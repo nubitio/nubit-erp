@@ -6,7 +6,6 @@ app.producto = (function () {
     var fm = $('#producto_fm');
     var txt_descripcion = $('#producto_descripcion');
     var cbo_categoria = $('#producto_categoria');
-    var cbo_destino = $('#producto_destino');
     var txt_precio = $('#producto_precio');
     var cbo_estado = $('#producto_estado');
     var btn_guardar;
@@ -70,11 +69,6 @@ app.producto = (function () {
                 sortable: true,
                 width: 180
             }, {
-                field: 'destino',
-                title: 'Destino',
-                sortable: true,
-                width: 150
-            }, {
                 field: 'precio',
                 title: 'Precio',
                 sortable: true,
@@ -109,40 +103,6 @@ app.producto = (function () {
                     } else {
                         dg.datagrid('addFilterRule', {
                             field: 'categoria_id',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'destino',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'COCINA'
-                }, {
-                    value: '2',
-                    text: 'BARRA'
-                }, {
-                    value: '3',
-                    text: 'COCINA/BARRA'
-                }, {
-                    value: '4',
-                    text: 'VITRINA'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'destino_id');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'destino_id',
                             op: 'equal',
                             value: value
                         });
@@ -224,28 +184,6 @@ app.producto = (function () {
             valueField: 'categoria_id',
             textField: 'descripcion',
             panelHeight: 200,
-            limitToList: true,
-            required: true
-        });
-
-        cbo_destino.combobox({
-            width: '100%',
-            label: 'Destino',
-            labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'COCINA'
-            }, {
-                value: '2',
-                text: 'BARRA'
-            }, {
-                value: '3',
-                text: 'COCINA/BARRA'
-            }, {
-                value: '4',
-                text: 'VITRINA'
-            }],
-            panelHeight: 'auto',
             limitToList: true,
             required: true
         });
