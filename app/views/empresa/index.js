@@ -176,7 +176,7 @@ app.empresa = (function () {
             if (e.keyCode == 13 && !enter_pressed) {
                 enter_pressed = true;
                 dlg.dialog('showMask', 'Consultando RUC');
-                $.get('https://app.jgm90.com/rucapi/ruc/' + txt_ruc.textbox('getValue'))
+                $.get('https://consultapi.jgm90.com/api/v1/ruc/' + txt_ruc.textbox('getValue') + '?token=abcxyz')
                     .done(function (result) {
                         enter_pressed = false;
                         if (result.error) {
@@ -184,11 +184,11 @@ app.empresa = (function () {
                         } else {
                             txt_razon_social.textbox('clear');
                             txt_domicilio_fiscal.textbox('clear');
-                            if (result.estado_contribuyente === 'ACTIVO') {
-                                txt_razon_social.textbox('setValue', result.razon_social);
-                                txt_domicilio_fiscal.textbox('setValue', result.domicilio_fiscal);
+                            if (result.estado === 'ACTIVO') {
+                                txt_razon_social.textbox('setValue', result.razonSocial);
+                                txt_domicilio_fiscal.textbox('setValue', result.direccion);
                             } else {
-                                show_error(result.razon_social + '<br>' + result.estado_contribuyente);
+                                show_error(result.razon_social + '<br>' + result.estado);
                             }
                         }
                         dlg.dialog('hideMask');
