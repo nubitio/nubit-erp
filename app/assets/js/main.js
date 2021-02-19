@@ -1,0 +1,214 @@
+const date = new Date(), y = date.getFullYear(), m = date.getMonth();
+const firstDay = new Date(y, m, 1);
+const lastDay = new Date(y, m + 1, 0);
+const mainObserver = new Observable();
+
+$(window).on('load', function () {
+    let container = $('#layout-container');
+    if (container) {
+        container.animate({"opacity": 1});
+    }
+});
+
+Mousetrap.prototype.stopCallback = function () {
+    return false;
+};
+
+$.fn.extend({
+    animateCss: function (animationName) {
+        var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';
+        this.addClass('animated ' + animationName).one(animationEnd, function () {
+            $(this).removeClass('animated ' + animationName);
+        });
+    }
+});
+
+$.extend($.fn.window.defaults, {
+    onMove: function (left, top) {
+        if (left < 0) {
+            $(this).window('move', {
+                left: 0
+            });
+        }
+        if (top < 0) {
+            $(this).window('move', {
+                top: 0
+            });
+        }
+    }
+});
+
+$.extend($.fn.datagrid.defaults, {
+    pagination: PAGINATION,
+    pageSize: PAGE_SIZE,
+    striped: STRIPED,
+    rownumbers: ROW_NUMBERS,
+    fitColumns: true,
+    fit: true,
+    border: BORDER,
+    singleSelect: SINGLE_SELECT,
+    multiSort: true,
+    remoteFilter: true
+});
+
+$.extend($.fn.dialog.defaults, {
+    width: DIALOG_WIDTH,
+    height: DIALOG_HEIGHT,
+    maxHeight: DIALOG_MAX_HEIGHT,
+    modal: MODAL,
+    closed: CLOSED,
+    inline: INLINE,
+    shadow: SHADOW,
+    closable: false,
+    border: false,
+    cls: 'card-dialog',
+    onOpen: function () {
+        $(this).dialog('center');
+        $(this).parent().animateCss(DIALOG_OPEN_ANIMATION);
+    },
+    onMove: function (left, top) {
+        if (left < 0) {
+            $(this).dialog('move', {
+                left: 0
+            });
+        }
+        if (top < 0) {
+            $(this).dialog('move', {
+                top: 0
+            });
+        }
+    }
+});
+
+$.extend($.messager.defaults, {
+    border: false,
+    closable: false,
+    cls: 'card-dialog'
+});
+
+$.extend($.fn.panel.methods, {
+    showMask: function (jq, msg) {
+        return jq.each(function () {
+            var pal = $(this).panel('panel');
+            if (pal.css('position').toLowerCase() != 'absolute') {
+                pal.css('position', 'relative');
+            }
+            var m = pal.children('div.panel-mask');
+            if (!m.length) {
+                m = $('<div class="panel-mask"></div>').appendTo(pal);
+            }
+            m.css({
+                position: 'absolute',
+                background: 'rgba(238, 238, 238, 0.4)',
+                width: '100%',
+                height: '100%',
+                top: 0
+            });
+            m.children('div.panel-mask-msg').remove();
+            var mm = $('<div class="panel-mask-msg text"></div>').appendTo(m);
+            msg = msg + ' <i class="fas fa-cog fa-spin fa-lg fa-fw color-accent"></i>';
+            mm.html(msg).css({position: 'absolute'}).css({
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginTop: -mm._outerHeight() / 2,
+                marginLeft: -mm._outerWidth() / 2,
+                padding: '10px',
+                background: '#fff',
+                border: '1px solid #cecece'
+            });
+        });
+    },
+    hideMask: function (jq) {
+        return jq.each(function () {
+            $(this).panel('panel').children('div.panel-mask').remove();
+        });
+    }
+});
+
+$.extend($.fn.validatebox.defaults.rules, {
+    validDate: {
+        validator: function (value) {
+            var date = dateparser(value);
+            var s = dateformatter(date);
+            return s == value;
+        },
+        message: 'Por favor ingrese una fecha valida'
+    }
+});
+
+$.extend($.fn.validatebox.defaults.rules, {
+    confirmPass: {
+        validator: function (value, param) {
+            var pass = $(param[0]).passwordbox('getValue');
+            return value == pass;
+        },
+        message: 'La confrmación no coincide con la contraseña.'
+    }
+});
+
+function dateformatter(date) {
+    var y = date.getFullYear();
+    var m = date.getMonth() + 1;
+    var d = date.getDate();
+    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
+}
+
+function dateparser(s) {
+    if (!s) return new Date();
+    var ss = (s.split('-'));
+    var y = parseInt(ss[0], 10);
+    var m = parseInt(ss[1], 10);
+    var d = parseInt(ss[2], 10);
+    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+        return new Date(y, m - 1, d);
+    } else {
+        return new Date();
+    }
+}
+
+function estado_formatter(val, row) {
+    if (val == 1) {
+        return 'Activo';
+    } else {
+        return 'Inactivo';
+    }
+}
+
+function estado_styler(val, row, index) {
+    if (val == 1) {
+        return 'color:#63b343;';
+    } else {
+        return 'color:#F8485D;';
+    }
+}
+
+function activo_formatter(val, row) {
+    if (val == 1) {
+        return 'SI';
+    } else {
+        return 'NO';
+    }
+}
+
+function activo_styler(value, row, index) {
+    if (value == 1) {
+        return 'color:#63b343;';
+    } else {
+        return 'color:#F8485D;';
+    }
+}
+
+function show_info(message) {
+    $.messager.show({
+        title: 'Info',
+        msg: message
+    });
+}
+
+function show_error(message) {
+    $.messager.show({
+        title: 'Error',
+        msg: message
+    });
+}

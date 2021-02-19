@@ -1,0 +1,24 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12 full-row">
+      <!-- Dialogo -->
+      <div id="cpassword_dlg">
+        <form class="fm" id="cpassword_fm" method="post" novalidate>
+          <div class="fitem">
+            <label>Actual</label>
+            <input id="pwd_actual" name="actual">
+          </div>
+          <div class="fitem">
+            <label>Nueva</label>
+            <input id="pwd_nueva" name="password">
+          </div>
+          <div class="fitem">
+            <label>Confirmar</label>
+            <input id="pwd_confirmar">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{{@UI}}change-password/index.js?v={{@version}}"></script>

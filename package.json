@@ -1,0 +1,34 @@
+{
+  "name": "restaurante",
+  "version": "1.0.0",
+  "description": "**sistema desarrollado en PHP**",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/johangm90/restaurante.git"
+  },
+  "author": "Johan Guerreros <johangm90@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/johangm90/restaurante/issues"
+  },
+  "homepage": "https://gitlab.com/johangm90/restaurante#README",
+  "devDependencies": {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-cache": "^0.4.5",
+    "gulp-cssnano": "^2.1.2",
+    "gulp-if": "^2.0.1",
+    "gulp-imagemin": "^3.0.3",
+    "gulp-less": "^3.1.0",
+    "gulp-php-minify": "^0.1.3",
+    "gulp-replace": "^0.5.4",
+    "gulp-uglify": "^2.0.0",
+    "gulp-useref": "^3.1.2",
+    "less-plugin-autoprefix": "^1.5.1",
+    "run-sequence": "^1.2.2"
+  }
+}

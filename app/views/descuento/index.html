@@ -1,0 +1,75 @@
+<div class="wrapper">
+  <div class="row">
+    <div class="col-md-12 full-row">
+      <div id="descuento_window">
+        <table id="descuento_dg"></table>
+      </div>
+      <!-- Dialogo -->
+      <div id="descuento_dlg">
+        <div class="easyui-layout" data-options="fit:true">
+          <form class="fm" id="descuento_fm" method="post" novalidate>
+            <div data-options="region: 'north', border: false" style="height:200px; padding:10px 30px">
+              <div class="fitem">
+                <input id="descuento_descripcion" name="descripcion">
+              </div>
+              <div class="fitem">
+                <input id="descuento_codigo" name="codigo">
+              </div>
+              <div class="fitem">
+                <input id="descuento_fecha_inicio" name="fecha_inicio">
+              </div>
+              <div class="fitem">
+                <input id="descuento_fecha_fin" name="fecha_fin">
+              </div>
+              <div class="fitem">
+                <input id="descuento_porcentaje" name="porcentaje">
+              </div>
+            </div>
+            <div data-options="region: 'center'" style="padding:2px 0px">
+              <div class="easyui-layout" data-options="fit:true">
+                <div data-options="region: 'north', border: false" style="padding:0px 30px">
+                  <table class="table table-bordered table-striped table-sm table-nomargin">
+                    <tr>
+                      <th width="60%">Producto</th>
+                      <th width="15%">P.Lista</th>
+                      <th width="15%">P.Desc</th>
+                      <th width="5%">
+                        <a href="#" onclick="app.descuento.add_detalle()">
+                          <i class="fa fa-plus fa-lg color-green"></i>
+                        </a>
+                      </th>
+                    </tr>
+                  </table>
+                </div>
+                <div data-options="region: 'center', border: false" style="padding:0px 30px">
+                  <table class="table table-bordered table-striped table-sm table-nomargin">
+                    <tbody id="descuento_tb_detalle"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script id="descuento_template" type="text/template">
+  <tr id="descuento_tr_%position%">
+    <td width="60%">
+      <input id="descuento_cbproducto_%position%" name="detalle[producto][]">
+    </td>
+    <td width="15%">
+      <input id="descuento_txtplista_%position%" name="detalle[precio_lista][]">
+    </td>
+    <td width="15%">
+      <input id="descuento_txtpdesc_%position%" name="detalle[precio_descuento][]">
+    </td>
+    <td width="5%">
+      <a href="#" onclick="app.descuento.remove_row(%position%)">
+        <i class="fa fa-remove fa-lg color-red" style="padding:5px 3px"></i>
+      </a>
+    </td>
+  </tr>
+</script>
+<script src="{{@UI}}descuento/index.js?v={{@version}}"></script>

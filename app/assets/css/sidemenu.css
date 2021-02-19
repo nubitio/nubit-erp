@@ -1,0 +1,93 @@
+.sidemenu .accordion .panel-title {
+    color: #b8c7ce;
+}
+
+.sidemenu .accordion .accordion-header {
+    background: #454544;
+    color: #b8c7ce;
+}
+
+.sidemenu .accordion .accordion-body {
+    background: #656563;
+    color: #e3e3e3;
+}
+
+.sidemenu .accordion .accordion-header-selected {
+    background: #343433;
+}
+
+.sidemenu .accordion .accordion-collapse {
+    background: transparent;
+}
+
+.sidemenu .tree-node-hover {
+    background: #9e9e9e;
+    color: #fff;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    margin-right: 5px;
+}
+
+.sidemenu .tree-node-selected {
+    border-right: 2px solid #e1653b;
+    background: #e1653b;
+    color: #fff;
+    border-left: 2px solid #f3f3f3;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    margin-right: 5px;
+}
+
+.sidemenu .accordion-header .panel-icon {
+    font-size: 16px;
+}
+
+.sidemenu .accordion-header .panel-tool {
+    display: none;
+}
+
+.sidemenu .accordion-header::after,
+.sidemenu .tree-node-nonleaf::after {
+    display: inline-block;
+    vertical-align: top;
+    border-style: solid;
+    transform: rotate(45deg);
+    width: 4px;
+    height: 4px;
+    content: '';
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    margin-top: -3px;
+    border-width: 0 1px 1px 0;
+}
+
+.sidemenu .accordion-header-selected::after {
+    transform: rotate(-135deg);
+}
+
+.sidemenu .tree-node-nonleaf::after {
+    transform: rotate(-135deg);
+}
+
+.sidemenu .tree-node-nonleaf-collapsed::after {
+    transform: rotate(45deg);
+}
+
+.sidemenu-collapsed .accordion-header::after {
+    display: none;
+}
+
+.sidemenu-tooltip .accordion {
+    border-color: #343433;
+}
+
+.accordion {
+    background: #454544;
+    border-color: #343433;
+}
+
+.tree-file {
+    background: transparent !important;
+    margin-right: 8px;
+}

@@ -1,0 +1,46 @@
+<div class="wrapper">
+    <table id="plantilla_dg"></table>
+    <!-- Dialogo -->
+    <div id="plantilla_dlg">
+        <div class="easyui-layout" data-options="fit:true">
+            <form class="fm" id="plantilla_fm" method="post" novalidate>
+                <div data-options="region: 'north', border: false" style="height:160px; padding:10px 30px">
+                    <div class="fitem">
+                        <input id="plantilla_descripcion" name="descripcion">
+                    </div>
+                    <div class="fitem">
+                        <input id="plantilla_estado" name="estado">
+                    </div>
+                </div>
+                <div data-options="region: 'center', border: false" style="padding:0 30px">
+                    <table class="table table-sm table-bordered header-fixed">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th style="width: 92%;">Producto</th>
+                            <th style=" width: 8%;">
+                                <a onclick="app.plantilla.add_detalle()" style="cursor: pointer">
+                                    <i class="fas fa-plus text-success" style="padding: 3px"></i>
+                                </a>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="plantilla_tb_detalle" style="height: 150px"></tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script id="plantilla_template" type="text/template">
+    <tr id="plantilla_tr_%position%">
+        <td style="width: 92%">
+            <input id="plantilla_cbproducto_%position%" name="detalle[producto][]">
+        </td>
+        <td style="width: 8%">
+            <a onclick="app.plantilla.remove_row(%position%)" style="cursor: pointer">
+                <i class="fas fa-times text-danger" style="padding:6px"></i>
+            </a>
+        </td>
+    </tr>
+</script>
+<script src="{{@UI}}plantilla/index.js?v={{@version}}"></script>

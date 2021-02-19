@@ -1,0 +1,19 @@
+{
+  "name": "johangm90/restaurante",
+  "require": {
+    "bcosca/fatfree": "^3.7.3",
+    "tecnickcom/tcpdf": "^6.3.5",
+    "phpoffice/phpspreadsheet": "^1.16",
+    "mike42/escpos-php": "^2.2",
+    "phpmailer/phpmailer": "^6.2.0",
+    "greenter/greenter": "^4.1.1",
+    "illuminate/database": "^6.20.10",
+    "messagebird/php-rest-api": "^1.19"
+  },
+  "authors": [
+    {
+      "name": "Johan Guerreros",
+      "email": "johangm90@gmail.com"
+    }
+  ]
+}

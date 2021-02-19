@@ -1,0 +1,134 @@
+<?php
+
+/**
+ * Class NoteDetail
+ */
+class NoteDetail implements JsonSerializable
+{
+    /**
+     * @var int
+     */
+    private $notaId;
+
+    /**
+     * @var string
+     */
+    private $productoId;
+
+    /**
+     * @var double
+     */
+    private $cantidad;
+
+    /**
+     * @var double
+     */
+    private $precioUnitario;
+
+    /**
+     * @var double
+     */
+    private $precioTotal;
+
+    public function jsonSerialize()
+    {
+        return [
+            'nota_id' => $this->getNotaId(),
+            'producto_id' => $this->getProductoId(),
+            'cantidad' => $this->getCantidad(),
+            'precio_unitario' => $this->getPrecioUnitario(),
+            'precio_total' => $this->getPrecioTotal()
+        ];
+    }
+
+
+    /**
+     * @return int
+     */
+    public function getNotaId()
+    {
+        return $this->notaId;
+    }
+
+    /**
+     * @param int $notaId
+     * @return NoteDetail
+     */
+    public function setNotaId($notaId)
+    {
+        $this->notaId = $notaId;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getProductoId()
+    {
+        return $this->productoId;
+    }
+
+    /**
+     * @param string $productoId
+     * @return NoteDetail
+     */
+    public function setProductoId($productoId)
+    {
+        $this->productoId = $productoId;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getCantidad()
+    {
+        return $this->cantidad;
+    }
+
+    /**
+     * @param float $cantidad
+     * @return NoteDetail
+     */
+    public function setCantidad($cantidad)
+    {
+        $this->cantidad = $cantidad;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getPrecioUnitario()
+    {
+        return $this->precioUnitario;
+    }
+
+    /**
+     * @param float $precioUnitario
+     * @return NoteDetail
+     */
+    public function setPrecioUnitario($precioUnitario)
+    {
+        $this->precioUnitario = $precioUnitario;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getPrecioTotal()
+    {
+        return $this->precioTotal;
+    }
+
+    /**
+     * @param float $precioTotal
+     * @return NoteDetail
+     */
+    public function setPrecioTotal($precioTotal)
+    {
+        $this->precioTotal = $precioTotal;
+        return $this;
+    }
+}

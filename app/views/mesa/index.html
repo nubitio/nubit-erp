@@ -1,0 +1,29 @@
+<div class="wrapper dx-viewport">
+    <table id="mesa_dg"></table>
+    <div id="table_map" style="height: 100%"></div>
+    <!--<div id="mesa_panel"></div>-->
+    <!-- Dialogo -->
+    <div id="mesa_dlg">
+        <form class="fm" id="mesa_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="mesa_empresa" name="empresa">
+            </div>
+            <div class="fitem">
+                <input id="mesa_local" name="local">
+            </div>
+            <div class="fitem">
+                <input id="mesa_ambiente" name="ambiente_id">
+            </div>
+            <div class="fitem">
+                <input id="mesa_descripcion" name="descripcion">
+            </div>
+            <div class="fitem">
+                <input id="mesa_position" name="position">
+            </div>
+            <div class="fitem">
+                <input id="mesa_estado" name="estado">
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{@UI}}mesa/index.js?v={{@version}}"></script>

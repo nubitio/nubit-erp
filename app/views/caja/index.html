@@ -1,0 +1,43 @@
+<div class="wrapper">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'north', title:'Registro de caja', border:false" style="height:110px; padding:10px 30px">
+            <form class="fm" id="caja_fm_pr" method="post" novalidate>
+                <input type="hidden" name="caja_id" id="caja_id">
+                <div class="fitem">
+                    <label>Fecha</label>
+                    <input class="easyui-textbox" name="fecha" id="caja_fecha" readonly>
+                </div>
+            </form>
+        </div>
+        <div data-options="region: 'center', border: false">
+            <table id="caja_dg"></table>
+        </div>
+    </div>
+    <!-- Dialogo -->
+    <div id="caja_dlg">
+        <form class="fm" id="caja_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="caja_tipo" name="tipo_id">
+            </div>
+            <div class="fitem">
+                <input id="caja_descripcion" name="descripcion">
+            </div>
+            <div class="fitem">
+                <input id="caja_referencia" name="referencia">
+            </div>
+            <div class="fitem">
+                <input id="caja_monto" name="monto">
+            </div>
+        </form>
+    </div>
+    <!--Dialogo Abrir caja-->
+    <div id="abrir_dlg">
+        <form class="fm" id="abrir_fm" method="post" novalidate>
+            <input type="hidden" name="usuario_id" value="{{@SESSION.usuario_id}}">
+            <div class="fitem">
+                <input id="saldo_inicial" name="saldo_inicial">
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{@UI}}caja/index.js?v={{@version}}"></script>

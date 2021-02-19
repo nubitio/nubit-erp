@@ -1,0 +1,89 @@
+<include href="layout/header.html"/>
+<div data-options="region:'center'" style="background: #eeeeee; padding: 10px;">
+    <div id="content"></div>
+    <div id="home_local">
+        <div id="home_lista_local"></div>
+    </div>
+</div>
+<script>
+    let layout = $('#layout-container');
+    let sidebar = $('#sidebar');
+    let content = $('#content');
+    let current;
+
+    (function () {
+        content.panel({
+            fit: true,
+            loadingMessage: '',
+            onBeforeLoad: function () {
+                $(this).panel('showMask', 'Cargando...');
+            },
+            onLoad: function () {
+                $(this).panel('hideMask');
+                $('.wrapper').animate({"opacity": 1});
+            }
+        });
+
+        $.get('getmenu')
+            .done(function (response) {
+                sidebar.sidemenu({
+                    data: response,
+                    fit: true,
+                    border: false,
+                    multiple: false,
+                    onSelect: function (item) {
+                        load_page(item.url, item.text);
+                    }
+                });
+            })
+            .fail(function (xhr, status, error) {
+                console.log(error);
+            });
+    })();
+
+    window.onpopstate = function (event) {
+        if (event.state) {
+            load_page(event.state.item.url, history.state.item.text);
+        }
+    };
+
+    window.onload = function () {
+        if (history.state) {
+            load_page(history.state.item.url, history.state.item.text);
+        } else {
+            load_page('dashboard', 'dashboard');
+        }
+        //$.messager.alert('Sistema', 'Estimado cliente, recuerde que tiene una deuda pendiente evite el corte del servicio realizando el pago correspondiente.');
+    };
+
+    window.onresize = function () {
+        layout.layout('resize');
+        sidebar.sidemenu('resize');
+    };
+
+    function toggle() {
+        let opts = sidebar.sidemenu('options');
+        sidebar.sidemenu(opts.collapsed ? 'expand' : 'collapse');
+        opts = sidebar.sidemenu('options');
+        let west = layout.layout('panel', 'west');
+        west.panel('resize', {
+            width: opts.collapsed ? 52 : 202
+        });
+        layout.layout('resize');
+        sidebar.sidemenu('resize', {
+            width: opts.collapsed ? 50 : 200
+        });
+    }
+
+    function load_page(url, title) {
+        if (url !== current) {
+            let state = {url: url, text: title};
+            window.history.pushState({item: state}, title, '#' + url);
+            current = url;
+            $('.wrapper').animate({"opacity": 0});
+            content.panel('refresh', url);
+        }
+    }
+</script>
+<script src="{{@UI}}layout/home.js?v={{@version}}"></script>
+<include href="layout/footer.html"/>

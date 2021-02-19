@@ -1,0 +1,24 @@
+<div class="wrapper">
+    <table id="menu_dg"></table>
+    <!-- Dialogo -->
+    <div id="menu_dlg">
+        <form class="fm" id="menu_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="menu_order" name="orden">
+            </div>
+            <div class="fitem">
+                <input id="menu_descripcion" name="descripcion">
+            </div>
+            <div class="fitem">
+                <input id="menu_link" name="link">
+            </div>
+            <div class="fitem">
+                <input id="menu_icono" name="icon">
+            </div>
+            <div class="fitem">
+                <input id="menu_padre" name="parent_id">
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{@UI}}menu/index.js?v={{@version}}"></script>
