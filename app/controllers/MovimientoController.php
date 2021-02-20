@@ -475,4 +475,26 @@ class MovimientoController extends BaseController
             $this->json(["success" => false, "msg" => $mail->ErrorInfo, "data" => null]);
         }
     }
+
+    function orderNote()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $data = $this->model->get_one_venta($id);
+        $sale = $data['venta'];
+        $this->app->set('title', 'Nota de pedido');
+        $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
+        $this->app->set('logo', $this->base64($logo_path));
+        $this->app->set('ruc', $sale['cabecera']['ruc_empresa']);
+        $this->app->set('series', $sale['cabecera']['serie']);
+        $this->app->set('number', $sale['cabecera']['numero']);
+        $this->app->set('customer', $sale['cabecera']['cliente']);
+        $this->app->set('date', date('d/m/Y', strtotime($sale['cabecera']['fecha'])));
+        $this->app->set('address', $sale['cabecera']['direccion_cliente']);
+        $this->app->set('detail', $sale['detalle']);
+        $this->app->set('total', $this->money_pen($sale['cabecera']['total']));
+        $this->app->set('obs', $sale['cabecera']['glosa']);
+        $template = new Template;
+        //echo $template->render('templates/invoice.html');
+        $this->report($template->render('templates/invoice.html'));
+    }
 }

@@ -25,10 +25,6 @@ app.venta = (function () {
     let btn_cancelar;
     let txt_vuelto = $('#venta_vuelto');
 
-    let orden_detalle;
-    let splitter_dlg = $('#splitter_dlg');
-    let splitter_table = $('#splitter_table');
-
     let cliente_dialog_obj;
 
     let session;
@@ -128,10 +124,9 @@ app.venta = (function () {
                 title: 'Numero',
                 sortable: true
             }, {
-                field: 'tipo_pago',
-                title: 'Pago',
-                sortable: true,
-                formatter: tipopagocell
+                field: 'total',
+                title: 'Total',
+                align: 'right'
             }, {
                 field: 'estado',
                 title: 'Estado',
@@ -217,34 +212,6 @@ app.venta = (function () {
                 }
             }
         }, {
-            field: 'tipo_pago',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'EFECTIVO'
-                }, {
-                    value: '2',
-                    text: 'TARJETA'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'tipo_pago');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'tipo_pago',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
             field: 'estado',
             type: 'combobox',
             options: {
@@ -254,7 +221,7 @@ app.venta = (function () {
                     text: 'TODOS'
                 }, {
                     value: '1',
-                    text: 'PROCESADO'
+                    text: 'INGRESADO'
                 }, {
                     value: '2',
                     text: 'ANULADO'
@@ -303,40 +270,6 @@ app.venta = (function () {
                 btn_cancelar = $('#venta_cancelar');
                 btn_guardar.addClass('md-btn');
                 btn_cancelar.addClass('md-btn-plain');
-            }
-        });
-
-        splitter_dlg.dialog({
-            width: 900,
-            height: 550,
-            toolbar: [{
-                id: 'splitter_add',
-                text: 'Agregar cuenta',
-                iconCls: ICON_ADD,
-                handler: function () {
-                    add_split();
-                }
-            }],
-            buttons: [{
-                id: 'splitter_cancelar',
-                text: TEXT_CANCEL,
-                handler: function () {
-                    splitter_dlg.dialog('close');
-                }
-            }, {
-                id: 'splitter_guardar',
-                text: 'Finalizar',
-                handler: function () {
-                    splitter_dlg.dialog('close');
-                }
-            }],
-            onOpen: function () {
-                splitter_dlg.dialog('center');
-                splitter_dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
-                let sptr_btn_guardar = $('#splitter_guardar');
-                let sptr_btn_cancelar = $('#splitter_cancelar');
-                sptr_btn_guardar.addClass('md-btn');
-                sptr_btn_cancelar.addClass('md-btn-plain');
             }
         });
 
@@ -458,13 +391,7 @@ app.venta = (function () {
         dlg.dialog('open').dialog('setTitle', 'Nuevo');
     }
 
-    let venta_guardar = function (frm = null) {
-        if (frm != null) {
-            fm = $('#split_fm_' + frm);
-            let btn_split = $('#split_btn_guardar_' + frm);
-            btn_split.prop('disabled', true);
-            btn_split.html('Procesando...');
-        }
+    let venta_guardar = function () {
         fm.form('submit', {
             url: route_venta,
             onSubmit: function () {
@@ -475,175 +402,23 @@ app.venta = (function () {
                 return valid;
             },
             success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        venta_cerrar_orden();
-                        generar_comprobante(result.venta);
-                        dlg.dialog('close');
-                        dg.datagrid('reload');
-                        show_info(result.msg);
-                        if (frm != null) {
-                            let btn_split = $('#split_btn_guardar_' + frm);
-                            btn_split.html('Procesado');
-                        }
-                    } else {
-                        show_error(result.msg);
-                        if (frm != null) {
-                            let btn_split = $('#split_btn_guardar_' + frm);
-                            btn_split.prop('disabled', false);
-                            btn_split.html('Guardar');
-                        }
-                    }
-                    enable_buttons();
-                } catch (e) {
-                    show_error(e);
-                    enable_buttons();
+                result = JSON.parse(result);
+                if (result.success) {
+                    dlg.dialog('close');
+                    dg.datagrid('reload');
+                    show_info(result.msg);
+                    showOptions(result.venta);
+                } else {
+                    show_error(result.msg);
                 }
+                enable_buttons();
             }
         });
     };
 
-    function formatDate(inputDate) {
-        let parts = inputDate.match(/(\d+)/g);
-        let date = new Date(parts[0], parts[1] - 1, parts[2]);
-        let y = date.getFullYear();
-        let m = date.getMonth() + 1;
-        let d = date.getDate();
-        console.log((d < 10 ? ('0' + d) : d) + '-' + (m < 10 ? ('0' + m) : m) + '-' + y);
-        return (d < 10 ? ('0' + d) : d) + '-' + (m < 10 ? ('0' + m) : m) + '-' + y;
-    }
-
-    function generar_comprobante(venta) {
-        let data = {};
+    function showOptions(venta) {
         let cabecera = venta.cabecera;
-        let vdetalle = venta.detalle;
-        data.facturacion = {};
-        data.facturacion.Serie = cabecera.serie;
-        data.facturacion.Correlativo = cabecera.numero;
-        data.facturacion.Fecha = formatDate(cabecera.fecha);
-        //'dd-mm-aaaa' formado de fecha
-        data.facturacion.Moneda = 'PEN';
-        if (cabecera.cliente != 'CLIENTE GENERAL' && cabecera.ruc_cliente.length == 11) {
-            data.facturacion.TipoComprobante = '01';
-        } else {
-            data.facturacion.TipoComprobante = '03';
-        }
-        // 01: factura
-        // 03: boleta
-
-        data.facturacion.Cliente = {};
-        data.facturacion.Cliente.NroDocumento = cabecera.ruc_cliente;
-        if (cabecera.cliente != 'CLIENTE GENERAL' && cabecera.ruc_cliente.length == 11) {
-            data.facturacion.Cliente.TipoDocumento = '6';
-        } else {
-            data.facturacion.Cliente.TipoDocumento = '1';
-        }
-        // 0: documento no domiciliado sin ruc.
-        // 1: DNI
-        // 4: Carnet extranjería
-        // 6: RUC
-        // 7: Pasaporte
-        // A: Cedula diplomatica de identidad
-
-        data.facturacion.Cliente.Nombres = cabecera.cliente;
-        data.facturacion.Cliente.Direccion = cabecera.direccion_cliente;
-
-        let igv = 0.18;
-        let divisor = 1 + igv;
-        let valor_venta = cabecera.total / divisor;
-        let valor_igv = valor_venta * igv;
-
-        data.facturacion.Gratuito = 0;
-        data.facturacion.Gravado = valor_venta.toFixed(2);
-        // Si tiene igv el monto gravado es el subtotal del documento
-
-        data.facturacion.Inafecto = 0;
-        // Si no tiene igv el monto inafecto es el total del documento
-
-        data.facturacion.Igv = valor_igv.toFixed(2);
-        // Monto de IGV del documento
-
-        data.facturacion.Subtotal = valor_venta.toFixed(2);
-        // Monto subtotal del documento
-
-        data.facturacion.Total = cabecera.total;
-        // Monto total del documento
-
-        data.facturacion.Detalle = [];
-        for (let i = 0; i < vdetalle.length; i++) {
-            let detalle = {};
-            //// Aqui puedes usar un $.each, para recorrer tu detalle o si usas objectos en javascript mucho mejor, si necesitas ayuda con codigo estoy disponible.
-            detalle.Producto = vdetalle[i].producto;
-
-            detalle.Cantidad = vdetalle[i].cantidad;
-            detalle.Precio = vdetalle[i].unitario;
-            // Monto incluido IGV del Precio Unitario
-
-            detalle.Importe = vdetalle[i].precio;
-            // Monto subtotal incluido IGV
-
-            detalle.Igv = 0;
-            // Monto IGV del precio del producto, adjunto calculo en excel
-
-            detalle.TipoImpuesto = 10;
-            data.facturacion.Detalle.push(detalle);
-        }
-
-        console.log(data);
         imprimir_ticket(cabecera.movimiento_id, "");
-        //$.post("venta/generar-comprobante", {Factura: data.facturacion}, function (text) {
-        /*$.post("http://192.168.0.50:88/facte/facturacion.php", {Factura: data.facturacion}, function (text) {
-        })
-            .done(function (text) {
-                let responseJSON = JSON.parse(text);
-                console.log(responseJSON);
-                if (responseJSON.Exito) {
-                    imprimir_ticket(cabecera.movimiento_id, responseJSON.Mensaje);
-                    let comprobante = {};
-                    comprobante.fecha = cabecera.fecha;
-                    comprobante.tipo_comprobante_id = 0;
-                    comprobante.serie = cabecera.serie;
-                    comprobante.numero = cabecera.numero;
-                    comprobante.cliente_id = cabecera.cliente_id;
-                    comprobante.inafecto = 0;
-                    comprobante.subtotal = valor_venta.toFixed(2);
-                    comprobante.igv = valor_igv.toFixed(2);
-                    comprobante.total = cabecera.total;
-                    comprobante.digest = responseJSON.Mensaje;
-                    guardar_comprobante(comprobante);
-                }
-            })
-            .fail(function (xhr, error, status) {
-                //alert("No se completó invocacion de función.");
-                imprimir_ticket(cabecera.movimiento_id, '');
-                let comprobante = {};
-                comprobante.fecha = cabecera.fecha;
-                comprobante.tipo_comprobante_id = 0;
-                comprobante.serie = cabecera.serie;
-                comprobante.numero = cabecera.numero;
-                comprobante.cliente_id = cabecera.cliente_id;
-                comprobante.inafecto = 0;
-                comprobante.subtotal = valor_venta.toFixed(2);
-                comprobante.igv = valor_igv.toFixed(2);
-                comprobante.total = cabecera.total;
-                comprobante.digest = 'ERROR: ' + error;
-                guardar_comprobante(comprobante);
-            });*/
-    }
-
-    function guardar_comprobante(comprobante) {
-        $.post('venta/guardar-comprobante', {comprobante: comprobante})
-            .done(function (result) {
-                if (result.success) {
-                    console.log(result);
-                } else {
-                    console.log(result);
-                }
-            })
-            .fail(function (xhr, status, error) {
-                console.log(error);
-            });
     }
 
     function disable_buttons() {
@@ -658,24 +433,6 @@ app.venta = (function () {
         btn_guardar.linkbutton('enable');
         btn_guardar.linkbutton({text: 'Guardar'});
         dlg.dialog('hideMask');
-    }
-
-    function venta_cerrar_orden() {
-        if (orden_id > 0) {
-            $.post('orden/finalizar/' + orden_id)
-                .done(function (result) {
-                    if (result.success) {
-                        orden_id = 0;
-                        show_info(result.msg);
-                        reload_list();
-                    } else {
-                        show_error(result.msg);
-                    }
-                })
-                .fail(function (xhr, status, error) {
-                    show_error(error)
-                });
-        }
     }
 
     function venta_anular() {
@@ -852,14 +609,6 @@ app.venta = (function () {
         }
     }
 
-    function venta_load_combos(detalle) {
-        for (let i = 0; i < detalle.length; i++) {
-            let obj = detalle[i];
-            $('#venta_cbproducto' + (i + 1)).combobox('select', obj.producto_id);
-        }
-        calcular_total();
-    }
-
     function tipopagocell(value, row) {
         if (value == 1) {
             return 'EFECTIVO';
@@ -872,19 +621,11 @@ app.venta = (function () {
 
     function vestado_formatter(value, row) {
         if (value == 1) {
-            return 'PROCESADO';
+            return 'INGRESADO';
         } else if (value == 2) {
             return 'ANULADO';
         } else {
             return '';
-        }
-    }
-
-    function list_styler(index, row) {
-        if (row.grupo === 'Atendido') {
-            return 'background-color:#fefefe;color:#4CAF50;';
-        } else if (row.grupo === 'Atendiendo') {
-            return 'background-color:#fefefe;color:#FF9800;';
         }
     }
 
@@ -912,33 +653,11 @@ app.venta = (function () {
     function venta_print() {
         let row = dg.datagrid('getSelected');
         if (row) {
-            jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
+            window.open('sale/order/' + row.movimiento_id)
+            //jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
         }
-    }
-
-    function venta_cargar_orden(id) {
-        dlg.dialog('showMask', 'Cargando...');
-        let template = list_template.html();
-        $.get('venta/orden/' + id)
-            .done(function (result) {
-                let detalle = result;
-                orden_detalle = result;
-                for (let i = 0; i < detalle.length; i++) {
-                    let obj = detalle[i];
-                    let row = template.replace(/%position%/g, position);
-                    tb_detalle.append(row);
-                    create(position, obj);
-                    position++;
-                }
-                venta_load_combos(detalle);
-                dlg.dialog('hideMask');
-            })
-            .fail(function (xhr, status, error) {
-                show_error(error);
-                dlg.dialog('hideMask');
-            });
     }
 
     function imprimir_ticket(ticket, digest) {
@@ -1129,356 +848,11 @@ app.venta = (function () {
         dlgc.dialog('hideMask');
     }
 
-    // splitter
-    let account = 0;
-
-    function load_splitter() {
-        let head = $('#splitter_head');
-        let body = $('#splitter_body');
-        head.empty();
-        body.empty();
-        account = 0;
-        splitter_dlg.dialog('open').dialog('setTitle', 'Dividir cuentas');
-        add_split();
-        add_split();
-    }
-
-    function add_split() {
-        account++;
-        let header = $('#splitter_head');
-        let head_template = $('#splitter_head_template');
-        let htemplate = head_template.html();
-        htemplate = htemplate.replace(/%account%/g, account);
-        header.append(htemplate);
-        for (let i = 1; i <= account; i++) {
-            $('#splitter_head_button_' + i).prop('disabled', true);
-        }
-        if (account > 2) {
-            $('#splitter_head_button_' + account).prop('disabled', false);
-            let prev_account = account - 1;
-            set_buttons_state_next(prev_account);
-        }
-
-        let body = $('#splitter_body');
-        let body_template = $('#splitter_body_template');
-        let btemplate = body_template.html();
-        btemplate = btemplate.replace(/%account%/g, account);
-        body.append(btemplate);
-        build_form(account);
-        if (account == 1) {
-            load_split_detail();
-        }
-    }
-
-    function build_form(index) {
-        let txt_operacion = $('#split_operacion_' + index);
-        let txt_orden = $('#split_orden_' + index);
-        let cbo_cliente = $('#split_cliente_' + index);
-        let txt_glosa = $('#split_glosa_' + index);
-        let cbo_pago = $('#split_pago_' + index);
-        let cbo_tarjeta = $('#split_tarjeta_' + index);
-
-        cbo_cliente.combobox({
-            width: 320,
-            label: 'Cliente',
-            labelAlign: 'right',
-            url: 'cliente/lista/1/0',
-            method: 'get',
-            valueField: 'ruc',
-            textField: 'razon_social',
-            panelHeight: 200,
-            limitToList: true,
-            required: true,
-            icons: [{
-                iconCls: ICON_ADD,
-                handler: function (e) {
-                    nuevo_cliente(cbo_cliente);
-                }
-            }],
-            onSelect: function (rec) {
-                if (rec.razon_social != 'CLIENTE GENERAL' && rec.ruc.length == 11) {
-                    txt_operacion.val('37b1e294-c224-11e7-91af-5600005a2745');
-                } else {
-                    txt_operacion.val('0ec9c6ae-c04f-11e7-91af-5600005a2745');
-                }
-            }
-        });
-
-        txt_glosa.textbox({
-            width: 320,
-            label: 'Obs',
-            labelAlign: 'right'
-        });
-
-        cbo_pago.combobox({
-            width: 320,
-            label: 'Tipo Pago',
-            labelAlign: 'right',
-            data: [{
-                value: '1',
-                text: 'EFECTIVO'
-            }, {
-                value: '2',
-                text: 'TARJETA'
-            }],
-            panelHeight: 'auto',
-            limitToList: true,
-            onSelect: function (rec) {
-                if (rec.value === '1') {
-                    cbo_tarjeta.combobox('clear');
-                    cbo_tarjeta.combobox('disable');
-                } else if (rec.value === '2') {
-                    cbo_tarjeta.combobox({required: true});
-                    cbo_tarjeta.combobox('enable');
-                    cbo_tarjeta.combobox('select', 1);
-                }
-            },
-            required: true
-        });
-
-        cbo_tarjeta.combobox({
-            width: 320,
-            label: 'Tarjeta',
-            labelAlign: 'right',
-            data: [{
-                value: '1',
-                text: 'VISA'
-            }, {
-                value: '2',
-                text: 'MASTERCARD'
-            }],
-            panelHeight: 'auto',
-            limitToList: true
-        });
-
-        route_venta = 'venta/add/2';
-        txt_orden.val(orden_id);
-        txt_operacion.val('0ec9c6ae-c04f-11e7-91af-5600005a2745'); //venta boleta
-        cbo_cliente.combobox('select', '00000000');
-        cbo_pago.combobox('select', 1);
-        cbo_tarjeta.combobox('disable');
-    }
-
-    function remove_account(index) {
-        let table = $('#split_tb_detalle_' + index);
-        if (table.children('tr').length == 0) {
-            $('#splitter_cuenta_' + index).remove();
-            $('#splitter_panel_' + index).remove();
-            account--;
-            if (account > 2) {
-                $('#splitter_head_button_' + account).prop('disabled', false);
-            }
-            set_buttons_state_next(account);
-        } else {
-            show_info("La cuenta no se puede eliminar por que no esta vacia");
-        }
-    }
-
-    let counter = 0;
-
-    function load_split_detail() {
-        let table = $('#split_tb_detalle_1');
-        let item_template = $('#splitter_item_template');
-        for (let i = 0; i < orden_detalle.length; i++) {
-            counter++;
-            let template = item_template.html();
-            template = template.replace(/%counter%/g, counter);
-            template = template.replace(/%account%/g, 1);
-            template = template.replace(/%item_cantidad%/g, orden_detalle[i].cantidad);
-            template = template.replace(/%item_producto%/, orden_detalle[i].producto);
-            template = template.replace(/%item_producto_id%/, orden_detalle[i].producto_id);
-            template = template.replace(/%item_unitario%/g, orden_detalle[i].precio_unitario);
-            template = template.replace(/%item_total%/g, orden_detalle[i].precio_total);
-            table.append(template);
-        }
-        set_buttons_state(1);
-    }
-
-    function set_buttons_state(index) {
-        console.log(index);
-        for (let i = 1; i <= counter; i++) {
-            $('#item_btn_back_' + i).prop('disabled', false);
-        }
-
-        if (index == 1) {
-            for (let i = 1; i <= counter; i++) {
-                $('#item_btn_back_' + i).prop('disabled', true);
-            }
-        }
-    }
-
-    function set_buttons_state_back(index) {
-        console.log(index);
-        for (let i = 1; i <= counter; i++) {
-            $('#item_btn_back_' + i).prop('disabled', false);
-        }
-
-        if (index == 1) {
-            for (let i = 1; i <= counter; i++) {
-                let btn = $('#item_btn_back_' + i);
-                let btn_account = btn.attr("data-account");
-                console.log(btn_account);
-                if (btn_account == index) {
-                    btn.prop('disabled', true);
-                }
-            }
-        }
-    }
-
-    function set_buttons_state_next(index) {
-        console.log(index);
-        for (let i = 1; i <= counter; i++) {
-            $('#item_btn_next_' + i).prop('disabled', false);
-        }
-
-        if (index == account) {
-            for (let i = 1; i <= counter; i++) {
-                let btn = $('#item_btn_next_' + i);
-                let btn_account = btn.attr("data-account");
-                console.log(btn_account);
-                if (btn_account == index) {
-                    btn.prop('disabled', true);
-                }
-            }
-        }
-    }
-
-    let move_item = function (direction, account, position) {
-        let lbl_cantidad = $('#item_text_cantidad_' + position);
-        let txt_cantidad = $('#item_cantidad_' + position);
-        let lbl_producto = $('#item_text_producto_' + position);
-        let txt_producto = $('#item_producto_' + position);
-        let lbl_unitario = $('#item_text_unitario_' + position);
-        let txt_unitario = $('#item_unitario_' + position);
-        let lbl_total = $('#item_text_total_' + position);
-        let txt_total = $('#item_total_' + position);
-
-        let producto_id = txt_producto.val();
-        let producto = lbl_producto.html();
-        let cantidad = parseInt(txt_cantidad.val());
-        let unitario = parseFloat(txt_unitario.val()).toFixed(2);
-        let total = parseFloat(txt_total.val()).toFixed(2);
-
-        if (direction == 1) {
-            if (cantidad >= 1) {
-                let new_account = Number(account) + 1;
-                let table = $('#split_tb_detalle_' + new_account);
-                let item_template = $('#splitter_item_template');
-                let exist = $('input[data-account=' + new_account + '][value=' + producto_id + ']');
-                if (exist.length !== 0) {
-                    let position = exist.attr("data-position");
-                    let lbl_cantidad = $('#item_text_cantidad_' + position);
-                    let txt_cantidad = $('#item_cantidad_' + position);
-                    let lbl_producto = $('#item_text_producto_' + position);
-                    let txt_producto = $('#item_producto_' + position);
-                    let lbl_unitario = $('#item_text_unitario_' + position);
-                    let txt_unitario = $('#item_unitario_' + position);
-                    let lbl_total = $('#item_text_total_' + position);
-                    let txt_total = $('#item_total_' + position);
-
-                    let producto_id = txt_producto.val();
-                    let producto = lbl_producto.html();
-                    let cantidad = parseInt(txt_cantidad.val());
-                    let unitario = parseFloat(txt_unitario.val());
-                    let total = parseFloat(txt_total.val());
-
-                    let new_cantidad = Number(cantidad) + 1;
-                    lbl_cantidad.html(new_cantidad);
-                    txt_cantidad.val(new_cantidad);
-                    let new_total = Number(new_cantidad) * Number(unitario);
-                    new_total = new_total.toFixed(2);
-                    lbl_total.html(new_total);
-                    txt_total.val(new_total);
-                } else {
-                    counter++;
-                    let template = item_template.html();
-                    template = template.replace(/%counter%/g, counter);
-                    template = template.replace(/%account%/g, new_account);
-                    template = template.replace(/%item_cantidad%/g, 1);
-                    template = template.replace(/%item_producto%/, producto);
-                    template = template.replace(/%item_producto_id%/, producto_id);
-                    template = template.replace(/%item_unitario%/g, unitario);
-                    template = template.replace(/%item_total%/g, unitario);
-                    table.append(template);
-                }
-                if (cantidad !== 1) {
-                    let new_cantidad = Number(cantidad) - 1;
-                    lbl_cantidad.html(new_cantidad);
-                    txt_cantidad.val(new_cantidad);
-                    let new_total = Number(new_cantidad) * Number(unitario);
-                    new_total = new_total.toFixed(2);
-                    lbl_total.html(new_total);
-                    txt_total.val(new_total);
-                } else {
-                    $('#item_' + position).remove();
-                }
-                set_buttons_state_next(new_account);
-            }
-        } else {
-            if (cantidad >= 1) {
-                let new_account = Number(account) - 1;
-                let table = $('#split_tb_detalle_' + new_account);
-                let item_template = $('#splitter_item_template');
-                let exist = $('input[data-account=' + new_account + '][value=' + producto_id + ']');
-                if (exist.length !== 0) {
-                    let position = exist.attr("data-position");
-                    let lbl_cantidad = $('#item_text_cantidad_' + position);
-                    let txt_cantidad = $('#item_cantidad_' + position);
-                    let lbl_producto = $('#item_text_producto_' + position);
-                    let txt_producto = $('#item_producto_' + position);
-                    let lbl_unitario = $('#item_text_unitario_' + position);
-                    let txt_unitario = $('#item_unitario_' + position);
-                    let lbl_total = $('#item_text_total_' + position);
-                    let txt_total = $('#item_total_' + position);
-
-                    let producto_id = txt_producto.val();
-                    let producto = lbl_producto.html();
-                    let cantidad = parseInt(txt_cantidad.val());
-                    let unitario = parseFloat(txt_unitario.val());
-                    let total = parseFloat(txt_total.val());
-
-                    let new_cantidad = Number(cantidad) + 1;
-                    lbl_cantidad.html(new_cantidad);
-                    txt_cantidad.val(new_cantidad);
-                    let new_total = Number(new_cantidad) * Number(unitario);
-                    new_total = new_total.toFixed(2);
-                    lbl_total.html(new_total);
-                    txt_total.val(new_total);
-                } else {
-                    counter++;
-                    let template = item_template.html();
-                    template = template.replace(/%counter%/g, counter);
-                    template = template.replace(/%account%/g, new_account);
-                    template = template.replace(/%item_cantidad%/g, 1);
-                    template = template.replace(/%item_producto%/, producto);
-                    template = template.replace(/%item_producto_id%/, producto_id);
-                    template = template.replace(/%item_unitario%/g, unitario);
-                    template = template.replace(/%item_total%/g, unitario);
-                    table.append(template);
-                }
-                if (cantidad !== 1) {
-                    let new_cantidad = Number(cantidad) - 1;
-                    lbl_cantidad.html(new_cantidad);
-                    txt_cantidad.val(new_cantidad);
-                    let new_total = Number(new_cantidad) * Number(unitario);
-                    new_total = new_total.toFixed(2);
-                    lbl_total.html(new_total);
-                    txt_total.val(new_total);
-                } else {
-                    $('#item_' + position).remove();
-                }
-                set_buttons_state_back(new_account);
-            }
-        }
-    };
-
     return {
         init: init,
         add_detalle: add_detalle,
         remove_row: remove_row,
         nuevo_cliente: nuevo_cliente,
-        remove_account: remove_account,
-        move_item: move_item,
         guardar: venta_guardar
     };
 })();

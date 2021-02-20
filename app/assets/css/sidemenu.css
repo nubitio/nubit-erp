@@ -3,17 +3,17 @@
 }
 
 .sidemenu .accordion .accordion-header {
-    background: #454544;
+    background: var(--primary-color);
     color: #b8c7ce;
 }
 
 .sidemenu .accordion .accordion-body {
-    background: #656563;
+    background: var(--secondary-color);
     color: #e3e3e3;
 }
 
 .sidemenu .accordion .accordion-header-selected {
-    background: #343433;
+    background: var(--primary-color-dark);
 }
 
 .sidemenu .accordion .accordion-collapse {
@@ -29,8 +29,8 @@
 }
 
 .sidemenu .tree-node-selected {
-    border-right: 2px solid #e1653b;
-    background: #e1653b;
+    border-right: 2px solid var(--accent-color);
+    background: var(--accent-color);
     color: #fff;
     border-left: 2px solid #f3f3f3;
     border-top-right-radius: 20px;
@@ -83,7 +83,7 @@
 }
 
 .accordion {
-    background: #454544;
+    background: var(--primary-color);
     border-color: #343433;
 }
 

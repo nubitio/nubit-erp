@@ -1,3 +1,10 @@
+:root {
+    --primary-color: #454544;
+    --primary-color-dark: #242424;
+    --accent-color: #EB9C34;
+    --secondary-color: #656565;
+}
+
 html, body {
     height: 100%;
     color: #6b6f82;
@@ -33,27 +40,27 @@ html, body {
 }
 
 .primary {
-    background: #454544;
+    background: var(--primary-color);
 }
 
 .primary-dark {
-    background: #242423;
+    background: var(--primary-color-dark);
 }
 
 .accent {
-    background: #e1653b;
+    background: var(--accent-color);
 }
 
 .color-primary {
-    color: #454544;
+    color: var(--primary-color);
 }
 
 .color-primary-dark {
-    color: #242423;
+    color: var(--primary-color-dark);
 }
 
 .color-accent {
-    color: #e1653b;
+    color: var(--accent-color);
 }
 
 .btn-menu {
@@ -219,7 +226,7 @@ html, body {
 }
 
 .md-btn {
-    background: #e1653b;
+    background: var(--accent-color);
     color: #fefefe !important;
     border: none;
     border-radius: 20px;
@@ -230,7 +237,7 @@ html, body {
 }
 
 .md-btn:hover {
-    background: #f06c40;
+    background: var(--accent-color);
     border: none;
 }
 
@@ -276,22 +283,22 @@ label {
 }
 
 input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
-    color: #e1653b;
+    color: var(--accent-color);
 }
 
 .datagrid-row-selected {
-    background: #e1653b !important;
+    background: var(--accent-color) !important;
     color: #fff !important;
 }
 
 .menu-active {
-    background-color: #e1653b !important;
-    border-color: #e1653b !important;
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
     color: #fff !important;
 }
 
 .combobox-item-selected {
-    background-color: #e1653b !important;
+    background-color: var(--accent-color) !important;
     color: #fff !important;
 }
 

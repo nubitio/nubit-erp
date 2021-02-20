@@ -183,6 +183,42 @@ class BaseController
         }
     }
 
+    public function report($html, $filename = 'download.pdf')
+    {
+        // Run wkhtmltopdf
+        $descriptorspec = array(
+            0 => array('pipe', 'r'), // stdin
+            1 => array('pipe', 'w'), // stdout
+            2 => array('pipe', 'w'), // stderr
+        );
+        $process = proc_open('wkhtmltopdf --viewport-size 1024x768 -q - -', $descriptorspec, $pipes);
+        // Send the HTML on stdin
+        fwrite($pipes[0], $html);
+        fclose($pipes[0]);
+        // Read the outputs
+        $pdf = stream_get_contents($pipes[1]);
+        $errors = stream_get_contents($pipes[2]);
+        // Close the process
+        fclose($pipes[1]);
+        $return_value = proc_close($process);
+        // Output the results
+        if ($errors) {
+            throw new Exception('PDF generation failed: ' . $errors);
+        } else {
+            header('Content-Type: application/pdf');
+            header('Content-Length: ' . strlen($pdf));
+            header('Content-Disposition: inline; filename="' . $filename . '";');
+            echo $pdf;
+        }
+    }
+
+    public function base64($path)
+    {
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        return 'data:image/' . $type . ';base64,' . base64_encode($data);
+    }
+
     public function money_pen($value)
     {
         return 'S/ ' . number_format($value, 2);

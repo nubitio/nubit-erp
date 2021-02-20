@@ -660,10 +660,10 @@ class MovimientoModel extends BaseModel
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,
             c.email as email_cliente,
-            sum( md.precio_total ) AS total 
+            d.p_venta AS total 
         FROM
             movimiento m
-            INNER JOIN movimiento_detalle md ON md.movimiento_id = m.movimiento_id
+            INNER JOIN vw_descuento d ON d.movimiento_id = m.movimiento_id
             INNER JOIN almacen a ON a.almacen_id = m.almacen_id
             INNER JOIN `local` l ON l.local_id = a.local_id
             INNER JOIN empresa e ON e.empresa_id = l.empresa_id
