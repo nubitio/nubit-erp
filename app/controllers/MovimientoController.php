@@ -497,4 +497,11 @@ class MovimientoController extends BaseController
         //echo $template->render('templates/invoice.html');
         $this->report($template->render('templates/invoice.html'));
     }
+
+    function makeInvoice()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $result = $this->model->makeInvoice($id);
+        $this->json($result);
+    }
 }

@@ -99,6 +99,12 @@ app.venta = (function () {
                 handler: function () {
                     venta_anular();
                 }
+            }, '-', {
+                text: 'Comprobante',
+                iconCls: ICON_INVOICE,
+                handler: function () {
+                    makeInvoice();
+                }
             }],
             columns: [[{
                 field: 'fecha',
@@ -289,14 +295,7 @@ app.venta = (function () {
                 handler: function (e) {
                     nuevo_cliente(cbo_cliente);
                 }
-            }],
-            onSelect: function (rec) {
-                if (rec.razon_social != 'CLIENTE GENERAL' && rec.ruc.length == 11) {
-                    cbo_operacion.val('37b1e294-c224-11e7-91af-5600005a2745');
-                } else {
-                    cbo_operacion.val('0ec9c6ae-c04f-11e7-91af-5600005a2745');
-                }
-            }
+            }]
         });
 
         txt_glosa.textbox({
@@ -381,7 +380,7 @@ app.venta = (function () {
         fm.form('clear');
         route_venta = 'venta/add/2';
         $('#venta_orden_id').val(orden_id);
-        cbo_operacion.val('0ec9c6ae-c04f-11e7-91af-5600005a2745'); //venta boleta
+        cbo_operacion.val('5c02c90b-74fc-11eb-a834-005056409407'); //venta ticket
         cbo_cliente.combobox('select', '00000000');
         cbo_pago.combobox('select', 1);
         cbo_tarjeta.combobox('disable');
@@ -609,16 +608,6 @@ app.venta = (function () {
         }
     }
 
-    function tipopagocell(value, row) {
-        if (value == 1) {
-            return 'EFECTIVO';
-        } else if (value == 2) {
-            return 'TARJETA';
-        } else {
-            return '';
-        }
-    }
-
     function vestado_formatter(value, row) {
         if (value == 1) {
             return 'INGRESADO';
@@ -663,6 +652,33 @@ app.venta = (function () {
     function imprimir_ticket(ticket, digest) {
         //jsWebClientPrint.print('useDefaultPrinter=' + $('#useDefaultPrinter').attr('checked') + '&printerName=' + $('#installedPrinterName').val());
         jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + ticket + "&digest=" + digest);
+    }
+
+    function makeInvoice() {
+        let row = dg.datagrid('getSelected');
+        if (row) {
+            if (row.comprobante_id === null) {
+                let confirmMessage = '';
+                if (row.cliente_id.length === 11) {
+                    confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+                } else {
+                    confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+                }
+                $.messager.confirm('Confirmar', confirmMessage, function (r) {
+                    if (r) {
+                        fetch('sale/invoice/' + row.movimiento_id)
+                            .then(response => response.json())
+                            .then(result => show_info(result.msg))
+                            .catch(error => show_error(error))
+                            .finally(() => dg.datagrid('reload'));
+                    }
+                })
+            } else {
+                show_info('Ya se registro el comprobante previamente');
+            }
+        } else {
+            show_info('Seleccione un registro');
+        }
     }
 
     Mousetrap.bind('ins', function () {

@@ -300,13 +300,16 @@ class MovimientoModel extends BaseModel
         try {
             $this->db->begin();
             $this->dao->copyfrom('POST');
-            if ($this->dao->operacion_id == '0ec9c6ae-c04f-11e7-91af-5600005a2745' || $this->dao->operacion_id == '37b1e294-c224-11e7-91af-5600005a2745') {
+            if ($this->dao->operacion_id == '0ec9c6ae-c04f-11e7-91af-5600005a2745' || $this->dao->operacion_id == '37b1e294-c224-11e7-91af-5600005a2745' || $this->dao->operacion_id == '5c02c90b-74fc-11eb-a834-005056409407') {
                 if ($this->dao->operacion_id == '0ec9c6ae-c04f-11e7-91af-5600005a2745') {
                     $serie = $this->get_serie(TipoDoc::BOLETA);
                     $numero = $this->next_numero(TipoDoc::BOLETA);
                 } else if ($this->dao->operacion_id == '37b1e294-c224-11e7-91af-5600005a2745') {
                     $serie = $this->get_serie(TipoDoc::FACTURA);
                     $numero = $this->next_numero(TipoDoc::FACTURA);
+                } else if ($this->dao->operacion_id == '5c02c90b-74fc-11eb-a834-005056409407') {
+                    $serie = $this->get_serie(TipoDoc::NOTA_PEDIDO);
+                    $numero = $this->next_numero(TipoDoc::NOTA_PEDIDO);
                 }
                 $this->dao->fecha = date('Y-m-d');
                 $this->dao->almacen_id = $this->current_almacen_id;
@@ -755,6 +758,16 @@ class MovimientoModel extends BaseModel
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
+        }
+    }
+
+    public function makeInvoice($id)
+    {
+        try {
+            $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $this->current_local_id]);
+            return ["success" => true, "data" => $result, "msg" => 'Comprobante registrado'];
+        } catch (Exception $e) {
+            return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
 }

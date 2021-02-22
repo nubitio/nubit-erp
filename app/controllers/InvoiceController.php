@@ -52,19 +52,15 @@ class InvoiceController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $type = $this->app->get('PARAMS.type');
 
-        $data = $this->model->ticket_cabecera($id);
-        if ($data['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
-            $tipo_id = '01';
-        } else {
-            $tipo_id = '03';
-        }
+        $sale = $this->botModel->getOne($id);
+        $header = $sale['data']['header'];
 
         if ($type == 'pdf') {
-            $filename = $data['ruc_empresa'] . '-' . $tipo_id . '-' . $data['serie'] . '-' . $data['numero'] . '.pdf';
+            $filename = $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.pdf';
         } elseif ($type == 'xml') {
-            $filename = $data['ruc_empresa'] . '-' . $tipo_id . '-' . $data['serie'] . '-' . $data['numero'] . '.xml';
+            $filename = $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.xml';
         } elseif ($type == 'cdr') {
-            $filename = 'R-' . $data['ruc_empresa'] . '-' . $tipo_id . '-' . $data['serie'] . '-' . $data['numero'] . '.zip';
+            $filename = 'R-' . $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.zip';
         } else {
             $this->app->error(404, 'Not Found');
             exit();
