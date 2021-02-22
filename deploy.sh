@@ -6,10 +6,10 @@ if [ $# -eq 0 ]; then
 elif [[ "$1" == "live" ]]; then
   if [[ -z $2 ]]; then
     echo "Running dry-run"
-    rsync --dry-run -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
+    rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
   elif [[ "$2" == "go" ]]; then
     echo "Running actual deploy"
-    rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
+    rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
   else
     echo "$ERROR"
   fi

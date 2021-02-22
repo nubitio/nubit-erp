@@ -133,13 +133,17 @@ app.venta = (function () {
                 field: 'total',
                 title: 'Total',
                 align: 'right'
+            },{
+                field: 'comprobante_id',
+                title: '',
+                align: 'center',
+                formatter: invoiceFormatter
             }, {
                 field: 'estado',
                 title: 'Estado',
-                sortable: true,
-                width: 80,
+                width: 70,
                 align: 'center',
-                formatter: vestado_formatter
+                formatter: statusFormatter
             }]],
             view: detailview,
             detailFormatter: function (index, row) {
@@ -608,11 +612,24 @@ app.venta = (function () {
         }
     }
 
-    function vestado_formatter(value, row) {
-        if (value == 1) {
-            return 'INGRESADO';
-        } else if (value == 2) {
-            return 'ANULADO';
+    function statusFormatter(value, row) {
+        if (value === null) {
+            value = -1
+        } else {
+            value = Number(value);
+        }
+        if (value === 1) {
+            return '<span class="badge badge-pill badge-success">INGRESADO</span>';
+        } else if (value === 2) {
+            return '<span class="badge badge-pill badge-danger">ANULADO</span>';
+        } else {
+            return '';
+        }
+    }
+
+    function invoiceFormatter(value, row) {
+        if (value !== null) {
+            return '<a href="/invoice/' + value + '" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
         } else {
             return '';
         }
