@@ -134,7 +134,7 @@ app.venta = (function () {
                 title: 'Total',
                 align: 'right'
             },{
-                field: 'comprobante_id',
+                field: 'movimiento_id',
                 title: '',
                 align: 'center',
                 formatter: invoiceFormatter
