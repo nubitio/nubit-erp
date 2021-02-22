@@ -134,7 +134,7 @@ app.venta = (function () {
                 title: 'Total',
                 align: 'right'
             },{
-                field: 'movimiento_id',
+                field: 'comprobante_id',
                 title: '',
                 align: 'center',
                 formatter: invoiceFormatter
@@ -629,7 +629,7 @@ app.venta = (function () {
 
     function invoiceFormatter(value, row) {
         if (value !== null) {
-            return '<a href="/invoice/' + value + '" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
+            return '<a href="/invoice/' + row.movimiento_id + '" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
         } else {
             return '';
         }
