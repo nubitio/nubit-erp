@@ -15,11 +15,15 @@ class MovimientoController extends BaseController
 {
 
     private $model;
+    private $botModel;
+    private $efact;
 
     function __construct()
     {
         parent::__construct();
         $this->model = new MovimientoModel();
+        $this->botModel = new BotModel();
+        $this->efact = new EFactController();
     }
 
     function render()
@@ -369,25 +373,6 @@ class MovimientoController extends BaseController
         echo '<div style="padding: 15px"><pre>' . $cmds . '</pre></div>';
     }
 
-    public function generar_comprobante()
-    {
-        $result = array();
-        try {
-            $client = new SoapClient('http://richardarisaca-001-site1.dtempurl.com/ServicioWeb.asmx?WSDL');
-            $data = array();
-            $data['data'] = json_encode($_POST['Factura']);
-            $data['tipocomprobante'] = $_POST['Factura']['TipoComprobante'];
-            $response = $client->registradocumento($data);
-            $result = json_decode(json_encode($response), True);
-            $result = $result['registradocumentoResult'];
-        } catch (Exception $e) {
-            $result['code'] = 500;
-            $result['message'] = $e->getMessage();
-            $result['data'] = array();
-        }
-        $this->json($result);
-    }
-
     public function guardar_comprobante()
     {
         return $this->json($this->model->guardar_comprobante());
@@ -502,6 +487,12 @@ class MovimientoController extends BaseController
     {
         $id = $this->app->get('PARAMS.id');
         $result = $this->model->makeInvoice($id);
+        $sale = $this->botModel->getOne($id);
+        if ($result['success']) {
+            if ($sale['success']) {
+                $this->efact->makeInvoice($sale['data']);
+            }
+        }
         $this->json($result);
     }
 }
