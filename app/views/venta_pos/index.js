@@ -629,7 +629,7 @@ app.venta = (function () {
 
     function invoiceFormatter(value, row) {
         if (value !== null) {
-            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
+            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
         } else {
             return '';
         }

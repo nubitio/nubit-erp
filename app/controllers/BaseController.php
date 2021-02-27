@@ -19,7 +19,7 @@ class BaseController
 
     public function beforeroute()
     {
-        if ($this->app->get('SESSION.usuario') === null && $_SERVER['HTTP_TOKEN'] != '0UD90Yra1AP6wl38lXK4En3Vy8Vu7m1d') {
+        if ($this->app->get('SESSION.usuario') === null) {
             $this->app->reroute('/login');
             exit;
         }

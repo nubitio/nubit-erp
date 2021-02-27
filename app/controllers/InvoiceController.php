@@ -51,16 +51,22 @@ class InvoiceController extends BaseController
     {
         $id = $this->app->get('PARAMS.id');
         $type = $this->app->get('PARAMS.type');
+        $mode = $this->app->get('GET.mode');
 
         $sale = $this->botModel->getOne($id);
         $header = $sale['data']['header'];
 
+        $mimetype = '';
+
         if ($type == 'pdf') {
             $filename = $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.pdf';
+            $mimetype = 'application/pdf';
         } elseif ($type == 'xml') {
             $filename = $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.xml';
+            $mimetype = 'application/xml';
         } elseif ($type == 'cdr') {
             $filename = 'R-' . $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.zip';
+            $mimetype = 'application/zip';
         } else {
             $this->app->error(404, 'Not Found');
             exit();
@@ -70,8 +76,12 @@ class InvoiceController extends BaseController
 
         if (file_exists($file)) {
             header('Content-Description: File Transfer');
-            header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . $filename);
+            header("Content-Type: {$mimetype}");
+            if ($mode == 'preview') {
+                header('Content-Disposition: inline; filename=' . $filename);
+            } else {
+                header('Content-Disposition: attachment; filename=' . $filename);
+            }
             header('Content-Transfer-Encoding: binary');
             header('Connection: Keep-Alive');
             header('Expires: 0');
