@@ -13,7 +13,7 @@ class UsuarioController extends BaseController
     function __construct()
     {
         parent::__construct();
-        $this->model = new UsuarioModel($this->db);
+        $this->model = new UsuarioModel();
     }
 
     function beforeroute()
@@ -70,15 +70,15 @@ class UsuarioController extends BaseController
         $username = $this->app->get('POST.username');
         $password = $this->app->get('POST.password');
 
-        $this->model->getByName($username);
+        $user = $this->model->getByName($username);
 
-        if ($this->model->dry()) {
+        if (!$user) {
             $this->json(array('msg' => 'Usuario y/o Contraseña Erroneos'));
         } else {
-            if ($this->model->estado == 1 && password_verify($password, $this->model->password)) {
-                $this->app->set('SESSION.usuario_id', $this->model->usuario_id);
-                $this->app->set('SESSION.usuario', $this->model->username);
-                $this->app->set('SESSION.rol_id', $this->model->rol_id);
+            if ($user['estado'] == 1 && password_verify($password, $user['password'])) {
+                $this->app->set('SESSION.usuario_id', $user['usuario_id']);
+                $this->app->set('SESSION.usuario', $user['username']);
+                $this->app->set('SESSION.rol_id', $user['rol_id']);
                 $this->json(array('success' => true, 'msg' => 'Bienvenido.'));
             } else {
                 $this->json(array('msg' => 'Usuario y/o Contraseña Incorrectos'));
@@ -146,5 +146,3 @@ class UsuarioController extends BaseController
         }
     }
 }
-
-?>

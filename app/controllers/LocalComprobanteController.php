@@ -13,7 +13,7 @@ class LocalComprobanteController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new LocalComprobanteModel($this->db);
+        $this->model = new LocalComprobanteModel();
     }
 
     public function render()

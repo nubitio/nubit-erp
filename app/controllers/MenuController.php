@@ -13,7 +13,7 @@ class MenuController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->menu = new MenuModel($this->db);
+        $this->menu = new MenuModel();
     }
 
     public function render()

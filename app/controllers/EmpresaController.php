@@ -13,7 +13,7 @@ class EmpresaController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new EmpresaModel($this->db);
+        $this->model = new EmpresaModel();
     }
 
     public function render()

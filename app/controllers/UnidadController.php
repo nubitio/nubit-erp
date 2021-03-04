@@ -13,7 +13,7 @@ class UnidadController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new UnidadModel($this->db);
+        $this->model = new UnidadModel();
     }
 
     public function render()

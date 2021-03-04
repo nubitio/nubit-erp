@@ -11,6 +11,19 @@ app.login = (function () {
     let btn_guardar;
     let btn_cancelar;
 
+    let loadTheme = function () {
+        fetch('home/theme')
+            .then(response => response.json())
+            .then(result => {
+                document.body.style.setProperty('--primary-color', result.data.primary_color);
+                document.body.style.setProperty('--primary-color-dark', result.data.primary_color_dark);
+                document.body.style.setProperty('--accent-color', result.data.accent_color);
+                document.body.style.setProperty('--secondary-color', result.data.secondary_color);
+            })
+            .catch(error => show_error(error))
+            .finally(() => init())
+    }
+
     let init = function () {
         localStorage.removeItem('session');
         win.window({
@@ -176,7 +189,8 @@ app.login = (function () {
 
     return {
         init: init,
-        login: login
+        login: login,
+        loadTheme: loadTheme
     };
 })();
-app.login.init();
+app.login.loadTheme();

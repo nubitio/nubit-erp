@@ -5,35 +5,20 @@
  * @License: Copyright (c) 2016. All Rights Reserved.
  */
 
-class RolModel extends DB\SQL\Mapper
+class RolModel extends BaseModel
 {
 
-    private $_db;
+    private $dao;
 
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        parent::__construct($db, 'rol');
-        $this->_db = $db;
+        parent::__construct();
+        $this->dao = new \DB\SQL\Mapper($this->db, 'rol');
     }
 
     public function all()
     {
-        $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
-        $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
-        $sort = isset($_POST['sort']) ? strval($_POST['sort']) : 'rol_id';
-        $order = isset($_POST['order']) ? strval($_POST['order']) : 'asc';
-        $offset = ($page - 1) * $rows;
-        $result = array();
-        $rs = $this->_db->query("SELECT count(*) FROM rol");
-        $row = $rs->fetch(PDO::FETCH_NUM);
-        $result["total"] = $row[0];
-        $rs = $this->_db->query("SELECT * FROM rol ORDER BY $sort $order LIMIT $offset,$rows");
-        $items = array();
-        while ($row = $rs->fetch(PDO::FETCH_OBJ)) {
-            array_push($items, $row);
-        }
-        $result["rows"] = $items;
-        return $result;
+        return $this->utils->setUp('rol', 'descripcion');
     }
 
     public function lista($filtered, $extended)
@@ -51,9 +36,9 @@ class RolModel extends DB\SQL\Mapper
 
     public function add()
     {
-        $this->copyFrom('POST');
+        $this->dao->copyFrom('POST');
         try {
-            $this->save();
+            $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -62,10 +47,10 @@ class RolModel extends DB\SQL\Mapper
 
     public function edit($id)
     {
-        $this->load(array('rol_id=?', $id));
-        $this->copyFrom('POST');
+        $this->dao->load(array('rol_id=?', $id));
+        $this->dao->copyFrom('POST');
         try {
-            $this->update();
+            $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -74,9 +59,9 @@ class RolModel extends DB\SQL\Mapper
 
     public function delete($id)
     {
-        $this->load(array('rol_id=?', $id));
+        $this->dao->load(array('rol_id=?', $id));
         try {
-            $this->erase();
+            $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());

@@ -5,17 +5,15 @@
  * @License: Copyright (c) 2016. All Rights Reserved.
  */
 
-class MenuModel extends DB\SQL\Mapper
+class MenuModel extends BaseModel
 {
 
-    protected $db;
-    protected $utils;
+    protected $dao;
 
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        parent::__construct($db, 'menu');
-        $this->db = $db;
-        $this->utils = new ModelUtils($db);
+        parent::__construct();
+        $this->dao = new \DB\SQL\Mapper($this->db, 'menu');
     }
 
     public function all()
@@ -64,41 +62,11 @@ class MenuModel extends DB\SQL\Mapper
         return $result;
     }
 
-    public function init()
-    {
-        $this->load(array('descripcion=?', 'Developer'));
-        if (!$this->menu_id > 0) {
-            $this->db->exec(
-                'INSERT INTO menu VALUES(?,?,?,?,?,?)',
-                array(
-                    1 => null,
-                    2 => '1000',
-                    3 => 'Developer',
-                    4 => '',
-                    5 => 'fa-cog color-bluegrey-dark',
-                    6 => 0
-                )
-            );
-            $this->load(array('descripcion=?', 'Developer'));
-            $this->db->exec(
-                'INSERT INTO menu VALUES(?,?,?,?,?,?)',
-                array(
-                    1 => null,
-                    2 => '1001',
-                    3 => 'Menus',
-                    4 => 'menu',
-                    5 => 'fa-table color-bluegrey',
-                    6 => $this->menu_id
-                )
-            );
-        }
-    }
-
     public function add()
     {
-        $this->copyFrom('POST');
+        $this->dao->copyFrom('POST');
         try {
-            $this->save();
+            $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -107,10 +75,10 @@ class MenuModel extends DB\SQL\Mapper
 
     public function edit($id)
     {
-        $this->load(array('menu_id=?', $id));
-        $this->copyFrom('POST');
+        $this->dao->load(array('menu_id=?', $id));
+        $this->dao->copyFrom('POST');
         try {
-            $this->update();
+            $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -119,9 +87,9 @@ class MenuModel extends DB\SQL\Mapper
 
     public function delete($id)
     {
-        $this->load(array('menu_id=?', $id));
+        $this->dao->load(array('menu_id=?', $id));
         try {
-            $this->erase();
+            $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());

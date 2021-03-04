@@ -13,7 +13,7 @@ class RolController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->rol = new RolModel($this->db);
+        $this->rol = new RolModel();
     }
 
     public function render()

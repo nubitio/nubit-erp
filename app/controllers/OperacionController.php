@@ -13,7 +13,7 @@ class OperacionController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new OperacionModel($this->db);
+        $this->model = new OperacionModel();
     }
 
     public function render()

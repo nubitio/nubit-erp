@@ -16,6 +16,7 @@ class BaseController
     protected $app;
     protected $db;
     protected $modulo;
+    protected $options;
 
     public function beforeroute()
     {
@@ -30,19 +31,10 @@ class BaseController
         /** @var Base $app */
         $app = Base::instance();
         $this->app = $app;
-        $cn = 'mysql:host=' . $app->get('DB_HOST') . ';port=' . $app->get('DB_PORT') . ';dbname=' . $app->get('DB_NAME');
-        $db = new DB\SQL (
-            $cn,
-            $app->get('DB_USER'),
-            $app->get('DB_PASSWORD'),
-            array(
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-            )
-        );
-        $this->db = $db;
         date_default_timezone_set('America/Lima');
         setlocale(LC_NUMERIC, 'C');
+
+        $this->options = new OptionsModel();
     }
 
     public function json($data)

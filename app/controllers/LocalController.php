@@ -13,7 +13,7 @@ class LocalController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new LocalModel($this->db);
+        $this->model = new LocalModel();
     }
 
     public function render()

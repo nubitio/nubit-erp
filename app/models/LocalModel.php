@@ -5,17 +5,15 @@
  * @License: Copyright (c) 2016. All Rights Reserved.
  */
 
-class LocalModel extends DB\SQL\Mapper
+class LocalModel extends BaseModel
 {
 
-    protected $db;
-    protected $utils;
+    protected $dao;
 
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        parent::__construct($db, 'local');
-        $this->db = $db;
-        $this->utils = new ModelUtils($db);
+        parent::__construct();
+        $this->dao = new \DB\SQL\Mapper($this->db, 'local');
     }
 
     public function all()
@@ -43,15 +41,14 @@ class LocalModel extends DB\SQL\Mapper
 
     public function cargar($id)
     {
-        $result = $this->db->exec("SELECT * FROM local WHERE empresa_id='$id' AND estado=1 ORDER BY descripcion");
-        return $result;
+        return $this->db->exec("SELECT * FROM local WHERE empresa_id='$id' AND estado=1 ORDER BY descripcion");
     }
 
     public function add()
     {
-        $this->copyFrom('POST');
+        $this->dao->copyFrom('POST');
         try {
-            $this->save();
+            $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -60,10 +57,10 @@ class LocalModel extends DB\SQL\Mapper
 
     public function edit($id)
     {
-        $this->load(array('local_id=?', $id));
-        $this->copyFrom('POST');
+        $this->dao->load(array('local_id=?', $id));
+        $this->dao->copyFrom('POST');
         try {
-            $this->update();
+            $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -72,9 +69,9 @@ class LocalModel extends DB\SQL\Mapper
 
     public function delete($id)
     {
-        $this->load(array('local_id=?', $id));
+        $this->dao->load(array('local_id=?', $id));
         try {
-            $this->erase();
+            $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -83,21 +80,18 @@ class LocalModel extends DB\SQL\Mapper
 
     public function exportar()
     {
-        $result = $this->db->exec("
-      SELECT
-        e.razon_social as empresa,
-        l.descripcion as local,
-        l.direccion,
-        l.telefono,
-        CASE l.estado
-        WHEN 1 THEN 'ACTIVO'
-        WHEN 0 THEN 'INACTIVO'
-        END AS estado
-      FROM local l
-      INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-    ");
-        return $result;
+        return $this->db->exec("
+            SELECT
+                e.razon_social as empresa,
+                l.descripcion as local,
+                l.direccion,
+                l.telefono,
+                CASE l.estado
+                WHEN 1 THEN 'ACTIVO'
+                WHEN 0 THEN 'INACTIVO'
+                END AS estado
+            FROM local l
+            INNER JOIN empresa e ON e.empresa_id = l.empresa_id
+        ");
     }
 }
-
-?>

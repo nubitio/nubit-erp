@@ -15,15 +15,19 @@ class MainController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->menu = new MenuModel($this->db);
-        $this->local = new LocalModel($this->db);
-        $this->almacen = new AlmacenModel(($this->db));
+        $this->menu = new MenuModel();
+        $this->local = new LocalModel();
+        $this->almacen = new AlmacenModel();
+    }
+
+    public function beforeroute()
+    {
+        //
     }
 
     function render()
     {
         if ($this->check_local()) {
-            $this->menu->init();
             $rol_id = $this->app->get('SESSION.rol_id');
             $menus = $this->menu->lista_rol($rol_id);
             $this->app->set('menus', $menus);
@@ -104,5 +108,15 @@ class MainController extends BaseController
         } else {
             $this->app->error("500", $result["msg"]);
         }
+    }
+
+    public function getTheme()
+    {
+        $primaryColor = $this->options->getByName('app_theme_primary_color');
+        $primaryColorDark = $this->options->getByName('app_theme_primary_color_dark');
+        $accentColor = $this->options->getByName('app_theme_accent_color');
+        $secondaryColor = $this->options->getByName('app_theme_secondary_color');
+
+        $this->json(['success' => true, 'data' => ['primary_color' => $primaryColor, 'primary_color_dark' => $primaryColorDark, 'accent_color' => $accentColor, 'secondary_color' => $secondaryColor], 'msg' => '']);
     }
 }

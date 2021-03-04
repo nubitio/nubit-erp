@@ -13,7 +13,7 @@ class CategoriaController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new CategoriaModel($this->db);
+        $this->model = new CategoriaModel();
     }
 
     public function render()

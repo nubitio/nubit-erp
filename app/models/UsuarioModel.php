@@ -5,17 +5,15 @@
  * @License: Copyright (c) 2016. All Rights Reserved.
  */
 
-class UsuarioModel extends DB\SQL\Mapper
+class UsuarioModel extends BaseModel
 {
 
-    protected $db;
-    protected $utils;
+    protected $dao;
 
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        parent::__construct($db, 'usuario');
-        $this->db = $db;
-        $this->utils = new ModelUtils($db);
+        parent::__construct();
+        $this->dao = new \DB\SQL\Mapper($this->db, 'usuario');
     }
 
     /**
@@ -29,52 +27,46 @@ class UsuarioModel extends DB\SQL\Mapper
 
     public function init()
     {
-        $this->load(array('username=?', 'root'));
-        if (!$this->usuario_id > 0) {
-            $this->db->exec(
-                'INSERT INTO usuario VALUES(?,?,?,?,?,?,?)',
-                array(
-                    1 => null,
-                    2 => 'root',
-                    3 => password_hash('root', PASSWORD_DEFAULT),
-                    4 => 0,
-                    5 => 1,
-                    6 => date('Y-m-d H:i:s'),
-                    7 => null
-                )
-            );
+        $this->dao->load(array('username=?', 'root'));
+        if (!$this->dao->usuario_id > 0) {
+            $this->dao->username = 'root';
+            $this->dao->password = password_hash('root', PASSWORD_DEFAULT);
+            $this->dao->estado = 1;
+            $this->dao->save();
         }
     }
 
     public function getById($id)
     {
-        $this->load(array('usuario_id=?', $id));
-        return $this->query;
+        $this->dao->load(array('usuario_id=?', $id));
+        return $this->dao->query;
     }
 
-    public function getByName($name)
+    public function getByName($username)
     {
-        $this->load(array('username=?', $name));
-        return $this->query;
+        $data = $this->db->exec('select * from usuario where username = ?', $username);
+        if ($data)
+            return $data[0];
+        return null;
     }
 
     public function getByPin($pin)
     {
-        $this->load(array('pin=?', $pin));
-        return $this->query;
+        $this->dao->load(array('pin=?', $pin));
+        return $this->dao->query;
     }
 
     public function getOne($name)
     {
         $result = $this->db->query("
-      SELECT
-        usuario_id,
-        username,
-        rol_id
-      FROM
-        usuario
-      WHERE username='$name'
-    ");
+            SELECT
+                usuario_id,
+                username,
+                rol_id
+            FROM
+                usuario
+            WHERE username='$name'
+        ");
         $result->setFetchMode(PDO::FETCH_ASSOC);
         return $result->fetch();
     }
@@ -97,13 +89,13 @@ class UsuarioModel extends DB\SQL\Mapper
 
     public function add()
     {
-        $this->copyfrom('POST');
-        $this->password = password_hash($this->password, PASSWORD_DEFAULT);
-        if ($this->pin == '') {
-            $this->pin = null;
+        $this->dao->copyfrom('POST');
+        $this->dao->password = password_hash($this->dao->password, PASSWORD_DEFAULT);
+        if ($this->dao->pin == '') {
+            $this->dao->pin = null;
         }
         try {
-            $this->save();
+            $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -112,19 +104,19 @@ class UsuarioModel extends DB\SQL\Mapper
 
     public function edit($id)
     {
-        $this->load(array('usuario_id=?', $id));
-        $password = $this->password;
-        $this->copyFrom('POST');
-        if (empty($this->password)) {
-            $this->password = $password;
+        $this->dao->load(array('usuario_id=?', $id));
+        $password = $this->dao->password;
+        $this->dao->copyFrom('POST');
+        if (empty($this->dao->password)) {
+            $this->dao->password = $password;
         } else {
-            $this->password = password_hash($this->password, PASSWORD_DEFAULT);
+            $this->dao->password = password_hash($this->dao->password, PASSWORD_DEFAULT);
         }
-        if ($this->pin == '') {
-            $this->pin = null;
+        if ($this->dao->pin == '') {
+            $this->dao->pin = null;
         }
         try {
-            $this->update();
+            $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -133,14 +125,12 @@ class UsuarioModel extends DB\SQL\Mapper
 
     public function delete($id)
     {
-        $this->load(array('usuario_id=?', $id));
+        $this->dao->load(array('usuario_id=?', $id));
         try {
-            $this->erase();
+            $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
         }
     }
 }
-
-?>

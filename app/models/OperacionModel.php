@@ -5,17 +5,15 @@
  * @License: Copyright (c) 2016. All Rights Reserved.
  */
 
-class OperacionModel extends DB\SQL\Mapper
+class OperacionModel extends BaseModel
 {
 
-    protected $db;
-    protected $utils;
+    protected $dao;
 
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        parent::__construct($db, 'operacion');
-        $this->db = $db;
-        $this->utils = new ModelUtils($db);
+        parent::__construct();
+        $this->dao = new \DB\SQL\Mapper($this->db, 'operacion');
     }
 
     public function all()
@@ -38,9 +36,9 @@ class OperacionModel extends DB\SQL\Mapper
 
     public function add()
     {
-        $this->copyFrom('POST');
+        $this->dao->copyFrom('POST');
         try {
-            $this->save();
+            $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -49,10 +47,10 @@ class OperacionModel extends DB\SQL\Mapper
 
     public function edit($id)
     {
-        $this->load(array('operacion_id=?', $id));
-        $this->copyFrom('POST');
+        $this->dao->load(array('operacion_id=?', $id));
+        $this->dao->copyFrom('POST');
         try {
-            $this->update();
+            $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -61,9 +59,9 @@ class OperacionModel extends DB\SQL\Mapper
 
     public function delete($id)
     {
-        $this->load(array('operacion_id=?', $id));
+        $this->dao->load(array('operacion_id=?', $id));
         try {
-            $this->erase();
+            $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
@@ -72,21 +70,12 @@ class OperacionModel extends DB\SQL\Mapper
 
     public function exportar()
     {
-        $result = $this->db->exec("
-      SELECT
-        descripcion as transaccion,
-        CASE tipo_id
-        WHEN 1 THEN 'INGRESO'
-        WHEN 2 THEN 'SALIDA'
-        END AS tipo,
-        CASE estado
-        WHEN 1 THEN 'ACTIVO'
-        WHEN 0 THEN 'INACTIVO'
-        END AS estado
-      FROM operacion
-    ");
-        return $result;
+        return $this->db->exec("
+            SELECT
+                descripcion as transaccion,
+                CASE tipo_id WHEN 1 THEN 'INGRESO' WHEN 2 THEN 'SALIDA' END AS tipo,
+                CASE estado WHEN 1 THEN 'ACTIVO' WHEN 0 THEN 'INACTIVO' END AS estado
+            FROM operacion
+        ");
     }
 }
-
-?>

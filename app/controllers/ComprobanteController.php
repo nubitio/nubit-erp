@@ -13,7 +13,7 @@ class ComprobanteController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->model = new ComprobanteModel($this->db);
+        $this->model = new ComprobanteModel();
     }
 
     public function render()
