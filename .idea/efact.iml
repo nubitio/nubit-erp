@@ -41,6 +41,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/greenter/ws" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/greenter/lite" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/greenter/xml" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/firebase/php-jwt" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

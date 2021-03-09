@@ -10,7 +10,8 @@
     "illuminate/database": "^6.20.10",
     "greenter/lite": "^4.2",
     "messagebird/php-rest-api": "^1.19",
-    "ext-json": "*"
+    "ext-json": "*",
+    "firebase/php-jwt": "^5.2"
   },
   "authors": [
     {

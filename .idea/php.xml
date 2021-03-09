@@ -39,6 +39,7 @@
       <path value="$PROJECT_DIR$/vendor/greenter/ws" />
       <path value="$PROJECT_DIR$/vendor/greenter/lite" />
       <path value="$PROJECT_DIR$/vendor/greenter/xml" />
+      <path value="$PROJECT_DIR$/vendor/firebase/php-jwt" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.2">

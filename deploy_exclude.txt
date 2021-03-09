@@ -2,4 +2,5 @@
 .idea
 tmp/
 app/config.ini
+app/certificate_prod.pem
 app/public/efact/*

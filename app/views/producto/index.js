@@ -21,7 +21,7 @@ app.producto = (function () {
         var dgurl = 'producto/get';
         var isdisabled = true;
 
-        if (session.rol_id == null || session.rol_id === 1) {
+        if (session.rol_id === null || Number(session.rol_id) === 1) {
             dgurl = 'producto/getadm';
             isdisabled = false;
         }
