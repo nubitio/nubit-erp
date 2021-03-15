@@ -11,7 +11,9 @@
     "greenter/lite": "^4.2",
     "messagebird/php-rest-api": "^1.19",
     "ext-json": "*",
-    "firebase/php-jwt": "^5.2"
+    "firebase/php-jwt": "^5.2",
+    "greenter/htmltopdf": "^4.3",
+    "greenter/report": "^4.3"
   },
   "authors": [
     {

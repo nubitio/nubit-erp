@@ -1,24 +1,22 @@
 <?php
 
+use Greenter\Model\Client\Client;
+use Greenter\Model\Company\Address;
+use Greenter\Model\Company\Company;
 use Greenter\Model\DocumentInterface;
 use Greenter\Model\Sale\Charge;
 use Greenter\Model\Sale\Document;
+use Greenter\Model\Sale\Invoice;
+use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
+use Greenter\Model\Sale\SaleDetail;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
-use Greenter\Report\XmlUtils;
-use Greenter\Ws\Services\SunatEndpoints;
-use Greenter\See;
-
-use Greenter\Model\Client\Client;
-use Greenter\Model\Company\Company;
-use Greenter\Model\Company\Address;
-use Greenter\Model\Sale\Invoice;
-use Greenter\Model\Sale\SaleDetail;
-use Greenter\Model\Sale\Legend;
-
 use Greenter\Report\HtmlReport;
 use Greenter\Report\PdfReport;
+use Greenter\Report\XmlUtils;
+use Greenter\See;
+use Greenter\Ws\Services\SunatEndpoints;
 
 class EFactController extends BaseController
 {
@@ -126,19 +124,23 @@ class EFactController extends BaseController
         if ($sale["success"]) {
             $result = $this->makeInvoice($sale["data"]);
             $this->botModel->updateSaleState($result);
-            return $this->json($result);
+            $this->json($result);
         } else {
-            return $this->json($sale);
+            $this->json($sale);
         }
     }
 
     public function makeInvoice($sale)
     {
         // Cliente
+        $address = new Address();
+        $address->setDireccion($sale['header']['client_address']);
+
         $client = new Client();
         $client->setTipoDoc($sale['header']['client_doc_type'])
             ->setNumDoc($sale['header']['client_doc_number'])
-            ->setRznSocial($sale['header']['client_name']);
+            ->setRznSocial($sale['header']['client_name'])
+            ->setAddress($address);
 
         // Venta
         $invoice = (new Invoice())

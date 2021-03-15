@@ -490,7 +490,8 @@ class MovimientoController extends BaseController
         $sale = $this->botModel->getOne($id);
         if ($result['success']) {
             if ($sale['success']) {
-                $this->efact->makeInvoice($sale['data']);
+                $info = $this->efact->makeInvoice($sale['data']);
+                $this->botModel->updateSaleState($info);
             }
         }
         $this->json($result);
