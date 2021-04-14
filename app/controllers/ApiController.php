@@ -8,6 +8,8 @@ class ApiController extends BaseController
     private $body;
     private $userDao;
     private $apiDao;
+    private $botModel;
+    private $efact;
 
     public function __construct()
     {
@@ -15,6 +17,8 @@ class ApiController extends BaseController
         $this->body = json_decode($this->app->get('BODY'), true);
         $this->userDao = new UsuarioModel();
         $this->apiDao = new ApiModel();
+        $this->botModel = new BotModel();
+        $this->efact = new EFactController();
     }
 
     public function beforeroute()
@@ -234,6 +238,9 @@ class ApiController extends BaseController
     {
         $result = $this->apiDao->createSale($this->body);
         if ($result['success']) {
+            if ($this->body['has_invoice'] == 1) {
+                $this->makeInvoice($result['data']);
+            }
             $this->app->status(201);
             $this->json($result['data']);
         } else {
@@ -247,6 +254,9 @@ class ApiController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $result = $this->apiDao->updateSale($id, $this->body);
         if ($result['success']) {
+            if ($this->body['has_invoice'] == 1) {
+                $this->makeInvoice($id);
+            }
             $this->app->status(200);
             $this->json($result['data']);
         } else {
@@ -266,5 +276,18 @@ class ApiController extends BaseController
             $this->app->status(500);
             $this->json(['error' => $result['msg']]);
         }
+    }
+
+    function makeInvoice($id)
+    {
+        $result = $this->apiDao->makeInvoice($id);
+        $sale = $this->botModel->getOne($id);
+        if ($result['success']) {
+            if ($sale['success']) {
+                $info = $this->efact->makeInvoice($sale['data']);
+                $this->botModel->updateSaleState($info);
+            }
+        }
+        $this->json($result);
     }
 }

@@ -1,20 +1,19 @@
 var app = app || {};
 app.empresa = (function () {
-    var route;
-    var dg = $('#empresa_dg');
-    var dlg = $('#empresa_dlg');
-    var fm = $('#empresa_fm');
+    let route;
+    let dg = $('#empresa_dg');
+    let dlg = $('#empresa_dlg');
+    let fm = $('#empresa_fm');
     //dlg
-    var txt_ruc = $('#empresa_ruc');
-    var txt_razon_social = $('#empresa_razon_social');
-    var txt_domicilio_fiscal = $('#empresa_domicilio_fiscal');
-    var txt_telefono = $('#empresa_telefono');
-    var txt_sunat = $('#empresa_sunat');
-    var cbo_estado = $('#empresa_estado');
-    var btn_guardar;
-    var btn_cancelar;
+    let txt_ruc = $('#empresa_ruc');
+    let txt_razon_social = $('#empresa_razon_social');
+    let txt_domicilio_fiscal = $('#empresa_domicilio_fiscal');
+    let txt_telefono = $('#empresa_telefono');
+    let cbo_estado = $('#empresa_estado');
+    let btn_guardar;
+    let btn_cancelar;
 
-    var init = function () {
+    let init = function () {
         dg.datagrid({
             title: 'Empresas',
             url: 'empresa/get',
@@ -176,7 +175,7 @@ app.empresa = (function () {
             if (e.keyCode == 13 && !enter_pressed) {
                 enter_pressed = true;
                 dlg.dialog('showMask', 'Consultando RUC');
-                $.get('https://consultapi.jgm90.com/api/v1/ruc/' + txt_ruc.textbox('getValue') + '?token=abcxyz')
+                $.get('api/ruc/' + txt_ruc.textbox('getValue'))
                     .done(function (result) {
                         enter_pressed = false;
                         if (result.error) {
@@ -212,7 +211,7 @@ app.empresa = (function () {
 
         txt_domicilio_fiscal.textbox({
             width: '100%',
-            height: 60,
+            height: 80,
             label: 'Domicilio fiscal',
             labelPosition: 'top',
             multiline: true
@@ -223,13 +222,6 @@ app.empresa = (function () {
             label: 'Telefono',
             labelPosition: 'top',
             validType: 'length[6,15]'
-        });
-
-        txt_sunat.textbox({
-            width: '100%',
-            label: 'Aut. Sunatl',
-            labelPosition: 'top',
-            multiline: true
         });
 
         cbo_estado.combobox({

@@ -220,7 +220,7 @@ class ApiModel extends BaseModel
                 $detail->save();
             }
             $sale['movimiento_id'] = $repository->movimiento_id;
-            return ['success' => true, 'data' => $sale, 'msg' => 'Registro insertado'];
+            return ['success' => true, 'data' => $uuid[0]['uuid'], 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
@@ -251,6 +251,18 @@ class ApiModel extends BaseModel
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        }
+    }
+
+    public function makeInvoice($id): array
+    {
+        try {
+            $warehouse = $this->db->exec("select * from almacen limit 1");
+            $local = $this->db->exec("select * from local where local_id = ?", [$warehouse[0]['local_id']]);
+            $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $local[0]['local_id']]);
+            return ["success" => true, "data" => $result, "msg" => 'Comprobante registrado'];
+        } catch (Exception $e) {
+            return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
 }
