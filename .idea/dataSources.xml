@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="c3_efact@giklabs.com" uuid="10789e1e-cf0b-4635-9e36-83e839d2167c">
+    <data-source source="LOCAL" name="c3_efact@giklabs.com" uuid="18543bba-97a8-427f-849a-7570417fe4e8">
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>

@@ -19,6 +19,15 @@ app.home = (function () {
             .finally(() => init())
     }
 
+    let loadOptions = function () {
+        fetch('options')
+            .then(response => response.json())
+            .then(result => {
+                localStorage.setItem('options', JSON.stringify(result));
+            })
+            .catch(error => show_error(error));
+    }
+
     let init = function () {
         dlg.dialog({
             title: 'Seleccione un local',
@@ -115,7 +124,9 @@ app.home = (function () {
     return {
         init: init,
         change_local: change_local,
-        loadTheme: loadTheme
+        loadTheme: loadTheme,
+        loadOptions: loadOptions
     };
 })();
 app.home.loadTheme();
+app.home.loadOptions();

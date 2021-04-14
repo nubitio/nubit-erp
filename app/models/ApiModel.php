@@ -207,6 +207,8 @@ class ApiModel extends BaseModel
         $repository->almacen_id = $warehouse[0]['almacen_id'];
         $repository->serie = $series[0]['serie'];
         $repository->numero = $number[0]['number'];
+        $repository->has_invoice = ($sale['has_invoice'] == 1) ? 1 : 0;
+        $repository->is_consume = ($sale['is_consume'] == 1) ? 1 : 0;
         $repository->tipo_pago = 1;
         $repository->estado = 1;
         try {
@@ -229,6 +231,9 @@ class ApiModel extends BaseModel
         $repository = new \DB\SQL\Mapper($this->db, 'movimiento');
         $repository->load(['movimiento_id = ?', $id]);
         $repository->copyfrom($sale);
+        $repository->has_invoice = ($sale['has_invoice'] == 1) ? 1 : 0;
+        $repository->is_consume = ($sale['is_consume'] == 1) ? 1 : 0;
+        $repository->estado = 1;
         try {
             $repository->update();
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro actualizado'];

@@ -28,6 +28,7 @@ app.venta = (function () {
     let cliente_dialog_obj;
 
     let session;
+    let options;
 
     //carga inicio
 
@@ -67,10 +68,16 @@ app.venta = (function () {
         return xhr;
     }
 
+    function getOption(name) {
+        let result = options.filter(o => o.name === name)
+        return result[0]
+    }
+
     let init = function () {
         venta_check_caja();
         load();
         session = JSON.parse(localStorage.getItem('session'));
+        options = JSON.parse(localStorage.getItem('options'));
         dg.datagrid({
             title: 'Ventas',
             url: 'venta/get',
@@ -133,7 +140,7 @@ app.venta = (function () {
                 field: 'total',
                 title: 'Total',
                 align: 'right'
-            },{
+            }, {
                 field: 'comprobante_id',
                 title: '',
                 align: 'center',
@@ -502,18 +509,29 @@ app.venta = (function () {
             min: 1,
             onChange: function (rec) {
                 ind = $(this).attr('line');
-                check_stock(position);
+                let option = getOption('app_option_stock');
+                if (option.value === 'true') {
+                    check_stock(position);
+                }
                 venta_calcular_montos(position);
             },
             required: true
         });
 
+        let option = getOption('app_option_price');
+        console.log(option)
+        let optionValue = (option.value === 'true');
+        console.log(optionValue)
+
         txt_precio.numberbox({
             width: '75',
-            required: true,
-            readonly: true,
             min: 0,
             precision: 2,
+            onChange: function (rec) {
+                venta_calcular_montos(position)
+            },
+            readonly: !optionValue,
+            required: true
         });
 
         txt_descuento.numberbox({

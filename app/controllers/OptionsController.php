@@ -21,6 +21,11 @@ class OptionsController extends BaseController
         $this->json($this->model->get());
     }
 
+    public function getAll()
+    {
+        $this->json($this->model->getAll());
+    }
+
     public function get_list()
     {
         $filtered = (bool)$this->app->get('PARAMS.filtered');

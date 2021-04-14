@@ -1,6 +1,7 @@
 .git
 .idea
 tmp/
+app/assets/images/logo.png
 app/config.ini
 app/certificate_prod.pem
 app/public/efact/*
