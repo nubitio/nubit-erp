@@ -239,7 +239,7 @@ class ApiController extends BaseController
         $result = $this->apiDao->createSale($this->body);
         if ($result['success']) {
             if ($this->body['has_invoice'] == 1) {
-                $this->makeInvoice($result['data']);
+                $this->makeInvoice($result['data']['movimiento_id']);
             }
             $this->app->status(201);
             $this->json($result['data']);
@@ -254,7 +254,7 @@ class ApiController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $result = $this->apiDao->updateSale($id, $this->body);
         if ($result['success']) {
-            if ($this->body['has_invoice'] == 1) {
+            if ($this->body['has_invoice'] == 1 && $this->body['iserie'] == "") {
                 $this->makeInvoice($id);
             }
             $this->app->status(200);
@@ -278,7 +278,7 @@ class ApiController extends BaseController
         }
     }
 
-    function makeInvoice($id)
+    function makeInvoice($id): array
     {
         $result = $this->apiDao->makeInvoice($id);
         $sale = $this->botModel->getOne($id);
@@ -288,6 +288,6 @@ class ApiController extends BaseController
                 $this->botModel->updateSaleState($info);
             }
         }
-        $this->json($result);
+        return $result;
     }
 }

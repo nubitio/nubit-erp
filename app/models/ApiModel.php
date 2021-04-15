@@ -220,7 +220,7 @@ class ApiModel extends BaseModel
                 $detail->save();
             }
             $sale['movimiento_id'] = $repository->movimiento_id;
-            return ['success' => true, 'data' => $uuid[0]['uuid'], 'msg' => 'Registro insertado'];
+            return ['success' => true, 'data' => $sale, 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
