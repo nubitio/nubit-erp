@@ -18,7 +18,7 @@ $app->config('app/config.ini');
 $app->config('app/routes.ini');
 
 // Define version
-$app->set('version', '1.0.5');
+$app->set('version', '1.0.6');
 
 // Execute application
 $app->run();
