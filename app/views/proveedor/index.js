@@ -1,18 +1,19 @@
 var app = app || {};
 app.proveedor = (function () {
-    var route;
-    var dg = $('#proveedor_dg');
-    var dlg = $('#proveedor_dlg');
-    var fm = $('#proveedor_fm');
-    var txt_ruc = $('#proveedor_ruc');
-    var txt_razon_social = $('#proveedor_razon_social');
-    var txt_domicilio_fiscal = $('#proveedor_domicilio_fiscal');
-    var txt_telefono = $('#proveedor_telefono');
-    var cbo_estado = $('#proveedor_estado');
-    var btn_guardar;
-    var btn_cancelar;
+    let route;
+    let dg = $('#proveedor_dg');
+    let dlg = $('#proveedor_dlg');
+    let fm = $('#proveedor_fm');
+    let txt_ruc = $('#proveedor_ruc');
+    let txt_razon_social = $('#proveedor_razon_social');
+    let txt_domicilio_fiscal = $('#proveedor_domicilio_fiscal');
+    let txt_telefono = $('#proveedor_telefono');
+    let cbo_estado = $('#proveedor_estado');
+    let btn_guardar;
+    let btn_cancelar;
+    let enter_pressed = false;
 
-    var init = function () {
+    let init = function () {
         dg.datagrid({
             title: 'Proveedores',
             url: 'proveedor/get',
@@ -123,37 +124,20 @@ app.proveedor = (function () {
             min: 0,
             validType: 'length[11,11]',
             invalidMessage: 'Ingrese un RUC valido.',
+            icons: [{
+                iconCls: ICON_SEACH,
+                handler: function (e) {
+                    consult();
+                }
+            }],
             required: true
         });
+
         txt_ruc.numberbox('textbox').attr('maxlength', '11');
 
-        let enter_pressed = false;
         txt_ruc.textbox('textbox').bind('keydown', function (e) {
             if (e.keyCode === 13 && !enter_pressed) {
-                enter_pressed = true;
-                dlg.dialog('showMask', 'Consultando RUC');
-                $.get('api/ruc/' + txt_ruc.textbox('getValue'))
-                    .done(function (result) {
-                        enter_pressed = false;
-                        if (result.error) {
-                            show_error(result.error);
-                        } else {
-                            txt_razon_social.textbox('clear');
-                            txt_domicilio_fiscal.textbox('clear');
-                            if (result.estado === 'ACTIVO') {
-                                txt_razon_social.textbox('setValue', result.razonSocial);
-                                txt_domicilio_fiscal.textbox('setValue', result.direccion);
-                            } else {
-                                show_error(result.razonSocial + '<br>' + result.estado);
-                            }
-                        }
-                        dlg.dialog('hideMask');
-                    })
-                    .fail(function (xhr, status, error) {
-                        enter_pressed = false;
-                        dlg.dialog('hideMask');
-                        show_error(error);
-                    });
+                consult();
             }
         });
 
@@ -200,6 +184,33 @@ app.proveedor = (function () {
     };
 
     // functions
+    function consult() {
+        enter_pressed = true;
+        dlg.dialog('showMask', 'Consultando RUC');
+        $.get('api/ruc/' + txt_ruc.textbox('getValue'))
+            .done(function (result) {
+                enter_pressed = false;
+                if (result.error) {
+                    show_error(result.error);
+                } else {
+                    txt_razon_social.textbox('clear');
+                    txt_domicilio_fiscal.textbox('clear');
+                    if (result.estado === 'ACTIVO') {
+                        txt_razon_social.textbox('setValue', result.razonSocial);
+                        txt_domicilio_fiscal.textbox('setValue', result.direccion);
+                    } else {
+                        show_error(result.razonSocial + '<br>' + result.estado);
+                    }
+                }
+                dlg.dialog('hideMask');
+            })
+            .fail(function (xhr, status, error) {
+                enter_pressed = false;
+                dlg.dialog('hideMask');
+                show_error(error);
+            });
+    }
+
     function nuevo() {
         fm.form('clear');
         route = 'proveedor/add';

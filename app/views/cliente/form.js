@@ -108,13 +108,13 @@ app.customerForm = (function () {
 
         txt_ruc.textbox('textbox').bind('keydown', function (e) {
             if (e.keyCode === 13 && !enter_pressed) {
-                enter_pressed = true;
                 consult()
             }
         });
     }
 
     function consult() {
+        enter_pressed = true;
         let doc = txt_ruc.textbox('getValue');
         let apiUrl = ''
         let dialogTitle = ''
