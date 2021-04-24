@@ -762,12 +762,18 @@ app.venta = (function () {
         min: 0,
         validType: 'length[8,11]',
         invalidMessage: 'Ingrese un RUC/DNI valido.',
+        icons: [{
+            iconCls: ICON_SEACH,
+            handler: function (e) {
+                consult()
+            }
+        }],
         required: true
     });
 
     txt_razon_social.textbox({
         width: '100%',
-        height: 60,
+        height: 80,
         label: 'Cliente',
         labelPosition: 'top',
         multiline: true,
@@ -776,7 +782,7 @@ app.venta = (function () {
 
     txt_domicilio_fiscal.textbox({
         width: '100%',
-        height: 60,
+        height: 80,
         label: 'Domicilio',
         labelPosition: 'top',
         multiline: true
@@ -807,33 +813,49 @@ app.venta = (function () {
 
     let enter_pressed = false;
     txt_ruc.textbox('textbox').bind('keydown', function (e) {
-        if (e.keyCode == 13 && !enter_pressed) {
+        if (e.keyCode === 13 && !enter_pressed) {
             enter_pressed = true;
-            dlgc.dialog('showMask', 'Consultando RUC');
-            $.get('https://consultapi.jgm90.com/api/v1/ruc/' + txt_ruc.textbox('getValue') + '?token=abcxyz')
-                .done(function (result) {
-                    enter_pressed = false;
-                    if (result.error) {
-                        show_error(result.error);
-                    } else {
-                        txt_razon_social.textbox('clear');
-                        txt_domicilio_fiscal.textbox('clear');
+            consult()
+        }
+    });
+
+    function consult() {
+        let doc = txt_ruc.textbox('getValue');
+        let apiUrl = ''
+        let dialogTitle = ''
+        if (doc.length === 11) {
+            dialogTitle = 'Consultando RUC';
+            apiUrl = 'api/ruc/';
+        } else {
+            dialogTitle = 'Consultando DNI';
+            apiUrl = 'api/dni/'
+        }
+        dlgc.dialog('showMask', dialogTitle);
+        $.get(apiUrl + txt_ruc.textbox('getValue'))
+            .done(function (result) {
+                enter_pressed = false;
+                if (result.error) {
+                    show_error(result.error);
+                } else {
+                    if (doc.length === 11) {
                         if (result.estado === 'ACTIVO') {
                             txt_razon_social.textbox('setValue', result.razonSocial);
                             txt_domicilio_fiscal.textbox('setValue', result.direccion);
                         } else {
                             show_error(result.razon_social + '<br>' + result.estado);
                         }
+                    } else {
+                        txt_razon_social.textbox('setValue', result.nombres + ' ' + result.apellidoPaterno + ' ' + result.apellidoMaterno);
                     }
-                    dlgc.dialog('hideMask');
-                })
-                .fail(function (xhr, status, error) {
-                    enter_pressed = false;
-                    dlgc.dialog('hideMask');
-                    show_error(error);
-                });
-        }
-    });
+                }
+                dlgc.dialog('hideMask');
+            })
+            .fail(function (xhr, status, error) {
+                enter_pressed = false;
+                dlgc.dialog('hideMask');
+                show_error(error);
+            });
+    }
 
     function nuevo_cliente(obj = null) {
         if (obj != null) {

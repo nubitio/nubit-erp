@@ -3,6 +3,10 @@
 
 class ApiModel extends BaseModel
 {
+    public function getAllLocals()
+    {
+        return $this->db->exec("select * from local");
+    }
 
     public function getAllCategories()
     {
@@ -166,10 +170,10 @@ class ApiModel extends BaseModel
         }
     }
 
-    public function getAllSales()
+    public function getAllSales($local_id): array
     {
         $result = [];
-        $sales = $this->db->exec("select * from vw_movimiento where operacion like 'VENTA%' order by date_created desc limit 50");
+        $sales = $this->db->exec("select * from vw_movimiento where operacion like 'VENTA%' and local_id = ? order by date_created desc limit 50", [$local_id]);
         foreach ($sales as $sale) {
             $detail = $this->db->exec("select * from vw_movimiento_detalle where movimiento_id = ?", [$sale['movimiento_id']]);
             $sale['detail'] = $detail;
@@ -196,9 +200,8 @@ class ApiModel extends BaseModel
         $repository->copyfrom($sale);
         $uuid = $this->db->exec("select uuid() as uuid");
         $operation = $this->db->exec("select * from operacion where descripcion = ?", ['VENTA TICKET']);
-        $warehouse = $this->db->exec("select * from almacen limit 1");
-        $local = $this->db->exec("select * from local where local_id = ?", [$warehouse[0]['local_id']]);
-        $series = $this->db->exec("select * from local_comprobante where tipo_comprobante_id = ? and local_id = ?", ['00', $local[0]['local_id']]);
+        $warehouse = $this->db->exec("select * from almacen where local_id = ? limit 1", [$sale['local_id']]);
+        $series = $this->db->exec("select * from local_comprobante where tipo_comprobante_id = ? and local_id = ?", ['00', $sale['local_id']]);
         $number = $this->db->exec("select ifnull(max(cast(numero as integer)),0)+1 as number from movimiento where serie = ?", [$series[0]['serie']]);
         $repository->movimiento_id = $uuid[0]['uuid'];
         $repository->fecha = date('Y-m-d');

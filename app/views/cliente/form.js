@@ -13,6 +13,8 @@ app.customerForm = (function () {
     let btnSave;
     let btnCancel;
 
+    let enter_pressed = false;
+
     let init = function () {
         dlg.dialog({
             buttons: [{
@@ -45,6 +47,12 @@ app.customerForm = (function () {
             min: 0,
             validType: 'length[8,11]',
             invalidMessage: 'Ingrese un RUC/DNI valido.',
+            icons: [{
+                iconCls: ICON_SEACH,
+                handler: function (e) {
+                    consult()
+                }
+            }],
             required: true
         });
 
@@ -98,45 +106,50 @@ app.customerForm = (function () {
             required: true
         });
 
-        let enter_pressed = false;
         txt_ruc.textbox('textbox').bind('keydown', function (e) {
-            if (e.keyCode == 13 && !enter_pressed) {
+            if (e.keyCode === 13 && !enter_pressed) {
                 enter_pressed = true;
-                let doc = txt_ruc.textbox('getValue');
-                let apiUrl = ''
-                let dialogTitle = ''
-                if (doc.length === 11) {
-                    dialogTitle = 'Consultando RUC';
-                    apiUrl = 'https://consultapi.jgm90.com/api/v1/ruc/';
-                } else {
-                    dialogTitle = 'Consultando DNI';
-                    apiUrl = 'https://consultapi.jgm90.com/api/v1/dni/'
-                }
-                dlg.dialog('showMask', dialogTitle);
-                $.get(apiUrl + txt_ruc.textbox('getValue') + '?token=abcxyz')
-                    .done(function (result) {
-                        enter_pressed = false;
-                        if (result.error) {
-                            show_error(result.error);
-                        } else {
-                            txt_razon_social.textbox('clear');
-                            txt_domicilio_fiscal.textbox('clear');
-                            if (result.estado === 'ACTIVO') {
-                                txt_razon_social.textbox('setValue', result.razonSocial);
-                                txt_domicilio_fiscal.textbox('setValue', result.direccion);
-                            } else {
-                                show_error(result.razon_social + '<br>' + result.estado);
-                            }
-                        }
-                        dlg.dialog('hideMask');
-                    })
-                    .fail(function (xhr, status, error) {
-                        enter_pressed = false;
-                        dlg.dialog('hideMask');
-                        show_error(error);
-                    });
+                consult()
             }
         });
+    }
+
+    function consult() {
+        let doc = txt_ruc.textbox('getValue');
+        let apiUrl = ''
+        let dialogTitle = ''
+        if (doc.length === 11) {
+            dialogTitle = 'Consultando RUC';
+            apiUrl = 'api/ruc/';
+        } else {
+            dialogTitle = 'Consultando DNI';
+            apiUrl = 'api/dni/'
+        }
+        dlg.dialog('showMask', dialogTitle);
+        $.get(apiUrl + txt_ruc.textbox('getValue'))
+            .done(function (result) {
+                enter_pressed = false;
+                if (result.error) {
+                    show_error(result.error);
+                } else {
+                    if (doc.length === 11) {
+                        if (result.estado === 'ACTIVO') {
+                            txt_razon_social.textbox('setValue', result.razonSocial);
+                            txt_domicilio_fiscal.textbox('setValue', result.direccion);
+                        } else {
+                            show_error(result.razonSocial + '<br>' + result.estado);
+                        }
+                    } else {
+                        txt_razon_social.textbox('setValue', result.nombres + ' ' + result.apellidoPaterno + ' ' + result.apellidoMaterno);
+                    }
+                }
+                dlg.dialog('hideMask');
+            })
+            .fail(function (xhr, status, error) {
+                enter_pressed = false;
+                dlg.dialog('hideMask');
+                show_error(error);
+            });
     }
 
     function add() {

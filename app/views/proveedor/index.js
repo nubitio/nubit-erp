@@ -127,12 +127,12 @@ app.proveedor = (function () {
         });
         txt_ruc.numberbox('textbox').attr('maxlength', '11');
 
-        var enter_pressed = false;
+        let enter_pressed = false;
         txt_ruc.textbox('textbox').bind('keydown', function (e) {
-            if (e.keyCode == 13 && !enter_pressed) {
+            if (e.keyCode === 13 && !enter_pressed) {
                 enter_pressed = true;
                 dlg.dialog('showMask', 'Consultando RUC');
-                $.get('https://app.jgm90.com/rucapi/ruc/' + txt_ruc.textbox('getValue'))
+                $.get('api/ruc/' + txt_ruc.textbox('getValue'))
                     .done(function (result) {
                         enter_pressed = false;
                         if (result.error) {
@@ -140,11 +140,11 @@ app.proveedor = (function () {
                         } else {
                             txt_razon_social.textbox('clear');
                             txt_domicilio_fiscal.textbox('clear');
-                            if (result.estado_contribuyente === 'ACTIVO') {
-                                txt_razon_social.textbox('setValue', result.razon_social);
-                                txt_domicilio_fiscal.textbox('setValue', result.domicilio_fiscal);
+                            if (result.estado === 'ACTIVO') {
+                                txt_razon_social.textbox('setValue', result.razonSocial);
+                                txt_domicilio_fiscal.textbox('setValue', result.direccion);
                             } else {
-                                show_error(result.razon_social + '<br>' + result.estado_contribuyente);
+                                show_error(result.razonSocial + '<br>' + result.estado);
                             }
                         }
                         dlg.dialog('hideMask');

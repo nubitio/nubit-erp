@@ -52,6 +52,11 @@ class ApiController extends BaseController
         }
     }
 
+    public function getAllLocals()
+    {
+        $this->json($this->apiDao->getAllLocals());
+    }
+
     public function getAllCategories()
     {
         $this->json($this->apiDao->getAllCategories());
@@ -219,7 +224,8 @@ class ApiController extends BaseController
 
     public function getAllSales()
     {
-        $this->json($this->apiDao->getAllSales());
+        $local_id = $this->app->get('PARAMS.local_id');
+        $this->json($this->apiDao->getAllSales($local_id));
     }
 
     public function getOneSale()

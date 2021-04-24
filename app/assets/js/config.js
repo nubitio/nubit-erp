@@ -29,6 +29,7 @@ ICON_DELETE = 'fas fa-trash fa-1x text-danger';
 ICON_XLS = 'fas fa-file-excel fa-1x text-success';
 ICON_PDF = 'fas fa-file-pdf fa-1x text-danger';
 ICON_INVOICE = 'fas fa-file-invoice fa-1x text-info';
+ICON_SEACH = 'fas fa-search fa-1x text-info'
 // Dialog
 DIALOG_WIDTH = 400;
 DIALOG_HEIGHT = 'auto';
