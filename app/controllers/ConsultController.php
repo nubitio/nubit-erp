@@ -11,6 +11,11 @@ class ConsultController extends BaseController
         $this->url = "https://consultapi.efact.app/api/v1/";
     }
 
+    public function beforeroute()
+    {
+        //public api
+    }
+
     function getRucInfo()
     {
         $ruc = $this->app->get('PARAMS.ruc');
