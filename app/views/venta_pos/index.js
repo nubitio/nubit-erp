@@ -130,12 +130,14 @@ app.venta = (function () {
                 width: 150
             }, {
                 field: 'serie',
-                title: 'Serie',
-                sortable: true
+                title: 'Nota',
+                align: 'center',
+                formatter: noteFormatter
             }, {
-                field: 'numero',
-                title: 'Numero',
-                sortable: true
+                field: 'iserie',
+                title: 'Comprobante',
+                align: 'center',
+                formatter: invoiceFormatter
             }, {
                 field: 'total',
                 title: 'Total',
@@ -144,7 +146,7 @@ app.venta = (function () {
                 field: 'comprobante_id',
                 title: '',
                 align: 'center',
-                formatter: invoiceFormatter
+                formatter: iconFormatter
             }, {
                 field: 'estado',
                 title: 'Estado',
@@ -645,7 +647,23 @@ app.venta = (function () {
         }
     }
 
+    function noteFormatter(value, row) {
+        if (value !== null) {
+            return row.serie + '-' + row.numero;
+        } else {
+            return '';
+        }
+    }
+
     function invoiceFormatter(value, row) {
+        if (value !== null) {
+            return row.iserie + '-' + row.inumero;
+        } else {
+            return '';
+        }
+    }
+
+    function iconFormatter(value, row) {
         if (value !== null) {
             return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
         } else {
