@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class PaymentTypeModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class PaymentTypeModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'payment_type');
+        $this->dao = new Mapper($this->db, 'payment_type');
     }
 
     public function get()

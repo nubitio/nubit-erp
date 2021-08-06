@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class NotaModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class NotaModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'nota');
+        $this->dao = new Mapper($this->db, 'nota');
     }
 
     public function get()

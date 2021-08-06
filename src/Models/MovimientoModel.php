@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class MovimientoModel extends BaseModel
 {
 
@@ -10,7 +12,7 @@ class MovimientoModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'movimiento');
+        $this->dao = new Mapper($this->db, 'movimiento');
     }
 
     public function all($tipo_id)

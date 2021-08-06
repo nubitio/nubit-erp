@@ -17,7 +17,8 @@
     "firebase/php-jwt": "^5.2",
     "greenter/htmltopdf": "^4.3",
     "greenter/report": "^4.3",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-pdo": "*"
   },
   "authors": [
     {

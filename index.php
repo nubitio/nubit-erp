@@ -12,6 +12,8 @@ $app->config('src/config.ini');
 // Define routes
 $app->config('src/routes.ini');
 
+$app->set('CACHE', true);
+
 // Define version
 $app->set('version', '1.0.6');
 

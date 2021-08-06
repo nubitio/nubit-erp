@@ -3,11 +3,12 @@
 namespace App\Utils;
 
 use DB\SQL;
+use PDO;
 
 class ModelUtils
 {
 
-    protected $db;
+    protected SQL $db;
 
     public function __construct(SQL $db)
     {

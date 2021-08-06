@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class EmpleadoModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class EmpleadoModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'empleado');
+        $this->dao = new Mapper($this->db, 'empleado');
     }
 
     public function get()

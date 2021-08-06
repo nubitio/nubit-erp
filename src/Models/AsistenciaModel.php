@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class AsistenciaModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class AsistenciaModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'asistencia');
+        $this->dao = new Mapper($this->db, 'asistencia');
     }
 
     public function get()

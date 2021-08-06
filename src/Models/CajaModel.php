@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use DB\SQL\Mapper;
+use PDO;
 
 class CajaModel extends BaseModel
 {
-    private $caja;
-    private $detail;
+    private Mapper $caja;
+    private Mapper $detail;
 
     public function __construct()
     {

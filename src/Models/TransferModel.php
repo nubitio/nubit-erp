@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class TransferModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class TransferModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'transfer');
+        $this->dao = new Mapper($this->db, 'transfer');
     }
 
     public function get()
