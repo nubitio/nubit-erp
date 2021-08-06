@@ -1,7 +1,10 @@
 {
-  "name": "johangm90/restaurante",
+  "name": "johangm90/efact",
   "description": "",
+  "minimum-stability": "stable",
+  "prefer-stable": true,
   "require": {
+    "php": ">=7.4",
     "bcosca/fatfree": "^3.7.3",
     "tecnickcom/tcpdf": "^6.3.5",
     "phpoffice/phpspreadsheet": "^1.16",
@@ -20,5 +23,13 @@
       "name": "Johan Guerreros",
       "email": "johangm90@gmail.com"
     }
-  ]
+  ],
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^5.3"
+  }
 }
