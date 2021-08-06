@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\CajaModel;
+use Template;
+
 class CajaController extends BaseController
 {
-
-    private $caja;
+    private CajaModel $caja;
 
     function __construct()
     {

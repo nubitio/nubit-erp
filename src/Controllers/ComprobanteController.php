@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\ComprobanteModel;
+use Template;
+
 class ComprobanteController extends BaseController
 {
 
-    private $model;
+    private ComprobanteModel $model;
 
     public function __construct()
     {

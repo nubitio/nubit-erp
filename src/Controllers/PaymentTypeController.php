@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\PaymentTypeModel;
+use Template;
+
 class PaymentTypeController extends BaseController
 {
-    private $model;
+    private PaymentTypeModel $model;
 
     public function __construct()
     {

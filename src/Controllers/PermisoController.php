@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\PermisoModel;
+use Template;
+
 class PermisoController extends BaseController
 {
 
-    private $permiso;
+    private PermisoModel $permiso;
 
     public function __construct()
     {
@@ -51,5 +54,3 @@ class PermisoController extends BaseController
         $this->json($data);
     }
 }
-
-?>

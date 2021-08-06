@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 class ConsultController extends BaseController
 {
-    private $url;
+    private string $url;
 
     public function __construct()
     {

@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\NotaModel;
+use Template;
+
 class NotaController extends BaseController
 {
-    private $model;
+    private NotaModel $model;
 
     public function __construct()
     {

@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\UnidadModel;
+use Template;
+
 class UnidadController extends BaseController
 {
 
-    private $model;
+    private UnidadModel $model;
 
     public function __construct()
     {

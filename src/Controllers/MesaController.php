@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\MesaModel;
+use Template;
+
 class MesaController extends BaseController
 {
 
-    private $model;
+    private MesaModel $model;
 
     public function __construct()
     {

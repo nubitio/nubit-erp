@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\LocalModel;
+use Template;
+
 class LocalController extends BaseController
 {
 
-    private $model;
+    private LocalModel $model;
 
     public function __construct()
     {
@@ -70,5 +73,3 @@ class LocalController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

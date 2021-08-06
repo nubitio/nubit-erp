@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\OptionsModel;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -12,10 +13,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class BaseController
 {
 
-    protected $app;
-    protected $db;
+    protected Base $app;
     protected $modulo;
-    protected $options;
+    protected OptionsModel $options;
 
     public function beforeroute()
     {
@@ -40,18 +40,6 @@ class BaseController
     {
         header('content-type: application/json; charset=utf-8');
         echo json_encode($data);
-    }
-
-    function pretty($var)
-    {
-        return gettype($var) . ' ' . json_encode(
-                $var,
-                JSON_UNESCAPED_SLASHES |
-                JSON_UNESCAPED_UNICODE |
-                JSON_PRETTY_PRINT |
-                JSON_PARTIAL_OUTPUT_ON_ERROR |
-                JSON_INVALID_UTF8_SUBSTITUTE
-            );
     }
 
     public function is_allowed()

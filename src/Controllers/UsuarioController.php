@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\UsuarioModel;
+use Template;
+
 class UsuarioController extends BaseController
 {
 
-    private $model;
+    private UsuarioModel $model;
 
     function __construct()
     {

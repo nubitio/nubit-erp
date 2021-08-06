@@ -2,15 +2,16 @@
 
 namespace App\Controllers;
 
+use App\Models\BotModel;
+use Template;
+
 class InvoiceController extends BaseController
 {
-    private $model;
-    private $botModel;
+    private BotModel $botModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->model = new MovimientoModel();
         $this->botModel = new BotModel();
     }
 

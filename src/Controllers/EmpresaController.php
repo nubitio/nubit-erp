@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\EmpresaModel;
+use Template;
+
 class EmpresaController extends BaseController
 {
 
-    private $model;
+    private EmpresaModel $model;
 
     public function __construct()
     {
@@ -63,5 +66,3 @@ class EmpresaController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

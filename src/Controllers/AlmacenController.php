@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\AlmacenModel;
+use Template;
+
 class AlmacenController extends BaseController
 {
 
-    private $model;
+    private AlmacenModel $model;
 
     public function __construct()
     {

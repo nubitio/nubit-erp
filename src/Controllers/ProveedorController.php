@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\ProveedorModel;
+use Template;
+
 class ProveedorController extends BaseController
 {
 
-    private $model;
+    private ProveedorModel $model;
 
     public function __construct()
     {

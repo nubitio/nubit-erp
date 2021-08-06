@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\SummaryModel;
+
 class SummaryController extends BaseController
 {
-    private $summaryModel;
-    private $efact;
+    private SummaryModel $summaryModel;
+    private EFactController $efact;
 
     public function __construct()
     {

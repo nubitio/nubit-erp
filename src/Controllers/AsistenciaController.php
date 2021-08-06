@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\AsistenciaModel;
+use Template;
+
 class AsistenciaController extends BaseController
 {
-    private $model;
+    private AsistenciaModel $model;
 
     public function __construct()
     {

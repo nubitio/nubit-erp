@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\ReservaModel;
+use Template;
+
 class ReservaController extends BaseController
 {
-    private $model;
+    private ReservaModel $model;
 
     public function __construct()
     {

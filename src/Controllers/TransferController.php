@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\TransferModel;
+use Template;
+
 class TransferController extends BaseController
 {
-    private $model;
+    private TransferModel $model;
 
     public function __construct()
     {

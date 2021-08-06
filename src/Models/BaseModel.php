@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Utils\ModelUtils;
+use Base;
+use DB\SQL;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class BaseModel
@@ -20,7 +23,7 @@ class BaseModel
         /** @var Base $app */
         $this->app = Base::instance();
         $cn = 'mysql:host=' . $this->app->get('DB_HOST') . ';port=' . $this->app->get('DB_PORT') . ';dbname=' . $this->app->get('DB_NAME');
-        $db = new DB\SQL (
+        $db = new SQL(
             $cn,
             $this->app->get('DB_USER'),
             $this->app->get('DB_PASSWORD'),

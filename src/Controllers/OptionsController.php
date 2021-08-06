@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\OptionsModel;
+use Template;
+
 class OptionsController extends BaseController
 {
-    private $model;
+    private OptionsModel $model;
 
     public function __construct()
     {

@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use Template;
+
 class FacturacionController extends BaseController
 {
     public function __construct()

@@ -2,12 +2,17 @@
 
 namespace App\Controllers;
 
+use App\Models\AlmacenModel;
+use App\Models\LocalModel;
+use App\Models\MenuModel;
+use Template;
+
 class MainController extends BaseController
 {
 
-    private $menu;
-    private $local;
-    private $almacen;
+    private MenuModel $menu;
+    private LocalModel $local;
+    private AlmacenModel $almacen;
 
     public function __construct()
     {

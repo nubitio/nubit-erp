@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\MenuModel;
+use Template;
+
 class MenuController extends BaseController
 {
 
-    private $menu;
+    private MenuModel $menu;
 
     public function __construct()
     {

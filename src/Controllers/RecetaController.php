@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\RecetaModel;
+use Template;
+
 class RecetaController extends BaseController
 {
 
-    private $model;
+    private RecetaModel $model;
 
     public function __construct()
     {
@@ -67,5 +70,3 @@ class RecetaController extends BaseController
         $this->export('Receta', $data);
     }
 }
-
-?>

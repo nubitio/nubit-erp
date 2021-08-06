@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\ProductoModel;
+use Template;
+
 class ProductoController extends BaseController
 {
 
-    private $model;
+    private ProductoModel $model;
 
     public function __construct()
     {

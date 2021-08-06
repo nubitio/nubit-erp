@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\RolModel;
+use Template;
+
 class RolController extends BaseController
 {
 
-    private $rol;
+    private RolModel $rol;
 
     public function __construct()
     {

@@ -2,6 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\BotModel;
+use App\Models\OptionsModel;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
@@ -22,9 +24,9 @@ use Greenter\Ws\Services\SunatEndpoints;
 
 class EFactController extends BaseController
 {
-    private $see;
-    private $optionsDao;
-    private $botModel;
+    private See $see;
+    private OptionsModel $optionsDao;
+    private BotModel $botModel;
 
     public function __construct()
     {

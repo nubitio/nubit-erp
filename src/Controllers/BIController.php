@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\BIModel;
+
 class BIController extends BaseController
 {
 
-    private $model;
+    private BIModel $model;
 
     public function __construct()
     {

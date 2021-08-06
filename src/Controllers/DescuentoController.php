@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\DescuentoModel;
+use Template;
+
 class DescuentoController extends BaseController
 {
-    protected $model;
+    protected DescuentoModel $model;
 
     public function __construct()
     {

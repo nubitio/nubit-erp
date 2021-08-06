@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\AmbienteModel;
+use Template;
+
 class AmbienteController extends BaseController
 {
 
-    private $model;
+    private AmbienteModel $model;
 
     public function __construct()
     {

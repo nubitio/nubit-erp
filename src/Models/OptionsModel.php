@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class OptionsModel extends BaseModel
 {
     private $dao;
@@ -9,7 +11,7 @@ class OptionsModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new DB\SQL\Mapper($this->db, 'options');
+        $this->dao = new Mapper($this->db, 'options');
     }
 
     public function get()

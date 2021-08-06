@@ -2,9 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\EmpleadoModel;
+use Template;
+
 class EmpleadoController extends BaseController
 {
-    private $model;
+    private EmpleadoModel $model;
 
     public function __construct()
     {

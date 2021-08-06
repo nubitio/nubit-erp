@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\OperacionModel;
+use Template;
+
 class OperacionController extends BaseController
 {
 
-    private $model;
+    private OperacionModel $model;
 
     public function __construct()
     {
@@ -64,5 +67,3 @@ class OperacionController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

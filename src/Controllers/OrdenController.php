@@ -2,15 +2,18 @@
 
 namespace App\Controllers;
 
+use App\Models\OrdenModel;
+use Template;
+
 class OrdenController extends BaseController
 {
 
-    private $model;
+    private OrdenModel $model;
 
     public function __construct()
     {
         parent::__construct();
-        $this->model = new OrdenModel($this->db);
+        $this->model = new OrdenModel();
     }
 
     public function render()

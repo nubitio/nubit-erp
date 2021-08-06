@@ -2,15 +2,18 @@
 
 namespace App\Controllers;
 
+use App\Models\ReporteModel;
+use Template;
+
 class ReporteController extends BaseController
 {
 
-    private $model;
+    private ReporteModel $model;
 
     public function __construct()
     {
         parent::__construct();
-        $this->model = new ReporteModel($this->db);
+        $this->model = new ReporteModel();
     }
 
     public function render()

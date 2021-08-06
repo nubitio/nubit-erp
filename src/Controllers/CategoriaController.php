@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\CategoriaModel;
+use Template;
+
 class CategoriaController extends BaseController
 {
-
-    private $model;
+    private CategoriaModel $model;
 
     public function __construct()
     {

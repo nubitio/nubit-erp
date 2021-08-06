@@ -4,16 +4,19 @@ namespace App\Controllers;
 
 include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
 
+use App\Models\BotModel;
+use App\Models\MovimientoModel;
 use Neodynamic\SDK\Web\WebClientPrint;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
+use Template;
 
 class MovimientoController extends BaseController
 {
 
-    private $model;
-    private $botModel;
-    private $efact;
+    private MovimientoModel $model;
+    private BotModel $botModel;
+    private EFactController $efact;
 
     function __construct()
     {

@@ -2,17 +2,20 @@
 
 namespace App\Controllers;
 
+use App\Models\NotifyModel;
+use App\Models\OptionsModel;
 use MessageBird\Client;
 use MessageBird\Objects\Conversation\Content;
 use MessageBird\Objects\Conversation\SendMessage;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Template;
 
 class NotifyController extends BaseController
 {
-    protected $model;
-    protected $bird;
-    protected $options;
+    protected NotifyModel $model;
+    protected Client $bird;
+    protected OptionsModel $options;
 
     public function __construct()
     {

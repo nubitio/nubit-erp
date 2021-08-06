@@ -2,15 +2,18 @@
 
 namespace App\Controllers;
 
+use App\Models\ApiModel;
+use App\Models\BotModel;
+use App\Models\UsuarioModel;
 use Firebase\JWT\JWT;
 
 class ApiController extends BaseController
 {
     private $body;
-    private $userDao;
-    private $apiDao;
-    private $botModel;
-    private $efact;
+    private UsuarioModel $userDao;
+    private ApiModel $apiDao;
+    private BotModel $botModel;
+    private EFactController $efact;
 
     public function __construct()
     {

@@ -2,10 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Models\AppModel;
+
 class AppController extends BaseController
 {
 
-    private $model;
+    private AppModel $model;
 
     public function __construct()
     {

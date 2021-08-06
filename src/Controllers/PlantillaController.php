@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\PlantillaModel;
+use Template;
+
 class PlantillaController extends BaseController
 {
 
-    private $model;
+    private PlantillaModel $model;
 
     public function __construct()
     {
@@ -67,5 +70,3 @@ class PlantillaController extends BaseController
         $this->export('Plantilla', $data);
     }
 }
-
-?>

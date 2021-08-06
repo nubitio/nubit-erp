@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 include dirname(dirname(__FILE__)) . '/WebClientPrint.php';
 
+use App\Models\MovimientoModel;
 use Neodynamic\SDK\Web\WebClientPrint;
 use Neodynamic\SDK\Web\DefaultPrinter;
 use Neodynamic\SDK\Web\InstalledPrinter;
@@ -16,7 +17,7 @@ use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 class PrintESCPOSController extends BaseController
 {
 
-    private $model;
+    private MovimientoModel $model;
 
     function __construct()
     {

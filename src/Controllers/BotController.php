@@ -2,11 +2,14 @@
 
 namespace App\Controllers;
 
+use App\Models\BotModel;
+use App\Models\CreditNoteModel;
+
 class BotController extends BaseController
 {
-    private $model;
-    private $efact;
-    private $noteModel;
+    private BotModel $model;
+    private EFactController $efact;
+    private CreditNoteModel $noteModel;
 
     public function __construct()
     {

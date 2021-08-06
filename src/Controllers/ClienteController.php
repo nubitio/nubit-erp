@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\ClienteModel;
+use Template;
+
 class ClienteController extends BaseController
 {
 
-    private $model;
+    private ClienteModel $model;
 
     public function __construct()
     {

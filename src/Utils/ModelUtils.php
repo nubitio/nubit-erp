@@ -1,11 +1,15 @@
 <?php
 
+namespace App\Utils;
+
+use DB\SQL;
+
 class ModelUtils
 {
 
     protected $db;
 
-    public function __construct(DB\SQL $db)
+    public function __construct(SQL $db)
     {
         $this->db = $db;
     }

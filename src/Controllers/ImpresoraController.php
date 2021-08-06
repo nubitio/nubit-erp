@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Models\ImpresoraModel;
+use Template;
+
 class ImpresoraController extends BaseController
 {
 
-    private $model;
+    private ImpresoraModel $model;
 
     public function __construct()
     {
@@ -63,5 +66,3 @@ class ImpresoraController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

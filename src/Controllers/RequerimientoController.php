@@ -2,15 +2,18 @@
 
 namespace App\Controllers;
 
+use App\Models\RequerimientoModel;
+use Template;
+
 class RequerimientoController extends BaseController
 {
 
-    private $model;
+    private RequerimientoModel $model;
 
     public function __construct()
     {
         parent::__construct();
-        $this->model = new RequerimientoModel($this->db);
+        $this->model = new RequerimientoModel();
     }
 
     public function render()
@@ -64,5 +67,3 @@ class RequerimientoController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>
