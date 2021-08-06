@@ -48,7 +48,7 @@ class PrintESCPOSController extends BaseController
                 $cabecera = $this->model->ticket_cabecera($id);
                 $detalle = $this->model->ticket_detalle($id);
 
-                $logo = EscposImage::load("app/assets/images/logo.png", false);
+                $logo = EscposImage::load("src/assets/images/logo.png", false);
 
                 $connector = new DummyPrintConnector();
                 $printer = new Printer($connector);

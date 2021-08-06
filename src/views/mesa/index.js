@@ -427,7 +427,7 @@ app.mesa = (function () {
             container.style.top = '26px';
             container.style.right = '0px';
             container.style.bottom = '0px';
-            container.style.background = 'url("app/assets/js/mxgraph/images/grid.gif")';
+            container.style.background = 'url("src/assets/js/mxgraph/images/grid.gif")';
 
             panel.appendChild(container);
 
@@ -508,4 +508,4 @@ app.mesa = (function () {
     };
 })();
 app.mesa.init();
-//app.mesa.main();
+//src.mesa.main();

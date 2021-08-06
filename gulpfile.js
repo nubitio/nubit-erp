@@ -14,31 +14,31 @@ var del = require('del');
 var runSequence = require('run-sequence');
 
 gulp.task('less', function() {
-  return gulp.src('app/assets/less/**/*.less')
+  return gulp.src('src/assets/less/**/*.less')
     .pipe(less({
       plugins: [autoprefix]
     }))
-    .pipe(gulp.dest('app/assets/css'));
+    .pipe(gulp.dest('src/assets/css'));
 });
 
 gulp.task('useref', function() {
-  return gulp.src('app/views/**/*')
+  return gulp.src('src/views/**/*')
     .pipe(replace("{{@ASSETS}}", '../../assets/'))
     .pipe(useref())
     .pipe(gulpif('*.js', uglify()))
     .pipe(gulpif('*.css', cssnano()))
-    .pipe(gulp.dest('dist/app/views'))
+    .pipe(gulp.dest('dist/src/views'))
     .pipe(replace('../../assets/', "{{@ASSETS}}"))
     .pipe(replace('../assets/', "{{@ASSETS}}"))
-    .pipe(gulp.dest('dist/app/views'));
+    .pipe(gulp.dest('dist/src/views'));
 });
 
 gulp.task('images', function() {
-  return gulp.src('app/assets/**/*.+(png|jpg|gif|svg)')
+  return gulp.src('src/assets/**/*.+(png|jpg|gif|svg)')
   .pipe(cache(imagemin({
     interlaced: true
   })))
-  .pipe(gulp.dest('dist/app/assets'));
+  .pipe(gulp.dest('dist/src/assets'));
 });
 
 gulp.task('php', function() {
@@ -59,8 +59,8 @@ gulp.task('config', function() {
 });
 
 gulp.task('fonts', function() {
-  return gulp.src('app/assets/fonts/**/*')
-  .pipe(gulp.dest('dist/app/assets/fonts'));
+  return gulp.src('src/assets/fonts/**/*')
+  .pipe(gulp.dest('dist/src/assets/fonts'));
 });
 
 // Cleaning 
@@ -74,7 +74,7 @@ gulp.task('clean:dist', function() {
 
 // Watchers
 gulp.task('watch', function() {
-  gulp.watch('app/assets/less/**/*.less', ['less']);
+  gulp.watch('src/assets/less/**/*.less', ['less']);
 });
 
 // Sequences

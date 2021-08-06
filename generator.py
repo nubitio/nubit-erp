@@ -24,13 +24,13 @@ def main(argv):
 
 def do_generation(module):
     path = os.getcwd()
-    controller_path = "app/controllers/" + module.title() + "Controller.php"
-    model_path = "app/models/" + module.title() + "Model.php"
-    view_path = "app/views/" + module
-    html_path = "app/views/" + module + "/index.html"
-    js_path = "app/views/" + module + "/index.js"
+    controller_path = "src/controllers/" + module.title() + "Controller.php"
+    model_path = "src/models/" + module.title() + "Model.php"
+    view_path = "src/views/" + module
+    html_path = "src/views/" + module + "/index.html"
+    js_path = "src/views/" + module + "/index.js"
     print("The current working directory is %s" % path)
-    connection = pymysql.connect(host='jgm90.com', user='c1_restaurante', password='Master.2017', db='c1_restaurante',
+    connection = pymysql.connect(host='giklabs.com', user='c3_admin', password='Admin.3000', db='c3_efact',
                                  charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
     try:
         controller = open(controller_path, 'w')

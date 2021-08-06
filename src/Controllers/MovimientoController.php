@@ -441,7 +441,7 @@ class MovimientoController extends BaseController
             $mail->addAttachment($pdf);
 
             $template = new Template();
-            $this->app->set('logo', $this->app->get('BASE_URL') . 'app/assets/images/logo.png');
+            $this->app->set('logo', $this->app->get('BASE_URL') . 'src/assets/images/logo.png');
             $this->app->set('tipo', $tipo);
             $this->app->set('serie', $data['serie']);
             $this->app->set('numero', $data['numero']);

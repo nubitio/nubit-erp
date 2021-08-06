@@ -51,4 +51,4 @@ WINDOW_CLOSE_ANIMATION = 'fadeInDown';
 DIALOG_OPEN_ANIMATION = 'zoomIn';
 DIALOG_CLOSE_ANIMATION = 'zoomOut';
 // Helpers
-mxBasePath = 'app/assets/js/mxgraph';
+mxBasePath = 'src/assets/js/mxgraph';

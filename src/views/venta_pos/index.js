@@ -116,13 +116,11 @@ app.venta = (function () {
             columns: [[{
                 field: 'fecha',
                 title: 'Fecha',
-                sortable: true,
-                width: 70
+                sortable: true
             }, {
                 field: 'operacion',
                 title: 'Operacion',
-                sortable: true,
-                width: 100
+                sortable: true
             }, {
                 field: 'cliente',
                 title: 'Cliente',
@@ -143,14 +141,8 @@ app.venta = (function () {
                 title: 'Total',
                 align: 'right'
             }, {
-                field: 'comprobante_id',
-                title: '',
-                align: 'center',
-                formatter: iconFormatter
-            }, {
                 field: 'estado',
                 title: 'Estado',
-                width: 70,
                 align: 'center',
                 formatter: statusFormatter
             }]],
@@ -202,63 +194,7 @@ app.venta = (function () {
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'operacion',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: 'VENTA BOLETA',
-                    text: 'VENTA BOLETA'
-                }, {
-                    value: 'VENTA FACTURA',
-                    text: 'VENTA FACTURA'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'operacion');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'operacion',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'INGRESADO'
-                }, {
-                    value: '2',
-                    text: 'ANULADO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
 
         dlg.dialog({
             width: 700,
@@ -313,6 +249,7 @@ app.venta = (function () {
 
         txt_glosa.textbox({
             width: '100%',
+            height: 80,
             label: 'Obs',
             labelPosition: 'top'
         });
@@ -321,41 +258,13 @@ app.venta = (function () {
             width: '100%',
             label: 'Tipo Pago',
             labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'EFECTIVO'
-            }, {
-                value: '2',
-                text: 'TARJETA'
-            }],
-            panelHeight: 'auto',
+            url: 'payment-type/list/1',
+            method: 'get',
+            valueField: 'id',
+            textField: 'name',
+            panelHeight: 200,
             limitToList: true,
-            onSelect: function (rec) {
-                if (rec.value === '1') {
-                    cbo_tarjeta.combobox('clear');
-                    cbo_tarjeta.combobox('disable');
-                } else if (rec.value === '2') {
-                    cbo_tarjeta.combobox({required: true});
-                    cbo_tarjeta.combobox('enable');
-                    cbo_tarjeta.combobox('select', 1);
-                }
-            },
             required: true
-        });
-
-        cbo_tarjeta.combobox({
-            width: '100%',
-            label: 'Tarjeta',
-            labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'VISA'
-            }, {
-                value: '2',
-                text: 'MASTERCARD'
-            }],
-            panelHeight: 'auto',
-            limitToList: true
         });
 
         txt_cash.numberbox({
@@ -649,7 +558,7 @@ app.venta = (function () {
 
     function noteFormatter(value, row) {
         if (value !== null) {
-            return row.serie + '-' + row.numero;
+            return '<a href="/sale/order/' + row.movimiento_id + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row.serie + '-' + row.numero + '</a>';
         } else {
             return '';
         }
@@ -657,15 +566,7 @@ app.venta = (function () {
 
     function invoiceFormatter(value, row) {
         if (value !== null) {
-            return row.iserie + '-' + row.inumero;
-        } else {
-            return '';
-        }
-    }
-
-    function iconFormatter(value, row) {
-        if (value !== null) {
-            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" target="_blank"><i class="fas fa-file-invoice fa-lg"></i></a>';
+            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + row.iserie + '-' + row.inumero + '</a>';
         } else {
             return '';
         }
@@ -695,8 +596,7 @@ app.venta = (function () {
     function venta_print() {
         let row = dg.datagrid('getSelected');
         if (row) {
-            window.open('sale/order/' + row.movimiento_id)
-            //jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
+            jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
         }

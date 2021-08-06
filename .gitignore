@@ -9,5 +9,5 @@
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-/app/config.ini
-/app/certificate_prod.pem
+/src/config.ini
+/src/certificate_prod.pem

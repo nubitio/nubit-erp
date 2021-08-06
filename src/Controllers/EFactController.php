@@ -37,7 +37,7 @@ class EFactController extends BaseController
             $this->see->setCredentials($this->getOption('invoice_user'), $this->getOption('invoice_password'));
         } else {
             $this->see->setService(SunatEndpoints::FE_BETA);
-            $this->see->setCertificate(file_get_contents('app/certificate_beta.pem'));
+            $this->see->setCertificate(file_get_contents('src/certificate_beta.pem'));
             $this->see->setCredentials('20000000001MODDATOS', 'moddatos');
         }
     }

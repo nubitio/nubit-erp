@@ -90,7 +90,7 @@ class NotifyController extends BaseController
 
         $template = new Template();
 
-        $this->app->set('logo', 'https://app.compuexpress.pe/app/assets/images/logo.png');
+        $this->app->set('logo', 'https://src.compuexpress.pe/src/assets/images/logo.png');
         $this->app->set('title', 'Notificación de sincronización');
         $this->app->set('subtitle', 'Hola, a continuación la fecha y hora de la última sincronización por local');
         $this->app->set('data', $info);
@@ -158,7 +158,7 @@ class NotifyController extends BaseController
 
     public function messageBirdReport()
     {
-        //$data = json_decode($this->app->get('BODY'), true);
+        //$data = json_decode($this->src->get('BODY'), true);
         $result = $this->model->saveReport($this->app->get('BODY'));
         $this->json($result);
     }
