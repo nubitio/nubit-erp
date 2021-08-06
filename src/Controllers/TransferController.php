@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class TransferController extends BaseController
 {
     private $model;

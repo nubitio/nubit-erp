@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class BotController extends BaseController
 {
     private $model;

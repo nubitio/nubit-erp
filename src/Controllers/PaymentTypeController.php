@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class PaymentTypeController extends BaseController
 {
     private $model;

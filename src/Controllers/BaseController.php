@@ -1,15 +1,14 @@
 <?php
 
+namespace App\Controllers;
+
+use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-/**
- * @Author: Johan Guerreros <johangm90@gmail.com>
- * @License: Copyright (c) 2016. All Rights Reserved.
- */
 class BaseController
 {
 

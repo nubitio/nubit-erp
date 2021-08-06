@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class ReservaController extends BaseController
 {
     private $model;

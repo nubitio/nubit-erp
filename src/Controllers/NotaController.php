@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class NotaController extends BaseController
 {
     private $model;

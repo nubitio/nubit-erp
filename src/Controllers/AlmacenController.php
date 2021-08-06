@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class AlmacenController extends BaseController
 {
 

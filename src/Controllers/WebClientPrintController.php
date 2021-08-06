@@ -1,22 +1,11 @@
 <?php
-//*********************************
-// IMPORTANT NOTE 
-// 1. In this sample we store users related stuff (like
-// the list of printers and whether they have the WCPP 
-// client utility installed) in the wcpcache folder BUT 
-// you can change it to another different storage (like a DB)!
-// which will be required in Load Balacing scenarios
-// 
-// 2. If your website requires user authentication, then
-// THIS FILE MUST be set to ALLOW ANONYMOUS access!!!
-//
-//*********************************
+
+namespace App\Controllers;
 
 //Includes WebClientPrint classes
 include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
 
 use Neodynamic\SDK\Web\WebClientPrint;
-
 
 class WebClientPrintController extends BaseController
 {

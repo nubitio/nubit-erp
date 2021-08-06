@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class OptionsController extends BaseController
 {
     private $model;

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class EmpleadoController extends BaseController
 {
     private $model;

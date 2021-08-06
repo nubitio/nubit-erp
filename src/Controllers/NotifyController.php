@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use MessageBird\Client;
 use MessageBird\Objects\Conversation\Content;
 use MessageBird\Objects\Conversation\SendMessage;

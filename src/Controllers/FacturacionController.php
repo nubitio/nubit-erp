@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 class FacturacionController extends BaseController
 {
     public function __construct()

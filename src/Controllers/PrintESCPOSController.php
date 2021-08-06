@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 include dirname(dirname(__FILE__)) . '/WebClientPrint.php';
 
 use Neodynamic\SDK\Web\WebClientPrint;

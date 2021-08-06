@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Controllers;
+
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;

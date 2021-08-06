@@ -1,9 +1,6 @@
 <?php
 
-/**
- * @Author: Johan Guerreros <johangm90@gmail.com>
- * @License: Copyright (c) 2016. All Rights Reserved.
- */
+namespace App\Controllers;
 
 include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
 
