@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class AsistenciaModel extends BaseModel
 {
     private $dao;

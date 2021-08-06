@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 use DB\SQL\Mapper;
 
 class CajaModel extends BaseModel

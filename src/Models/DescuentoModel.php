@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class DescuentoModel extends DB\SQL\Mapper
 {
     protected $db;

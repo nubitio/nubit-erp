@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class OptionsModel extends BaseModel
 {
     private $dao;

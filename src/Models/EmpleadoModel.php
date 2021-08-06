@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class EmpleadoModel extends BaseModel
 {
     private $dao;

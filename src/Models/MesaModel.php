@@ -1,9 +1,6 @@
 <?php
 
-/**
- * @Author: Johan Guerreros <johangm90@gmail.com>
- * @License: Copyright (c) 2016. All Rights Reserved.
- */
+namespace App\Models;
 
 class MesaModel extends DB\SQL\Mapper
 {

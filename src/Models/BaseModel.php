@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class BaseModel

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class ReservaModel extends BaseModel
 {
     private $dao;

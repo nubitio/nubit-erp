@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models;
+
 class NotaModel extends BaseModel
 {
     private $dao;
