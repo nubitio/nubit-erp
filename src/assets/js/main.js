@@ -212,3 +212,17 @@ function show_error(message) {
         msg: message
     });
 }
+
+function disableButtons(btnOk, btnCancel, dialog) {
+    btnCancel.linkbutton('disable');
+    btnOk.linkbutton('disable');
+    btnOk.linkbutton({text: 'Guardando...'});
+    dialog.dialog('showMask', 'Procesando...');
+}
+
+function enableButtons(btnOk, btnCancel, dialog) {
+    btnCancel.linkbutton('enable');
+    btnOk.linkbutton('enable');
+    btnOk.linkbutton({text: 'Guardar'});
+    dialog.dialog('hideMask');
+}

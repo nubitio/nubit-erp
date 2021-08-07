@@ -129,18 +129,18 @@ class UsuarioController extends BaseController
         $this->app->reroute('/login');
     }
 
-    function cpassword()
+    function password()
     {
         $template = new Template;
         echo $template->render('change-password/index.html');
     }
 
-    function spassword()
+    function changePassword()
     {
         $id = $this->app->get('SESSION.usuario_id');
-        $this->model->getById($id);
-        if (password_verify($_POST['actual'], $this->model->password)) {
-            $this->json($this->model->spassword($id));
+        $user = $this->model->getById($id);
+        if (password_verify($_POST['actual'], $user['password'])) {
+            $this->json($this->model->changePassword($id));
         } else {
             $this->json(array('msg' => 'Contraseña actual incorrecta'));
         }

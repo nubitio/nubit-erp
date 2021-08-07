@@ -1,88 +1,95 @@
-var url;
-var txt_actual = $('#pwd_actual');
-var txt_nueva = $('#pwd_nueva');
-var txt_confirmar = $('#pwd_confirmar');
-var dlg = $('#cpassword_dlg');
-// dialog
-dlg.dialog({
-    title: 'Cambiar Contraseña',
-    width: DIALOG_WIDTH,
-    height: DIALOG_HEIGHT,
-    modal: false,
-    closed: false,
-    draggable: false,
-    closable: false,
-    inline: INLINE,
-    shadow: SHADOW,
-    buttons: [{
-        id: 'categoria_cancelar',
-        text: TEXT_CANCEL,
-        iconCls: ICON_CANCEL,
-        handler: function () {
-            $('#tt').tabs('close', 'Cambiar Contraseña');
-        }
-    }, {
-        id: 'categoria_guardar',
-        text: TEXT_SAVE,
-        iconCls: ICON_SAVE,
-        handler: function () {
-            cpassword_guardar();
-        }
-    }],
-    onOpen: function () {
-        $(this).parent().animateCss(DIALOG_OPEN_ANIMATION);
+var app = app || {};
+app.password = (function () {
+    let dlg = $('#dlg');
+    let fm = $('#fm');
+    let txtActualPassword = $('#actualPassword');
+    let txtNewPassword = $('#newPassword');
+    let txtConfirmPassword = $('#confirmPassword');
+    let btnSave;
+    let btnCancel;
+
+    let init = function () {
+        dlg.dialog({
+            title: 'Cambiar Contraseña',
+            buttons: [{
+                id: 'password_cancel',
+                text: TEXT_CANCEL,
+                iconCls: ICON_CANCEL,
+                handler: function () {
+                    load_page('dashboard', 'Dashboard');
+                }
+            }, {
+                id: 'password_save',
+                text: TEXT_SAVE,
+                iconCls: ICON_SAVE,
+                handler: function () {
+                    save();
+                }
+            }],
+            onOpen: function () {
+                dlg.dialog('center');
+                dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
+                btnSave = $('#password_save');
+                btnCancel = $('#password_cancel');
+                btnSave.addClass('md-btn');
+                btnCancel.addClass('md-btn-plain');
+            }
+        });
+
+        txtActualPassword.passwordbox({
+            width: '100%',
+            label: 'Contraseña actual',
+            labelPosition: 'top',
+            iconWidth: 25,
+            required: true
+        });
+
+        txtNewPassword.passwordbox({
+            width: '100%',
+            label: 'Nueva contraseña',
+            labelPosition: 'top',
+            iconWidth: 25,
+            required: true
+        });
+
+        txtConfirmPassword.passwordbox({
+            width: '100%',
+            label: 'Confirmar contraseña',
+            labelPosition: 'top',
+            iconWidth: 25,
+            validType: 'confirmPass["#newPassword"]',
+            required: true
+        });
+
+        dlg.dialog('open');
     }
-});
-// bind
-txt_actual.passwordbox({
-    prompt: 'Contraseña actual',
-    iconWidth: 25,
-    required: true
-});
 
-txt_nueva.passwordbox({
-    prompt: 'Nueva contraseña',
-    iconWidth: 25,
-    required: true
-});
-
-txt_confirmar.passwordbox({
-    prompt: 'Confirmar contraseña',
-    iconWidth: 25,
-    validType: 'confirmPass["#pwd_nueva"]',
-    required: true
-});
-
-function cpassword_guardar() {
-    $('#cpassword_fm').form('submit', {
-        url: 'spassword',
-        onSubmit: function () {
-            valid = $(this).form('validate');
-            if (valid) {
-                $('#categoria_cancelar').linkbutton('disable');
-                $('#categoria_guardar').linkbutton('disable');
-                $('#categoria_guardar').linkbutton({text: 'Guardando...'});
+    function save() {
+        fm.form('submit', {
+            url: 'password/update',
+            onSubmit: function () {
+                let valid = $(this).form('validate');
+                if (valid) {
+                    disableButtons(btnSave, btnCancel, dlg)
+                }
+                return valid;
+            },
+            success: function (result) {
+                result = JSON.parse(result);
+                if (result.success) {
+                    show_info(result.msg)
+                    dlg.dialog('close');
+                    window.location.href = '/logout'
+                } else {
+                    enableButtons(btnSave, btnCancel, dlg)
+                    show_error(result.msg)
+                }
             }
-            return valid;
-        },
-        success: function (result) {
-            result = JSON.parse(result);
-            if (result.success) {
-                $.messager.show({
-                    title: 'Info',
-                    msg: result.msg
-                });
-                $('#cpassword_dlg').dialog('close');
-                $('#tt').tabs('close', 'Cambiar Contraseña');
-            } else {
-                $('#categoria_cancelar').linkbutton('enable');
-                $('#categoria_guardar').linkbutton('enable');
-                $('#categoria_guardar').linkbutton({text: 'Guardar'});
-                $.messager.show({
-                    title: 'Error',
-                    msg: result.msg
-                });
-            }
-        }
-    });
-}
+        });
+    }
+
+    return {
+        init: init
+    }
+})();
+app.password.init();

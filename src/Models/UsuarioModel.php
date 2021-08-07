@@ -35,8 +35,10 @@ class UsuarioModel extends BaseModel
 
     public function getById($id)
     {
-        $this->dao->load(array('usuario_id=?', $id));
-        return $this->dao->query;
+        $data = $this->db->exec('select * from usuario where usuario_id = ?', $id);
+        if ($data)
+            return $data[0];
+        return null;
     }
 
     public function getByName($username)
@@ -68,14 +70,14 @@ class UsuarioModel extends BaseModel
         return $result->fetch();
     }
 
-    public function spassword($id)
+    public function changePassword($id): array
     {
         try {
             $this->db->exec(
-                'UPDATE usuario SET password=? WHERE usuario_id=?',
+                'UPDATE usuario SET password = ? WHERE usuario_id = ?',
                 array(
-                    1 => password_hash($_POST['password'], PASSWORD_DEFAULT),
-                    2 => $id
+                    password_hash($_POST['password'], PASSWORD_DEFAULT),
+                    $id
                 )
             );
             return array('success' => true, 'msg' => 'Registro actualizado.');
