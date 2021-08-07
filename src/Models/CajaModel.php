@@ -24,9 +24,9 @@ class CajaModel extends BaseModel
         return $this->utils->setUp('vw_caja', 'apertura, local', 'desc, asc', $filter);
     }
 
-    public function check()
+    public function getCurrentActiveCashBox(): array
     {
-        $result = $this->db->exec("
+        $data = $this->db->exec("
           SELECT
             c.caja_id,
             date(c.apertura) as fecha,
@@ -36,9 +36,15 @@ class CajaModel extends BaseModel
             caja c
           INNER JOIN usuario u ON u.usuario_id = c.usuario_id
           WHERE
-            c.estado=1
-        ");
-        return $result;
+            c.estado = 1
+            AND c.local_id = ?
+            AND c.usuario_id = ?
+        ", [$this->current_local_id, $this->current_user_id]);
+        if ($data) {
+            return ['success' => true, 'data' => $data[0]];
+        } else {
+            return ['success' => false, 'data' => null];
+        }
     }
 
     public function detalle($id)
@@ -51,8 +57,7 @@ class CajaModel extends BaseModel
           WHERE
             caja_id = '$id' 
           ORDER BY
-            tipo_id,
-            descripcion
+            uid
         ");
         $result->setFetchMode(PDO::FETCH_ASSOC);
         $rs['rows'] = $result->fetchall();
@@ -85,12 +90,10 @@ class CajaModel extends BaseModel
         return $rs;
     }
 
-    public function next_uid($caja_id)
+    public function next_uid($caja_id): int
     {
-        $result = $this->db->query("SELECT max(uid) as uid FROM caja_detalle WHERE caja_id='$caja_id'");
-        $result->setFetchMode(PDO::FETCH_ASSOC);
-        $result = $result->fetch();
-        $uid = $result['uid'];
+        $result = $this->db->exec("SELECT max(uid) as uid FROM caja_detalle WHERE caja_id = ?", [$caja_id]);
+        $uid = $result[0]['uid'];
         if ($uid) {
             $uid += 1;
         } else {
@@ -109,9 +112,8 @@ class CajaModel extends BaseModel
             $this->caja->caja_id = $uuid;
             $this->caja->local_id = $this->current_local_id;
             $this->caja->apertura = $datetime;
-            $this->caja->usuario_id = $_POST['usuario_id'];
+            $this->caja->usuario_id = $this->current_user_id;
             $this->caja->estado = 1;
-            $this->caja->user_create = $this->current_user_id;
             $this->caja->save();
             $last = $uuid;
             $uid = $this->next_uid($last);
@@ -120,22 +122,6 @@ class CajaModel extends BaseModel
             $this->detail->tipo_id = 1;
             $this->detail->descripcion = 'FONDO DE CAJA';
             $this->detail->monto = $_POST['saldo_inicial'];
-            $this->detail->save();
-            $uid = $this->next_uid($last);
-            $this->detail->reset();
-            $this->detail->uid = $uid;
-            $this->detail->caja_id = $last;
-            $this->detail->tipo_id = 1;
-            $this->detail->descripcion = 'VENTA EFECTIVO';
-            $this->detail->monto = 0;
-            $this->detail->save();
-            $this->detail->reset();
-            $uid = $this->next_uid($last);
-            $this->detail->uid = $uid;
-            $this->detail->caja_id = $last;
-            $this->detail->tipo_id = 1;
-            $this->detail->descripcion = 'VENTA TARJETA';
-            $this->detail->monto = 0;
             $this->detail->save();
             $this->db->commit();
             return array('success' => true, 'msg' => 'Registro guardado.');
@@ -165,16 +151,18 @@ class CajaModel extends BaseModel
     public function flujo()
     {
         try {
-            $result = $this->db->exec('SELECT caja_id FROM caja ORDER BY apertura DESC LIMIT 1');
-            $last = $result[0]['caja_id'];
-            $uid = $this->next_uid($last);
-            $this->detail->copyfrom('POST');
-            $this->detail->uid = $uid;
-            $this->detail->caja_id = $last;
-            $this->detail->user_create = $this->current_user_id;
-            $this->detail->save();
-            return array('success' => true, 'msg' => 'Registro guardado.');
-        } catch (\PDOException $e) {
+            $result = $this->getCurrentActiveCashBox();
+            if ($result['success']) {
+                $cashBoxId = $result['data']['caja_id'];
+                $this->detail->copyfrom('POST');
+                $this->detail->uid = $this->next_uid($cashBoxId);
+                $this->detail->caja_id = $cashBoxId;
+                $this->detail->save();
+                return array('success' => true, 'msg' => 'Registro guardado.');
+            } else {
+                throw new \Exception("no active cashbox found");
+            }
+        } catch (\Exception $e) {
             return array('msg' => $e->getMessage());
         }
     }
@@ -202,45 +190,74 @@ class CajaModel extends BaseModel
         }
     }
 
-    public function cabecera($id)
-    {
-        $result = $this->db->query("
-          SELECT
-            u.username,
-            c.apertura,
-            c.cierre,
-            SUM( CASE WHEN cd.descripcion = 'VENTA EFECTIVO' THEN cd.monto ELSE 0 END ) AS contado,
-            SUM( CASE WHEN cd.descripcion = 'VENTA TARJETA' THEN cd.monto ELSE 0 END ) AS credito,
-            SUM( CASE WHEN cd.descripcion LIKE 'VENTA%' THEN cd.monto ELSE 0 END ) AS total
-          FROM
-            caja c
-            INNER JOIN caja_detalle cd ON cd.caja_id = c.caja_id
-            INNER JOIN usuario u ON u.usuario_id = c.usuario_id
-          WHERE c.caja_id = '$id'
-        ");
-        $result->setFetchMode(PDO::FETCH_ASSOC);
-        return $result->fetch();
-    }
-
     public function get_caja_info($apertura, $cierre)
     {
         return $this->db->exec('CALL sp_caja_info (?,?,?)', array(1 => $this->current_local_id, 2 => $apertura, 3 => $cierre));
     }
 
-    public function detalle_reporte($id)
+    public function getOneById($id)
     {
-        $result = $this->db->query("
-          SELECT
-            *
-          FROM
-            caja_detalle
-          WHERE
-            caja_id = '$id' 
-          ORDER BY
-            tipo_id,
-            descripcion
-        ");
-        $result->setFetchMode(PDO::FETCH_ASSOC);
-        return $result->fetchall();
+        $data = $this->db->exec('select * from vw_caja where caja_id = ?', $id);
+        return $data[0];
+    }
+
+    public function getDetailById($id)
+    {
+        return $this->db->exec('select * from caja_detalle where caja_id = ?', $id);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function update_caja()
+    {
+        try {
+            $this->db->begin();
+            $result = $this->getCurrentActiveCashBox();
+            if ($result['success']) {
+                $caja = $result['data']['caja_id'];
+            } else {
+                throw new \Exception("no active cashbox found");
+            }
+            if ($caja) {
+                $caja_id = $caja[0]['caja_id'];
+                $startDate = $caja[0]['apertura'];
+                $endDate = date('Y-m-d H:i:s');
+                $totals = $this->db->exec("
+                    SELECT
+                        pt.id,
+                        pt.`name`,
+                        SUM( ROUND( precio_total - ( precio_total * IFNULL( m.descuento, 0 ) / 100 ), 2 ) ) as total
+                    FROM
+                        movimiento_detalle md
+                        INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id
+                        INNER JOIN payment_type pt ON pt.id = m.tipo_pago 
+                        AND m.estado = 1 
+                        AND m.numero > 0 
+                    WHERE
+                        m.created_by = ?
+                        AND (m.date_created BETWEEN ? AND ?) 
+                    GROUP BY
+                        pt.id", [$this->current_user_id, $startDate, $endDate]);
+
+                $detail = new Mapper($this->db, 'caja_detalle');
+                foreach ($totals as $total) {
+                    $detail->load(['caja_id = ? and descripcion = ?', $caja_id, $total['name']]);
+                    if ($detail->dry()) {
+                        $detail->uid = $this->next_uid($caja_id);
+                    }
+                    $detail->tipo_id = 1;
+                    $detail->caja_id = $caja_id;
+                    $detail->descripcion = $total['name'];
+                    $detail->monto = $total['total'];
+
+                    $detail->save();
+                }
+                $this->db->commit();
+            }
+        } catch (\PDOException $e) {
+            $this->db->rollback();
+            throw new \Exception($e->getMessage(), 0, $e);
+        }
     }
 }

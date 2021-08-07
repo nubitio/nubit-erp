@@ -65,15 +65,15 @@ app.caja = (function () {
 
         txt_descripcion.textbox({
             width: '100%',
-            label: 'Descripción',
+            label: 'Concepto',
             labelPosition: 'top',
             required: true
         });
 
         txt_referencia.textbox({
             width: '100%',
-            height: 60,
-            label: 'Referencia',
+            height: 80,
+            label: 'Observaciones',
             labelPosition: 'top',
             multiline: true
         });
@@ -88,9 +88,10 @@ app.caja = (function () {
         });
     };
 
-    function load_datagrid(caja_id) {
+    function load_datagrid(caja) {
         dg.datagrid({
-            url: 'caja/detalle/' + caja_id,
+            title: `Caja - ${caja.fecha}`,
+            url: 'caja/detalle/' + caja.caja_id,
             toolbar: [{
                 text: TEXT_ADD,
                 iconCls: ICON_ADD,
@@ -110,8 +111,8 @@ app.caja = (function () {
                     caja_eliminar();
                 }
             }, '-', {
-                text: 'Cerrar',
-                iconCls: 'fa fa-lock fa-1x colo-red',
+                text: 'Cerrar caja',
+                iconCls: 'fa fa-lock fa-1x text-info',
                 handler: function () {
                     caja_cerrar();
                 }
@@ -121,17 +122,15 @@ app.caja = (function () {
             columns: [[{
                 field: 'tipo_id',
                 title: 'Tipo',
-                formatter: tipo_formatter,
-                styler: tipo_styler
+                formatter: typeFormatter
             }, {
                 field: 'descripcion',
-                title: 'Descripción',
-                width: 200
+                title: 'Concepto',
             }, {
                 field: 'referencia',
-                title: 'Referencia',
-                styler: tipo_styler,
-                width: 100
+                title: 'Observaciones',
+                width: 100,
+                formatter: footerFormatter
             }, {
                 field: 'monto',
                 title: 'Monto',
@@ -141,16 +140,17 @@ app.caja = (function () {
     }
 
     function caja_check_exist() {
-        $.get('caja/check', function (response) {
-            if (response == 'false') {
-                abrir_caja();
-            } else {
-                let obj = response[0];
-                $("#caja_id").val(obj.caja_id);
-                txt_fecha.textbox('setValue', obj.fecha);
-                load_datagrid(obj.caja_id);
-            }
-        });
+        fetch('caja/check')
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    $("#caja_id").val(result.data.caja_id);
+                    load_datagrid(result.data);
+                } else {
+                    abrir_caja();
+                }
+            })
+            .catch(error => show_error(error));
     }
 
     function caja_nuevo() {
@@ -162,7 +162,7 @@ app.caja = (function () {
     function caja_editar() {
         let row = dg.datagrid('getSelected');
         if (row) {
-            if (row.descripcion == 'FONDO DE CAJA' || row.descripcion == 'VENTA EFECTIVO' || row.descripcion == 'VENTA TARJETA') {
+            if (row.descripcion === 'FONDO DE CAJA') {
                 $.messager.show({
                     title: 'Error',
                     msg: 'No puedes editar este registro.',
@@ -179,9 +179,9 @@ app.caja = (function () {
         fm.form('submit', {
             url: route,
             onSubmit: function () {
-                valid = fm.form('validate');
+                let valid = fm.form('validate');
                 if (valid) {
-                    disable_buttons();
+                    disable_buttons(btn_guardar, btn_cancelar, dlg);
                 }
                 return valid;
             },
@@ -195,34 +195,19 @@ app.caja = (function () {
                     } else {
                         show_error(result.msg);
                     }
-                    enable_buttons();
+                    enable_buttons(btn_guardar, btn_cancelar, dlg);
                 } catch (e) {
                     show_error(e);
-                    enable_buttons();
+                    enable_buttons(btn_guardar, btn_cancelar, dlg);
                 }
             }
         });
     }
 
-    function disable_buttons() {
-        btn_cancelar.linkbutton('disable');
-        btn_guardar.linkbutton('disable');
-        btn_guardar.linkbutton({text: 'Guardando...'});
-        dlg.dialog('showMask', 'Procesando...');
-    }
-
-    function enable_buttons() {
-        btn_cancelar.linkbutton('enable');
-        btn_guardar.linkbutton('enable');
-        btn_guardar.linkbutton({text: 'Guardar'});
-        dlg.dialog('hideMask');
-    }
-
-
     function caja_eliminar() {
         let row = dg.datagrid('getSelected');
         if (row) {
-            if (row.descripcion == 'FONDO DE CAJA' || row.descripcion == 'VENTA EFECTIVO' || row.descripcion == 'VENTA TARJETA') {
+            if (row.descripcion === 'FONDO DE CAJA') {
                 $.messager.show({
                     title: 'Error',
                     msg: 'No puedes eliminar este registro.',
@@ -267,17 +252,14 @@ app.caja = (function () {
                     },
                     success: function (result) {
                         result = JSON.parse(result);
-                        console.log('result');
                         if (result.success) {
+                            dg.datagrid('loadData', {total: 0, rows: [], footer: []});
+                            dg.datagrid('getPanel').panel('setTitle', 'Abrir caja');
                             caja_check_exist();
                             $.messager.show({
                                 title: 'Info',
                                 msg: result.msg
                             });
-                            let count = $('#tt').tabs('tabs').length;
-                            for (let i = count - 1; i >= 0; i--) {
-                                $('#tt').tabs('close', i);
-                            }
                         } else {
                             $.messager.show({
                                 title: 'Error',
@@ -290,28 +272,29 @@ app.caja = (function () {
         });
     }
 
-
-    function tipo_formatter(value, row) {
-        if (value == 1) {
-            value = 'Ingreso';
-            return value;
-        } else if (value == 2) {
-            value = 'Egreso';
-            return value;
+    function typeFormatter(value) {
+        value = Number(value);
+        if (value === 1) {
+            value = '<span class="badge badge-pill badge-success">INGRESO</span>';
+        } else if (value === 2) {
+            value = '<span class="badge badge-pill badge-danger">EGRESO</span>';
+        } else {
+            value = '';
         }
+        return value;
     }
 
-    function tipo_styler(value, row, index) {
-        if (value == 1 || value == 'Total Ingresos') {
-            return 'background-color:#eeeeec;color:#63b343;';
-        } else if (value == 2 || value == 'Total Egresos') {
-            return 'background-color:#eeeeec;color:#dd4850;';
-        } else if (value == 'Total Efectivo') {
-            return 'background-color:#eeeeec;color:#546885;';
+    function footerFormatter(value) {
+        if (value === 'Total Ingresos') {
+            value = `<span class="text-success float-right">${value}</span>`;
+        } else if (value === 'Total Egresos') {
+            value = `<span class="text-danger float-right">${value}</span>`;
+        } else if (value === 'Total Efectivo') {
+            value = `<span class="float-right">${value}</span>`;
         }
+        return value;
     }
 
-// abrir
     let fmab = $('#abrir_fm');
     let dlgab = $('#abrir_dlg');
     let txt_saldoinicial = $('#saldo_inicial');
@@ -342,7 +325,7 @@ app.caja = (function () {
         }
     });
 
-    txt_saldoinicial.textbox({
+    txt_saldoinicial.numberbox({
         width: '100%',
         label: 'Fondo de caja',
         labelPosition: 'top',
@@ -352,6 +335,7 @@ app.caja = (function () {
     });
 
     function abrir_caja() {
+        fmab.form('clear');
         dlgab.dialog('open').dialog('setTitle', 'Abrir Caja');
         route = 'caja/add';
     }
@@ -360,25 +344,38 @@ app.caja = (function () {
         fmab.form('submit', {
             url: route,
             onSubmit: function () {
-                return $(this).form('validate');
+                let valid = fmab.form('validate');
+                if (valid) {
+                    disable_buttons(btn_abrir_guardar, btn_abrir_cancelar, dlgab);
+                }
             },
             success: function (result) {
                 result = JSON.parse(result);
                 if (result.success) {
-                    dlgab.dialog('close');    // close the dialog
-                    caja_check_exist();  // reload the user data
-                    $.messager.show({
-                        title: 'Info',
-                        msg: result.msg
-                    });
+                    dlgab.dialog('close');
+                    caja_check_exist();
+                    show_info(result.msg);
+                    enable_buttons(btn_abrir_guardar, btn_abrir_cancelar, dlgab);
                 } else {
-                    $.messager.show({
-                        title: 'Error',
-                        msg: result.msg
-                    });
+                    show_error(result.msg);
+                    enable_buttons(btn_abrir_guardar, btn_abrir_cancelar, dlgab);
                 }
             }
         });
+    }
+
+    function disable_buttons(btnOk, btnCancel, dialog) {
+        btnCancel.linkbutton('disable');
+        btnOk.linkbutton('disable');
+        btnOk.linkbutton({text: 'Guardando...'});
+        dialog.dialog('showMask', 'Procesando...');
+    }
+
+    function enable_buttons(btnOk, btnCancel, dialog) {
+        btnCancel.linkbutton('enable');
+        btnOk.linkbutton('enable');
+        btnOk.linkbutton({text: 'Guardar'});
+        dialog.dialog('hideMask');
     }
 
     return {

@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Models\entity;
+
 class Movimiento extends \Illuminate\Database\Eloquent\Model
 {
     protected $table = 'movimiento';

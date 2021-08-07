@@ -147,12 +147,6 @@ class MovimientoController extends BaseController
         $this->json($data);
     }
 
-    function fixstock()
-    {
-        $data = $this->model->fixstock();
-        $this->json($data);
-    }
-
     function stock()
     {
         $producto = $this->app->get('PARAMS.producto_id');
@@ -375,7 +369,7 @@ class MovimientoController extends BaseController
 
     public function guardar_comprobante()
     {
-        return $this->json($this->model->guardar_comprobante());
+        $this->json($this->model->guardar_comprobante());
     }
 
     public function get_one_venta()

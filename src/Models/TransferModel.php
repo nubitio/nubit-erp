@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\entity\Movimiento;
 use DB\SQL\Mapper;
 
 class TransferModel extends BaseModel

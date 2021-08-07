@@ -30,21 +30,22 @@ app.venta = (function () {
     let session;
     let options;
 
-    //carga inicio
-
-    function venta_check_caja() {
-        $.get('caja/check', function (response) {
-            if (response == 'false') {
-                $.messager.alert({
-                    closable: false,
-                    title: 'Registro Ventas',
-                    msg: 'No se encontro una caja activa',
-                    fn: function () {
-                        load_page('caja', 'caja');
-                    }
-                });
-            }
-        });
+    function caja_check_exist() {
+        fetch('caja/check')
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    $.messager.alert({
+                        closable: false,
+                        title: 'Registro ventas',
+                        msg: 'No se encontro una caja activa para el usuario actual',
+                        fn: function () {
+                            load_page('caja', 'caja');
+                        }
+                    });
+                }
+            })
+            .catch(error => show_error(error));
     }
 
     let load = function () {
@@ -74,7 +75,7 @@ app.venta = (function () {
     }
 
     let init = function () {
-        venta_check_caja();
+        caja_check_exist();
         load();
         session = JSON.parse(localStorage.getItem('session'));
         options = JSON.parse(localStorage.getItem('options'));
@@ -338,8 +339,12 @@ app.venta = (function () {
     };
 
     function showOptions(venta) {
-        let cabecera = venta.cabecera;
-        imprimir_ticket(cabecera.movimiento_id, "");
+        try{
+            let cabecera = venta.cabecera;
+            imprimir_ticket(cabecera.movimiento_id, "");
+        }catch (e){
+            show_error(e)
+        }
     }
 
     function disable_buttons() {

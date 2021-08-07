@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Utils;
+
 abstract class TipoDoc
 {
     const BOLETA = '03';

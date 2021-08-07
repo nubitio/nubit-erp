@@ -18,28 +18,32 @@ app.caja_consulta = (function () {
                 field: 'apertura',
                 title: 'Apertura',
                 sortable: true,
-                width: 200
+                align: 'center',
             }, {
                 field: 'cierre',
                 title: 'Cierre',
                 sortable: true,
-                width: 200
+                align: 'center',
             }, {
-                field: 'monto',
-                title: 'Monto',
-                sortable: true,
-                width: 200
+                field: 'saldo_inicial',
+                title: 'Saldo inicial',
+                width: 100,
+                align: 'right',
+            }, {
+                field: 'saldo_final',
+                title: 'Saldo final',
+                align: 'right',
             }, {
                 field: 'usuario',
                 title: 'Usuario',
                 sortable: true,
-                width: 100
+                align: 'center',
             }, {
                 field: 'estado',
                 title: 'Estado',
                 sortable: true,
-                width: 100,
-                formatter: cestado_formatter
+                align: 'center',
+                formatter: statusFormatter
             }]],
             view: detailview,
             detailFormatter: function (index, row) {
@@ -112,14 +116,14 @@ app.caja_consulta = (function () {
         }
     }
 
-    function cestado_formatter(value, row) {
-        if (value == 1) {
-            value = 'ACTIVO';
-            return value;
+    function statusFormatter(value, row) {
+        value = Number(value);
+        if (value === 1) {
+            value = '<span class="badge badge-pill badge-success">ABIERTO</span>';
         } else {
-            value = 'CERRADO';
-            return value;
+            value = '<span class="badge badge-pill badge-secondary">CERRADO</span>';
         }
+        return value;
     }
 
     function cajas_reporte() {
