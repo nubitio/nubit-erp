@@ -24,17 +24,20 @@ def main(argv):
 
 def do_generation(module):
     path = os.getcwd()
-    controller_path = "src/controllers/" + module.title() + "Controller.php"
-    model_path = "src/models/" + module.title() + "Model.php"
-    view_path = "src/views/" + module
-    html_path = "src/views/" + module + "/index.html"
-    js_path = "src/views/" + module + "/index.js"
+    controller_path = "src/Controllers/" + module.title() + "Controller.php"
+    model_path = "src/Models/" + module.title() + "Model.php"
+    view_path = "src/Views/" + module
+    html_path = "src/Views/" + module + "/index.html"
+    js_path = "src/Views/" + module + "/index.js"
     print("The current working directory is %s" % path)
-    connection = pymysql.connect(host='giklabs.com', user='c3_admin', password='Admin.3000', db='c3_efact',
+    connection = pymysql.connect(host='localhost', user='c3_admin', password='Admin.3000', db='c3_efact',
                                  charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
     try:
         controller = open(controller_path, 'w')
         controller.write("<?php\n\n")
+        controller.write("\n")
+        controller.write("namespace App\\Controllers;")
+        controller.write("\n")
         controller.write("class " + module.title() + "Controller extends BaseController\n")
         controller.write("{\n")
         controller.write("    private $model;\n\n")
@@ -51,11 +54,6 @@ def do_generation(module):
         controller.write("    public function get()\n")
         controller.write("    {\n")
         controller.write("        $this->json($this->model->get());\n")
-        controller.write("    }\n\n")
-        controller.write("    public function get_list()\n")
-        controller.write("    {\n")
-        controller.write("        $filtered = (bool)$this->app->get('PARAMS.filtered');\n")
-        controller.write("        $this->json($this->model->get_list($filtered));\n")
         controller.write("    }\n\n")
         controller.write("    public function insert()\n")
         controller.write("    {\n")
@@ -76,31 +74,24 @@ def do_generation(module):
         print("File created %s" % controller_path)
         model = open(model_path, 'w')
         model.write("<?php\n\n")
+        model.write("\n")
+        model.write("namespace App\\Models;")
+        model.write("\n")
         model.write("class " + module.title() + "Model extends BaseModel\n")
         model.write("{\n")
         model.write("    private $dao;\n\n")
         model.write("    public function __construct()\n")
         model.write("    {\n")
         model.write("        parent::__construct();\n")
-        model.write("        $this->dao = new DB\\SQL\\Mapper($this->db, '" + module + "');\n")
+        model.write("        $this->dao = new Mapper($this->db, '" + module + "');\n")
         model.write("    }\n\n")
         model.write("    public function get()\n")
         model.write("    {\n")
-        model.write("        return $this->utils->setUp('" + module + "', 'id', 'asc', 'activo=1');\n")
-        model.write("    }\n\n")
-        model.write("    public function get_list($filtered)\n")
-        model.write("    {\n")
-        model.write("        if ($filtered) {\n")
-        model.write("            $result = $this->db->exec('select * from " + module + " where activo=1');\n")
-        model.write("        } else {\n")
-        model.write("            $result = $this->db->exec('select * from " + module + "');\n")
-        model.write("        }\n")
-        model.write("        return $result;\n")
+        model.write("        return $this->utils->setUp('" + module + "', 'id', 'asc');\n")
         model.write("    }\n\n")
         model.write("    public function insert()\n")
         model.write("    {\n")
         model.write("        $this->dao->copyfrom('POST');\n")
-        model.write("        $this->dao->created_by = $this->user_id;\n")
         model.write("        try {\n")
         model.write("            $this->dao->save();\n")
         model.write("            return array('success' => true, 'msg' => 'Registro guardado.');\n")
@@ -112,7 +103,6 @@ def do_generation(module):
         model.write("    {\n")
         model.write("        $this->dao->load(array('id=?', $id));\n")
         model.write("        $this->dao->copyfrom('POST');\n")
-        model.write("        $this->dao->updated_by = $this->user_id;\n")
         model.write("        try {\n")
         model.write("            $this->dao->update();\n")
         model.write("            return array('success' => true, 'msg' => 'Registro actualizado.');\n")
@@ -139,7 +129,7 @@ def do_generation(module):
         html = open(html_path, 'w')
         html.write('<div class="wrapper">\n')
         html.write('    <table id="' + module + '_dg"></table>\n')
-        html.write('    <!-- Dialogo -->\n')
+        html.write('    <!-- Dialog -->\n')
         html.write('    <div id="' + module + '_dlg">\n')
         html.write('        <form class="fm" id="' + module + '_fm" method="post" novalidate>\n')
         result = {}
@@ -150,10 +140,11 @@ def do_generation(module):
                 result = cursor.fetchall()
         finally:
             connection.close()
+
+        ignored = ['id', module + '_id', 'created_at', 'updated_at', 'created_by', 'updated_by']
         for row in result:
             field = row['Field']
             field_type = row['Type']
-            ignored = ['created_at', 'updated_at', 'created_by', 'updated_by']
             boolean_types = ['bit', 'tinyint']
             if not any(c in field for c in ignored):
                 html.write('            <div class="fitem">\n')
@@ -165,7 +156,7 @@ def do_generation(module):
         html.write('        </form>\n')
         html.write('    </div>\n')
         html.write('</div>\n')
-        html.write('<script src="{{@UI}}' + module + '/index.js?v={{@version}}"></script>\n')
+        html.write('<script src="{{ @ASSETS }}js/pages/' + module + '/index.js?v={{@version}}"></script>\n')
         html.close()
         print("File created %s" % html_path)
         js = open(js_path, 'w')
@@ -177,7 +168,6 @@ def do_generation(module):
         js.write('    let fm = $("#' + module + '_fm");\n')
         for row in result:
             field = row['Field']
-            ignored = ['created_at', 'updated_at', 'created_by', 'updated_by']
             if not any(c in field for c in ignored):
                 js.write('    let txt_' + field + ' = $("#' + module + '_' + field + '");\n')
         js.write('    let btn_save;\n')
@@ -209,7 +199,6 @@ def do_generation(module):
         js.write('            columns: [[\n')
         for row in result:
             field = row['Field']
-            ignored = ['created_at', 'updated_at', 'created_by', 'updated_by']
             if not any(c in field for c in ignored):
                 js.write('                {\n')
                 js.write('                    field: "' + field + '",\n')

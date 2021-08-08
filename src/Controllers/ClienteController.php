@@ -16,7 +16,7 @@ class ClienteController extends BaseController
         $this->model = new ClienteModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('cliente/index.html');

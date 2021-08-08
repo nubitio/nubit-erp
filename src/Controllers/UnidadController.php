@@ -16,7 +16,7 @@ class UnidadController extends BaseController
         $this->model = new UnidadModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('unidad/index.html');

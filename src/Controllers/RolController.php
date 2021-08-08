@@ -16,7 +16,7 @@ class RolController extends BaseController
         $this->rol = new RolModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('rol/index.html');

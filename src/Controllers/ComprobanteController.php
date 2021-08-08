@@ -16,7 +16,7 @@ class ComprobanteController extends BaseController
         $this->model = new ComprobanteModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('tipo-comprobante/index.html');

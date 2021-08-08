@@ -15,7 +15,7 @@ class EmpleadoController extends BaseController
         $this->model = new EmpleadoModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('empleado/index.html');

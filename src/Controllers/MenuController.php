@@ -16,7 +16,7 @@ class MenuController extends BaseController
         $this->menu = new MenuModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('menu/index.html');

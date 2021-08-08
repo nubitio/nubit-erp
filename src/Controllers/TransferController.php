@@ -15,7 +15,7 @@ class TransferController extends BaseController
         $this->model = new TransferModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('transfer/index.html');

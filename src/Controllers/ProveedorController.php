@@ -16,7 +16,7 @@ class ProveedorController extends BaseController
         $this->model = new ProveedorModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('proveedor/index.html');

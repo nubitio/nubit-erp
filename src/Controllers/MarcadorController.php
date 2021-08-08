@@ -20,7 +20,7 @@ class MarcadorController extends BaseController
         // do nothing
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('marcador/index.html');

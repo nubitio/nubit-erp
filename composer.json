@@ -19,7 +19,8 @@
     "ext-json": "*",
     "firebase/php-jwt": "^5.2",
     "greenter/htmltopdf": "^4.3",
-    "greenter/report": "^4.3"
+    "greenter/report": "^4.3",
+    "twig/twig": "^3.3"
   },
   "authors": [
     {

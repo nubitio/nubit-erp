@@ -16,7 +16,7 @@ class LocalController extends BaseController
         $this->model = new LocalModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('local/index.html');

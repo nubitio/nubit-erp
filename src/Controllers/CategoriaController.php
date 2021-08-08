@@ -15,7 +15,7 @@ class CategoriaController extends BaseController
         $this->model = new CategoriaModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('categoria/index.html');

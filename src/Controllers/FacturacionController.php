@@ -11,7 +11,7 @@ class FacturacionController extends BaseController
         parent::__construct();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('contabilidad/facturacion/index.html');

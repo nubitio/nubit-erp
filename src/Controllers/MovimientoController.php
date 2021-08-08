@@ -27,7 +27,7 @@ class MovimientoController extends BaseController
         $this->efact = new EFactController();
     }
 
-    function render()
+    function index()
     {
         $template = new Template;
         echo $template->render('movimientos/index.html');

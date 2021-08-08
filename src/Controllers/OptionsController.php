@@ -15,7 +15,7 @@ class OptionsController extends BaseController
         $this->model = new OptionsModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('options/index.html');

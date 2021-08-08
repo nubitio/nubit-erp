@@ -30,6 +30,7 @@ class CajaModel extends BaseModel
           SELECT
             c.caja_id,
             date(c.apertura) as fecha,
+            c.apertura,
             c.usuario_id,
             u.username as cajera
           FROM
@@ -215,13 +216,13 @@ class CajaModel extends BaseModel
             $this->db->begin();
             $result = $this->getCurrentActiveCashBox();
             if ($result['success']) {
-                $caja = $result['data']['caja_id'];
+                $caja = $result['data'];
             } else {
                 throw new \Exception("no active cashbox found");
             }
             if ($caja) {
-                $caja_id = $caja[0]['caja_id'];
-                $startDate = $caja[0]['apertura'];
+                $caja_id = $caja['caja_id'];
+                $startDate = $caja['apertura'];
                 $endDate = date('Y-m-d H:i:s');
                 $totals = $this->db->exec("
                     SELECT

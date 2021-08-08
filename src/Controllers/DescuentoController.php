@@ -15,7 +15,7 @@ class DescuentoController extends BaseController
         $this->model = new DescuentoModel($this->db);
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('descuento/index.html');

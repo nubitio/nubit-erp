@@ -15,7 +15,7 @@ class AsistenciaController extends BaseController
         $this->model = new AsistenciaModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('asistencia/index.html');

@@ -20,7 +20,7 @@ class InvoiceController extends BaseController
         // avoid redirect to login
     }
 
-    public function render()
+    public function index()
     {
         $id = $this->app->get('PARAMS.id');
 

@@ -16,7 +16,7 @@ class AlmacenController extends BaseController
         $this->model = new AlmacenModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('almacen/index.html');

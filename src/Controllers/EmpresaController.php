@@ -16,7 +16,7 @@ class EmpresaController extends BaseController
         $this->model = new EmpresaModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('empresa/index.html');

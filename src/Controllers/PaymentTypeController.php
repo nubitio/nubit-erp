@@ -15,7 +15,7 @@ class PaymentTypeController extends BaseController
         $this->model = new PaymentTypeModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('payment_type/index.html');

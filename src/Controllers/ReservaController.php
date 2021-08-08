@@ -15,7 +15,7 @@ class ReservaController extends BaseController
         $this->model = new ReservaModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('reserva/index.html');

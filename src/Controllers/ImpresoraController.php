@@ -16,7 +16,7 @@ class ImpresoraController extends BaseController
         $this->model = new ImpresoraModel($this->db);
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('impresora/index.html');

@@ -9,12 +9,15 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 class BaseController
 {
 
     protected Base $app;
     protected string $modulo;
+    protected Environment $twig;
     protected OptionsModel $options;
 
     public function beforeroute()
@@ -33,7 +36,32 @@ class BaseController
         date_default_timezone_set('America/Lima');
         setlocale(LC_NUMERIC, 'C');
 
+        $loader = new FilesystemLoader('../templates');
+        $this->twig = new Environment($loader, [
+            'debug' => true,
+            'cache' => '../public/tmp/',
+        ]);
+
         $this->options = new OptionsModel();
+    }
+
+    public function render(string $view, array $parameters = [])
+    {
+        try {
+            echo $this->twig->render($view, $parameters);
+        } catch (\Exception $e) {
+            $this->app->error(500, $e->getMessage(), $e->getTrace());
+        }
+    }
+
+    public function renderView(string $view, array $parameters = []): ?string
+    {
+        try {
+            return $this->twig->render($view, $parameters);
+        } catch (\Exception $e) {
+            $this->app->error(500, $e->getMessage(), $e->getTrace());
+            return null;
+        }
     }
 
     public function json($data)

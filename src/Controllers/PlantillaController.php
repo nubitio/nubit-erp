@@ -16,7 +16,7 @@ class PlantillaController extends BaseController
         $this->model = new PlantillaModel($this->db);
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('plantilla/index.html');

@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
           integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 
-    <title>{{ @title }}</title>
+    <title>{{ title }}</title>
 </head>
 <body>
 <div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 padding">
@@ -17,12 +17,12 @@
         <table class="table table-borderless">
             <tr>
                 <td>
-                    <img src="{{ @logo }}" alt="Logo" style="position: relative; max-height: 100px">
+                    <img src="{{ logo }}" alt="Logo" style="position: relative; max-height: 100px">
                 </td>
                 <td class="text-right">
-                    <h4>{{ @title }}</h4>
-                    <p>Local: {{ @header['local'] }}</p>
-                    Cajero(a): <span class="text-uppercase">{{ @header['usuario'] }}</span>
+                    <h4>{{ title }}</h4>
+                    <p>Local: {{ header['local'] }}</p>
+                    Cajero(a): <span class="text-uppercase">{{ header['usuario'] }}</span>
                 </td>
             </tr>
         </table>
@@ -30,14 +30,14 @@
         <table class="table table-borderless mb-4">
             <tr>
                 <td style="width: 65%">
-                    <div>Apertura: {{ date('d/m/Y H:i', strtotime(@header['apertura'])) }}</div>
-                    <check if="{{ @header['cierre'] != null }}">
-                        <div>Cierre: {{ date('d/m/Y H:i', strtotime(@header['cierre'])) }}</div>
-                    </check>
+                    <div>Apertura: {{ header['apertura']|date("d/m/Y H:i") }}</div>
+                    {% if header['cierre'] %}
+                        <div>Cierre: {{ header['cierre']|date('d/m/Y H:i') }}</div>
+                    {% endif %}
                 </td>
                 <td>
-                    <div>Total ingresos: {{ @header['ingresos'] }}</div>
-                    <div>Total egresos: {{ @header['egresos'] }}</div>
+                    <div>Total ingresos: {{ header['ingresos'] }}</div>
+                    <div>Total egresos: {{ header['egresos'] }}</div>
                 </td>
             </tr>
         </table>
@@ -53,15 +53,15 @@
                 </tr>
                 </thead>
                 <tbody>
-                <repeat group="{{ @detail }}" value="{{ @item }}" counter="{{ @counter }}">
+                {% for item in detail %}
                     <tr>
-                        <td class="text-center">{{ @counter }}</td>
-                        <td>{{ @item['descripcion'] }}</td>
-                        <td class="text-right">{{ (@item['tipo_id'] == 1) ? @item['monto'] : '-' }}</td>
-                        <td class="text-right">{{ (@item['tipo_id'] == 2) ? @item['monto'] : '-' }}</td>
-                        <td>{{ @item['referencia'] }}</td>
+                        <td class="text-center">{{ counter }}</td>
+                        <td>{{ item['descripcion'] }}</td>
+                        <td class="text-right">{{ (item['tipo_id'] == 1) ? item['monto'] : '-' }}</td>
+                        <td class="text-right">{{ (item['tipo_id'] == 2) ? item['monto'] : '-' }}</td>
+                        <td>{{ item['referencia'] }}</td>
                     </tr>
-                </repeat>
+                {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -75,7 +75,7 @@
                         <td class="left">
                             <strong class="text-dark">Saldo final</strong></td>
                         <td class="right">
-                            <strong class="text-dark">{{ @header['saldo_final'] }}</strong>
+                            <strong class="text-dark">{{ header['saldo_final'] }}</strong>
                         </td>
                     </tr>
                     </tbody>
@@ -83,7 +83,7 @@
             </div>
         </div>
         <hr>
-        <p class="mb-0">{{ @obs }}</p>
+        <p class="mb-0">{{ obs }}</p>
     </div>
 </div>
 </body>

@@ -21,7 +21,7 @@ class UsuarioController extends BaseController
         //needed for avoid redirect loop
     }
 
-    function render()
+    function index()
     {
         $template = new Template;
         echo $template->render('usuario/index.html');

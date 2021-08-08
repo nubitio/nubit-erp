@@ -15,7 +15,7 @@ class CajaController extends BaseController
         $this->caja = new CajaModel();
     }
 
-    function render()
+    function index()
     {
         $template = new Template;
         echo $template->render('caja/index.html');
@@ -84,14 +84,14 @@ class CajaController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $header = $this->caja->getOneById($id);
         $detail = $this->caja->getDetailById($id);
-
-        $this->app->set('title', 'Reporte de caja');
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
-        $this->app->set('logo', $this->base64($logo_path));
-        $this->app->set('header', $header);
-        $this->app->set('detail', $detail);
-        $template = new Template;
-        //echo $template->render('templates/invoice.html');
-        $this->report($template->render('templates/cashbox.html'));
+
+        $content = $this->renderView('reportes/cashbox.html.twig', [
+            'title' => 'Reporte de caja',
+            'logo' => $this->base64($logo_path),
+            'header' => $header,
+            'detail' => $detail
+        ]);
+        $this->report($content);
     }
 }

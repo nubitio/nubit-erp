@@ -16,7 +16,7 @@ class AmbienteController extends BaseController
         $this->model = new AmbienteModel($this->db);
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('ambiente/index.html');

@@ -16,7 +16,7 @@ class OperacionController extends BaseController
         $this->model = new OperacionModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('operacion/index.html');

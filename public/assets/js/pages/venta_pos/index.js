@@ -453,7 +453,6 @@ app.venta = (function () {
 
         txt_descuento.numberbox({
             width: '60',
-            readonly: true,
             min: 0,
             precision: 2,
         });

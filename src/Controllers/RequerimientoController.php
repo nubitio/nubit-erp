@@ -16,7 +16,7 @@ class RequerimientoController extends BaseController
         $this->model = new RequerimientoModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('requerimiento/index.html');

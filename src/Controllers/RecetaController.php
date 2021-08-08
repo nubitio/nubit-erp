@@ -16,7 +16,7 @@ class RecetaController extends BaseController
         $this->model = new RecetaModel($this->db);
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('receta/index.html');

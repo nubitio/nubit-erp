@@ -27,7 +27,7 @@ class MainController extends BaseController
         //
     }
 
-    function render()
+    function index()
     {
         if ($this->check_local()) {
             $rol_id = $this->app->get('SESSION.rol_id');

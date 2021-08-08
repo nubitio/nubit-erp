@@ -15,7 +15,7 @@ class NotaController extends BaseController
         $this->model = new NotaModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template();
         echo $template->render('nota/index.html');

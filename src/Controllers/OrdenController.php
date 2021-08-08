@@ -16,7 +16,7 @@ class OrdenController extends BaseController
         $this->model = new OrdenModel();
     }
 
-    public function render()
+    public function index()
     {
         $template = new Template;
         echo $template->render('orden/index.html');
