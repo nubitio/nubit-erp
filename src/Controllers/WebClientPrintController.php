@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 //Includes WebClientPrint classes
-include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
+include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
 
 use Neodynamic\SDK\Web\WebClientPrint;
 
@@ -17,7 +17,7 @@ class WebClientPrintController extends BaseController
         //===================
         //Set wcpcache folder RELATIVE to WebClientPrint.php file
         //FILE WRITE permission on this folder is required!!!
-        WebClientPrint::$wcpCacheFolder = dirname(dirname(__FILE__)) . '/wcpcache/';
+        WebClientPrint::$wcpCacheFolder = dirname(__FILE__, 3) . '/public/wcpcache/';
         //===================
 
         // Clean built-in Cache

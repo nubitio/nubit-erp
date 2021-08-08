@@ -10,10 +10,6 @@ $(window).on('load', function () {
     }
 });
 
-Mousetrap.prototype.stopCallback = function () {
-    return false;
-};
-
 $.fn.extend({
     animateCss: function (animationName) {
         var animationEnd = 'webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend';

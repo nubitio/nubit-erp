@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\ClienteModel;
-use Template;
 
 class ClienteController extends BaseController
 {
@@ -18,8 +17,7 @@ class ClienteController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('cliente/index.html');
+        $this->render('cliente/index.html.twig');
     }
 
     public function get()

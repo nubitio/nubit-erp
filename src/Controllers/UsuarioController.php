@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\UsuarioModel;
-use Template;
 
 class UsuarioController extends BaseController
 {
@@ -23,8 +22,7 @@ class UsuarioController extends BaseController
 
     function index()
     {
-        $template = new Template;
-        echo $template->render('usuario/index.html');
+        $this->render('usuario/index.html.twig');
     }
 
     function get()
@@ -60,8 +58,9 @@ class UsuarioController extends BaseController
             exit;
         } else {
             $this->model->init();
-            $template = new Template;
-            echo $template->render('login/index.html');
+            $this->render('login/index.html.twig', [
+                'title' => $this->app->get('TITLE')
+            ]);
         }
     }
 
@@ -131,8 +130,7 @@ class UsuarioController extends BaseController
 
     function password()
     {
-        $template = new Template;
-        echo $template->render('change-password/index.html');
+        $this->render('change-password/index.html.twig');
     }
 
     function changePassword()

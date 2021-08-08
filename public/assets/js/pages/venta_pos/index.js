@@ -639,12 +639,6 @@ app.venta = (function () {
         }
     }
 
-    Mousetrap.bind('ins', function () {
-        //add_detalle();
-    });
-
-    //formulario cliente nuevo correcto
-
     let dlgc = $('#venta_cliente_dlg');
     let fmc = $('#venta_cliente_fm');
     let txt_ruc = $('#ven_cliente_ruc');

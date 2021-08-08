@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\RolModel;
-use Template;
 
 class RolController extends BaseController
 {
@@ -18,8 +17,7 @@ class RolController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('rol/index.html');
+        $this->render('rol/index.html.twig');
     }
 
     public function get()

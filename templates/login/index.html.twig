@@ -1,34 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{@TITLE}}</title>
+    <title>{{ title }}</title>
     <!-- Icons -->
-    <link rel="shortcut icon" href="{{@ASSETS}}images/logo.png">
+    <link rel="shortcut icon" href="{{ asset('assets/images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
     <!-- build:css ../assets/css/styles.css -->
-    <link rel="stylesheet" href="{{@ASSETS}}css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{@ASSETS}}css/easyui.css">
-    <link rel="stylesheet" href="{{@ASSETS}}css/all.min.css">
-    <link rel="stylesheet" href="{{@ASSETS}}css/animate.css">
-    <link rel="stylesheet" href="{{@ASSETS}}css/main.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/easyui.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
     <!-- endbuild -->
     <!-- build:js ../assets/js/lib.min.js -->
-    <script src="{{@ASSETS}}js/jquery.min.js"></script>
-    <script src="{{@ASSETS}}js/jquery.easyui.min.js"></script>
-    <script src="{{@ASSETS}}js/mousetrap.min.js"></script>
-    <script src="{{@ASSETS}}js/observable.js"></script>
-    <script src="{{@ASSETS}}js/config.js"></script>
-    <script src="{{@ASSETS}}js/main.js"></script>
+    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
+    <script src="{{ asset('assets/js/observable.js') }}"></script>
+    <script src="{{ asset('assets/js/config.js') }}"></script>
+    <script src="{{ asset('assets/js/main.js') }}"></script>
     <!-- endbuild -->
 </head>
 <body class="login-bg">
 <div class="wrapper">
     <div id="login_window" style="background: transparent; padding:10px;">
         <div style="margin:20px auto;max-width:250px;height:100px;overflow:hidden">
-            <img src="{{@ASSETS}}images/logo.png" class="rounded mx-auto d-block" style="height: 100px;">
+            <img src="{{ asset('assets/images/logo.png') }}" class="rounded mx-auto d-block" style="height: 100px;">
         </div>
         <form id="login_fm" class="login-form" method="post" style="padding:0 20px">
             <div style="margin-bottom:20px">
@@ -46,6 +45,6 @@
         <div id="home_lista_local"></div>
     </div>
 </div>
-<script src="{{ @ASSETS }}js/pages/login/index.js?v={{@version}}"></script>
+<script src="{{ asset('assets/js/pages/login/index.js') }}"></script>
 </body>
 </html>

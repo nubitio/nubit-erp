@@ -27,15 +27,15 @@
                 <div data-options="region: 'center', border: false" style="padding:0 30px">
                     <table class="table table-sm table-bordered header-fixed">
                         <thead class="thead-dark">
-                            <tr>
-                                <th style="width: 74%">Producto</th>
-                                <th style="width: 20%">Cantidad</th>
-                                <th style="width: 6%">
-                                    <a onclick="app.salida.add_detalle()" style="cursor: pointer">
-                                        <i class="fas fa-plus text-success" style="padding: 3px"></i>
-                                    </a>
-                                </th>
-                            </tr>
+                        <tr>
+                            <th style="width: 74%">Producto</th>
+                            <th style="width: 20%">Cantidad</th>
+                            <th style="width: 6%">
+                                <a onclick="app.salida.add_detalle()" style="cursor: pointer">
+                                    <i class="fas fa-plus text-success" style="padding: 3px"></i>
+                                </a>
+                            </th>
+                        </tr>
                         </thead>
                         <tbody id="salida_tb_detalle" style="height: 110px"></tbody>
                     </table>
@@ -59,4 +59,4 @@
         </td>
     </tr>
 </script>
-<script src="{{ @ASSETS }}js/pages/salida/index.js?v={{@version}}"></script>
+<script src="{{ asset('assets/js/pages/salida/index.js') }}"></script>

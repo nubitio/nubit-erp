@@ -18,8 +18,7 @@ class EmpresaController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('empresa/index.html');
+        $this->render('empresa/index.html.twig');
     }
 
     public function get()

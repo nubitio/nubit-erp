@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\AlmacenModel;
-use Template;
 
 class AlmacenController extends BaseController
 {
@@ -18,8 +17,7 @@ class AlmacenController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('almacen/index.html');
+        $this->render('almacen/index.html.twig');
     }
 
     public function get()

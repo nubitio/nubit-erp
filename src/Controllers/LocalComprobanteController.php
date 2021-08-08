@@ -18,8 +18,7 @@ class LocalComprobanteController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('local-comprobante/index.html');
+        $this->render('local-comprobante/index.html.twig');
     }
 
     public function get()

@@ -17,8 +17,7 @@ class CategoriaController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('categoria/index.html');
+        $this->render('categoria/index.html.twig');
     }
 
     public function get()

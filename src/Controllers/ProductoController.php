@@ -22,10 +22,9 @@ class ProductoController extends BaseController
         echo $template->render('insumo/index.html');
     }
 
-    public function render_productos()
+    public function index()
     {
-        $template = new Template();
-        echo $template->render('producto/index.html');
+        $this->render('producto/index.html.twig');
     }
 
     public function get_insumos()

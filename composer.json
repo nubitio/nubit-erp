@@ -8,6 +8,7 @@
     "ext-curl": "*",
     "ext-pdo": "*",
     "ext-intl": "*",
+    "ext-zip": "*",
     "bcosca/fatfree": "^3.7.3",
     "tecnickcom/tcpdf": "^6.3.5",
     "phpoffice/phpspreadsheet": "^1.16",
@@ -20,7 +21,9 @@
     "firebase/php-jwt": "^5.2",
     "greenter/htmltopdf": "^4.3",
     "greenter/report": "^4.3",
-    "twig/twig": "^3.3"
+    "twig/twig": "^3.3",
+    "symfony/asset": "^5.3",
+    "symfony/twig-bridge": "^5.3"
   },
   "authors": [
     {

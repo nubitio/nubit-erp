@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\OptionsModel;
-use Template;
 
 class OptionsController extends BaseController
 {
@@ -17,8 +16,7 @@ class OptionsController extends BaseController
 
     public function index()
     {
-        $template = new Template();
-        echo $template->render('options/index.html');
+        $this->render('options/index.html.twig');
     }
 
     public function get()

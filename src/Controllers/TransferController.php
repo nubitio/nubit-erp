@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\TransferModel;
-use Template;
 
 class TransferController extends BaseController
 {
@@ -17,8 +16,7 @@ class TransferController extends BaseController
 
     public function index()
     {
-        $template = new Template();
-        echo $template->render('transfer/index.html');
+        $this->render('transfer/index.html.twig');
     }
 
     public function get()

@@ -17,14 +17,12 @@ class CajaController extends BaseController
 
     function index()
     {
-        $template = new Template;
-        echo $template->render('caja/index.html');
+        $this->render('caja/index.html.twig');
     }
 
     function consulta()
     {
-        $template = new Template;
-        echo $template->render('caja-consulta/index.html');
+        $this->render('caja-consulta/index.html.twig');
     }
 
     function check()

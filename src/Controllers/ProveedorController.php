@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\ProveedorModel;
-use Template;
 
 class ProveedorController extends BaseController
 {
@@ -18,8 +17,7 @@ class ProveedorController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('proveedor/index.html');
+        $this->render('proveedor/index.html.twig');
     }
 
     public function get()

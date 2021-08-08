@@ -5,7 +5,6 @@ namespace App\Controllers;
 use App\Models\AlmacenModel;
 use App\Models\LocalModel;
 use App\Models\MenuModel;
-use Template;
 
 class MainController extends BaseController
 {
@@ -34,8 +33,10 @@ class MainController extends BaseController
             $menus = $this->menu->lista_rol($rol_id);
             $this->app->set('menus', $menus);
             $this->app->set('view', 'dashboard/index.html');
-            $template = new Template;
-            echo $template->render('layout/index.html');
+            $this->render('layout/base.html.twig', [
+                'title' => $this->app->get('TITLE'),
+                'session' => $this->app->get('SESSION')
+            ]);
         } else {
             $this->app->clear('SESSION');
             $this->app->reroute('/login');
@@ -76,8 +77,7 @@ class MainController extends BaseController
 
     function dashboard()
     {
-        $template = new Template;
-        echo $template->render('dashboard/index.html');
+        $this->render('dashboard/index.html.twig');
     }
 
     function get_menu()

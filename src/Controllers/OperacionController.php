@@ -18,8 +18,7 @@ class OperacionController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('operacion/index.html');
+        $this->render('operacion/index.html.twig');
     }
 
     public function get()

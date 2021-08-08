@@ -18,8 +18,7 @@ class UnidadController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('unidad/index.html');
+        $this->render('unidad/index.html.twig');
     }
 
     public function get()

@@ -9,6 +9,10 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Bridge\Twig\Extension\AssetExtension;
+use Symfony\Component\Asset\Packages;
+use Symfony\Component\Asset\PathPackage;
+use Symfony\Component\Asset\VersionStrategy\EmptyVersionStrategy;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -41,6 +45,8 @@ class BaseController
             'debug' => true,
             'cache' => '../public/tmp/',
         ]);
+
+        $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new EmptyVersionStrategy()))));
 
         $this->options = new OptionsModel();
     }

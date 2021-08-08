@@ -18,8 +18,7 @@ class ComprobanteController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('tipo-comprobante/index.html');
+        $this->render('tipo-comprobante/index.html.twig');
     }
 
     public function get()

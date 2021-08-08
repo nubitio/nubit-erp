@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
+include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
 
 use App\Models\BotModel;
 use App\Models\MovimientoModel;
@@ -29,20 +29,17 @@ class MovimientoController extends BaseController
 
     function index()
     {
-        $template = new Template;
-        echo $template->render('movimientos/index.html');
+        $this->render('movimientos/index.html.twig');
     }
 
     function ingreso()
     {
-        $template = new Template;
-        echo $template->render('ingreso/index.html');
+        $this->render('ingreso/index.html.twig');
     }
 
     function salida()
     {
-        $template = new Template;
-        echo $template->render('salida/index.html');
+        $this->render('salida/index.html.twig');
     }
 
     function salidaanular()
@@ -60,18 +57,22 @@ class MovimientoController extends BaseController
 
     function venta()
     {
-        $wcppScript1 = WebClientPrint::createWcppDetectionScript($this->action('WebClientPrintController'), session_id());
-        $wcppScript2 = WebClientPrint::createScript($this->action('WebClientPrintController'), $this->action('PrintESCPOSController'), session_id());
-        $session_id = session_id();
-        $this->app->set('wcpscript1', $wcppScript1);
-        $this->app->set('wcpscript2', $wcppScript2);
-        $this->app->set('session_id', $session_id);
+        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->action('WebClientPrintController'), session_id());
+        $printScrip = WebClientPrint::createScript($this->action('WebClientPrintController'), $this->action('PrintESCPOSController'), session_id());
+        $sessionId = session_id();
+        $this->app->set('wcpscript1', $printDetectionScript);
+        $this->app->set('wcpscript2', $printScrip);
+        $this->app->set('session_id', $sessionId);
         $template = new Template;
         $mode = $this->app->get('MODE');
         if ($mode == 'REST') {
             echo $template->render('venta/index.html');
         } else {
-            echo $template->render('venta_pos/index.html');
+            $this->render('venta_pos/index.html.twig', [
+                'session_id' => $sessionId,
+                'printDetectionScript' => $printDetectionScript,
+                'printScript' => $printScrip
+            ]);
         }
     }
 
@@ -475,7 +476,7 @@ class MovimientoController extends BaseController
         $this->app->set('obs', $sale['cabecera']['glosa']);
         $template = new Template;
         //echo $template->render('templates/invoice.html');
-        $this->report($template->render('templates/invoice.html'));
+        $this->report($template->render('reportes/invoice.html'));
     }
 
     function makeInvoice()

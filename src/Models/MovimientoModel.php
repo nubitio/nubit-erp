@@ -497,7 +497,7 @@ class MovimientoModel extends BaseModel
         }
     }
 
-    public function makeInvoice($id)
+    public function makeInvoice($id): array
     {
         try {
             $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $this->current_local_id]);

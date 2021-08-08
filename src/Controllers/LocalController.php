@@ -18,8 +18,7 @@ class LocalController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('local/index.html');
+        $this->render('local/index.html.twig');
     }
 
     public function get()
