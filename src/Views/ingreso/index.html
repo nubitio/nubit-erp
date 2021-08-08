@@ -1,0 +1,83 @@
+<div class="wrapper">
+    <table id="ingreso_dg"></table>
+    <!-- Dialogo -->
+    <div id="ingreso_dlg">
+        <div class="easyui-layout" data-options="fit:true">
+            <form class="fm" id="ingreso_fm" method="post" novalidate>
+                <div data-options="region: 'north', border: false" style="height:245px; padding:10px 30px">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="fitem">
+                                <input id="ingreso_fecha" name="fecha">
+                            </div>
+                            <div class="fitem">
+                                <input id="ingreso_almacen" name="almacen_id">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="fitem">
+                                <input id="ingreso_operacion" name="operacion_id">
+                            </div>
+                            <div class="fitem">
+                                <input id="ingreso_proveedor" name="proveedor_id">
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="fitem">
+                                <input id="ingreso_glosa" name="glosa">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div data-options="region: 'center', border: false" style="padding:0 30px">
+                    <table class="table table-sm table-bordered header-fixed">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th style="width: 50%">Producto</th>
+                            <th style="width: 15%">Cant.</th>
+                            <th style="width: 15%">Unitario</th>
+                            <th style="width: 15%">Total</th>
+                            <th style="width: 5%">
+                                <a onclick="app.ingreso.add_detalle()" style="cursor: pointer">
+                                    <i class="fas fa-plus text-success" style="padding: 3px"></i>
+                                </a>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody id="ingreso_tb_detalle" style="height: 110px"></tbody>
+                        <tfoot>
+                        <tr class="table-secondary">
+                            <td colspan="3" class="text-right" style="width: 80%"><b>Total</b></td>
+                            <td colspan="2" class="text-center" style="width: 20%">
+                                <b>S/ <span id="ingreso_total">0.00</span></b>
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script id="ingreso_template" type="text/template">
+    <tr id="ingreso_tr_%position%">
+        <td style="width: 50%">
+            <input id="ingreso_cbproducto_%position%" name="detalle[producto][]">
+        </td>
+        <td style="width: 15%">
+            <input id="ingreso_tbcantidad_%position%" name="detalle[cantidad][]" class="cantidad">
+        </td>
+        <td style="width: 15%">
+            <input id="ingreso_tbprecio_%position%" name="detalle[unitario][]">
+        </td>
+        <td style="width: 15%">
+            <input id="ingreso_tbtotal_%position%" name="detalle[total][]" class="ingreso_subtotal">
+        </td>
+        <td style="width: 5%">
+            <a onclick="app.ingreso.remove_row(%position%)" style="cursor: pointer">
+                <i class="fas fa-times text-danger" style="padding:6px"></i>
+            </a>
+        </td>
+    </tr>
+</script>
+<script src="{{ @ASSETS }}js/pages/ingreso/index.js?v={{@version}}"></script>

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\BotModel;
 use App\Models\OptionsModel;
+use DateTime;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
@@ -21,6 +22,7 @@ use Greenter\Report\PdfReport;
 use Greenter\Report\XmlUtils;
 use Greenter\See;
 use Greenter\Ws\Services\SunatEndpoints;
+use NumberFormatter;
 
 class EFactController extends BaseController
 {
@@ -41,7 +43,7 @@ class EFactController extends BaseController
             $this->see->setCredentials($this->getOption('invoice_user'), $this->getOption('invoice_password'));
         } else {
             $this->see->setService(SunatEndpoints::FE_BETA);
-            $this->see->setCertificate(file_get_contents('src/certificate_beta.pem'));
+            $this->see->setCertificate(file_get_contents('../config/certificate_beta.pem'));
             $this->see->setCredentials('20000000001MODDATOS', 'moddatos');
         }
     }

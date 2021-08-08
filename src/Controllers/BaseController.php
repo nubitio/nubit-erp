@@ -14,7 +14,7 @@ class BaseController
 {
 
     protected Base $app;
-    protected $modulo;
+    protected string $modulo;
     protected OptionsModel $options;
 
     public function beforeroute()
@@ -51,7 +51,7 @@ class BaseController
         }
     }
 
-    public function upload($modulo)
+    public function upload(string $modulo)
     {
         $this->modulo = $modulo;
         $web = \Web::instance();

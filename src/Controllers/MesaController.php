@@ -72,5 +72,3 @@ class MesaController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

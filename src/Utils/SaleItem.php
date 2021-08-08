@@ -1,10 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: johan
- * Date: 06/10/18
- * Time: 12:11 PM
- */
+
+namespace App\Utils;
+
+use Base;
 
 class SaleItem
 {

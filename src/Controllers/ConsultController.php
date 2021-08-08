@@ -9,7 +9,7 @@ class ConsultController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        $this->url = "https://consultapi.efact.src/api/v1/";
+        $this->url = "https://consultapi.efact.app/api/v1/";
     }
 
     public function beforeroute()

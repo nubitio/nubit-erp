@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{@TITLE}}</title>
+    <!-- Icons -->
+    <link rel="shortcut icon" href="{{@ASSETS}}images/logo.png">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
+    <!-- build:css ../assets/css/styles.css -->
+    <link rel="stylesheet" href="{{@ASSETS}}css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{@ASSETS}}css/easyui.css">
+    <link rel="stylesheet" href="{{@ASSETS}}css/all.min.css">
+    <link rel="stylesheet" href="{{@ASSETS}}css/animate.css">
+    <link rel="stylesheet" href="{{@ASSETS}}css/main.css">
+    <!-- endbuild -->
+    <!-- build:js ../assets/js/lib.min.js -->
+    <script src="{{@ASSETS}}js/jquery.min.js"></script>
+    <script src="{{@ASSETS}}js/jquery.easyui.min.js"></script>
+    <script src="{{@ASSETS}}js/mousetrap.min.js"></script>
+    <script src="{{@ASSETS}}js/observable.js"></script>
+    <script src="{{@ASSETS}}js/config.js"></script>
+    <script src="{{@ASSETS}}js/main.js"></script>
+    <!-- endbuild -->
+</head>
+<body class="login-bg">
+<div class="wrapper">
+    <div id="login_window" style="background: transparent; padding:10px;">
+        <div style="margin:20px auto;max-width:250px;height:100px;overflow:hidden">
+            <img src="{{@ASSETS}}images/logo.png" class="rounded mx-auto d-block" style="height: 100px;">
+        </div>
+        <form id="login_fm" class="login-form" method="post" style="padding:0 20px">
+            <div style="margin-bottom:20px">
+                <input id="username" name="username">
+            </div>
+            <div>
+                <input id="password" name="password">
+            </div>
+            <div class="text-center" style="margin-top:40px">
+                <a id="login" onclick="app.login.login()" class="md-btn accent">Iniciar sesión</a>
+            </div>
+        </form>
+    </div>
+    <div id="home_local">
+        <div id="home_lista_local"></div>
+    </div>
+</div>
+<script src="{{ @ASSETS }}js/pages/login/index.js?v={{@version}}"></script>
+</body>
+</html>

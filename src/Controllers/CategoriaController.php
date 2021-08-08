@@ -65,5 +65,3 @@ class CategoriaController extends BaseController
         $this->export($data, $extras);
     }
 }
-
-?>

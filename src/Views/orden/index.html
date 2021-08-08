@@ -1,0 +1,69 @@
+<div class="wrapper">
+    <table id="orden_dg"></table>
+    <div id="orden_toolbar">
+        <!--<a id="orden_finalizar" href="#"></a>-->
+        <a id="orden_add"></a>
+        <a id="orden_anular"></a>
+        <div class="float-right">
+            <input id="orden_fecha_inicio">
+            <input id="orden_fecha_fin">
+            <a id="orden_reporte"></a>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+    <!-- Dialogo -->
+    <div id="orden_dlg">
+        <div class="easyui-layout" data-options="fit:true">
+            <form class="fm" id="orden_fm" method="post" novalidate>
+                <div data-options="region: 'north', border: false" style="height:150px; padding:10px 30px">
+                    <div class="fitem">
+                        <input id="orden_mesa" name="mesa_id">
+                    </div>
+                    <div class="fitem">
+                        <input id="orden_nota" name="nota">
+                    </div>
+                </div>
+                <div data-options="region: 'center', border: false" style="padding:0 30px">
+                    <table class="table table-sm table-bordered header-fixed">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th style="width: 50%">Producto</th>
+                                <th style="width: 15%">Cantidad</th>
+                                <th style="width: 15%">Unitario</th>
+                                <th style="width: 15%">Total</th>
+                                <th style="width: 5%">
+                                    <a onclick="app.orden.add_detalle()" style="cursor: pointer">
+                                        <i class="fas fa-plus text-success" style="padding: 3px"></i>
+                                    </a>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="orden_tb_detalle" style="height: 110px"></tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script id="orden_template" type="text/template">
+    <tr id="orden_tr_%position%">
+        <td style="width: 50%">
+            <input id="orden_cbproducto_%position%" name="detalle[producto][]">
+        </td>
+        <td style="width: 15%">
+            <input id="orden_tbcantidad_%position%" name="detalle[cantidad][]" class="cantidad">
+        </td>
+        <td style="width: 15%">
+            <input id="orden_tbprecio_%position%" name="detalle[unitario][]">
+        </td>
+        <td style="width: 15%">
+            <input id="orden_tbtotal_%position%" name="detalle[total][]" class="orden_subtotal">
+        </td>
+        <td style="width: 5%">
+            <a onclick="app.orden.remove_row(%position%)" style="cursor: pointer;">
+                <i class="fas fa-times text-danger" style="padding: 6px"></i>
+            </a>
+        </td>
+    </tr>
+</script>
+<script src="{{ @ASSETS }}js/pages/orden/index.js?v={{@version}}"></script>

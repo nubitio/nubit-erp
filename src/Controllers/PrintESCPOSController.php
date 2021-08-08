@@ -5,6 +5,7 @@ namespace App\Controllers;
 include dirname(dirname(__FILE__)) . '/WebClientPrint.php';
 
 use App\Models\MovimientoModel;
+use App\Utils\SaleItem;
 use Neodynamic\SDK\Web\WebClientPrint;
 use Neodynamic\SDK\Web\DefaultPrinter;
 use Neodynamic\SDK\Web\InstalledPrinter;
@@ -13,6 +14,7 @@ use Neodynamic\SDK\Web\ClientPrintJob;
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
+use NumberFormatter;
 
 class PrintESCPOSController extends BaseController
 {

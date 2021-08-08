@@ -1,0 +1,39 @@
+<div class="wrapper">
+    <table id="empleado_dg"></table>
+    <!-- Dialogo -->
+    <div id="empleado_dlg">
+        <form class="fm" id="empleado_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="empleado_dni" name="dni">
+            </div>
+            <div class="fitem">
+                <input id="empleado_nombres" name="nombres">
+            </div>
+            <div class="fitem">
+                <input id="empleado_apellidos" name="apellidos">
+            </div>
+            <div class="fitem">
+                <input id="empleado_genero" name="genero">
+            </div>
+            <div class="fitem">
+                <input id="empleado_fecha_nacimiento" name="fecha_nacimiento">
+            </div>
+            <div class="fitem">
+                <input id="empleado_tipo_contrato" name="tipo_contrato">
+            </div>
+            <div class="fitem">
+                <input id="empleado_fecha_ingreso" name="fecha_ingreso">
+            </div>
+            <div class="fitem">
+                <input id="empleado_telefono" name="telefono">
+            </div>
+            <div class="fitem">
+                <input id="empleado_email" name="email">
+            </div>
+            <div class="fitem">
+                <input id="empleado_activo" name="activo">
+            </div>
+        </form>
+    </div>
+</div>
+<script src="{{ @ASSETS }}js/pages/empleado/index.js?v={{@version}}"></script>

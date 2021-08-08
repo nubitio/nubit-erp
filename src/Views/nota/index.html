@@ -1,0 +1,44 @@
+<div class="wrapper">
+    <table id="nota_dg"></table>
+    <!-- Dialogo -->
+    <div id="nota_dlg">
+        <form class="fm" id="nota_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="nota_movimiento_id" name="movimiento_id">
+            </div>
+            <div class="fitem">
+                <input id="nota_fecha" name="fecha">
+            </div>
+            <div class="fitem">
+                <input id="nota_tipo_id" name="tipo_id">
+            </div>
+            <div class="fitem">
+                <input id="nota_codigo_motivo" name="codigo_motivo">
+            </div>
+            <div class="fitem">
+                <input id="nota_descripcion_motivo" name="descripcion_motivo">
+            </div>
+            <div class="fitem">
+                <input id="nota_serie" name="serie">
+            </div>
+            <div class="fitem">
+                <input id="nota_correlativo" name="correlativo">
+            </div>
+            <div class="fitem">
+                <input id="nota_digest" name="digest">
+            </div>
+            <div class="fitem">
+                <input id="nota_envio_sunat" name="envio_sunat">
+            </div>
+            <div class="fitem">
+                <input id="nota_mensaje_sunat" name="mensaje_sunat">
+            </div>
+        </form>
+    </div>
+    <!-- summary-->
+    <div id="dlgSummary">
+        <table id="dgSummary"></table>
+    </div>
+</div>
+<script src="{{ @ASSETS }}js/pages/nota/index.js?v={{@version}}"></script>
+<script src="{{ @ASSETS }}js/pages/contabilidad/facturacion/summary.js?v={{@version}}"></script>

@@ -7,6 +7,7 @@ include_once(dirname(dirname(__FILE__)) . '/WebClientPrint.php');
 use App\Models\BotModel;
 use App\Models\MovimientoModel;
 use Neodynamic\SDK\Web\WebClientPrint;
+use NumberFormatter;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Template;

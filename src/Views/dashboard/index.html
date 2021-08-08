@@ -1,0 +1,45 @@
+<div class="wrapper">
+    <div class="container-fluid">
+        <div class="row" style="margin-top: 15px">
+            <div class="col-md-12 mb-3" style="min-height: 425px">
+                <div id="rotation-panel" style="overflow-x: hidden">
+                    <div class="card">
+                        <div class="card-header" style="padding: 8px 10px">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Rotación de productos</h6>
+                                </div>
+                                <div class="col-md-6 text-right">
+                                    <input id="lapse-selector">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body" style="padding: 8px">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="card-panel" id="most-sold" style="min-height: 350px"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card-panel" id="less-sold" style="min-height: 350px"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <table id="without-rotation"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-panel chart-box" id="venta_semana" style="min-width:320px; height:340px;"></div>
+            </div>
+            <div class="col-md-6">
+                <div class="card-panel chart-box" id="venta_mes" style="min-width:320px; height:340px;"></div>
+            </div>
+            <div class="col-md-12">
+                <div class="card-panel chart-box" id="venta_dia" style="min-width:320px; height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ @ASSETS }}js/pages/dashboard/index.js?v={{@version}}"></script>

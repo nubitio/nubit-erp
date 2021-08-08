@@ -5,6 +5,9 @@
   "prefer-stable": true,
   "require": {
     "php": ">=7.4",
+    "ext-curl": "*",
+    "ext-pdo": "*",
+    "ext-intl": "*",
     "bcosca/fatfree": "^3.7.3",
     "tecnickcom/tcpdf": "^6.3.5",
     "phpoffice/phpspreadsheet": "^1.16",
@@ -16,9 +19,7 @@
     "ext-json": "*",
     "firebase/php-jwt": "^5.2",
     "greenter/htmltopdf": "^4.3",
-    "greenter/report": "^4.3",
-    "ext-curl": "*",
-    "ext-pdo": "*"
+    "greenter/report": "^4.3"
   },
   "authors": [
     {
