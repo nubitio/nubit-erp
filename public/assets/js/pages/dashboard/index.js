@@ -1,18 +1,11 @@
 var app = app || {};
 app.dashboard = (function () {
-
-    let productRotationPanel = $('#rotation-panel')
     let lapseSelector = $('#lapse-selector');
     let chartMostSold = $('#most-sold');
     let dgLessSold = $('#less-sold');
     let dgWithoutRotation = $('#without-rotation');
 
     let init = function () {
-        productRotationPanel.panel({
-            fit: true,
-            border: false
-        });
-
         lapseSelector.combobox({
             data: [{
                 value: 'week',
@@ -117,7 +110,6 @@ app.dashboard = (function () {
     }
 
     function getRotationInfo(lapse) {
-        productRotationPanel.panel('showMask', 'Cargando datos...');
         fetch('bi/product-rotation/' + lapse)
             .then(response => response.json())
             .then(result => {
@@ -148,7 +140,6 @@ app.dashboard = (function () {
                 dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => show_error(err))
-            .finally(() => productRotationPanel.panel('hideMask'));
     }
 
     function draw() {
