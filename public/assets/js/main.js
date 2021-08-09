@@ -201,35 +201,11 @@ function dateparser(s) {
     }
 }
 
-function estado_formatter(val, row) {
-    if (val == 1) {
-        return 'Activo';
+function activeFormatter(val) {
+    if (Number(val) === 1) {
+        return '<span class="badge rounded-pill bg-success">SI</span>';
     } else {
-        return 'Inactivo';
-    }
-}
-
-function estado_styler(val, row, index) {
-    if (val == 1) {
-        return 'color:#63b343;';
-    } else {
-        return 'color:#F8485D;';
-    }
-}
-
-function activo_formatter(val, row) {
-    if (val == 1) {
-        return 'SI';
-    } else {
-        return 'NO';
-    }
-}
-
-function activo_styler(value, row, index) {
-    if (value == 1) {
-        return 'color:#63b343;';
-    } else {
-        return 'color:#F8485D;';
+        return '<span class="badge rounded-pill bg-danger">NO</span>';
     }
 }
 

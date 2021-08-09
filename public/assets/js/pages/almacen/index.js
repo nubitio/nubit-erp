@@ -62,122 +62,19 @@ app.almacen = (function () {
                 field: 'tipo',
                 title: 'Tipo',
                 sortable: true,
-                width: 100
             }, {
                 field: 'estado',
-                title: 'Estado',
+                title: 'Activo',
                 sortable: true,
-                width: 100,
                 align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
+                formatter: activeFormatter,
             }]],
             onDblClickRow: function () {
                 editar();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'empresa',
-            type: 'combobox',
-            options: {
-                url: 'empresa/lista/1/1',
-                method: 'get',
-                valueField: 'empresa_id',
-                textField: 'razon_social',
-                panelHeight: 200,
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'empresa_id');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'empresa_id',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'local',
-            type: 'combobox',
-            options: {
-                url: 'local/lista/1/1',
-                method: 'get',
-                valueField: 'local_id',
-                textField: 'descripcion',
-                panelHeight: 200,
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'local_id');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'local_id',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'tipo',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: 'INSUMOS',
-                    text: 'INSUMOS'
-                }, {
-                    value: 'PRODUCTOS',
-                    text: 'PRODUCTOS'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'tipo');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'tipo',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
 
         dlg.dialog({
             buttons: [{

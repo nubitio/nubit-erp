@@ -85,8 +85,8 @@ app.empleado = (function () {
                 {
                     field: "activo",
                     title: "Activo",
-                    formatter: activo_formatter,
-                    styler: activo_styler
+                    align: 'center',
+                    formatter: activeFormatter,
                 },
             ]],
             onDblClickRow: function () {

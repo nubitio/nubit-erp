@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\CategoriaModel;
-use Template;
 
 class CategoriaController extends BaseController
 {
@@ -22,45 +21,24 @@ class CategoriaController extends BaseController
 
     public function get()
     {
-        $data = $this->model->all();
-        $this->json($data);
+        $this->json($this->model->get());
     }
 
-    public function lista()
+    public function insert()
     {
-        $filtered = (bool)$this->app->get('PARAMS.filtered');
-        $extended = (bool)$this->app->get('PARAMS.extended');
-        $data = $this->model->lista($filtered, $extended);
-        $this->json($data);
+        $this->json($this->model->insert());
     }
 
-    public function add()
-    {
-        $data = $this->model->add();
-        $this->json($data);
-    }
-
-    public function edit()
+    public function update()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->edit($id);
-        $this->json($data);
+        $this->json($this->model->update($id));
     }
 
     public function delete()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->delete($id);
-        $this->json($data);
-    }
-
-    public function exportar()
-    {
-        $data = $this->model->exportar();
-        $extras = [
-            'title' => 'LISTA DE CATEGORIAS',
-            'subtitle' => ''
-        ];
-        $this->export($data, $extras);
+        $this->json($this->model->delete($id));
     }
 }
+    

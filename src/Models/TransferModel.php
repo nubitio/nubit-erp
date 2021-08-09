@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\entity\Movimiento;
 use DB\SQL\Mapper;
 
 class TransferModel extends BaseModel
@@ -30,7 +29,7 @@ class TransferModel extends BaseModel
         $this->dao->created_at = date('Y-m-d H:i:s');
         try {
             //salida
-            $out = new Movimiento();
+            $out = new Mapper($this->db, 'movimiento');
             $outId = $this->db->exec("select UUID() as id");
             $out->movimiento_id = $outId[0]['id'];
             $out->tipo_id = 2;
@@ -41,14 +40,14 @@ class TransferModel extends BaseModel
             $out->save();
             $this->dao->salida_id = $outId[0]['id'];
             for ($i = 0; $i < count($_POST['detalle']['producto']); $i++) {
-                $item = new MovimientoDetalle();
+                $item = new Mapper($this->db, 'movimiento_detalle');
                 $item->movimiento_id = $outId[0]['id'];
                 $item->producto_id = $_POST['detalle']['producto'][$i];
                 $item->cantidad = $_POST['detalle']['cantidad'][$i];
                 $item->save();
             }
             //ingreso
-            $in = new Movimiento();
+            $in = new Mapper($this->db, 'movimiento');
             $inId = $this->db->exec("select UUID() as id");
             $in->movimiento_id = $inId[0]['id'];
             $in->tipo_id = 1;
@@ -59,7 +58,7 @@ class TransferModel extends BaseModel
             $in->save();
             $this->dao->ingreso_id = $inId[0]['id'];
             for ($i = 0; $i < count($_POST['detalle']['producto']); $i++) {
-                $item = new MovimientoDetalle();
+                $item = new Mapper($this->db, 'movimiento_detalle');
                 $item->movimiento_id = $inId[0]['id'];
                 $item->producto_id = $_POST['detalle']['producto'][$i];
                 $item->cantidad = $_POST['detalle']['cantidad'][$i];

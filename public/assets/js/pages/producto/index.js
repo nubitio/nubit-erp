@@ -76,69 +76,17 @@ app.producto = (function () {
                 align: 'right'
             }, {
                 field: 'estado',
-                title: 'Estado',
+                title: 'Activo',
                 sortable: true,
-                width: 120,
                 align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
+                formatter: activeFormatter,
             }]],
             onDblClickRow: function () {
                 editar();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'categoria',
-            type: 'combobox',
-            options: {
-                url: 'categoria/lista/1/1',
-                method: 'get',
-                valueField: 'categoria_id',
-                textField: 'descripcion',
-                panelHeight: 200,
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'categoria_id');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'categoria_id',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
 
         if (session.rol_id == null || session.rol_id == 1) {
             dg.datagrid('hideColumn', 'precio');

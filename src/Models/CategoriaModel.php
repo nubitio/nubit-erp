@@ -2,38 +2,26 @@
 
 namespace App\Models;
 
+use DB\SQL\Mapper;
+
 class CategoriaModel extends BaseModel
 {
-
-    protected $dao;
+    private Mapper $dao;
 
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new \DB\SQL\Mapper($this->db, 'categoria');
+        $this->dao = new Mapper($this->db, 'categoria');
     }
 
-    public function all()
+    public function get()
     {
-        return $this->utils->setUp('categoria', 'categoria_id');
+        return $this->utils->setUp('categoria', 'id', 'asc');
     }
 
-    public function lista($filtered, $extended)
+    public function insert()
     {
-        if ($filtered) {
-            $result = $this->db->exec("SELECT * FROM categoria WHERE estado=1 ORDER BY descripcion");
-        } else {
-            $result = $this->db->exec("SELECT * FROM categoria ORDER BY descripcion");
-        }
-        if ($extended) {
-            array_unshift($result, array('categoria_id' => '', 'descripcion' => 'TODOS', 'estado' => '1'));
-        }
-        return $result;
-    }
-
-    public function add()
-    {
-        $this->dao->copyFrom('POST');
+        $this->dao->copyfrom('POST');
         try {
             $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
@@ -42,10 +30,10 @@ class CategoriaModel extends BaseModel
         }
     }
 
-    public function edit($id)
+    public function update($id)
     {
-        $this->dao->load(array('categoria_id=?', $id));
-        $this->dao->copyFrom('POST');
+        $this->dao->load(array('id=?', $id));
+        $this->dao->copyfrom('POST');
         try {
             $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
@@ -56,7 +44,7 @@ class CategoriaModel extends BaseModel
 
     public function delete($id)
     {
-        $this->dao->load(array('categoria_id=?', $id));
+        $this->dao->load(array('id=?', $id));
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
@@ -64,14 +52,5 @@ class CategoriaModel extends BaseModel
             return array('msg' => $e->getMessage());
         }
     }
-
-    public function exportar()
-    {
-        return $this->db->exec("
-            SELECT
-                descripcion as categoria,
-                CASE estado WHEN 1 THEN 'ACTIVO' WHEN 0 THEN 'INACTIVO' END AS estado
-            FROM categoria
-        ");
-    }
 }
+    

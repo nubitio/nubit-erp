@@ -158,9 +158,9 @@ app.facturacion = (function () {
             value = Number(value);
         }
         if (value === 1) {
-            return '<span class="badge badge-pill badge-success">NO</span>';
+            return '<span class="badge rounded-pill bg-success">NO</span>';
         } else if (value === 2) {
-            return '<span class="badge badge-pill badge-danger">SI</span>';
+            return '<span class="badge rounded-pill bg-danger">SI</span>';
         } else {
             return '';
         }
@@ -173,15 +173,15 @@ app.facturacion = (function () {
             value = Number(value);
         }
         if (value === -1) {
-            return '<span class="badge badge-pill badge-secondary">PENDIENTE</span>';
+            return '<span class="badge rounded-pill bg-secondary">PENDIENTE</span>';
         } else if (value === 0) {
-            return '<span class="badge badge-pill badge-success">ENVIADO</span>';
+            return '<span class="badge rounded-pill bg-success">ENVIADO</span>';
         } else if (value < 2000) {
-            return '<span class="badge badge-pill badge-warning">ERRONEO</span>';
+            return '<span class="badge rounded-pill bg-warning">ERRONEO</span>';
         } else if (value >= 2000 && value < 4000) {
-            return '<span class="badge badge-pill badge-danger">RECHAZADO</span>';
+            return '<span class="badge rounded-pill bg-danger">RECHAZADO</span>';
         } else if (value >= 4000) {
-            return '<span class="badge badge-pill badge-info">OBSERVADO</span>';
+            return '<span class="badge rounded-pill bg-info">OBSERVADO</span>';
         }
     }
 

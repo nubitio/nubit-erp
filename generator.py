@@ -24,114 +24,12 @@ def main(argv):
 
 def do_generation(module):
     path = os.getcwd()
-    controller_path = "src/Controllers/" + module.title() + "Controller.php"
-    model_path = "src/Models/" + module.title() + "Model.php"
-    view_path = "src/Views/" + module
-    html_path = "src/Views/" + module + "/index.html"
-    js_path = "src/Views/" + module + "/index.js"
+    pages_path = "public/assets/js/pages/" + module
+    js_path = pages_path + "/index.js"
     print("The current working directory is %s" % path)
     connection = pymysql.connect(host='localhost', user='c3_admin', password='Admin.3000', db='c3_efact',
                                  charset='utf8mb4', cursorclass=pymysql.cursors.DictCursor)
     try:
-        controller = open(controller_path, 'w')
-        controller.write("<?php\n\n")
-        controller.write("\n")
-        controller.write("namespace App\\Controllers;")
-        controller.write("\n")
-        controller.write("class " + module.title() + "Controller extends BaseController\n")
-        controller.write("{\n")
-        controller.write("    private $model;\n\n")
-        controller.write("    public function __construct()\n")
-        controller.write("    {\n")
-        controller.write("        parent::__construct();\n")
-        controller.write("        $this->model = new " + module.title() + "Model();\n")
-        controller.write("    }\n\n")
-        controller.write("    public function render()\n")
-        controller.write("    {\n")
-        controller.write("        $template = new Template();\n")
-        controller.write("        echo $template->render('" + module + "/index.html');\n")
-        controller.write("    }\n\n")
-        controller.write("    public function get()\n")
-        controller.write("    {\n")
-        controller.write("        $this->json($this->model->get());\n")
-        controller.write("    }\n\n")
-        controller.write("    public function insert()\n")
-        controller.write("    {\n")
-        controller.write("        $this->json($this->model->insert());\n")
-        controller.write("    }\n\n")
-        controller.write("    public function update()\n")
-        controller.write("    {\n")
-        controller.write("        $id = $this->app->get('PARAMS.id');\n")
-        controller.write("        $this->json($this->model->update($id));\n")
-        controller.write("    }\n\n")
-        controller.write("    public function delete()\n")
-        controller.write("    {\n")
-        controller.write("        $id = $this->app->get('PARAMS.id');\n")
-        controller.write("        $this->json($this->model->delete($id));\n")
-        controller.write("    }\n")
-        controller.write("}\n")
-        controller.close()
-        print("File created %s" % controller_path)
-        model = open(model_path, 'w')
-        model.write("<?php\n\n")
-        model.write("\n")
-        model.write("namespace App\\Models;")
-        model.write("\n")
-        model.write("class " + module.title() + "Model extends BaseModel\n")
-        model.write("{\n")
-        model.write("    private $dao;\n\n")
-        model.write("    public function __construct()\n")
-        model.write("    {\n")
-        model.write("        parent::__construct();\n")
-        model.write("        $this->dao = new Mapper($this->db, '" + module + "');\n")
-        model.write("    }\n\n")
-        model.write("    public function get()\n")
-        model.write("    {\n")
-        model.write("        return $this->utils->setUp('" + module + "', 'id', 'asc');\n")
-        model.write("    }\n\n")
-        model.write("    public function insert()\n")
-        model.write("    {\n")
-        model.write("        $this->dao->copyfrom('POST');\n")
-        model.write("        try {\n")
-        model.write("            $this->dao->save();\n")
-        model.write("            return array('success' => true, 'msg' => 'Registro guardado.');\n")
-        model.write("        } catch (\\PDOException $e) {\n")
-        model.write("            return array('msg' => $e->getMessage());\n")
-        model.write("        }\n")
-        model.write("    }\n\n")
-        model.write("    public function update($id)\n")
-        model.write("    {\n")
-        model.write("        $this->dao->load(array('id=?', $id));\n")
-        model.write("        $this->dao->copyfrom('POST');\n")
-        model.write("        try {\n")
-        model.write("            $this->dao->update();\n")
-        model.write("            return array('success' => true, 'msg' => 'Registro actualizado.');\n")
-        model.write("        } catch (\\PDOException $e) {\n")
-        model.write("            return array('msg' => $e->getMessage());\n")
-        model.write("        }\n")
-        model.write("    }\n\n")
-        model.write("    public function delete($id)\n")
-        model.write("    {\n")
-        model.write("        $this->dao->load(array('id=?', $id));\n")
-        model.write("        try {\n")
-        model.write("            $this->dao->erase();\n")
-        model.write("            return array('success' => true, 'msg' => 'Registro eliminado.');\n")
-        model.write("        } catch (\\PDOException $e) {\n")
-        model.write("            return array('msg' => $e->getMessage());\n")
-        model.write("        }\n")
-        model.write("    }\n")
-        model.write("}\n")
-        model.close()
-        print("File created %s" % model_path)
-        if not os.path.exists(view_path):
-            os.mkdir(view_path)
-            print("Folder created %s" % view_path)
-        html = open(html_path, 'w')
-        html.write('<div class="wrapper">\n')
-        html.write('    <table id="' + module + '_dg"></table>\n')
-        html.write('    <!-- Dialog -->\n')
-        html.write('    <div id="' + module + '_dlg">\n')
-        html.write('        <form class="fm" id="' + module + '_fm" method="post" novalidate>\n')
         result = {}
         try:
             with connection.cursor() as cursor:
@@ -141,24 +39,16 @@ def do_generation(module):
         finally:
             connection.close()
 
-        ignored = ['id', module + '_id', 'created_at', 'updated_at', 'created_by', 'updated_by']
-        for row in result:
-            field = row['Field']
-            field_type = row['Type']
-            boolean_types = ['bit', 'tinyint']
-            if not any(c in field for c in ignored):
-                html.write('            <div class="fitem">\n')
-                if any(c in field_type for c in boolean_types):
-                    html.write('                <label class="text-right">' + field.title().replace("_",
-                                                                                                    " ") + '</label>\n')
-                html.write('                <input id="' + module + '_' + field + '" name="' + field + '">\n')
-                html.write('            </div>\n')
-        html.write('        </form>\n')
-        html.write('    </div>\n')
-        html.write('</div>\n')
-        html.write('<script src="{{ @ASSETS }}js/pages/' + module + '/index.js?v={{@version}}"></script>\n')
-        html.close()
-        print("File created %s" % html_path)
+        ignored = ['id', f'{module}_id', 'created_at', 'updated_at', 'created_by', 'updated_by']
+
+        generate_controller(module)
+        generate_model(module)
+        generate_template(module, result, ignored)
+
+        if not os.path.exists(pages_path):
+            os.mkdir(pages_path)
+            print("Folder created %s" % pages_path)
+
         js = open(js_path, 'w')
         js.write('var app = app || {};\n')
         js.write('app.' + module + ' = (function () {\n\n')
@@ -168,10 +58,10 @@ def do_generation(module):
         js.write('    let fm = $("#' + module + '_fm");\n')
         for row in result:
             field = row['Field']
-            if not any(c in field for c in ignored):
+            if not(field in ignored):
                 js.write('    let txt_' + field + ' = $("#' + module + '_' + field + '");\n')
-        js.write('    let btn_save;\n')
-        js.write('    let btn_cancel;\n')
+        js.write('    let btnOk;\n')
+        js.write('    let btnCancel;\n\n')
         js.write('    let init = function () {\n')
         js.write('        dg.datagrid({\n')
         js.write('            title: "' + module.title() + '",\n')
@@ -199,10 +89,12 @@ def do_generation(module):
         js.write('            columns: [[\n')
         for row in result:
             field = row['Field']
-            if not any(c in field for c in ignored):
+            if not(field in ignored):
                 js.write('                {\n')
                 js.write('                    field: "' + field + '",\n')
                 js.write('                    title: "' + field.title().replace("_", " ") + '",\n')
+                if (field == 'active'):
+                    js.write('                    formatter: activeFormatter,\n')
                 js.write('                },\n')
         js.write('            ]],\n')
         js.write('            onDblClickRow: function () {\n')
@@ -218,7 +110,7 @@ def do_generation(module):
         js.write('                    dlg.dialog("close");\n')
         js.write('                }\n')
         js.write('            }, {\n')
-        js.write('                id: "' + module + '_save",\n')
+        js.write('                id: "' + module + '_ok",\n')
         js.write('                text: TEXT_SAVE,\n')
         js.write('                handler: function () {\n')
         js.write('                    save();\n')
@@ -227,10 +119,10 @@ def do_generation(module):
         js.write('            onOpen: function () {\n')
         js.write('                dlg.dialog("center");\n')
         js.write('                dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);\n')
-        js.write('                btn_save = $("#' + module + '_save");\n')
-        js.write('                btn_cancel = $("#' + module + '_cancel");\n')
-        js.write('                btn_save.addClass("md-btn");\n')
-        js.write('                btn_cancel.addClass("md-btn-plain");\n')
+        js.write('                btnOk = $("#' + module + '_ok");\n')
+        js.write('                btnCancel = $("#' + module + '_cancel");\n')
+        js.write('                btnOk.addClass("md-btn");\n')
+        js.write('                btnCancel.addClass("md-btn-plain");\n')
         js.write('            }\n')
         js.write('        });\n\n')
         for row in result:
@@ -243,19 +135,23 @@ def do_generation(module):
             numeric_types = ['int', 'decimal', 'float', 'double']
             date_types = ['date', 'datetime']
             boolean_types = ['bit', 'tinyint']
-            ignored = ['created_at', 'updated_at', 'created_by', 'updated_by']
-            if not any(c in field for c in ignored):
+            if not (field in ignored):
                 if any(c in type for c in string_types):
                     js.write('        txt_' + field + '.textbox({\n')
-                elif any(c in type for c in numeric_types):
-                    js.write('        txt_' + field + '.numberbox({\n')
-                elif any(c in type for c in date_types):
-                    js.write('        txt_' + field + '.datebox({\n')
                 elif any(c in type for c in boolean_types):
                     js.write('        txt_' + field + '.switchbutton({\n')
+                elif any(c in type for c in date_types):
+                    js.write('        txt_' + field + '.datebox({\n')
+                elif any(c in type for c in numeric_types):
+                    if (field.endswith('_id')):
+                        js.write('        txt_' + field + '.combobox({\n')
+                    else:
+                        js.write('        txt_' + field + '.numberbox({\n')
                 else:
                     js.write(f'        txt_' + field + '.combobox({\n')
                 if any(c in type for c in boolean_types):
+                    js.write(f'            label: "{field.title().replace("_", " ")}",\n')
+                    js.write('            labelPosition: "top",\n')
                     js.write('            onText: "SI",\n')
                     js.write('            offText: "NO",\n')
                     js.write('            value: "1",\n')
@@ -266,6 +162,13 @@ def do_generation(module):
                 if any(c in type for c in date_types):
                     js.write('            formatter: dateformatter,\n')
                     js.write('            parser: dateparser,\n')
+                if (field.endswith('_id')):
+                    js.write('            url: "",\n')
+                    js.write('            method: "get",\n')
+                    js.write('            valueField: "",\n')
+                    js.write('            textField: "",\n')
+                    js.write('            panelHeight: 200,\n')
+                    js.write('            limitToList: true,\n')
                 js.write(f'            required: {required}\n')
                 js.write('        });\n\n')
         js.write('    };\n\n')
@@ -290,7 +193,7 @@ def do_generation(module):
         js.write('            onSubmit: function () {\n')
         js.write('                let valid = fm.form("validate");\n')
         js.write('                if (valid) {\n')
-        js.write('                    disable_buttons();\n')
+        js.write('                    disableButtons(btnOk, btnCancel, dlg);\n')
         js.write('                }\n')
         js.write('                return valid;\n')
         js.write('            },\n')
@@ -304,10 +207,10 @@ def do_generation(module):
         js.write('                    } else {\n')
         js.write('                        show_error(result.msg);\n')
         js.write('                    }\n')
-        js.write('                    enable_buttons();\n')
+        js.write('                    enableButtons(btnOk, btnCancel, dlg);\n')
         js.write('                } catch (e) {\n')
         js.write('                    show_error(e);\n')
-        js.write('                    enable_buttons();\n')
+        js.write('                    enableButtons(btnOk, btnCancel, dlg);\n')
         js.write('                }\n')
         js.write('            }\n')
         js.write('        });\n')
@@ -335,18 +238,6 @@ def do_generation(module):
         js.write('            show_info("Seleccione un registro");\n')
         js.write('        }\n')
         js.write('    }\n\n')
-        js.write('    function disable_buttons() {\n')
-        js.write('        btn_cancel.linkbutton("disable");\n')
-        js.write('        btn_save.linkbutton("disable");\n')
-        js.write('        btn_save.linkbutton({text: "Guardando..."});\n')
-        js.write('        dlg.dialog("showMask", "Procesando...");\n')
-        js.write('    }\n\n')
-        js.write('    function enable_buttons() {\n')
-        js.write('        btn_cancel.linkbutton("enable");\n')
-        js.write('        btn_save.linkbutton("enable");\n')
-        js.write('        btn_save.linkbutton({text: TEXT_SAVE});\n')
-        js.write('        dlg.dialog("hideMask");\n')
-        js.write('    }\n\n')
         js.write('    return {\n')
         js.write('        init: init\n')
         js.write('    };\n')
@@ -354,9 +245,167 @@ def do_generation(module):
         js.write('app.' + module + '.init();\n')
         js.close()
         print("File created %s" % js_path)
+        generate_routes(module)
     except OSError as e:
         print("OSError [{}]: {} at {}".format(e.errno, e.strerror, e.filename))
 
+def generate_controller(module):
+    controller_path = "src/Controllers/" + module.title() + "Controller.php"
+    controller = open(controller_path, 'w')
+    controller_text = f'''<?php
+
+namespace App\\Controllers;
+
+use App\\Models\\{module.title()}Model;
+
+class {module.title()}Controller extends BaseController
+{{
+    private {module.title()}Model $model;
+
+    public function __construct()
+    {{
+        parent::__construct();
+        $this->model = new {module.title()}Model();
+    }}
+
+    public function index()
+    {{
+        $this->render('{module}/index.html.twig');
+    }}
+
+    public function get()
+    {{
+        $this->json($this->model->get());
+    }}
+
+    public function insert()
+    {{
+        $this->json($this->model->insert());
+    }}
+
+    public function update()
+    {{
+        $id = $this->app->get('PARAMS.id');
+        $this->json($this->model->update($id));
+    }}
+
+    public function delete()
+    {{
+        $id = $this->app->get('PARAMS.id');
+        $this->json($this->model->delete($id));
+    }}
+}}
+    '''
+    controller.write(controller_text)
+    controller.close()
+    print("File created %s" % controller_path)
+
+def generate_model(module):
+    model_path = "src/Models/" + module.title() + "Model.php"
+    model = open(model_path, 'w')
+    model_text = f'''<?php
+
+namespace App\\Models;
+
+use DB\\SQL\\Mapper;
+
+class {module.title()}Model extends BaseModel
+{{
+    private Mapper $dao;
+
+    public function __construct()
+    {{
+        parent::__construct();
+        $this->dao = new Mapper($this->db, '{module}');
+    }}
+
+    public function get()
+    {{
+        return $this->utils->setUp('{module}', 'id', 'asc');
+    }}
+
+    public function insert()
+    {{
+        $this->dao->copyfrom('POST');
+        try {{
+            $this->dao->save();
+            return array('success' => true, 'msg' => 'Registro guardado.');
+        }} catch (\\PDOException $e) {{
+            return array('msg' => $e->getMessage());
+        }}
+    }}
+
+    public function update($id)
+    {{
+        $this->dao->load(array('id=?', $id));
+        $this->dao->copyfrom('POST');
+        try {{
+            $this->dao->update();
+            return array('success' => true, 'msg' => 'Registro actualizado.');
+        }} catch (\\PDOException $e) {{
+            return array('msg' => $e->getMessage());
+        }}
+    }}
+
+    public function delete($id)
+    {{
+        $this->dao->load(array('id=?', $id));
+        try {{
+            $this->dao->erase();
+            return array('success' => true, 'msg' => 'Registro eliminado.');
+        }} catch (\\PDOException $e) {{
+            return array('msg' => $e->getMessage());
+        }}
+    }}
+}}
+    '''
+    model.write(model_text)
+    model.close()
+    print("File created %s" % model_path)
+
+def generate_template(module, result, ignored):
+    templates_path = "templates/" + module
+    template_path = templates_path + "/index.html.twig"
+    if not os.path.exists(templates_path):
+        os.mkdir(templates_path)
+        print("Folder created %s" % templates_path)
+
+    template = open(template_path, 'w')
+    template.write('<div class="wrapper">\n')
+    template.write('    <table id="' + module + '_dg"></table>\n')
+    template.write('    <!-- Dialog -->\n')
+    template.write('    <div id="' + module + '_dlg">\n')
+    template.write('        <form class="fm" id="' + module + '_fm" method="post" novalidate>\n')
+
+    for row in result:
+        field = row['Field']
+        field_type = row['Type']
+        if not (field in ignored):
+            template.write('            <div class="fitem">\n')
+            template.write('                <input id="' + module + '_' + field + '" name="' + field + '">\n')
+            template.write('            </div>\n')
+
+    template.write('        </form>\n')
+    template.write('    </div>\n')
+    template.write('</div>\n')
+    template.write('<script src="{{ asset(\'assets/js/pages/' + module + '/index.js\') }}"></script>\n')
+    template.close()
+    print("File created %s" % template_path)
+
+def generate_routes(module):
+    routes = open('config/routes.ini', 'a')
+    routes.write('\n# ' + module)
+    routes_text = f'''
+GET /{module} = App\\Controllers\\{module.title()}Controller->index
+POST /{module}/get = App\\Controllers\\{module.title()}Controller->get
+POST /{module}/add = App\\Controllers\\{module.title()}Controller->insert
+POST /{module}/edit/@id = App\\Controllers\\{module.title()}Controller->update
+POST /{module}/delete/@id = App\\Controllers\\{module.title()}Controller->delete
+    '''
+    routes.write(routes_text)
+    routes.close()
+    print("Routes generated for %s" % module)
+    print(routes_text)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

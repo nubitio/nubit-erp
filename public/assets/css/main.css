@@ -319,6 +319,15 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
     color: #6b6f82;
 }
 
+.switchbutton-on {
+    background: var(--accent-color);
+    color: #fff;
+}
+
+.textbox-label {
+    width: 80%;
+}
+
 /*scrollbar*/
 ::-webkit-scrollbar {
     width: 12px;

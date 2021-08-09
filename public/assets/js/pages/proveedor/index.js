@@ -46,15 +46,13 @@ app.proveedor = (function () {
                 {field: 'ruc', title: 'Ruc', sortable: true, align: 'center'},
                 {field: 'razon_social', title: 'Razón Social', sortable: true, width: 200},
                 {field: 'domicilio_fiscal', title: 'Domicilio Fiscal', sortable: true, width: 300},
-                {field: 'telefono', title: 'Telefono', sortable: true, width: 80},
+                {field: 'telefono', title: 'Telefono', sortable: true,},
                 {
                     field: 'estado',
-                    title: 'Estado',
+                    title: 'Activo',
                     sortable: true,
-                    width: 100,
                     align: 'center',
-                    formatter: estado_formatter,
-                    styler: estado_styler
+                    formatter: activeFormatter,
                 }
             ]],
             onDblClickRow: function () {

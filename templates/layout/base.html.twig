@@ -35,7 +35,7 @@
 </head>
 <body class="easyui-layout" id="layout-container">
 <div data-options="region: 'north', border: false" class="primary-dark" style="height: 56px;">
-    <div class="float-left">
+    <div class="float-start">
         <div class="easyui-linkbutton menu-bars" data-options="plain: true" onclick="toggle()">
             <i class="fa fa-bars fa-lg"></i>
         </div>
@@ -43,7 +43,7 @@
         <span id="home_local_title" style="color: #e3e3e3; margin-left: 20px;"><i
                     class="fa fa-home"></i> {{ session.local }}</span>
     </div>
-    <div class="float-right">
+    <div class="float-end">
         <img src="" alt="" style="height: 56px">
         <a href="#" class="easyui-menubutton menu-user"
            data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ session.usuario }}</a>

@@ -55,50 +55,19 @@ app.customer = (function () {
                 field: 'telefono',
                 title: 'Telefono',
                 sortable: true,
-                width: 80
             }, {
                 field: 'estado',
-                title: 'Estado',
+                title: 'Activo',
                 sortable: true,
-                width: 100,
                 align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
+                formatter: activeFormatter,
             }]],
             onDblClickRow: function () {
                 app.customer.form.edit();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
     };
 
     function exportar() {

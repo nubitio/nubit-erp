@@ -37,50 +37,20 @@ app.unidad = (function () {
                 field: 'descripcion',
                 title: 'Descripcion',
                 sortable: true,
-                width: 400
+                width: 100
             }, {
                 field: 'estado',
-                title: 'Estado',
+                title: 'Activo',
                 sortable: true,
-                width: 100,
                 align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
+                formatter: activeFormatter,
             }]],
             onDblClickRow: function () {
                 editar();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
 
         dlg.dialog({
             buttons: [{

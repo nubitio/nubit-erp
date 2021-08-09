@@ -1,167 +1,141 @@
 var app = app || {};
 app.categoria = (function () {
-    var route;
-    var dg = $('#categoria_dg');
-    var dlg = $('#categoria_dlg');
-    var fm = $('#categoria_fm');
-    var txt_descripcion = $('#categoria_descripcion');
-    var cbo_estado = $('#categoria_estado');
-    var btn_guardar;
-    var btn_cancelar;
 
-    var init = function () {
+    let route;
+    let dg = $("#categoria_dg");
+    let dlg = $("#categoria_dlg");
+    let fm = $("#categoria_fm");
+    let txt_name = $("#categoria_name");
+    let txt_parent_id = $("#categoria_parent_id");
+    let txt_active = $("#categoria_active");
+    let btnOk;
+    let btnCancel;
+
+    let init = function () {
         dg.datagrid({
-            title: 'Categorias',
-            url: 'categoria/get',
+            title: "Categoria",
+            url: "categoria/get",
             remoteFilter: true,
             toolbar: [{
                 text: TEXT_ADD,
                 iconCls: ICON_ADD,
                 handler: function () {
-                    nuevo();
+                    insert();
                 }
-            }, '-', {
+            }, "-", {
                 text: TEXT_EDIT,
                 iconCls: ICON_EDIT,
                 handler: function () {
-                    editar();
+                    update();
                 }
-            }, '-', {
+            }, "-", {
                 text: TEXT_DELETE,
                 iconCls: ICON_DELETE,
                 handler: function () {
-                    eliminar();
-                }
-            }, '-', {
-                text: TEXT_EXPORTAR,
-                iconCls: ICON_XLS,
-                handler: function () {
-                    exportar();
+                    erase();
                 }
             }],
-            columns: [[{
-                field: 'descripcion',
-                title: 'Descripcion',
-                sortable: true,
-                width: 400
-            }, {
-                field: 'estado',
-                title: 'Estado',
-                sortable: true,
-                width: 100,
-                align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
-            }]],
+            columns: [[
+                {
+                    field: "name",
+                    title: "Name",
+                },
+                {
+                    field: "parent_id",
+                    title: "Parent Id",
+                },
+                {
+                    field: "active",
+                    title: "Active",
+                    formatter: activeFormatter,
+                },
+            ]],
             onDblClickRow: function () {
-                editar();
+                update();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid("enableFilter", [{}]);
 
         dlg.dialog({
             buttons: [{
-                id: 'categoria_cancelar',
+                id: "categoria_cancel",
                 text: TEXT_CANCEL,
                 handler: function () {
-                    dlg.dialog('close');
+                    dlg.dialog("close");
                 }
             }, {
-                id: 'categoria_guardar',
+                id: "categoria_ok",
                 text: TEXT_SAVE,
                 handler: function () {
-                    guardar();
+                    save();
                 }
             }],
             onOpen: function () {
-                dlg.dialog('center');
+                dlg.dialog("center");
                 dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
-                btn_guardar = $('#categoria_guardar');
-                btn_cancelar = $('#categoria_cancelar');
-                btn_guardar.addClass('md-btn');
-                btn_cancelar.addClass('md-btn-plain');
+                btnOk = $("#categoria_ok");
+                btnCancel = $("#categoria_cancel");
+                btnOk.addClass("md-btn");
+                btnCancel.addClass("md-btn-plain");
             }
         });
 
-        txt_descripcion.textbox({
-            width: '100%',
-            label: 'Descripcion',
-            labelPosition: 'top',
+        txt_name.textbox({
+            width: "100%",
+            label: "Name",
+            labelPosition: "top",
             required: true
         });
 
-        cbo_estado.combobox({
-            width: '100%',
-            label: 'Estado',
-            labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'ACTIVO'
-            }, {
-                value: '2',
-                text: 'INACTIVO'
-            }],
-            panelHeight: 'auto',
+        txt_parent_id.combobox({
+            width: "100%",
+            label: "Parent Id",
+            labelPosition: "top",
+            url: "",
+            method: "get",
+            valueField: "",
+            textField: "",
+            panelHeight: 200,
             limitToList: true,
-            editable: false,
+            required: false
+        });
+
+        txt_active.switchbutton({
+            label: "Active",
+            labelPosition: "top",
+            onText: "SI",
+            offText: "NO",
+            value: "1",
             required: true
         });
+
     };
 
-    function nuevo() {
-        fm.form('clear');
-        route = 'categoria/add';
-        cbo_estado.combobox('select', 1);
-        dlg.dialog('open').dialog('setTitle', 'Nuevo');
+    function insert() {
+        fm.form("clear");
+        route = "categoria/add";
+        dlg.dialog("open").dialog("setTitle", "Nuevo");
     }
 
-    function editar() {
-        var row = dg.datagrid('getSelected');
+    function update() {
+        let row = dg.datagrid("getSelected");
         if (row) {
-            dlg.dialog('open').dialog('setTitle', 'Editar');
-            fm.form('load', row);
-            route = 'categoria/edit/' + row.categoria_id;
+            dlg.dialog("open").dialog("setTitle", "Editar");
+            fm.form("load", row);
+            route = "categoria/edit/" + row.id;
         } else {
-            show_info('Seleccione un registro');
+            show_info("Seleccione un registro.");
         }
     }
 
-    function guardar() {
-        fm.form('submit', {
+    function save() {
+        fm.form("submit", {
             url: route,
             onSubmit: function () {
-                valid = fm.form('validate');
+                let valid = fm.form("validate");
                 if (valid) {
-                    disable_buttons();
+                    disableButtons(btnOk, btnCancel, dlg);
                 }
                 return valid;
             },
@@ -169,44 +143,30 @@ app.categoria = (function () {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        dlg.dialog('close');
-                        dg.datagrid('reload');
+                        dlg.dialog("close");
+                        dg.datagrid("reload");
                         show_info(result.msg);
                     } else {
                         show_error(result.msg);
                     }
-                    enable_buttons();
+                    enableButtons(btnOk, btnCancel, dlg);
                 } catch (e) {
                     show_error(e);
-                    enable_buttons();
+                    enableButtons(btnOk, btnCancel, dlg);
                 }
             }
         });
     }
 
-    function disable_buttons() {
-        btn_cancelar.linkbutton('disable');
-        btn_guardar.linkbutton('disable');
-        btn_guardar.linkbutton({text: 'Guardando...'});
-        dlg.dialog('showMask', 'Procesando...');
-    }
-
-    function enable_buttons() {
-        btn_cancelar.linkbutton('enable');
-        btn_guardar.linkbutton('enable');
-        btn_guardar.linkbutton({text: 'Guardar'});
-        dlg.dialog('hideMask');
-    }
-
-    function eliminar() {
-        var row = dg.datagrid('getSelected');
+    function erase() {
+        let row = dg.datagrid("getSelected");
         if (row) {
-            $.messager.confirm('Confirmar', '¿Está seguro que desea eliminar este registro?', function (r) {
+            $.messager.confirm("Confirmar", TEXT_CONFIRM, function (r) {
                 if (r) {
-                    $.post('categoria/delete/' + row.categoria_id)
+                    $.post("categoria/delete/" + row.id)
                         .done(function (result) {
                             if (result.success) {
-                                dg.datagrid('reload');
+                                dg.datagrid("reload");
                                 show_info(result.msg);
                             } else {
                                 show_error(result.msg);
@@ -218,17 +178,12 @@ app.categoria = (function () {
                 }
             });
         } else {
-            show_info('Seleccione un registro');
+            show_info("Seleccione un registro");
         }
-    }
-
-    function exportar() {
-        window.open('categoria/exportar');
     }
 
     return {
         init: init
     };
-
 })();
 app.categoria.init();

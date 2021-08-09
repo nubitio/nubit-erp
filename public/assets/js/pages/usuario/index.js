@@ -45,72 +45,19 @@ app.usuario = (function () {
                 field: 'rol',
                 title: 'Rol',
                 sortable: true,
-                width: 20,
             }, {
                 field: 'estado',
-                title: 'Estado',
+                title: 'Activo',
                 sortable: true,
-                width: 20,
                 align: 'center',
-                formatter: estado_formatter,
-                styler: estado_styler
+                formatter: activeFormatter,
             }]],
             onDblClickRow: function () {
                 editar();
             }
         });
 
-        dg.datagrid('enableFilter', [{
-            field: 'rol',
-            type: 'combobox',
-            options: {
-                url: 'rol/lista/1/1',
-                method: 'get',
-                valueField: 'rol_id',
-                textField: 'descripcion',
-                panelHeight: 200,
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'rol_id');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'rol_id',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }, {
-            field: 'estado',
-            type: 'combobox',
-            options: {
-                panelHeight: 'auto',
-                data: [{
-                    value: '',
-                    text: 'TODOS'
-                }, {
-                    value: '1',
-                    text: 'ACTIVO'
-                }, {
-                    value: '2',
-                    text: 'INACTIVO'
-                }],
-                onChange: function (value) {
-                    if (value === '') {
-                        dg.datagrid('removeFilterRule', 'estado');
-                    } else {
-                        dg.datagrid('addFilterRule', {
-                            field: 'estado',
-                            op: 'equal',
-                            value: value
-                        });
-                    }
-                    dg.datagrid('doFilter');
-                }
-            }
-        }]);
+        dg.datagrid('enableFilter', []);
 
         dlg.dialog({
             buttons: [{

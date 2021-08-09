@@ -119,9 +119,9 @@ app.caja_consulta = (function () {
     function statusFormatter(value, row) {
         value = Number(value);
         if (value === 1) {
-            value = '<span class="badge badge-pill badge-success">ABIERTO</span>';
+            value = '<span class="badge rounded-pill bg-success">ABIERTO</span>';
         } else {
-            value = '<span class="badge badge-pill badge-secondary">CERRADO</span>';
+            value = '<span class="badge rounded-pill bg-secondary">CERRADO</span>';
         }
         return value;
     }
