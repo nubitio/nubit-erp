@@ -1,24 +1,54 @@
 #!/bin/bash
 
-ERROR="Error. Please make sure you've indicated correct parameters"
-if [ $# -eq 0 ]; then
-  echo "$ERROR"
-elif [[ "$1" == "live" ]]; then
-  if [[ -z $2 ]]; then
-    echo "Running dry-run"
-    rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c3_efact@giklabs.com:/web/
-    #rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c6_sysdein@giklabs.com:/web/
-    #rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
-    #rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c7_elcevichero@giklabs.com:/web/
-    #rsync --dry-run -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c7_arcacevic@giklabs.com:/web/
-  elif [[ "$2" == "go" ]]; then
-    echo "Running actual deploy"
-    rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c3_efact@giklabs.com:/web/
-    #rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c6_sysdein@giklabs.com:/web/
-    #rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c5_surtihogar@giklabs.com:/web/
-    #rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c7_elcevichero@giklabs.com:/web/
-    #rsync -auzP --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ c7_arcacevic@giklabs.com:/web/
-  else
-    echo "$ERROR"
-  fi
-fi
+SERVER="giklabs.com"
+PS3='Please enter your choice: '
+options=("Demo" "ArcaCevic" "ArcaServis" "SurtiHogar" "Sysdein" "Maia" "Giancorpf" "Quit")
+
+function deploy() {
+  echo "Running deploy"
+  rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ $USERNAME@$SERVER:/web/
+}
+
+function dry-run() {
+  echo "Running dry-run"
+  rsync --dry-run -auzP --force --progress --exclude-from=deploy_exclude.txt -e "ssh -p22" ./ $USERNAME@$SERVER:/web/
+}
+
+select opt in "${options[@]}"; do
+  case $opt in
+  "Demo")
+    USERNAME="c3_efact"
+    deploy
+    ;;
+  "ArcaCevic")
+    USERNAME="c7_arcacevic"
+    deploy
+    ;;
+  "ArcaServis")
+    USERNAME="c7_elcevichero"
+    deploy
+    ;;
+  "SurtiHogar")
+    USERNAME="c5_surtihogar"
+    deploy
+    ;;
+  "Sysdein")
+      USERNAME="c6_sysdein"
+      deploy
+      ;;
+  "Maia")
+      USERNAME="c4_maia"
+      deploy
+      ;;
+  "Giancorpf")
+      USERNAME="c2_giancorpf"
+      deploy
+      ;;
+  "Quit")
+    break
+    ;;
+  *)
+    echo "Invalid option $REPLY"
+    ;;
+  esac
+done

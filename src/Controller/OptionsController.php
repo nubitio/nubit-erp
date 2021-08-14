@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Controller;
+
+use App\Models\OptionsModel;
+
+class OptionsController extends BaseController
+{
+    private OptionsModel $model;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->model = new OptionsModel();
+    }
+
+    public function index()
+    {
+        $this->render('options/index.html.twig');
+    }
+
+    public function get()
+    {
+        $this->json($this->model->get());
+    }
+
+    public function getAll()
+    {
+        $this->json($this->model->getAll());
+    }
+
+    public function get_list()
+    {
+        $filtered = (bool)$this->app->get('PARAMS.filtered');
+        $this->json($this->model->get_list($filtered));
+    }
+
+    public function insert()
+    {
+        $this->json($this->model->insert());
+    }
+
+    public function update()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $this->json($this->model->update($id));
+    }
+
+    public function delete()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $this->json($this->model->delete($id));
+    }
+}
