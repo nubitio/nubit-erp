@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\PlantillaModel;
+use App\Model\PlantillaModel;
 use Template;
 
 class PlantillaController extends BaseController

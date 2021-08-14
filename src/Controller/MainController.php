@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Models\AlmacenModel;
-use App\Models\LocalModel;
-use App\Models\MenuModel;
+use App\Model\AlmacenModel;
+use App\Model\LocalModel;
+use App\Model\MenuModel;
 
 class MainController extends BaseController
 {

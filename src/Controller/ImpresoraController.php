@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ImpresoraModel;
+use App\Model\ImpresoraModel;
 use Template;
 
 class ImpresoraController extends BaseController

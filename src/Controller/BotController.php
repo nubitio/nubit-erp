@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Models\BotModel;
-use App\Models\CreditNoteModel;
+use App\Model\BotModel;
+use App\Model\CreditNoteModel;
 
 class BotController extends BaseController
 {

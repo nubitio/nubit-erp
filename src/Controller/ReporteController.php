@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ReporteModel;
+use App\Model\ReporteModel;
 use Template;
 
 class ReporteController extends BaseController

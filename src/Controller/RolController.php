@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\RolModel;
+use App\Model\RolModel;
 
 class RolController extends BaseController
 {

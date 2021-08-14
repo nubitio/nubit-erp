@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\CategoriaModel;
+use App\Model\CategoriaModel;
 
 class CategoriaController extends BaseController
 {

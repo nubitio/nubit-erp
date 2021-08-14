@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\EmpresaModel;
+use App\Model\EmpresaModel;
 use Template;
 
 class EmpresaController extends BaseController

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\EmpleadoModel;
+use App\Model\EmpleadoModel;
 use Template;
 
 class EmpleadoController extends BaseController

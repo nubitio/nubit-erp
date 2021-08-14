@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\BackupModel;
+use App\Model\BackupModel;
 
 class BackupController extends BaseController
 {

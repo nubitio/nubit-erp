@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\OptionsModel;
+use App\Model\OptionsModel;
 
 class OptionsController extends BaseController
 {

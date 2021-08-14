@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ClienteModel;
+use App\Model\ClienteModel;
 
 class ClienteController extends BaseController
 {

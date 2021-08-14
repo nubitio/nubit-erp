@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\MenuModel;
+use App\Model\MenuModel;
 use Template;
 
 class MenuController extends BaseController

@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Models\BotModel;
-use App\Models\OptionsModel;
+use App\Model\BotModel;
+use App\Model\OptionsModel;
 use DateTime;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;

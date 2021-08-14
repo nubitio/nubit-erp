@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\UnidadModel;
+use App\Model\UnidadModel;
 use Template;
 
 class UnidadController extends BaseController

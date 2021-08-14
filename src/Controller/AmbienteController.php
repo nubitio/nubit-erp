@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\AmbienteModel;
+use App\Model\AmbienteModel;
 use Template;
 
 class AmbienteController extends BaseController

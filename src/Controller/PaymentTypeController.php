@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\PaymentTypeModel;
+use App\Model\PaymentTypeModel;
 use Template;
 
 class PaymentTypeController extends BaseController

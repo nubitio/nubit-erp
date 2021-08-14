@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\BIModel;
+use App\Model\BIModel;
 
 class BIController extends BaseController
 {

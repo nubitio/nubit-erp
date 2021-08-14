@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\DescuentoModel;
+use App\Model\DescuentoModel;
 use Template;
 
 class DescuentoController extends BaseController

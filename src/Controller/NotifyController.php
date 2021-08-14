@@ -2,8 +2,8 @@
 
 namespace App\Controller;
 
-use App\Models\NotifyModel;
-use App\Models\OptionsModel;
+use App\Model\NotifyModel;
+use App\Model\OptionsModel;
 use MessageBird\Client;
 use MessageBird\Objects\Conversation\Content;
 use MessageBird\Objects\Conversation\SendMessage;

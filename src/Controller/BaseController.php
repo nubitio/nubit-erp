@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\OptionsModel;
+use App\Model\OptionsModel;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;

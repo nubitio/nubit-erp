@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\AppModel;
+use App\Model\AppModel;
 
 class AppController extends BaseController
 {

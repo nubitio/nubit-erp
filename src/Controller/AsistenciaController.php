@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\AsistenciaModel;
+use App\Model\AsistenciaModel;
 use Template;
 
 class AsistenciaController extends BaseController

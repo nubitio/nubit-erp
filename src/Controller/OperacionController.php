@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\OperacionModel;
+use App\Model\OperacionModel;
 use Template;
 
 class OperacionController extends BaseController

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\LocalComprobanteModel;
+use App\Model\LocalComprobanteModel;
 use Template;
 
 class LocalComprobanteController extends BaseController

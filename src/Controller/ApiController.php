@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
-use App\Models\ApiModel;
-use App\Models\BotModel;
-use App\Models\UsuarioModel;
+use App\Model\ApiModel;
+use App\Model\BotModel;
+use App\Model\UsuarioModel;
 use Firebase\JWT\JWT;
 
 class ApiController extends BaseController

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ConcentradosModel;
+use App\Model\ConcentradosModel;
 use Template;
 
 class ConcentradosController extends BaseController

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\NotaModel;
+use App\Model\NotaModel;
 use Template;
 
 class NotaController extends BaseController

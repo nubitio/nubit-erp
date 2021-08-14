@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ReservaModel;
+use App\Model\ReservaModel;
 use Template;
 
 class ReservaController extends BaseController

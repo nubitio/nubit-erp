@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ProductoModel;
+use App\Model\ProductoModel;
 use Template;
 
 class ProductoController extends BaseController

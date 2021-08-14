@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\SummaryModel;
+use App\Model\SummaryModel;
 
 class SummaryController extends BaseController
 {

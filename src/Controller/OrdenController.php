@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\OrdenModel;
+use App\Model\OrdenModel;
 use Template;
 
 class OrdenController extends BaseController

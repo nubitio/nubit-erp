@@ -4,8 +4,8 @@ namespace App\Controller;
 
 include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
 
-use App\Models\BotModel;
-use App\Models\MovimientoModel;
+use App\Model\BotModel;
+use App\Model\MovimientoModel;
 use Neodynamic\SDK\Web\WebClientPrint;
 use NumberFormatter;
 use PHPMailer\PHPMailer\Exception;

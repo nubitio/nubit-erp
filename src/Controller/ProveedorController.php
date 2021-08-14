@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\ProveedorModel;
+use App\Model\ProveedorModel;
 
 class ProveedorController extends BaseController
 {

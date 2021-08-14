@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\RequerimientoModel;
+use App\Model\RequerimientoModel;
 use Template;
 
 class RequerimientoController extends BaseController

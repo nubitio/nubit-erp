@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\BotModel;
+use App\Model\BotModel;
 use Template;
 
 class InvoiceController extends BaseController

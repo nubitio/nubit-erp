@@ -4,7 +4,7 @@ namespace App\Controller;
 
 include dirname(dirname(__FILE__)) . '/WebClientPrint.php';
 
-use App\Models\MovimientoModel;
+use App\Model\MovimientoModel;
 use App\Utils\SaleItem;
 use Neodynamic\SDK\Web\WebClientPrint;
 use Neodynamic\SDK\Web\DefaultPrinter;

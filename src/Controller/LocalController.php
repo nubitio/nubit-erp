@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\LocalModel;
+use App\Model\LocalModel;
 use Template;
 
 class LocalController extends BaseController

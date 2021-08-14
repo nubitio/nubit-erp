@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\TransferModel;
+use App\Model\TransferModel;
 
 class TransferController extends BaseController
 {

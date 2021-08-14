@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\AlmacenModel;
+use App\Model\AlmacenModel;
 
 class AlmacenController extends BaseController
 {

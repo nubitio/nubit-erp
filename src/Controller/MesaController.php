@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\MesaModel;
+use App\Model\MesaModel;
 use Template;
 
 class MesaController extends BaseController

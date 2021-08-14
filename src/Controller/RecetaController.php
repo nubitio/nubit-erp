@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\RecetaModel;
+use App\Model\RecetaModel;
 use Template;
 
 class RecetaController extends BaseController

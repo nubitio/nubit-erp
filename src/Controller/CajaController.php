@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Models\CajaModel;
+use App\Model\CajaModel;
 use Template;
 
 class CajaController extends BaseController
