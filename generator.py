@@ -250,13 +250,13 @@ def do_generation(module):
         print("OSError [{}]: {} at {}".format(e.errno, e.strerror, e.filename))
 
 def generate_controller(module):
-    controller_path = "src/Controllers/" + module.title() + "Controller.php"
+    controller_path = "src/Controller/" + module.title() + "Controller.php"
     controller = open(controller_path, 'w')
     controller_text = f'''<?php
 
-namespace App\\Controllers;
+namespace App\\Controller;
 
-use App\\Models\\{module.title()}Model;
+use App\\Model\\{module.title()}Model;
 
 class {module.title()}Controller extends BaseController
 {{
@@ -301,11 +301,11 @@ class {module.title()}Controller extends BaseController
     print("File created %s" % controller_path)
 
 def generate_model(module):
-    model_path = "src/Models/" + module.title() + "Model.php"
+    model_path = "src/Model/" + module.title() + "Model.php"
     model = open(model_path, 'w')
     model_text = f'''<?php
 
-namespace App\\Models;
+namespace App\\Model;
 
 use DB\\SQL\\Mapper;
 
@@ -396,11 +396,11 @@ def generate_routes(module):
     routes = open('config/routes.ini', 'a')
     routes.write('\n# ' + module)
     routes_text = f'''
-GET /{module} = App\\Controllers\\{module.title()}Controller->index
-POST /{module}/get = App\\Controllers\\{module.title()}Controller->get
-POST /{module}/add = App\\Controllers\\{module.title()}Controller->insert
-POST /{module}/edit/@id = App\\Controllers\\{module.title()}Controller->update
-POST /{module}/delete/@id = App\\Controllers\\{module.title()}Controller->delete
+GET /{module} = App\\Controller\\{module.title()}Controller->index
+POST /{module}/get = App\\Controller\\{module.title()}Controller->get
+POST /{module}/add = App\\Controller\\{module.title()}Controller->insert
+POST /{module}/edit/@id = App\\Controller\\{module.title()}Controller->update
+POST /{module}/delete/@id = App\\Controller\\{module.title()}Controller->delete
     '''
     routes.write(routes_text)
     routes.close()
