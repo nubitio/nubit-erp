@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-use App\Utils\ModelUtils;
+use App\Util\ModelUtils;
 use Base;
 use DB\SQL;
 

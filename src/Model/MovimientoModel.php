@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-use App\Utils\TipoDoc;
+use App\Util\TipoDoc;
 use DB\SQL\Mapper;
 use PDO;
 
