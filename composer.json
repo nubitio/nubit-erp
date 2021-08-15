@@ -22,7 +22,8 @@
     "greenter/report": "^4.3",
     "twig/twig": "^3.3",
     "symfony/twig-bridge": "^5.3",
-    "symfony/asset": "^5.3"
+    "symfony/asset": "^5.3",
+    "symfony/dependency-injection": "^5.3"
   },
   "authors": [
     {
