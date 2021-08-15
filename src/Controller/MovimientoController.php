@@ -63,17 +63,11 @@ class MovimientoController extends BaseController
         $this->app->set('wcpscript1', $printDetectionScript);
         $this->app->set('wcpscript2', $printScrip);
         $this->app->set('session_id', $sessionId);
-        $template = new Template;
-        $mode = $this->app->get('MODE');
-        if ($mode == 'REST') {
-            echo $template->render('venta/index.html');
-        } else {
-            $this->render('venta_pos/index.html.twig', [
-                'session_id' => $sessionId,
-                'printDetectionScript' => $printDetectionScript,
-                'printScript' => $printScrip
-            ]);
-        }
+        $this->render('venta/index.html.twig', [
+            'session_id' => $sessionId,
+            'printDetectionScript' => $printDetectionScript,
+            'printScript' => $printScrip
+        ]);
     }
 
     function get()
