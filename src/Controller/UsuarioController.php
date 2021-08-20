@@ -57,7 +57,6 @@ class UsuarioController extends BaseController
             $this->app->reroute('/home');
             exit;
         } else {
-            $this->model->init();
             $this->render('login/index.html.twig', [
                 'title' => $this->app->get('TITLE')
             ]);
