@@ -9,49 +9,49 @@ class UsuarioController extends BaseController
 
     private UsuarioModel $model;
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
         $this->model = new UsuarioModel();
     }
 
-    function beforeroute()
+    public function beforeroute()
     {
         //needed for avoid redirect loop
     }
 
-    function index()
+    public function index()
     {
         $this->render('usuario/index.html.twig');
     }
 
-    function get()
+    public function get()
     {
         $result = $this->model->all();
         $this->json($result);
     }
 
-    function add()
+    public function add()
     {
         $data = $this->model->add();
         $this->json($data);
     }
 
-    function edit()
+    public function edit()
     {
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->edit($id);
         $this->json($data);
     }
 
-    function delete()
+    public function delete()
     {
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->delete($id);
         $this->json($data);
     }
 
-    function login()
+    public function login()
     {
         if ($this->app->get('SESSION.usuario') !== null) {
             $this->app->reroute('/home');
@@ -64,7 +64,7 @@ class UsuarioController extends BaseController
         }
     }
 
-    function autenticar()
+    public function autenticar()
     {
         $username = $this->app->get('POST.username');
         $password = $this->app->get('POST.password');
@@ -74,7 +74,7 @@ class UsuarioController extends BaseController
         if (!$user) {
             $this->json(array('msg' => 'Usuario y/o Contraseña Erroneos'));
         } else {
-            if ($user['estado'] == 1 && password_verify($password, $user['password'])) {
+            if ($user['active'] == 1 && password_verify($password, $user['password'])) {
                 $this->app->set('SESSION.usuario_id', $user['usuario_id']);
                 $this->app->set('SESSION.usuario', $user['username']);
                 $this->app->set('SESSION.rol_id', $user['rol_id']);
@@ -85,7 +85,7 @@ class UsuarioController extends BaseController
         }
     }
 
-    function app_login()
+    public function app_login()
     {
         $username = $this->app->get('POST.username');
         $password = $this->app->get('POST.password');
@@ -104,7 +104,7 @@ class UsuarioController extends BaseController
         }
     }
 
-    function app_pin_login()
+    public function app_pin_login()
     {
         $pin = $this->app->get('POST.pin');
 
@@ -122,18 +122,18 @@ class UsuarioController extends BaseController
         }
     }
 
-    function salir()
+    public function salir()
     {
         $this->app->clear('SESSION');
         $this->app->reroute('/login');
     }
 
-    function password()
+    public function password()
     {
         $this->render('change-password/index.html.twig');
     }
 
-    function changePassword()
+    public function changePassword()
     {
         $id = $this->app->get('SESSION.usuario_id');
         $user = $this->model->getById($id);

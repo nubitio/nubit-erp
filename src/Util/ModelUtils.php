@@ -8,14 +8,14 @@ use PDO;
 class ModelUtils
 {
 
-    protected SQL $db;
+    private SQL $db;
 
     public function __construct(SQL $db)
     {
         $this->db = $db;
     }
 
-    public function setUp($table, $sort, $order = 'ASC', $filter = null)
+    public function setUp($table, $sort, $order = 'ASC', $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;

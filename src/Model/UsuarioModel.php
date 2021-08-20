@@ -22,17 +22,6 @@ class UsuarioModel extends BaseModel
         return $this->utils->setUp('vw_usuario', 'username');
     }
 
-    public function init()
-    {
-        $this->dao->load(array('username=?', 'root'));
-        if (!$this->dao->usuario_id > 0) {
-            $this->dao->username = 'root';
-            $this->dao->password = password_hash('root', PASSWORD_DEFAULT);
-            $this->dao->estado = 1;
-            $this->dao->save();
-        }
-    }
-
     public function getById($id)
     {
         $data = $this->db->exec('select * from usuario where usuario_id = ?', $id);

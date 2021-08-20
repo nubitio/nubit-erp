@@ -2,13 +2,11 @@
 
 namespace App\Model;
 
-class NotifyModel
+class NotifyModel extends BaseModel
 {
-    protected $db;
-
-    public function __construct(DB\SQL $db)
+    public function __construct()
     {
-        $this->db = $db;
+        parent::__construct();
     }
 
     public function lastSync()

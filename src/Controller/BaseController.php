@@ -18,10 +18,9 @@ use Twig\Loader\FilesystemLoader;
 
 class BaseController
 {
-
     protected Base $app;
-    protected string $modulo;
-    protected Environment $twig;
+    private string $modulo;
+    private Environment $twig;
     protected OptionsModel $options;
 
     public function beforeroute()

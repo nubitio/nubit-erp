@@ -2,18 +2,17 @@
 
 namespace App\Controller;
 
-include dirname(dirname(__FILE__)) . '/WebClientPrint.php';
+include_once dirname(__FILE__, 3) . '/public/WebClientPrint.php';
 
 use App\Model\MovimientoModel;
 use App\Util\SaleItem;
-use Neodynamic\SDK\Web\WebClientPrint;
-use Neodynamic\SDK\Web\DefaultPrinter;
-use Neodynamic\SDK\Web\InstalledPrinter;
-use Neodynamic\SDK\Web\ClientPrintJob;
-
-use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
+use Mike42\Escpos\Printer;
+use Neodynamic\SDK\Web\ClientPrintJob;
+use Neodynamic\SDK\Web\DefaultPrinter;
+use Neodynamic\SDK\Web\InstalledPrinter;
+use Neodynamic\SDK\Web\WebClientPrint;
 use NumberFormatter;
 
 class PrintESCPOSController extends BaseController
