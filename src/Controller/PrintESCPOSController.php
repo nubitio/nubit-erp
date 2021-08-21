@@ -78,7 +78,11 @@ class PrintESCPOSController extends BaseController
                 } else {
                     $tipo = 'NOTA DE VENTA';
                 }
-                $ticket = $cabecera['serie'] . '-' . $cabecera['numero'];
+                if ($cabecera['inumero'] > 0) {
+                    $ticket = $cabecera['iserie'] . '-' . $cabecera['inumero'];
+                } else {
+                    $ticket = $cabecera['serie'] . '-' . $cabecera['numero'];
+                }
                 $printer->text($str_line);
                 $printer->setEmphasis(true);
                 $printer->text($tipo . "\n");
