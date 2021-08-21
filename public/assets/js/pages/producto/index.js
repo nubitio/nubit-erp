@@ -1,34 +1,20 @@
 var app = app || {};
 app.producto = (function () {
-    var route;
-    var dg = $('#producto_dg');
-    var dlg = $('#producto_dlg');
-    var fm = $('#producto_fm');
-    var txt_descripcion = $('#producto_descripcion');
-    var cbo_categoria = $('#producto_categoria');
-    var txt_precio = $('#producto_precio');
-    var cbo_estado = $('#producto_estado');
-    var btn_guardar;
-    var btn_cancelar;
+    let route;
+    let dg = $('#producto_dg');
+    let dlg = $('#producto_dlg');
+    let fm = $('#producto_fm');
+    let txt_descripcion = $('#producto_descripcion');
+    let cbo_categoria = $('#producto_categoria');
+    let txt_precio = $('#producto_precio');
+    let cbo_estado = $('#producto_estado');
+    let btn_guardar;
+    let btn_cancelar;
 
-    var precio_local = $('#producto_precio_local');
-
-    var session;
-
-    var init = function () {
-        session = JSON.parse(localStorage.getItem('session'));
-
-        var dgurl = 'producto/get';
-        var isdisabled = true;
-
-        if (session.rol_id === null || Number(session.rol_id) === 1) {
-            dgurl = 'producto/getadm';
-            isdisabled = false;
-        }
-
+    let init = function () {
         dg.datagrid({
             title: 'Productos',
-            url: dgurl,
+            url: 'producto/get',
             remoteFilter: true,
             toolbar: [{
                 text: TEXT_ADD,
@@ -36,21 +22,18 @@ app.producto = (function () {
                 handler: function () {
                     nuevo();
                 },
-                disabled: isdisabled
             }, '-', {
                 text: TEXT_EDIT,
                 iconCls: ICON_EDIT,
                 handler: function () {
                     editar();
                 },
-                disabled: isdisabled
             }, '-', {
                 text: TEXT_DELETE,
                 iconCls: ICON_DELETE,
                 handler: function () {
                     eliminar();
                 },
-                disabled: isdisabled
             }, '-', {
                 text: TEXT_EXPORTAR,
                 iconCls: ICON_XLS,
@@ -88,10 +71,6 @@ app.producto = (function () {
 
         dg.datagrid('enableFilter', []);
 
-        if (session.rol_id == null || session.rol_id == 1) {
-            dg.datagrid('hideColumn', 'precio');
-        }
-
         dlg.dialog({
             buttons: [{
                 id: 'producto_cancelar',
@@ -127,7 +106,7 @@ app.producto = (function () {
             width: '100%',
             label: 'Categoria',
             labelPosition: 'top',
-            url: 'categoria/lista/1/0',
+            url: 'categoria/lista/1',
             method: 'get',
             valueField: 'categoria_id',
             textField: 'descripcion',
@@ -171,12 +150,11 @@ app.producto = (function () {
     }
 
     function editar() {
-        var row = dg.datagrid('getSelected');
+        let row = dg.datagrid('getSelected');
         if (row) {
             dlg.dialog('open').dialog('setTitle', 'Editar');
             fm.form('load', row);
             route = 'producto/edit/' + row.producto_id;
-            //load_precios(row.producto_id);
         } else {
             show_info('Seleccione un registro');
         }
@@ -226,7 +204,7 @@ app.producto = (function () {
     }
 
     function eliminar() {
-        var row = dg.datagrid('getSelected');
+        let row = dg.datagrid('getSelected');
         if (row) {
             $.messager.confirm('Confirmar', '¿Está seguro que desea eliminar este registro?', function (r) {
                 if (r) {
@@ -251,24 +229,6 @@ app.producto = (function () {
 
     function exportar() {
         window.open('producto/exportar');
-    }
-
-    function load_precios(id) {
-        dlg.dialog('showMask', 'Cargando...');
-        //var template = list_template.html();
-        $.get('producto/precios/' + id)
-            .done(function (result) {
-                precio_local.empty();
-                dlg.dialog('hideMask');
-                for (let i = 0; i < result.length; i++) {
-                    precio_local.append(`<tr><td><input type="checkbox"></td><td>${result[i].local}</td><td><input type="text" class="precio" value="${result[i].precio}"></td></tr>`)
-                }
-                $('.precio').numberbox({});
-            })
-            .fail(function (xhr, status, error) {
-                show_error(error);
-                dlg.dialog('hideMask');
-            });
     }
 
     return {

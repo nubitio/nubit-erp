@@ -70,11 +70,6 @@ class ProductoModel extends BaseModel
            p.descripcion", $this->current_local_id);
     }
 
-    public function get_precios($id)
-    {
-        return $this->db->exec("call sp_get_precios (?)", $id);
-    }
-
     public function add($tipo)
     {
         $key = $this->db->exec("SELECT UUID() AS uuid");
@@ -136,11 +131,6 @@ class ProductoModel extends BaseModel
         } catch (\PDOException $e) {
             return array('msg' => $e->getMessage());
         }
-    }
-
-    public function exportar_insumos()
-    {
-        return $this->db->exec("call sp_reporte_insumos");
     }
 
     public function exportar_productos()

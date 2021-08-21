@@ -24,6 +24,12 @@ class CategoriaController extends BaseController
         $this->json($this->model->get());
     }
 
+    public function getList()
+    {
+        $type = $this->app->get('PARAMS.type');
+        $this->json($this->model->getList($type));
+    }
+
     public function insert()
     {
         $this->json($this->model->insert());

@@ -16,32 +16,14 @@ class ProductoController extends BaseController
         $this->model = new ProductoModel();
     }
 
-    public function render_insumos()
-    {
-        $template = new Template;
-        echo $template->render('insumo/index.html');
-    }
-
     public function index()
     {
         $this->render('producto/index.html.twig');
     }
 
-    public function get_insumos()
+    public function getAll()
     {
-        $data = $this->model->all(1);
-        $this->json($data);
-    }
-
-    public function get_productos()
-    {
-        $data = $this->model->all(2);
-        $this->json($data);
-    }
-
-    public function get_all()
-    {
-        $this->json($this->model->get_all(2));
+        $this->json($this->model->all(2));
     }
 
     public function lista()
@@ -55,18 +37,6 @@ class ProductoController extends BaseController
     public function listafull()
     {
         $data = $this->model->listafull();
-        $this->json($data);
-    }
-
-    public function get_precios()
-    {
-        $id = $this->app->get('PARAMS.id');
-        $this->json($this->model->get_precios($id));
-    }
-
-    public function add_insumo()
-    {
-        $data = $this->model->add(1);
         $this->json($data);
     }
 
@@ -88,16 +58,6 @@ class ProductoController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->delete($id);
         $this->json($data);
-    }
-
-    public function exportar_insumos()
-    {
-        $data = $this->model->exportar_insumos();
-        $extras = [
-            'title' => 'REPORTE DE INSUMOS',
-            'subtitle' => ''
-        ];
-        $this->export($data, $extras);
     }
 
     public function exportar_productos()

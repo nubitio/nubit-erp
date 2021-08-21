@@ -37,16 +37,17 @@ app.categoria = (function () {
             }],
             columns: [[
                 {
-                    field: "name",
-                    title: "Name",
+                    field: "descripcion",
+                    title: "Nombre",
+                    width: 200,
                 },
                 {
                     field: "parent_id",
-                    title: "Parent Id",
+                    title: "Categoria padre",
                 },
                 {
-                    field: "active",
-                    title: "Active",
+                    field: "estado",
+                    title: "Activo",
                     formatter: activeFormatter,
                 },
             ]],
@@ -83,26 +84,26 @@ app.categoria = (function () {
 
         txt_name.textbox({
             width: "100%",
-            label: "Name",
+            label: "Nombre",
             labelPosition: "top",
             required: true
         });
 
         txt_parent_id.combobox({
             width: "100%",
-            label: "Parent Id",
+            label: "Categoria padre",
             labelPosition: "top",
-            url: "",
+            url: "categoria/lista/0",
             method: "get",
-            valueField: "",
-            textField: "",
+            valueField: "categoria_id",
+            textField: "descripcion",
             panelHeight: 200,
             limitToList: true,
             required: false
         });
 
         txt_active.switchbutton({
-            label: "Active",
+            label: "Activo",
             labelPosition: "top",
             onText: "SI",
             offText: "NO",
@@ -123,7 +124,7 @@ app.categoria = (function () {
         if (row) {
             dlg.dialog("open").dialog("setTitle", "Editar");
             fm.form("load", row);
-            route = "categoria/edit/" + row.id;
+            route = "categoria/edit/" + row.categoria_id;
         } else {
             show_info("Seleccione un registro.");
         }
@@ -163,7 +164,7 @@ app.categoria = (function () {
         if (row) {
             $.messager.confirm("Confirmar", TEXT_CONFIRM, function (r) {
                 if (r) {
-                    $.post("categoria/delete/" + row.id)
+                    $.post("categoria/delete/" + row.categoria_id)
                         .done(function (result) {
                             if (result.success) {
                                 dg.datagrid("reload");

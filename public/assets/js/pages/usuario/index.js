@@ -46,7 +46,7 @@ app.usuario = (function () {
                 title: 'Rol',
                 sortable: true,
             }, {
-                field: 'active',
+                field: 'estado',
                 title: 'Activo',
                 sortable: true,
                 align: 'center',

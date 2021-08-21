@@ -16,7 +16,15 @@ class CategoriaModel extends BaseModel
 
     public function get()
     {
-        return $this->utils->setUp('categoria', 'id', 'asc');
+        return $this->utils->setUp('categoria', 'descripcion', 'asc');
+    }
+
+    public function getList($type)
+    {
+        if ($type == 0) {
+            return $this->db->exec("select * from categoria where ifnull(parent_id, '') = ''");
+        }
+        return $this->db->exec("select * from categoria where ifnull(parent_id, '') != ''");
     }
 
     public function insert()
@@ -32,7 +40,7 @@ class CategoriaModel extends BaseModel
 
     public function update($id)
     {
-        $this->dao->load(array('id=?', $id));
+        $this->dao->load(array('categoria_id=?', $id));
         $this->dao->copyfrom('POST');
         try {
             $this->dao->update();
@@ -44,7 +52,7 @@ class CategoriaModel extends BaseModel
 
     public function delete($id)
     {
-        $this->dao->load(array('id=?', $id));
+        $this->dao->load(array('categoria_id=?', $id));
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
