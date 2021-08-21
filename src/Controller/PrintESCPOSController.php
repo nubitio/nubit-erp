@@ -51,15 +51,17 @@ class PrintESCPOSController extends BaseController
                 $cabecera = $this->model->ticket_cabecera($id);
                 $detalle = $this->model->ticket_detalle($id);
 
-                $logo = EscposImage::load(dirname(__FILE__, 3) . "/public/assets/images/logo.png", false);
+                $logo = EscposImage::load(dirname(__FILE__, 3) . "/public/assets/images/logo.png", true);
 
                 $connector = new DummyPrintConnector();
                 $printer = new Printer($connector);
                 //Create ESC/POS commands
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
                 /* Print top logo */
-                $printer->graphics($logo);
-                $printer->feed();
+                if ($this->app->get('PRINT_LOGO')) {
+                    $printer->graphics($logo);
+                    $printer->feed();
+                }
                 $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
                 $printer->text($cabecera['empresa'] . "\n");
                 $printer->selectPrintMode();
