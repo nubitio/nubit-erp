@@ -553,9 +553,9 @@ app.venta = (function () {
             value = Number(value);
         }
         if (value === 1) {
-            return '<span class="badge badge-pill badge-success">INGRESADO</span>';
+            return '<span class="badge rounded-pill bg-success">INGRESADO</span>';
         } else if (value === 2) {
-            return '<span class="badge badge-pill badge-danger">ANULADO</span>';
+            return '<span class="badge rounded-pill bg-danger">ANULADO</span>';
         } else {
             return '';
         }
@@ -850,7 +850,7 @@ app.venta.init();
 
 function wcppDetectOnSuccess() {
     let wcppVer = arguments[0];
-    if (wcppVer.substring(0, 1) == "3") {
+    if (wcppVer.substring(0, 1) == "4") {
         $.messager.show({
             title: 'WebClientPrint',
             msg: 'Preparado para imprimir.'

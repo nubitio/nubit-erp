@@ -37,7 +37,7 @@ select opt in "${options[@]}"; do
       deploy
       ;;
   "Maia")
-      USERNAME="c4_maia"
+      USERNAME="c8_maia"
       deploy
       ;;
   "Giancorpf")

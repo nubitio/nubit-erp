@@ -389,19 +389,18 @@ class MovimientoModel extends BaseModel
             m.operacion_id,
             m.serie,
             m.numero,
+            m.iserie,
+            m.inumero,
+            m.digest,
             m.descuento,
             m.glosa,
-            '' AS aut_sunat,
-            '' AS impresora_marca,
-            '' AS impresora_modelo,
-            '' AS impresora_serie,
             c.ruc AS ruc_cliente,
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,
             c.email as email_cliente,
             d.p_venta AS total 
         FROM
-            movimiento m
+            vw_movimiento m
             INNER JOIN vw_descuento d ON d.movimiento_id = m.movimiento_id
             INNER JOIN almacen a ON a.almacen_id = m.almacen_id
             INNER JOIN `local` l ON l.local_id = a.local_id

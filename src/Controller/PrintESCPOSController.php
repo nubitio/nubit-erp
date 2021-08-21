@@ -17,7 +17,6 @@ use NumberFormatter;
 
 class PrintESCPOSController extends BaseController
 {
-
     private MovimientoModel $model;
 
     function __construct()
@@ -52,25 +51,30 @@ class PrintESCPOSController extends BaseController
                 $cabecera = $this->model->ticket_cabecera($id);
                 $detalle = $this->model->ticket_detalle($id);
 
-                $logo = EscposImage::load("src/assets/images/logo.png", false);
+                $logo = EscposImage::load(dirname(__FILE__, 3) . "/public/assets/images/logo.png", false);
 
                 $connector = new DummyPrintConnector();
                 $printer = new Printer($connector);
                 //Create ESC/POS commands
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
                 /* Print top logo */
-                //$printer->graphics($logo);
-                $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                $printer->graphics($logo);
+                $printer->feed();
+                $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
                 $printer->text($cabecera['empresa'] . "\n");
                 $printer->selectPrintMode();
                 $printer->text('RUC ' . $cabecera['ruc_empresa'] . "\n");
                 $printer->text($cabecera['direccion_empresa'] . "\n");
                 $printer->text($cabecera['direccion_local'] . "\n");
                 $printer->text('Telefono ' . $cabecera['telefono'] . "\n");
-                if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
-                    $tipo = 'FACTURA ELECTRONICA';
+                if ($cabecera['inumero'] > 0) {
+                    if (strlen($cabecera['ruc_cliente']) == 11) {
+                        $tipo = 'FACTURA ELECTRONICA';
+                    } elseif (strlen($cabecera['ruc_cliente']) == 8) {
+                        $tipo = 'BOLETA ELECTRONICA';
+                    }
                 } else {
-                    $tipo = 'BOLETA ELECTRONICA';
+                    $tipo = 'NOTA DE VENTA';
                 }
                 $ticket = $cabecera['serie'] . '-' . $cabecera['numero'];
                 $printer->text($str_line);
@@ -85,11 +89,11 @@ class PrintESCPOSController extends BaseController
                 $printer->text("Moneda: Soles\n");
                 $total = 0;
                 $printer->text($str_line);
-                if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
+                if (strlen($cabecera['ruc_cliente']) == 11) {
                     $printer->text('RUC Cli.: ' . $cabecera['ruc_cliente'] . "\n");
                     $printer->text('R.Social: ' . $cabecera['cliente'] . "\n");
                     $printer->text('Direccion: ' . $cabecera['direccion_cliente'] . "\n");
-                } else {
+                } elseif (strlen($cabecera['ruc_cliente']) == 8) {
                     $printer->text('DNI: ' . $cabecera['ruc_cliente'] . "\n");
                     $printer->text('Cliente: ' . $cabecera['cliente'] . "\n");
                     $printer->text('Direccion: ' . $cabecera['direccion_cliente'] . "\n");
@@ -118,43 +122,41 @@ class PrintESCPOSController extends BaseController
                 $str_opg = number_format($valor_venta, 2, '.', '');
                 $str_igv = number_format($valor_igv, 2, '.', '');
                 $str_total = number_format($total, 2, '.', '');
-                //if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
                 $printer->text($str_line);
-                if (1 == 1) {
+                if ($cabecera['inumero'] > 0) {
                     $printer->text(new SaleItem('IMPORTE', $str_total));
                     $printer->text(new SaleItem('OP. GRAVADA', $str_opg));
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
                     $printer->text(new SaleItem('IGV 18%', $str_igv));
-                    $printer->text(new SaleItem('TOTAL', $str_total));
-
-                    $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
-                    $parts = explode('.', $str_total);
-                    $monto = $formatter->format($parts[0]);
-                    $str_monto = mb_strtoupper($monto . " Y " . $parts[1] . "/100");
-
-                    $printer->text($str_line);
-                    $printer->text($str_monto . "\n");
-                } else {
-                    $printer->text(new SaleItem('TOTAL', $str_total));
                 }
+                $printer->text(new SaleItem('TOTAL', $str_total));
+                $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
+                $parts = explode('.', $str_total);
+                $monto = $formatter->format($parts[0]);
+                $str_monto = mb_strtoupper($monto . " Y " . $parts[1] . "/100");
+
+                $printer->text($str_line);
+                $printer->text($str_monto . "\n");
                 $printer->text($str_line);
                 $printer->setJustification(Printer::JUSTIFY_CENTER);
-                if ($this->app->get('PRINT_QR')) {
-                    if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
-                        $tipo_id = '01';
-                    } else {
-                        $tipo_id = '03';
+                if ($cabecera['inumero'] > 0) {
+                    if ($this->app->get('PRINT_QR')) {
+                        if (strlen($cabecera['ruc_cliente']) == 11) {
+                            $tipo_id = '01';
+                        } elseif (strlen($cabecera['ruc_cliente']) == 8) {
+                            $tipo_id = '03';
+                        }
+                        $qr_data = $cabecera['ruc_cliente'] . "|" . $tipo_id . "|" . $cabecera['serie'] . "|" . $cabecera['numero'] . "|" . $str_igv . "|" . $str_total . "|" . $cabecera['fecha'] . "|0|0|" . $digest;
+                        $printer->qrCode($qr_data, Printer::QR_ECLEVEL_L, 8);
                     }
-                    $qr_data = $cabecera['ruc_cliente'] . "|" . $tipo_id . "|" . $cabecera['serie'] . "|" . $cabecera['numero'] . "|" . $str_igv . "|" . $str_total . "|" . $cabecera['fecha'] . "|0|0|" . $digest;
-                    $printer->qrCode($qr_data, Printer::QR_ECLEVEL_L, 8);
+                    $printer->feed();
+                    $printer->text("Resumen: " . $cabecera['digest'] . "\n");
+                    $printer->feed();
+                    $printer->text("Representacion impresa del" . "\n");
+                    $printer->text("comprobante electronico, consulte en" . "\n");
+                    $printer->text($this->app->get('EFACT_URL') . "\n");
                 }
-                $printer->feed();
-                $printer->text("Resumen: " . $digest . "\n");
-                $printer->feed();
-                $printer->text("Representacion impresa del" . "\n");
-                $printer->text("comprobante electronico, consulte en" . "\n");
-                $printer->text($this->app->get('EFACT_URL') . "\n");
                 $printer->feed();
                 $printer->text(date("d-m-Y H:i:s") . "\n");
                 $printer->text("** Gracias por su preferencia **" . "\n");

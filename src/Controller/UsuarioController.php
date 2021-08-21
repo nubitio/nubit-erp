@@ -73,7 +73,7 @@ class UsuarioController extends BaseController
         if (!$user) {
             $this->json(array('msg' => 'Usuario y/o Contraseña Erroneos'));
         } else {
-            if ($user['active'] == 1 && password_verify($password, $user['password'])) {
+            if ($user['estado'] == 1 && password_verify($password, $user['password'])) {
                 $this->app->set('SESSION.usuario_id', $user['usuario_id']);
                 $this->app->set('SESSION.usuario', $user['username']);
                 $this->app->set('SESSION.rol_id', $user['rol_id']);

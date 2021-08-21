@@ -1,6 +1,7 @@
 .git
 .idea
-tmp/
+public/tmp/
+tests/
 .gitignore
 composer.json
 composer.lock
@@ -8,10 +9,12 @@ deploy.sh
 deploy_exclude.txt
 generator.py
 README.md
+
 public/assets/images/logo.png
 config/config.ini
 config/certificate_prod.pem
 public/efact/*
+
 app/assets/images/logo.png
 app/config.ini
 app/certificate_prod.pem
