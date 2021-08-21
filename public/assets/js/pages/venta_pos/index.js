@@ -677,7 +677,7 @@ app.venta = (function () {
         label: 'RUC/DNI',
         labelPosition: 'top',
         min: 0,
-        validType: 'length[8,11]',
+        validType: 'validCustomerId',
         invalidMessage: 'Ingrese un RUC/DNI valido.',
         icons: [{
             iconCls: ICON_SEACH,

@@ -273,9 +273,9 @@ app.caja = (function () {
     function typeFormatter(value) {
         value = Number(value);
         if (value === 1) {
-            value = '<span class="badge badge-pill badge-success">INGRESO</span>';
+            value = '<span class="badge rounded-pill bg-success">INGRESO</span>';
         } else if (value === 2) {
-            value = '<span class="badge badge-pill badge-danger">EGRESO</span>';
+            value = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
         } else {
             value = '';
         }

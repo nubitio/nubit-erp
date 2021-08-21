@@ -19,7 +19,7 @@ $app->config('../config/routes.ini');
 $app->set('CACHE', true);
 
 // Define version
-$app->set('version', '1.1.0-beta1');
+$app->set('version', '1.1.0-beta2');
 
 /*$containerBuilder = new ContainerBuilder();
 $loader = new PhpFileLoader($containerBuilder, new FileLocator(dirname(__FILE__, 2) . '/config'));
