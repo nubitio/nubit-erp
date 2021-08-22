@@ -39,11 +39,11 @@ class EFactController extends BaseController
 
         if ($this->app->get('EFACT_MODE') == 'PROD') {
             $this->see->setService(SunatEndpoints::FE_PRODUCCION);
-            $this->see->setCertificate(file_get_contents($this->getOption('invoice_cert')));
+            $this->see->setCertificate(file_get_contents(dirname(__FILE__, 3) . '/config/' . $this->getOption('invoice_cert')));
             $this->see->setCredentials($this->getOption('invoice_user'), $this->getOption('invoice_password'));
         } else {
             $this->see->setService(SunatEndpoints::FE_BETA);
-            $this->see->setCertificate(file_get_contents('../config/certificate_beta.pem'));
+            $this->see->setCertificate(file_get_contents(dirname(__FILE__, 3) . '/config/' . 'certificate_beta.pem'));
             $this->see->setCredentials('20000000001MODDATOS', 'moddatos');
         }
     }
