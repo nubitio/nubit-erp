@@ -349,9 +349,6 @@ class MovimientoModel extends BaseModel
                     4 => $id
                 )
             );
-            if ($this->dao->orden_id > 0) {
-                $this->db->exec('UPDATE orden SET anulado = ? WHERE orden_id = ?', [1, $this->dao->orden_id]);
-            }
             $this->db->commit();
             $this->cajaModel->update_caja();
             return array('success' => true, 'msg' => 'Registro anulado.');
