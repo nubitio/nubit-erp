@@ -200,7 +200,7 @@ class ApiModel extends BaseModel
         $repository = new \DB\SQL\Mapper($this->db, 'movimiento');
         $repository->copyfrom($sale);
         $uuid = $this->db->exec("select uuid() as uuid");
-        $operation = $this->db->exec("select * from operacion where descripcion = ?", ['VENTA TICKET']);
+        $operation = $this->db->exec("select * from operacion where descripcion like '?%' limit 1", ['VENTA']);
         $warehouse = $this->db->exec("select * from almacen where local_id = ? limit 1", [$sale['local_id']]);
         $series = $this->db->exec("select * from local_comprobante where tipo_comprobante_id = ? and local_id = ?", ['00', $sale['local_id']]);
         $number = $this->db->exec("select ifnull(max(cast(numero as integer)),0)+1 as number from movimiento where serie = ?", [$series[0]['serie']]);
