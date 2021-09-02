@@ -46,7 +46,7 @@ class InvoiceController extends BaseController
         $this->app->set('pdf', $pdf);
         $this->app->set('xml', $xml);
         $this->app->set('cdr', $cdr);
-        echo $template->render('invoice/index.html');
+        echo $template->render('invoice/index.html.twig');
     }
 
     public function download()

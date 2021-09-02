@@ -11,6 +11,7 @@ use Greenter\Model\Company\Company;
 use Greenter\Model\DocumentInterface;
 use Greenter\Model\Sale\Charge;
 use Greenter\Model\Sale\Document;
+use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
@@ -157,6 +158,7 @@ class EFactController extends BaseController
             ->setSerie($sale['header']['doc_series'])
             ->setCorrelativo($sale['header']['doc_number'])
             ->setFechaEmision(new DateTime($sale['header']['doc_date'] . " 00:00:00"))
+            ->setFormaPago(new FormaPagoContado())
             ->setTipoMoneda($sale['header']['doc_currency'])
             ->setClient($client)
             ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
