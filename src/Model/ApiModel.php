@@ -4,6 +4,11 @@ namespace App\Model;
 
 class ApiModel extends BaseModel
 {
+    public function getConfig()
+    {
+        return $this->db->exec("select * from options");
+    }
+
     public function getAllLocals()
     {
         return $this->db->exec("select * from local");

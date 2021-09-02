@@ -56,6 +56,11 @@ class ApiController extends BaseController
         }
     }
 
+    public function getConfig()
+    {
+        $this->json($this->apiDao->getConfig());
+    }
+
     public function getAllLocals()
     {
         $this->json($this->apiDao->getAllLocals());
