@@ -88,7 +88,7 @@ class EFactController extends BaseController
     public function getPDF(DocumentInterface $invoice, $data)
     {
         $html = new HtmlReport('', [
-            'cache' => 'tmp',
+            'cache'            => 'tmp',
             'strict_variables' => true,
         ]);
         $html->setTemplate('invoice.html.twig');
@@ -97,8 +97,8 @@ class EFactController extends BaseController
         $report->setOptions([
             'no-outline',
             'viewport-size' => '1280x1024',
-            'page-width' => '21cm',
-            'page-height' => '29.7cm',
+            'page-width'    => '21cm',
+            'page-height'   => '29.7cm',
         ]);
         $report->setBinPath('wkhtmltopdf');
 
@@ -108,9 +108,10 @@ class EFactController extends BaseController
                 'logo' => $logo,
                 'hash' => $this->getHash($invoice)
             ],
-            'user' => [
+            'user'   => [
                 'header' => '',
                 'extras' => [
+                    ['name' => 'FORMA DE PAGO', 'value' => 'CONTADO'],
                     ['name' => 'OBS', 'value' => $data['Obs']]
                 ],
             ]

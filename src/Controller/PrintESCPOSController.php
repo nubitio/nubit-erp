@@ -104,6 +104,7 @@ class PrintESCPOSController extends BaseController
                     $printer->text('Cliente: ' . $cabecera['cliente'] . "\n");
                     $printer->text('Direccion: ' . $cabecera['direccion_cliente'] . "\n");
                 }
+                $printer->text("Forma de pago: CONTADO\n");
                 $printer->text($str_line);
                 $printer->text(new SaleItem('# Descripcion', "S/"));
                 $printer->text($str_line);
