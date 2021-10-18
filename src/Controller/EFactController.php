@@ -139,7 +139,22 @@ class EFactController extends BaseController
         }
     }
 
-    public function makeInvoice($sale)
+    public function savePDF()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $sale = $this->botModel->getOne($id);
+        if ($sale["success"]) {
+            try {
+                $invoice = $this->buildInvoice($sale['data']);
+                file_put_contents($this->app->get('EFACT_DIR') . $invoice->getName() . '.pdf', $this->getPDF($invoice, $sale));
+                $this->json(["success" => true, "message" => "PDF generado correctamente"]);
+            } catch (Exception $e) {
+                $this->json(["success" => false, "message" => $e->getMessage()]);
+            }
+        }
+    }
+
+    public function buildInvoice($sale)
     {
         // Cliente
         $address = new Address();
@@ -216,6 +231,13 @@ class EFactController extends BaseController
 
         $invoice->setDetails($items)
             ->setLegends([$legend]);
+
+        return $invoice;
+    }
+
+    public function makeInvoice($sale): array
+    {
+        $invoice = $this->buildInvoice($sale);
 
         $result = $this->see->send($invoice);
         // Guardar XML

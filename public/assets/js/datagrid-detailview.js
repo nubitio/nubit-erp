@@ -11,7 +11,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				return;
 			}
 		}
-		
+
 		var rows = state.data.rows;
 		var fields = $(target).datagrid('getColumnFields', frozen);
 		var table = [];
@@ -27,14 +27,14 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				classValue = css['class'] || '';
 				styleValue = css['style'] || '';
 			}
-			
+
 			var cls = 'class="datagrid-row ' + (i % 2 && opts.striped ? 'datagrid-row-alt ' : ' ') + classValue + '"';
 			var style = styleValue ? 'style="' + styleValue + '"' : '';
 			var rowId = state.rowIdPrefix + '-' + (frozen?1:2) + '-' + i;
 			table.push('<tr id="' + rowId + '" datagrid-row-index="' + i + '" ' + cls + ' ' + style + '>');
 			table.push(this.renderRow.call(this, target, fields, frozen, i, rows[i]));
 			table.push('</tr>');
-			
+
 			table.push('<tr style="display:none;">');
 			if (frozen){
 				table.push('<td colspan=' + (fields.length+(opts.rownumbers?1:0)) + ' style="border-right:0">');
@@ -52,16 +52,16 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 
 			table.push('</td>');
 			table.push('</tr>');
-			
+
 		}
 		table.push('</tbody></table>');
-		
+
 		$(container).html(table.join(''));
 	},
-	
+
 	renderRow: function(target, fields, frozen, rowIndex, rowData){
 		var opts = $.data(target, 'datagrid').options;
-		
+
 		var cc = [];
 		if (frozen && opts.rownumbers){
 			var rownumber = rowIndex + 1;
@@ -86,9 +86,9 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				}
 				var cls = classValue ? 'class="' + classValue + '"' : '';
 				var style = col.hidden ? 'style="display:none;' + styleValue + '"' : (styleValue ? 'style="' + styleValue + '"' : '');
-				
+
 				cc.push('<td field="' + field + '" ' + cls + ' ' + style + '>');
-				
+
 				if (col.checkbox){
 					style = '';
 				} else if (col.expander){
@@ -102,15 +102,19 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 						style += ';height:auto;';
 					}
 				}
-				
+
 				cc.push('<div style="' + style + '" ');
 				if (col.checkbox){
 					cc.push('class="datagrid-cell-check ');
 				} else {
-					cc.push('class="datagrid-cell ' + col.cellClass);
+					if (col.cellClass){
+						cc.push('class="datagrid-cell ' + col.cellClass);
+					}else {
+						cc.push('class="datagrid-cell-rownumber');
+					}
 				}
 				cc.push('">');
-				
+
 				if (col.checkbox){
 					cc.push('<input type="checkbox" name="' + field + '" value="' + (value!=undefined ? value : '') + '">');
 				} else if (col.expander) {
@@ -122,41 +126,41 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				} else {
 					cc.push(value);
 				}
-				
+
 				cc.push('</div>');
 				cc.push('</td>');
 			}
 		}
 		return cc.join('');
 	},
-	
+
 	insertRow: function(target, index, row){
 		var opts = $.data(target, 'datagrid').options;
 		var dc = $.data(target, 'datagrid').dc;
 		var panel = $(target).datagrid('getPanel');
 		var view1 = dc.view1;
 		var view2 = dc.view2;
-		
+
 		var isAppend = false;
 		var rowLength = $(target).datagrid('getRows').length;
 		if (rowLength == 0){
 			$(target).datagrid('loadData',{total:1,rows:[row]});
 			return;
 		}
-		
+
 		if (index == undefined || index == null || index >= rowLength) {
 			index = rowLength;
 			isAppend = true;
 			this.canUpdateDetail = false;
 		}
-		
+
 		$.fn.datagrid.defaults.view.insertRow.call(this, target, index, row);
-		
+
 		_insert(true);
 		_insert(false);
-		
+
 		this.canUpdateDetail = true;
-		
+
 		function _insert(frozen){
 			var tr = opts.finder.getTr(target, index, 'body', frozen?1:2);
 			if (isAppend){
@@ -173,7 +177,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 			}
 		}
 	},
-	
+
 	deleteRow: function(target, index){
 		var opts = $.data(target, 'datagrid').options;
 		var dc = $.data(target, 'datagrid').dc;
@@ -182,14 +186,14 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 		$.fn.datagrid.defaults.view.deleteRow.call(this, target, index);
 		dc.body2.triggerHandler('scroll');
 	},
-	
+
 	updateRow: function(target, rowIndex, row){
 		var dc = $.data(target, 'datagrid').dc;
 		var opts = $.data(target, 'datagrid').options;
 		var cls = $(target).datagrid('getExpander', rowIndex).attr('class');
 		$.fn.datagrid.defaults.view.updateRow.call(this, target, rowIndex, row);
 		$(target).datagrid('getExpander', rowIndex).attr('class',cls);
-		
+
 		// update the detail content
 		if (opts.autoUpdateDetail && this.canUpdateDetail){
 			var row = $(target).datagrid('getRows')[rowIndex];
@@ -197,7 +201,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 			detail.html(opts.detailFormatter.call(target, rowIndex, row));
 		}
 	},
-	
+
 	bindEvents: function(target){
 		var state = $.data(target, 'datagrid');
 
@@ -221,13 +225,13 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				}
 				$(target).datagrid('fixRowHeight');
 				e.stopPropagation();
-				
+
 			} else {
 				clickHandler(e);
 			}
 		});
 	},
-	
+
 	onBeforeRender: function(target){
 		var state = $.data(target, 'datagrid');
 		var opts = state.options;
@@ -248,7 +252,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 			} else {
 				opts.frozenColumns = [[{field:'_expander',expander:true,width:24,resizable:false,fixed:true}]];
 			}
-			
+
 			var t = dc.view1.children('div.datagrid-header').find('table');
 			var td = $('<td rowspan="'+opts.frozenColumns.length+'"><div class="datagrid-header-expander" style="width:24px;"></div></td>');
 			if ($('tr',t).length == 0){
@@ -268,27 +272,27 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 		// 	},0);
 		// }
 	},
-	
+
 	onAfterRender: function(target){
 		var that = this;
 		var state = $.data(target, 'datagrid');
 		var dc = state.dc;
 		var opts = state.options;
 		var panel = $(target).datagrid('getPanel');
-		
+
 		$.fn.datagrid.defaults.view.onAfterRender.call(this, target);
-		
+
 		if (!state.onResizeColumn){
 			state.onResizeColumn = opts.onResizeColumn;
 			opts.onResizeColumn = function(field, width){
 				if (!opts.fitColumns){
-					resizeDetails();				
+					resizeDetails();
 				}
 				var rowCount = $(target).datagrid('getRows').length;
 				for(var i=0; i<rowCount; i++){
 					$(target).datagrid('fixDetailRowHeight', i);
 				}
-				
+
 				// call the old event code
 				state.onResizeColumn.call(target, field, width);
 			};
@@ -332,10 +336,10 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				}
 			}
 		}
-		
-		
+
+
 		this.canUpdateDetail = true;	// define if to update the detail content when 'updateRow' method is called;
-		
+
 		var footer = dc.footer1.add(dc.footer2);
 		footer.find('span.datagrid-row-expander').css('visibility', 'hidden');
 		$(target).datagrid('resize');

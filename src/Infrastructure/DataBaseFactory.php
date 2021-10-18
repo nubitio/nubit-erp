@@ -21,7 +21,7 @@ class DataBaseFactory
         $config = Setup::createAnnotationMetadataConfiguration(array(__DIR__), $isDevMode, $proxyDir, $cache, $useSimpleAnnotationReader);
 
         $conn = array(
-            'url' => 'mysql://c1_restaurante:Master.2017@jgm90.com:3306/c1_restaurante'
+            'url' => $_ENV['DATABASE_URL']
         );
 
         return EntityManager::create($conn, $config);

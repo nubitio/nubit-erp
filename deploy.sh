@@ -25,7 +25,7 @@ select opt in "${options[@]}"; do
     deploy
     ;;
   "ArcaServis")
-    USERNAME="c7_elcevichero"
+    USERNAME="c7_arcaservis"
     deploy
     ;;
   "SurtiHogar")

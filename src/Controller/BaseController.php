@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Asset\PathPackage;
-use Symfony\Component\Asset\VersionStrategy\EmptyVersionStrategy;
+use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -45,7 +45,7 @@ class BaseController
             'cache' => '../public/tmp/',
         ]);
 
-        $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new EmptyVersionStrategy()))));
+        $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy('v1', '%s?version=%s')))));
 
         $this->options = new OptionsModel();
     }
@@ -111,19 +111,19 @@ class BaseController
         $letters = range('A', 'Z');
         $calc = new Spreadsheet();
         $header_style = array(
-            'font' => array(
+            'font'      => array(
                 'bold' => true,
             ),
             'alignment' => array(
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
             ),
-            'fill' => array(
+            'fill'      => array(
                 'fillType' => Fill::FILL_SOLID,
-                'color' => array('rgb' => 'D3D7CF')
+                'color'    => array('rgb' => 'D3D7CF')
             ),
         );
         $center_style = array(
-            'font' => array(
+            'font'      => array(
                 'bold' => true,
             ),
             'alignment' => array(

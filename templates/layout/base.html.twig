@@ -60,10 +60,10 @@
         </div>
     </div>
 </div>
-<div data-options="region:'west', border: false" style="width: 202px; background: #454544;">
+<div data-options="region:'west', border: false" style="width: 252px;">
     <div id="sidebar" style="min-height: 100vh;"></div>
 </div>
-<div data-options="region:'center'" style="background: #eeeeee; padding: 10px;">
+<div data-options="region:'center', border: false">
     <div id="content"></div>
     <div id="home_local">
         <div id="home_lista_local"></div>
@@ -78,6 +78,7 @@
     (function () {
         content.panel({
             fit: true,
+            border: false,
             loadingMessage: '',
             onBeforeLoad: function () {
                 $(this).panel('showMask', 'Cargando...');
@@ -130,11 +131,11 @@
         opts = sidebar.sidemenu('options');
         let west = layout.layout('panel', 'west');
         west.panel('resize', {
-            width: opts.collapsed ? 52 : 202
+            width: opts.collapsed ? 52 : 252
         });
         layout.layout('resize');
         sidebar.sidemenu('resize', {
-            width: opts.collapsed ? 50 : 200
+            width: opts.collapsed ? 50 : 250
         });
     }
 

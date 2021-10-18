@@ -1,0 +1,33 @@
+#!/usr/bin/env php
+<?php
+
+use App\Command\DemoCommand;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\Application;
+use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\Dotenv\Dotenv;
+
+require dirname(__DIR__) . '/vendor/autoload.php';
+
+$app = new Application();
+
+$dotenv = new Dotenv();
+$dotenv->loadEnv(__DIR__ . '/../.env');
+
+$container = new ContainerBuilder();
+
+$loader = new PhpFileLoader($container, new FileLocator(__DIR__));
+$loader->load(__DIR__ . '/../config/services.php');
+
+$container->compile();
+
+$commandLoader = new ContainerCommandLoader(
+    $container, [
+        'app:run-demo' => DemoCommand::class,
+    ]
+);
+
+$app->setCommandLoader($commandLoader);
+$app->run();
