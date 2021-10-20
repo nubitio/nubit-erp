@@ -2,6 +2,10 @@
 
 namespace App\Model;
 
+use App\Domain\Common\ApiResponse;
+use App\Domain\Note\Note;
+use DB\SQL\Mapper;
+
 class CreditNoteModel extends BaseModel
 {
 
@@ -13,7 +17,7 @@ class CreditNoteModel extends BaseModel
     /**
      * @param string $serie
      * @return string
-     * @throws Exception
+     * @throws \Exception
      */
     public function getSeries($serie)
     {
@@ -21,14 +25,14 @@ class CreditNoteModel extends BaseModel
         if ($obj) {
             return $obj[0]['serie'];
         } else {
-            throw new Exception("No associated series found");
+            throw new \Exception("No associated series found");
         }
     }
 
     /**
      * @param string $serie
      * @return int
-     * @throws Exception
+     * @throws \Exception
      */
     public function getNextNumber($serie)
     {
@@ -36,7 +40,7 @@ class CreditNoteModel extends BaseModel
         if ($obj) {
             return $obj[0]['number'] + 1;
         } else {
-            throw new Exception("Unable to get the next number");
+            throw new \Exception("Unable to get the next number");
         }
     }
 
@@ -44,21 +48,21 @@ class CreditNoteModel extends BaseModel
      * @param Note $note
      * @return ApiResponse
      */
-    public function add(Note $note)
+    public function add(Note $note): ApiResponse
     {
         try {
             $this->db->begin();
-            $header = new \DB\SQL\Mapper($this->db, 'nota');
+            $header = new Mapper($this->db, 'nota');
             $header->copyfrom(json_decode(json_encode($note), true));
             $header->save();
             foreach ($note->getDetails() as $item) {
-                $detail = new \DB\SQL\Mapper($this->db, 'nota_detalle');
+                $detail = new Mapper($this->db, 'nota_detalle');
                 $detail->copyfrom(json_decode(json_encode($item), true));
                 $detail->save();
             }
             $this->db->commit();
             return (new ApiResponse())->setSuccess(true)->setMessage('Registro insertado')->setData($note);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return (new ApiResponse())->setSuccess(false)->setMessage($e->getMessage())->setData(null);
         }
     }

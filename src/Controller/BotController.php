@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Domain\Note\Note;
+use App\Domain\Note\NoteDetail;
 use App\Model\BotModel;
 use App\Model\CreditNoteModel;
 
@@ -68,9 +70,9 @@ class BotController extends BaseController
                     $result = $this->efact->makeInvoice($sale["data"]);
                     $this->model->updateSaleState($result);
                     $data[$i] = [
-                        "id" => $sale["data"]["header"]["movimiento_id"],
-                        "comprobante" => $sale["data"]["header"]["doc_series"] . "-" . $sale["data"]["header"]["doc_number"],
-                        "result_code" => $result["code"],
+                        "id"             => $sale["data"]["header"]["movimiento_id"],
+                        "comprobante"    => $sale["data"]["header"]["doc_series"] . "-" . $sale["data"]["header"]["doc_number"],
+                        "result_code"    => $result["code"],
                         "result_message" => $result["msg"]
                     ];
                 }
@@ -92,9 +94,9 @@ class BotController extends BaseController
                     $result = $this->efact->makeNote($sale['data']);
                     $this->model->updateNoteState($result);
                     array_push($data, [
-                        "id" => $sale["data"]["note"]["nota_id"],
-                        "comprobante" => $sale["data"]["note"]["serie"] . "-" . $sale["data"]["note"]["correlativo"],
-                        "result_code" => $result["code"],
+                        "id"             => $sale["data"]["note"]["nota_id"],
+                        "comprobante"    => $sale["data"]["note"]["serie"] . "-" . $sale["data"]["note"]["correlativo"],
+                        "result_code"    => $result["code"],
                         "result_message" => $result["msg"]
                     ]);
                 }
@@ -104,7 +106,7 @@ class BotController extends BaseController
         $this->json($response);
     }
 
-    private function fillNotes($fillables)
+    private function fillNotes($fillables): string
     {
         $counter = 0;
         $total = count($fillables);
@@ -142,7 +144,7 @@ class BotController extends BaseController
                         $counter++;
                     }
                 }
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 return $e->getMessage();
             }
         }
