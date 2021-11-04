@@ -16,7 +16,36 @@ class NotaModel extends BaseModel
 
     public function get()
     {
-        return $this->utils->setUp('vw_nota', 'created_at, numero', 'desc, desc');
+        return $this->utils->setUp('vw_nota', 'created_at, correlativo', 'desc, desc');
+    }
+
+    /**
+     * @param $id
+     * @return array|false
+     */
+    public function getOne($id)
+    {
+        $data = $this->db->exec("
+            select
+                n.nota_id,
+                n.tipo_id as doc_type,
+                n.serie as doc_series,
+                n.correlativo as doc_number,
+                n.fecha as doc_date,
+                c.email as email_cliente,
+                sum(nd.precio_total) as doc_sale_amount,
+                0 as doc_discount_amount
+            from nota n
+            inner join nota_detalle nd on n.nota_id = nd.nota_id
+            inner join movimiento m on n.movimiento_id = m.movimiento_id
+            inner join cliente c on m.cliente_id = c.ruc
+            where n.nota_id = ?
+        ", [$id]);
+        if ($data[0]['nota_id']) {
+            return ['header' => $data[0]];
+        } else {
+            return false;
+        }
     }
 
     public function insert()

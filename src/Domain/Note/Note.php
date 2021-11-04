@@ -2,12 +2,10 @@
 
 namespace App\Domain\Note;
 
-use JsonSerializable;
-
 /**
  * Class Note.
  */
-class Note implements JsonSerializable
+class Note implements \JsonSerializable
 {
     /**
      * @var string

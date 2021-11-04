@@ -15,13 +15,13 @@ class CreditNoteModel extends BaseModel
     }
 
     /**
-     * @param string $serie
+     * @param string $series
      * @return string
      * @throws \Exception
      */
-    public function getSeries($serie)
+    public function getSeries(string $series): string
     {
-        $obj = $this->db->exec("select * from local_comprobante where serie_asociada = ?", [$serie]);
+        $obj = $this->db->exec("select * from local_comprobante where serie_asociada = ?", [$series]);
         if ($obj) {
             return $obj[0]['serie'];
         } else {
@@ -30,13 +30,13 @@ class CreditNoteModel extends BaseModel
     }
 
     /**
-     * @param string $serie
+     * @param string $series
      * @return int
      * @throws \Exception
      */
-    public function getNextNumber($serie)
+    public function getNextNumber(string $series): int
     {
-        $obj = $this->db->exec("select ifnull(max(correlativo), 0) as number from nota where serie = ?", [$serie]);
+        $obj = $this->db->exec("select ifnull(max(correlativo), 0) as number from nota where serie = ?", [$series]);
         if ($obj) {
             return $obj[0]['number'] + 1;
         } else {

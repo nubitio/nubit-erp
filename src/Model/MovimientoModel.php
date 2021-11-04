@@ -112,6 +112,11 @@ class MovimientoModel extends BaseModel
         }
     }
 
+    public function get_list()
+    {
+        return $this->db->exec("select movimiento_id, concat(iserie, '-', inumero) as comprobante from vw_movimiento where inumero > 0");
+    }
+
     public function getprecio($id)
     {
         $result = $this->db->exec("

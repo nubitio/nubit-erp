@@ -122,6 +122,11 @@ class MovimientoController extends BaseController
         $this->json($data);
     }
 
+    function get_list()
+    {
+        $this->json($this->model->get_list());
+    }
+
     function getprecio()
     {
         $id = $this->app->get('PARAMS.producto_id');
@@ -250,6 +255,8 @@ class MovimientoController extends BaseController
 
     public function send_email()
     {
+        $this->json(["success" => false, "msg" => 'Error del servidor de correos', "data" => null]);
+        exit();
         $id = $this->app->get('PARAMS.id');
 
         $data = $this->model->ticket_cabecera($id);

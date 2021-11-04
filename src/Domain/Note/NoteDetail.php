@@ -5,7 +5,7 @@ namespace App\Domain\Note;
 /**
  * Class NoteDetail
  */
-class NoteDetail implements JsonSerializable
+class NoteDetail implements \JsonSerializable
 {
     /**
      * @var int

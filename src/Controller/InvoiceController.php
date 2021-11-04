@@ -3,16 +3,19 @@
 namespace App\Controller;
 
 use App\Model\BotModel;
+use App\Model\NotaModel;
 use Template;
 
 class InvoiceController extends BaseController
 {
     private BotModel $botModel;
+    private NotaModel $noteModel;
 
     public function __construct()
     {
         parent::__construct();
         $this->botModel = new BotModel();
+        $this->noteModel = new NotaModel();
     }
 
     function beforeroute()
@@ -25,11 +28,22 @@ class InvoiceController extends BaseController
         $id = $this->app->get('PARAMS.id');
 
         $data = $this->botModel->getOne($id);
-        $sale = $data['data'];
-        if ($sale['header']['doc_type'] == '01') {
-            $tipo = 'FACTURA';
+        $receipt = $data['data'];
+
+        if (!$receipt) {
+            $receipt = $this->noteModel->getOne($id);
+        }
+
+        if ($receipt['header']['doc_type'] == '01') {
+            $type = 'FACTURA';
+        } else if ($receipt['header']['doc_type'] == '03') {
+            $type = 'BOLETA';
+        } else if ($receipt['header']['doc_type'] == '07') {
+            $type = 'NOTA DE CRÉDITO';
+        } else if ($receipt['header']['doc_type'] == '08') {
+            $type = 'NOTA DE DÉBITO';
         } else {
-            $tipo = 'BOLETA';
+            $type = '';
         }
 
         $pdf = $this->app->get('BASE_URL') . 'invoice/download/' . $id . '/pdf';
@@ -37,12 +51,12 @@ class InvoiceController extends BaseController
         $cdr = $this->app->get('BASE_URL') . 'invoice/download/' . $id . '/cdr';
 
         $template = new Template();
-        $this->app->set('tipo', $tipo);
-        $this->app->set('serie', $sale['header']['doc_series']);
-        $this->app->set('numero', $sale['header']['doc_number']);
-        $fecha = date("d/m/Y", strtotime($sale['header']['doc_date']));
+        $this->app->set('tipo', $type);
+        $this->app->set('serie', $receipt['header']['doc_series']);
+        $this->app->set('numero', $receipt['header']['doc_number']);
+        $fecha = date("d/m/Y", strtotime($receipt['header']['doc_date']));
         $this->app->set('fecha_emision', $fecha);
-        $this->app->set('monto_total', $this->money_pen($sale['header']['doc_sale_amount'] - $sale['header']['doc_discount_amount']));
+        $this->app->set('monto_total', $this->money_pen($receipt['header']['doc_sale_amount'] - $receipt['header']['doc_discount_amount']));
         $this->app->set('pdf', $pdf);
         $this->app->set('xml', $xml);
         $this->app->set('cdr', $cdr);
@@ -55,10 +69,14 @@ class InvoiceController extends BaseController
         $type = $this->app->get('PARAMS.type');
         $mode = $this->app->get('GET.mode');
 
-        $sale = $this->botModel->getOne($id);
-        $header = $sale['data']['header'];
+        $data = $this->botModel->getOne($id);
+        $receipt = $data['data'];
 
-        $mimetype = '';
+        if (!$receipt) {
+            $receipt = $this->noteModel->getOne($id);
+        }
+
+        $header = $receipt['header'];
 
         if ($type == 'pdf') {
             $filename = $header['company_id'] . '-' . $header['doc_type'] . '-' . $header['doc_series'] . '-' . $header['doc_number'] . '.pdf';

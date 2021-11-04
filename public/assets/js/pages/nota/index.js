@@ -1,5 +1,4 @@
 var app = app || {};
-var accounting = app.accounting || {}
 app.nota = (function () {
 
     let route;
@@ -8,16 +7,11 @@ app.nota = (function () {
     let fm = $("#nota_fm");
     let txt_movimiento_id = $("#nota_movimiento_id");
     let txt_fecha = $("#nota_fecha");
-    let txt_tipo_id = $("#nota_tipo_id");
     let txt_codigo_motivo = $("#nota_codigo_motivo");
     let txt_descripcion_motivo = $("#nota_descripcion_motivo");
-    let txt_serie = $("#nota_serie");
-    let txt_correlativo = $("#nota_correlativo");
-    let txt_digest = $("#nota_digest");
-    let txt_envio_sunat = $("#nota_envio_sunat");
-    let txt_mensaje_sunat = $("#nota_mensaje_sunat");
     let btn_save;
     let btn_cancel;
+
     let init = function () {
         dg.datagrid({
             title: "Nota",
@@ -27,8 +21,7 @@ app.nota = (function () {
                 text: TEXT_ADD,
                 iconCls: ICON_ADD,
                 handler: function () {
-                    show_info('Función en desarrollo');
-                    //insert();
+                    insert();
                 }
             }, "-", {
                 text: TEXT_EDIT,
@@ -44,11 +37,24 @@ app.nota = (function () {
                     show_info('Función en desarrollo');
                     //erase();
                 }
-            }, '-', {
-                text: 'Resumen diario',
-                iconCls: 'fas fa-file-invoice fa-1x text-primary',
+            }, {
+                text: 'Enviar Sunat',
+                iconCls: 'fas fa-paper-plane fa-1x text-warning',
                 handler: function () {
-                    accounting.summary.open(2);
+                    show_info('Función en desarrollo');
+                    //enviar_sunat();
+                }
+            }, '-', {
+                text: 'Enviar Cliente',
+                iconCls: 'fas fa-paper-plane fa-1x text-success',
+                handler: function () {
+                    sendEmailToClient();
+                }
+            }, '-', {
+                text: 'Ver',
+                iconCls: 'fas fa-eye fa-1x text-info',
+                handler: function () {
+                    viewDocument();
                 }
             }],
             columns: [[
@@ -123,11 +129,17 @@ app.nota = (function () {
             }
         });
 
-        txt_movimiento_id.textbox({
+        txt_movimiento_id.combobox({
             width: "100%",
-            label: "Movimiento Id",
+            label: "Comprobante",
             labelPosition: "top",
-            required: false
+            url: 'invoice/list',
+            method: 'get',
+            valueField: 'movimiento_id',
+            textField: 'comprobante',
+            panelHeight: 200,
+            limitToList: true,
+            required: true
         });
 
         txt_fecha.datebox({
@@ -136,65 +148,57 @@ app.nota = (function () {
             labelPosition: "top",
             formatter: dateformatter,
             parser: dateparser,
-            required: false
+            required: true
         });
 
-        txt_tipo_id.textbox({
+        txt_codigo_motivo.combobox({
             width: "100%",
-            label: "Tipo Id",
+            label: "Motivo",
             labelPosition: "top",
-            required: false
-        });
-
-        txt_codigo_motivo.textbox({
-            width: "100%",
-            label: "Codigo Motivo",
-            labelPosition: "top",
-            required: false
+            data: [{
+                value: '01',
+                text: 'Anulación de la operación'
+            }, {
+                value: '02',
+                text: 'Anulación por error en el RUC'
+            }, {
+                value: '03',
+                text: 'Corrección por error en la descripción'
+            }, {
+                value: '04',
+                text: 'Descuento global'
+            }, {
+                value: '05',
+                text: 'Descuento por ítem'
+            }, {
+                value: '06',
+                text: 'Devolución total'
+            }, {
+                value: '07',
+                text: 'Devolución por ítem'
+            }, {
+                value: '08',
+                text: 'Bonificación'
+            }, {
+                value: '09',
+                text: 'Disminución en el valor'
+            }, {
+                value: '10',
+                text: 'Otros Conceptos'
+            }],
+            panelHeight: 'auto',
+            limitToList: true,
+            required: true
         });
 
         txt_descripcion_motivo.textbox({
             width: "100%",
+            height: 80,
             label: "Descripcion Motivo",
             labelPosition: "top",
+            multiline: true,
             required: false
         });
-
-        txt_serie.textbox({
-            width: "100%",
-            label: "Serie",
-            labelPosition: "top",
-            required: false
-        });
-
-        txt_correlativo.numberbox({
-            width: "100%",
-            label: "Correlativo",
-            labelPosition: "top",
-            required: false
-        });
-
-        txt_digest.textbox({
-            width: "100%",
-            label: "Digest",
-            labelPosition: "top",
-            required: false
-        });
-
-        txt_envio_sunat.numberbox({
-            width: "100%",
-            label: "Envio Sunat",
-            labelPosition: "top",
-            required: false
-        });
-
-        txt_mensaje_sunat.textbox({
-            width: "100%",
-            label: "Mensaje Sunat",
-            labelPosition: "top",
-            required: false
-        });
-
     };
 
     function insert() {
@@ -230,9 +234,9 @@ app.nota = (function () {
                     if (result.success) {
                         dlg.dialog("close");
                         dg.datagrid("reload");
-                        show_info(result.msg);
+                        show_info(result.message);
                     } else {
-                        show_error(result.msg);
+                        show_error(result.message);
                     }
                     enable_buttons();
                 } catch (e) {
@@ -252,9 +256,9 @@ app.nota = (function () {
                         .done(function (result) {
                             if (result.success) {
                                 dg.datagrid("reload");
-                                show_info(result.msg);
+                                show_info(result.message);
                             } else {
-                                show_error(result.msg);
+                                show_error(result.message);
                             }
                         })
                         .fail(function (xhr, status, error) {
@@ -264,6 +268,68 @@ app.nota = (function () {
             });
         } else {
             show_info("Seleccione un registro");
+        }
+    }
+
+    function showDataGridLoading(msg) {
+        dg.datagrid('options').loadMsg = msg;
+        dg.datagrid('loading');
+    }
+
+    function hideDataGridLoading() {
+        dg.datagrid('loaded');
+        dg.datagrid('options').loadMsg = TEXT_LOADING;
+    }
+
+    function enviar_sunat() {
+        let row = dg.datagrid('getSelected');
+        if (row) {
+            showDataGridLoading('Enviando comprobante...');
+            $.get('venta/getone/' + row.movimiento_id)
+                .done(function (response) {
+                    if (response.success) {
+                        generar_comprobante(response.venta);
+                    } else {
+                        show_error(response.msg);
+                        hideDataGridLoading();
+                    }
+
+                })
+                .fail(function (xhr, status, error) {
+                    show_error(error);
+                    hideDataGridLoading();
+                });
+        } else {
+            show_info('Seleccione un registro');
+        }
+    }
+
+    function sendEmailToClient() {
+        let row = dg.datagrid('getSelected');
+        if (row) {
+            showDataGridLoading('Enviando mensaje');
+            fetch('venta/enviarefact/' + row.nota_id)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        show_info(result.message)
+                    } else {
+                        show_error(result.message)
+                    }
+                })
+                .catch(error => show_error(error))
+                .finally(() => hideDataGridLoading());
+        } else {
+            show_info('Seleccione un registro');
+        }
+    }
+
+    function viewDocument() {
+        let row = dg.datagrid('getSelected');
+        if (row) {
+            window.open('invoice/' + row.nota_id);
+        } else {
+            show_info('Seleccione un registro');
         }
     }
 
