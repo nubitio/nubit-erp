@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Invoice\Consult;
 use App\Model\BotModel;
 use App\Model\OptionsModel;
 use DateTime;
@@ -433,5 +434,26 @@ class EFactController extends BaseController
         // Guardar CDR
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $this->getOption('invoice_ruc') . '-' . $statusResult->getCdrResponse()->getId() . '.zip', $statusResult->getCdrZip());
         return ["success" => true, "ticket" => $ticket, "id" => $statusResult->getCdrResponse()->getId(), "hash" => null, "code" => $statusResult->getCdrResponse()->getCode(), "msg" => $statusResult->getCdrResponse()->getDescription()];
+    }
+
+    function consultCDR($id)
+    {
+        $id = $this->app->get('PARAMS.id');
+        $saleInfo = $this->botModel->getOne($id);
+        if ($saleInfo["success"]) {
+            $sale = $saleInfo['data'];
+            try {
+                $consult = new Consult($this->app);
+                $ruc = $this->getOption('invoice_ruc');
+                $user = $this->getOption('invoice_user');
+                $pass = $this->getOption('invoice_password');
+                $type = $sale['header']['doc_type'];
+                $series = $sale['header']['doc_series'];
+                $number = $sale['header']['doc_number'];
+                $consult->consult($ruc, $user, $pass, $type, $series, $number);
+            } catch (\Exception $e) {
+                $this->json(["success" => false, "message" => $e->getMessage()]);
+            }
+        }
     }
 }

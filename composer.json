@@ -10,6 +10,7 @@
     "ext-intl": "*",
     "ext-zip": "*",
     "ext-json": "*",
+    "ext-soap": "*",
     "bcosca/fatfree": "^3.7.3",
     "tecnickcom/tcpdf": "^6.3.5",
     "phpoffice/phpspreadsheet": "^1.16",

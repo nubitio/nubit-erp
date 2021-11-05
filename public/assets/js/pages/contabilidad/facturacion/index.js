@@ -28,6 +28,12 @@ app.facturacion = (function () {
                     view_invoice();
                 }
             }, '-', {
+                text: 'Consultar CDR',
+                iconCls: 'fas fa-file fa-1x text-secondary',
+                handler: function () {
+                    consultCdr();
+                }
+            }, '-', {
                 text: 'Resumen diario',
                 iconCls: 'fas fa-file-invoice fa-1x text-primary',
                 handler: function () {
@@ -146,6 +152,15 @@ app.facturacion = (function () {
         let row = dg.datagrid('getSelected');
         if (row) {
             window.open('invoice/' + row.movimiento_id);
+        } else {
+            show_info('Seleccione un registro');
+        }
+    }
+
+    function consultCdr() {
+        let row = dg.datagrid('getSelected');
+        if (row) {
+            window.open('invoice/consult/' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
         }
