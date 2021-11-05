@@ -85,7 +85,7 @@ class EFactController extends BaseController
         echo "</pre>";
     }
 
-    public function getPDF(DocumentInterface $invoice, $data)
+    public function getPDF(DocumentInterface $invoice, array $extras)
     {
         $html = new HtmlReport('', [
             'cache'            => 'tmp',
@@ -110,10 +110,7 @@ class EFactController extends BaseController
             ],
             'user'   => [
                 'header' => '',
-                'extras' => [
-                    ['name' => 'FORMA DE PAGO', 'value' => 'CONTADO'],
-                    ['name' => 'OBS', 'value' => $data['Obs']]
-                ],
+                'extras' => $extras,
             ]
         ];
 
@@ -139,18 +136,40 @@ class EFactController extends BaseController
         }
     }
 
-    public function savePDF()
+    public function makePDF()
     {
         $id = $this->app->get('PARAMS.id');
         $sale = $this->botModel->getOne($id);
+        if (!$sale["success"]) {
+            $sale = $this->botModel->getOneNote($id);
+        }
         if ($sale["success"]) {
             try {
-                $invoice = $this->buildInvoice($sale['data']);
-                file_put_contents($this->app->get('EFACT_DIR') . $invoice->getName() . '.pdf', $this->getPDF($invoice, $sale));
+                if ($sale["data"]["note"]) {
+                    $receipt = $this->buildNote($sale["data"]);
+                    $extras = [];
+                } else {
+                    $receipt = $this->buildInvoice($sale['data']);
+                    $extras = [
+                        ['name' => 'FORMA DE PAGO', 'value' => 'CONTADO'],
+                        ['name' => 'OBS', 'value' => $sale['header']['doc_notes']]
+                    ];
+                }
+                file_put_contents($this->app->get('EFACT_DIR') . $receipt->getName() . '.pdf', $this->getPDF($receipt, $extras));
                 $this->json(["success" => true, "message" => "PDF generado correctamente"]);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 $this->json(["success" => false, "message" => $e->getMessage()]);
             }
+        }
+    }
+
+    public function savePdf(DocumentInterface $document, $extras = [])
+    {
+        try {
+            file_put_contents($this->app->get('EFACT_DIR') . $document->getName() . '.pdf', $this->getPDF($document, $extras));
+            $this->json(["success" => true, "message" => "{$document->getName()} successfully saved"]);
+        } catch (\Exception $e) {
+            $this->json(["success" => false, "message" => $e->getMessage()]);
         }
     }
 
@@ -243,7 +262,11 @@ class EFactController extends BaseController
         // Guardar XML
         file_put_contents($this->app->get('EFACT_DIR') . $invoice->getName() . '.xml', $this->see->getFactory()->getLastXml());
         // Guardar PDF
-        file_put_contents($this->app->get('EFACT_DIR') . $invoice->getName() . '.pdf', $this->getPDF($invoice, $sale));
+        $extras = [
+            ['name' => 'FORMA DE PAGO', 'value' => 'CONTADO'],
+            ['name' => 'OBS', 'value' => $sale['header']['doc_notes']]
+        ];
+        file_put_contents($this->app->get('EFACT_DIR') . $invoice->getName() . '.pdf', $this->getPDF($invoice, $extras));
         if (!$result->isSuccess()) {
             return ["success" => false, "id" => $sale['header']['movimiento_id'], "hash" => $this->getHash($invoice), "code" => $result->getError()->getCode(), "msg" => $result->getError()->getMessage()];
         }
@@ -252,7 +275,7 @@ class EFactController extends BaseController
         return ["success" => true, "id" => $sale['header']['movimiento_id'], "hash" => $this->getHash($invoice), "code" => $result->getCdrResponse()->getCode(), "msg" => $result->getCdrResponse()->getDescription()];
     }
 
-    public function makeNote($sale)
+    public function buildNote($sale)
     {
         // Cliente
         $client = new Client();
@@ -316,10 +339,16 @@ class EFactController extends BaseController
         $note->setDetails($items)
             ->setLegends([$legend]);
 
+        return $note;
+    }
+
+    public function makeNote($sale): array
+    {
+        $note = $this->buildNote($sale);
         $result = $this->see->send($note);
         // Guardar XML
         file_put_contents($this->app->get('EFACT_DIR') . $note->getName() . '.xml', $this->see->getFactory()->getLastXml());
-
+        $this->savePdf($note);
         if (!$result->isSuccess()) {
             return ["success" => false, "id" => $sale['note']['nota_id'], "hash" => $this->getHash($note), "code" => $result->getError()->getCode(), "msg" => $result->getError()->getMessage()];
         }

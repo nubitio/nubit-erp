@@ -63,6 +63,22 @@ class BotModel extends BaseModel
         }
     }
 
+    public function getOneNote($id): array
+    {
+        $note = $this->db->exec("select * from nota where nota_id = '$id'");
+        if ($note) {
+            $sale = $this->getOne($note[0]['movimiento_id']);
+            if ($sale["success"]) {
+                $sale["data"]["note"] = $note[0];
+            } else {
+                return $sale;
+            }
+            return ["success" => true, "msg" => '', 'data' => $sale['data']];
+        } else {
+            return ["success" => false, "msg" => 'No se encontro el registro', 'data' => null];
+        }
+    }
+
     public function updateSaleState($data)
     {
         $comprobante = new \DB\SQL\Mapper($this->db, 'comprobante');
