@@ -263,7 +263,7 @@ app.dashboard = (function () {
             let months = [];
             let data = [];
             for (var i = 0; i < result.length; i++) {
-                months.push(result[i].months);
+                months.push(result[i].month);
                 data.push(parseFloat(result[i].total));
             }
             Highcharts.chart('monthly_invoicing', {

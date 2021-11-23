@@ -29,7 +29,7 @@ class Consult
         $result = $service->getStatusCdr($ruc, $type, $series, $number);
 
         if (!$result->isSuccess()) {
-            return ['success' => false, 'message' => $result->getError()];
+            return ['success' => false, 'message' => $result->getError()->getCode() . ': ' . $result->getError()->getMessage()];
         }
 
         $cdr = $result->getCdrResponse();
@@ -38,6 +38,6 @@ class Consult
         }
 
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $ruc . '-' . $type . '-' . $series . '-' . $number . '.zip', $result->getCdrZip());
-        return ['success' => true, 'cdr' => $cdr];
+        return ['success' => true, 'message' => $cdr->getDescription(), 'cdr' => $cdr];
     }
 }

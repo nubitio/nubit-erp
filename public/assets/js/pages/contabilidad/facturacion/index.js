@@ -160,7 +160,16 @@ app.facturacion = (function () {
     function consultCdr() {
         let row = dg.datagrid('getSelected');
         if (row) {
-            window.open('invoice/consult/' + row.movimiento_id);
+            fetch('invoice/consult/' + row.movimiento_id)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        show_info(result.message);
+                        dg.datagrid('reload');
+                    } else {
+                        show_error(result.message);
+                    }
+                })
         } else {
             show_info('Seleccione un registro');
         }
