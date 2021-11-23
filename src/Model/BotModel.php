@@ -83,7 +83,7 @@ class BotModel extends BaseModel
     {
         $comprobante = new \DB\SQL\Mapper($this->db, 'comprobante');
         $comprobante->load(array('movimiento_id=?', $data['id']));
-        $comprobante->digest = $data['hash'];
+        $comprobante->digest = $data['hash'] ?? $comprobante->digest;
         $comprobante->envio_sunat = $data['code'];
         $comprobante->mensaje_sunat = $data['msg'];
         $comprobante->updated_at = date('Y-m-d H:i:s');

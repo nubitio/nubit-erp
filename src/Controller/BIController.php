@@ -30,6 +30,11 @@ class BIController extends BaseController
         $this->json($this->model->venta_mes());
     }
 
+    public function monthlyInvoicing()
+    {
+        $this->json($this->model->monthlyInvoicing());
+    }
+
     public function productRotation()
     {
         $lapse = $this->app->get('PARAMS.lapse');

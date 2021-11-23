@@ -450,7 +450,15 @@ class EFactController extends BaseController
                 $type = $sale['header']['doc_type'];
                 $series = $sale['header']['doc_series'];
                 $number = $sale['header']['doc_number'];
-                $consult->consult($ruc, $user, $pass, $type, $series, $number);
+                $result = $consult->consult($ruc, $user, $pass, $type, $series, $number);
+                if ($result['success']) {
+                    $this->botModel->updateSaleState([
+                        'id'   => $id,
+                        'code' => $result['cdr']->getCode(),
+                        'msg'  => $result['cdr']->getDescription(),
+                    ]);
+                }
+                $this->json($result);
             } catch (\Exception $e) {
                 $this->json(["success" => false, "message" => $e->getMessage()]);
             }

@@ -26,6 +26,11 @@ class BIModel extends BaseModel
         return $this->db->exec("call sp_bi_venta_por_mes (?)", array($this->current_local_id));
     }
 
+    public function monthlyInvoicing()
+    {
+        return $this->db->exec("call sp_bi_monthly_invoicing");
+    }
+
     public function productRotation($lapse = 'week')
     {
         return $this->db->exec("CALL sp_bi_product_rotation (?, ?)", array($this->current_local_id, $lapse));

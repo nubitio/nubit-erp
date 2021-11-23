@@ -257,6 +257,42 @@ app.dashboard = (function () {
                 series: data
             });
         });
+
+        // monthly invoicing
+        $.get('bi/monthly-invoicing', function (result) {
+            let months = [];
+            let data = [];
+            for (var i = 0; i < result.length; i++) {
+                months.push(result[i].months);
+                data.push(parseFloat(result[i].total));
+            }
+            Highcharts.chart('monthly_invoicing', {
+                title: {
+                    text: 'Facturación por mes'
+                },
+                subtitle: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: months
+                },
+                yAxis: {
+                    title: {
+                        text: 'Comprobantes'
+                    }
+                },
+                credits: {
+                    enabled: false
+                },
+                series: [{
+                    name: 'Comprobantes',
+                    type: 'column',
+                    colorByPoint: true,
+                    data: data,
+                    showInLegend: false
+                }]
+            });
+        });
     }
 
     return {

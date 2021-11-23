@@ -29,17 +29,15 @@ class Consult
         $result = $service->getStatusCdr($ruc, $type, $series, $number);
 
         if (!$result->isSuccess()) {
-            dump($result->getError());
-            return;
+            return ['success' => false, 'message' => $result->getError()];
         }
 
         $cdr = $result->getCdrResponse();
         if ($cdr === null) {
-            echo 'CDR no encontrado, el comprobante no ha sido comunicado a SUNAT.';
-            return;
+            return ['success' => false, 'message' => 'CDR no encontrado, el comprobante no ha sido comunicado a SUNAT.'];
         }
 
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $ruc . '-' . $type . '-' . $series . '-' . $number . '.zip', $result->getCdrZip());
-        dump($cdr);
+        return ['success' => true, 'cdr' => $cdr];
     }
 }
