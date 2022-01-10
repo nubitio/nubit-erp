@@ -329,6 +329,8 @@ app.venta = (function () {
                 if (result.success) {
                     let option = getOption('app_option_invoicing_automatically');
                     let optionValue = (option.value === 'true');
+                    console.log(optionValue)
+                    console.log(option.value)
                     if(optionValue) {
                         makeInvoice(result.venta);
                     }
@@ -647,12 +649,6 @@ app.venta = (function () {
     function makeInvoice(venta) {
         if (venta) {
             if (venta.comprobante_id === null) {
-                let confirmMessage = '';
-                if (venta.cliente_id.length === 11) {
-                    confirmMessage = 'Se emitira una factura electrónica'
-                } else {
-                    confirmMessage = 'Se emitira una boleta electrónica'
-                }
                 fetch('sale/invoice/' + venta.movimiento_id)
                     .then(response => response.json())
                     .then(result => show_info(result.msg))

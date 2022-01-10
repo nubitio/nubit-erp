@@ -133,7 +133,6 @@ app.options = (function () {
                         show_error(result.msg);
                     }
                     enable_buttons();
-                    location.reload();
                 } catch (e) {
                     show_error(e);
                     enable_buttons();
