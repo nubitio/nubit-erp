@@ -28,7 +28,7 @@ app.venta = (function () {
     let cliente_dialog_obj;
 
     let session;
-    let options;;
+    let options;
 
     function caja_check_exist() {
         fetch('caja/check')
@@ -326,8 +326,6 @@ app.venta = (function () {
             },
             success: function (result) {
                 result = JSON.parse(result);
-                console.log(result);
-
                 let optionValueTrue = (result.success === true);
                 console.log(optionValueTrue)
 
@@ -337,7 +335,6 @@ app.venta = (function () {
                     let optionValue = (option.value === 'true');
                     if(optionValue) {
                         makeInvoice(result.venta);
-                        console.log(result.venta)
                     }
 
                     dlg.dialog('close');
