@@ -326,11 +326,7 @@ app.venta = (function () {
             },
             success: function (result) {
                 result = JSON.parse(result);
-                let optionValueTrue = (result.success === true);
-                console.log(optionValueTrue)
-
                 if (result.success) {
-
                     let option = getOption('app_option_invoicing_automatically');
                     let optionValue = (option.value === 'true');
                     if(optionValue) {
@@ -605,7 +601,7 @@ app.venta = (function () {
             });
         } else {
             show_info('Seleccione un registro');
-            }
+        }
     }
 
     function venta_print() {
@@ -614,7 +610,7 @@ app.venta = (function () {
             jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
-}
+        }
     }
 
     function imprimir_ticket(ticket, digest) {
@@ -653,19 +649,16 @@ app.venta = (function () {
             if (venta.comprobante_id === null) {
                 let confirmMessage = '';
                 if (venta.cliente_id.length === 11) {
-                    confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+                    confirmMessage = 'Se emitira una factura electrónica'
                 } else {
-                    confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+                    confirmMessage = 'Se emitira una boleta electrónica'
                 }
-                $.messager.confirm('Confirmar', confirmMessage, function (r) {
-                    if (r) {
-                        fetch('sale/invoice/' + venta.movimiento_id)
-                            .then(response => response.json())
-                            .then(result => show_info(result.msg))
-                            .catch(error => show_error(error))
-                            .finally(() => dg.datagrid('reload'));
-                    }
-                })
+                fetch('sale/invoice/' + venta.movimiento_id)
+                    .then(response => response.json())
+                    .then(result => show_info(result.msg))
+                    .catch(error => show_error(error))
+                    .finally(() => dg.datagrid('reload'));
+
             } else {
                 show_info('Ya se registro el comprobante previamente');
             }
