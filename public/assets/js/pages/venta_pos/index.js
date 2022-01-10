@@ -647,19 +647,15 @@ app.venta = (function () {
         }
     }
     function makeInvoice(venta) {
-        if (venta) {
-            if (venta.comprobante_id === null) {
-                fetch('sale/invoice/' + venta.movimiento_id)
-                    .then(response => response.json())
-                    .then(result => show_info(result.msg))
-                    .catch(error => show_error(error))
-                    .finally(() => dg.datagrid('reload'));
+        if (venta.comprobante_id === null) {
+            fetch('sale/invoice/' + venta.movimiento_id)
+                .then(response => response.json())
+                .then(result => show_info(result.msg))
+                .catch(error => show_error(error))
+                .finally(() => dg.datagrid('reload'));
 
-            } else {
-                show_info('Ya se registro el comprobante previamente');
-            }
         } else {
-            show_info('Seleccione un registro');
+            show_info('Ya se registro el comprobante previamente');
         }
     }
 
