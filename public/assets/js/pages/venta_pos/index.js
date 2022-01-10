@@ -605,7 +605,7 @@ app.venta = (function () {
             });
         } else {
             show_info('Seleccione un registro');
-        }
+            }
     }
 
     function venta_print() {
@@ -659,7 +659,7 @@ app.venta = (function () {
                 }
                 $.messager.confirm('Confirmar', confirmMessage, function (r) {
                     if (r) {
-                        fetch('sale/invoice/' + row.movimiento_id)
+                        fetch('sale/invoice/' + venta.movimiento_id)
                             .then(response => response.json())
                             .then(result => show_info(result.msg))
                             .catch(error => show_error(error))
