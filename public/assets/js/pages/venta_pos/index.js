@@ -28,7 +28,7 @@ app.venta = (function () {
     let cliente_dialog_obj;
 
     let session;
-    let options;
+    let options;;
 
     function caja_check_exist() {
         fetch('caja/check')
@@ -326,7 +326,20 @@ app.venta = (function () {
             },
             success: function (result) {
                 result = JSON.parse(result);
+                console.log(result);
+
+                let optionValueTrue = (result.success === true);
+                console.log(optionValueTrue)
+
                 if (result.success) {
+
+                    let option = getOption('app_option_invoicing_automatically');
+                    let optionValue = (option.value === 'true');
+                    if(optionValue) {
+                        makeInvoice(result.venta);
+                        console.log(result.venta)
+                    }
+
                     dlg.dialog('close');
                     dg.datagrid('reload');
                     show_info(result.msg);
@@ -604,7 +617,7 @@ app.venta = (function () {
             jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
-        }
+}
     }
 
     function imprimir_ticket(ticket, digest) {
@@ -618,6 +631,31 @@ app.venta = (function () {
             if (row.comprobante_id === null) {
                 let confirmMessage = '';
                 if (row.cliente_id.length === 11) {
+                    confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+                } else {
+                    confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+                }
+                $.messager.confirm('Confirmar', confirmMessage, function (r) {
+                    if (r) {
+                        fetch('sale/invoice/' + row.movimiento_id)
+                            .then(response => response.json())
+                            .then(result => show_info(result.msg))
+                            .catch(error => show_error(error))
+                            .finally(() => dg.datagrid('reload'));
+                    }
+                })
+            } else {
+                show_info('Ya se registro el comprobante previamente');
+            }
+        } else {
+            show_info('Seleccione un registro');
+        }
+    }
+    function makeInvoice(venta) {
+        if (venta) {
+            if (venta.comprobante_id === null) {
+                let confirmMessage = '';
+                if (venta.cliente_id.length === 11) {
                     confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
                 } else {
                     confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
