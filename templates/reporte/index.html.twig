@@ -10,12 +10,14 @@
         <div class="clearfix"></div>
     </div>
     <div id="reporte_reportes" style="width:180px;">
-        <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_articulo()">Venta por articulo</div>
-        <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_detallado()"> Venta detallado</div>
+        <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_articulo()">Venta por articulo
+        </div>
+        <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_detallado()"> Venta detallado
+        </div>
         <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_contable()">Venta contable</div>
         <div data-options="iconCls:'fa fa-file color-yellow'" onclick="app.reporte.rpt_comprobantes_anulados()">
             Comprobantes anulados
         </div>
     </div>
 </div>
-<script src="{{ @ASSETS }}js/pages/reporte/index.js?v={{@version}}"></script>
+<script src="{{ asset('assets/js/pages/reporte/index.js') }}"></script>

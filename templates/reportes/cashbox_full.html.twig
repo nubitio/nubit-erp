@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
+          integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+
+    <title>{{ title }}</title>
+</head>
+<body>
+<div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 padding">
+    <div class="p-4">
+        <table class="table table-borderless">
+            <tr>
+                <td>
+                    <img src="{{ logo }}" alt="Logo" style="position: relative; max-height: 100px">
+                </td>
+                <td class="text-right">
+                    <h4>{{ title }}</h4>
+                    <p>Local: {{ header['local'] }}</p>
+                    Cajero(a): <span class="text-uppercase">{{ header['usuario'] }}</span>
+                </td>
+            </tr>
+        </table>
+        <hr>
+        <div class="col-md-4 offset-4">
+            <table class="table table-sm mb-4">
+                <tr>
+                    <td></td>
+                    <td>Fecha</td>
+                    <td>Hora</td>
+                </tr>
+                <tr>
+                    <td>Apertura</td>
+                    <td>{{ header['apertura']|date('d/m/Y') }}</td>
+                    <td>{{ header['apertura']|date('H:i') }}</td>
+                </tr>
+                <tr>
+                    <td>Cierre</td>
+                    <td>
+                        {% if header['cierre'] %}
+                            {{ header['cierre']|date('d/m/Y') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if header['cierre'] %}
+                            {{ header['cierre']|date('H:i') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="mb-4">
+            <table class="table table-sm">
+                <tr class="text-center">
+                    <td colspan="10">VENTAS POR TIPO DE DOCUMENTO</td>
+                </tr>
+                <tr>
+                    <td rowspan="2" class="align-middle">Documento</td>
+                    <td rowspan="2" class="align-middle">Serie</td>
+                    <td rowspan="2" class="align-middle">Desde</td>
+                    <td rowspan="2" class="align-middle">Hasta</td>
+                    <td colspan="5" class="text-center">Método de pago</td>
+                </tr>
+                <tr>
+                    <td>Efectivo</td>
+                    <td>Tarjeta</td>
+                    <td>Cheque</td>
+                    <td>Transferencia</td>
+                    <td>Total</td>
+                </tr>
+            </table>
+        </div>
+        <div class="table-responsive-sm">
+            <table class="table table-striped">
+                <thead>
+                <tr class="text-center">
+                    <td colspan="5">MOVIMIENTO DE CAJA</td>
+                </tr>
+                <tr>
+                    <th class="text-center">#</th>
+                    <th>Concepto</th>
+                    <th class="text-right">Ingresos</th>
+                    <th class="text-right">Egresos</th>
+                    <th>Observación</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in detail %}
+                    <tr>
+                        <td class="text-center">{{ counter }}</td>
+                        <td>{{ item['descripcion'] }}</td>
+                        <td class="text-right">{{ (item['tipo_id'] == 1) ? item['monto'] : '-' }}</td>
+                        <td class="text-right">{{ (item['tipo_id'] == 2) ? item['monto'] : '-' }}</td>
+                        <td>{{ item['referencia'] }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-sm-5">
+            </div>
+            <div class="col-lg-4 col-sm-5 ml-auto">
+                <table class="table table-clear">
+                    <tbody>
+                    <tr>
+                        <td class="left">
+                            <strong class="text-dark">Saldo final</strong></td>
+                        <td class="right">
+                            <strong class="text-dark">{{ header['saldo_final'] }}</strong>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <hr>
+        <p class="mb-0">{{ obs }}</p>
+    </div>
+</div>
+</body>
+</html>

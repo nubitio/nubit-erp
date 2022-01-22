@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Model\CajaModel;
-use Template;
 
 class CajaController extends BaseController
 {
@@ -77,7 +76,7 @@ class CajaController extends BaseController
         $this->json($data);
     }
 
-    public function reporte()
+    public function exportCashBox()
     {
         $id = $this->app->get('PARAMS.id');
         $header = $this->caja->getOneById($id);
@@ -85,8 +84,24 @@ class CajaController extends BaseController
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
 
         $content = $this->renderView('reportes/cashbox.html.twig', [
-            'title' => 'Reporte de caja',
-            'logo' => $this->base64($logo_path),
+            'title'  => 'Reporte de caja',
+            'logo'   => $this->base64($logo_path),
+            'header' => $header,
+            'detail' => $detail
+        ]);
+        $this->report($content);
+    }
+
+    public function reportCashBox()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $header = $this->caja->getOneById($id);
+        $detail = $this->caja->getDetailById($id);
+        $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
+
+        $content = $this->renderView('reportes/cashbox_full.html.twig', [
+            'title'  => 'Reporte de caja',
+            'logo'   => $this->base64($logo_path),
             'header' => $header,
             'detail' => $detail
         ]);
