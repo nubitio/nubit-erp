@@ -504,7 +504,7 @@ class MovimientoModel extends BaseModel
             $this->db->exec('update movimiento set has_invoice = 1 where movimiento_id = ?', [$id]);
             $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $this->current_local_id]);
             return ["success" => true, "data" => $result, "msg" => 'Comprobante registrado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
