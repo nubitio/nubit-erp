@@ -27,56 +27,47 @@
             </tr>
         </table>
         <hr>
-        <div class="col-md-4 offset-4">
-            <table class="table table-sm mb-4">
-                <tr>
-                    <td></td>
-                    <td>Fecha</td>
-                    <td>Hora</td>
-                </tr>
-                <tr>
-                    <td>Apertura</td>
-                    <td>{{ header['apertura']|date('d/m/Y') }}</td>
-                    <td>{{ header['apertura']|date('H:i') }}</td>
-                </tr>
-                <tr>
-                    <td>Cierre</td>
-                    <td>
-                        {% if header['cierre'] %}
-                            {{ header['cierre']|date('d/m/Y') }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if header['cierre'] %}
-                            {{ header['cierre']|date('H:i') }}
-                        {% else %}
-                            -
-                        {% endif %}
-                    </td>
-                </tr>
-            </table>
-        </div>
+        <table class="table table-borderless table-sm mb-4">
+            <tr>
+                <td>Apertura:</td>
+                <td>
+                    {{ header['apertura']|date("d/m/Y H:i") }}
+                </td>
+                <td>Total ingresos:</td>
+                <td class="text-right">{{ header['ingresos'] }}</td>
+            </tr>
+            <tr>
+                <td>Cierre:</td>
+                <td>
+                    {% if header['cierre'] %}
+                        {{ header['cierre']|date('d/m/Y H:i') }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>Total egresos:</td>
+                <td class="text-right">{{ header['egresos'] }}</td>
+            </tr>
+        </table>
         <div class="mb-4">
             <table class="table table-sm">
                 <tr class="text-center">
-                    <td colspan="10">VENTAS POR TIPO DE DOCUMENTO</td>
+                    <td colspan="4">VENTAS POR TIPO DE DOCUMENTO</td>
                 </tr>
                 <tr>
-                    <td rowspan="2" class="align-middle">Documento</td>
-                    <td rowspan="2" class="align-middle">Serie</td>
-                    <td rowspan="2" class="align-middle">Desde</td>
-                    <td rowspan="2" class="align-middle">Hasta</td>
-                    <td colspan="5" class="text-center">Método de pago</td>
+                    <th>Documento</th>
+                    <th>Serie</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
                 </tr>
-                <tr>
-                    <td>Efectivo</td>
-                    <td>Tarjeta</td>
-                    <td>Cheque</td>
-                    <td>Transferencia</td>
-                    <td>Total</td>
-                </tr>
+                {% for item in receipt %}
+                    <tr>
+                        <td>{{ item['tipo'] }}</td>
+                        <td>{{ item['serie'] }}</td>
+                        <td>{{ item['desde'] }}</td>
+                        <td>{{ item['hasta'] }}</td>
+                    </tr>
+                {% endfor %}
             </table>
         </div>
         <div class="table-responsive-sm">

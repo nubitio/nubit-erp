@@ -234,12 +234,14 @@ class MovimientoModel extends BaseModel
             }
             $key = $this->db->exec("SELECT UUID() AS uuid");
             $uuid = $key[0]['uuid'];
+            $cashBox = $this->cajaModel->getCurrentActiveCashBox();
             $this->dao->movimiento_id = $uuid;
             $this->dao->tipo_id = $tipo_id;
             $this->dao->proveedor_id = empty($this->dao->proveedor_id) ? null : $this->dao->proveedor_id;
             $this->dao->serie = $serie;
             $this->dao->numero = $numero;
             $this->dao->estado = 1;
+            $this->dao->caja_id = $cashBox['caja_id'];
             $this->dao->created_by = $this->current_user_id;
             $this->dao->date_created = date('Y-m-d H:i:s');
             $this->dao->save();
