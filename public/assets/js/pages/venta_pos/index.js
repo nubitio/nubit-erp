@@ -34,7 +34,7 @@ app.venta = (function () {
         fetch('caja/check')
             .then(response => response.json())
             .then(result => {
-                if (!result.success) {
+                if (!result.caja_id) {
                     $.messager.alert({
                         closable: false,
                         title: 'Registro ventas',

@@ -2,16 +2,19 @@
 
 namespace App\Controller;
 
+use App\Domain\CashBox\GetInfoReceiptType;
 use App\Model\CajaModel;
 
 class CajaController extends BaseController
 {
     private CajaModel $caja;
+    private GetInfoReceiptType $getInfoReceiptType;
 
-    function __construct()
+    function __construct(GetInfoReceiptType $getInfoReceiptType)
     {
         parent::__construct();
         $this->caja = new CajaModel();
+        $this->getInfoReceiptType = $getInfoReceiptType;
     }
 
     function index()
@@ -99,11 +102,14 @@ class CajaController extends BaseController
         $detail = $this->caja->getDetailById($id);
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
 
+        $receiptTypeInfo = $this->getInfoReceiptType->execute($id);
+
         $content = $this->renderView('reportes/cashbox_full.html.twig', [
-            'title'  => 'Reporte de caja',
-            'logo'   => $this->base64($logo_path),
-            'header' => $header,
-            'detail' => $detail
+            'title'   => 'Reporte de caja',
+            'logo'    => $this->base64($logo_path),
+            'header'  => $header,
+            'detail'  => $detail,
+            'receipt' => $receiptTypeInfo
         ]);
         $this->report($content);
     }
