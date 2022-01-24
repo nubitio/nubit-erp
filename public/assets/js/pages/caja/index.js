@@ -144,9 +144,9 @@ app.caja = (function () {
         fetch('caja/check')
             .then(response => response.json())
             .then(result => {
-                if (result.success) {
-                    $("#caja_id").val(result.data.caja_id);
-                    load_datagrid(result.data);
+                if (result.caja_id) {
+                    $("#caja_id").val(result.caja_id);
+                    load_datagrid(result);
                 } else {
                     abrir_caja();
                 }

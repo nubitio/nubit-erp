@@ -11,7 +11,13 @@ app.caja_consulta = (function () {
                 text: TEXT_EXPORTAR,
                 iconCls: ICON_PDF,
                 handler: function () {
-                    cajas_reporte();
+                    cashBoxExport();
+                }
+            }, '-', {
+                text: TEXT_REPORTE,
+                iconCls: ICON_PDF,
+                handler: function () {
+                    cashBoxReport();
                 }
             }],
             columns: [[{
@@ -126,10 +132,19 @@ app.caja_consulta = (function () {
         return value;
     }
 
-    function cajas_reporte() {
-        var row = dg.datagrid('getSelected');
+    function cashBoxExport() {
+        const row = dg.datagrid('getSelected');
         if (row) {
-            window.open("caja/reporte/" + row.caja_id);
+            window.open("caja/export/" + row.caja_id);
+        } else {
+            show_info('Seleccione un registro');
+        }
+    }
+
+    function cashBoxReport() {
+        const row = dg.datagrid('getSelected');
+        if (row) {
+            window.open("caja/report/" + row.caja_id);
         } else {
             show_info('Seleccione un registro');
         }
