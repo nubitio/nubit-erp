@@ -1,9 +1,14 @@
+# Core
+/.env.local
+/.env.local.php
+/.env.*.local
 /vendor/
 /public/tmp/
 /node_modules/
 /dist/
 /config/config.ini
 /config/certificate_prod.pem
+
 ### JetBrains template
 # User-specific stuff
 .idea/**/workspace.xml

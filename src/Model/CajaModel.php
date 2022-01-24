@@ -24,6 +24,9 @@ class CajaModel extends BaseModel
         return $this->utils->setUp('vw_caja', 'apertura, local', 'desc, asc', $filter);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function getCurrentActiveCashBox(): array
     {
         $data = $this->db->exec("
@@ -42,9 +45,9 @@ class CajaModel extends BaseModel
             AND c.usuario_id = ?
         ", [$this->current_local_id, $this->current_user_id]);
         if ($data) {
-            return ['success' => true, 'data' => $data[0]];
+            return $data[0];
         } else {
-            return ['success' => false, 'data' => null];
+            throw new \Exception('No se encontró caja activa');
         }
     }
 
@@ -76,15 +79,15 @@ class CajaModel extends BaseModel
         $footer = array(
             array(
                 'referencia' => 'Total Ingresos',
-                'monto' => number_format($total_ingresos, 2)
+                'monto'      => number_format($total_ingresos, 2)
             ),
             array(
                 'referencia' => 'Total Egresos',
-                'monto' => number_format($total_egresos, 2)
+                'monto'      => number_format($total_egresos, 2)
             ),
             array(
                 'referencia' => 'Total Efectivo',
-                'monto' => number_format($total_efectivo, 2)
+                'monto'      => number_format($total_efectivo, 2)
             )
         );
         $rs['footer'] = $footer;
@@ -153,16 +156,12 @@ class CajaModel extends BaseModel
     {
         try {
             $result = $this->getCurrentActiveCashBox();
-            if ($result['success']) {
-                $cashBoxId = $result['data']['caja_id'];
-                $this->detail->copyfrom('POST');
-                $this->detail->uid = $this->next_uid($cashBoxId);
-                $this->detail->caja_id = $cashBoxId;
-                $this->detail->save();
-                return array('success' => true, 'msg' => 'Registro guardado.');
-            } else {
-                throw new \Exception("no active cashbox found");
-            }
+            $cashBoxId = $result['caja_id'];
+            $this->detail->copyfrom('POST');
+            $this->detail->uid = $this->next_uid($cashBoxId);
+            $this->detail->caja_id = $cashBoxId;
+            $this->detail->save();
+            return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\Exception $e) {
             return array('msg' => $e->getMessage());
         }
@@ -214,12 +213,7 @@ class CajaModel extends BaseModel
     {
         try {
             $this->db->begin();
-            $result = $this->getCurrentActiveCashBox();
-            if ($result['success']) {
-                $caja = $result['data'];
-            } else {
-                throw new \Exception("no active cashbox found");
-            }
+            $caja = $this->getCurrentActiveCashBox();
             if ($caja) {
                 $caja_id = $caja['caja_id'];
                 $startDate = $caja['apertura'];

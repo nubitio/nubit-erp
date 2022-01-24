@@ -195,6 +195,9 @@ class BaseController
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function report($html, $filename = 'download.pdf')
     {
         // Run wkhtmltopdf
@@ -215,7 +218,7 @@ class BaseController
         $return_value = proc_close($process);
         // Output the results
         if ($errors) {
-            throw new Exception('PDF generation failed: ' . $errors);
+            throw new \Exception('PDF generation failed: ' . $errors);
         } else {
             header('Content-Type: application/pdf');
             header('Content-Length: ' . strlen($pdf));

@@ -18,8 +18,7 @@ class ReporteController extends BaseController
 
     public function index()
     {
-        $template = new Template;
-        echo $template->render('reporte/index.html');
+        $this->render('reporte/index.html.twig');
     }
 
     public function get()

@@ -6,13 +6,14 @@ MAINTAINER Johan Guerreros (johangm90@gmail.com)
 ARG DEBIAN_FRONTEND=noninteractive
 
 # update package list
+RUN apt-get update -y
 RUN apt update
 
 # install prerequisites
 RUN apt install -y software-properties-common
 
 # install curl and git
-RUN apt install -y curl git zip unzip
+RUN apt install -y curl git zip unzip wget
 
 # install apache
 RUN apt install -y apache2
@@ -24,6 +25,10 @@ RUN apt update
 # install php
 RUN apt -y install php7.4 mcrypt php7.4-mcrypt php7.4-mbstring php7.4-xml php7.4-mysql php7.4-curl php7.4-zip php7.4-soap php7.4-gd php7.4-intl
 RUN apt install -y libapache2-mod-php7.4
+
+# install wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
+RUN apt install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
 
 # Apache conf
 # allow .htaccess with RewriteEngine

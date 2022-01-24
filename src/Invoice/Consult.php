@@ -7,13 +7,6 @@ use Greenter\Ws\Services\SoapClient;
 
 class Consult
 {
-    protected \Base $app;
-
-    public function __construct($app)
-    {
-        $this->app = $app;
-    }
-
     /**
      * @throws \SoapFault
      */
@@ -37,7 +30,7 @@ class Consult
             return ['success' => false, 'message' => 'CDR no encontrado, el comprobante no ha sido comunicado a SUNAT.'];
         }
 
-        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $ruc . '-' . $type . '-' . $series . '-' . $number . '.zip', $result->getCdrZip());
+        file_put_contents($_ENV['EFACT_DIR'] . 'R-' . $ruc . '-' . $type . '-' . $series . '-' . $number . '.zip', $result->getCdrZip());
         return ['success' => true, 'message' => $cdr->getDescription(), 'cdr' => $cdr];
     }
 }

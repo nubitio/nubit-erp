@@ -3,25 +3,29 @@
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use Symfony\Component\Dotenv\Dotenv;
 
 require_once("../vendor/autoload.php");
+
+$dotenv = new Dotenv();
+$dotenv->loadEnv(__DIR__ . '/../.env');
 
 // Retrieve instance of the framework
 /** @var Base $app */
 $app = Base::instance();
 
-// Initialize src
-$app->config('../config/config.ini');
+// Load configuration
+$app->config(dirname(__FILE__, 2) . '/config/config.ini');
 
 // Define routes
-$app->config('../config/routes.ini');
+$app->config(dirname(__FILE__, 2) . '/config/routes.ini');
 
 $app->set('CACHE', true);
 
 // Define version
 $app->set('version', '1.1.0-beta2');
 
-/*$containerBuilder = new ContainerBuilder();
+$containerBuilder = new ContainerBuilder();
 $loader = new PhpFileLoader($containerBuilder, new FileLocator(dirname(__FILE__, 2) . '/config'));
 
 try {
@@ -32,9 +36,11 @@ try {
 
 $containerBuilder->compile();
 
+$app->set('di', $containerBuilder);
+
 $app->set('CONTAINER', function ($class) use ($containerBuilder) {
     return $containerBuilder->get($class);
-});*/
+});
 
 // Execute application
 $app->run();
