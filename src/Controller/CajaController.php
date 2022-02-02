@@ -29,7 +29,11 @@ class CajaController extends BaseController
 
     function check()
     {
-        $this->json($this->caja->getCurrentActiveCashBox());
+        try {
+            $this->json($this->caja->getCurrentActiveCashBox());
+        } catch (\Exception $e) {
+            $this->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     function get()

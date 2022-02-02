@@ -1,6 +1,7 @@
 .git
 .idea
 public/tmp/
+public/wcpcache/
 tests/
 .gitignore
 composer.json
