@@ -59,15 +59,23 @@
                     <th>Serie</th>
                     <th>Desde</th>
                     <th>Hasta</th>
+                    <th>Total</th>
                 </tr>
+                {% set total = 0 %}
                 {% for item in receipt %}
                     <tr>
                         <td>{{ item['tipo'] }}</td>
                         <td>{{ item['serie'] }}</td>
                         <td>{{ item['desde'] }}</td>
                         <td>{{ item['hasta'] }}</td>
+                        <td>{{ item['total'] }}</td>
                     </tr>
+                    {% set total = total + item['total'] %}
                 {% endfor %}
+                <tr>
+                    <td colspan="4"><b>TOTAL</b></td>
+                    <td>{{ total|number_format(2,'.','') }}</td>
+                </tr>
             </table>
         </div>
         <div class="table-responsive-sm">
@@ -85,6 +93,7 @@
                 </tr>
                 </thead>
                 <tbody>
+                {% set arqueo = 0 %}
                 {% for item in detail %}
                     <tr>
                         <td class="text-center">{{ counter }}</td>
@@ -93,7 +102,17 @@
                         <td class="text-right">{{ (item['tipo_id'] == 2) ? item['monto'] : '-' }}</td>
                         <td>{{ item['referencia'] }}</td>
                     </tr>
+                    {% if item['descripcion'] == 'FONDO DE CAJA' %}
+                        {% set arqueo = item['monto'] %}
+                    {% endif %}
                 {% endfor %}
+                <tr>
+                    <td class="text-center"></td>
+                    <td>ARQUEO DE CAJA</td>
+                    <td class="text-right">-</td>
+                    <td class="text-right">{{ arqueo }}</td>
+                    <td></td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -107,7 +126,7 @@
                         <td class="left">
                             <strong class="text-dark">Saldo final</strong></td>
                         <td class="right">
-                            <strong class="text-dark">{{ header['saldo_final'] }}</strong>
+                            <strong class="text-dark">{{ (header['saldo_final'] - arqueo)|number_format(2,'.','') }}</strong>
                         </td>
                     </tr>
                     </tbody>
