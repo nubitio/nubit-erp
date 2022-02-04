@@ -18,6 +18,11 @@
         <div data-options="iconCls:'fa fa-file color-yellow'" onclick="app.reporte.rpt_comprobantes_anulados()">
             Comprobantes anulados
         </div>
+        {% if option.show_airport_report == 'true' %}
+            <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_aeropuerto()">
+                Reporte aeropuerto
+            </div>
+        {% endif %}
     </div>
 </div>
 <script src="{{ asset('assets/js/pages/reporte/index.js') }}"></script>
