@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Extension\AppExtension;
 use App\Model\OptionsModel;
+use App\Service\MenuBuilder;
+use App\Service\OptionBuilder;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -46,7 +49,8 @@ class BaseController
         ]);
 
         $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy('v1', '%s?version=%s')))));
-
+        $optionBuilder = $app->get('di')->get(OptionBuilder::class);
+        $this->twig->addExtension(new AppExtension($optionBuilder));
         $this->options = new OptionsModel();
     }
 
