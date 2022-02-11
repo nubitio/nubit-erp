@@ -35,7 +35,16 @@ class ProductoModel extends BaseModel
             return $this->listafull();
         }
         if ($filtered) {
-            $result = $this->db->exec("SELECT * FROM producto WHERE estado=1 ORDER BY descripcion");
+            $result = $this->db->exec("
+                SELECT * FROM producto p
+                INNER JOIN producto_local pl on pl.producto_id=p.producto_id 
+                WHERE 
+                      estado=1 AND 
+                      p.tipo_id=2 AND 
+                      p.estado=1 AND 
+                      pl.activo=1 AND 
+                      pl.local_id=?
+                ", $this->current_local_id);
         } else {
             $result = $this->db->exec("SELECT * FROM producto ORDER BY descripcion");
         }
