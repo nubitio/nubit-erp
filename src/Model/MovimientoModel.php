@@ -164,10 +164,13 @@ class MovimientoModel extends BaseModel
         if ($categoria == '0') {
             $categoria = null;
         }
+        /* previous app version condition
         if ($this->app->get('MODE') == 'POS') {
             return $this->db->exec("call sp_reporte_movimientos_pos (?,?,?,?,?)", array($this->current_local_id, $almacen, $categoria, $fi, $ff));
         }
         return $this->db->exec("CALL sp_reporte_movimientos (?,?,?,?)", array($almacen, $categoria, $fi, $ff));
+        */
+        return $this->db->exec("call sp_reporte_movimientos_pos (?,?,?,?,?)", array($this->current_local_id, $almacen, $categoria, $fi, $ff));
     }
 
     public function mdetalle($producto)
