@@ -273,4 +273,91 @@ class ApiModel extends BaseModel
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
+
+    public function getSalesByDate(string $date)
+    {
+        $data = $this->db->exec("select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)", ['date' => $date]);
+        if ($data) {
+            return $data[0];
+        } else {
+            return null;
+        }
+    }
+    public function getSalesByDayForWeek(string $date)
+    {
+        $data = $this->db->exec("select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)", ['date' => $date]);
+        if ($data) {
+            return $data[0];
+        } else {
+            return null;
+        }
+    }
+
+    public function getWeeklySales()//venta de domingo a sabado de una semana cantidad
+    {
+        $sql = "
+        select
+            t.db_date as date,
+            t.day_name as day,
+            count(m.movimiento_id) as value
+        from time_dimension t
+        left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
+        where week(curdate()) = week(t.db_date) and year(curdate()) = year(t.db_date)
+        group by t.db_date
+        order by t.db_date
+        ";
+        return $this->db->exec($sql);
+    }
+    public function getMonthSales()//venta por dia en un respectivo mes en cantidad
+    {
+        $sql = "
+        select
+            t.db_date as date,
+            t.day	as fecha,
+            t.month_name as month,
+            count(m.movimiento_id) as value
+        from time_dimension t
+        left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
+        where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
+        group by t.db_date
+        order by t.db_date
+        ";
+        return $this->db->exec($sql);
+    }
+    public function getTopProduct()//top 10 productos mas vendidos
+    {
+        $sql = "
+        select
+			p.producto_id,
+            p.descripcion as product,
+            count(md.cantidad) as total
+            
+        from time_dimension t 
+        left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
+        left join movimiento_detalle md on m.movimiento_id = md.movimiento_id
+        left join producto p on md.producto_id = p.producto_id
+        where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
+        group by p.descripcion, p.producto_id
+        order by total
+        limit 10
+        ";
+        return $this->db->exec($sql);
+    }
+    public function getVoucherForMonth()//comprobantes totales por mes
+    {
+        $sql = "
+        select
+            c.serie as serie,	
+            count(*) as totalcomprobante
+            
+        from time_dimension t        
+        left join comprobante c on (c.serie)=serie
+        where month(curdate()) = month(t.db_date)  and year(curdate()) = year(t.db_date)
+        group by c.serie
+        order by totalcomprobante
+        
+        ";
+        return $this->db->exec($sql);
+    }
+
 }
