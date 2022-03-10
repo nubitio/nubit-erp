@@ -275,6 +275,7 @@ app.ingreso = (function () {
         route = 'ingreso/add/1';
         db_fecha.datebox('setValue', 'Today');
         dlg.dialog('open').dialog('setTitle', 'Nuevo');
+        syncCheckbox_option()
     }
 
     function editar() {
@@ -413,7 +414,10 @@ app.ingreso = (function () {
             width: '70',
             min: 0,
             precision: 2,
-            required: true
+            required: true,
+            onChange: function () {
+                calcular_subtotal(position);
+            },
         });
 
         txt_precio.numberbox({
