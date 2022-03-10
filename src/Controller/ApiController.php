@@ -305,43 +305,68 @@ class ApiController extends BaseController
         }
         return $result;
     }
+
     public function getSalesByDate()
     {
-        $date= $this->app->get('PARAMS.date');
+        $date = $this->app->get('PARAMS.date');
         //dd($this->apiDao->getWeeklySales());
-        $data= $this->apiDao->getSalesByDate($date);
+        $data = $this->apiDao->getSalesByDate($date);
         $this->json($data["total"]);
 
     }
+
     public function getSalesByDayForWeek()
     {
-        $date= $this->app->get('PARAMS.date');
-        $data= $this->apiDao->getSalesByDayForWeek($date);
+        $date = $this->app->get('PARAMS.date');
+        $data = $this->apiDao->getSalesByDayForWeek($date);
         $this->json($data["total"]);
 
     }
+
     public function getWeeklySales()
     {
-        $date= $this->app->get('PARAMS.date');
-        $data= $this->apiDao->getWeeklySales();
+        $date = $this->app->get('PARAMS.date');
+        $data = $this->apiDao->getWeeklySales();
         $this->json($data);
     }
+    public function getWeeklySalesSoles()
+    {
+        $date = $this->app->get('PARAMS.date');
+        $local_id = $this->app->get('PARAMS.local_id');
+        $this->json($this->apiDao->getWeeklySalesSoles($local_id));
+
+    }
+    public function getMonthSalesSoles()
+    {
+        $date = $this->app->get('PARAMS.date');
+        $local_id = $this->app->get('PARAMS.local_id');
+        $this->json($this->apiDao->getMonthSalesSoles($local_id));
+
+    }
+
     public function getMonthSales()
     {
-        $date= $this->app->get('PARAMS.date');
-        $data= $this->apiDao->getMonthSales();
+        $date = $this->app->get('PARAMS.date');
+        $data = $this->apiDao->getMonthSales();
         $this->json($data);
     }
+
     public function getTopProduct()
     {
-        $date= $this->app->get('PARAMS.date');
-        $data= $this->apiDao->getTopProduct();
+        $date = $this->app->get('PARAMS.date');
+        $data = $this->apiDao->getTopProduct();
         $this->json($data);
     }
+
     public function getVoucherForMonth()
     {
-        $date= $this->app->get('PARAMS.date');
-        $data= $this->apiDao->getVoucherForMonth();
-        $this->json($data);
+        $local_id = $this->app->get('PARAMS.local_id');
+        $this->json($this->apiDao->getVoucherForMonth($local_id));
+
+    }
+    public function getVoucherForMonthSoles()
+    {
+        $local_id = $this->app->get('PARAMS.local_id');
+        $this->json($this->apiDao->getVoucherForMonthSoles($local_id));
     }
 }

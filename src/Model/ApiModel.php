@@ -283,6 +283,7 @@ class ApiModel extends BaseModel
             return null;
         }
     }
+
     public function getSalesByDayForWeek(string $date)
     {
         $data = $this->db->exec("select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)", ['date' => $date]);
@@ -291,6 +292,25 @@ class ApiModel extends BaseModel
         } else {
             return null;
         }
+    }
+    public function getWeeklySalesSoles($local_id):array//venta de domingo a sabado de una semana sole
+    {
+        $sql = "
+        select
+	        td.DAY AS dia,
+	        sum( IFNULL( v.p_venta, 0 ) ) AS ventatotal 
+        from time_dimension td
+        left join vw_descuento v ON td.db_date = v.fecha 
+         and v.estado = 1 
+         and v.local_id = ?
+        where
+            month(curdate()) = month(td.db_date) and year(curdate()) = year(td.db_date)
+        group by
+            td.DAY 
+        order by
+            td.DAY
+        ";
+        return $this->db->exec($sql,[$local_id]);
     }
 
     public function getWeeklySales()//venta de domingo a sabado de una semana cantidad
@@ -308,6 +328,26 @@ class ApiModel extends BaseModel
         ";
         return $this->db->exec($sql);
     }
+    public function getMonthSalesSoles($local_id):array//venta de domingo a sabado de una semana sole
+    {
+        $sql = "
+        select
+	        td.DAY AS dia,
+	        sum( IFNULL( v.p_venta, 0 ) ) AS ventatotal 
+        from time_dimension td
+        left join vw_descuento v ON td.db_date = v.fecha 
+         and v.estado = 1 
+         and local_id = ?
+        where
+            month(curdate()) = month(td.db_date) and year(curdate()) = year(td.db_date)
+        group by
+            td.DAY 
+        order by
+            td.DAY
+        ";
+        return $this->db->exec($sql,[$local_id]);
+    }
+
     public function getMonthSales()//venta por dia en un respectivo mes en cantidad
     {
         $sql = "
@@ -324,40 +364,85 @@ class ApiModel extends BaseModel
         ";
         return $this->db->exec($sql);
     }
+
     public function getTopProduct()//top 10 productos mas vendidos
     {
         $sql = "
         select
 			p.producto_id,
             p.descripcion as product,
-            count(md.cantidad) as total
+            sum(md.cantidad) as total
             
         from time_dimension t 
         left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
-        left join movimiento_detalle md on m.movimiento_id = md.movimiento_id
-        left join producto p on md.producto_id = p.producto_id
+        inner join movimiento_detalle md on m.movimiento_id = md.movimiento_id
+        inner join producto p on md.producto_id = p.producto_id
         where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
         group by p.descripcion, p.producto_id
-        order by total
+        order by total 
         limit 10
         ";
         return $this->db->exec($sql);
     }
-    public function getVoucherForMonth()//comprobantes totales por mes
+
+    public function getTopProductM()//top 10 productos menos vendidos
     {
         $sql = "
         select
-            c.serie as serie,	
-            count(*) as totalcomprobante
+			p.producto_id,
+            p.descripcion as product,
+            sum(md.cantidad) as total
             
-        from time_dimension t        
-        left join comprobante c on (c.serie)=serie
-        where month(curdate()) = month(t.db_date)  and year(curdate()) = year(t.db_date)
-        group by c.serie
-        order by totalcomprobante
-        
+        from time_dimension t 
+        left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
+        inner join movimiento_detalle md on m.movimiento_id = md.movimiento_id
+        inner join producto p on md.producto_id = p.producto_id
+        where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
+        group by p.descripcion, p.producto_id
+        order by total desc
+        limit 10
         ";
         return $this->db->exec($sql);
+    }
+
+    public function getVoucherForMonth($local_id):array//comprobantes totales por mes
+    {
+        $sql = "
+        SELECT
+        
+               tc.codigo,
+               tc.descripcion,
+               lc.serie,
+               count( c.comprobante_id ) AS totalComprobante 
+        FROM local_comprobante lc
+        INNER JOIN tipo_comprobante tc ON tc.codigo = lc.tipo_comprobante_id
+        LEFT JOIN comprobante c ON lc.serie = c.serie 
+        AND ( MONTH ( c.fecha ) = MONTH ( curdate() ) AND YEAR ( c.fecha ) = YEAR ( CURDATE()) ) 
+        WHERE local_id=?
+        GROUP BY tc.codigo 
+        
+        ";
+        return $this->db->exec($sql,[$local_id]);
+    }
+
+    public function getVoucherForMonthSoles($local_id): array//comprobantes totales por mes (soles)
+    {
+        $sql = "
+        SELECT
+        
+               tc.codigo,
+               tc.descripcion,
+               lc.serie,
+               sum( c.total ) AS total 
+        FROM local_comprobante lc
+        INNER JOIN tipo_comprobante tc ON tc.codigo = lc.tipo_comprobante_id
+        LEFT JOIN comprobante c ON lc.serie = c.serie 
+        AND ( MONTH ( c.fecha ) = MONTH ( curdate() ) AND YEAR ( c.fecha ) = YEAR ( CURDATE()) ) 
+        WHERE local_id=?
+        GROUP BY tc.codigo 
+        
+        ";
+        return $this->db->exec($sql,[$local_id]);
     }
 
 }
