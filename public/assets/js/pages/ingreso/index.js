@@ -503,10 +503,35 @@ app.ingreso = (function () {
         }
     }
 
+    var stopsync_flag;
+    function syncCheckbox_option(){
+        stopsync_flag = setInterval(function(){
+            console.log('test1');
+
+            var checkbox = document.querySelector("input[name=checkbox_pUnitarioName]");
+
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    console.log("Checkbox is checked..");
+                } else {
+                    console.log("Checkbox is not checked..");
+                }
+            });
+
+            document.getElementById("ingreso_cancelar").addEventListener("click", stopSync_checkbox);
+            document.getElementById("ingreso_guardar").addEventListener("click", stopSync_checkbox);
+        },1000);
+    }
+    function stopSync_checkbox(){
+        clearInterval(stopsync_flag);
+    }
+
     return {
         init: init,
         add_detalle: add_detalle,
-        remove_row: remove_row
+        remove_row: remove_row,
+        syncCheckbox_option: syncCheckbox_option
     };
 })();
 app.ingreso.init();
+//app.ingreso.syncCheckbox_option();
