@@ -19,6 +19,8 @@ app.ingreso = (function () {
     let btn_guardar;
     let btn_cancelar;
     let is_loading = false;
+    let flag_edit_check = true;
+    let form_item = [];
 
     let load = function () {
         is_loading = true;
@@ -268,6 +270,12 @@ app.ingreso = (function () {
     };
 
     function nuevo() {
+        flag_edit_check = true;
+        let checkbox = document.querySelector("input[name=checkbox_pUnitarioName]");
+        checkbox.addEventListener('change', function() {
+            this.checked ? flag_edit_check = false : flag_edit_check = true;
+            update_check_input();
+        });
         position = 1;
         tb_detalle.empty();
         add_detalle();
@@ -275,7 +283,6 @@ app.ingreso = (function () {
         route = 'ingreso/add/1';
         db_fecha.datebox('setValue', 'Today');
         dlg.dialog('open').dialog('setTitle', 'Nuevo');
-        syncCheckbox_option()
     }
 
     function editar() {
@@ -394,6 +401,7 @@ app.ingreso = (function () {
         let txt_cantidad = $('#ingreso_tbcantidad_' + position);
         let txt_precio = $('#ingreso_tbprecio_' + position);
         let txt_subtotal = $('#ingreso_tbtotal_' + position);
+        form_item.push([txt_precio,txt_subtotal]);
 
         cbo_producto.combogrid({
             data: lista_productos,
@@ -426,7 +434,8 @@ app.ingreso = (function () {
             precision: 2,
             onChange: function () {
                 calcular_subtotal(position);
-            }
+            },
+            readonly: flag_edit_check
         });
 
         txt_subtotal.numberbox({
@@ -435,7 +444,8 @@ app.ingreso = (function () {
             precision: 2,
             onChange: function () {
                 calcular_unitario(position);
-            }
+            },
+            readonly: flag_edit_check
         });
 
         if (obj != null) {
@@ -503,35 +513,23 @@ app.ingreso = (function () {
         }
     }
 
-    var stopsync_flag;
-    function syncCheckbox_option(){
-        stopsync_flag = setInterval(function(){
-            console.log('test1');
-
-            var checkbox = document.querySelector("input[name=checkbox_pUnitarioName]");
-
-            checkbox.addEventListener('change', function() {
-                if (this.checked) {
-                    console.log("Checkbox is checked..");
-                } else {
-                    console.log("Checkbox is not checked..");
-                }
+    function update_check_input()
+    {
+        for(let item of form_item)
+        {
+            item[0].numberbox({
+                readonly:flag_edit_check
             });
-
-            document.getElementById("ingreso_cancelar").addEventListener("click", stopSync_checkbox);
-            document.getElementById("ingreso_guardar").addEventListener("click", stopSync_checkbox);
-        },1000);
-    }
-    function stopSync_checkbox(){
-        clearInterval(stopsync_flag);
+            item[1].numberbox({
+                readonly:flag_edit_check
+            });
+        }
     }
 
     return {
         init: init,
         add_detalle: add_detalle,
-        remove_row: remove_row,
-        syncCheckbox_option: syncCheckbox_option
+        remove_row: remove_row
     };
 })();
 app.ingreso.init();
-//app.ingreso.syncCheckbox_option();
