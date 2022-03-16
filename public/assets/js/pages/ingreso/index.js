@@ -19,6 +19,8 @@ app.ingreso = (function () {
     let btn_guardar;
     let btn_cancelar;
     let is_loading = false;
+    let flag_edit_check = true;
+    let form_item = [];
 
     let load = function () {
         is_loading = true;
@@ -268,6 +270,12 @@ app.ingreso = (function () {
     };
 
     function nuevo() {
+        flag_edit_check = true;
+        let checkbox = document.querySelector("input[name=checkbox_pUnitarioName]");
+        checkbox.addEventListener('change', function() {
+            this.checked ? flag_edit_check = false : flag_edit_check = true;
+            update_check_input();
+        });
         position = 1;
         tb_detalle.empty();
         add_detalle();
@@ -393,6 +401,7 @@ app.ingreso = (function () {
         let txt_cantidad = $('#ingreso_tbcantidad_' + position);
         let txt_precio = $('#ingreso_tbprecio_' + position);
         let txt_subtotal = $('#ingreso_tbtotal_' + position);
+        form_item.push([txt_precio,txt_subtotal]);
 
         cbo_producto.combogrid({
             data: lista_productos,
@@ -413,7 +422,10 @@ app.ingreso = (function () {
             width: '70',
             min: 0,
             precision: 2,
-            required: true
+            required: true,
+            onChange: function () {
+                calcular_subtotal(position);
+            },
         });
 
         txt_precio.numberbox({
@@ -422,7 +434,8 @@ app.ingreso = (function () {
             precision: 2,
             onChange: function () {
                 calcular_subtotal(position);
-            }
+            },
+            readonly: flag_edit_check
         });
 
         txt_subtotal.numberbox({
@@ -431,7 +444,8 @@ app.ingreso = (function () {
             precision: 2,
             onChange: function () {
                 calcular_unitario(position);
-            }
+            },
+            readonly: flag_edit_check
         });
 
         if (obj != null) {
@@ -496,6 +510,19 @@ app.ingreso = (function () {
             return '<span class="badge badge-pill badge-info">PRODUCTO</span>';
         } else {
             return '';
+        }
+    }
+
+    function update_check_input()
+    {
+        for(let item of form_item)
+        {
+            item[0].numberbox({
+                readonly:flag_edit_check
+            });
+            item[1].numberbox({
+                readonly:flag_edit_check
+            });
         }
     }
 
