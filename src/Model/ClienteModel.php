@@ -42,7 +42,7 @@ class ClienteModel extends BaseModel
             $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.', 'data' => $this->dao->ruc);
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No se pudo guardar el registro porque ya existe el RUC/DNI en la base de datos, ingrese otro RUC/DNI', $e->getMessage());
         }
     }
 
@@ -54,7 +54,7 @@ class ClienteModel extends BaseModel
             $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No puede actualizar el cliente con el RUC/DNI especificado, DNI/RUC ya usado', $e->getMessage());
         }
     }
 
@@ -65,7 +65,7 @@ class ClienteModel extends BaseModel
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No puede eliminar este registro, primero necesita eliminar sus registros hijos',$e->getMessage());
         }
     }
 
