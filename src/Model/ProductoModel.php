@@ -98,7 +98,7 @@ class ProductoModel extends BaseModel
             }
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No se pudo ingresar el producto porque ya existe en la base de datos, ingrese otro nombre', $e->getMessage());
         }
     }
 
@@ -124,7 +124,7 @@ class ProductoModel extends BaseModel
             }
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No se puede actualizar el producto, ese nombre ya esta utilizado', $e->getMessage());
         }
     }
 

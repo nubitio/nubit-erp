@@ -277,14 +277,14 @@ app.salida = (function () {
             },
             success: function (result) {
                 try {
-                    result = JSON.parse(result);
+                    result = JSON.parse(JSON.stringify(result));
                     if (result.success) {
                         dlg.dialog('close');
                         dg.datagrid('reload');
                         show_info(result.msg);
                     } else {
                         show_error(result.msg);
-                        show_info('Ya existe el Producto Ingresado ...');
+                        show_info('No se puede retirar productos sin una caja activa');
                     }
                     enable_buttons();
                 } catch (e) {
