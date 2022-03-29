@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    ports:
+      - '8080:80'
+    volumes:
+      - '.:/var/www/html'
+  database:
+    image: mariadb:10.7.1
+    ports:
+      - '3306:3306'
+    volumes:
+      - '~/Apps/mariadb/data:/var/lib/mysql'
+    environment:
+      - MYSQL_ROOT_PASSWORD=develop
+      - MYSQL_PASSWORD=Admin.3000
+      - MYSQL_USER=c1_demo
+      - MYSQL_DATABASE=c1_demo
+  webpack:
+    image: node:16.14.0
+    command: npm run watch
+    working_dir: /home/node/app
+    volumes:
+      - '.:/home/node/app'
