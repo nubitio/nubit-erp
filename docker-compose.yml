@@ -12,7 +12,7 @@ services:
     ports:
       - '3306:3306'
     volumes:
-      - '~/Apps/mariadb/data:/var/lib/mysql'
+      - '~/Apps/mariadb:/var/lib/mysql'
     environment:
       - MYSQL_ROOT_PASSWORD=develop
       - MYSQL_PASSWORD=Admin.3000
@@ -20,7 +20,8 @@ services:
       - MYSQL_DATABASE=c1_demo
   webpack:
     image: node:16.14.0
-    command: npm run watch
+    #command: npm run watch
     working_dir: /home/node/app
     volumes:
       - '.:/home/node/app'
+    stdin_open: true
