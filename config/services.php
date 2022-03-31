@@ -4,7 +4,13 @@ use App\Infrastructure\DataBaseFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupCollection;
+use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return function (ContainerConfigurator $configurator) {
     $configurator->parameters();
@@ -25,5 +31,17 @@ return function (ContainerConfigurator $configurator) {
         ->factory([DriverManager::class, 'getConnection'])
         ->args([
             ['url' => $_ENV['DATABASE_URL']],
+        ]);
+
+    $services->set('webpack_encore.entrypoint_lookup_collection', EntrypointLookupCollection::class)
+        ->arg('$buildEntrypoints', service('service_container'));
+    $services->set(Packages::class);
+
+    $services->set('webpack_encore.tag_renderer', TagRenderer::class)
+        ->args([
+            [
+                'entrypointLookupCollection' => new Reference('webpack_encore.entrypoint_lookup_collection'),
+                'packages' => new Reference(Packages::class)
+            ],
         ]);
 };

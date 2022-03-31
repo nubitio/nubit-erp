@@ -17,6 +17,7 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     .addEntry('app', './assets/app.js')
+    .addEntry('product', './assets/product.js')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
@@ -50,9 +51,13 @@ Encore
 
     // enables Sass/SCSS support
     .enableSassLoader()
+    .enableVueLoader(() => {
+    }, {
+        version: 3
+    })
 
-    // uncomment if you use TypeScript
-    //.enableTypeScriptLoader()
+// uncomment if you use TypeScript
+//.enableTypeScriptLoader()
 ;
 
 module.exports = Encore.getWebpackConfig();
