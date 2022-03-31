@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Util\TipoDoc;
 use DB\SQL\Mapper;
+use mysql_xdevapi\Exception;
 use PDO;
 
 class MovimientoModel extends BaseModel
@@ -233,7 +234,13 @@ class MovimientoModel extends BaseModel
             $uuid = $key[0]['uuid'];
             if($tipo_id == 2)
             {
-                $cashBox = $this->cajaModel->getCurrentActiveCashBox();
+                try {
+                    $cashBox = $this->cajaModel->getCurrentActiveCashBox();
+                }
+                catch (\Exception $e)
+                {
+                    return ['success'=>false, 'msg'=>'No puedes retirar productos sin una caja activa'];
+                }
             }
             $this->dao->movimiento_id = $uuid;
             $this->dao->tipo_id = $tipo_id;

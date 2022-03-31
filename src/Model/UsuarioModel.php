@@ -86,7 +86,7 @@ class UsuarioModel extends BaseModel
             $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No se pudo agregar el usuario porque ya existe en la base de datos, use otro nombre', $e->getMessage());
         }
     }
 
@@ -107,7 +107,7 @@ class UsuarioModel extends BaseModel
             $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            return array('msg' => 'No se puede actualizar el usuario, ese nombre ya esta utilizado', $e->getMessage());
         }
     }
 
