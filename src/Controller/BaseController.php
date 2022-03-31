@@ -16,6 +16,7 @@ use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
+use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -50,6 +51,7 @@ class BaseController
 
         $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy('v1', '%s?version=%s')))));
         $optionBuilder = $app->get('di')->get(OptionBuilder::class);
+        $this->twig->addExtension(new EntryFilesTwigExtension($app->get('di')));
         $this->twig->addExtension(new AppExtension($optionBuilder));
         $this->options = new OptionsModel();
     }

@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "devDependencies": {
     "@symfony/webpack-encore": "^1.8.2",
+    "@vue/compiler-sfc": "^3.2.31",
     "sass": "^1.49.9",
     "sass-loader": "^12.6.0",
+    "vue": "^3.2.31",
+    "vue-loader": "^16.8.3",
     "webpack-notifier": "^1.15.0"
   },
   "scripts": {
@@ -12,5 +15,8 @@
     "dev": "encore dev",
     "watch": "encore dev --watch",
     "build": "encore production --progress"
+  },
+  "dependencies": {
+    "vx-easyui": "^1.2.41"
   }
 }
