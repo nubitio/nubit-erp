@@ -98,7 +98,12 @@ class ProductoModel extends BaseModel
             }
             return array('success' => true, 'msg' => 'Registro guardado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            switch ($e->getCode()) {
+                case 23000:
+                    return array('msg'=> 'No se pudo ingresar el producto porque ya existe en la base de datos, ingrese otro nombre');
+                default:
+                    return array('msg' => 'No se puede realizar la operación, intente nuevamente o consulte con su administrador de sistema');
+            }
         }
     }
 
@@ -124,7 +129,12 @@ class ProductoModel extends BaseModel
             }
             return array('success' => true, 'msg' => 'Registro actualizado.');
         } catch (\PDOException $e) {
-            return array('msg' => $e->getMessage());
+            switch ($e->getCode()) {
+                case 23000:
+                    return array('msg'=> 'No se puede actualizar el producto, ese nombre ya esta utilizado');
+                default:
+                    return array('msg' => 'No se puede realizar la operación, intente nuevamente o consulte con su administrador de sistema');
+            }
         }
     }
 
