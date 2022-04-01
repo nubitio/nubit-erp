@@ -1,9 +1,14 @@
-import {createApp} from 'vue'
+import Vue from 'vue'
 import App from './pages/product.vue'
-import EasyUI from 'vx-easyui'
 
-import 'vx-easyui/dist/themes/default/easyui.css'
+import 'vx-easyui/dist/themes/bootstrap/easyui.css'
 import 'vx-easyui/dist/themes/icon.css'
 import 'vx-easyui/dist/themes/vue.css'
+import EasyUI from 'vx-easyui';
 
-createApp(App).use(EasyUI).mount('#app')
+Vue.use(EasyUI);
+
+new Vue({
+    el: '#app',
+    render: h => h(App)
+})
