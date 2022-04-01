@@ -235,4 +235,4 @@ app.producto = (function () {
         init: init
     };
 })();
-app.producto.init();
+//app.producto.init();
