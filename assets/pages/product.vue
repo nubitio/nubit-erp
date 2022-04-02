@@ -2,9 +2,9 @@
   <div>
     <h2>Products</h2>
     <DataGrid ref="dg" :data="data" :filterable="true" style="min-width:700px;height:250px">
-      <GridColumn field="itemid" title="Item ID"></GridColumn>
-      <GridColumn field="name" title="Name"></GridColumn>
-      <GridColumn field="listprice" title="List Price" align="right" :filterOperators="operators">
+      <GridColumn field="codigo" title="Código"></GridColumn>
+      <GridColumn field="descripcion" title="Producto"></GridColumn>
+      <GridColumn field="precio" title="Precio" align="right" :filterOperators="operators">
         <template slot="filter" slot-scope="scope">
           <NumberBox v-model="scope.column.filterValue" :precision="1" class="f-full">
           </NumberBox>
@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "product",
   data() {
@@ -46,10 +48,9 @@ export default {
     }
   },
   mounted() {
-    fetch('producto/get')
-        .then(response => response.json())
-        .then(json => {
-          this.data = json;
+    axios.post('producto/get')
+        .then(response => {
+          this.data = response.data.rows;
         })
         .catch(error => console.error(error))
   }

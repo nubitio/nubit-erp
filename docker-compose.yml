@@ -12,7 +12,7 @@ services:
     ports:
       - '3306:3306'
     volumes:
-      - '~/Apps/mariadb/data:/var/lib/mysql'
+      - '~/Apps/mariadb:/var/lib/mysql'
     environment:
       - MYSQL_ROOT_PASSWORD=develop
       - MYSQL_PASSWORD=Admin.3000
