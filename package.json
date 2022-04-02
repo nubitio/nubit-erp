@@ -17,6 +17,7 @@
     "build": "encore production --progress"
   },
   "dependencies": {
+    "axios": "^0.26.1",
     "core-js": "^3.21.1",
     "vx-easyui": "^1.2.41"
   }
