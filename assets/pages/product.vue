@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Products</h2>
+    <h2 class="rounded">Products</h2>
     <DataGrid ref="dg" :data="data" :filterable="true" style="min-width:700px;height:250px">
       <GridColumn field="codigo" title="Código"></GridColumn>
       <GridColumn field="descripcion" title="Producto"></GridColumn>
@@ -58,5 +58,7 @@ export default {
 </script>
 
 <style scoped>
-
+.rounded {
+  border-radius: 5px;
+}
 </style>

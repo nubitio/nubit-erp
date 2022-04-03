@@ -9,6 +9,5 @@ import EasyUI from 'vx-easyui';
 Vue.use(EasyUI);
 
 new Vue({
-    el: '#app',
     render: h => h(App)
-})
+}).$mount('#app')

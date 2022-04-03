@@ -1,4 +1,14 @@
-<div class="wrapper">
-    <div id="app"></div>
-</div>
-{{ encore_entry_script_tags('product') }}
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('product') }}
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('product') }}
+{% endblock %}
+{% block body %}
+    <div class="wrapper">
+        <div id="app"></div>
+    </div>
+{% endblock %}
