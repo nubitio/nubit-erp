@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title }}</title>
+    <!-- Icons -->
+    <link rel="shortcut icon" href="{{ asset('assets/images/logo.png') }}">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
+    <!-- build:css ../assets/css/styles.css -->
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/easyui.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/sidemenu.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+        {{ encore_entry_link_tags('app') }}
+    {% endblock %}
+    <!-- endbuild -->
+    <!-- build:js ../assets/js/lib.min.js -->
+    {% block javascripts %}
+        <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
+        <script src="{{ asset('assets/js/easyui-lang-es.js') }}"></script>
+        <script src="{{ asset('assets/js/datagrid-detailview.js') }}"></script>
+        <script src="{{ asset('assets/js/datagrid-filter.js') }}"></script>
+        <script src="{{ asset('assets/js/highcharts.js') }}"></script>
+        <script src="{{ asset('assets/js/highcharts-more.js') }}"></script>
+        <script src="{{ asset('assets/js/dumbbell.js') }}"></script>
+        <script src="{{ asset('assets/js/lollipop.js') }}"></script>
+        <script src="{{ asset('assets/js/solid-gauge.js') }}"></script>
+        <script src="{{ asset('assets/js/exporting.js') }}"></script>
+        <script src="{{ asset('assets/js/observable.js') }}"></script>
+        <script src="{{ asset('assets/js/config.js') }}"></script>
+        <script src="{{ asset('assets/js/main.js') }}"></script>
+        {{ encore_entry_script_tags('app') }}
+    {% endblock %}
+    <!-- endbuild -->
+</head>
+<body class="easyui-layout" id="layout-container">
+<div data-options="region: 'north', border: false" class="primary-dark" style="height: 56px;">
+    <div class="float-start">
+        <div class="easyui-linkbutton menu-bars" data-options="plain: true" onclick="toggle()">
+            <i class="fa fa-bars fa-lg"></i>
+        </div>
+        <a href="home"><img style="height:56px;" src="{{ asset('assets/images/logo.png') }}" alt="logo"></a>
+        <span id="home_local_title" style="color: #e3e3e3; margin-left: 20px;"><i
+                    class="fa fa-home"></i> {{ session.local }}</span>
+    </div>
+    <div class="float-end">
+        <img src="" alt="" style="height: 56px">
+        <a href="#" class="easyui-menubutton menu-user"
+           data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ session.usuario }}</a>
+        <div id="user_menu" style="width:165px;">
+            <div data-options="iconCls:'fa fa-home fa-fw'" onclick="app.home.change_local()">Cambiar
+                Local
+            </div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="load_page('password', 'Cambiar contraseña')">Cambiar
+                Contraseña
+            </div>
+            <div class="menu-sep"></div>
+            <div data-options="iconCls:'fa fa-power-off fa-fw'" onclick="window.location = ('logout')">Salir</div>
+        </div>
+    </div>
+</div>
+<div data-options="region:'west', border: false" style="width: 252px;">
+    <div id="sidebar" style="min-height: 100vh;"></div>
+</div>
+<div data-options="region:'center', border: false">
+    <div id="content">
+        {% block body %}
+        {% endblock %}
+    </div>
+    <div id="home_local">
+        <div id="home_lista_local"></div>
+    </div>
+</div>
+<script>
+    let layout = $('#layout-container');
+    let sidebar = $('#sidebar');
+
+    (function () {
+        $.get('getmenu')
+            .done(function (response) {
+                sidebar.sidemenu({
+                    data: response,
+                    fit: true,
+                    border: false,
+                    multiple: false,
+                    onSelect: function (item) {
+                        load_page(item.url, item.text);
+                    }
+                });
+            })
+            .fail(function (xhr, status, error) {
+                console.log(error);
+            });
+    })();
+
+    window.onresize = function () {
+        layout.layout('resize');
+        sidebar.sidemenu('resize');
+    };
+
+    function toggle() {
+        let opts = sidebar.sidemenu('options');
+        sidebar.sidemenu(opts.collapsed ? 'expand' : 'collapse');
+        opts = sidebar.sidemenu('options');
+        let west = layout.layout('panel', 'west');
+        west.panel('resize', {
+            width: opts.collapsed ? 52 : 252
+        });
+        layout.layout('resize');
+        sidebar.sidemenu('resize', {
+            width: opts.collapsed ? 50 : 250
+        });
+    }
+</script>
+<script src="{{ asset('assets/js/pages/layout/home.js') }}"></script>
+</body>
+</html>

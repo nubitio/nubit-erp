@@ -52,5 +52,7 @@ return function (ContainerConfigurator $configurator) {
 
     $services->set('webpack_encore.tag_renderer', TagRenderer::class)
         ->arg('$entrypointLookupCollection', service('webpack_encore.entrypoint_lookup_collection'))
-        ->arg('$packages', new Reference(Packages::class));
+        ->arg('$packages', new Reference(Packages::class))
+        ->arg('$defaultAttributes', [])
+        ->arg('$defaultScriptAttributes', ['defer' => true]);
 };
