@@ -14,9 +14,9 @@
         <link rel="stylesheet" href="{{ asset('assets/css/easyui.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
+        {{ encore_entry_link_tags('app') }}
         <link rel="stylesheet" href="{{ asset('assets/css/sidemenu.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
-        {{ encore_entry_link_tags('app') }}
     {% endblock %}
     <!-- endbuild -->
     <!-- build:js ../assets/js/lib.min.js -->
@@ -94,6 +94,7 @@
                         load_page(item.url, item.text);
                     }
                 });
+                $('.wrapper').animate({"opacity": 1});
             })
             .fail(function (xhr, status, error) {
                 console.log(error);

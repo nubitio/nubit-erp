@@ -1,14 +1,21 @@
-{% extends 'base.html.twig' %}
-{% block stylesheets %}
-    {{ parent() }}
-    {{ encore_entry_link_tags('product') }}
-{% endblock %}
-{% block javascripts %}
-    {{ parent() }}
-    {{ encore_entry_script_tags('product') }}
-{% endblock %}
-{% block body %}
-    <div class="wrapper">
-        <div id="app"></div>
+<div class="wrapper">
+    <table id="producto_dg"></table>
+    <!-- Dialogo -->
+    <div id="producto_dlg">
+        <form class="fm" id="producto_fm" method="post" novalidate>
+            <div class="fitem">
+                <input id="producto_descripcion" name="descripcion">
+            </div>
+            <div class="fitem">
+                <input id="producto_categoria" name="categoria_id">
+            </div>
+            <div class="fitem">
+                <input id="producto_precio" name="precio">
+            </div>
+            <div class="fitem">
+                <input id="producto_estado" name="estado">
+            </div>
+        </form>
     </div>
-{% endblock %}
+</div>
+<script src="{{ asset('assets/js/pages/producto/index.js') }}"></script>
