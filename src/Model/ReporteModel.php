@@ -128,6 +128,11 @@ class ReporteModel extends BaseModel
         return $this->db->exec("call sp_reporte_anulados(?, ?)", array($fecha_desde, $fecha_hasta));
     }
 
+    public function notasCredito($fecha_desde, $fecha_hasta)
+    {
+        return $this->db->exec("call sp_reporte_anulados(?, ?)", array($fecha_desde, $fecha_hasta));
+    }
+
     public function asistencia_diaria($fecha)
     {
         return $this->db->exec("call sp_reporte_asistencia_diaria(?)", array($fecha));

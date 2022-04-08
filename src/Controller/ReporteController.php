@@ -116,6 +116,19 @@ class ReporteController extends BaseController
         $this->export($data, $extras);
     }
 
+    public function reporte_notasCredito()
+    {
+        $fi = $this->app->get('PARAMS.fi');
+        $ff = $this->app->get('PARAMS.ff');
+        $data = $this->model->notasCredito($fi, $ff);
+        $extras = [
+            'title' => 'NOTAS DE CREDITO',
+            'subtitle' => 'PERIODO ' . $fi . ' AL ' . $ff,
+            'sumcols' => []
+        ];
+        $this->export($data, $extras);
+    }
+
     public function asistencia_diaria()
     {
         $fecha = $this->app->get('PARAMS.fecha');
