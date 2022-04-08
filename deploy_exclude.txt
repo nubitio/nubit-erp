@@ -4,12 +4,15 @@ public/tmp/
 public/wcpcache/
 tests/
 .gitignore
-composer.json
-composer.lock
 deploy.sh
 deploy_exclude.txt
 generator.py
 README.md
+.env
+.env.local
+Dockerfile
+docker-compose.yml
+node_modules/
 
 public/assets/images/logo.png
 config/config.ini
