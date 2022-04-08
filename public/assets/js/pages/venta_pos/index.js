@@ -128,6 +128,10 @@ app.venta = (function () {
                 sortable: true,
                 width: 150
             }, {
+                field: 'tipo_pago',
+                title: 'Pago',
+                formatter: tipopagocell
+            }, {
                 field: 'serie',
                 title: 'Nota',
                 align: 'center',
@@ -195,7 +199,40 @@ app.venta = (function () {
             }
         });
 
-        dg.datagrid('enableFilter', []);
+        dg.datagrid('enableFilter', [
+            {
+                field: 'tipo_pago',
+                type: 'combobox',
+                options: {
+                    panelHeight: 'auto',
+                    data: [{
+                        value: '',
+                        text: 'TODOS'
+                    }, {
+                        value: '1',
+                        text: 'EFECTIVO'
+                    }, {
+                        value: '2',
+                        text: 'TARJETA'
+                    }, {
+                        value: '3',
+                        text: 'YAPE'
+                    }],
+                    onChange: function (value) {
+                        if (value === '') {
+                            dg.datagrid('removeFilterRule', 'tipo_pago');
+                        } else {
+                            dg.datagrid('addFilterRule', {
+                                field: 'tipo_pago',
+                                op: 'equal',
+                                value: value
+                            });
+                        }
+                        dg.datagrid('doFilter');
+                    }
+                }
+            }
+        ]);
 
         dlg.dialog({
             width: 700,
@@ -552,6 +589,18 @@ app.venta = (function () {
             let vuelto = cash - total;
             vuelto = vuelto.toFixed(2);
             txt_vuelto.html(vuelto);
+        }
+    }
+
+    function tipopagocell(value, row) {
+        if (value == 1) {
+            return 'EFECTIVO';
+        } else if (value == 2) {
+            return 'TARJETA';
+        } else if (value == 3) {
+            return  'YAPE';
+        } else {
+            return '';
         }
     }
 
