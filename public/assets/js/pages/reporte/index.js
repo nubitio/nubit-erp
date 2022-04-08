@@ -108,6 +108,16 @@ app.reporte = (function () {
         }
     };
 
+    let rpt_notas_de_credito = function () {
+        var fi = db_fecha_inicio.datebox('getValue');
+        var ff = db_fecha_fin.datebox('getValue');
+        if (fi && ff) {
+            window.open('reporte/notasCredito/' + fi + '/' + ff);
+        } else {
+            show_info('Ingrese las Fechas');
+        }
+    };
+
     return {
         init: init,
         rpt_articulo: rpt_articulo,
@@ -115,7 +125,8 @@ app.reporte = (function () {
         rpt_dia: rpt_dia,
         rpt_contable: rpt_contable,
         rpt_aeropuerto: rpt_aeropuerto,
-        rpt_comprobantes_anulados: rpt_comprobantes_anulados
+        rpt_comprobantes_anulados: rpt_comprobantes_anulados,
+        rpt_notas_de_credito: rpt_notas_de_credito
     };
 
 })();
