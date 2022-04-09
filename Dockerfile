@@ -27,10 +27,10 @@ RUN apt -y install php7.4 mcrypt php7.4-mcrypt php7.4-mbstring php7.4-xml php7.4
 RUN apt install -y libapache2-mod-php7.4
 
 # install wkhtmltopdf
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_amd64.deb
-RUN apt install -y ./wkhtmltox_0.12.6-1.focal_amd64.deb
-#RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_arm64.deb
-#RUN apt install -y ./wkhtmltox_0.12.6-1.focal_arm64.deb
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_${arch}.deb && \
+    apt install -y ./wkhtmltox_0.12.6-1.focal_${arch}.deb
 
 # Apache conf
 # allow .htaccess with RewriteEngine

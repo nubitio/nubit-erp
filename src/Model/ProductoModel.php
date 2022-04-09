@@ -2,6 +2,8 @@
 
 namespace App\Model;
 
+use Symfony\Component\Uid\Uuid;
+
 class ProductoModel extends BaseModel
 {
     private $dao;
@@ -81,8 +83,7 @@ class ProductoModel extends BaseModel
 
     public function add($tipo)
     {
-        $key = $this->db->exec("SELECT UUID() AS uuid");
-        $uuid = $key[0]['uuid'];
+        $uuid = Uuid::v4();
         $this->dao->copyFrom('POST');
         $this->dao->producto_id = $uuid;
         $this->dao->tipo_id = $tipo;
