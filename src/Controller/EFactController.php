@@ -92,7 +92,7 @@ class EFactController extends BaseController
             'cache'            => 'tmp',
             'strict_variables' => true,
         ]);
-        $html->setTemplate('invoice.html.twig');
+        $html->setTemplate('invoice.html.twig');//crear nuevo template
 
         $report = new PdfReport($html);
         $report->setOptions([
@@ -186,6 +186,15 @@ class EFactController extends BaseController
             ->setRznSocial($sale['header']['client_name'])
             ->setAddress($address);
 
+        /*
+        $igv = 0.18;
+        $rc = 0.05;
+        $divisor = 1 + $igv + $rc;
+        $valor_venta = $total / $divisor;
+        $valor_igv = $valor_venta*$igv;
+        $valor_rc = $valor_venta*$rc;
+        */
+
         // Venta
         $invoice = (new Invoice())
             ->setUblVersion('2.1')
@@ -203,8 +212,14 @@ class EFactController extends BaseController
             ->setValorVenta($sale['header']['doc_sale_value'])
             ->setSubTotal($sale['header']['doc_sale_amount'])
             ->setMtoImpVenta($sale['header']['doc_sale_amount'])
-            ->setCompany($this->getCompany());
-
+            ->setCompany($this->getCompany())
+            ->setCargos([
+                (new Charge())
+                    ->setCodTipo('46')
+                    ->setMontoBase($sale['header']['doc_sale_amount'])
+                    ->setFactor(0.05)
+                    ->setMonto($sale['header']['doc_sale_amount']/(1.23)*0.05)
+                ]);
         if ($sale['header']['doc_discount_percent'] > 0) {
             $invoice->setDescuentos([
                 (new Charge())
