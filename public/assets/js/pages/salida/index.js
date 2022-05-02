@@ -277,12 +277,13 @@ app.salida = (function () {
             },
             success: function (result) {
                 try {
+                    result = JSON.parse(result);
                     if (result.success) {
                         dlg.dialog('close');
                         dg.datagrid('reload');
                         show_info(result.msg);
                     } else {
-                        show_error(result);
+                        show_error(result.msg);
                     }
                     enable_buttons();
                 } catch (e) {

@@ -123,11 +123,15 @@ class PrintESCPOSController extends BaseController
                 }
 
                 $igv = 0.18;
-                $divisor = 1 + $igv;
+                $rc = 0.05;
+                $divisor = 1 + $igv + $rc;
                 $valor_venta = $total / $divisor;
-                $valor_igv = $valor_venta * $igv;
+                $valor_igv = $valor_venta*$igv;
+                $valor_rc = $valor_venta*$rc;
+
                 $str_opg = number_format($valor_venta, 2, '.', '');
                 $str_igv = number_format($valor_igv, 2, '.', '');
+                $str_consumo = number_format($valor_rc, 2, '.','');
                 $str_total = number_format($total, 2, '.', '');
                 $printer->text($str_line);
                 if ($cabecera['inumero'] > 0) {
@@ -136,6 +140,7 @@ class PrintESCPOSController extends BaseController
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
                     $printer->text(new SaleItem('IGV 18%', $str_igv));
+                    $printer->text(new SaleItem('RC 5%',$str_consumo));
                 }
                 $printer->text(new SaleItem('TOTAL', $str_total));
                 $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
