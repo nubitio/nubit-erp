@@ -209,17 +209,18 @@ class EFactController extends BaseController
             ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
             ->setMtoIGV($sale['header']['doc_igv_amount'])
             ->setTotalImpuestos($sale['header']['doc_total_taxes'])
+            ->setSumOtrosCargos($sale['header']['doc_sale_amount'] / (1.23) * 0.05)
             ->setValorVenta($sale['header']['doc_sale_value'])
-            ->setSubTotal($sale['header']['doc_sale_amount'])
+            ->setSubTotal($sale['header']['doc_sale_amount'] - $sale['header']['doc_sale_amount'] / (1.23) * 0.05)
             ->setMtoImpVenta($sale['header']['doc_sale_amount'])
             ->setCompany($this->getCompany())
             ->setCargos([
                 (new Charge())
                     ->setCodTipo('46')
-                    ->setMontoBase($sale['header']['doc_sale_amount'])
+                    ->setMontoBase($sale['header']['doc_sale_value'])
                     ->setFactor(0.05)
-                    ->setMonto($sale['header']['doc_sale_amount']/(1.23)*0.05)
-                ]);
+                    ->setMonto($sale['header']['doc_sale_amount'] / (1.23) * 0.05)
+            ]);
         if ($sale['header']['doc_discount_percent'] > 0) {
             $invoice->setDescuentos([
                 (new Charge())
@@ -235,7 +236,9 @@ class EFactController extends BaseController
         $items = [];
         for ($i = 0; $i < count($sale['detail']); $i++) {
             $igv = 0.18;
-            $divisor = 1 + $igv;
+            $rc = 0.05;
+            //$divisor = 1 + $igv;
+            $divisor = 1 + $igv + $rc;
             $valor_venta = $sale['detail'][$i]['price'] / $divisor;
             $valor_igv = $valor_venta * $igv;
             $monto_base_igv = round($valor_venta * $sale['detail'][$i]['quantity'], 2);
