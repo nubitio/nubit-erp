@@ -233,7 +233,147 @@ class MovimientoController extends BaseController
 
     function preview()
     {
-        echo 'Preview not working';
+        $id = $this->app->get('PARAMS.id');
+        //get empresa info
+        $cabecera = $this->model->ticket_cabecera($id);
+        $detalle = $this->model->ticket_detalle($id);
+        //Sample plain receipt
+        $newLine = '<br>';
+
+        $cmds = str_pad($cabecera['empresa'], 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad('RUC ' . $cabecera['ruc_empresa'], 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad($cabecera['direccion_empresa'], 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad($cabecera['direccion_local'], 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad('Telefono ' . $cabecera['telefono'], 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        if (strlen($cabecera['ruc_cliente'])>=9) {
+            $tipo = 'FACTURA ELECTRONICA';
+        } else {
+            $tipo = 'BOLETA ELECTRONICA';
+        }
+        $ticket = $cabecera['serie'] . '-' . $cabecera['numero'];
+        $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad($tipo, 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        //$cmds .= str_pad($ticket, 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $fecha = date("d-m-Y", strtotime($cabecera['fecha']));
+        $cmds .= str_pad('Fecha emision: ' . $fecha, 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $moneda = 'Moneda: Soles';
+        $cmds .= str_pad($moneda, 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $total = 0.00;
+        if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $cmds .= 'RUC Cli.: ' . $cabecera['ruc_cliente'];
+            $cmds .= $newLine;
+            $cmds .= 'R.Social: ' . $cabecera['cliente'];
+            $cmds .= $newLine;
+            $cmds .= 'Direccion: ' . $cabecera['direccion_cliente'];
+            $cmds .= $newLine;
+        } else {
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $cmds .= 'DNI: ' . $cabecera['ruc_cliente'];
+            $cmds .= $newLine;
+            $cmds .= 'Cliente: ' . $cabecera['cliente'];
+            $cmds .= $newLine;
+            $cmds .= 'Direccion: ' . $cabecera['direccion_cliente'];
+            $cmds .= $newLine;
+        }
+        $cmds .= 'Forma Pago: Contado';
+        $cmds .= $newLine;
+        $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad('#', 3) . str_pad('Descripcion', 24) . str_pad('Precio', 6, " ", STR_PAD_LEFT);
+        $cmds .= $newLine;
+        $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        for ($i = 0; $i < count($detalle); $i++) {
+            $cantidad = floor($detalle[$i]['cantidad']);
+            $producto = strlen($detalle[$i]['producto']) > 22 ? substr($detalle[$i]['producto'], 0, 22) : $detalle[$i]['producto'];
+            $cmds .= str_pad($cantidad, 2, '0', STR_PAD_LEFT) . ' ' . str_pad($producto, 24) . str_pad($detalle[$i]['precio'], 6, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $total += $detalle[$i]['precio'];
+        }
+        if ($cabecera['descuento'] > 0) {
+            $descuento = $total * $cabecera['descuento'] / 100;
+            $descuento = number_format($descuento, 2, '.', '');
+            $cmds .= str_pad('1', 2, '0', STR_PAD_LEFT) . ' ' . str_pad('DESCUENTO', 24) . str_pad('-' . $descuento, 6, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $total = $total - $descuento;
+        }
+        //if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
+        if (1 == 1) {
+            $igv = 0.18;
+            $rc = 0.05;
+            $divisor = 1 + $igv + $rc;
+            $valor_venta = $total / $divisor;
+            $valor_igv = $valor_venta*$igv;
+            $valor_rc = $valor_venta*$rc;
+
+            $str_opg = $this->money_pen($valor_venta);
+            $str_igv = $this->money_pen($valor_igv);
+            $str_rc = $this->money_pen($valor_rc);
+            $str_total = $this->money_pen($total);
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $cmds .= str_pad('IMPORTE', 23) . str_pad($str_total, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('OP. GRAVADA', 23) . str_pad($str_opg, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('OP. INAFECTA', 23) . str_pad('S/ 0.00', 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('OP. EXONERADA', 23) . str_pad('S/ 0.00', 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('IGV 18%', 23) . str_pad($str_igv, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('RC 5%', 23) . str_pad($str_rc, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('TOTAL', 23) . str_pad($str_total, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
+            $formatted_total = str_replace(',', '', number_format($total, 2));
+            $parts = explode('.', $formatted_total);
+            $monto = $formatter->format($parts[0]);
+            $str_monto = mb_strtoupper($monto . " Y " . $parts[1] . "/100");
+            $cmds .= str_pad($str_monto, 33, " ", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+        } else {
+            $total = $this->money_pen($total);
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+            $cmds .= str_pad('TOTAL', 23) . str_pad($total, 10, " ", STR_PAD_LEFT);
+            $cmds .= $newLine;
+            $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
+            $cmds .= $newLine;
+        }
+        $cmds .= $newLine;
+        $cmds .= str_pad("Representacion impresa del", 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad("comprobante electronico, consulte en", 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad($this->app->get('EFACT_URL'), 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= $newLine;
+        $cmds .= str_pad(date("d-m-Y H:i:s"), 33, " ", STR_PAD_BOTH);
+        $cmds .= $newLine;
+        $cmds .= str_pad("** Gracias por su preferencia **", 33, " ", STR_PAD_BOTH);
+
+        echo '<div style="padding: 15px"><pre>' . $cmds . '</pre></div>';
     }
 
     public function guardar_comprobante()
