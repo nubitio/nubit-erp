@@ -11,6 +11,7 @@ use NumberFormatter;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Template;
+use App\Model\OptionsModel;
 
 class MovimientoController extends BaseController
 {
@@ -25,6 +26,7 @@ class MovimientoController extends BaseController
         $this->model = new MovimientoModel();
         $this->botModel = new BotModel();
         $this->efact = new EFactController();
+        $this->optionsDao = new OptionsModel();
     }
 
     function index()
@@ -337,8 +339,13 @@ class MovimientoController extends BaseController
             $cmds .= $newLine;
             $cmds .= str_pad('IGV 18%', 23) . str_pad($str_igv, 10, " ", STR_PAD_LEFT);
             $cmds .= $newLine;
-            $cmds .= str_pad('RC 5%', 23) . str_pad($str_rc, 10, " ", STR_PAD_LEFT);
-            $cmds .= $newLine;
+
+            $app_option_rc_get = (int)$this->getOption('app_option_rc');
+            if($app_option_rc_get>=1)
+            {
+                $cmds .= str_pad('RC '.$app_option_rc_get.'%: ', 23) . str_pad($str_rc, 10, " ", STR_PAD_LEFT);
+                $cmds .= $newLine;
+            }
             $cmds .= str_pad('TOTAL', 23) . str_pad($str_total, 10, " ", STR_PAD_LEFT);
             $cmds .= $newLine;
             $cmds .= str_pad('', 33, "-", STR_PAD_BOTH);
@@ -500,5 +507,14 @@ class MovimientoController extends BaseController
             }
         }
         $this->json($result);
+    }
+
+    public function getOption($name)
+    {
+        try {
+            return $this->optionsDao->getByName($name);
+        } catch (Exception $e) {
+            $this->app->error(500, "No se pudo obtener la opcion {$name}");
+        }
     }
 }
