@@ -14,6 +14,7 @@ use Neodynamic\SDK\Web\DefaultPrinter;
 use Neodynamic\SDK\Web\InstalledPrinter;
 use Neodynamic\SDK\Web\WebClientPrint;
 use NumberFormatter;
+use App\Model\OptionsModel;
 
 class PrintESCPOSController extends BaseController
 {
@@ -23,6 +24,7 @@ class PrintESCPOSController extends BaseController
     {
         parent::__construct();
         $this->model = new MovimientoModel();
+        $this->optionsDao = new OptionsModel();
     }
 
     function beforeroute()
@@ -122,12 +124,30 @@ class PrintESCPOSController extends BaseController
                     $total = $total - $descuento;
                 }
 
-                $igv = 0.18;
-                $rc = 0.05;
-                $divisor = 1 + $igv + $rc;
-                $valor_venta = $total / $divisor;
-                $valor_igv = $valor_venta*$igv;
-                $valor_rc = $valor_venta*$rc;
+                $igv = 0;
+                $rc = 0;
+                $divisor = 0;
+                $valor_venta = 0;
+                $valor_igv = 0;
+                $valor_rc = 0;
+
+                $app_option_rc_get = (int)$this->getOption('app_option_rc');
+                if($app_option_rc_get>=1)
+                {
+                    $igv = 0.18;
+                    $rc = $app_option_rc_get/100;
+                    $divisor = 1 + $igv + $rc;
+                    $valor_venta = $total / $divisor;
+                    $valor_igv = $valor_venta*$igv;
+                    $valor_rc = $valor_venta*$rc;
+                }
+                else
+                {
+                    $igv = 0.18;
+                    $divisor = 1 + $igv;
+                    $valor_venta = $total / $divisor;
+                    $valor_igv = $valor_venta*$igv;
+                }
 
                 $str_opg = number_format($valor_venta, 2, '.', '');
                 $str_igv = number_format($valor_igv, 2, '.', '');
@@ -140,7 +160,11 @@ class PrintESCPOSController extends BaseController
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
                     $printer->text(new SaleItem('IGV 18%', $str_igv));
-                    $printer->text(new SaleItem('RC 5%',$str_consumo));
+                    if($app_option_rc_get>=1)
+                    {
+                        $printer->text(new SaleItem('RC'.$app_option_rc_get.'% :',$str_consumo));
+                    }
+
                 }
                 $printer->text(new SaleItem('TOTAL', $str_total));
                 $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
@@ -196,6 +220,15 @@ class PrintESCPOSController extends BaseController
                 ob_end_flush();
                 exit();
             }
+        }
+    }
+
+    public function getOption($name)
+    {
+        try {
+            return $this->optionsDao->getByName($name);
+        } catch (Exception $e) {
+            $this->app->error(500, "No se pudo obtener la opcion {$name}");
         }
     }
 }
