@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Model\OptionsModel;
 use App\Util\TipoDoc;
 use DB\SQL\Mapper;
 use mysql_xdevapi\Exception;
@@ -12,12 +13,24 @@ class MovimientoModel extends BaseModel
 
     protected $dao;
     private CajaModel $cajaModel;
+    private OptionsModel $optionsDao;
 
     public function __construct()
     {
         parent::__construct();
         $this->dao = new Mapper($this->db, 'movimiento');
         $this->cajaModel = new CajaModel();
+        $this->optionsDao = new OptionsModel();
+
+    }
+
+    public function getOption($name)
+    {
+        try {
+            return $this->optionsDao->getByName($name);
+        } catch (Exception $e) {
+            $this->app->error(500, "No se pudo obtener la opcion {$name}");
+        }
     }
 
     public function all($tipo_id)
@@ -248,6 +261,8 @@ class MovimientoModel extends BaseModel
             $this->dao->serie = $serie;
             $this->dao->numero = $numero;
             $this->dao->estado = 1;
+            $this->dao->igv = 18;
+            $this->dao->recargo_consumo = (int)$this->getOption('app_option_rc');
             if($tipo_id == 2)
             {
                 $this->dao->caja_id = $cashBox['caja_id'];

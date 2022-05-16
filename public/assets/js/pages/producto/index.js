@@ -42,10 +42,15 @@ app.producto = (function () {
                 }
             }],
             columns: [[{
+                field: 'codigo',
+                title: 'Código',
+                sortable: true,
+                width: 100
+            }, {
                 field: 'descripcion',
                 title: 'Descripción',
                 sortable: true,
-                width: 300
+                width: 200
             }, {
                 field: 'categoria',
                 title: 'Categoria',
