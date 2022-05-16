@@ -442,7 +442,33 @@ class ApiModel extends BaseModel
         GROUP BY tc.codigo 
         
         ";
-        return $this->db->exec($sql,[$local_id]);
+        return $this->db->exec($sql, [$local_id]);
     }
+
+    public function getUrlCustomer()
+    {
+        $sql ="
+        SELECT
+               cl.ruc as ruc,
+               cl.razon_social as nombre,
+               IFNULL( cl.imagen ,concat('https://i.pravatar.cc/',cl.ruc)) as imagen
+        FROM cliente cl   
+        ";
+
+        return $this->db->exec($sql);
+    }
+    public function getUrlProduct()
+    {
+        $sql ="
+        SELECT
+            p.descripcion as nombre,
+            p.imagen as imagen
+        
+        FROM vw_producto p
+        ";
+
+        return $this->db->exec($sql);
+    }
+
 
 }
