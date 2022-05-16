@@ -369,4 +369,12 @@ class ApiController extends BaseController
         $local_id = $this->app->get('PARAMS.local_id');
         $this->json($this->apiDao->getVoucherForMonthSoles($local_id));
     }
+    public function getUrlCustomer()
+    {
+        $this->json($this->apiDao->getUrlCustomer());
+    }
+    public function getUrlProduct()
+    {
+        $this->json($this->apiDao->getUrlProduct());
+    }
 }
