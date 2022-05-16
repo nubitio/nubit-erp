@@ -186,41 +186,132 @@ class EFactController extends BaseController
             ->setRznSocial($sale['header']['client_name'])
             ->setAddress($address);
 
-        /*
-        $igv = 0.18;
-        $rc = 0.05;
-        $divisor = 1 + $igv + $rc;
-        $valor_venta = $total / $divisor;
-        $valor_igv = $valor_venta*$igv;
-        $valor_rc = $valor_venta*$rc;
-        */
+        $igv = 0;
+        $rc = 0;
+        $divisor = 0;
+        $valor_venta = 0;
+        $valor_igv = 0;
+        $valor_rc = 0;
+        $invoice = (new Invoice());
+        $items = [];
 
-        // Venta
-        $invoice = (new Invoice())
-            ->setUblVersion('2.1')
-            ->setTipoOperacion('0101')// Catalog. 51
-            ->setTipoDoc($sale['header']['doc_type'])
-            ->setSerie($sale['header']['doc_series'])
-            ->setCorrelativo($sale['header']['doc_number'])
-            ->setFechaEmision(new DateTime($sale['header']['doc_date'] . " 00:00:00"))
-            ->setFormaPago(new FormaPagoContado())
-            ->setTipoMoneda($sale['header']['doc_currency'])
-            ->setClient($client)
-            ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
-            ->setMtoIGV($sale['header']['doc_igv_amount'])
-            ->setTotalImpuestos($sale['header']['doc_total_taxes'])
-            ->setSumOtrosCargos($sale['header']['doc_sale_amount'] / (1.23) * 0.05)
-            ->setValorVenta($sale['header']['doc_sale_value'])
-            ->setSubTotal($sale['header']['doc_sale_amount'] - $sale['header']['doc_sale_amount'] / (1.23) * 0.05)
-            ->setMtoImpVenta($sale['header']['doc_sale_amount'])
-            ->setCompany($this->getCompany())
-            ->setCargos([
-                (new Charge())
-                    ->setCodTipo('46')
-                    ->setMontoBase($sale['header']['doc_sale_value'])
-                    ->setFactor(0.05)
-                    ->setMonto($sale['header']['doc_sale_amount'] / (1.23) * 0.05)
-            ]);
+        $app_option_rc_get = (int)$this->getOption('app_option_rc');
+        if($app_option_rc_get>=1)
+        {
+            $igv = 0.18;
+            $rc = $app_option_rc_get/100;
+            $divisor = 1 + $igv + $rc;//1.23
+            $venta_total = $sale['header']['doc_sale_amount'];//123
+            $valor_venta = $venta_total / $divisor;//100
+            $valor_igv = $valor_venta*$igv;//18
+            $valor_rc = $valor_venta*$rc;//5
+
+            // Venta
+            $invoice = (new Invoice())
+                ->setUblVersion('2.1')
+                ->setTipoOperacion('0101')// Catalog. 51
+                ->setTipoDoc($sale['header']['doc_type'])
+                ->setSerie($sale['header']['doc_series'])
+                ->setCorrelativo($sale['header']['doc_number'])
+                ->setFechaEmision(new DateTime($sale['header']['doc_date'] . " 00:00:00"))
+                ->setFormaPago(new FormaPagoContado())
+                ->setTipoMoneda($sale['header']['doc_currency'])
+                ->setClient($client)
+                ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
+                ->setMtoIGV($sale['header']['doc_igv_amount'])
+                ->setTotalImpuestos($sale['header']['doc_total_taxes'])
+                ->setSumOtrosCargos(($sale['header']['doc_sale_amount'] / ($divisor)) * $rc)
+                ->setValorVenta($sale['header']['doc_sale_value'])
+                ->setSubTotal($sale['header']['doc_sale_amount'] - ($sale['header']['doc_sale_amount'] / $divisor) * $rc)
+                ->setMtoImpVenta($sale['header']['doc_sale_amount'])
+                ->setCompany($this->getCompany())
+                ->setCargos([
+                    (new Charge())
+                        ->setCodTipo('46')
+                        ->setMontoBase($sale['header']['doc_sale_value'])
+                        ->setFactor($rc)
+                        ->setMonto(($sale['header']['doc_sale_amount'] / $divisor) * $rc)
+                ]);
+
+            for ($i = 0; $i < count($sale['detail']); $i++) {
+                $igv = 0.18;
+                $rc = $app_option_rc_get/100;
+                //$divisor = 1 + $igv;
+                $divisor = 1 + $igv + $rc;//1.23
+                $venta_total_item = $sale['detail'][$i]['price'];//123
+                $valor_venta = $venta_total_item / $divisor;//100
+                $valor_igv = $valor_venta * $igv;//18
+                $valor_rc = $valor_venta * $rc;//5
+                $monto_base_igv = round($valor_venta * $sale['detail'][$i]['quantity'], 2);
+                $monto_igv = round($valor_igv * $sale['detail'][$i]['quantity'], 2);
+                $item = (new SaleDetail())
+                    ->setCodProducto($sale['detail'][$i]['code'])
+                    ->setUnidad('NIU')
+                    ->setCantidad($sale['detail'][$i]['quantity'])
+                    ->setMtoValorUnitario(number_format($valor_venta, 2, '.', ''))
+                    ->setDescripcion($sale['detail'][$i]['product'])
+                    ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
+                    ->setPorcentajeIgv(18.00)// 18%
+                    ->setIgv(number_format($monto_igv, 2, '.', ''))
+                    ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
+                    ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
+                    ->setMtoValorVenta(number_format($monto_base_igv, 2, '.', ''))
+                    ->setMtoPrecioUnitario(number_format($valor_venta + $valor_igv, 2, '.', ''));
+                array_push($items, $item);
+            }
+        }
+        else //not rc charge
+        {
+            $igv = 0.18;
+            $divisor = 1 + $igv;
+            $valor_venta = $sale['header']['doc_sale_amount'] / $divisor;
+            $valor_igv = $valor_venta*$igv;
+
+            // Venta
+            $invoice = (new Invoice())
+                ->setUblVersion('2.1')
+                ->setTipoOperacion('0101')// Catalog. 51
+                ->setTipoDoc($sale['header']['doc_type'])
+                ->setSerie($sale['header']['doc_series'])
+                ->setCorrelativo($sale['header']['doc_number'])
+                ->setFechaEmision(new DateTime($sale['header']['doc_date'] . " 00:00:00"))
+                ->setFormaPago(new FormaPagoContado())
+                ->setTipoMoneda($sale['header']['doc_currency'])
+                ->setClient($client)
+                ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
+                ->setMtoIGV($sale['header']['doc_igv_amount'])
+                ->setTotalImpuestos($sale['header']['doc_total_taxes'])
+                ->setValorVenta($sale['header']['doc_sale_value'])
+                ->setSubTotal($sale['header']['doc_sale_amount'])
+                ->setMtoImpVenta($sale['header']['doc_sale_amount'])
+                ->setCompany($this->getCompany());
+
+            for ($i = 0; $i < count($sale['detail']); $i++) {
+                $igv = 0.18;
+                //$rc = 0.05;
+                $divisor = 1 + $igv;
+                //$divisor = 1 + $igv + $rc;
+                $valor_venta = $sale['detail'][$i]['price'] / $divisor;
+                $valor_igv = $valor_venta * $igv;
+                $monto_base_igv = round($valor_venta * $sale['detail'][$i]['quantity'], 2);
+                $monto_igv = round($valor_igv * $sale['detail'][$i]['quantity'], 2);
+                $item = (new SaleDetail())
+                    ->setCodProducto($sale['detail'][$i]['code'])
+                    ->setUnidad('NIU')
+                    ->setCantidad($sale['detail'][$i]['quantity'])
+                    ->setMtoValorUnitario(number_format($valor_venta, 2, '.', ''))
+                    ->setDescripcion($sale['detail'][$i]['product'])
+                    ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
+                    ->setPorcentajeIgv(18.00)// 18%
+                    ->setIgv(number_format($monto_igv, 2, '.', ''))
+                    ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
+                    ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
+                    ->setMtoValorVenta(number_format($monto_base_igv, 2, '.', ''))
+                    ->setMtoPrecioUnitario(number_format($valor_venta + $valor_igv, 2, '.', ''));
+                array_push($items, $item);
+            }
+        }
+
         if ($sale['header']['doc_discount_percent'] > 0) {
             $invoice->setDescuentos([
                 (new Charge())
@@ -233,31 +324,6 @@ class EFactController extends BaseController
             $invoice->setMtoImpVenta($sale['header']['doc_sale_amount'] - $sale['header']['doc_discount_amount']);
         }
 
-        $items = [];
-        for ($i = 0; $i < count($sale['detail']); $i++) {
-            $igv = 0.18;
-            $rc = 0.05;
-            //$divisor = 1 + $igv;
-            $divisor = 1 + $igv + $rc;
-            $valor_venta = $sale['detail'][$i]['price'] / $divisor;
-            $valor_igv = $valor_venta * $igv;
-            $monto_base_igv = round($valor_venta * $sale['detail'][$i]['quantity'], 2);
-            $monto_igv = round($valor_igv * $sale['detail'][$i]['quantity'], 2);
-            $item = (new SaleDetail())
-                ->setCodProducto($sale['detail'][$i]['code'])
-                ->setUnidad('NIU')
-                ->setCantidad($sale['detail'][$i]['quantity'])
-                ->setMtoValorUnitario(number_format($valor_venta, 2, '.', ''))
-                ->setDescripcion($sale['detail'][$i]['product'])
-                ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
-                ->setPorcentajeIgv(18.00)// 18%
-                ->setIgv(number_format($monto_igv, 2, '.', ''))
-                ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
-                ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
-                ->setMtoValorVenta(number_format($monto_base_igv, 2, '.', ''))
-                ->setMtoPrecioUnitario(number_format($valor_venta + $valor_igv, 2, '.', ''));
-            array_push($items, $item);
-        }
         $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
         $parts = explode('.', $sale['header']['doc_sale_amount']);
         $monto = $formatter->format($parts[0]);
