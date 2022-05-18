@@ -24,10 +24,7 @@ class ApiResponse implements JsonSerializable
      */
     private $data;
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'success' => $this->isSuccess(),

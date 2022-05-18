@@ -2,7 +2,7 @@
 
 SERVER="giklabs.com"
 PS3='Please enter your choice: '
-options=("Demo" "ArcaCevic" "ArcaServis" "SurtiHogar" "Sysdein" "Maia" "Giancorpf" "DSI" "Las Yolas" "1Break" "Quit")
+options=("Demo" "ArcaCevic" "ArcaServis" "SurtiHogar" "Sysdein" "Maia" "Giancorpf" "DSI" "Las Yolas" "1Break" "Difashbela" "Quit")
 
 function deploy() {
   echo "Running deploy"
@@ -54,6 +54,10 @@ select opt in "${options[@]}"; do
       ;;
   "1Break")
       USERNAME="c16_1break"
+      deploy
+      ;;
+  "Difashbela")
+      USERNAME="c19_difashbela"
       deploy
       ;;
   "Quit")

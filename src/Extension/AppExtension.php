@@ -19,7 +19,6 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'app'  => [
-                'name'    => $_ENV['APP_NAME'],
                 'user'    => [],
                 'session' => $_SESSION,
             ],

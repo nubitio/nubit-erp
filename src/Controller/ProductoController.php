@@ -2,18 +2,29 @@
 
 namespace App\Controller;
 
+use App\Domain\Product\CreateProduct;
+use App\Domain\Product\DeleteProduct;
+use App\Domain\Product\GetAllProduct;
+use App\Domain\Product\UpdateProduct;
 use App\Model\ProductoModel;
 use Template;
 
 class ProductoController extends BaseController
 {
-
     private ProductoModel $model;
+    private GetAllProduct $getAllProduct;
+    private CreateProduct $createProduct;
+    private UpdateProduct $updateProduct;
+    private DeleteProduct $deleteProduct;
 
-    public function __construct()
+    public function __construct(GetAllProduct $getAllProduct, CreateProduct $createProduct, UpdateProduct $updateProduct, DeleteProduct $deleteProduct)
     {
         parent::__construct();
         $this->model = new ProductoModel();
+        $this->getAllProduct = $getAllProduct;
+        $this->createProduct = $createProduct;
+        $this->updateProduct = $updateProduct;
+        $this->deleteProduct = $deleteProduct;
     }
 
     public function index()
@@ -23,7 +34,7 @@ class ProductoController extends BaseController
 
     public function getAll()
     {
-        $this->json($this->model->all(2));
+        $this->json($this->getAllProduct->execute());
     }
 
     public function lista()
@@ -40,31 +51,32 @@ class ProductoController extends BaseController
         $this->json($data);
     }
 
-    public function add_producto()
+    public function add()
     {
-        $data = $this->model->add(2);
-        $this->json($data);
+        $this->createProduct->execute($_POST);
+        $this->json(['success' => true]);
     }
 
     public function edit()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->edit($id);
-        $this->json($data);
+        $_POST['producto_id'] = $id;
+        $this->updateProduct->execute($_POST);
+        $this->json(['success' => true]);
     }
 
     public function delete()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->delete($id);
-        $this->json($data);
+        $this->deleteProduct->execute($id);
+        $this->json(['success' => true]);
     }
 
     public function exportar_productos()
     {
         $data = $this->model->exportar_productos();
         $extras = [
-            'title' => 'REPORTE DE PRODUCTOS',
+            'title'    => 'REPORTE DE PRODUCTOS',
             'subtitle' => ''
         ];
         $this->export($data, $extras);

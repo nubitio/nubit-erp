@@ -32,7 +32,7 @@ class NoteDetail implements \JsonSerializable
      */
     private $precioTotal;
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'nota_id'         => $this->getNotaId(),
