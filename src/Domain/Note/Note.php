@@ -87,10 +87,7 @@ class Note implements \JsonSerializable
      */
     private $details;
 
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return [
             'nota_id'            => $this->getNotaId(),
