@@ -2,8 +2,12 @@
 
 namespace App\Domain\Service;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
+use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
@@ -13,7 +17,10 @@ class SerializerService
 
     public function __construct()
     {
-        $normalizers = [new ObjectNormalizer()];
+        $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
+        $metadataAwareNameConverter = new MetadataAwareNameConverter($classMetadataFactory);
+
+        $normalizers = [new ObjectNormalizer($classMetadataFactory, $metadataAwareNameConverter)];
         $encoders = [new XmlEncoder(), new JsonEncoder()];
         $this->serializer = new Serializer($normalizers, $encoders);
     }
