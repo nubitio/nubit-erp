@@ -2,18 +2,40 @@
 
 namespace App\Controller;
 
-use App\Model\ProductoModel;
-use Template;
+use App\Domain\Product\CreateProduct;
+use App\Domain\Product\DeleteProduct;
+use App\Domain\Product\ExportProducts;
+use App\Domain\Product\GetAllProducts;
+use App\Domain\Product\GetProductList;
+use App\Domain\Product\Product;
+use App\Domain\Product\UpdateProduct;
+use Symfony\Component\Uid\Uuid;
 
 class ProductoController extends BaseController
 {
+    private GetAllProducts $getAllProduct;
+    private CreateProduct $createProduct;
+    private UpdateProduct $updateProduct;
+    private DeleteProduct $deleteProduct;
+    private ExportProducts $exportProducts;
+    private GetProductList $getProductList;
 
-    private ProductoModel $model;
-
-    public function __construct()
+    public function __construct(
+        GetAllProducts $getAllProduct,
+        CreateProduct  $createProduct,
+        UpdateProduct  $updateProduct,
+        DeleteProduct  $deleteProduct,
+        ExportProducts $exportProducts,
+        GetProductList $getProductList
+    )
     {
         parent::__construct();
-        $this->model = new ProductoModel();
+        $this->getAllProduct = $getAllProduct;
+        $this->createProduct = $createProduct;
+        $this->updateProduct = $updateProduct;
+        $this->deleteProduct = $deleteProduct;
+        $this->exportProducts = $exportProducts;
+        $this->getProductList = $getProductList;
     }
 
     public function index()
@@ -23,48 +45,54 @@ class ProductoController extends BaseController
 
     public function getAll()
     {
-        $this->json($this->model->all(2));
+        $format = "local_id = '%s'";
+        $filter = sprintf($format, $this->current_local_id);
+        $this->json($this->getAllProduct->execute($filter));
     }
 
     public function lista()
     {
-        $filtered = (bool)$this->app->get('PARAMS.filtered');
-        $extended = (bool)$this->app->get('PARAMS.extended');
-        $data = $this->model->lista($filtered, $extended);
+        $data = $this->getProductList->execute($this->current_local_id);
         $this->json($data);
     }
 
     public function listafull()
     {
-        $data = $this->model->listafull();
+        $data = $this->getProductList->execute($this->current_local_id);
         $this->json($data);
     }
 
-    public function add_producto()
+    public function add()
     {
-        $data = $this->model->add(2);
-        $this->json($data);
+        $_POST['producto_id'] = Uuid::v4();
+        /**
+         * @var Product $product
+         */
+        $product = $this->serializer->deserialize(json_encode($_POST), Product::class, 'json');
+        $this->createProduct->execute($product);
+        $this->json(['success' => true]);
     }
 
     public function edit()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->edit($id);
-        $this->json($data);
+        $_POST['producto_id'] = $id;
+        $this->updateProduct->execute($_POST);
+        $this->json(['success' => true]);
     }
 
     public function delete()
     {
         $id = $this->app->get('PARAMS.id');
-        $data = $this->model->delete($id);
-        $this->json($data);
+        $this->deleteProduct->execute($id);
+        $this->json(['success' => true]);
     }
 
     public function exportar_productos()
     {
-        $data = $this->model->exportar_productos();
+        $data = $this->exportProducts->execute($this->current_local_id);
         $extras = [
-            'title' => 'REPORTE DE PRODUCTOS',
+            'title'    => 'REPORTE DE PRODUCTOS',
             'subtitle' => ''
         ];
         $this->export($data, $extras);

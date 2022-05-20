@@ -3,6 +3,7 @@
 use App\Domain\EntryFactory;
 use App\Domain\EntryLookupFactory;
 use App\Domain\PackageFactory;
+use App\Event\EventDispatcherFactory;
 use App\Infrastructure\DataBaseFactory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -11,6 +12,7 @@ use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupCollectionInterface;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupInterface;
 use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
@@ -36,6 +38,10 @@ return function (ContainerConfigurator $configurator) {
         ->args([
             ['url' => $_ENV['DATABASE_URL']],
         ]);
+
+    $services->set(EventDispatcherInterface::class)
+        ->factory([EventDispatcherFactory::class, 'create'])
+        ->arg('$container', service('service_container'));
 
     $services->set('_default', EntrypointLookupInterface::class)
         ->factory([EntryFactory::class, 'create']);
