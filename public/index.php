@@ -1,13 +1,12 @@
 <?php
 
 use App\Domain\Compiler\RemoveUnwantedServices;
+use App\EventListener\ProductListener;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
-use Symfony\Component\ErrorHandler\DebugClassLoader;
-use Symfony\Component\ErrorHandler\ErrorHandler;
 
 require_once("../vendor/autoload.php");
 

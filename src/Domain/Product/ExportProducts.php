@@ -2,7 +2,7 @@
 
 namespace App\Domain\Product;
 
-class GetAllProduct
+class ExportProducts
 {
     private IProductRepository $productRepository;
 
@@ -11,8 +11,8 @@ class GetAllProduct
         $this->productRepository = $productRepository;
     }
 
-    public function execute(): array
+    public function execute(string $localId): array
     {
-        return $this->productRepository->getAll();
+        return $this->productRepository->getAllForExport($localId);
     }
 }

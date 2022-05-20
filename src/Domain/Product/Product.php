@@ -9,93 +9,113 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 #[IgnoreAutowire]
 class Product
 {
-    #[SerializedName('id')]
-    private string $producto_id;
-    #[SerializedName('code')]
-    #[NotBlank]x
-    private string $codigo;
-    #[SerializedName('name')]
-    private string $descripcion;
-    #[SerializedName('price')]
-    private float $precio;
-    #[SerializedName('active')]
-    private bool $estado;
+    #[SerializedName('producto_id')]
+    private ?string $id = null;
+    #[SerializedName('codigo')]
+    #[NotBlank]
+    private ?string $code = null;
+    #[SerializedName('descripcion')]
+    private ?string $name = null;
+    #[SerializedName('categoria_id')]
+    private ?string $categoryId = null;
+    #[SerializedName('precio')]
+    private float $price = 0.0;
+    #[SerializedName('estado')]
+    private bool $active = true;
 
     /**
-     * @param string $producto_id
-     * @param string $descripcion
-     * @param float $precio
-     * @param bool $estado
+     * @return string|null
      */
-    public function __construct(string $producto_id, string $descripcion, float $precio, bool $estado)
+    public function getId(): ?string
     {
-        $this->producto_id = $producto_id;
-        $this->descripcion = $descripcion;
-        $this->precio = $precio;
-        $this->estado = $estado;
+        return $this->id;
     }
 
     /**
-     * @return string
+     * @param string|null $id
      */
-    public function getProductoId(): string
+    public function setId(?string $id): void
     {
-        return $this->producto_id;
+        $this->id = $id;
     }
 
     /**
-     * @param string $producto_id
+     * @return string|null
      */
-    public function setProductoId(string $producto_id): void
+    public function getCode(): ?string
     {
-        $this->producto_id = $producto_id;
+        return $this->code;
     }
 
     /**
-     * @return string
+     * @param string|null $code
      */
-    public function getDescripcion(): string
+    public function setCode(?string $code): void
     {
-        return $this->descripcion;
+        $this->code = $code;
     }
 
     /**
-     * @param string $descripcion
+     * @return string|null
      */
-    public function setDescripcion(string $descripcion): void
+    public function getName(): ?string
     {
-        $this->descripcion = $descripcion;
+        return $this->name;
+    }
+
+    /**
+     * @param string|null $name
+     */
+    public function setName(?string $name): void
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCategoryId(): ?string
+    {
+        return $this->categoryId;
+    }
+
+    /**
+     * @param string|null $categoryId
+     */
+    public function setCategoryId(?string $categoryId): void
+    {
+        $this->categoryId = $categoryId;
     }
 
     /**
      * @return float
      */
-    public function getPrecio(): float
+    public function getPrice(): float
     {
-        return $this->precio;
+        return $this->price;
     }
 
     /**
-     * @param float $precio
+     * @param float $price
      */
-    public function setPrecio(float $precio): void
+    public function setPrice(float $price): void
     {
-        $this->precio = $precio;
+        $this->price = $price;
     }
 
     /**
      * @return bool
      */
-    public function isEstado(): bool
+    public function isActive(): bool
     {
-        return $this->estado;
+        return $this->active;
     }
 
     /**
-     * @param bool $estado
+     * @param bool $active
      */
-    public function setEstado(bool $estado): void
+    public function setActive(bool $active): void
     {
-        $this->estado = $estado;
+        $this->active = $active;
     }
 }

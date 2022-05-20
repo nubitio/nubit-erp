@@ -4,27 +4,38 @@ namespace App\Controller;
 
 use App\Domain\Product\CreateProduct;
 use App\Domain\Product\DeleteProduct;
-use App\Domain\Product\GetAllProduct;
+use App\Domain\Product\ExportProducts;
+use App\Domain\Product\GetAllProducts;
+use App\Domain\Product\GetProductList;
+use App\Domain\Product\Product;
 use App\Domain\Product\UpdateProduct;
-use App\Model\ProductoModel;
-use Template;
+use Symfony\Component\Uid\Uuid;
 
 class ProductoController extends BaseController
 {
-    private ProductoModel $model;
-    private GetAllProduct $getAllProduct;
+    private GetAllProducts $getAllProduct;
     private CreateProduct $createProduct;
     private UpdateProduct $updateProduct;
     private DeleteProduct $deleteProduct;
+    private ExportProducts $exportProducts;
+    private GetProductList $getProductList;
 
-    public function __construct(GetAllProduct $getAllProduct, CreateProduct $createProduct, UpdateProduct $updateProduct, DeleteProduct $deleteProduct)
+    public function __construct(
+        GetAllProducts $getAllProduct,
+        CreateProduct  $createProduct,
+        UpdateProduct  $updateProduct,
+        DeleteProduct  $deleteProduct,
+        ExportProducts $exportProducts,
+        GetProductList $getProductList
+    )
     {
         parent::__construct();
-        $this->model = new ProductoModel();
         $this->getAllProduct = $getAllProduct;
         $this->createProduct = $createProduct;
         $this->updateProduct = $updateProduct;
         $this->deleteProduct = $deleteProduct;
+        $this->exportProducts = $exportProducts;
+        $this->getProductList = $getProductList;
     }
 
     public function index()
@@ -34,26 +45,31 @@ class ProductoController extends BaseController
 
     public function getAll()
     {
-        $this->json($this->getAllProduct->execute());
+        $format = "local_id = '%s'";
+        $filter = sprintf($format, $this->current_local_id);
+        $this->json($this->getAllProduct->execute($filter));
     }
 
     public function lista()
     {
-        $filtered = (bool)$this->app->get('PARAMS.filtered');
-        $extended = (bool)$this->app->get('PARAMS.extended');
-        $data = $this->model->lista($filtered, $extended);
+        $data = $this->getProductList->execute($this->current_local_id);
         $this->json($data);
     }
 
     public function listafull()
     {
-        $data = $this->model->listafull();
+        $data = $this->getProductList->execute($this->current_local_id);
         $this->json($data);
     }
 
     public function add()
     {
-        $this->createProduct->execute($_POST);
+        $_POST['producto_id'] = Uuid::v4();
+        /**
+         * @var Product $product
+         */
+        $product = $this->serializer->deserialize(json_encode($_POST), Product::class, 'json');
+        $this->createProduct->execute($product);
         $this->json(['success' => true]);
     }
 
@@ -74,7 +90,7 @@ class ProductoController extends BaseController
 
     public function exportar_productos()
     {
-        $data = $this->model->exportar_productos();
+        $data = $this->exportProducts->execute($this->current_local_id);
         $extras = [
             'title'    => 'REPORTE DE PRODUCTOS',
             'subtitle' => ''

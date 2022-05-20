@@ -26,7 +26,7 @@
     "symfony/asset": "^5.3",
     "symfony/dependency-injection": "^5.3",
     "symfony/config": "^5.3",
-    "doctrine/orm": "^2.9",
+    "doctrine/orm": "2.11.*",
     "symfony/dotenv": "^5.3",
     "symfony/console": "^5.3",
     "lavary/crunz": "^3.0",
@@ -37,7 +37,9 @@
     "symfony/serializer": "^6.0",
     "symfony/property-access": "^6.0",
     "symfony/validator": "^6.0",
-    "doctrine/annotations": "^1.13"
+    "symfony/cache": "^6.0",
+    "doctrine/annotations": "^1.13",
+    "symfony/event-dispatcher": "^6.0"
   },
   "authors": [
     {
