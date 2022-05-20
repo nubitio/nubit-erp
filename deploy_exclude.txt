@@ -8,7 +8,6 @@ deploy.sh
 deploy_exclude.txt
 generator.py
 README.md
-.env
 .env.local
 Dockerfile
 docker-compose.yml

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Domain\Service\SerializerService;
 use App\Extension\AppExtension;
 use App\Model\OptionsModel;
 use App\Service\MenuBuilder;
@@ -26,6 +27,10 @@ class BaseController
     private string $modulo;
     private Environment $twig;
     protected OptionsModel $options;
+    protected SerializerService $serializer;
+    protected $current_user_id;
+    protected $current_local_id;
+    protected $current_almacen_id;
 
     public function beforeroute()
     {
@@ -54,6 +59,11 @@ class BaseController
         $this->twig->addExtension(new EntryFilesTwigExtension($app->get('di')));
         $this->twig->addExtension(new AppExtension($optionBuilder));
         $this->options = new OptionsModel();
+        $this->serializer = $app->get('di')->get(SerializerService::class);
+
+        $this->current_user_id = $this->app->get('SESSION.usuario_id');
+        $this->current_local_id = $this->app->get('SESSION.local_id');
+        $this->current_almacen_id = $this->app->get('SESSION.default_almacen');
     }
 
     public function render(string $view, array $parameters = [])
