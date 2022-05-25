@@ -5,6 +5,7 @@ namespace App\Controller;
 include_once dirname(__FILE__, 3) . '/public/WebClientPrint.php';
 
 use App\Model\MovimientoModel;
+use App\Model\OptionsModel;
 use App\Util\SaleItem;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
@@ -14,7 +15,6 @@ use Neodynamic\SDK\Web\DefaultPrinter;
 use Neodynamic\SDK\Web\InstalledPrinter;
 use Neodynamic\SDK\Web\WebClientPrint;
 use NumberFormatter;
-use App\Model\OptionsModel;
 
 class PrintESCPOSController extends BaseController
 {
@@ -45,10 +45,10 @@ class PrintESCPOSController extends BaseController
             if (isset($qs[WebClientPrint::CLIENT_PRINT_JOB])) {
 
                 $useDefaultPrinter = ($qs['useDefaultPrinter'] === 'checked');
-                $printerName = urldecode($qs['printerName']);
+                $printerName = $qs['printerName'] ?? null;
 
                 $id = urldecode($qs['ticket']);
-                $digest = urldecode($qs['digest']);
+                $digest = urldecode($qs['digest'] ?? null);
 
                 $cabecera = $this->model->ticket_cabecera($id);
                 $detalle = $this->model->ticket_detalle($id);
@@ -132,26 +132,23 @@ class PrintESCPOSController extends BaseController
                 $valor_rc = 0;
 
                 $app_option_rc_get = (int)$this->getOption('app_option_rc');
-                if($app_option_rc_get>=1)
-                {
+                if ($app_option_rc_get >= 1) {
                     $igv = 0.18;
-                    $rc = $app_option_rc_get/100;
+                    $rc = $app_option_rc_get / 100;
                     $divisor = 1 + $igv + $rc;
                     $valor_venta = $total / $divisor;
-                    $valor_igv = $valor_venta*$igv;
-                    $valor_rc = $valor_venta*$rc;
-                }
-                else
-                {
+                    $valor_igv = $valor_venta * $igv;
+                    $valor_rc = $valor_venta * $rc;
+                } else {
                     $igv = 0.18;
                     $divisor = 1 + $igv;
                     $valor_venta = $total / $divisor;
-                    $valor_igv = $valor_venta*$igv;
+                    $valor_igv = $valor_venta * $igv;
                 }
 
                 $str_opg = number_format($valor_venta, 2, '.', '');
                 $str_igv = number_format($valor_igv, 2, '.', '');
-                $str_consumo = number_format($valor_rc, 2, '.','');
+                $str_consumo = number_format($valor_rc, 2, '.', '');
                 $str_total = number_format($total, 2, '.', '');
                 $printer->text($str_line);
                 if ($cabecera['inumero'] > 0) {
@@ -160,9 +157,8 @@ class PrintESCPOSController extends BaseController
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
                     $printer->text(new SaleItem('IGV 18%', $str_igv));
-                    if($app_option_rc_get>=1)
-                    {
-                        $printer->text(new SaleItem('RC'.$app_option_rc_get.'% :',$str_consumo));
+                    if ($app_option_rc_get >= 1) {
+                        $printer->text(new SaleItem('RC' . $app_option_rc_get . '% :', $str_consumo));
                     }
 
                 }
