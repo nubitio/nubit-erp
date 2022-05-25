@@ -10,7 +10,7 @@ interface IProductRepository
 
     public function getProductList(string $localId): array;
 
-    public function getById(int $id): array;
+    public function getById(string $id): Product;
 
     public function getByName(string $name): array;
 
@@ -18,7 +18,7 @@ interface IProductRepository
 
     public function insert(Product $product): void;
 
-    public function update(array $product): void;
+    public function update(Product $product): void;
 
     public function delete(string $id): void;
 }

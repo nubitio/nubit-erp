@@ -5,6 +5,8 @@ namespace App\Infrastructure\Product;
 use App\Domain\Product\IProductRepository;
 use App\Domain\Product\Product;
 use App\Event\ProductCreatedEvent;
+use App\Event\ProductDeletedEvent;
+use App\Event\ProductUpdatedEvent;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,7 +32,18 @@ class ProductRepository implements IProductRepository
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('vw_producto', 'producto_id', filter: $filter);
+        $table = "
+            SELECT
+                p.*,
+                CONCAT('uploads/images/', p.imagen) AS image_path,
+                pl.local_id,
+                c.descripcion AS categoria
+            FROM producto p
+            INNER JOIN producto_local pl ON p.producto_id = pl.producto_id
+            INNER JOIN categoria c ON p.categoria_id = c.categoria_id
+            WHERE p.estado = 1
+        ";
+        return $this->dataGridLoader->load("($table) t", 'producto_id', filter: $filter);
     }
 
     /**
@@ -67,9 +80,10 @@ class ProductRepository implements IProductRepository
         return $this->connection->fetchAllAssociative($query, [$localId]);
     }
 
-    public function getById(int $id): array
+    public function getById(string $id): Product
     {
-        // TODO: Implement getById() method.
+        $entity = $this->entityManager->find(ProductEntity::class, $id);
+        return $entity->toDomain();
     }
 
     public function getByName(string $name): array
@@ -99,13 +113,23 @@ class ProductRepository implements IProductRepository
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function update(array $product): void
+    public function update(Product $product): void
     {
-        $this->connection->update('producto', $product, ['producto_id' => $product['producto_id']]);
+        $entity = $this->entityManager->find(ProductEntity::class, $product->getId());
+        $entity->fromDomain($product);
+        $this->entityManager->flush();
+
+        $event = new ProductUpdatedEvent($product);
+        $this->eventDispatcher->dispatch($event, ProductUpdatedEvent::NAME);
     }
 
     public function delete(string $id): void
     {
-        $this->connection->delete('producto', ['producto_id' => $id]);
+        $entity = $this->entityManager->find(ProductEntity::class, $id);
+        $this->entityManager->remove($entity);
+        $this->entityManager->flush();
+
+        $event = new ProductDeletedEvent($entity->toDomain());
+        $this->eventDispatcher->dispatch($event, ProductDeletedEvent::NAME);
     }
 }

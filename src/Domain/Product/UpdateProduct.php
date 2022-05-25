@@ -11,7 +11,7 @@ class UpdateProduct
         $this->productRepository = $productRepository;
     }
 
-    public function execute(array $data): void
+    public function execute(Product $data): void
     {
         $this->productRepository->update($data);
     }

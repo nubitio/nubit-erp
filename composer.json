@@ -39,7 +39,8 @@
     "symfony/validator": "^6.0",
     "symfony/cache": "^6.0",
     "doctrine/annotations": "^1.13",
-    "symfony/event-dispatcher": "^6.0"
+    "symfony/event-dispatcher": "^6.0",
+    "symfony/string": "^6.0"
   },
   "authors": [
     {

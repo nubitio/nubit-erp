@@ -1,7 +1,6 @@
 <?php
 
 use App\Domain\Compiler\RemoveUnwantedServices;
-use App\EventListener\ProductListener;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;

@@ -9,6 +9,7 @@ use App\Domain\Product\GetAllProducts;
 use App\Domain\Product\GetProductList;
 use App\Domain\Product\Product;
 use App\Domain\Product\UpdateProduct;
+use App\Util\Constants;
 use Symfony\Component\Uid\Uuid;
 
 class ProductoController extends BaseController
@@ -65,27 +66,37 @@ class ProductoController extends BaseController
     public function add()
     {
         $_POST['producto_id'] = Uuid::v4();
+        if (!empty($_FILES['imagen']['name'])) {
+            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+        }
         /**
          * @var Product $product
          */
         $product = $this->serializer->deserialize(json_encode($_POST), Product::class, 'json');
         $this->createProduct->execute($product);
-        $this->json(['success' => true]);
+        $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     public function edit()
     {
         $id = $this->app->get('PARAMS.id');
         $_POST['producto_id'] = $id;
-        $this->updateProduct->execute($_POST);
-        $this->json(['success' => true]);
+        if (!empty($_FILES['imagen']['name'])) {
+            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+        }
+        /**
+         * @var Product $product
+         */
+        $product = $this->serializer->deserialize(json_encode($_POST), Product::class, 'json');
+        $this->updateProduct->execute($product);
+        $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
     public function delete()
     {
         $id = $this->app->get('PARAMS.id');
         $this->deleteProduct->execute($id);
-        $this->json(['success' => true]);
+        $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
     public function exportar_productos()

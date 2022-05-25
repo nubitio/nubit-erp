@@ -2,7 +2,14 @@
     <table id="producto_dg"></table>
     <!-- Dialogo -->
     <div id="producto_dlg">
-        <form class="fm" id="producto_fm" method="post" novalidate>
+        <form class="fm" id="producto_fm" method="post" enctype="multipart/form-data" novalidate>
+            <div class="mb-2">
+                <input class="easyui-filebox" label="Imagen" labelPosition="top" name="imagen">
+            </div>
+            <div class="mb-2">
+                <input class="easyui-textbox" label="Código" labelPosition="top" name="codigo"
+                       data-options="width: '100%'">
+            </div>
             <div class="fitem">
                 <input id="producto_descripcion" name="descripcion">
             </div>

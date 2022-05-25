@@ -27,6 +27,8 @@ class ProductEntity
     private string $categoryId;
     #[Column(name: "precio", type: "decimal")]
     private float $price;
+    #[Column(name: "imagen", type: "string")]
+    private ?string $image = null;
     #[Column(name: "estado", type: "boolean")]
     private bool $active;
 
@@ -111,6 +113,22 @@ class ProductEntity
     }
 
     /**
+     * @return string|null
+     */
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string|null $image
+     */
+    public function setImage(?string $image): void
+    {
+        $this->image = $image;
+    }
+
+    /**
      * @return bool
      */
     public function isActive(): bool
@@ -138,6 +156,7 @@ class ProductEntity
         $this->setName($product->getName());
         $this->setCategoryId($product->getCategoryId());
         $this->setPrice($product->getPrice());
+        $this->setImage($product->getImage());
         $this->setActive($product->isActive());
 
         return $this;
@@ -149,7 +168,9 @@ class ProductEntity
         $product->setId($this->getId());
         $product->setCode($this->getCode());
         $product->setName($this->getName());
+        $product->setCategoryId($this->getCategoryId());
         $product->setPrice($this->getPrice());
+        $product->setImage($this->getImage());
         $product->setActive($this->isActive());
 
         return $product;

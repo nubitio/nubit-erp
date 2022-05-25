@@ -48,9 +48,16 @@ app.producto = (function () {
                 width: 100
             }, {
                 field: 'descripcion',
-                title: 'Descripción',
+                title: 'Nombre',
                 sortable: true,
                 width: 200
+            },{
+                field: 'image_path',
+                title: 'Imagen',
+                sortable: false,
+                align: 'center',
+                width: 50,
+                formatter: imageFormatter,
             }, {
                 field: 'categoria',
                 title: 'Categoria',
