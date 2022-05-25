@@ -209,6 +209,18 @@ function activeFormatter(val) {
     }
 }
 
+function imageFormatter(val, row) {
+    if (val) {
+        return `<a href="${val}" data-lightbox="${row.descripcion}">
+                    <img src="${val}" style="width: 30px; height: 30px;"  alt=""/>
+                </a>`;
+    } else {
+        return `<a href="https://ui-avatars.com/api/?name=${row.descripcion}" data-lightbox="${row.descripcion}">
+                    <img src="https://ui-avatars.com/api/?name=${row.descripcion}" style="width: 30px; height: 30px;"  alt=""/>
+                </a>`;
+    }
+}
+
 function show_info(message) {
     $.messager.show({
         title: 'Info',

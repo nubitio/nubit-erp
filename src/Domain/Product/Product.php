@@ -20,6 +20,8 @@ class Product
     private ?string $categoryId = null;
     #[SerializedName('precio')]
     private float $price = 0.0;
+    #[SerializedName('imagen')]
+    private ?string $image = null;
     #[SerializedName('estado')]
     private bool $active = true;
 
@@ -101,6 +103,22 @@ class Product
     public function setPrice(float $price): void
     {
         $this->price = $price;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param string|null $image
+     */
+    public function setImage(?string $image): void
+    {
+        $this->image = $image;
     }
 
     /**

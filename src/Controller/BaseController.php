@@ -7,6 +7,7 @@ use App\Extension\AppExtension;
 use App\Model\OptionsModel;
 use App\Service\MenuBuilder;
 use App\Service\OptionBuilder;
+use App\Service\UploaderHelper;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -28,6 +29,7 @@ class BaseController
     private Environment $twig;
     protected OptionsModel $options;
     protected SerializerService $serializer;
+    protected UploaderHelper $uploader;
     protected $current_user_id;
     protected $current_local_id;
     protected $current_almacen_id;
@@ -60,6 +62,7 @@ class BaseController
         $this->twig->addExtension(new AppExtension($optionBuilder));
         $this->options = new OptionsModel();
         $this->serializer = $app->get('di')->get(SerializerService::class);
+        $this->uploader = $app->get('di')->get(UploaderHelper::class);
 
         $this->current_user_id = $this->app->get('SESSION.usuario_id');
         $this->current_local_id = $this->app->get('SESSION.local_id');
