@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Psr\Container\ContainerInterface;
 use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Asset\PathPackage;
@@ -27,6 +28,7 @@ class BaseController
     protected Base $app;
     private string $modulo;
     private Environment $twig;
+    protected ContainerInterface $container;
     protected OptionsModel $options;
     protected SerializerService $serializer;
     protected UploaderHelper $uploader;
@@ -49,6 +51,7 @@ class BaseController
         $this->app = $app;
         date_default_timezone_set('America/Lima');
         setlocale(LC_NUMERIC, 'C');
+        $this->container = $app->get('di');
 
         $loader = new FilesystemLoader('../templates');
         $this->twig = new Environment($loader, [
@@ -56,13 +59,15 @@ class BaseController
             'cache' => '../public/tmp/',
         ]);
 
-        $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy('v1', '%s?version=%s')))));
-        $optionBuilder = $app->get('di')->get(OptionBuilder::class);
+        $assetsVersion = "v$_ENV[APP_VERSION]";
+        $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy($assetsVersion, '%s?version=%s')))));
+        $optionBuilder = $this->container->get(OptionBuilder::class);
         $this->twig->addExtension(new EntryFilesTwigExtension($app->get('di')));
         $this->twig->addExtension(new AppExtension($optionBuilder));
+
         $this->options = new OptionsModel();
-        $this->serializer = $app->get('di')->get(SerializerService::class);
-        $this->uploader = $app->get('di')->get(UploaderHelper::class);
+        $this->serializer = $this->container->get(SerializerService::class);
+        $this->uploader = $this->container->get(UploaderHelper::class);
 
         $this->current_user_id = $this->app->get('SESSION.usuario_id');
         $this->current_local_id = $this->app->get('SESSION.local_id');

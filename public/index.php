@@ -24,9 +24,6 @@ $app->config(dirname(__FILE__, 2) . '/config/routes.ini');
 
 $app->set('CACHE', true);
 
-// Define version
-$app->set('version', '1.1.0-beta2');
-
 $containerBuilder = new ContainerBuilder();
 $loader = new PhpFileLoader($containerBuilder, new FileLocator(dirname(__FILE__, 2) . '/config'));
 
@@ -45,7 +42,7 @@ $app->set('CONTAINER', function ($class) use ($containerBuilder) {
     return $containerBuilder->get($class);
 });
 
-//\Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
+\Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
 
 Debug::enable();
 

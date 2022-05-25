@@ -152,12 +152,24 @@ class ProductEntity
     public function fromDomain(Product $product): self
     {
         $this->setId($product->getId());
-        $this->setCode($product->getCode());
-        $this->setName($product->getName());
-        $this->setCategoryId($product->getCategoryId());
-        $this->setPrice($product->getPrice());
-        $this->setImage($product->getImage());
-        $this->setActive($product->isActive());
+        if ($product->getCode() !== null) {
+            $this->setCode($product->getCode());
+        }
+        if ($product->getName() !== null) {
+            $this->setName($product->getName());
+        }
+        if ($product->getCategoryId() !== null) {
+            $this->setCategoryId($product->getCategoryId());
+        }
+        if ($product->getPrice() !== null && $product->getPrice() !== 0.0) {
+            $this->setPrice($product->getPrice());
+        }
+        if ($product->getImage() !== null) {
+            $this->setImage($product->getImage());
+        }
+        if ($product->isActive() !== null) {
+            $this->setActive($product->isActive());
+        }
 
         return $this;
     }
