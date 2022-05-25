@@ -6,7 +6,9 @@ class SessionService
 {
     public function __construct()
     {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     public function set($key, $value): void
@@ -14,9 +16,9 @@ class SessionService
         $_SESSION[$key] = $value;
     }
 
-    public function get($key)
+    public function get($key): mixed
     {
-        return $_SESSION[$key];
+        return $_SESSION[$key] ?? null;
     }
 
     public function delete($key): void

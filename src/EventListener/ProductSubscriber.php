@@ -53,6 +53,9 @@ class ProductSubscriber implements EventSubscriberInterface
 
     public function onProductUpdated(ProductUpdatedEvent $event)
     {
+        if ($this->sessionService->get('local_id') === null) {
+            return;
+        }
         $productLocal = new ProductLocal();
         $productLocal->setLocalId($this->sessionService->get('local_id'));
         $productLocal->setProductId($event->getProduct()->getId());

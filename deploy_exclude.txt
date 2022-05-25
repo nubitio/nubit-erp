@@ -17,6 +17,7 @@ public/assets/images/logo.png
 config/config.ini
 config/certificate_prod.pem
 public/efact/*
+public/uploads/images/*
 
 app/assets/images/logo.png
 app/config.ini

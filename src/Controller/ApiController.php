@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Domain\Product\Product;
+use App\Domain\Product\UpdateProduct;
 use App\Model\ApiModel;
 use App\Model\BotModel;
 use App\Model\UsuarioModel;
@@ -14,6 +16,7 @@ class ApiController extends BaseController
     private ApiModel $apiDao;
     private BotModel $botModel;
     private EFactController $efact;
+    private UpdateProduct $updateProduct;
 
     public function __construct()
     {
@@ -23,6 +26,7 @@ class ApiController extends BaseController
         $this->apiDao = new ApiModel();
         $this->botModel = new BotModel();
         $this->efact = new EFactController();
+        $this->updateProduct = $this->container->get(UpdateProduct::class);
     }
 
     public function beforeroute()
@@ -40,9 +44,9 @@ class ApiController extends BaseController
         } else {
             if ($user['estado'] == 1 && password_verify($this->body['password'], $user['password'])) {
                 $data = [
-                    'iat' => time(),
-                    'exp' => time() + (60 * 60),
-                    'sub' => $user['usuario_id'],
+                    'iat'  => time(),
+                    'exp'  => time() + (60 * 60),
+                    'sub'  => $user['usuario_id'],
                     'name' => $user['username'],
                     'role' => $user['rol_id']
                 ];
@@ -231,6 +235,22 @@ class ApiController extends BaseController
         }
     }
 
+    public function uploadImage()
+    {
+        $_POST['producto_id'] = $this->app->get('PARAMS.id');
+        if (!empty($_FILES['imagen']['name'])) {
+            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+        }
+
+        /**
+         * @var Product $product
+         */
+        $product = $this->serializer->deserialize(json_encode($_POST), Product::class, 'json');
+        $this->updateProduct->execute($product);
+        $this->app->status(200);
+        $this->json(['success' => true, 'message' => 'Image uploaded']);
+    }
+
     public function getAllSales()
     {
         $local_id = $this->app->get('PARAMS.local_id');
@@ -329,6 +349,7 @@ class ApiController extends BaseController
         $data = $this->apiDao->getWeeklySales();
         $this->json($data);
     }
+
     public function getWeeklySalesSoles()
     {
         $date = $this->app->get('PARAMS.date');
@@ -336,6 +357,7 @@ class ApiController extends BaseController
         $this->json($this->apiDao->getWeeklySalesSoles($local_id));
 
     }
+
     public function getMonthSalesSoles()
     {
         $date = $this->app->get('PARAMS.date');
@@ -364,15 +386,18 @@ class ApiController extends BaseController
         $this->json($this->apiDao->getVoucherForMonth($local_id));
 
     }
+
     public function getVoucherForMonthSoles()
     {
         $local_id = $this->app->get('PARAMS.local_id');
         $this->json($this->apiDao->getVoucherForMonthSoles($local_id));
     }
+
     public function getUrlCustomer()
     {
         $this->json($this->apiDao->getUrlCustomer());
     }
+
     public function getUrlProduct()
     {
         $this->json($this->apiDao->getUrlProduct());
