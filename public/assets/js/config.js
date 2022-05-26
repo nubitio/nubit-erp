@@ -54,3 +54,10 @@ DIALOG_CLOSE_ANIMATION = 'zoomOut';
 mxBasePath = 'src/assets/js/mxgraph';
 // Constants
 PROTECTED_CASHBOX = ['FONDO DE CAJA', 'EFECTIVO', 'TARJETA', 'YAPE'];
+// Form types
+const FORM_TYPE = Object.freeze({
+    TEXT_BOX: 'textbox',
+    COMBO_BOX: 'combobox',
+    FILE_BOX: 'filebox',
+    CHECK_BOX: 'checkbox',
+});

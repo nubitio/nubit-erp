@@ -41,7 +41,6 @@ class ProductRepository implements IProductRepository
             FROM producto p
             INNER JOIN producto_local pl ON p.producto_id = pl.producto_id
             INNER JOIN categoria c ON p.categoria_id = c.categoria_id
-            WHERE p.estado = 1
         ";
         return $this->dataGridLoader->load("($table) t", 'producto_id', filter: $filter);
     }

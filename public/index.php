@@ -42,9 +42,11 @@ $app->set('CONTAINER', function ($class) use ($containerBuilder) {
     return $containerBuilder->get($class);
 });
 
-\Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
-
-Debug::enable();
+if ($_ENV['APP_ENV'] != 'dev') {
+    \Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
+} else {
+    Debug::enable();
+}
 
 $app->set('ONERROR', function ($app) {
     $exception = $app->get('EXCEPTION');

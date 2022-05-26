@@ -56,7 +56,6 @@ class ClienteController extends BaseController
 
     public function delete()
     {
-        $this->is_allowed();
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->delete($id);
         $this->json($data);
