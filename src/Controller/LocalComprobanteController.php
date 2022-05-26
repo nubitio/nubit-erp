@@ -44,7 +44,6 @@ class LocalComprobanteController extends BaseController
 
     public function delete()
     {
-        $this->is_allowed();
         $local = $this->app->get('PARAMS.local');
         $tipo = $this->app->get('PARAMS.tipo');
         $serie = $this->app->get('PARAMS.serie');

@@ -4,7 +4,6 @@ namespace App\Domain\Product;
 
 use App\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[IgnoreAutowire]
 class Product
@@ -12,7 +11,6 @@ class Product
     #[SerializedName('producto_id')]
     private ?string $id = null;
     #[SerializedName('codigo')]
-    #[NotBlank]
     private ?string $code = null;
     #[SerializedName('descripcion')]
     private ?string $name = null;
@@ -23,7 +21,7 @@ class Product
     #[SerializedName('imagen')]
     private ?string $image = null;
     #[SerializedName('estado')]
-    private bool $active = true;
+    private bool $active = false;
 
     /**
      * @return string|null
@@ -54,7 +52,11 @@ class Product
      */
     public function setCode(?string $code): void
     {
-        $this->code = $code;
+        if ($code === '') {
+            $this->code = null;
+        } else {
+            $this->code = $code;
+        }
     }
 
     /**

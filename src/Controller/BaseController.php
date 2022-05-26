@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Domain\Service\SerializerService;
 use App\Extension\AppExtension;
 use App\Model\OptionsModel;
-use App\Service\MenuBuilder;
 use App\Service\OptionBuilder;
 use App\Service\UploaderHelper;
 use Base;
@@ -26,7 +25,6 @@ use Twig\Loader\FilesystemLoader;
 class BaseController
 {
     protected Base $app;
-    private string $modulo;
     private Environment $twig;
     protected ContainerInterface $container;
     protected OptionsModel $options;
@@ -97,37 +95,6 @@ class BaseController
     {
         header('content-type: application/json; charset=utf-8');
         echo json_encode($data);
-    }
-
-    public function is_allowed()
-    {
-        $rol_id = $this->app->get('SESSION.rol_id');
-        if ($rol_id > 1) {
-            $this->json(array('msg' => 'No autorizado'));
-            exit;
-        }
-    }
-
-    public function upload(string $modulo)
-    {
-        $this->modulo = $modulo;
-        $web = \Web::instance();
-        $overwrite = false;
-        $slug = true;
-        $files = $web->receive(function ($file, $formFieldName) {
-            if ($file['size'] > (2 * 1024 * 1024)) {
-                return false;
-            }
-            return true;
-        },
-            $overwrite,
-            function ($fileBaseName, $formFieldName) {
-                $temp = explode(".", $fileBaseName);
-                $ext = end($temp);
-                return $this->modulo . '_' . uniqid() . '_' . $formFieldName . '.' . $ext;
-            }
-        );
-        return $files;
     }
 
     public function export($data, $extras, $kardex = null)

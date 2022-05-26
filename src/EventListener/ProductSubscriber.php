@@ -66,10 +66,12 @@ class ProductSubscriber implements EventSubscriberInterface
 
     public function onProductDeleted(ProductDeletedEvent $event)
     {
-        $imagePath = 'uploads/images/' . $event->getProduct()->getImage();
+        if ($event->getProduct()->getImage() != null) {
+            $imagePath = 'uploads/images/' . $event->getProduct()->getImage();
 
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
+            if (file_exists($imagePath)) {
+                unlink($imagePath);
+            }
         }
 
         $this->deleteProductLocal->execute($event->getProduct()->getId(), $this->sessionService->get('local_id'));
