@@ -1,19 +1,30 @@
 var app = app || {};
 app.proveedor = (function () {
-    let route;
     let dg = $('#proveedor_dg');
-    let dlg = $('#proveedor_dlg');
-    let fm = $('#proveedor_fm');
     let txt_ruc = $('#proveedor_ruc');
     let txt_razon_social = $('#proveedor_razon_social');
     let txt_domicilio_fiscal = $('#proveedor_domicilio_fiscal');
     let txt_telefono = $('#proveedor_telefono');
     let cbo_estado = $('#proveedor_estado');
-    let btn_guardar;
-    let btn_cancelar;
     let enter_pressed = false;
 
+    let dialog = null;
+    let form = null;
+
+    const ADD_ROUTE = '/proveedor/add/';
+    const EDIT_ROUTE = '/proveedor/edit/';
+    const DELETE_ROUTE = '/proveedor/delete/';
+    const EXPORT_ROUTE = '/proveedor/export/';
+    const ENTITY_ID = 'proveedor_id';
+
     let init = function () {
+        dialog = new Dialog('proveedor_dlg', 'provider:save');
+        form = new Form('proveedor_fm', 'proveedor_dg',dialog)
+
+        mainObserver.subscribe('provider:save', () => {
+            form.save();
+        })
+
         dg.datagrid({
             title: 'Proveedores',
             url: 'proveedor/get',
@@ -21,19 +32,20 @@ app.proveedor = (function () {
                 text: TEXT_ADD,
                 iconCls: ICON_ADD,
                 handler: function () {
-                    nuevo();
+                    form.add(ADD_ROUTE);
+                    cbo_estado.combobox('select', 1);
                 }
             }, '-', {
                 text: TEXT_EDIT,
                 iconCls: ICON_EDIT,
                 handler: function () {
-                    editar();
+                    form.update(EDIT_ROUTE, ENTITY_ID)
                 }
             }, '-', {
                 text: TEXT_DELETE,
                 iconCls: ICON_DELETE,
                 handler: function () {
-                    eliminar();
+                    form.delete(DELETE_ROUTE, ENTITY_ID)
                 }
             }, '-', {
                 text: TEXT_EXPORTAR,
@@ -56,7 +68,7 @@ app.proveedor = (function () {
                 }
             ]],
             onDblClickRow: function () {
-                editar();
+                form.update(EDIT_ROUTE,ENTITY_ID);
             }
         });
 
@@ -89,31 +101,6 @@ app.proveedor = (function () {
                 }
             }
         }]);
-
-        dlg.dialog({
-            buttons: [{
-                id: 'proveedor_cancelar',
-                text: TEXT_CANCEL,
-                handler: function () {
-                    dlg.dialog('close');
-                }
-            }, {
-                id: 'proveedor_guardar',
-                text: TEXT_SAVE,
-                handler: function () {
-                    guardar();
-                }
-            }],
-            onOpen: function () {
-                dlg.dialog('center');
-                dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
-                btn_guardar = $('#proveedor_guardar');
-                btn_cancelar = $('#proveedor_cancelar');
-                btn_guardar.addClass('md-btn');
-                btn_cancelar.addClass('md-btn-plain');
-                console.log({btn_cancelar, btn_guardar});
-            }
-        });
 
         txt_ruc.numberbox({
             width: '100%',
@@ -209,94 +196,8 @@ app.proveedor = (function () {
             });
     }
 
-    function nuevo() {
-        fm.form('clear');
-        route = 'proveedor/add';
-        cbo_estado.combobox('select', 1);
-        dlg.dialog('open').dialog('setTitle', 'Nuevo');
-    }
-
-    function editar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            dlg.dialog('open').dialog('setTitle', 'Editar');
-            fm.form('load', row);
-            route = 'proveedor/edit/' + row.proveedor_id;
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
-
-    function guardar() {
-        fm.form('submit', {
-            url: route,
-            onSubmit: function () {
-                valid = fm.form('validate');
-                if (valid) {
-                    disable_buttons();
-                }
-                return valid;
-            },
-            success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        dlg.dialog('close');
-                        dg.datagrid('reload');
-                        show_info(result.msg);
-                    } else {
-                        show_error(result.msg);
-                        show_info('Ya existe el número de Ruc Ingresado ...');
-                    }
-                    enable_buttons();
-                } catch (e) {
-                    show_error(e);
-                    enable_buttons();
-                }
-            }
-        });
-    }
-
-    function disable_buttons() {
-        btn_cancelar.linkbutton('disable');
-        btn_guardar.linkbutton('disable');
-        btn_guardar.linkbutton({text: 'Guardando...'});
-        dlg.dialog('showMask', 'Procesando...');
-    }
-
-    function enable_buttons() {
-        btn_cancelar.linkbutton('enable');
-        btn_guardar.linkbutton('enable');
-        btn_guardar.linkbutton({text: 'Guardar'});
-        dlg.dialog('hideMask');
-    }
-
-    function eliminar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            $.messager.confirm('Confirmar', '¿Está seguro que desea eliminar este registro?', function (r) {
-                if (r) {
-                    $.post('proveedor/delete/' + row.proveedor_id)
-                        .done(function (result) {
-                            if (result.success) {
-                                dg.datagrid('reload');
-                                show_info(result.msg);
-                            } else {
-                                show_error(result.msg);
-                            }
-                        })
-                        .fail(function (xhr, status, error) {
-                            show_error(error);
-                        });
-                }
-            });
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
-
     function exportar() {
-        window.open('proveedor/exportar');
+        window.open(EXPORT_ROUTE);
     }
 
     mainObserver.subscribe('proveedores:save', function (data) {

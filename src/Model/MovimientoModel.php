@@ -274,6 +274,11 @@ class MovimientoModel extends BaseModel
             $query_parts = array();
             $detalle = $_POST['detalle'];
             for ($i = 0; $i < count($detalle['producto']); $i++) {
+                if(isset($detalle['descuento'][$i])) {
+                    $detalle['descuento'][$i] = $detalle['descuento'][$i];
+                } else {
+                    $detalle['descuento'][$i] = 0.00;
+                }
                 $query_parts[] = "('" . $uuid . "', '" . $detalle['producto'][$i] . "', '" . $detalle['cantidad'][$i] . "', '" . $detalle['unitario'][$i] . "', '" . $detalle['descuento'][$i] . "', '" . $detalle['total'][$i] . "')";
                 if ($this->dao->orden_id > 0) {
                     $orderDetail = new Mapper($this->db, 'orden_detalle');
@@ -441,6 +446,14 @@ class MovimientoModel extends BaseModel
             INNER JOIN cliente c ON c.ruc = m.cliente_id 
         WHERE
             m.movimiento_id = ?", array($id));
+        if(isset($result[0]))
+        {
+            $result[0] = $result[0];
+        }
+        else
+        {
+            $result[0] = null;
+        }
         return $result[0];
     }
 
