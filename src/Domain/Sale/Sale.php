@@ -56,6 +56,10 @@ class Sale
     private ?int $tax = null;
     #[SerializedName('recargo_consumo')]
     private ?int $charge = null;
+    /**
+     * @var SaleDetail[]
+     */
+    private array $detail;
 
     /**
      * @return string
@@ -439,5 +443,21 @@ class Sale
     public function setCharge(?int $charge): void
     {
         $this->charge = $charge;
+    }
+
+    /**
+     * @return SaleDetail[]
+     */
+    public function getDetail(): array
+    {
+        return $this->detail;
+    }
+
+    /**
+     * @param SaleDetail[] $detail
+     */
+    public function setDetail(array $detail): void
+    {
+        $this->detail = $detail;
     }
 }
