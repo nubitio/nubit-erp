@@ -1,13 +1,14 @@
 class Dialog {
-    constructor(dialog, observer) {
-        this.dialog = $('#' + dialog);
-        this.observer = observer;
+    constructor(container) {
+        this.container = document.getElementById(container);
+        this.dialog = null;
         this.positiveButton = null;
         this.negativeButton = null;
         this.init();
     }
 
     init() {
+        this.setupView();
         let ref = this;
 
         this.dialog.dialog({
@@ -21,17 +22,29 @@ class Dialog {
                 id: 'positive-button',
                 text: TEXT_SAVE,
                 handler: function () {
-                    mainObserver.notify(ref.observer);
+                    mainObserver.notify(EVENT.SAVE);
                 }
             }],
             onOpen: function () {
                 ref.dialog.dialog('center');
+                ref.dialog.parent().animateCss(DIALOG_OPEN_ANIMATION);
                 ref.positiveButton = $('#positive-button');
                 ref.negativeButton = $('#negative-button');
                 ref.positiveButton.addClass('md-btn');
                 ref.negativeButton.addClass('md-btn-plain');
             }
         });
+    }
+
+    setupView() {
+        let dialog = document.createElement('div');
+        dialog.setAttribute('id', 'dialog');
+        this.container.appendChild(dialog);
+        this.dialog = $('#' + dialog.id);
+    }
+
+    get id() {
+        return this.dialog.attr('id');
     }
 
     show(title) {

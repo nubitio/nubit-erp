@@ -302,5 +302,3 @@ app.dashboard = (function () {
 })();
 app.dashboard.init();
 app.dashboard.draw();
-
-$('.wrapper').animate({"opacity": 1});

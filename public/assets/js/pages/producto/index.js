@@ -1,156 +1,81 @@
 var app = app || {};
 app.producto = (function () {
-    let dg = $('#producto_dg');
-    let txt_imagen = $('#producto_imagen');
-    let txt_codigo = $('#producto_codigo');
-    let txt_descripcion = $('#producto_descripcion');
-    let cbo_categoria = $('#producto_categoria');
-    let txt_precio = $('#producto_precio');
-    let cbo_estado = $('#producto_estado');
+    let dataGrid = null;
     let dialog = null;
     let form = null;
 
-    const ADD_ROUTE = '/producto/add/';
-    const EDIT_ROUTE = '/producto/edit/';
-    const DELETE_ROUTE = '/producto/delete/';
-    const EXPORT_ROUTE = '/producto/export/';
+    const ADD_ROUTE = 'producto/add/';
+    const EDIT_ROUTE = 'producto/edit/';
+    const DELETE_ROUTE = 'producto/delete/';
+    const EXPORT_ROUTE = 'producto/exportar/';
     const ENTITY_ID = 'producto_id';
 
-    let init = function () {
-        dialog = new Dialog('producto_dlg', 'product:save');
-        form = new Form('producto_fm', 'producto_dg', dialog);
+    let init = async function () {
+        let categories = await loadData('categoria/lista/1', 'categoria_id', 'descripcion');
 
-        mainObserver.subscribe('product:save', () => {
-            form.save();
-        });
+        const formFields = [
+            {
+                type: FORM_TYPE.FILE,
+                label: 'Imagen',
+                name: 'imagen',
+                required: false,
+            },
+            {type: FORM_TYPE.TEXT, label: 'Código', name: 'codigo', required: false, visible: true},
+            {
+                type: FORM_TYPE.TEXT,
+                label: 'Descripción',
+                name: 'descripcion',
+                required: true,
+                width: 100,
+                visible: true
+            },
+            {type: FORM_TYPE.HIDDEN, label: 'Imagen', name: 'image_path', visible: true, formatter: imageFormatter},
+            {
+                type: FORM_TYPE.SELECT,
+                label: 'Categoría',
+                name: 'categoria_id',
+                data: categories,
+                required: true,
+                visible: false
+            },
+            {type: FORM_TYPE.HIDDEN, label: 'Categoría', name: 'categoria', visible: true},
+            {type: FORM_TYPE.NUMBER, label: 'Precio', name: 'precio', required: true, visible: true},
+            {
+                type: FORM_TYPE.SWITCH,
+                label: 'Activo',
+                name: 'estado',
+                required: true,
+                visible: true,
+                formatter: activeFormatter
+            },
+        ];
 
-        dg.datagrid({
+        dataGrid = new DataGrid('wrapper', formFields, {
             title: 'Productos',
             url: 'producto/get',
-            remoteFilter: true,
-            toolbar: [{
-                text: TEXT_ADD,
-                iconCls: ICON_ADD,
-                handler: function () {
-                    form.add(ADD_ROUTE);
-                    cbo_estado.switchbutton('check');
-                },
-            }, '-', {
-                text: TEXT_EDIT,
-                iconCls: ICON_EDIT,
-                handler: function () {
-                    form.update(EDIT_ROUTE, ENTITY_ID);
-                },
-            }, '-', {
-                text: TEXT_DELETE,
-                iconCls: ICON_DELETE,
-                handler: function () {
-                    form.delete(DELETE_ROUTE, ENTITY_ID);
-                },
-            }, '-', {
-                text: TEXT_EXPORTAR,
-                iconCls: ICON_XLS,
-                handler: function () {
-                    exportar();
-                }
-            }],
-            columns: [[{
-                field: 'codigo',
-                title: 'Código',
-                sortable: true,
-                width: 100
-            }, {
-                field: 'descripcion',
-                title: 'Nombre',
-                sortable: true,
-                width: 200
-            }, {
-                field: 'image_path',
-                title: 'Imagen',
-                sortable: false,
-                align: 'center',
-                width: 50,
-                formatter: imageFormatter,
-            }, {
-                field: 'categoria',
-                title: 'Categoria',
-                sortable: true,
-                width: 180
-            }, {
-                field: 'precio',
-                title: 'Precio',
-                sortable: true,
-                width: 80,
-                align: 'right'
-            }, {
-                field: 'estado',
-                title: 'Activo',
-                sortable: true,
-                align: 'center',
-                formatter: activeFormatter,
-            }]],
-            onDblClickRow: function () {
-                form.update(EDIT_ROUTE, ENTITY_ID);
-            }
         });
 
-        dg.datagrid('enableFilter', []);
+        dialog = new Dialog('wrapper');
 
-        txt_imagen.filebox({
-            width: '100%',
-            label: 'Imagen',
-            labelPosition: 'top',
-            buttonText: 'Seleccionar',
+        form = new Form(dialog.id, dataGrid.id, dialog, formFields);
+
+        mainObserver.subscribe('on:add', () => {
+            form.add(ADD_ROUTE, ENTITY_ID)
+            form.field.estado.switchbutton('check');
         });
-
-        txt_codigo.textbox({
-            width: '100%',
-            label: 'Código',
-            labelPosition: 'top',
+        mainObserver.subscribe('on:edit', () => {
+            form.edit(EDIT_ROUTE, ENTITY_ID)
         });
-
-        txt_descripcion.textbox({
-            width: '100%',
-            label: 'Nombre',
-            labelPosition: 'top',
-            required: true
+        mainObserver.subscribe('on:save', () => {
+            form.save();
         });
-
-        cbo_categoria.combobox({
-            width: '100%',
-            label: 'Categoria',
-            labelPosition: 'top',
-            url: 'categoria/lista/1',
-            method: 'get',
-            valueField: 'categoria_id',
-            textField: 'descripcion',
-            panelHeight: 200,
-            limitToList: true,
-            required: true
+        mainObserver.subscribe('on:delete', () => {
+            form.delete(DELETE_ROUTE, ENTITY_ID);
         });
-
-        txt_precio.numberbox({
-            width: '100%',
-            label: 'Precio',
-            labelPosition: 'top',
-            min: 0,
-            precision: 2,
-            required: true
-        });
-
-        cbo_estado.switchbutton({
-            label: "Activo",
-            labelPosition: "top",
-            onText: "SI",
-            offText: "NO",
-            value: "1",
-            required: true
+        mainObserver.subscribe('on:export', () => {
+            window.open(EXPORT_ROUTE);
         });
     };
-
-    function exportar() {
-        window.open(EXPORT_ROUTE);
-    }
 
     return {
         init: init

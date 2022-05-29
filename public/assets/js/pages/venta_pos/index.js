@@ -280,6 +280,15 @@ app.venta = (function () {
             icons: [{
                 iconCls: ICON_ADD,
                 handler: function (e) {
+                    /*let formFields = [
+                        {type: FORM_TYPE.TEXT, name: 'ruc', label: 'RUC', required: true},
+                        {type: FORM_TYPE.TEXT, name: 'razon_social', label: 'Razón Social', required: true},
+                        {type: FORM_TYPE.TEXT, name: 'direccion', label: 'Dirección', required: true},
+                        {type: FORM_TYPE.TEXT, name: 'telefono', label: 'Teléfono', required: true},
+                        {type: FORM_TYPE.TEXT, name: 'email', label: 'Email', required: true}
+                    ]
+                    let customerForm = new Form('drawer', 'venta_dg', 'venta_dlg', formFields);
+                    drawer.drawer('expand');*/
                     nuevo_cliente(cbo_cliente);
                 }
             }]
@@ -598,7 +607,7 @@ app.venta = (function () {
         } else if (value == 2) {
             return 'TARJETA';
         } else if (value == 3) {
-            return  'YAPE';
+            return 'YAPE';
         } else {
             return '';
         }
