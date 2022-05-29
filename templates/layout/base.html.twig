@@ -31,6 +31,7 @@
     <script src="{{ asset('assets/js/exporting.js') }}"></script>
     <script src="{{ asset('assets/js/lightbox.min.js') }}"></script>
     <script src="{{ asset('assets/js/observable.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/util/DataGrid.js') }}"></script>
     <script src="{{ asset('assets/js/pages/util/Dialog.js') }}"></script>
     <script src="{{ asset('assets/js/pages/util/Form.js') }}"></script>
     <script src="{{ asset('assets/js/config.js') }}"></script>
@@ -72,11 +73,13 @@
     <div id="home_local">
         <div id="home_lista_local"></div>
     </div>
+    <div id="drawer"></div>
 </div>
 <script>
     let layout = $('#layout-container');
     let sidebar = $('#sidebar');
     let content = $('#content');
+    let drawer = $('#drawer');
     let current;
 
     (function () {
@@ -90,7 +93,12 @@
             onLoad: function () {
                 $(this).panel('hideMask');
                 $('.wrapper').animate({"opacity": 1});
+                $('#wrapper').animate({"opacity": 1});
             }
+        });
+
+        drawer.drawer({
+            width: 300,
         });
 
         $.get('getmenu')

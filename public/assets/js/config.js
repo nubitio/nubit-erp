@@ -56,8 +56,19 @@ mxBasePath = 'src/assets/js/mxgraph';
 PROTECTED_CASHBOX = ['FONDO DE CAJA', 'EFECTIVO', 'TARJETA', 'YAPE'];
 // Form types
 const FORM_TYPE = Object.freeze({
-    TEXT_BOX: 'textbox',
-    COMBO_BOX: 'combobox',
-    FILE_BOX: 'filebox',
-    CHECK_BOX: 'checkbox',
+    HIDDEN: 'hidden',
+    FILE: 'file',
+    TEXT: 'text',
+    NUMBER: 'number',
+    SELECT: 'select',
+    SWITCH: 'switch',
+    CHECK: 'check',
+});
+
+const EVENT = Object.freeze({
+    ADD: 'on:add',
+    EDIT: 'on:edit',
+    SAVE: 'on:save',
+    DELETE: 'on:delete',
+    EXPORT: 'on:export',
 });

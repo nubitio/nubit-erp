@@ -248,3 +248,20 @@ function enableButtons(btnOk, btnCancel, dialog) {
     btnOk.linkbutton({text: 'Guardar'});
     dialog.dialog('hideMask');
 }
+
+const loadData = async (url, key, value) => {
+    try {
+        let result = [];
+        const response = await fetch(url);
+        const data = await response.json();
+        data.forEach(element => {
+            result.push({
+                value: element[key],
+                text: element[value]
+            });
+        });
+        return result;
+    } catch (error) {
+        console.log(error);
+    }
+};
