@@ -1,7 +1,12 @@
-class Observable {
+export default class Observable {
+    private observers: any[];
 
     constructor() {
         this.observers = [];
+    }
+
+    getObservers() {
+        return this.observers;
     }
 
     subscribe(name, callback) {
@@ -11,6 +16,10 @@ class Observable {
 
     unsubscribe(name) {
         this.observers = this.observers.filter(subscriber => subscriber.name !== name);
+    }
+
+    unsubscribeAll() {
+        this.observers = [];
     }
 
     notify(name, data) {
