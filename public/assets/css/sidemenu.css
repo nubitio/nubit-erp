@@ -1,21 +1,22 @@
 .sidemenu .accordion .panel-title {
     height: 40px;
     line-height: 40px;
-    color: #b8c7ce;
+    color: var(--text-color);
+    background: transparent !important;
 }
 
 .sidemenu .accordion .accordion-header {
-    background: var(--primary-color);
-    color: #b8c7ce;
+    background: var(--primary-color-dark);
+    color: var(--text-color);
 }
 
 .sidemenu .accordion .accordion-body {
-    background: var(--secondary-color);
-    color: #e3e3e3;
+    background: var(--primary-color-dark);
+    color: var(--text-color);
 }
 
 .sidemenu .accordion .accordion-header-selected {
-    background: var(--primary-color-dark);
+    background: var(--background-color);
 }
 
 .sidemenu .accordion .accordion-collapse {
@@ -43,6 +44,11 @@
     border-top-right-radius: 50px;
     border-bottom-right-radius: 50px;
     margin-right: 10px;
+}
+
+.sidemenu .tree-title {
+    margin: 11px 0;
+    padding: 0 25px;
 }
 
 .sidemenu .accordion-header .panel-icon {
@@ -90,8 +96,8 @@
 }
 
 .accordion {
-    background: var(--primary-color);
-    border-color: #343433;
+    background: var(--primary-color-dark);
+    border-color: var(--border-color);
 }
 
 .tree-file {

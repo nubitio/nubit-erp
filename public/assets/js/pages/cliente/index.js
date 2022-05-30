@@ -45,7 +45,8 @@ app.customer = (function () {
                 name: 'estado',
                 required: true,
                 visible: true,
-                formatter: activeFormatter
+                formatter: activeFormatter,
+                defaultValue: true
             },
         ];
 

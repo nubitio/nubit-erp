@@ -92,6 +92,8 @@ export default class DataGrid {
     }
 
     setupDataGrid() {
+        let ref = this;
+
         this.dataGrid.datagrid({
             title: this.options.title,
             url: this.options.url,
@@ -99,7 +101,7 @@ export default class DataGrid {
             toolbar: this.toolbar,
             columns: [this.columns],
             onDblClickRow: function () {
-                window.Observer.notify(EventType.EDIT);
+                window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, id: ref.getIdField()});
             }
         });
 

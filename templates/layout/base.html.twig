@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/lightbox.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/sidemenu.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+    <link id="theme" rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
     {{ encore_entry_link_tags('main') }}
     <!-- endbuild -->
     <!-- build:js ../assets/js/lib.min.js -->
@@ -43,10 +43,11 @@
             <i class="fa fa-bars fa-lg"></i>
         </div>
         <a href="home"><img style="height:56px;" src="{{ asset('assets/images/logo.png') }}" alt="logo"></a>
-        <span id="home_local_title" style="color: #e3e3e3; margin-left: 20px;"><i
+        <span id="home_local_title" style="margin-left: 20px;"><i
                     class="fa fa-home"></i> {{ session.local }}</span>
     </div>
     <div class="float-end">
+        <button class="btn md-btn-plain" onclick="toggleTheme()"><i id="theme-icon" class="fa fa-sun"></i></button>
         <img src="" alt="" style="height: 56px">
         <a href="#" class="easyui-menubutton menu-user"
            data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ session.usuario }}</a>
@@ -63,10 +64,10 @@
         </div>
     </div>
 </div>
-<div data-options="region:'west', border: false" style="width: 252px;">
+<div data-options="region:'west', border: true" style="width: 252px;">
     <div id="sidebar" style="min-height: 100vh;"></div>
 </div>
-<div data-options="region:'center', border: false">
+<div data-options="region:'center', border: true">
     <div id="content"></div>
     <div id="home_local">
         <div id="home_lista_local"></div>
@@ -78,6 +79,7 @@
     let sidebar = $('#sidebar');
     let content = $('#content');
     let drawer = $('#drawer');
+    let themeIcon = $('#theme-icon');
     let current;
 
     (function () {
@@ -101,8 +103,18 @@
 
         $.get('getmenu')
             .done(function (response) {
+                let menu = []
+                response.forEach(item => {
+                    if (item.children) {
+                        item.children.forEach(child => {
+                            child.iconCls = '';
+                        })
+                    }
+                    menu.push(item);
+                });
+
                 sidebar.sidemenu({
-                    data: response,
+                    data: menu,
                     fit: true,
                     border: false,
                     multiple: false,
@@ -127,6 +139,16 @@
             load_page(history.state.item.url, history.state.item.text);
         } else {
             load_page('dashboard', 'dashboard');
+        }
+
+        const theme = localStorage.getItem('theme');
+
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.removeClass('fa-moon').addClass('fa-sun');
+        } else {
+            document.body.classList.add('light-theme');
+            themeIcon.removeClass('fa-sun').addClass('fa-moon');
         }
     };
 
@@ -157,6 +179,22 @@
             current = url;
             $('.wrapper').animate({"opacity": 0});
             content.panel('refresh', url);
+        }
+    }
+
+    function toggleTheme() {
+        let theme = localStorage.getItem('theme');
+
+        if (theme === 'dark') {
+            localStorage.setItem('theme', 'light');
+            document.body.classList.remove('dark-theme');
+            document.body.classList.add('light-theme');
+            themeIcon.removeClass('fa-sun').addClass('fa-moon');
+        } else {
+            localStorage.setItem('theme', 'dark');
+            document.body.classList.remove('light-theme');
+            document.body.classList.add('dark-theme');
+            themeIcon.removeClass('fa-moon').addClass('fa-sun');
         }
     }
 </script>
