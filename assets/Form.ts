@@ -1,4 +1,17 @@
-class Form {
+import {Constants} from "./Constants";
+import {FormType} from "./FormType";
+import {SharedUtils} from "./SharedUtils";
+import {EventType} from "./EventType";
+
+export default class Form {
+    private container: HTMLElement;
+    private form: JQuery;
+    private dataGrid: JQuery;
+    private dialog: any;
+    private fields: any;
+    private formFields: {};
+    private route: null;
+
     constructor(container, dataGrid, dialog, fields) {
         this.container = document.getElementById(container);
         this.form = null;
@@ -13,6 +26,7 @@ class Form {
     init() {
         this.setupView();
         this.buildFormFields();
+        this.setupObservers();
     }
 
     setupView() {
@@ -25,7 +39,7 @@ class Form {
         this.form = $('#' + form.id);
 
         this.fields.forEach(field => {
-            if (field.type !== FORM_TYPE.HIDDEN) {
+            if (field.type !== FormType.HIDDEN) {
                 let fieldContainer = document.createElement('div');
                 fieldContainer.setAttribute('class', 'mb-2');
 
@@ -39,25 +53,51 @@ class Form {
         });
     }
 
+    setupObservers() {
+        window.Observer.subscribe(EventType.ADD, (data) => {
+            this.add(data.route);
+        });
+
+        window.Observer.subscribe(EventType.EDIT, (data) => {
+            this.edit(data.route, data.id);
+        });
+
+        window.Observer.subscribe(EventType.DELETE, (data) => {
+            this.delete(data.route, data.id);
+        });
+
+        window.Observer.subscribe(EventType.SAVE, () => {
+            this.save();
+        });
+
+        window.Observer.subscribe(EventType.EXPORT, (data) => {
+            window.open(data.route);
+        });
+    }
+
     buildFormFields() {
+        console.log(this.fields);
         this.fields.forEach(field => {
             switch (field.type) {
-                case FORM_TYPE.FILE:
+                case FormType.FILE:
                     this.buildFileInput(field);
                     break;
-                case FORM_TYPE.TEXT:
+                case FormType.TEXT:
                     this.buildTextInput(field);
                     break;
-                case FORM_TYPE.NUMBER:
+                case FormType.TEXTAREA:
+                    this.buildTextAreaInput(field);
+                    break;
+                case FormType.NUMBER:
                     this.buildNumberInput(field);
                     break;
-                case FORM_TYPE.SELECT:
+                case FormType.SELECT:
                     this.buildSelectInput(field);
                     break;
-                case FORM_TYPE.SWITCH:
+                case FormType.SWITCH:
                     this.buildSwitchInput(field);
                     break;
-                case FORM_TYPE.CHECK:
+                case FormType.CHECK:
                     break;
                 default:
                     break;
@@ -83,6 +123,21 @@ class Form {
             width: '100%',
             label: field.label,
             labelPosition: 'top',
+            validType: field.validators,
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildTextAreaInput(field) {
+        let input = $('#' + field.name);
+        input.textbox({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            height: field.height || 90,
+            multiline: true,
+            validType: field.validators,
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -96,6 +151,7 @@ class Form {
             labelPosition: 'top',
             min: 0,
             precision: 2,
+            validType: field.validators,
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -145,7 +201,7 @@ class Form {
             this.form.form('load', row);
             this.route = route + row[id];
         } else {
-            show_info('Seleccione un registro');
+            SharedUtils.showMessage('Info', 'Seleccione un registro para editar');
         }
     }
 
@@ -167,13 +223,13 @@ class Form {
                     if (result.success) {
                         ref.dialog.hide();
                         ref.dataGrid.datagrid('reload');
-                        show_info(result.msg);
+                        SharedUtils.showMessage('Info', result.msg);
                     } else {
-                        show_error(result.msg);
+                        SharedUtils.showMessage('Error', result.msg);
                     }
                     ref.dialog.setLoading(false);
                 } catch (e) {
-                    show_error(e);
+                    SharedUtils.showMessage('Error', e);
                     ref.dialog.setLoading(false);
                 }
             }
@@ -184,24 +240,24 @@ class Form {
         let ref = this;
         let row = this.dataGrid.datagrid('getSelected');
         if (row) {
-            $.messager.confirm('Confirmar', TEXT_CONFIRM, function (r) {
+            ($ as any).messager.confirm('Confirmar', Constants.TEXT_CONFIRM, function (r) {
                 if (r) {
                     $.post(route + row[id])
                         .done(function (result) {
                             if (result.success) {
                                 ref.dataGrid.datagrid('reload');
-                                show_info(result.msg);
+                                SharedUtils.showMessage('Info', result.msg);
                             } else {
-                                show_error(result.msg);
+                                SharedUtils.showMessage('Error', result.msg);
                             }
                         })
                         .fail(function (xhr, status, error) {
-                            show_error(error);
+                            SharedUtils.showMessage('Error', error);
                         });
                 }
             });
         } else {
-            show_info('Seleccione un registro');
+            SharedUtils.showMessage('Info', 'Seleccione un registro');
         }
     }
 }

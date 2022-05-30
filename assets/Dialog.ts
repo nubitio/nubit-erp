@@ -1,4 +1,13 @@
-class Dialog {
+import {Constants} from "./Constants";
+import {Animation} from "./Animation";
+import {EventType} from "./EventType";
+
+export default class Dialog {
+    private container: HTMLElement;
+    private dialog: JQuery;
+    private positiveButton: JQuery;
+    private negativeButton: JQuery;
+
     constructor(container) {
         this.container = document.getElementById(container);
         this.dialog = null;
@@ -14,20 +23,20 @@ class Dialog {
         this.dialog.dialog({
             buttons: [{
                 id: 'negative-button',
-                text: TEXT_CANCEL,
+                text: Constants.TEXT_CANCEL,
                 handler: function () {
                     ref.hide();
                 }
             }, {
                 id: 'positive-button',
-                text: TEXT_SAVE,
+                text: Constants.TEXT_SAVE,
                 handler: function () {
-                    mainObserver.notify(EVENT.SAVE);
+                    window.Observer.notify(EventType.SAVE);
                 }
             }],
             onOpen: function () {
                 ref.dialog.dialog('center');
-                ref.dialog.parent().animateCss(DIALOG_OPEN_ANIMATION);
+                ref.dialog.parent().animateCss(Animation.DIALOG_OPEN_ANIMATION);
                 ref.positiveButton = $('#positive-button');
                 ref.negativeButton = $('#negative-button');
                 ref.positiveButton.addClass('md-btn');
@@ -55,16 +64,16 @@ class Dialog {
         this.dialog.dialog('close');
     }
 
-    setLoading(isLoading) {
+    setLoading(isLoading, title = 'Procesando...') {
         if (isLoading) {
             this.positiveButton.linkbutton('disable');
             this.negativeButton.linkbutton('disable');
             this.positiveButton.linkbutton({text: 'Guardando...'});
-            this.dialog.dialog('showMask', 'Procesando...');
+            this.dialog.dialog('showMask', title);
         } else {
             this.positiveButton.linkbutton('enable');
             this.negativeButton.linkbutton('enable');
-            this.positiveButton.linkbutton({text: TEXT_SAVE});
+            this.positiveButton.linkbutton({text: Constants.TEXT_SAVE});
             this.dialog.dialog('hideMask');
         }
     }

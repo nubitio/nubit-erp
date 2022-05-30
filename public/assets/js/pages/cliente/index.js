@@ -1,83 +1,117 @@
 var app = app || {};
 app.customer = (function () {
-    let dg = $('#cliente_dg');
+    const ROUTES = Object.freeze({
+        ADD: 'cliente/add/',
+        EDIT: 'cliente/edit/',
+        DELETE: 'cliente/delete/',
+        EXPORT: 'cliente/exportar/',
+    });
+
+    let dataGrid = null;
+    let dialog = null;
+    let form = null;
 
     let init = function () {
-        mainObserver.subscribe('customer:save', () => {
-            dg.datagrid('reload')
-        });
+        let fields = [
+            {
+                type: window.FormType.TEXT,
+                label: 'RUC/DNI',
+                name: 'ruc',
+                required: true,
+                validators: ['validCustomerId'],
+                isKey: true,
+                visible: true
+            },
+            {
+                type: window.FormType.TEXTAREA,
+                label: 'Cliente',
+                name: 'razon_social',
+                required: true,
+                width: 100,
+                visible: true
+            },
+            {
+                type: window.FormType.TEXTAREA,
+                label: 'Domicilio',
+                name: 'domicilio_fiscal',
+                required: false,
+                visible: true
+            },
+            {type: window.FormType.TEXT, label: 'Teléfono', name: 'telefono', required: false, visible: true},
+            {type: window.FormType.TEXT, label: 'Correo', name: 'email', required: false, visible: true},
+            {
+                type: window.FormType.SWITCH,
+                label: 'Activo',
+                name: 'estado',
+                required: true,
+                visible: true,
+                formatter: activeFormatter
+            },
+        ];
 
-        dg.datagrid({
+        dataGrid = new window.DataGrid('wrapper', fields, {
             title: 'Clientes',
             url: 'cliente/get',
-            remoteFilter: true,
-            toolbar: [{
-                text: TEXT_ADD,
-                iconCls: ICON_ADD,
-                handler: function () {
-                    app.customerForm.add();
-                }
-            }, '-', {
-                text: TEXT_EDIT,
-                iconCls: ICON_EDIT,
-                handler: function () {
-                    app.customerForm.edit();
-                }
-            }, '-', {
-                text: TEXT_DELETE,
-                iconCls: ICON_DELETE,
-                handler: function () {
-                    app.customerForm.erase();
-                }
-            }, '-', {
-                text: TEXT_EXPORTAR,
-                iconCls: ICON_XLS,
-                handler: function () {
-                    exportar();
-                }
-            }],
-            columns: [[{
-                field: 'ruc',
-                title: 'Ruc',
-                sortable: true,
-                align: 'center'
-            }, {
-                field: 'razon_social',
-                title: 'Razón Social',
-                sortable: true,
-                width: 200
-            }, {
-                field: 'domicilio_fiscal',
-                title: 'Domicilio Fiscal',
-                sortable: true,
-                width: 300
-            }, {
-                field: 'telefono',
-                title: 'Telefono',
-                sortable: true,
-            }, {
-                field: 'estado',
-                title: 'Activo',
-                sortable: true,
-                align: 'center',
-                formatter: activeFormatter,
-            }]],
-            onDblClickRow: function () {
-                app.customer.form.edit();
+            routes: ROUTES,
+        });
+
+        dialog = new window.Dialog('wrapper');
+
+        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+
+        form.field.ruc.textbox('textbox').bind('keyup', function (e) {
+            console.log(e);
+            if (e.keyCode === 13) {
+                consult();
             }
         });
 
-        dg.datagrid('enableFilter', []);
+        form.field.ruc.textbox({
+            icons: [{
+                iconCls: ICON_SEACH,
+                handler: function (e) {
+                    consult()
+                }
+            }]
+        });
     };
 
-    function exportar() {
-        window.open('cliente/exportar');
+    function consult() {
+        let doc = form.field.ruc.textbox('getValue');
+        let apiUrl = ''
+        let dialogTitle = ''
+        if (doc.length === 11) {
+            dialogTitle = 'Consultando RUC';
+            apiUrl = 'api/ruc/';
+        } else {
+            dialogTitle = 'Consultando DNI';
+            apiUrl = 'api/dni/'
+        }
+        dialog.setLoading(true, dialogTitle);
+        fetch(apiUrl + doc)
+            .then(response => response.json())
+            .then(data => {
+                    dialog.setLoading(false);
+                    if (doc.length === 11) {
+                        if (data.estado === 'ACTIVO') {
+                            form.field.razon_social.textbox('setValue', data.razonSocial);
+                            form.field.domicilio_fiscal.textbox('setValue', data.direccion);
+                        } else {
+                            show_error('El RUC no está activo');
+                        }
+                    } else {
+                        form.field.razon_social.textbox('setValue', data.nombres + ' ' + data.apellidoPaterno + ' ' + data.apellidoMaterno);
+                    }
+                }
+            )
+            .catch(error => {
+                dialog.setLoading(false);
+                show_error(error.message);
+            });
     }
 
     return {
-        init: init,
-        dg: dg
+        init: init
     };
 })();
-
 app.customer.init();

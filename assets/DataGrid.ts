@@ -1,11 +1,21 @@
-class DataGrid {
+import {Constants} from "./Constants";
+import {EventType} from "./EventType";
+
+export default class DataGrid {
+    private container: HTMLElement;
+    private fields: any;
+    private options: any;
+    private dataGrid: JQuery;
+    private toolbar: any[];
+    private columns: any[];
+
     constructor(container, fields, options) {
         this.container = document.getElementById(container);
         this.fields = fields;
         this.options = options;
         this.dataGrid = null;
         this.toolbar = null;
-        this.colums = null;
+        this.columns = null;
         this.init();
     }
 
@@ -28,7 +38,7 @@ class DataGrid {
     }
 
     setupColumns() {
-        this.colums = [];
+        this.columns = [];
         this.fields.forEach(field => {
             if (field.visible) {
                 let column = {
@@ -39,41 +49,47 @@ class DataGrid {
                     sortable: field.sortable,
                     formatter: field.formatter,
                 };
-                this.colums.push(column);
+                this.columns.push(column);
             }
         });
     }
 
     setupToolBar() {
+        let ref = this;
+
         let defaultToolbar = [{
-            text: TEXT_ADD,
-            iconCls: ICON_ADD,
+            text: Constants.TEXT_ADD,
+            iconCls: Constants.ICON_ADD,
             handler: function () {
-                mainObserver.notify(EVENT.ADD);
+                window.Observer.notify(EventType.ADD, {route: ref.options.routes.ADD});
             },
         }, '-', {
-            text: TEXT_EDIT,
-            iconCls: ICON_EDIT,
+            text: Constants.TEXT_EDIT,
+            iconCls: Constants.ICON_EDIT,
             handler: function () {
-                mainObserver.notify(EVENT.EDIT);
+                window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, id: ref.getIdField()});
             },
         }, '-', {
-            text: TEXT_DELETE,
-            iconCls: ICON_DELETE,
+            text: Constants.TEXT_DELETE,
+            iconCls: Constants.ICON_DELETE,
             handler: function () {
-                mainObserver.notify(EVENT.DELETE);
+                window.Observer.notify(EventType.DELETE, {route: ref.options.routes.DELETE, id: ref.getIdField()});
             },
         }, '-', {
-            text: TEXT_EXPORTAR,
-            iconCls: ICON_XLS,
+            text: Constants.TEXT_EXPORT,
+            iconCls: Constants.ICON_XLS,
             handler: function () {
-                mainObserver.notify(EVENT.EXPORT);
+                window.Observer.notify(EventType.EXPORT, {route: ref.options.routes.EXPORT});
             }
         }];
 
         this.toolbar = this.options.toolbar || defaultToolbar;
     }
 
+    getIdField() {
+        let idField = this.fields.find(field => field.isKey === true);
+        return idField.name;
+    }
 
     setupDataGrid() {
         this.dataGrid.datagrid({
@@ -81,9 +97,9 @@ class DataGrid {
             url: this.options.url,
             remoteFilter: true,
             toolbar: this.toolbar,
-            columns: [this.colums],
+            columns: [this.columns],
             onDblClickRow: function () {
-                mainObserver.notify(EVENT.EDIT);
+                window.Observer.notify(EventType.EDIT);
             }
         });
 

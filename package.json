@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "devDependencies": {
     "@symfony/webpack-encore": "^1.8.2",
+    "@types/jquery": "^3.5.14",
     "sass": "^1.49.9",
     "sass-loader": "^12.6.0",
+    "ts-loader": "^9.3.0",
+    "typescript": "^4.7.2",
     "vue": "^2.6.14",
     "vue-loader": "^15.9.8",
     "vue-template-compiler": "^2.6.14",
@@ -19,6 +22,6 @@
   "dependencies": {
     "axios": "^0.26.1",
     "core-js": "^3.21.1",
-    "vx-easyui": "^1.2.41"
+    "jquery": "^3.6.0"
   }
 }
