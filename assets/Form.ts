@@ -76,7 +76,6 @@ export default class Form {
     }
 
     buildFormFields() {
-        console.log(this.fields);
         this.fields.forEach(field => {
             switch (field.type) {
                 case FormType.FILE:
@@ -192,6 +191,14 @@ export default class Form {
         this.form.form('clear');
         this.route = route;
         this.dialog.show('Nuevo');
+
+        this.fields.forEach(field => {
+            if (field.type === FormType.SWITCH) {
+                if (field.defaultValue) {
+                    this.formFields[field.name].switchbutton('check');
+                }
+            }
+        });
     }
 
     edit(route, id) {

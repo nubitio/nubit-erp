@@ -299,10 +299,6 @@ app.proveedor = (function () {
         window.open('proveedor/exportar');
     }
 
-    mainObserver.subscribe('proveedores:save', function (data) {
-        console.log(data);
-    });
-
     return {
         init: init
     };
