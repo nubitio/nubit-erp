@@ -1,9 +1,18 @@
 var app = app || {};
 app.dashboard = (function () {
     let lapseSelector = $('#lapse-selector');
-    let chartMostSold = $('#most-sold');
-    let dgLessSold = $('#less-sold');
     let dgWithoutRotation = $('#without-rotation');
+
+    let chartTheme = null;
+
+    let mostSoldProductsData = null;
+    let lessSoldProductsData = null;
+    let totalSalesPerDayOfCurrentWeekData = null;
+    let totalSalesPerDayOfCurrentMonthData = null;
+    let totalSalesPerMonthData = null;
+    let invoiceCountPerMonthData = null;
+    let dataLoaded = false;
+    let rotationDataLoaded = false;
 
     let init = function () {
         lapseSelector.combobox({
@@ -27,19 +36,251 @@ app.dashboard = (function () {
         dgWithoutRotation.datagrid({
             title: 'Productos sin rotación',
             pagination: false,
-            border: true,
             cls: 'card-panel',
             minHeight: 350,
             columns: [[
-                {field: 'producto', title: 'Producto', width: 200, sortable: true},
-                {field: 'cantidad', title: 'Cant', align: 'right', sortable: true}
+                {field: 'producto', title: 'Producto', width: 200},
+                {field: 'cantidad', title: 'Cant', align: 'right'}
             ]]
         });
 
+        setupTheme();
         lapseSelector.combobox('select', 'week');
+        fetchData();
+
+        window.Observer.subscribe('on:theme:change', () => {
+            setupTheme();
+
+            if (dataLoaded) {
+                drawCharts();
+            } else {
+                fetchData();
+            }
+
+            if (rotationDataLoaded) {
+                drawRotationCharts();
+            } else {
+                getRotationInfo('week');
+            }
+        });
+
+        window.Observer.subscribe('on:rotation-data:loaded', () => {
+            drawRotationCharts();
+        });
+
+        window.Observer.subscribe('on:bi-data:loaded', () => {
+            drawCharts();
+        });
+
+        window.setInterval(() => {
+            fetchData();
+        }, 60000);
     };
 
-    function drawMostSold(data) {
+    function setupTheme() {
+        let bgColor = getComputedStyle(document.body).getPropertyValue('--background-color');
+        let primaryColor = getComputedStyle(document.body).getPropertyValue('--primary-color');
+        let borderColor = getComputedStyle(document.body).getPropertyValue('--border-color');
+        let textColor = getComputedStyle(document.body).getPropertyValue('--text-color');
+
+        chartTheme = {
+            colors: ['#2b908f', '#90ee7e', '#f45b5b', '#7798BF', '#aaeeee', '#ff0066',
+                '#eeaaee', '#55BF3B', '#DF5353', '#7798BF', '#aaeeee'],
+            chart: {
+                backgroundColor: bgColor,
+                plotBorderColor: borderColor,
+            },
+            title: {
+                style: {
+                    color: textColor,
+                }
+            },
+            subtitle: {
+                style: {
+                    color: textColor,
+                }
+            },
+            xAxis: {
+                gridLineColor: borderColor,
+                labels: {
+                    style: {
+                        color: textColor
+                    }
+                },
+                lineColor: borderColor,
+                minorGridLineColor: borderColor,
+                tickColor: borderColor,
+                title: {
+                    style: {
+                        color: textColor
+                    }
+                }
+            },
+            yAxis: {
+                gridLineColor: borderColor,
+                labels: {
+                    style: {
+                        color: textColor
+                    }
+                },
+                lineColor: borderColor,
+                minorGridLineColor: borderColor,
+                tickColor: borderColor,
+                title: {
+                    style: {
+                        color: textColor
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: bgColor,
+                style: {
+                    color: textColor
+                }
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        color: textColor,
+                    },
+                    marker: {
+                        lineColor: borderColor
+                    },
+                    borderColor: borderColor
+                },
+                boxplot: {
+                    fillColor: bgColor
+                },
+                candlestick: {
+                    lineColor: borderColor
+                },
+                errorbar: {
+                    color: textColor
+                }
+            },
+            legend: {
+                backgroundColor: bgColor,
+                itemStyle: {
+                    color: textColor
+                },
+                itemHoverStyle: {
+                    color: textColor
+                },
+                itemHiddenStyle: {
+                    color: textColor
+                },
+                title: {
+                    style: {
+                        color: textColor
+                    }
+                }
+            },
+            credits: {
+                style: {
+                    color: textColor
+                }
+            },
+            labels: {
+                style: {
+                    color: textColor
+                }
+            },
+            drilldown: {
+                activeAxisLabelStyle: {
+                    color: textColor
+                },
+                activeDataLabelStyle: {
+                    color: textColor
+                }
+            },
+            navigation: {
+                buttonOptions: {
+                    symbolStroke: textColor,
+                    theme: {
+                        fill: bgColor
+                    }
+                }
+            }
+        }
+        Highcharts.setOptions(chartTheme);
+    }
+
+    function getRotationInfo(lapse) {
+        fetch('bi/product-rotation/' + lapse)
+            .then(response => response.json())
+            .then(result => {
+                let reversed = result.slice().reverse();
+                let mostSold = reversed.slice(0, 10);
+                let lessSold = result.filter(item => Number(item.cantidad) > 0).slice(0, 10);
+                let withoutRotation = result.filter(item => Number(item.cantidad) === 0);
+                let mostSoldData = [];
+                let lessSoldData = [];
+
+                mostSold.forEach((obj) => {
+                        let item = {
+                            name: obj.producto,
+                            low: Number(obj.cantidad)
+                        };
+                        mostSoldData.push(item);
+                    }
+                );
+
+                lessSold.forEach((obj) => {
+                        let item = {
+                            name: obj.producto,
+                            low: Number(obj.cantidad)
+                        };
+                        lessSoldData.push(item);
+                    }
+                );
+
+                mostSoldProductsData = mostSoldData;
+                lessSoldProductsData = lessSoldData;
+                rotationDataLoaded = true;
+
+                window.Observer.notify('on:rotation-data:loaded');
+                dgWithoutRotation.datagrid('loadData', withoutRotation);
+            })
+            .catch(err => show_error(err))
+    }
+
+    function fetchData() {
+        const totalSalesPerDayOfCurrentWeekRequest = fetch('bi/venta-semana').then(response => response.json());
+        const totalSalesPerDayOfCurrentMonthRequest = fetch('bi/venta-dia').then(response => response.json());
+        const totalSalesPerMonthRequest = fetch('bi/venta-mes').then(response => response.json());
+        const invoiceCountPerMonthRequest = fetch('bi/monthly-invoicing').then(response => response.json());
+
+        const data = Promise.all([
+            totalSalesPerDayOfCurrentWeekRequest,
+            totalSalesPerDayOfCurrentMonthRequest,
+            totalSalesPerMonthRequest,
+            invoiceCountPerMonthRequest
+        ]);
+
+        data.then(result => {
+            totalSalesPerDayOfCurrentWeekData = result[0];
+            totalSalesPerDayOfCurrentMonthData = result[1];
+            totalSalesPerMonthData = result[2];
+            invoiceCountPerMonthData = result[3];
+            dataLoaded = true;
+
+            window.Observer.notify('on:bi-data:loaded');
+        });
+    }
+
+    function drawRotationCharts() {
+        drawMostSoldProducts();
+        drawLessSoldProducts();
+    }
+
+    function drawCharts() {
+        drawTotalSalesPerDayOfCurrentWeek();
+        drawTotalSalesPerDayOfCurrentMonth();
+        drawTotalSalesPerMonth();
+        drawInvoiceCountPerMonth();
+    }
+
+    function drawMostSoldProducts() {
         Highcharts.chart('most-sold', {
             chart: {
                 type: 'lollipop',
@@ -69,12 +310,12 @@ app.dashboard = (function () {
             series: [{
                 name: 'Cantidad',
                 colorByPoint: true,
-                data: data
+                data: mostSoldProductsData
             }]
         });
     }
 
-    function drawLessSold(data) {
+    function drawLessSoldProducts() {
         Highcharts.chart('less-sold', {
             chart: {
                 type: 'lollipop',
@@ -104,201 +345,163 @@ app.dashboard = (function () {
             series: [{
                 name: 'Cantidad',
                 colorByPoint: true,
-                data: data
+                data: lessSoldProductsData
             }]
         });
     }
 
-    function getRotationInfo(lapse) {
-        fetch('bi/product-rotation/' + lapse)
-            .then(response => response.json())
-            .then(result => {
-                let reversed = result.slice().reverse();
-                let mostSold = reversed.slice(0, 10);
-                let lessSold = result.filter(item => Number(item.cantidad) > 0).slice(0, 10);
-                let withoutRotation = result.filter(item => Number(item.cantidad) === 0);
-                let mostSoldData = [];
-                mostSold.forEach((obj) => {
-                        let item = {
-                            name: obj.producto,
-                            low: Number(obj.cantidad)
-                        };
-                        mostSoldData.push(item);
-                    }
-                );
-                let lessSoldData = [];
-                lessSold.forEach((obj) => {
-                        let item = {
-                            name: obj.producto,
-                            low: Number(obj.cantidad)
-                        };
-                        lessSoldData.push(item);
-                    }
-                );
-                drawMostSold(mostSoldData);
-                drawLessSold(lessSoldData);
-                dgWithoutRotation.datagrid('loadData', withoutRotation);
-            })
-            .catch(err => show_error(err))
+    function drawTotalSalesPerDayOfCurrentWeek() {
+        let days = [];
+        let totalSales = [];
+        totalSalesPerDayOfCurrentWeekData.forEach((item) => {
+            days.push(item.dia);
+            totalSales.push(parseFloat(item.venta));
+        });
+
+        Highcharts.chart('venta_semana', {
+            title: {
+                text: 'Ventas por semana'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                categories: days
+            },
+            yAxis: {
+                title: {
+                    text: 'Monto en soles'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: 'Total',
+                type: 'column',
+                colorByPoint: true,
+                data: totalSales,
+                showInLegend: false
+            }]
+        });
     }
 
-    function draw() {
-        // venta semana
-        $.get('bi/venta-semana', function (result) {
-            var dias = [];
-            var data = [];
-            for (var i = 0; i < result.length; i++) {
-                dias.push(result[i].dia);
-                data.push(parseFloat(result[i].venta));
-            }
-            Highcharts.chart('venta_semana', {
-                title: {
-                    text: 'Ventas por semana'
-                },
-                subtitle: {
-                    text: ''
-                },
-                xAxis: {
-                    categories: dias
-                },
-                yAxis: {
-                    title: {
-                        text: 'Monto en soles'
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    name: 'Total',
-                    type: 'column',
-                    colorByPoint: true,
-                    data: data,
-                    showInLegend: false
-                }]
-            });
+    function drawTotalSalesPerDayOfCurrentMonth() {
+        let days = [];
+        let totalSales = [];
+        totalSalesPerDayOfCurrentMonthData.forEach((item) => {
+            days.push(item.dia);
+            totalSales.push(parseFloat(item.venta));
         });
 
-        $.get('bi/venta-mes', function (result) {
-            let months = [];
-            let data = [];
-            for (var i = 0; i < result.length; i++) {
-                months.push(result[i].mes);
-                data.push(parseFloat(result[i].venta));
-            }
-            Highcharts.chart('venta_mes', {
+        Highcharts.chart('venta_dia', {
+            chart: {
+                type: 'spline'
+            },
+            title: {
+                text: 'Venta por día'
+            },
+            xAxis: {
+                categories: days
+            },
+            yAxis: {
                 title: {
-                    text: 'Ventas por mes'
-                },
-                subtitle: {
-                    text: ''
-                },
-                xAxis: {
-                    categories: months
-                },
-                yAxis: {
-                    title: {
-                        text: 'Monto en soles'
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    name: 'Total',
-                    type: 'column',
-                    colorByPoint: true,
-                    data: data,
-                    showInLegend: false
-                }]
-            });
+                    text: 'Monto en soles'
+                }
+            },
+            tooltip: {
+                shared: true,
+                valueSuffix: ''
+            },
+            credits: {
+                enabled: false
+            },
+            plotOptions: {
+                line: {
+                    dataLabels: {
+                        enabled: true
+                    },
+                    enableMouseTracking: false
+                }
+            },
+            series: {
+                name: 'Total',
+                data: totalSales
+            }
+        });
+    }
+
+    function drawTotalSalesPerMonth() {
+        let months = [];
+        let totalSales = [];
+        totalSalesPerMonthData.forEach((item) => {
+            months.push(item.mes);
+            totalSales.push(parseFloat(item.venta));
         });
 
-        // venta dia
-        $.get('bi/venta-dia', function (result) {
-            var dias = [];
-            var detail = [];
-            var data = [];
-            for (var i = 0; i < result.length; i++) {
-                dias.push(result[i].dia);
-                detail.push(parseFloat(result[i].venta));
-            }
-            data.push({"name": 'Venta', "data": detail});
-            Highcharts.chart('venta_dia', {
-                chart: {
-                    type: 'spline'
-                },
+        Highcharts.chart('venta_mes', {
+            title: {
+                text: 'Ventas por mes'
+            },
+            subtitle: {
+                text: ''
+            },
+            xAxis: {
+                categories: months
+            },
+            yAxis: {
                 title: {
-                    text: 'Venta por día'
-                },
-                xAxis: {
-                    categories: dias
-                },
-                yAxis: {
-                    title: {
-                        text: 'Monto en soles'
-                    }
-                },
-                tooltip: {
-                    shared: true,
-                    valueSuffix: ''
-                },
-                credits: {
-                    enabled: false
-                },
-                plotOptions: {
-                    line: {
-                        dataLabels: {
-                            enabled: true
-                        },
-                        enableMouseTracking: false
-                    }
-                },
-                series: data
-            });
+                    text: 'Monto en soles'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: 'Total',
+                type: 'column',
+                colorByPoint: true,
+                data: totalSales,
+                showInLegend: false
+            }]
+        });
+    }
+
+    function drawInvoiceCountPerMonth() {
+        let months = [];
+        let data = [];
+        invoiceCountPerMonthData.forEach((item) => {
+            months.push(item.mes);
+            data.push(parseFloat(item.total));
         });
 
-        // monthly invoicing
-        $.get('bi/monthly-invoicing', function (result) {
-            let months = [];
-            let data = [];
-            for (var i = 0; i < result.length; i++) {
-                months.push(result[i].month);
-                data.push(parseFloat(result[i].total));
-            }
-            Highcharts.chart('monthly_invoicing', {
+        Highcharts.chart('monthly_invoicing', {
+            title: {
+                text: 'Facturación por mes'
+            },
+            xAxis: {
+                categories: months
+            },
+            yAxis: {
                 title: {
-                    text: 'Facturación por mes'
-                },
-                subtitle: {
-                    text: ''
-                },
-                xAxis: {
-                    categories: months
-                },
-                yAxis: {
-                    title: {
-                        text: 'Comprobantes'
-                    }
-                },
-                credits: {
-                    enabled: false
-                },
-                series: [{
-                    name: 'Comprobantes',
-                    type: 'column',
-                    colorByPoint: true,
-                    data: data,
-                    showInLegend: false
-                }]
-            });
+                    text: 'Comprobantes'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            series: [{
+                name: 'Comprobantes',
+                type: 'column',
+                colorByPoint: true,
+                data: data,
+                showInLegend: false
+            }]
         });
     }
 
     return {
-        init: init,
-        draw: draw
+        init: init
     }
 })();
 app.dashboard.init();
-app.dashboard.draw();

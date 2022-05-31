@@ -196,6 +196,8 @@
             document.body.classList.add('dark-theme');
             themeIcon.removeClass('fa-moon').addClass('fa-sun');
         }
+
+        window.Observer.notify('on:theme:change');
     }
 </script>
 <script src="{{ asset('assets/js/pages/layout/home.js') }}"></script>

@@ -37,8 +37,8 @@
 }
 
 .sidemenu .tree-node-selected {
-    border-right: 2px solid var(--accent-color);
-    background: var(--accent-color);
+    border-right: 2px solid rgb(var(--accent-color));
+    background: rgb(var(--accent-color));
     color: #fff;
     border-left: 2px solid #f3f3f3;
     border-top-right-radius: 50px;

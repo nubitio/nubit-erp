@@ -1,6 +1,5 @@
 var app = app || {};
 app.login = (function () {
-    let win = $('#login_window');
     let fm = $('#login_fm');
     let txt_username = $('#username');
     let txt_password = $('#password');
@@ -15,10 +14,7 @@ app.login = (function () {
         fetch('home/theme')
             .then(response => response.json())
             .then(result => {
-                document.body.style.setProperty('--primary-color', result.data.primary_color);
-                document.body.style.setProperty('--primary-color-dark', result.data.primary_color_dark);
                 document.body.style.setProperty('--accent-color', result.data.accent_color);
-                document.body.style.setProperty('--secondary-color', result.data.secondary_color);
             })
             .catch(error => show_error(error))
             .finally(() => init())
@@ -26,25 +22,10 @@ app.login = (function () {
 
     let init = function () {
         localStorage.removeItem('session');
-        win.window({
-            title: '',
-            width: 400,
-            height: 400,
-            border: false,
-            shadow: false,
-            draggable: false,
-            resizable: false,
-            collapsible: false,
-            minimizable: false,
-            maximizable: false,
-            closable: false,
-            cls: 'login-window'
-        });
 
         dlg.dialog({
             title: 'Seleccione un local',
-            border: 'thin',
-            cls: 'fondo-blue-dark',
+            border: false,
             width: 400,
             height: 250,
             modal: true,
