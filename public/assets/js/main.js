@@ -94,7 +94,6 @@ $.extend($.fn.panel.methods, {
             }
             m.css({
                 position: 'absolute',
-                background: 'rgba(238, 238, 238, 0.4)',
                 width: '100%',
                 height: '100%',
                 top: 0
@@ -109,8 +108,6 @@ $.extend($.fn.panel.methods, {
                 marginTop: -mm._outerHeight() / 2,
                 marginLeft: -mm._outerWidth() / 2,
                 padding: '10px',
-                background: '#fff',
-                border: '1px solid #cecece'
             });
         });
     },
