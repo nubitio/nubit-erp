@@ -114,4 +114,4 @@ app.proveedor = (function () {
         init: init
     };
 })();
-app.customer.init();
+app.proveedor.init();
