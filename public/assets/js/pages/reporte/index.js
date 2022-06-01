@@ -98,7 +98,7 @@ app.reporte = (function () {
         }
     };
 
-    let rpt_comprobantes_anulados = function () {
+    let rpt_ventas_anuladas = function () {
         var fi = db_fecha_inicio.datebox('getValue');
         var ff = db_fecha_fin.datebox('getValue');
         if (fi && ff) {
@@ -125,7 +125,7 @@ app.reporte = (function () {
         rpt_dia: rpt_dia,
         rpt_contable: rpt_contable,
         rpt_aeropuerto: rpt_aeropuerto,
-        rpt_comprobantes_anulados: rpt_comprobantes_anulados,
+        rpt_ventas_anuladas: rpt_ventas_anuladas,
         rpt_notas_de_credito: rpt_notas_de_credito
     };
 

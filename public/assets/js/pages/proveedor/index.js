@@ -50,7 +50,7 @@ app.proveedor = (function () {
         ];
 
         dataGrid = new window.DataGrid('wrapper', fields, {
-            title: 'proveedor',
+            title: 'Proveedores',
             url: 'proveedor/get',
             routes: ROUTES,
         });

@@ -109,7 +109,7 @@ class ReporteController extends BaseController
         $ff = $this->app->get('PARAMS.ff');
         $data = $this->model->anulados($fi, $ff);
         $extras = [
-            'title' => 'COMPROBANTES ANULADOS',
+            'title' => 'VENTAS ANULADAS',
             'subtitle' => 'PERIODO ' . $fi . ' AL ' . $ff,
             'sumcols' => []
         ];
