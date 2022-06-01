@@ -399,7 +399,7 @@ label {
     text-decoration: none;
 }
 
-input {
+input, textarea, select {
     background-color: var(--background-color);
     color: var(--text-color);
 }
@@ -615,6 +615,51 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .combo-arrow:hover {
     background-color: var(--background-color);
+}
+
+.pagination-first {
+    background: var(--background-color);
+}
+
+.pagination-first::after {
+    font: var(--fa-font-solid);
+    content: '\f100';
+}
+
+.pagination-prev {
+    background: var(--background-color);
+}
+
+.pagination-prev::after {
+    font: var(--fa-font-solid);
+    content: '\f104';
+}
+
+.pagination-next {
+    background: var(--background-color);
+}
+
+.pagination-next::after {
+    font: var(--fa-font-solid);
+    content: '\f105';
+}
+
+.pagination-last {
+    background: var(--background-color);
+}
+
+.pagination-last::after {
+    font: var(--fa-font-solid);
+    content: '\f101';
+}
+
+.pagination-load {
+    background: var(--background-color);
+}
+
+.pagination-load::after {
+    font: var(--fa-font-solid);
+    content: '\f2f1';
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
