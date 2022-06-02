@@ -1,225 +1,71 @@
 var app = app || {};
 app.operacion = (function () {
-    var route;
-    var dg = $('#operacion_dg');
-    var dlg = $('#operacion_dlg');
-    var fm = $('#operacion_fm');
+    const ROUTES = Object.freeze({
+        ADD: 'operacion/add/',
+        EDIT: 'operacion/edit/',
+        DELETE: 'operacion/delete/',
+        EXPORT: 'operacion/exportar/',
+    });
 
-    var txt_descripcion = $('#operacion_descripcion');
-    var cbo_tipo = $('#operacion_tipo');
-    var cbo_estado = $('#operacion_estado');
+    let dataGrid = null;
+    let dialog = null;
+    let form = null;
 
-    var btn_guardar;
-    var btn_cancelar;
-
-    var init = function () {
-        dg.datagrid({
-            title: 'Transacciones',
-            url: 'operacion/get',
-            remoteFilter: true,
-            toolbar: [{
-                text: TEXT_ADD,
-                iconCls: ICON_ADD,
-                handler: function () {
-                    nuevo();
-                }
-            }, '-', {
-                text: TEXT_EDIT,
-                iconCls: ICON_EDIT,
-                handler: function () {
-                    editar();
-                }
-            }, '-', {
-                text: TEXT_DELETE,
-                iconCls: ICON_DELETE,
-                handler: function () {
-                    eliminar();
-                }
-            }, '-', {
-                text: TEXT_EXPORTAR,
-                iconCls: ICON_XLS,
-                handler: function () {
-                    exportar();
-                }
-            }],
-            columns: [[{
-                field: 'descripcion',
-                title: 'Descripcion',
-                sortable: true,
-                width: 100
-            }, {
-                field: 'tipo',
-                title: 'Tipo',
-                sortable: true,
-            }, {
-                field: 'estado',
-                title: 'Activo',
-                sortable: true,
-                align: 'center',
-                formatter: activeFormatter,
-            }]],
-            onDblClickRow: function () {
-                editar();
-            }
-        });
-
-        dg.datagrid('enableFilter', []);
-
-        dlg.dialog({
-            buttons: [{
-                id: 'operacion_cancelar',
-                text: TEXT_CANCEL,
-                handler: function () {
-                    dlg.dialog('close');
-                }
-            }, {
-                id: 'operacion_guardar',
-                text: TEXT_SAVE,
-                handler: function () {
-                    guardar();
-                }
-            }],
-            onOpen: function () {
-                dlg.dialog('center');
-                dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
-                btn_guardar = $('#operacion_guardar');
-                btn_cancelar = $('#operacion_cancelar');
-                btn_guardar.addClass('md-btn');
-                btn_cancelar.addClass('md-btn-plain');
-            }
-        });
-
-        txt_descripcion.textbox({
-            width: '100%',
-            label: 'Descripcion',
-            labelPosition: 'top',
-            required: true
-        });
-
-        cbo_tipo.combobox({
-            width: '100%',
-            label: 'Tipo',
-            labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'INGRESO'
-            }, {
-                value: '2',
-                text: 'SALIDA'
-            }],
-            panelHeight: 'auto',
-            limitToList: true,
-            editable: false,
-            required: true
-        });
-
-        cbo_estado.combobox({
-            width: '100%',
-            label: 'Estado',
-            labelPosition: 'top',
-            data: [{
-                value: '1',
-                text: 'ACTIVO'
-            }, {
-                value: '2',
-                text: 'INACTIVO'
-            }],
-            panelHeight: 'auto',
-            limitToList: true,
-            editable: false,
-            required: true
-        });
-    };
-
-    function nuevo() {
-        fm.form('clear');
-        route = 'operacion/add';
-        cbo_estado.combobox('select', 1);
-        dlg.dialog('open').dialog('setTitle', 'Nuevo');
-    }
-
-    function editar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            dlg.dialog('open').dialog('setTitle', 'Editar');
-            fm.form('load', row);
-            route = 'operacion/edit/' + row.operacion_id;
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
-
-    function guardar() {
-        fm.form('submit', {
-            url: route,
-            onSubmit: function () {
-                valid = fm.form('validate');
-                if (valid) {
-                    disable_buttons();
-                }
-                return valid;
+    let init = function () {
+        let fields = [
+            {
+                type: window.FormType.HIDDEN,
+                name: 'operacion_id',
+                isKey: true,
+                visible: false
             },
-            success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        dlg.dialog('close');
-                        dg.datagrid('reload');
-                        show_info(result.msg);
-                    } else {
-                        show_error(result.msg);
-                    }
-                    enable_buttons();
-                } catch (e) {
-                    show_error(e);
-                    enable_buttons();
-                }
+            {
+                type: window.FormType.TEXT,
+                label: 'Descripción',
+                name: 'descripcion',
+                required: true,
+                width: 200,
+                visible: true
+            },
+            {
+                type: window.FormType.SELECT,
+                label: 'Tipo',
+                name: 'tipo_id',
+                data: [{
+                    value: '1',
+                    text: 'INGRESO'
+                }, {
+                    value: '2',
+                    text: 'SALIDA'
+                }],
+                required: true,
+                width: 200,
+                formatter: typeFormatter,
+                align: 'center',
+                visible: true
+            },
+            {
+                type: window.FormType.SWITCH,
+                label: 'Activo',
+                name: 'estado',
+                required: true,
+                visible: true,
+                formatter: activeFormatter,
+                defaultValue: true
             }
-        });
-    }
+        ];
 
-    function disable_buttons() {
-        btn_cancelar.linkbutton('disable');
-        btn_guardar.linkbutton('disable');
-        btn_guardar.linkbutton({text: 'Guardando...'});
-        dlg.dialog('showMask', 'Procesando...');
-    }
-
-    function enable_buttons() {
-        btn_cancelar.linkbutton('enable');
-        btn_guardar.linkbutton('enable');
-        btn_guardar.linkbutton({text: 'Guardar'});
-        dlg.dialog('hideMask');
-    }
-
-    function eliminar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            $.messager.confirm('Confirmar', '¿Está seguro que desea eliminar este registro?', function (r) {
-                if (r) {
-                    $.post('operacion/delete/' + row.operacion_id)
-                        .done(function (result) {
-                            if (result.success) {
-                                dg.datagrid('reload');
-                                show_info(result.msg);
-                            } else {
-                                show_error(result.msg);
-                            }
-                        })
-                        .fail(function (xhr, status, error) {
-                            show_error(error);
-                        });
-                }
+        dataGrid = new window.DataGrid('wrapper', fields,
+            {
+                title: 'Operaciones',
+                url: 'operacion/get',
+                routes: ROUTES,
             });
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
 
-    function exportar() {
-        window.open('operacion/exportar');
-    }
+        dialog = new window.Dialog('wrapper');
 
+        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+    };
     return {
         init: init
     };
