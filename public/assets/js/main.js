@@ -205,6 +205,14 @@ function activeFormatter(val) {
     }
 }
 
+function typeFormatter(tipo_id) {
+    if (Number(tipo_id) === 1) {
+        return '<span class="badge bg-primary">INGRESO</span>';
+    } else {
+        return '<span class="badge bg-secondary">SALIDA</span>';
+    }
+}
+
 function imageFormatter(val, row) {
     if (val) {
         return `<a href="${val}" data-lightbox="${row.descripcion}">
