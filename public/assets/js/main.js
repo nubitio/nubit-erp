@@ -213,6 +213,14 @@ function typeFormatter(tipo_id) {
     }
 }
 
+function typeWarehouseFormatter(tipo_id) {
+    if (Number(tipo_id) === 1) {
+        return '<span class="badge bg-primary">PRODUCTOS</span>';
+    } else {
+        return '<span class="badge bg-secondary">INSUMOS</span>';
+    }
+}
+
 function imageFormatter(val, row) {
     if (val) {
         return `<a href="${val}" data-lightbox="${row.descripcion}">
