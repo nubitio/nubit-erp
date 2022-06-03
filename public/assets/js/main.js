@@ -214,10 +214,10 @@ function typeFormatter(tipo_id) {
 }
 
 function typeWarehouseFormatter(tipo_id) {
-    if (Number(tipo_id) === 1) {
-        return '<span class="badge bg-primary">PRODUCTOS</span>';
+    if (Number(tipo_id) === 2) {
+        return '<span class="badge bg-bg-secondary">INSUMOS</span>';
     } else {
-        return '<span class="badge bg-secondary">INSUMOS</span>';
+        return '<span class="badge bg-primary">PRODUCTOS</span>';
     }
 }
 
