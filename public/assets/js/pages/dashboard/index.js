@@ -424,10 +424,10 @@ app.dashboard = (function () {
                     enableMouseTracking: false
                 }
             },
-            series: {
+            series: [{
                 name: 'Total',
                 data: totalSales
-            }
+            }]
         });
     }
 
@@ -471,7 +471,7 @@ app.dashboard = (function () {
         let months = [];
         let data = [];
         invoiceCountPerMonthData.forEach((item) => {
-            months.push(item.mes);
+            months.push(item.month);
             data.push(parseFloat(item.total));
         });
 
