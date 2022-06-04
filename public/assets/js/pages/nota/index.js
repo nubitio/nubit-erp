@@ -27,22 +27,28 @@ app.nota = (function () {
                 text: TEXT_EDIT,
                 iconCls: ICON_EDIT,
                 handler: function () {
-                    show_info('Función en desarrollo');
-                    //update();
+                    update();
                 }
             }, "-", {
                 text: TEXT_DELETE,
                 iconCls: ICON_DELETE,
                 handler: function () {
-                    show_info('Función en desarrollo');
-                    //erase();
+                    erase();
                 }
             }, {
                 text: 'Enviar Sunat',
                 iconCls: 'fas fa-paper-plane fa-1x text-warning',
                 handler: function () {
-                    show_info('Función en desarrollo');
-                    //enviar_sunat();
+                    let row = dg.datagrid("getSelected");
+                    if (row) {
+                        $.messager.confirm('Confirmar', '¿Desea enviar el comprobante a Sunat?', function (r) {
+                            if (r) {
+                                sendNote(row);
+                            }
+                        });
+                    } else {
+                        show_info('Seleccione un registro');
+                    }
                 }
             }, '-', {
                 text: 'Enviar Cliente',
@@ -210,9 +216,13 @@ app.nota = (function () {
     function update() {
         let row = dg.datagrid("getSelected");
         if (row) {
-            dlg.dialog("open").dialog("setTitle", "Editar");
-            fm.form("load", row);
-            route = "nota/edit/" + row.id;
+            if (isEditable(row)) {
+                dlg.dialog("open").dialog("setTitle", "Editar");
+                fm.form("load", row);
+                route = "nota/edit/" + row.nota_id;
+            } else {
+                show_info("No se puede editar un registro enviado a la SUNAT.");
+            }
         } else {
             show_info("Seleccione un registro.");
         }
@@ -250,25 +260,37 @@ app.nota = (function () {
     function erase() {
         let row = dg.datagrid("getSelected");
         if (row) {
-            $.messager.confirm("Confirmar", TEXT_CONFIRM, function (r) {
-                if (r) {
-                    $.post("nota/delete/" + row.id)
-                        .done(function (result) {
-                            if (result.success) {
-                                dg.datagrid("reload");
-                                show_info(result.message);
-                            } else {
-                                show_error(result.message);
-                            }
-                        })
-                        .fail(function (xhr, status, error) {
-                            show_error(error);
-                        });
-                }
-            });
+            if (isEditable(row)) {
+                $.messager.confirm("Confirmar", TEXT_CONFIRM, function (r) {
+                    if (r) {
+                        $.post("nota/delete/" + row.nota_id)
+                            .done(function (result) {
+                                if (result.success) {
+                                    dg.datagrid("reload");
+                                    show_info(result.msg);
+                                } else {
+                                    show_error(result.msg);
+                                }
+                            })
+                            .fail(function (xhr, status, error) {
+                                show_error(error);
+                            });
+                    }
+                });
+            } else {
+                show_error("No se puede eliminar una nota que ya se envio a la SUNAT.");
+            }
         } else {
             show_info("Seleccione un registro");
         }
+    }
+
+    function isEditable(row) {
+        let statusCode = -1;
+        if (row.envio_sunat !== null) {
+            statusCode = Number(row.envio_sunat);
+        }
+        return statusCode === -1;
     }
 
     function showDataGridLoading(msg) {
@@ -281,26 +303,15 @@ app.nota = (function () {
         dg.datagrid('options').loadMsg = TEXT_LOADING;
     }
 
-    function enviar_sunat() {
-        let row = dg.datagrid('getSelected');
-        if (row) {
-            showDataGridLoading('Enviando comprobante...');
-            $.get('venta/getone/' + row.movimiento_id)
-                .done(function (response) {
-                    if (response.success) {
-                        generar_comprobante(response.venta);
-                    } else {
-                        show_error(response.msg);
-                        hideDataGridLoading();
-                    }
-
-                })
-                .fail(function (xhr, status, error) {
-                    show_error(error);
-                    hideDataGridLoading();
-                });
+    function sendNote(note) {
+        if (isEditable(note)) {
+            fetch('nota/send/' + note.nota_id)
+                .then(response => response.json())
+                .then(result => show_info(result.msg))
+                .catch(error => show_error(error))
+                .finally(() => dg.datagrid('reload'));
         } else {
-            show_info('Seleccione un registro');
+            show_info('No se puede enviar una nota que ya se envio a la SUNAT.');
         }
     }
 

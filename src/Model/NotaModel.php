@@ -66,7 +66,7 @@ class NotaModel extends BaseModel
 
     public function update($id)
     {
-        $this->dao->load(array('id=?', $id));
+        $this->dao->load(array('nota_id=?', $id));
         $this->dao->copyfrom('POST');
         $this->dao->updated_by = $this->current_user_id;
         try {
@@ -79,7 +79,7 @@ class NotaModel extends BaseModel
 
     public function delete($id)
     {
-        $this->dao->load(array('id=?', $id));
+        $this->dao->load(array('nota_id=?', $id));
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');

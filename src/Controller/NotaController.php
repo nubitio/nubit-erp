@@ -8,12 +8,14 @@ use App\Domain\Note\NoteDetail;
 use App\Model\BotModel;
 use App\Model\CreditNoteModel;
 use App\Model\NotaModel;
+use Symfony\Component\Uid\Uuid;
 
 class NotaController extends BaseController
 {
     private NotaModel $model;
     private CreditNoteModel $noteModel;
     private BotModel $botModel;
+    private EFactController $efact;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class NotaController extends BaseController
         $this->model = new NotaModel();
         $this->noteModel = new CreditNoteModel();
         $this->botModel = new BotModel();
+        $this->efact = new EFactController();
     }
 
     public function index()
@@ -40,7 +43,7 @@ class NotaController extends BaseController
             if ($saleResult['success']) {
                 $sale = $saleResult['data'];
                 $serie = $this->noteModel->getSeries($sale['header']['doc_series']);
-                $uuid = $this->botModel->getUUID();
+                $uuid = Uuid::v4();
                 $note = (new Note())
                     ->setNotaId($uuid)
                     ->setMovimientoId($sale['header']['movimiento_id'])
@@ -60,7 +63,7 @@ class NotaController extends BaseController
                         ->setCantidad($row['quantity'])
                         ->setPrecioUnitario($row['price'])
                         ->setPrecioTotal($row['total']);
-                    array_push($details, $detail);
+                    $details[] = $detail;
                 }
                 $note->setDetails($details);
                 $response = $this->noteModel->add($note);
@@ -83,5 +86,18 @@ class NotaController extends BaseController
     {
         $id = $this->app->get('PARAMS.id');
         $this->json($this->model->delete($id));
+    }
+
+    public function send()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $sale = $this->botModel->getOneNote($id);
+        if ($sale["success"]) {
+            $result = $this->efact->makeNote($sale['data']);
+            $this->botModel->updateNoteState($result);
+            $this->json($result);
+        } else {
+            $this->json($sale);
+        }
     }
 }
