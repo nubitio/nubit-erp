@@ -699,7 +699,6 @@ app.venta = (function () {
     }
 
     function createInvoice(sale) {
-        console.log(sale);
         if (sale.comprobante_id === null) {
             fetch('sale/invoice/' + sale.movimiento_id)
                 .then(response => response.json())

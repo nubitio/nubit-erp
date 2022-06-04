@@ -168,9 +168,9 @@ class EFactController extends BaseController
     {
         try {
             file_put_contents($this->app->get('EFACT_DIR') . $document->getName() . '.pdf', $this->getPDF($document, $extras));
-            $this->json(["success" => true, "message" => "{$document->getName()} successfully saved"]);
+            return ["success" => true, "message" => "{$document->getName()} successfully saved"];
         } catch (\Exception $e) {
-            $this->json(["success" => false, "message" => $e->getMessage()]);
+            return ["success" => false, "message" => $e->getMessage()];
         }
     }
 
@@ -196,15 +196,14 @@ class EFactController extends BaseController
         $items = [];
 
         $app_option_rc_get = (int)$this->getOption('app_option_rc');
-        if($app_option_rc_get>=1)
-        {
+        if ($app_option_rc_get >= 1) {
             $igv = 0.18;
-            $rc = $app_option_rc_get/100;
+            $rc = $app_option_rc_get / 100;
             $divisor = 1 + $igv + $rc;//1.23
             $venta_total = $sale['header']['doc_sale_amount'];//123
             $valor_venta = $venta_total / $divisor;//100
-            $valor_igv = $valor_venta*$igv;//18
-            $valor_rc = $valor_venta*$rc;//5
+            $valor_igv = $valor_venta * $igv;//18
+            $valor_rc = $valor_venta * $rc;//5
 
             // Venta
             $invoice = (new Invoice())
@@ -235,7 +234,7 @@ class EFactController extends BaseController
 
             for ($i = 0; $i < count($sale['detail']); $i++) {
                 $igv = 0.18;
-                $rc = $app_option_rc_get/100;
+                $rc = $app_option_rc_get / 100;
                 //$divisor = 1 + $igv;
                 $divisor = 1 + $igv + $rc;//1.23
                 $venta_total_item = $sale['detail'][$i]['price'];//123
@@ -259,13 +258,12 @@ class EFactController extends BaseController
                     ->setMtoPrecioUnitario(number_format($valor_venta + $valor_igv, 2, '.', ''));
                 array_push($items, $item);
             }
-        }
-        else //not rc charge
+        } else //not rc charge
         {
             $igv = 0.18;
             $divisor = 1 + $igv;
             $valor_venta = $sale['header']['doc_sale_amount'] / $divisor;
-            $valor_igv = $valor_venta*$igv;
+            $valor_igv = $valor_venta * $igv;
 
             // Venta
             $invoice = (new Invoice())
