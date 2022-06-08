@@ -37,7 +37,7 @@ app.almacen = (function () {
                 name: 'empresa',
                 visible: true
             },
-            {//form
+            {
                 type: window.FormType.SELECT,
                 label: 'Local',
                 name: 'local_id',
@@ -46,7 +46,7 @@ app.almacen = (function () {
                 width: 200,
                 visible: false
             },
-            {//datagrid
+            {
                 type: window.FormType.HIDDEN,
                 label: 'Local Descripción',
                 name: 'descripcion',
@@ -65,6 +65,14 @@ app.almacen = (function () {
                 type: window.FormType.SELECT,
                 label: 'Tipo',
                 name: 'tipo_id',
+                data: [{
+                    value: '1',
+                    text: 'PRODUCTO'
+                }, {
+                    value: '2',
+                    text: 'INSUMO'
+                }],
+                formatter: typeWarehouseFormatter,
                 required: true,
                 width: 200,
                 visible: true,
