@@ -23,20 +23,37 @@ app.local_comprobante = (function () {
                 visible: false
             },
             {
-                type: window.FormType.SELECT,
+                type: window.FormType.HIDDEN,
+                name: 'empresa',
                 label: 'Empresa',
-                name: 'empresa_id',
-                data: empresaName,
-                required: true,
+                sortable: true,
                 width: 200,
-                visible: false
+                visible: true
             },
             {
                 type: window.FormType.HIDDEN,
-                label: 'Empresa',
-                name: 'empresa',
+                name: 'local',
+                label: 'Local',
+                sortable: true,
                 width: 200,
                 visible: true
+            },
+            {
+                type: window.FormType.HIDDEN,
+                name: 'tipo_comprobante',
+                label: 'Tipo',
+                sortable: true,
+                width: 200,
+                visible: true
+            },
+            //START FORM
+            {
+                type: window.FormType.SELECT,
+                label: 'Empresa',
+                name: 'empresa',
+                data: empresaName,
+                required: true,
+                visible: false
             },
             {
                 type: window.FormType.SELECT,
@@ -44,49 +61,33 @@ app.local_comprobante = (function () {
                 name: 'local_id',
                 data: localName,
                 required: true,
-                width: 200,
                 visible: false
-            },
-            {
-                type: window.FormType.HIDDEN,
-                label: 'Local',
-                name: 'local',
-                width: 200,
-                visible: true
             },
             {
                 type: window.FormType.SELECT,
-                label: 'Tipo',
+                label: 'Tipo Comprobante',
                 name: 'tipo_comprobante_id',
                 data: comprobanteName,
                 required: true,
-                width: 200,
                 visible: false
             },
             {
-                type: window.FormType.HIDDEN,
-                label: 'Tipo',
-                name: 'tipo_comprobante_id',
-                width: 200,
-                visible: true
-            },
-            {
                 type: window.FormType.TEXT,
-                label: 'Serie',
                 name: 'serie',
+                label: 'Serie',
+                sortable: true,
                 width: 200,
-                required: false,
                 visible: true
             },
             {
                 type: window.FormType.TEXT,
-                label: 'Serie asociada',
                 name: 'serie_asociada',
-                width: 200,
-                required: false,
+                label: 'Serie asociada',
+                sortable: true,
+                width: 100,
                 visible: true
             }
-
+            //FINISH FORM
         ];
 
         dataGrid = new window.DataGrid('wrapper', fields, {
