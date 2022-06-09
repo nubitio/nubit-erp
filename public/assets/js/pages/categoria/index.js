@@ -4,7 +4,6 @@ app.categoria = (function () {
         ADD: 'categoria/add/',
         EDIT: 'categoria/edit/',
         DELETE: 'categoria/delete/',
-        EXPORT: 'categoria/exportar/',
     });
 
     let dataGrid = null;
@@ -23,9 +22,10 @@ app.categoria = (function () {
             },
             {
                 type: window.FormType.TEXT,
-                label: 'Descripción',
+                label: 'Categoria',
                 name: 'descripcion',
                 required: true,
+                width: 200,
                 visible: true
             },
             {
@@ -33,14 +33,13 @@ app.categoria = (function () {
                 label: 'Padre',
                 name: 'parent_id',
                 data: categoriaPadre,
-                required: true,
-                width: 200,
-                visible: true
+                visible: false
             },
             {
                 type: window.FormType.HIDDEN,
-                name: 'imagen',
-                visible: false
+                label: 'Padre',
+                name: 'padre',
+                visible: true
             },
             {
                 type: window.FormType.SWITCH,
@@ -61,10 +60,8 @@ app.categoria = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+        form = new window.Form(dialog.id, fields);
     };
-
-
 
     return {
         init: init

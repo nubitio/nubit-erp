@@ -8,6 +8,7 @@ declare global {
         Form: any;
         EventType: any;
         FormType: any;
+        Constants: any;
     }
 
     interface JQuery {
