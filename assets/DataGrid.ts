@@ -146,8 +146,8 @@ export default class DataGrid {
             remoteFilter: true,
             toolbar: this.toolbar,
             columns: [this.columns],
-            onDblClickRow: function () {
-                window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, id: ref.getIdField()});
+            onDblClickRow: function (index, row) {
+                window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, row: row});
             }
         });
 
