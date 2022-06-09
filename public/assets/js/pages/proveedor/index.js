@@ -57,7 +57,7 @@ app.proveedor = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+        form = new window.Form(dialog.id, fields);
 
         form.field.ruc.textbox('textbox').bind('keyup', function (e) {
             console.log(e);

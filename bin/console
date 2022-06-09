@@ -2,6 +2,10 @@
 <?php
 
 use App\Command\DemoCommand;
+use App\Command\SendEmailCommand;
+use App\Command\SendSmsCommand;
+use App\Command\SendWhatsAppCommand;
+use App\Domain\Compiler\RemoveUnwantedServices;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
@@ -16,16 +20,20 @@ $app = new Application();
 $dotenv = new Dotenv();
 $dotenv->loadEnv(__DIR__ . '/../.env');
 
-$container = new ContainerBuilder();
+$containerBuilder = new ContainerBuilder();
 
-$loader = new PhpFileLoader($container, new FileLocator(__DIR__));
+$loader = new PhpFileLoader($containerBuilder, new FileLocator(__DIR__));
 $loader->load(__DIR__ . '/../config/services.php');
 
-$container->compile();
+$containerBuilder->addCompilerPass(new RemoveUnwantedServices());
+$containerBuilder->compile();
 
 $commandLoader = new ContainerCommandLoader(
-    $container, [
-        'app:run-demo' => DemoCommand::class,
+    $containerBuilder, [
+        'app:run-demo'      => DemoCommand::class,
+        'app:send-email'    => SendEmailCommand::class,
+        'app:send-sms'      => SendSmsCommand::class,
+        'app:send-whatsapp' => SendWhatsAppCommand::class,
     ]
 );
 

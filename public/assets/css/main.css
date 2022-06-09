@@ -591,6 +591,10 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
     border-color: var(--border-color);
 }
 
+.window-mask {
+    z-index: 1 !important;
+}
+
 .combo-arrow {
     opacity: 1;
     border: 1px solid var(--border-color);

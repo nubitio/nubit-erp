@@ -58,22 +58,21 @@ app.customer = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+        form = new window.Form(dialog.id, fields);
 
-        form.field.ruc.textbox('textbox').bind('keyup', function (e) {
-            console.log(e);
-            if (e.keyCode === 13) {
-                consult();
-            }
-        });
-
-        form.field.ruc.textbox({
+        let rucField = form.field.ruc.textbox({
             icons: [{
                 iconCls: ICON_SEACH,
                 handler: function (e) {
                     consult()
                 }
             }]
+        });
+
+        rucField.textbox('textbox').bind('keyup', function (e) {
+            if (e.keyCode === 13) {
+                consult()
+            }
         });
     };
 

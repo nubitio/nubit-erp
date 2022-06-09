@@ -79,7 +79,7 @@ app.local = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, fields);
+        form = new window.Form(dialog.id, fields);
     };
 
     return {
