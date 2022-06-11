@@ -100,7 +100,7 @@ $.extend($.fn.panel.methods, {
             });
             m.children('div.panel-mask-msg').remove();
             var mm = $('<div class="panel-mask-msg text"></div>').appendTo(m);
-            msg = msg + ' <i class="fas fa-cog fa-spin fa-lg fa-fw color-accent"></i>';
+            msg = msg + ' <i class="fas fa-circle-notch fa-spin fa-lg fa-fw"></i>';
             mm.html(msg).css({position: 'absolute'}).css({
                 position: 'absolute',
                 top: '50%',

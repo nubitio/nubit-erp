@@ -7,4 +7,5 @@ export enum EventType {
     LOADING = 'on:loading',
     SUCCESS = 'on:success',
     ERROR = 'on:error',
+    THEME_CHANGE = 'on:theme:change',
 }

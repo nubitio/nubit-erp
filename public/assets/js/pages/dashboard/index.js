@@ -48,7 +48,7 @@ app.dashboard = (function () {
         lapseSelector.combobox('select', 'week');
         fetchData();
 
-        window.Observer.subscribe('on:theme:change', () => {
+        window.Observer.subscribe(window.EventType.THEME_CHANGE, () => {
             setupTheme();
 
             if (dataLoaded) {
