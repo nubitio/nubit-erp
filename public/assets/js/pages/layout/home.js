@@ -6,19 +6,6 @@ app.home = (function () {
     let btn_guardar;
     let btn_cancelar;
 
-    let loadTheme = function () {
-        fetch('home/theme')
-            .then(response => response.json())
-            .then(result => {
-                document.body.style.setProperty('--primary-color', result.data.primary_color);
-                document.body.style.setProperty('--primary-color-dark', result.data.primary_color_dark);
-                document.body.style.setProperty('--accent-color', result.data.accent_color);
-                document.body.style.setProperty('--secondary-color', result.data.secondary_color);
-            })
-            .catch(error => show_error(error))
-            .finally(() => init())
-    }
-
     let loadOptions = function () {
         fetch('options')
             .then(response => response.json())
@@ -124,9 +111,7 @@ app.home = (function () {
     return {
         init: init,
         change_local: change_local,
-        loadTheme: loadTheme,
         loadOptions: loadOptions
     };
 })();
-app.home.loadTheme();
 app.home.loadOptions();

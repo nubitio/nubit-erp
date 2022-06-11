@@ -1,3 +1,5 @@
+import ThemeManager from "../ThemeManager";
+
 export {};
 
 declare global {
@@ -9,6 +11,7 @@ declare global {
         EventType: any;
         FormType: any;
         Constants: any;
+        ThemeManager: ThemeManager;
     }
 
     interface JQuery {

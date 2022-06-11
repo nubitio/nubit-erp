@@ -13,19 +13,20 @@
     <link rel="stylesheet" href="{{ asset('assets/css/easyui.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+    {{ encore_entry_link_tags('main') }}
     <!-- endbuild -->
     <!-- build:js ../assets/js/lib.min.js -->
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
     <script src="{{ asset('assets/js/config.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
+    {{ encore_entry_script_tags('main') }}
     <!-- endbuild -->
 </head>
-<body class="login">
+<body class="login wrapper">
 <div class="container-fluid login-container h-100">
     <div class="row h-100 justify-content-center align-items-center">
-        <div class="col-5 h-100 d-none d-sm-block">
+        <div class="col-5 h-100 d-none d-sm-block login-art">
             <div class="row h-auto justify-content-center">
                 <div class="col-md-8">
                     <div class="mt-4" style="max-width:200px; height:50px; overflow:hidden">
@@ -39,7 +40,7 @@
                     <div class="mt-5">
                         <h1>Sistema de ventas Efact</h1>
                     </div>
-                    <div class="mt-4">
+                    <div class="mt-4 lead text-muted">
                         Gestiona tus ventas en un solo lugar
                     </div>
                 </div>
@@ -70,17 +71,6 @@
         <div id="home_lista_local"></div>
     </div>
 </div>
-<script>
-    window.onload = function () {
-        const theme = localStorage.getItem('theme');
-
-        if (theme === 'dark') {
-            document.body.classList.add('dark-theme');
-        } else {
-            document.body.classList.add('light-theme');
-        }
-    };
-</script>
 <script src="{{ asset('assets/js/pages/login/index.js') }}"></script>
 </body>
 </html>
