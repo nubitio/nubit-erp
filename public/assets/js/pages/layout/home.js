@@ -114,4 +114,5 @@ app.home = (function () {
         loadOptions: loadOptions
     };
 })();
+app.home.init();
 app.home.loadOptions();
