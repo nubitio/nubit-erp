@@ -98,7 +98,7 @@ app.local_comprobante = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog, fields);
+        form = new window.Form(dialog.id, fields);
     };
 
     return {
