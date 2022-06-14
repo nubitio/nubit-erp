@@ -2,11 +2,11 @@
 
 namespace App\Model;
 
-use App\Model\OptionsModel;
 use App\Util\TipoDoc;
 use DB\SQL\Mapper;
 use mysql_xdevapi\Exception;
 use PDO;
+use Symfony\Component\Uid\Uuid;
 
 class MovimientoModel extends BaseModel
 {
@@ -243,16 +243,12 @@ class MovimientoModel extends BaseModel
                 $serie = null;
                 $numero = null;
             }
-            $key = $this->db->exec("SELECT UUID() AS uuid");
-            $uuid = $key[0]['uuid'];
-            if($tipo_id == 2)
-            {
+            $uuid = Uuid::v4();
+            if ($tipo_id == 2) {
                 try {
                     $cashBox = $this->cajaModel->getCurrentActiveCashBox();
-                }
-                catch (\Exception $e)
-                {
-                    return ['success'=>false, 'msg'=>'No puedes retirar productos sin una caja activa'];
+                } catch (\Exception $e) {
+                    return ['success' => false, 'msg' => 'No puedes retirar productos sin una caja activa'];
                 }
             }
             $this->dao->movimiento_id = $uuid;
@@ -263,20 +259,20 @@ class MovimientoModel extends BaseModel
             $this->dao->estado = 1;
             $this->dao->igv = 18;
             $this->dao->recargo_consumo = (int)$this->getOption('app_option_rc');
-            if($tipo_id == 2)
-            {
+            if ($tipo_id == 2) {
                 $this->dao->caja_id = $cashBox['caja_id'];
             }
             $this->dao->created_by = $this->current_user_id;
             $this->dao->date_created = date('Y-m-d H:i:s');
+            if (!isset($this->dao->descuento) || $this->dao->descuento == '') {
+                $this->dao->descuento = 0.00;
+            }
             $this->dao->save();
             $query = 'INSERT INTO movimiento_detalle (`movimiento_id`, `producto_id`, `cantidad`, `precio_unitario`, `descuento`, `precio_total`) VALUES ';
             $query_parts = array();
             $detalle = $_POST['detalle'];
             for ($i = 0; $i < count($detalle['producto']); $i++) {
-                if(isset($detalle['descuento'][$i])) {
-                    $detalle['descuento'][$i] = $detalle['descuento'][$i];
-                } else {
+                if (!isset($detalle['descuento'][$i]) || $detalle['descuento'][$i] == '') {
                     $detalle['descuento'][$i] = 0.00;
                 }
                 $query_parts[] = "('" . $uuid . "', '" . $detalle['producto'][$i] . "', '" . $detalle['cantidad'][$i] . "', '" . $detalle['unitario'][$i] . "', '" . $detalle['descuento'][$i] . "', '" . $detalle['total'][$i] . "')";
@@ -299,8 +295,7 @@ class MovimientoModel extends BaseModel
                 }
             }
             $this->db->commit();
-            if($tipo_id == 2)
-            {
+            if ($tipo_id == 2) {
                 $this->cajaModel->update_caja();
             }
             $venta = array();
@@ -446,12 +441,9 @@ class MovimientoModel extends BaseModel
             INNER JOIN cliente c ON c.ruc = m.cliente_id 
         WHERE
             m.movimiento_id = ?", array($id));
-        if(isset($result[0]))
-        {
+        if (isset($result[0])) {
             $result[0] = $result[0];
-        }
-        else
-        {
+        } else {
             $result[0] = null;
         }
         return $result[0];

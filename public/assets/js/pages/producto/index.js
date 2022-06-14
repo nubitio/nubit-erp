@@ -14,7 +14,7 @@ app.producto = (function () {
     let init = async function () {
         let categories = await loadData('categoria/lista/1', 'categoria_id', 'descripcion');
 
-        const formFields = [
+        const fields = [
             {
                 type: window.FormType.HIDDEN,
                 name: 'producto_id',
@@ -64,7 +64,7 @@ app.producto = (function () {
             },
         ];
 
-        dataGrid = new window.DataGrid('wrapper', formFields, {
+        dataGrid = new window.DataGrid('wrapper', fields, {
             title: 'Productos',
             url: 'producto/get',
             routes: ROUTES,
@@ -72,7 +72,7 @@ app.producto = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, formFields);
+        form = new window.Form(dialog.id, fields);
     };
 
     return {

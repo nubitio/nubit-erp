@@ -100,7 +100,7 @@ $.extend($.fn.panel.methods, {
             });
             m.children('div.panel-mask-msg').remove();
             var mm = $('<div class="panel-mask-msg text"></div>').appendTo(m);
-            msg = msg + ' <i class="fas fa-cog fa-spin fa-lg fa-fw color-accent"></i>';
+            msg = msg + ' <i class="fas fa-circle-notch fa-spin fa-lg fa-fw"></i>';
             mm.html(msg).css({position: 'absolute'}).css({
                 position: 'absolute',
                 top: '50%',
@@ -202,6 +202,22 @@ function activeFormatter(val) {
         return '<span class="badge rounded-pill bg-success">SI</span>';
     } else {
         return '<span class="badge rounded-pill bg-danger">NO</span>';
+    }
+}
+
+function typeFormatter(tipo_id) {
+    if (Number(tipo_id) === 1) {
+        return '<span class="badge bg-primary">INGRESO</span>';
+    } else {
+        return '<span class="badge bg-secondary">SALIDA</span>';
+    }
+}
+
+function typeWarehouseFormatter(tipo_id) {
+    if (Number(tipo_id) === 2) {
+        return '<span class="badge bg-bg-secondary">INSUMOS</span>';
+    } else {
+        return '<span class="badge bg-primary">PRODUCTOS</span>';
     }
 }
 

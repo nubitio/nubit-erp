@@ -2,16 +2,19 @@
 
 namespace App\Controller;
 
+use App\Domain\Category\GetAllCategories;
 use App\Model\CategoriaModel;
 
 class CategoriaController extends BaseController
 {
     private CategoriaModel $model;
+    private GetAllCategories $getAllCategories;
 
     public function __construct()
     {
         parent::__construct();
         $this->model = new CategoriaModel();
+        $this->getAllCategories = $this->container->get(GetAllCategories::class);
     }
 
     public function index()
@@ -21,7 +24,7 @@ class CategoriaController extends BaseController
 
     public function get()
     {
-        $this->json($this->model->get());
+        $this->json($this->getAllCategories->execute());
     }
 
     public function getList()

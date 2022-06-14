@@ -98,7 +98,11 @@ class BotModel extends BaseModel
     private function saleHeader($id)
     {
         $result = $this->db->exec("CALL sp_sale_header(?)", [$id]);
-        return $result[0];
+        if ($result) {
+            return $result[0];
+        } else {
+            return null;
+        }
     }
 
     private function saleDetail($id)
@@ -147,7 +151,7 @@ class BotModel extends BaseModel
         try {
             $note->update();
             return ["success" => true, "msg" => 'Registro actualizado.', "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => null];
         }
     }

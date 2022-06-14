@@ -10,14 +10,8 @@ app.login = (function () {
     let btn_guardar;
     let btn_cancelar;
 
-    let loadTheme = function () {
-        fetch('home/theme')
-            .then(response => response.json())
-            .then(result => {
-                document.body.style.setProperty('--accent-color', result.data.accent_color);
-            })
-            .catch(error => show_error(error))
-            .finally(() => init())
+    window.onload = function () {
+        $('.wrapper').animate({"opacity": 1});
     }
 
     let init = function () {
@@ -171,7 +165,6 @@ app.login = (function () {
     return {
         init: init,
         login: login,
-        loadTheme: loadTheme
     };
 })();
-app.login.loadTheme();
+app.login.init();

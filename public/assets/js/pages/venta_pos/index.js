@@ -281,14 +281,16 @@ app.venta = (function () {
                 iconCls: ICON_ADD,
                 handler: function (e) {
                     /*let formFields = [
-                        {type: FORM_TYPE.TEXT, name: 'ruc', label: 'RUC', required: true},
-                        {type: FORM_TYPE.TEXT, name: 'razon_social', label: 'Razón Social', required: true},
-                        {type: FORM_TYPE.TEXT, name: 'direccion', label: 'Dirección', required: true},
-                        {type: FORM_TYPE.TEXT, name: 'telefono', label: 'Teléfono', required: true},
-                        {type: FORM_TYPE.TEXT, name: 'email', label: 'Email', required: true}
+                        {type: window.FormType.TEXT, name: 'ruc', label: 'RUC', required: true},
+                        {type: window.FormType.TEXT, name: 'razon_social', label: 'Razón Social', required: true},
+                        {type: window.FormType.TEXT, name: 'direccion', label: 'Dirección', required: true},
+                        {type: window.FormType.TEXT, name: 'telefono', label: 'Teléfono', required: true},
+                        {type: window.FormType.TEXT, name: 'email', label: 'Email', required: true}
                     ]
-                    let customerForm = new Form('drawer', 'venta_dg', 'venta_dlg', formFields);
-                    drawer.drawer('expand');*/
+                    let dialog = new window.Dialog('drawer', {width: '100%'})
+                    let customerForm = new window.Form(dialog.id, 'venta_dg', dialog, formFields);
+                    drawer.drawer('expand');
+                    window.Observer.notify(window.EventType.ADD, 'cliente/add')*/
                     nuevo_cliente(cbo_cliente);
                 }
             }]
@@ -699,7 +701,6 @@ app.venta = (function () {
     }
 
     function createInvoice(sale) {
-        console.log(sale);
         if (sale.comprobante_id === null) {
             fetch('sale/invoice/' + sale.movimiento_id)
                 .then(response => response.json())

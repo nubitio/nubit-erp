@@ -4,12 +4,14 @@ import {EventType} from "./EventType";
 
 export default class Dialog {
     private container: HTMLElement;
+    private options: any;
     private dialog: JQuery;
     private positiveButton: JQuery;
     private negativeButton: JQuery;
 
-    constructor(container) {
+    constructor(container, options) {
         this.container = document.getElementById(container);
+        this.options = options || {};
         this.dialog = null;
         this.positiveButton = null;
         this.negativeButton = null;
@@ -21,6 +23,7 @@ export default class Dialog {
         let ref = this;
 
         this.dialog.dialog({
+            width: this.options.width || 400,
             buttons: [{
                 id: 'negative-button',
                 text: Constants.TEXT_CANCEL,
@@ -43,6 +46,8 @@ export default class Dialog {
                 ref.negativeButton.addClass('md-btn-plain');
             }
         });
+
+        this.setupObservers();
     }
 
     setupView() {
@@ -50,6 +55,24 @@ export default class Dialog {
         dialog.setAttribute('id', 'dialog');
         this.container.appendChild(dialog);
         this.dialog = $('#' + dialog.id);
+    }
+
+    setupObservers() {
+        window.Observer.subscribe(EventType.ADD, (data) => {
+            this.show('Nuevo');
+        });
+
+        window.Observer.subscribe(EventType.EDIT, (data) => {
+            this.show('Editar');
+        });
+
+        window.Observer.subscribe(EventType.LOADING, (isLoading) => {
+            this.setLoading(isLoading);
+        });
+
+        window.Observer.subscribe(EventType.SUCCESS, (data) => {
+            this.hide();
+        });
     }
 
     get id() {

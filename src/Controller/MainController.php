@@ -34,7 +34,7 @@ class MainController extends BaseController
             $this->app->set('menus', $menus);
             $this->app->set('view', 'dashboard/index.html');
             $this->render('layout/base.html.twig', [
-                'title' => $this->app->get('TITLE'),
+                'title'   => $this->app->get('TITLE'),
                 'session' => $this->app->get('SESSION')
             ]);
         } else {
@@ -63,10 +63,10 @@ class MainController extends BaseController
             $this->app->set('SESSION.default_almacen', $almacen[0]['almacen_id']);
             $data = [
                 "usuario_id" => $this->app->get('SESSION.usuario_id'),
-                "usuario" => $this->app->get('SESSION.usuario'),
-                "rol_id" => $this->app->get('SESSION.rol_id'),
-                "local_id" => $this->app->get('SESSION.local_id'),
-                "local" => $this->app->get('SESSION.local'),
+                "usuario"    => $this->app->get('SESSION.usuario'),
+                "rol_id"     => $this->app->get('SESSION.rol_id'),
+                "local_id"   => $this->app->get('SESSION.local_id'),
+                "local"      => $this->app->get('SESSION.local'),
                 "almacen_id" => $this->app->get('SESSION.default_almacen')
             ];
             $this->json(array('success' => true, "data" => $data));
@@ -114,11 +114,8 @@ class MainController extends BaseController
 
     public function getTheme()
     {
-        $primaryColor = $this->options->getByName('app_theme_primary_color');
-        $primaryColorDark = $this->options->getByName('app_theme_primary_color_dark');
         $accentColor = $this->options->getByName('app_theme_accent_color');
-        $secondaryColor = $this->options->getByName('app_theme_secondary_color');
 
-        $this->json(['success' => true, 'data' => ['primary_color' => $primaryColor, 'primary_color_dark' => $primaryColorDark, 'accent_color' => $accentColor, 'secondary_color' => $secondaryColor], 'msg' => '']);
+        $this->json(['success' => true, 'accentColor' => $accentColor]);
     }
 }

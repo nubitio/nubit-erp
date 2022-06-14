@@ -24,7 +24,17 @@ class CategoriaModel extends BaseModel
         if ($type == 0) {
             return $this->db->exec("select * from categoria where ifnull(parent_id, '') = ''");
         }
-        return $this->db->exec("select * from categoria where ifnull(parent_id, '') != ''");
+        return $this->db->exec("
+            SELECT
+                p.categoria_id,
+                case when ifnull(c.parent_id, '') != '' then CONCAT(p.descripcion,'-',c.descripcion) ELSE p.descripcion end as descripcion,
+                p.parent_id,
+                p.imagen,
+                p.estado
+            FROM
+                categoria p
+                LEFT JOIN categoria c ON c.parent_id = p.categoria_id
+        ");
     }
 
     public function insert()

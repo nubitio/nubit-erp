@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dcc1e4d65418fd19f96ee1a28c73edd2",
+    "content-hash": "f8927d3b00b9ad67e279c7bb182f0f75",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2508,25 +2508,27 @@
         },
         {
             "name": "messagebird/php-rest-api",
-            "version": "v1.20.0",
+            "version": "v3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/messagebird/php-rest-api.git",
-                "reference": "f7c7ae490b0b2d9d228bac61b5d855c4623f7fad"
+                "reference": "c2aa9e2319604cb26571c4aed71c335c67380beb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/messagebird/php-rest-api/zipball/f7c7ae490b0b2d9d228bac61b5d855c4623f7fad",
-                "reference": "f7c7ae490b0b2d9d228bac61b5d855c4623f7fad",
+                "url": "https://api.github.com/repos/messagebird/php-rest-api/zipball/c2aa9e2319604cb26571c4aed71c335c67380beb",
+                "reference": "c2aa9e2319604cb26571c4aed71c335c67380beb",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "php": ">=7.0"
+                "firebase/php-jwt": "^5.4",
+                "php": ">=7.3|~8.0.0|~8.1.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^6.0|^7.5"
+                "phpunit/phpunit": "^9.5.14",
+                "vimeo/psalm": "4.18.1"
             },
             "type": "library",
             "autoload": {
@@ -2551,7 +2553,7 @@
                 "issues": "https://github.com/messagebird/php-rest-api/issues",
                 "source": "https://github.com/messagebird/php-rest-api"
             },
-            "time": "2021-03-25T21:53:01+00:00"
+            "time": "2022-03-04T07:29:01+00:00"
         },
         {
             "name": "mike42/escpos-php",
