@@ -98,7 +98,7 @@ app.local_comprobante = (function () {
 
         dialog = new window.Dialog('wrapper');
 
-        form = new window.Form(dialog.id, dataGrid.id, dialog, fields); //remove dialog and grid id
+        form = new window.Form(dialog, fields);
     };
 
     return {
