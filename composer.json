@@ -16,7 +16,7 @@
     "phpoffice/phpspreadsheet": "^1.16",
     "mike42/escpos-php": "^2.2",
     "phpmailer/phpmailer": "^6.2.0",
-    "messagebird/php-rest-api": "^1.19",
+    "messagebird/php-rest-api": "^3.0",
     "firebase/php-jwt": "^5.2",
     "greenter/lite": "^4.2",
     "greenter/htmltopdf": "^4.3",

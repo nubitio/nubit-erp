@@ -8,7 +8,7 @@ namespace App\Domain\Note;
 class NoteDetail implements \JsonSerializable
 {
     /**
-     * @var int
+     * @var string
      */
     private $notaId;
 
@@ -45,7 +45,7 @@ class NoteDetail implements \JsonSerializable
 
 
     /**
-     * @return int
+     * @return string
      */
     public function getNotaId()
     {
@@ -53,7 +53,7 @@ class NoteDetail implements \JsonSerializable
     }
 
     /**
-     * @param int $notaId
+     * @param string $notaId
      * @return NoteDetail
      */
     public function setNotaId($notaId)

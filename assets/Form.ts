@@ -6,17 +6,13 @@ import {EventType} from "./EventType";
 export default class Form {
     private container: HTMLElement;
     private form: JQuery;
-    private dataGrid: JQuery;
-    private dialog: any;
     private fields: any;
     private formFields: {};
     private route: null;
 
-    constructor(container, dataGrid, dialog, fields) {
+    constructor(container, fields) {
         this.container = document.getElementById(container);
         this.form = null;
-        this.dataGrid = $('#' + dataGrid);
-        this.dialog = dialog;
         this.fields = fields;
         this.formFields = {};
         this.route = null;
@@ -59,11 +55,11 @@ export default class Form {
         });
 
         window.Observer.subscribe(EventType.EDIT, (data) => {
-            this.edit(data.route, data.id);
+            this.edit(data.route, data.row);
         });
 
         window.Observer.subscribe(EventType.DELETE, (data) => {
-            this.delete(data.route, data.id);
+            this.delete(data.route, data.row);
         });
 
         window.Observer.subscribe(EventType.SAVE, () => {
@@ -183,6 +179,11 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
+    getIdField() {
+        let idField = this.fields.find(field => field.isKey === true);
+        return idField.name;
+    }
+
     get field() {
         return this.formFields;
     }
@@ -190,7 +191,6 @@ export default class Form {
     add(route) {
         this.form.form('clear');
         this.route = route;
-        this.dialog.show('Nuevo');
 
         this.fields.forEach(field => {
             if (field.type === FormType.SWITCH) {
@@ -201,15 +201,9 @@ export default class Form {
         });
     }
 
-    edit(route, id) {
-        let row = this.dataGrid.datagrid('getSelected');
-        if (row) {
-            this.dialog.show('Editar');
-            this.form.form('load', row);
-            this.route = route + row[id];
-        } else {
-            SharedUtils.showMessage('Info', 'Seleccione un registro para editar');
-        }
+    edit(route, row) {
+        this.form.form('load', row);
+        this.route = route + row[this.getIdField()];
     }
 
     save() {
@@ -220,7 +214,7 @@ export default class Form {
             onSubmit: function () {
                 let valid = ref.form.form('validate');
                 if (valid) {
-                    ref.dialog.setLoading(true);
+                    window.Observer.notify(EventType.LOADING, true);
                 }
                 return valid;
             },
@@ -228,43 +222,37 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        ref.dialog.hide();
-                        ref.dataGrid.datagrid('reload');
+                        window.Observer.notify(EventType.SUCCESS);
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);
                     }
-                    ref.dialog.setLoading(false);
                 } catch (e) {
                     SharedUtils.showMessage('Error', e);
-                    ref.dialog.setLoading(false);
+                } finally {
+                    window.Observer.notify(EventType.LOADING, false);
                 }
             }
         });
     }
 
-    delete(route, id) {
+    delete(route, row) {
         let ref = this;
-        let row = this.dataGrid.datagrid('getSelected');
-        if (row) {
-            ($ as any).messager.confirm('Confirmar', Constants.TEXT_CONFIRM, function (r) {
-                if (r) {
-                    $.post(route + row[id])
-                        .done(function (result) {
-                            if (result.success) {
-                                ref.dataGrid.datagrid('reload');
-                                SharedUtils.showMessage('Info', result.msg);
-                            } else {
-                                SharedUtils.showMessage('Error', result.msg);
-                            }
-                        })
-                        .fail(function (xhr, status, error) {
-                            SharedUtils.showMessage('Error', error);
-                        });
-                }
-            });
-        } else {
-            SharedUtils.showMessage('Info', 'Seleccione un registro');
-        }
+        ($ as any).messager.confirm('Confirmar', Constants.TEXT_CONFIRM, function (r) {
+            if (r) {
+                $.post(route + row[ref.getIdField()])
+                    .done(function (result) {
+                        if (result.success) {
+                            window.Observer.notify(EventType.SUCCESS);
+                            SharedUtils.showMessage('Info', result.msg);
+                        } else {
+                            SharedUtils.showMessage('Error', result.msg);
+                        }
+                    })
+                    .fail(function (xhr, status, error) {
+                        SharedUtils.showMessage('Error', error);
+                    });
+            }
+        });
     }
 }

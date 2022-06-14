@@ -499,8 +499,8 @@ class MovimientoController extends BaseController
     {
         $id = $this->app->get('PARAMS.id');
         $result = $this->model->makeInvoice($id);
-        $sale = $this->botModel->getOne($id);
         if ($result['success']) {
+            $sale = $this->botModel->getOne($id);
             if ($sale['success']) {
                 $info = $this->efact->makeInvoice($sale['data']);
                 $this->botModel->updateSaleState($info);
