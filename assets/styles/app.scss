@@ -9,6 +9,7 @@ $primary: darken(#428bca, 20%);
 :root {
   --primary-color: #fff;
   --primary-color-dark: #fbfaff;
+  --secondary-color: #fff;
   --accent-color: 235 156 52;
   --accent-color-contrast: #ced4da;
   --background-color: #fff;
@@ -25,20 +26,24 @@ html, body {
 body.dark-theme {
   --primary-color: #313533 !important;
   --primary-color-dark: #2c302e !important;
+  --secondary-color: #fff !important;
   --accent-color: 235 156 52;
   --accent-color-contrast: #ced4da;
   --background-color: #313533 !important;
   --text-color: #ced4da !important;
+  --text-color-alt: #99a4b1 !important;
   --border-color: #575757 !important;
 }
 
 body.light-theme {
   --primary-color: #fff !important;
   --primary-color-dark: #fbfaff !important;
+  --secondary-color: #000 !important;
   --accent-color: 235 156 52;
   --accent-color-contrast: #6b6f82;
   --background-color: #fff !important;
   --text-color: #6b6f82 !important;
+  --text-color-alt: #545a6d !important;
   --border-color: #D4D4D4 !important;
 }
 
@@ -418,6 +423,10 @@ label {
   text-decoration: none;
 }
 
+.textbox-invalid {
+  border-color: #ffa8a8;
+}
+
 input, textarea, select {
   background-color: var(--background-color);
   color: var(--text-color);
@@ -439,13 +448,13 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   border: 1px solid var(--border-color);
 }
 
-.datagrid-row-selected {
-  background: rgb(var(--accent-color)) !important;
-  color: var(--accent-color-contrast) !important;
-}
-
 .datagrid-row-over,
 .datagrid-header td.datagrid-header-over {
+  background: var(--primary-color-dark);
+  color: var(--text-color);
+}
+
+.datagrid-row-selected {
   background: rgb(var(--accent-color)) !important;
   color: var(--accent-color-contrast) !important;
 }
@@ -486,12 +495,12 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   padding: 10px 12px;
 }
 
-.combobox-item-selected {
-  background-color: rgb(var(--accent-color)) !important;
-  color: var(--accent-color-contrast) !important;
+.combobox-item-hover {
+  background-color: var(--primary-color-dark);
+  color: var(--text-color);
 }
 
-.combobox-item-hover {
+.combobox-item-selected {
   background-color: rgb(var(--accent-color)) !important;
   color: var(--accent-color-contrast) !important;
 }
@@ -783,7 +792,15 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 }
 
 .calendar-today {
-  color: #0000ff !important;
+  background-color: var(--primary-color-dark);
+  color: var(--secondary-color);
+}
+
+.calendar-selected {
+  background-color: var(--primary-color-dark);
+  color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  padding: 0;
 }
 
 .datebox-button a {
@@ -798,26 +815,38 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   background-color: var(--background-color);
 }
 
+.sidemenu .accordion .accordion-header {
+  background: var(--primary-color-dark);
+  color: var(--text-color-alt);
+}
+
+.sidemenu .accordion .accordion-header:hover {
+  color: var(--secondary-color);
+}
+
 .sidemenu .accordion .panel-title {
   height: 40px;
   line-height: 40px;
-  color: var(--text-color);
+  color: var(--text-color-alt);
   background: transparent !important;
+  font-weight: 500;
+  font-size: .9rem;
 }
 
-.sidemenu .accordion .accordion-header {
-  background: var(--primary-color-dark);
-  color: var(--text-color);
+.sidemenu .accordion-header-selected .panel-title,
+.sidemenu .accordion .panel-title:hover {
+  color: var(--secondary-color);
 }
 
 .sidemenu .accordion .accordion-body {
   background: var(--primary-color-dark);
-  color: var(--text-color);
+  color: var(--text-color-alt);
   padding: 0;
 }
 
 .sidemenu .accordion .accordion-header-selected {
   background: var(--background-color);
+  color: var(--secondary-color);
 }
 
 .sidemenu .accordion .accordion-collapse {
@@ -829,27 +858,26 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   line-height: 50px;
 }
 
+.sidemenu .tree-title {
+  margin: 11px 0;
+  padding: 0 25px;
+  font-size: .85rem;
+  font-weight: 500;
+}
+
 .sidemenu .tree-node-hover {
-  background: #9e9e9e;
-  color: #fff;
-  border-top-right-radius: 50px;
-  border-bottom-right-radius: 50px;
-  margin-right: 10px;
+  background: none;
+  color: var(--secondary-color);
 }
 
 .sidemenu .tree-node-selected {
   border-right: 2px solid rgb(var(--accent-color));
   background: rgb(var(--accent-color));
   color: var(--accent-color-contrast);
-  border-left: 2px solid #f3f3f3;
+  border-left: 2px solid var(--border-color);
   border-top-right-radius: 50px;
   border-bottom-right-radius: 50px;
   margin-right: 10px;
-}
-
-.sidemenu .tree-title {
-  margin: 11px 0;
-  padding: 0 25px;
 }
 
 .sidemenu .accordion-header .panel-icon {
@@ -871,7 +899,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   content: '';
   position: absolute;
   right: 20px;
-  top: 50%;
+  top: 45%;
   margin-top: -3px;
   border-width: 0 1px 1px 0;
 }
@@ -893,7 +921,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 }
 
 .sidemenu-tooltip .accordion {
-  border-color: #343433;
+  border-color: var(--border-color);
 }
 
 .accordion {
