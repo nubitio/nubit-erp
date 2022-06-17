@@ -92,6 +92,8 @@
                 $(this).panel('hideMask');
                 $('.wrapper').animate({"opacity": 1});
                 $('#wrapper').animate({"opacity": 1});
+                let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
+                sidebar.sidemenu('select', selectedMenu);
             }
         });
 
@@ -105,6 +107,7 @@
                 response.forEach(item => {
                     if (item.children) {
                         item.children.forEach(child => {
+                            child.parent = item.text;
                             child.iconCls = '';
                         })
                     }
@@ -117,6 +120,7 @@
                     border: false,
                     multiple: false,
                     onSelect: function (item) {
+                        localStorage.setItem('selectedMenu', JSON.stringify(item));
                         load_page(item.url, item.text);
                     }
                 });
