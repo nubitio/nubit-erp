@@ -157,6 +157,17 @@ $.extend($.fn.validatebox.defaults.rules, {
     }
 });
 
+$.extend($.fn.sidemenu.methods, {
+    select: function (jq, item) {
+        let accordion = $('.sidemenu .accordion');
+        accordion.accordion('select', item.parent);
+        let selected = accordion.accordion('getPanel', item.parent);
+        let tree = selected.find('.tree');
+        let node = tree.tree('find', {text: item.text});
+        tree.tree('select', node.target);
+    }
+});
+
 function rucValidator(ruc) {
     let rucCopy = ruc;
     let validStartWith = [10, 15, 16, 17, 20];
