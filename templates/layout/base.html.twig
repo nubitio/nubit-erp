@@ -159,6 +159,8 @@
     function toggle() {
         let opts = sidebar.sidemenu('options');
         setSidebarCollapsed(!opts.collapsed);
+        let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
+        sidebar.sidemenu('select', selectedMenu);
     }
 
     function setSidebarCollapsed(collapse) {
