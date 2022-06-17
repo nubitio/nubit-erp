@@ -5,6 +5,8 @@ $primary: darken(#428bca, 20%);
 @import "~@fortawesome/fontawesome-free/scss/solid";
 @import "~@fortawesome/fontawesome-free/scss/brands";
 @import "~@fortawesome/fontawesome-free/scss/fontawesome";
+@import "~animate.css";
+@import "easyui.css";
 
 :root {
   --primary-color: #fff;
@@ -15,12 +17,14 @@ $primary: darken(#428bca, 20%);
   --background-color: #fff;
   --text-color: #6b6f82;
   --border-color: #D4D4D4;
+  --animate-duration: 300ms;
+  --font: 'Ubuntu', sans-serif;
 }
 
 html, body {
   height: 100%;
   color: var(--text-color);
-  font-family: 'Ubuntu', sans-serif;
+  font-family: var(--font);
 }
 
 body.dark-theme {
@@ -201,18 +205,6 @@ pre {
   border-left: 1px solid #ddd;
   border-right: 1px solid #fff;
   margin: 2px 1px;
-}
-
-.fadeInUp {
-  animation-duration: 0.3s;
-}
-
-.zoomIn {
-  animation-duration: 0.3s;
-}
-
-.zoomOut {
-  animation-duration: 0.3s;
 }
 
 .table {
@@ -920,8 +912,45 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   display: none;
 }
 
+.sidemenu-collapsed .accordion .accordion-header:hover {
+  background-color: var(--background-color);
+  color: var(--secondary-color);
+}
+
+.sidemenu-tooltip {
+  opacity: 1 !important;
+  font-family: var(--font);
+  margin: 0 -12px !important;
+}
+
 .sidemenu-tooltip .accordion {
   border-color: var(--border-color);
+}
+
+.sidemenu-tooltip .tooltip-arrow-outer, .sidemenu-tooltip .tooltip-arrow {
+  display: none !important;
+}
+
+.sidemenu-tooltip .accordion-header::after,
+.sidemenu-tooltip .tree-node-nonleaf::after {
+  border-style: none;
+  width: 0;
+  height: 0;
+  border-width: 0;
+}
+
+.sidemenu-tooltip .accordion .accordion-header {
+  background: var(--background-color);
+}
+
+.sidemenu-tooltip .accordion .panel-title {
+  padding-left: 10px;
+  color: var(--secondary-color);
+}
+
+.sidemenu-tooltip .tree-title {
+  margin: 11px 0;
+  padding: 0 5px;
 }
 
 .accordion {
@@ -931,7 +960,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .tree-file {
   background: transparent !important;
-  margin-right: 8px;
+  margin-right: 0;
 }
 
 /*scrollbar*/

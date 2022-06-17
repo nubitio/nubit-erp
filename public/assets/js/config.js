@@ -46,10 +46,10 @@ TEXT_LOADING = 'Procesando, por favor espere …';
 // Icons
 ICON_CLEAR = 'fas fa-times color-grey-dark';
 // Animation
-WINDOW_OPEN_ANIMATION = 'fadeInUp';
-WINDOW_CLOSE_ANIMATION = 'fadeInDown';
-DIALOG_OPEN_ANIMATION = 'zoomIn';
-DIALOG_CLOSE_ANIMATION = 'zoomOut';
+WINDOW_OPEN_ANIMATION = 'animate__fadeInUp';
+WINDOW_CLOSE_ANIMATION = 'animate__fadeInDown';
+DIALOG_OPEN_ANIMATION = 'animate__zoomIn';
+DIALOG_CLOSE_ANIMATION = 'animate__zoomOut';
 // Helpers
 mxBasePath = 'src/assets/js/mxgraph';
 // Constants
