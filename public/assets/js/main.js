@@ -162,6 +162,10 @@ $.extend($.fn.sidemenu.methods, {
         let accordion = $('.sidemenu .accordion');
         accordion.accordion('select', item.parent);
         let selected = accordion.accordion('getPanel', item.parent);
+        $('.sidemenu .accordion .accordion-header').each((index, element) => {
+            $(element).removeClass('accordion-header-selected')
+        });
+        selected.prev().addClass('accordion-header-selected');
         let tree = selected.find('.tree');
         let node = tree.tree('find', {text: item.text});
         tree.tree('select', node.target);

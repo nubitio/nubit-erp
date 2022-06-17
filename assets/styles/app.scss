@@ -129,15 +129,30 @@ pre {
 }
 
 .l-btn {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1.5;
   color: var(--text-color);
-  background: var(--background-color);
-  border: 1px solid var(--border-color);
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  background-color: transparent;
+  border: 1px solid transparent;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  border-radius: .25rem;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
 .l-btn-plain:hover {
-  background: var(--background-color);
-  color: var(--text-color);
+  background: var(--primary-color-dark);
+  color: var(--text-color-alt);
   border: 1px solid var(--border-color);
+  padding: .375rem .75rem;
 }
 
 .menu-bars {
@@ -428,6 +443,12 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   color: rgb(var(--accent-color));
 }
 
+.datagrid .panel-title {
+  font-size: 1rem;
+  padding: 0.75rem 0.5rem;
+  height: auto;
+}
+
 .datagrid-row {
   height: 36px;
 }
@@ -480,6 +501,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   background-color: rgb(var(--accent-color)) !important;
   border-color: rgb(var(--accent-color)) !important;
   color: var(--accent-color-contrast) !important;
+  border-radius: 0;
 }
 
 .combobox-item, .combobox-group, .combobox-stick {
@@ -678,6 +700,15 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   background-color: var(--background-color);
 }
 
+.pagination .l-btn {
+  padding: 0.25rem 0.5rem;
+}
+
+.pagination .l-btn span {
+  font-size: 0;
+  line-height: 1.7rem;
+}
+
 .pagination-first {
   background: var(--background-color);
 }
@@ -685,6 +716,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .pagination-first::after {
   font: var(--fa-font-solid);
   content: '\f100';
+  font-size: 0.875rem;
 }
 
 .pagination-prev {
@@ -694,6 +726,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .pagination-prev::after {
   font: var(--fa-font-solid);
   content: '\f104';
+  font-size: 0.875rem;
 }
 
 .pagination-next {
@@ -703,6 +736,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .pagination-next::after {
   font: var(--fa-font-solid);
   content: '\f105';
+  font-size: 0.875rem;
 }
 
 .pagination-last {
@@ -712,6 +746,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .pagination-last::after {
   font: var(--fa-font-solid);
   content: '\f101';
+  font-size: 0.875rem;
 }
 
 .pagination-load {
@@ -721,6 +756,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .pagination-load::after {
   font: var(--fa-font-solid);
   content: '\f2f1';
+  font-size: 0.875rem;
 }
 
 .pagination-loading {
@@ -732,6 +768,10 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   font: var(--fa-font-solid);
   content: '\f1ce';
   animation: fa-spin 2s infinite linear;
+}
+
+.pagination-info {
+  line-height: 2.5rem;
 }
 
 .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
@@ -852,7 +892,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .sidemenu .tree-title {
   margin: 11px 0;
-  padding: 0 25px;
+  padding-left: 34px;
   font-size: .85rem;
   font-weight: 500;
 }
