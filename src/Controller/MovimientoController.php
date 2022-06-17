@@ -494,13 +494,13 @@ class MovimientoController extends BaseController
             $discountAmount = $total * $discount / 100;
             $discountAmount = number_format($discountAmount, 2, '.', '');
             $this->app->set('discount', $this->money_pen($discountAmount));
-            $total = $total - $discount;
+            $total = $total - $discountAmount;
         }
         $this->app->set('total', $this->money_pen($total));
         $this->app->set('obs', $sale['cabecera']['glosa']);
         $template = new Template;
         //echo $template->render('templates/invoice.html');
-        $this->report($template->render('reportes/invoice.html'));
+        $this->report($template->render('reportes/invoice.html.twig'));
     }
 
     function makeInvoice()
