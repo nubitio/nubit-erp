@@ -488,7 +488,15 @@ class MovimientoController extends BaseController
         $this->app->set('date', date('d/m/Y', strtotime($sale['cabecera']['fecha'])));
         $this->app->set('address', $sale['cabecera']['direccion_cliente']);
         $this->app->set('detail', $sale['detalle']);
-        $this->app->set('total', $this->money_pen($sale['cabecera']['total']));
+        $total = $sale['cabecera']['total'];
+        $discount = $sale['cabecera']['descuento'];
+        if ($sale['cabecera']['descuento'] > 0) {
+            $discountAmount = $total * $discount / 100;
+            $discountAmount = number_format($discountAmount, 2, '.', '');
+            $this->app->set('discount', $this->money_pen($discountAmount));
+            $total = $total - $discount;
+        }
+        $this->app->set('total', $this->money_pen($total));
         $this->app->set('obs', $sale['cabecera']['glosa']);
         $template = new Template;
         //echo $template->render('templates/invoice.html');

@@ -76,6 +76,14 @@
             <div class="col-lg-4 col-sm-5 ml-auto">
                 <table class="table table-clear">
                     <tbody>
+                    <check if="{{ isset(@discount) }}">
+                        <true>
+                            <tr>
+                                <td class="left">Descuento</td>
+                                <td class="right">{{ @discount }}</td>
+                            </tr>
+                        </true>
+                    </check>
                     <tr>
                         <td class="left">
                             <strong class="text-dark">Total</strong></td>
