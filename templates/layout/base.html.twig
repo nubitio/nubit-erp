@@ -8,12 +8,8 @@
     <!-- Icons -->
     <link rel="shortcut icon" href="{{ asset('assets/images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
-    <!-- build:css ../assets/css/styles.css -->
-    <link rel="stylesheet" href="{{ asset('assets/css/easyui.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/animate.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/lightbox.min.css') }}">
     {{ encore_entry_link_tags('main') }}
-    <!-- endbuild -->
     <!-- build:js ../assets/js/lib.min.js -->
     <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
@@ -124,6 +120,9 @@
                         load_page(item.url, item.text);
                     }
                 });
+
+                let sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
+                setSidebarCollapsed(sidebarCollapsed === 'true');
             })
             .fail(function (xhr, status, error) {
                 console.log(error);
@@ -159,16 +158,21 @@
 
     function toggle() {
         let opts = sidebar.sidemenu('options');
-        sidebar.sidemenu(opts.collapsed ? 'expand' : 'collapse');
-        opts = sidebar.sidemenu('options');
+        setSidebarCollapsed(!opts.collapsed);
+    }
+
+    function setSidebarCollapsed(collapse) {
+        sidebar.sidemenu(collapse ? 'collapse' : 'expand');
+        let opts = sidebar.sidemenu('options');
         let west = layout.layout('panel', 'west');
         west.panel('resize', {
-            width: opts.collapsed ? 52 : 252
+            width: opts.collapsed ? 50 : 250
         });
         layout.layout('resize');
         sidebar.sidemenu('resize', {
             width: opts.collapsed ? 50 : 250
         });
+        localStorage.setItem('sidebarCollapsed', opts.collapsed);
     }
 
     function load_page(url, title) {
