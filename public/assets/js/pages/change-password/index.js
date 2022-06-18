@@ -15,7 +15,7 @@ app.password = (function () {
                 id: 'password_cancel',
                 text: TEXT_CANCEL,
                 handler: function () {
-                    load_page('dashboard', 'Dashboard');
+                    loadPage('dashboard', 'Dashboard');
                 }
             }, {
                 id: 'password_save',

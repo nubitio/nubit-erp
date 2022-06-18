@@ -129,6 +129,22 @@ pre {
 }
 
 .l-btn {
+  color: var(--text-color);
+  background: var(--background-color);
+  border: 1px solid var(--border-color);
+}
+
+.l-btn:hover {
+  background: var(--primary-color-dark);
+  color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+}
+
+.l-btn-focus {
+  outline: none;
+}
+
+.l-btn-plain {
   display: inline-block;
   font-weight: 400;
   line-height: 1.5;
@@ -140,7 +156,7 @@ pre {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
-  background-color: transparent;
+  background: transparent;
   border: 1px solid transparent;
   padding: .375rem .75rem;
   font-size: 1rem;
@@ -386,6 +402,19 @@ label {
   background-color: var(--background-color);
 }
 
+.messager-body .messager-input {
+  width: 100%;
+  min-height: calc(2.25rem + 2px) !important;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5 !important;
+  color: var(--text-color) !important;
+  outline-style: none;
+  border-radius: .25rem;
+  border: 1px solid var(--border-color);
+}
+
 .textbox .textbox-text {
   display: block;
   width: 100% !important;
@@ -565,6 +594,10 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .textbox-label {
   width: 80%;
+}
+
+.datagrid-cell a {
+  text-decoration: none !important;
 }
 
 .datagrid-cell, .datagrid-cell-group {
@@ -792,6 +825,17 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .table {
   color: var(--text-color);
+  border-color: var(--border-color);
+}
+
+.table > :not(:first-child) {
+  border-top: 2px solid var(--border-color);
+}
+
+.table-secondary {
+  --bs-table-bg: var(--primary-color-dark);
+  color: var(--text-color-alt);
+  border-color: var(--border-color);
 }
 
 .calendar-body th {

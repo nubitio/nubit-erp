@@ -50,7 +50,7 @@
                 Local
             </div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="load_page('password', 'Cambiar contraseña')">Cambiar
+            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar
                 Contraseña
             </div>
             <div class="menu-sep"></div>
@@ -89,7 +89,9 @@
                 $('.wrapper').animate({"opacity": 1});
                 $('#wrapper').animate({"opacity": 1});
                 let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
-                sidebar.sidemenu('select', selectedMenu);
+                if (selectedMenu !== null) {
+                    sidebar.sidemenu('select', selectedMenu);
+                }
             }
         });
 
@@ -117,7 +119,7 @@
                     multiple: false,
                     onSelect: function (item) {
                         localStorage.setItem('selectedMenu', JSON.stringify(item));
-                        load_page(item.url, item.text);
+                        loadPage(item.url, item.text, true);
                     }
                 });
 
@@ -131,15 +133,16 @@
 
     window.onpopstate = function (event) {
         if (event.state) {
-            load_page(event.state.item.url, history.state.item.text);
+            loadPage(event.state.item.url, history.state.item.text);
         }
     };
 
     window.onload = function () {
         if (history.state) {
-            load_page(history.state.item.url, history.state.item.text);
+            let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
+            loadPage(history.state.item.url, history.state.item.text, selectedMenu !== null);
         } else {
-            load_page('dashboard', 'dashboard');
+            loadPage('dashboard', 'dashboard');
         }
 
         window.Observer.subscribe(window.EventType.THEME_CHANGE, (theme) => {
@@ -177,7 +180,10 @@
         localStorage.setItem('sidebarCollapsed', opts.collapsed);
     }
 
-    function load_page(url, title) {
+    function loadPage(url, title, isMenu = false) {
+        if (!isMenu) {
+            localStorage.removeItem('selectedMenu');
+        }
         if (url !== current) {
             window.Observer.unsubscribeAll();
             let state = {url: url, text: title};
