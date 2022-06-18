@@ -40,7 +40,7 @@ app.venta = (function () {
                         title: 'Registro ventas',
                         msg: 'No se encontro una caja activa para el usuario actual',
                         fn: function () {
-                            load_page('caja', 'caja');
+                            loadPage('caja', 'caja');
                         }
                     });
                 }

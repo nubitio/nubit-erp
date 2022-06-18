@@ -81,7 +81,7 @@ app.home = (function () {
                     if (response.success) {
                         dlg.dialog('close');
                         lbl_local.html(row.descripcion);
-                        load_page('dashboard', 'dashboard');
+                        loadPage('dashboard', 'dashboard');
                         localStorage.setItem('session', JSON.stringify(response.data));
                     }
                 })
