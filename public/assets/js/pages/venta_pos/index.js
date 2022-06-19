@@ -3,18 +3,15 @@ var wcppPingDelay_ms = 5000;
 app.venta = (function () {
     let is_loading = false;
     let route_venta;
-    let route_cliente;
     let position = 1;
     let orden_id = 0;
     let venta_productos;//lista productos
 
-    let dg = $('#venta_dg');
     let dlg = $('#venta_dlg');
     let fm = $('#venta_fm');
     let cbo_operacion = $('#venta_operacion');
     let cbo_cliente = $('#venta_cliente');
     let txt_glosa = $('#venta_glosa');
-    let btn_addcliente = $('#venta_addcliente');
     let cbo_pago = $('#venta_pago');
     let cbo_tarjeta = $('#venta_tarjeta');
     let tb_detalle = $('#venta_tb_detalle');
@@ -25,10 +22,9 @@ app.venta = (function () {
     let btn_cancelar;
     let txt_vuelto = $('#venta_vuelto');
 
-    let cliente_dialog_obj;
-
     let session;
     let options;
+    let dataGrid;
 
     function caja_check_exist() {
         fetch('caja/check')
@@ -79,94 +75,79 @@ app.venta = (function () {
         load();
         session = JSON.parse(localStorage.getItem('session'));
         options = JSON.parse(localStorage.getItem('options'));
-        dg.datagrid({
+        let fields = [
+            {
+                type: window.FormType.HIDDEN,
+                name: 'movimiento_id',
+                isKey: true,
+                visible: false
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Fecha',
+                name: 'fecha',
+                required: true,
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Cliente',
+                name: 'cliente',
+                width: 200,
+                required: true,
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Pago',
+                name: 'tipo_pago',
+                formatter: tipopagocell,
+                required: true,
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Nota',
+                name: 'serie',
+                align: 'center',
+                formatter: noteFormatter,
+                required: true,
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Comprobante',
+                name: 'iserie',
+                align: 'center',
+                formatter: invoiceFormatter,
+                required: true,
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Total',
+                name: 'total',
+                align: 'right',
+                visible: true,
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Estado',
+                name: 'estado',
+                align: 'center',
+                formatter: statusFormatter,
+                visible: true,
+            }
+        ]
+
+        dataGrid = new window.DataGrid('wrapper', fields, {
             title: 'Ventas',
             url: 'venta/get',
-            remoteFilter: true,
-            toolbar: [{
-                text: TEXT_ADD,
-                iconCls: ICON_ADD,
-                handler: function () {
-                    venta_nuevo(false);
-                }
-            }, '-', {
-                text: 'Vista Previa',
-                iconCls: 'fas fa-eye fa-1x text-info',
-                handler: function () {
-                    venta_preview();
-                }
-            }, '-', {
-                text: 'Imprimir',
-                iconCls: 'fas fa-print fa-1x text-primary',
-                handler: function () {
-                    venta_print();
-                }
-            }, '-', {
-                text: 'Anular',
-                iconCls: ICON_DELETE,
-                handler: function () {
-                    venta_anular();
-                }
-            }, '-', {
-                text: 'Comprobante',
-                iconCls: ICON_INVOICE,
-                handler: function () {
-                    makeInvoice();
-                }
-            }],
-            columns: [[{
-                field: 'fecha',
-                title: 'Fecha',
-                sortable: true
-            }, {
-                field: 'operacion',
-                title: 'Operacion',
-                sortable: true
-            }, {
-                field: 'cliente',
-                title: 'Cliente',
-                sortable: true,
-                width: 150
-            }, {
-                field: 'tipo_pago',
-                title: 'Pago',
-                formatter: tipopagocell
-            }, {
-                field: 'serie',
-                title: 'Nota',
-                align: 'center',
-                formatter: noteFormatter
-            }, {
-                field: 'iserie',
-                title: 'Comprobante',
-                align: 'center',
-                formatter: invoiceFormatter
-            }, {
-                field: 'total',
-                title: 'Total',
-                align: 'right'
-            }, {
-                field: 'estado',
-                title: 'Estado',
-                align: 'center',
-                formatter: statusFormatter
-            }]],
-            view: detailview,
-            detailFormatter: function (index, row) {
-                return '<div style="padding:2px"><table class="ddv"></table></div>';
-            },
-            onExpandRow: function (index, row) {
-                let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
-                ddv.datagrid({
-                    url: 'venta/detalle/' + row.movimiento_id,
-                    loadMsg: 'Procesando, por favor espere ...',
-                    height: 'auto',
-                    fit: false,
-                    border: true,
-                    pagination: false,
-                    multiSort: false,
-                    remoteFilter: false,
-                    columns: [[{
+            routes: {},
+            subGrid: {
+                url: 'venta/detalle/',
+                columns: [
+                    {
                         field: 'producto',
                         title: 'Producto',
                         width: 300
@@ -185,54 +166,63 @@ app.venta = (function () {
                         title: 'Total',
                         width: 100,
                         align: 'right'
-                    }]],
-                    onResize: function () {
-                        dg.datagrid('fixDetailRowHeight', index);
-                    },
-                    onLoadSuccess: function () {
-                        setTimeout(function () {
-                            dg.datagrid('fixDetailRowHeight', index);
-                        }, 0);
                     }
-                });
-                dg.datagrid('fixDetailRowHeight', index);
-            }
+                ]
+            },
         });
 
-        dg.datagrid('enableFilter', [
+        let toolbarButtons = [
             {
-                field: 'tipo_pago',
-                type: 'combobox',
-                options: {
-                    panelHeight: 'auto',
-                    data: [{
-                        value: '',
-                        text: 'TODOS'
-                    }, {
-                        value: '1',
-                        text: 'EFECTIVO'
-                    }, {
-                        value: '2',
-                        text: 'TARJETA'
-                    }, {
-                        value: '3',
-                        text: 'YAPE'
-                    }],
-                    onChange: function (value) {
-                        if (value === '') {
-                            dg.datagrid('removeFilterRule', 'tipo_pago');
-                        } else {
-                            dg.datagrid('addFilterRule', {
-                                field: 'tipo_pago',
-                                op: 'equal',
-                                value: value
-                            });
-                        }
-                        dg.datagrid('doFilter');
-                    }
+                text: TEXT_ADD,
+                iconCls: ICON_ADD,
+                handler: function () {
+                    venta_nuevo(false);
+                }
+            },
+            {
+                text: 'Vista Previa',
+                iconCls: 'fas fa-eye fa-1x text-info',
+                handler: function () {
+                    venta_preview();
+                }
+            },
+            {
+                text: 'Imprimir',
+                iconCls: 'fas fa-print fa-1x text-primary',
+                handler: function () {
+                    venta_print();
+                }
+            },
+            {
+                text: 'Anular',
+                iconCls: ICON_DELETE,
+                handler: function () {
+                    venta_anular();
+                }
+            },
+            {
+                text: 'Comprobante',
+                iconCls: ICON_INVOICE,
+                handler: function () {
+                    makeInvoice();
                 }
             }
-        ]);
+        ];
+
+        dataGrid.addToolbarButtons(toolbarButtons);
+
+        let viewportHeight = window.innerHeight;
+        console.log(viewportHeight);
+        let customer = new window.app.customer('drawer', {width: '100%', maxHeight: viewportHeight, modal: false});
+        customer.init();
+        customer.renderDialog();
+
+        window.Observer.subscribe(window.EventType.SUCCESS, (data) => {
+            cbo_cliente.combobox('reload');
+            console.log(data);
+            cbo_cliente.combobox('setValue', data || '');
+            drawer.drawer('close');
+        })
 
         dlg.dialog({
             width: 700,
@@ -280,18 +270,8 @@ app.venta = (function () {
             icons: [{
                 iconCls: ICON_ADD,
                 handler: function (e) {
-                    /*let formFields = [
-                        {type: window.FormType.TEXT, name: 'ruc', label: 'RUC', required: true},
-                        {type: window.FormType.TEXT, name: 'razon_social', label: 'Razón Social', required: true},
-                        {type: window.FormType.TEXT, name: 'direccion', label: 'Dirección', required: true},
-                        {type: window.FormType.TEXT, name: 'telefono', label: 'Teléfono', required: true},
-                        {type: window.FormType.TEXT, name: 'email', label: 'Email', required: true}
-                    ]
-                    let dialog = new window.Dialog('drawer', {width: '100%'})
-                    let customerForm = new window.Form(dialog.id, 'venta_dg', dialog, formFields);
+                    window.Observer.notify(window.EventType.ADD, {route: customer.ROUTES.ADD});
                     drawer.drawer('expand');
-                    window.Observer.notify(window.EventType.ADD, 'cliente/add')*/
-                    nuevo_cliente(cbo_cliente);
                 }
             }]
         });
@@ -332,13 +312,6 @@ app.venta = (function () {
             precision: 2,
             onChange: function () {
                 calcular_total();
-            }
-        });
-
-        btn_addcliente.linkbutton({
-            plain: true,
-            onClick: function () {
-                nuevo_cliente();
             }
         });
     };
@@ -385,7 +358,7 @@ app.venta = (function () {
                     }
 
                     dlg.dialog('close');
-                    dg.datagrid('reload');
+                    dataGrid.reload();
                     show_info(result.msg);
                     showOptions(result.venta);
                 } else {
@@ -420,14 +393,14 @@ app.venta = (function () {
     }
 
     function venta_anular() {
-        let row = dg.datagrid('getSelected');
+        let row = dataGrid.selectedRow;
         if (row) {
             $.messager.prompt('Confirmar', 'Ingrese un motivo', function (r) {
                 if (r) {
                     $.post('venta/anular/' + row.movimiento_id, {motivo: r})
                         .done(function (result) {
                             if (result.success) {
-                                dg.datagrid('reload');
+                                dataGrid.reload();
                                 show_info(result.msg);
                             } else {
                                 show_error(result.msg);
@@ -592,7 +565,6 @@ app.venta = (function () {
     }
 
     function venta_vuelto() {
-        let txt_cash = $('#venta_cash');
         let txt_total = $('#venta_total');
         let total = Number(txt_total.text());
         let cash = Number(txt_cash.textbox('getValue'));
@@ -647,7 +619,7 @@ app.venta = (function () {
     }
 
     function venta_preview() {
-        let row = dg.datagrid('getSelected');
+        let row = dataGrid.selectedRow;
         if (row) {
             $('#venta_ticket').dialog({
                 title: 'Ticket - Vista Previa',
@@ -668,7 +640,7 @@ app.venta = (function () {
     }
 
     function venta_print() {
-        let row = dg.datagrid('getSelected');
+        let row = dataGrid.selectedRow;
         if (row) {
             jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
         } else {
@@ -682,7 +654,7 @@ app.venta = (function () {
     }
 
     function makeInvoice() {
-        let row = dg.datagrid('getSelected');
+        let row = dataGrid.selectedRow;
         if (row) {
             let confirmMessage = '';
             if (row.cliente_id.length === 11) {
@@ -706,216 +678,16 @@ app.venta = (function () {
                 .then(response => response.json())
                 .then(result => show_info(result.msg))
                 .catch(error => show_error(error))
-                .finally(() => dg.datagrid('reload'));
+                .finally(() => dataGrid.reload());
         } else {
             show_info('Ya se registro el comprobante previamente');
         }
-    }
-
-    let dlgc = $('#venta_cliente_dlg');
-    let fmc = $('#venta_cliente_fm');
-    let txt_ruc = $('#ven_cliente_ruc');
-    let txt_razon_social = $('#ven_cliente_razon_social');
-    let txt_domicilio_fiscal = $('#ven_cliente_domicilio_fiscal');
-    let txt_telefono = $('#ven_cliente_telefono');
-    let cbo_estado = $('#ven_cliente_estado');
-    let btn_clie_guardar;
-    let btn_clie_cancelar;
-
-    dlgc.dialog({
-        buttons: [{
-            id: 'cliente_cancelar',
-            text: TEXT_CANCEL,
-            handler: function () {
-                dlgc.dialog('close');
-            }
-        }, {
-            id: 'cliente_guardar',
-            text: TEXT_SAVE,
-            handler: function () {
-                venta_cliente_guardar();
-            }
-        }],
-        onOpen: function () {
-            $(this).parent().animateCss(DIALOG_OPEN_ANIMATION);
-            btn_clie_guardar = $('#cliente_guardar');
-            btn_clie_cancelar = $('#cliente_cancelar');
-            btn_clie_guardar.addClass('md-btn');
-            btn_clie_cancelar.addClass('md-btn-plain');
-        }
-    });
-
-    txt_ruc.textbox({
-        width: '100%',
-        label: 'RUC/DNI',
-        labelPosition: 'top',
-        min: 0,
-        validType: 'validCustomerId',
-        invalidMessage: 'Ingrese un RUC/DNI valido.',
-        icons: [{
-            iconCls: ICON_SEACH,
-            handler: function (e) {
-                consult()
-            }
-        }],
-        required: true
-    });
-
-    txt_razon_social.textbox({
-        width: '100%',
-        height: 80,
-        label: 'Cliente',
-        labelPosition: 'top',
-        multiline: true,
-        required: true
-    });
-
-    txt_domicilio_fiscal.textbox({
-        width: '100%',
-        height: 80,
-        label: 'Domicilio',
-        labelPosition: 'top',
-        multiline: true
-    });
-
-    txt_telefono.numberbox({
-        width: '100%',
-        label: 'Telefono',
-        labelPosition: 'top',
-        validType: 'length[6,15]'
-    });
-
-    cbo_estado.combobox({
-        width: '100%',
-        label: 'Estado',
-        labelPosition: 'top',
-        data: [{
-            value: '1',
-            text: 'ACTIVO'
-        }, {
-            value: '2',
-            text: 'INACTIVO'
-        }],
-        panelHeight: 'auto',
-        limitToList: true,
-        required: true
-    });
-
-    let enter_pressed = false;
-    txt_ruc.textbox('textbox').bind('keydown', function (e) {
-        if (e.keyCode === 13 && !enter_pressed) {
-            consult()
-        }
-    });
-
-    function consult() {
-        enter_pressed = true;
-        let doc = txt_ruc.textbox('getValue');
-        let apiUrl = ''
-        let dialogTitle = ''
-        if (doc.length === 11) {
-            dialogTitle = 'Consultando RUC';
-            apiUrl = 'api/ruc/';
-        } else {
-            dialogTitle = 'Consultando DNI';
-            apiUrl = 'api/dni/'
-        }
-        dlgc.dialog('showMask', dialogTitle);
-        $.get(apiUrl + txt_ruc.textbox('getValue'))
-            .done(function (result) {
-                enter_pressed = false;
-                if (result.error) {
-                    show_error(result.error);
-                } else {
-                    if (doc.length === 11) {
-                        if (result.estado === 'ACTIVO') {
-                            txt_razon_social.textbox('setValue', result.razonSocial);
-                            txt_domicilio_fiscal.textbox('setValue', result.direccion);
-                        } else {
-                            show_error(result.razon_social + '<br>' + result.estado);
-                        }
-                    } else {
-                        txt_razon_social.textbox('setValue', result.nombres + ' ' + result.apellidoPaterno + ' ' + result.apellidoMaterno);
-                    }
-                }
-                dlgc.dialog('hideMask');
-            })
-            .fail(function (xhr, status, error) {
-                enter_pressed = false;
-                dlgc.dialog('hideMask');
-                show_error(error);
-            });
-    }
-
-    function nuevo_cliente(obj = null) {
-        if (obj != null) {
-            cliente_dialog_obj = obj;
-        } else {
-            cliente_dialog_obj = cbo_cliente;
-        }
-        fmc.form('clear');
-        route_cliente = 'venta/add-cliente';
-        cbo_estado.combobox('select', 1);
-        dlgc.dialog('open').dialog('center').dialog('setTitle', 'Nuevo cliente');
-    }
-
-    function venta_cliente_guardar() {
-        let ruc = txt_ruc.textbox('getValue');
-        fmc.form('submit', {
-            url: route_cliente,
-            onSubmit: function () {
-                valid = fmc.form('validate');
-                if (valid) {
-                    clie_disable_buttons();
-                }
-                return valid;
-            },
-            success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        dlgc.dialog('close');
-                        cliente_dialog_obj.combobox('reload');
-                        cliente_dialog_obj.combobox({
-                            onLoadSuccess: function (param) {
-                                $.get('cliente/getone/' + ruc, function (result) {
-                                    console.log(result);
-                                    cliente_dialog_obj.combobox('select', result.ruc);
-                                });
-                            }
-                        });
-                        show_info(result.msg);
-                    } else {
-                        show_error(result.msg);
-                    }
-                    clie_enable_buttons();
-                } catch (e) {
-                    show_error(e);
-                    clie_enable_buttons();
-                }
-            }
-        });
-    }
-
-    function clie_disable_buttons() {
-        btn_clie_guardar.linkbutton('disable');
-        btn_clie_cancelar.linkbutton('disable');
-        btn_clie_cancelar.linkbutton({text: 'Guardando...'});
-        dlgc.dialog('showMask', 'Procesando...');
-    }
-
-    function clie_enable_buttons() {
-        btn_clie_guardar.linkbutton('enable');
-        btn_clie_cancelar.linkbutton('enable');
-        btn_clie_cancelar.linkbutton({text: 'Guardar'});
-        dlgc.dialog('hideMask');
     }
 
     return {
         init: init,
         add_detalle: add_detalle,
         remove_row: remove_row,
-        nuevo_cliente: nuevo_cliente,
         guardar: venta_guardar
     };
 })();

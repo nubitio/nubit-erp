@@ -47,6 +47,10 @@ export default class DataGrid {
         return this.dataGrid.attr('id');
     }
 
+    get selectedRow() {
+        return this.dataGrid.datagrid('getSelected') || null;
+    }
+
     setupColumns() {
         this.columns = [];
         this.fields.forEach(field => {
@@ -126,9 +130,13 @@ export default class DataGrid {
         this.toolbar = this.options.toolbar || this.defaultToolbar;
     }
 
-    addToolbarButton(button) {
-        this.toolbar.push('-');
-        this.toolbar.push(button);
+    addToolbarButtons(buttons) {
+        buttons.forEach(button => {
+            if (this.toolbar.length > 0) {
+                this.toolbar.push('-');
+            }
+            this.toolbar.push(button);
+        });
         this.dataGrid.datagrid({'toolbar': this.toolbar});
     }
 
@@ -137,7 +145,7 @@ export default class DataGrid {
         return idField.name;
     }
 
-    setupDataGrid() {
+    private setupDataGrid() {
         let ref = this;
 
         this.dataGrid.datagrid({
@@ -151,7 +159,44 @@ export default class DataGrid {
             }
         });
 
+        if (this.options.subGrid) {
+            this.setupSubGrid(this.options.subGrid);
+        }
+
         this.dataGrid.datagrid('enableFilter', []);
+    }
+
+    private setupSubGrid(subGrid) {
+        let ref = this;
+        this.dataGrid.datagrid({
+            view: window.detailview,
+            detailFormatter: function (index, row) {
+                return '<div style="padding:2px"><table class="ddv"></table></div>';
+            },
+            onExpandRow: function (index, row) {
+                let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
+                ddv.datagrid({
+                    url: subGrid.url + row[ref.getIdField()],
+                    loadMsg: 'Procesando, por favor espere ...',
+                    height: 'auto',
+                    fit: false,
+                    border: true,
+                    pagination: false,
+                    multiSort: false,
+                    remoteFilter: false,
+                    columns: [subGrid.columns],
+                    onResize: function () {
+                        ref.dataGrid.datagrid('fixDetailRowHeight', index);
+                    },
+                    onLoadSuccess: function () {
+                        setTimeout(function () {
+                            ref.dataGrid.datagrid('fixDetailRowHeight', index);
+                        }, 0);
+                    }
+                });
+                ref.dataGrid.datagrid('fixDetailRowHeight', index);
+            }
+        });
     }
 
     reload() {

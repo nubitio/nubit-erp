@@ -7,7 +7,7 @@ export default class Form {
     private container: HTMLElement;
     private form: JQuery;
     private fields: any;
-    private formFields: {};
+    private formFields: any = {};
     private route: null;
 
     constructor(container, fields) {
@@ -185,7 +185,7 @@ export default class Form {
     }
 
     get field() {
-        return this.formFields;
+        return this.formFields || {};
     }
 
     add(route) {
@@ -222,7 +222,7 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        window.Observer.notify(EventType.SUCCESS);
+                        window.Observer.notify(EventType.SUCCESS, result.data || {});
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);

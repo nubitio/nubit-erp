@@ -42,7 +42,7 @@ body.dark-theme {
 body.light-theme {
   --primary-color: #fff !important;
   --primary-color-dark: #fbfaff !important;
-  --secondary-color: #000 !important;
+  --secondary-color: rgb(var(--accent-color)) !important;
   --accent-color: 235 156 52;
   --accent-color-contrast: #6b6f82;
   --background-color: #fff !important;
@@ -297,6 +297,11 @@ pre {
   border-bottom: 1px solid var(--border-color);
 }
 
+.window-thinborder .window-header {
+  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+}
+
 .window-shadow {
   background: var(--background-color);
   -moz-box-shadow: 2px 2px 3px var(--border-color);
@@ -474,7 +479,7 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .datagrid .panel-title {
   font-size: 1rem;
-  padding: 0.75rem 0.5rem;
+  padding: 0.7rem 0.5rem;
   height: auto;
 }
 
@@ -620,6 +625,10 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .datagrid-row-alt {
   background: var(--background-color);
+}
+
+.datagrid-row-alt .datagrid-row-over {
+  background: var(--primary-color-dark);
 }
 
 .datagrid-header, .datagrid-td-rownumber {
