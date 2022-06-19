@@ -4,12 +4,12 @@ import {EventType} from "./EventType";
 
 export default class Dialog {
     private container: HTMLElement;
-    private options: any;
+    private options: any = {};
     private dialog: JQuery;
     private positiveButton: JQuery;
     private negativeButton: JQuery;
 
-    constructor(container, options) {
+    constructor(container, options = {}) {
         this.container = document.getElementById(container);
         this.options = options || {};
         this.dialog = null;
@@ -24,6 +24,8 @@ export default class Dialog {
 
         this.dialog.dialog({
             width: this.options.width || 400,
+            maxHeight: this.options.maxHeight || 550,
+            modal: this.options.modal || true,
             buttons: [{
                 id: 'negative-button',
                 text: Constants.TEXT_CANCEL,
@@ -52,7 +54,8 @@ export default class Dialog {
 
     setupView() {
         let dialog = document.createElement('div');
-        dialog.setAttribute('id', 'dialog');
+        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        dialog.setAttribute('id', randomId);
         this.container.appendChild(dialog);
         this.dialog = $('#' + dialog.id);
     }

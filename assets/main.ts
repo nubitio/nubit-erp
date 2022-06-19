@@ -7,6 +7,7 @@ import {EventType} from "./EventType";
 import {FormType} from "./FormType";
 import {Constants} from "./Constants";
 import ThemeManager from "./ThemeManager";
+import Customer from "./pages/Customer";
 
 window.Observer = new Observable();
 window.DataGrid = DataGrid;
@@ -16,3 +17,6 @@ window.EventType = EventType;
 window.FormType = FormType;
 window.Constants = Constants;
 window.ThemeManager = new ThemeManager();
+window.app = window.app || {};
+
+window.app.customer = Customer;

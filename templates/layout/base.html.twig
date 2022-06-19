@@ -76,7 +76,13 @@
     let themeIcon = $('#theme-icon');
     let current;
 
-    (function () {
+    window.onpopstate = function (event) {
+        if (event.state) {
+            loadPage(event.state.item.url, history.state.item.text);
+        }
+    };
+
+    window.onload = function () {
         content.panel({
             fit: true,
             border: false,
@@ -96,7 +102,7 @@
         });
 
         drawer.drawer({
-            width: 300,
+            width: 350,
         });
 
         $.get('getmenu')
@@ -129,15 +135,7 @@
             .fail(function (xhr, status, error) {
                 console.log(error);
             });
-    })();
 
-    window.onpopstate = function (event) {
-        if (event.state) {
-            loadPage(event.state.item.url, history.state.item.text);
-        }
-    };
-
-    window.onload = function () {
         if (history.state) {
             let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
             loadPage(history.state.item.url, history.state.item.text, selectedMenu !== null);

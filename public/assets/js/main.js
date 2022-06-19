@@ -36,7 +36,6 @@ $.extend($.fn.window.defaults, {
 $.extend($.fn.datagrid.defaults, {
     pagination: PAGINATION,
     pageSize: PAGE_SIZE,
-    striped: STRIPED,
     rownumbers: ROW_NUMBERS,
     fitColumns: true,
     fit: true,
