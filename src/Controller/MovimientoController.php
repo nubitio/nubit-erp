@@ -478,9 +478,7 @@ class MovimientoController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->get_one_venta($id);
         $sale = $data['venta'];
-        $this->app->set('title', 'Nota de pedido');
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
-        $this->app->set('logo', $this->base64($logo_path));
         $this->app->set('ruc', $sale['cabecera']['ruc_empresa']);
         $this->app->set('series', $sale['cabecera']['serie']);
         $this->app->set('number', $sale['cabecera']['numero']);
@@ -498,10 +496,14 @@ class MovimientoController extends BaseController
         }
         $this->app->set('total', $this->money_pen($total));
         $this->app->set('obs', $sale['cabecera']['glosa']);
-        $template = new Template;
-        //echo $template->render('templates/invoice.html');
-        $this->report($template->render('reportes/invoice.html.twig'));
-    }
+        $content = $this->renderView('reportes/invoice.html.twig', [
+            'title'  => 'Nota de pedido',
+            'logo'   => $this->base64($logo_path),
+            'header' => $sale['cabecera'],
+            'detail' => $sale['detalle'],
+            'total' => $total
+        ]);
+        $this->report($content);    }
 
     function makeInvoice()
     {
