@@ -22,9 +22,9 @@
                 <td>
                     <div class="card">
                         <div class="card-body text-center">
-                            <p>RUC: {{ ruc }}</p>
+                            <p>RUC: {{ header.ruc }}</p>
                             <h5>NOTA DE PEDIDO</h5>
-                            {{ serie }} - {{ numero }}
+                            {{ header.serie }} - {{ header.numero }}
                         </div>
                     </div>
                 </td>
@@ -34,30 +34,30 @@
         <table class="table table-borderless">
             <tr>
                 <td class="text-left">
-                    <p>Establecimiento: {{ local }}</p>
+                    <p>Establecimiento: {{ header.local }}</p>
                 </td>
                 <td>
-                    <p>Atentido por: <span class="text-uppercase">{{ usuario }}</span></p>
+                    <p>Atentido por: <span class="text-uppercase">{{ header.username }}</span></p>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <p>Fecha: {{ fecha }}</p>
+                    <p>Fecha: {{ header.fecha }}</p>
                 </td>
                 <td>
-                    <p>Hora: {{ hora|date("H:m:s") }}</p>
+                    <p>Hora: {{ header.date_created|date("H:m:s") }}</p>
                 </td>
             </tr>
         </table>
         <table class="table table-borderless mb-4">
             <tr>
                 <td style="width: 65%">
-                    <div>Nombre de cliente: {{ cliente }}</div>
+                    <div>Nombre de cliente: {{ header.cliente }}</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    Dirección: {{ direccion }}
+                    Dirección: {{ header.direccion_cliente }}
                 </td>
             </tr>
         </table>
@@ -92,9 +92,9 @@
             <div class="col-lg-4 col-sm-5 ml-auto">
                 <table class="table table-clear">
                     <tbody>
-                    {% if descuento > 0 %}
+                    {% if header.descuento > 0 %}
                         <tr>
-                            <td class="left">Dto.({{descuento}}%)</td>
+                            <td class="left">Dscto.</td>
                             <td class="right">-{{ valor_descuento }}</td>
                         </tr>
                     {% endif %}

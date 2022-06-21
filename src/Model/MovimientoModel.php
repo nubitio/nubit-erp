@@ -429,8 +429,8 @@ class MovimientoModel extends BaseModel
             m.digest,
             m.descuento,
             m.glosa,
-            m.created_by,
             m.date_created,
+            u.username,
             c.ruc AS ruc_cliente,
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,
@@ -442,7 +442,9 @@ class MovimientoModel extends BaseModel
             INNER JOIN almacen a ON a.almacen_id = m.almacen_id
             INNER JOIN `local` l ON l.local_id = a.local_id
             INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-            INNER JOIN cliente c ON c.ruc = m.cliente_id 
+            INNER JOIN cliente c ON c.ruc = m.cliente_id
+    		INNER JOIN usuario u on u.usuario_id = m.created_by
+
         WHERE
             m.movimiento_id = ?", array($id));
         if (isset($result[0])) {
