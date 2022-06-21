@@ -479,15 +479,9 @@ class MovimientoController extends BaseController
         $data = $this->model->get_one_venta($id);
         $sale = $data['venta'];
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
-        $this->app->set('ruc', $sale['cabecera']['ruc_empresa']);
-        $this->app->set('series', $sale['cabecera']['serie']);
-        $this->app->set('number', $sale['cabecera']['numero']);
-        $this->app->set('customer', $sale['cabecera']['cliente']);
-        $this->app->set('date', date('d/m/Y', strtotime($sale['cabecera']['fecha'])));
-        $this->app->set('address', $sale['cabecera']['direccion_cliente']);
-        $this->app->set('detail', $sale['detalle']);
         $total = $sale['cabecera']['total'];
         $discount = $sale['cabecera']['descuento'];
+        $discountAmount = 0.00;
         if ($sale['cabecera']['descuento'] > 0) {
             $discountAmount = $total * $discount / 100;
             $discountAmount = number_format($discountAmount, 2, '.', '');
@@ -499,9 +493,16 @@ class MovimientoController extends BaseController
         $content = $this->renderView('reportes/invoice.html.twig', [
             'title'  => 'Nota de pedido',
             'logo'   => $this->base64($logo_path),
-            'header' => $sale['cabecera'],
-            'detail' => $sale['detalle'],
-            'total' => $total
+            'ruc' => $sale['cabecera']['ruc_empresa'],
+            'serie' => $sale['cabecera']['serie'],
+            'numero' => $sale['cabecera']['numero'],
+            'cliente' => $sale['cabecera']['cliente'],
+            'fecha' => date('d/m/Y', strtotime($sale['cabecera']['fecha'])),
+            'direccion' => $sale['cabecera']['direccion_cliente'],
+            'detalle' => $sale['detalle'],
+            'descuento' => $sale['cabecera']['descuento'],
+            'valor_descuento' => $discountAmount,
+            'total' =>  $total,
         ]);
         $this->report($content);    }
 
