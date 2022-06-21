@@ -493,19 +493,11 @@ class MovimientoController extends BaseController
         $content = $this->renderView('reportes/invoice.html.twig', [
             'title'  => 'Nota de pedido',
             'logo'   => $this->base64($logo_path),
-            'usuario' => $sale['cabecera']['usuario'],
-            'local' => $sale['cabecera']['local'],
-            'hora' => $sale['cabecera']['date_created'],
-            'ruc' => $sale['cabecera']['ruc_empresa'],
-            'serie' => $sale['cabecera']['serie'],
-            'numero' => $sale['cabecera']['numero'],
-            'cliente' => $sale['cabecera']['cliente'],
-            'fecha' => date('d/m/Y', strtotime($sale['cabecera']['fecha'])),
-            'direccion' => $sale['cabecera']['direccion_cliente'],
+            'header' => $sale['cabecera'],
+            'detail' => $sale['detalle'],
             'detalle' => $sale['detalle'],
-            'descuento' => $sale['cabecera']['descuento'],
-            'valor_descuento' => $discountAmount,
-            'total' =>  $total,
+            'valor_descuento' => $this->money_pen($discountAmount),
+            'total' =>  $this->money_pen($total),
         ]);
         $this->report($content);    }
 
