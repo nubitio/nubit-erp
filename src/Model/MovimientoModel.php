@@ -413,6 +413,8 @@ class MovimientoModel extends BaseModel
         $result = $this->db->exec("
           SELECT
             m.movimiento_id,
+            m.created_by as usuario,
+            m.local,
             m.fecha,
             e.razon_social AS empresa,
             e.ruc AS ruc_empresa,
@@ -427,6 +429,7 @@ class MovimientoModel extends BaseModel
             m.digest,
             m.descuento,
             m.glosa,
+            m.created_by,
             c.ruc AS ruc_cliente,
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,

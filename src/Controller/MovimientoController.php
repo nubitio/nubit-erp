@@ -493,6 +493,8 @@ class MovimientoController extends BaseController
         $content = $this->renderView('reportes/invoice.html.twig', [
             'title'  => 'Nota de pedido',
             'logo'   => $this->base64($logo_path),
+            'usuario' => $sale['cabecera']['usuario'],
+            'local' => $sale['cabecera']['local'],
             'ruc' => $sale['cabecera']['ruc_empresa'],
             'serie' => $sale['cabecera']['serie'],
             'numero' => $sale['cabecera']['numero'],

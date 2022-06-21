@@ -33,6 +33,14 @@
         <hr>
         <table class="table table-borderless mb-4">
             <tr>
+                <td class="text-left">
+                    <p>Establecimiento: {{ local }}</p>
+                    Atentido por: <span class="text-uppercase">{{ usuario }}</span>
+                </td>
+            </tr>
+        </table>
+        <table class="table table-borderless mb-4">
+            <tr>
                 <td style="width: 65%">
                     <div>Señor (es): {{ cliente }}</div>
                 </td>
@@ -58,7 +66,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for item in detail %}
+                {% for item in detalle %}
                     <tr>
                         <td class="center">{{ counter }}</td>
                         <td class="center">{{ item['cantidad'] }}</td>
