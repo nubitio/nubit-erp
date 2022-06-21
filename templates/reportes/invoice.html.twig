@@ -22,9 +22,9 @@
                 <td>
                     <div class="card">
                         <div class="card-body text-center">
-                            <p>RUC: {{ header.ruc_empresa }}</p>
+                            <p>RUC: {{ ruc }}</p>
                             <h5>NOTA DE PEDIDO</h5>
-                            {{ header.serie }} - {{ header.numero }}
+                            {{ serie }} - {{ numero }}
                         </div>
                     </div>
                 </td>
@@ -34,15 +34,15 @@
         <table class="table table-borderless mb-4">
             <tr>
                 <td style="width: 65%">
-                    <div>Señor (es): {{ header.cliente }}</div>
+                    <div>Señor (es): {{ cliente }}</div>
                 </td>
                 <td>
-                    <div>Fecha: {{ header.fecha }}</div>
+                    <div>Fecha: {{ fecha }}</div>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    Dirección: {{ header.direccion_cliente }}
+                    Dirección: {{ direccion }}
                 </td>
             </tr>
         </table>
@@ -76,10 +76,10 @@
             <div class="col-lg-4 col-sm-5 ml-auto">
                 <table class="table table-clear">
                     <tbody>
-                    {% if header.descuento %}
+                    {% if descuento %}
                         <tr>
-                            <td class="left">Descuento</td>
-                            <td class="right">{{ header.descuento }} %</td>
+                            <td class="left">Dscto</td>
+                            <td class="right">{{ valor_descuento }} ( {{descuento}} %)</td>
                         </tr>
                     {% endif %}
                     <tr>
