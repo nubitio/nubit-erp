@@ -495,6 +495,7 @@ class MovimientoController extends BaseController
             'logo'   => $this->base64($logo_path),
             'usuario' => $sale['cabecera']['usuario'],
             'local' => $sale['cabecera']['local'],
+            'hora' => $sale['cabecera']['date_created'],
             'ruc' => $sale['cabecera']['ruc_empresa'],
             'serie' => $sale['cabecera']['serie'],
             'numero' => $sale['cabecera']['numero'],

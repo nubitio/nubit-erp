@@ -430,6 +430,7 @@ class MovimientoModel extends BaseModel
             m.descuento,
             m.glosa,
             m.created_by,
+            m.date_created,
             c.ruc AS ruc_cliente,
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,
