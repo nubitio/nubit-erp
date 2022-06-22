@@ -257,9 +257,9 @@ class MovimientoModel extends BaseModel
             $this->dao->serie = $serie;
             $this->dao->numero = $numero;
             $this->dao->estado = 1;
-            $this->dao->igv = 18;
+            $this->dao->igv = (int)$this->getOption('app_option_igv');
             $this->dao->recargo_consumo = (int)$this->getOption('app_option_rc');
-            if ($tipo_id == 2) {
+            if ($tipo_id == 2) {//salida
                 $this->dao->caja_id = $cashBox['caja_id'];
             }
             $this->dao->created_by = $this->current_user_id;
@@ -271,10 +271,12 @@ class MovimientoModel extends BaseModel
             $query = 'INSERT INTO movimiento_detalle (`movimiento_id`, `producto_id`, `cantidad`, `precio_unitario`, `descuento`, `precio_total`) VALUES ';
             $query_parts = array();
             $detalle = $_POST['detalle'];
+
             for ($i = 0; $i < count($detalle['producto']); $i++) {
-                if (!isset($detalle['descuento'][$i]) || $detalle['descuento'][$i] == '') {
-                    $detalle['descuento'][$i] = 0.00;
-                }
+                if (!isset($detalle['descuento'][$i]) || $detalle['descuento'][$i] == '') {$detalle['descuento'][$i] = 0.00;}
+                if (!isset($detalle['unitario'][$i]) || $detalle['unitario'][$i] == '') {$detalle['unitario'][$i] = 0.00;}
+                if (!isset($detalle['total'][$i]) || $detalle['total'][$i] == '') {$detalle['total'][$i] = 0.00;}
+
                 $query_parts[] = "('" . $uuid . "', '" . $detalle['producto'][$i] . "', '" . $detalle['cantidad'][$i] . "', '" . $detalle['unitario'][$i] . "', '" . $detalle['descuento'][$i] . "', '" . $detalle['total'][$i] . "')";
                 if ($this->dao->orden_id > 0) {
                     $orderDetail = new Mapper($this->db, 'orden_detalle');
@@ -413,6 +415,8 @@ class MovimientoModel extends BaseModel
         $result = $this->db->exec("
           SELECT
             m.movimiento_id,
+            m.created_by as usuario,
+            m.local,
             m.fecha,
             e.razon_social AS empresa,
             e.ruc AS ruc_empresa,
@@ -427,6 +431,8 @@ class MovimientoModel extends BaseModel
             m.digest,
             m.descuento,
             m.glosa,
+            m.date_created,
+            u.username,
             c.ruc AS ruc_cliente,
             c.razon_social AS cliente,
             c.domicilio_fiscal AS direccion_cliente,
@@ -438,7 +444,9 @@ class MovimientoModel extends BaseModel
             INNER JOIN almacen a ON a.almacen_id = m.almacen_id
             INNER JOIN `local` l ON l.local_id = a.local_id
             INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-            INNER JOIN cliente c ON c.ruc = m.cliente_id 
+            INNER JOIN cliente c ON c.ruc = m.cliente_id
+    		INNER JOIN usuario u on u.usuario_id = m.created_by
+
         WHERE
             m.movimiento_id = ?", array($id));
         if (isset($result[0])) {
