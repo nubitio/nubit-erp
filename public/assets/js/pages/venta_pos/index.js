@@ -212,7 +212,6 @@ app.venta = (function () {
         dataGrid.addToolbarButtons(toolbarButtons);
 
         let viewportHeight = window.innerHeight;
-        console.log(viewportHeight);
         let customer = new window.app.customer('drawer', {width: '100%', maxHeight: viewportHeight, modal: false});
         customer.init();
         customer.renderDialog();

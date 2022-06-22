@@ -89,6 +89,10 @@
             loadingMessage: '',
             onBeforeLoad: function () {
                 $(this).panel('showMask', 'Cargando...');
+                drawer.drawer('destroy');
+                drawer.drawer({
+                    width: 350,
+                })
             },
             onLoad: function () {
                 $(this).panel('hideMask');
