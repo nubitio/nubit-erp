@@ -495,7 +495,6 @@ class MovimientoController extends BaseController
             'logo'   => $this->base64($logo_path),
             'header' => $sale['cabecera'],
             'detail' => $sale['detalle'],
-            'detalle' => $sale['detalle'],
             'valor_descuento' => $this->money_pen($discountAmount),
             'total' =>  $this->money_pen($total),
         ]);
