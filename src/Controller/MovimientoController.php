@@ -478,30 +478,27 @@ class MovimientoController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->get_one_venta($id);
         $sale = $data['venta'];
-        $this->app->set('title', 'Nota de pedido');
         $logo_path = $this->app->get('ASSETS') . 'images/logo.png';
-        $this->app->set('logo', $this->base64($logo_path));
-        $this->app->set('ruc', $sale['cabecera']['ruc_empresa']);
-        $this->app->set('series', $sale['cabecera']['serie']);
-        $this->app->set('number', $sale['cabecera']['numero']);
-        $this->app->set('customer', $sale['cabecera']['cliente']);
-        $this->app->set('date', date('d/m/Y', strtotime($sale['cabecera']['fecha'])));
-        $this->app->set('address', $sale['cabecera']['direccion_cliente']);
-        $this->app->set('detail', $sale['detalle']);
         $total = $sale['cabecera']['total'];
         $discount = $sale['cabecera']['descuento'];
+        $discountAmount = 0.00;
         if ($sale['cabecera']['descuento'] > 0) {
             $discountAmount = $total * $discount / 100;
             $discountAmount = number_format($discountAmount, 2, '.', '');
             $this->app->set('discount', $this->money_pen($discountAmount));
-            $total = $total - $discount;
+            $total = $total - $discountAmount;
         }
         $this->app->set('total', $this->money_pen($total));
         $this->app->set('obs', $sale['cabecera']['glosa']);
-        $template = new Template;
-        //echo $template->render('templates/invoice.html');
-        $this->report($template->render('reportes/invoice.html'));
-    }
+        $content = $this->renderView('reportes/invoice.html.twig', [
+            'title'  => 'Nota de pedido',
+            'logo'   => $this->base64($logo_path),
+            'header' => $sale['cabecera'],
+            'detail' => $sale['detalle'],
+            'valor_descuento' => $this->money_pen($discountAmount),
+            'total' =>  $this->money_pen($total),
+        ]);
+        $this->report($content);    }
 
     function makeInvoice()
     {
