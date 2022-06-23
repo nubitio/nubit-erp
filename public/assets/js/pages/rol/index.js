@@ -1,12 +1,14 @@
 var app = app || {};
 app.rol = (function () {
-    let route;
-    let dg = $('#rol_dg');
-    let dlg = $('#rol_dlg');
-    let fm = $('#rol_fm');
-    let txt_descripcion = $('#rol_descripcion');
-    let btn_guardar;
-    let btn_cancelar;
+    const ROUTES = Object.freeze({
+        ADD: 'rol/add/',
+        EDIT: 'rol/edit/',
+        DELETE: 'rol/delete/',
+    });
+
+    let dataGrid = null;
+    let dialog = null;
+    let form = null;
 
     let rol_id;
     let rm_tg = $('#rol_menu_tg');
@@ -15,76 +17,50 @@ app.rol = (function () {
     let rm_btn_cancelar;
 
     let init = function () {
-        dg.datagrid({
+        let fields = [
+            {
+                type: window.FormType.HIDDEN,
+                name: 'rol_id',
+                isKey: true,
+                visible: false
+            },
+            {
+                type: window.FormType.HIDDEN,
+                label: 'Codigo',
+                name: 'rol_id',
+                visible: true
+            },
+            {
+                type: window.FormType.TEXT,
+                label: 'Descripcion',
+                name: 'descripcion',
+                visible: true,
+                required: true,
+                width: 200
+            },
+        ];
+
+        dataGrid = new window.DataGrid('wrapper', fields, {
             title: 'Roles',
             url: 'rol/get',
-            remoteFilter: true,
-            toolbar: [{
-                text: TEXT_ADD,
-                iconCls: ICON_ADD,
-                handler: function () {
-                    nuevo();
-                }
-            }, '-', {
-                text: TEXT_EDIT,
-                iconCls: ICON_EDIT,
-                handler: function () {
-                    editar();
-                }
-            }, '-', {
-                text: TEXT_DELETE,
-                iconCls: ICON_DELETE,
-                handler: function () {
-                    eliminar();
-                }
-            }, '-', {
-                text: 'Permisos',
+            routes: ROUTES,
+        });
+
+        dialog = new window.Dialog('wrapper');
+        form = new window.Form(dialog.id, fields);
+
+        //AGREGA BOTTON PERMISO//
+        let toolbarButtons=[
+            {text: 'Permisos',
                 iconCls: 'fas fa-user-shield fa-1x',
                 handler: function () {
-                    permisos();
+                    permisos()
                 }
-            }],
-            columns: [[{
-                field: 'rol_id',
-                title: 'Codigo',
-                sortable: true,
-            }, {
-                field: 'descripcion',
-                title: 'Descripcion',
-                sortable: true,
-                width: 100
-            }]],
-            onDblClickRow: function () {
-                editar();
             }
-        });
+        ];
+        dataGrid.addToolbarButtons(toolbarButtons);
 
-        dg.datagrid('enableFilter');
-
-        dlg.dialog({
-            buttons: [{
-                id: 'rol_cancelar',
-                text: TEXT_CANCEL,
-                handler: function () {
-                    dlg.dialog('close');
-                }
-            }, {
-                id: 'rol_guardar',
-                text: TEXT_SAVE,
-                handler: function () {
-                    guardar();
-                }
-            }],
-            onOpen: function () {
-                dlg.dialog('center');
-                dlg.parent().animateCss(DIALOG_OPEN_ANIMATION);
-                btn_guardar = $('#rol_guardar');
-                btn_cancelar = $('#rol_cancelar');
-                btn_guardar.addClass('md-btn');
-                btn_cancelar.addClass('md-btn-plain');
-            }
-        });
-
+        //DIALOGO DE PERMISO GUARDAR Y CANCELAR//
         rm_dlg.dialog({
             height: 500,
             buttons: [{
@@ -109,106 +85,10 @@ app.rol = (function () {
                 rm_btn_cancelar.addClass('md-btn-plain');
             }
         });
-
-        txt_descripcion.textbox({
-            width: '100%',
-            label: 'Descripcion',
-            labelPosition: 'top',
-            required: true
-        });
-
-        rm_tg.tree({
-            checkbox: true,
-            lines: true
-        });
     };
 
-    function nuevo() {
-        fm.form('clear');
-        route = 'rol/add';
-        dlg.dialog('open').dialog('setTitle', 'Nuevo');
-    }
-
-    function editar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            dlg.dialog('open').dialog('setTitle', 'Editar');
-            fm.form('load', row);
-            route = 'rol/edit/' + row.rol_id;
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
-
-    function guardar() {
-        fm.form('submit', {
-            url: route,
-            onSubmit: function () {
-                let valid = fm.form('validate');
-                if (valid) {
-                    disable_buttons();
-                }
-                return valid;
-            },
-            success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        dlg.dialog('close');
-                        dg.datagrid('reload');
-                        show_info(result.msg);
-                    } else {
-                        show_error(result.msg);
-                    }
-                    enable_buttons();
-                } catch (e) {
-                    show_error(e);
-                    enable_buttons();
-                }
-            }
-        });
-    }
-
-    function disable_buttons() {
-        btn_cancelar.linkbutton('disable');
-        btn_guardar.linkbutton('disable');
-        btn_guardar.linkbutton({text: 'Guardando...'});
-        dlg.dialog('showMask', 'Procesando...');
-    }
-
-    function enable_buttons() {
-        btn_cancelar.linkbutton('enable');
-        btn_guardar.linkbutton('enable');
-        btn_guardar.linkbutton({text: 'Guardar'});
-        dlg.dialog('hideMask');
-    }
-
-    function eliminar() {
-        var row = dg.datagrid('getSelected');
-        if (row) {
-            $.messager.confirm('Confirmar', '¿Está seguro que desea eliminar este registro?', function (r) {
-                if (r) {
-                    $.post('rol/delete/' + row.rol_id)
-                        .done(function (result) {
-                            if (result.success) {
-                                dg.datagrid('reload');
-                                show_info(result.msg);
-                            } else {
-                                show_error(result.msg);
-                            }
-                        })
-                        .fail(function (xhr, status, error) {
-                            show_error(error);
-                        });
-                }
-            });
-        } else {
-            show_info('Seleccione un registro');
-        }
-    }
-
     function permisos() {
-        let row = dg.datagrid('getSelected');
+        let row = dataGrid.selectedRow;
         if (row) {
             rol_id = row.rol_id;
             rm_tg.tree('loadData', []);
