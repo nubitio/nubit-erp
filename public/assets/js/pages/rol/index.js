@@ -85,6 +85,12 @@ app.rol = (function () {
                 rm_btn_cancelar.addClass('md-btn-plain');
             }
         });
+
+        //DIALOGO CHECKBOX//
+        rm_tg.tree({
+            checkbox: true,
+            lines: true
+        });
     };
 
     function permisos() {
