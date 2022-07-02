@@ -550,7 +550,7 @@ class MovimientoModel extends BaseModel
     public function makeInvoice($id): array
     {
         $sale = $this->db->exec("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($id));
-        $invoiceCalculator = new InvoiceCalculator($sale[0]['total'], $sale[0]['descuento'], $sale[0]['igv'], $sale[0]['recargo_consumo']);
+        $invoiceCalculator = new InvoiceCalculator($sale[0]['total'], $sale[0]['descuento'] ?? 0.0, $sale[0]['igv'], $sale[0]['recargo_consumo'] ?? 0.0);
         $invoiceAmounts = $invoiceCalculator->calculate();
         try {
             $this->db->exec('update movimiento set has_invoice = 1 where movimiento_id = ?', [$id]);

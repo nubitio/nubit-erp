@@ -2,8 +2,18 @@
 
 namespace App\Model;
 
+use App\Domain\Invoice\InvoiceCalculator;
+
 class ApiModel extends BaseModel
 {
+    private OptionsModel $optionsDao;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->optionsDao = new OptionsModel();
+    }
+
     public function getConfig()
     {
         return $this->db->exec("select * from options");
@@ -200,6 +210,15 @@ class ApiModel extends BaseModel
         }
     }
 
+    public function getOption($name)
+    {
+        try {
+            return $this->optionsDao->getByName($name);
+        } catch (\Exception $e) {
+            $this->app->error(500, "No se pudo obtener la opcion {$name}");
+        }
+    }
+
     public function createSale($sale): array
     {
         $repository = new \DB\SQL\Mapper($this->db, 'movimiento');
@@ -220,6 +239,8 @@ class ApiModel extends BaseModel
         $repository->is_consume = ($sale['is_consume'] == 1) ? 1 : 0;
         $repository->tipo_pago = 1;
         $repository->estado = 1;
+        $repository->igv = (int)$this->getOption('app_option_igv');
+        $repository->recargo_consumo = (int)$this->getOption('app_option_rc');
         try {
             $repository->save();
             foreach ($sale['detail'] as $item) {
@@ -265,11 +286,14 @@ class ApiModel extends BaseModel
 
     public function makeInvoice($id, $local_id): array
     {
+        $sale = $this->db->exec("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($id));
+        $invoiceCalculator = new InvoiceCalculator($sale[0]['total'], $sale[0]['descuento'] ?? 0.0, $sale[0]['igv'], $sale[0]['recargo_consumo'] ?? 0.0);
+        $invoiceAmounts = $invoiceCalculator->calculate();
         try {
-            $warehouse = $this->db->exec("select * from almacen where local_id = ? limit 1", [$local_id]);
-            $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $local_id]);
+            $this->db->exec('update movimiento set has_invoice = 1 where movimiento_id = ?', [$id]);
+            $result = $this->db->exec('CALL sp_make_invoice(?,?,?,?,?,?,?)', [$id, $local_id, $invoiceAmounts->getSubtotal(), $invoiceAmounts->getTaxedAmount(), $invoiceAmounts->getDiscountAmount(), $invoiceAmounts->getTax(), $invoiceAmounts->getTotal()]);
             return ["success" => true, "data" => $result, "msg" => 'Comprobante registrado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -293,7 +317,8 @@ class ApiModel extends BaseModel
             return null;
         }
     }
-    public function getWeeklySalesSoles($local_id):array//venta de domingo a sabado de una semana sole
+
+    public function getWeeklySalesSoles($local_id): array//venta de domingo a sabado de una semana sole
     {
         $sql = "
         select
@@ -310,7 +335,7 @@ class ApiModel extends BaseModel
         order by
             td.DAY
         ";
-        return $this->db->exec($sql,[$local_id]);
+        return $this->db->exec($sql, [$local_id]);
     }
 
     public function getWeeklySales()//venta de domingo a sabado de una semana cantidad
@@ -328,7 +353,8 @@ class ApiModel extends BaseModel
         ";
         return $this->db->exec($sql);
     }
-    public function getMonthSalesSoles($local_id):array//venta de domingo a sabado de una semana sole
+
+    public function getMonthSalesSoles($local_id): array//venta de domingo a sabado de una semana sole
     {
         $sql = "
         select
@@ -345,7 +371,7 @@ class ApiModel extends BaseModel
         order by
             td.DAY
         ";
-        return $this->db->exec($sql,[$local_id]);
+        return $this->db->exec($sql, [$local_id]);
     }
 
     public function getMonthSales()//venta por dia en un respectivo mes en cantidad
@@ -405,7 +431,7 @@ class ApiModel extends BaseModel
         return $this->db->exec($sql);
     }
 
-    public function getVoucherForMonth($local_id):array//comprobantes totales por mes
+    public function getVoucherForMonth($local_id): array//comprobantes totales por mes
     {
         $sql = "
         SELECT
@@ -422,7 +448,7 @@ class ApiModel extends BaseModel
         GROUP BY tc.codigo 
         
         ";
-        return $this->db->exec($sql,[$local_id]);
+        return $this->db->exec($sql, [$local_id]);
     }
 
     public function getVoucherForMonthSoles($local_id): array//comprobantes totales por mes (soles)
@@ -447,7 +473,7 @@ class ApiModel extends BaseModel
 
     public function getUrlCustomer()
     {
-        $sql ="
+        $sql = "
         SELECT
                cl.ruc as ruc,
                cl.razon_social as nombre,
@@ -457,9 +483,10 @@ class ApiModel extends BaseModel
 
         return $this->db->exec($sql);
     }
+
     public function getUrlProduct()
     {
-        $sql ="
+        $sql = "
         SELECT
             p.descripcion as nombre,
             p.imagen as imagen
