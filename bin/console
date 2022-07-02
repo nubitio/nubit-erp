@@ -2,6 +2,7 @@
 <?php
 
 use App\Command\DemoCommand;
+use App\Command\InvoiceUpdateCommand;
 use App\Command\SendEmailCommand;
 use App\Command\SendSmsCommand;
 use App\Command\SendWhatsAppCommand;
@@ -30,10 +31,11 @@ $containerBuilder->compile();
 
 $commandLoader = new ContainerCommandLoader(
     $containerBuilder, [
-        'app:run-demo'      => DemoCommand::class,
-        'app:send-email'    => SendEmailCommand::class,
-        'app:send-sms'      => SendSmsCommand::class,
-        'app:send-whatsapp' => SendWhatsAppCommand::class,
+        'app:run-demo'       => DemoCommand::class,
+        'app:update-invoice' => InvoiceUpdateCommand::class,
+        'app:send-email'     => SendEmailCommand::class,
+        'app:send-sms'       => SendSmsCommand::class,
+        'app:send-whatsapp'  => SendWhatsAppCommand::class,
     ]
 );
 
