@@ -18,6 +18,8 @@ class ProductEntity
     #[Id]
     #[Column(name: "producto_id", type: "string")]
     private string $id;
+    #[Column(name: "tipo_id", type: "integer")]
+    private int $typeId;
     #[NotBlank]
     #[Column(name: "codigo", type: "string")]
     private ?string $code = null;
@@ -46,6 +48,22 @@ class ProductEntity
     public function setId(string $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTypeId(): int
+    {
+        return $this->typeId;
+    }
+
+    /**
+     * @param int $typeId
+     */
+    public function setTypeId(int $typeId): void
+    {
+        $this->typeId = $typeId;
     }
 
     /**
@@ -155,6 +173,9 @@ class ProductEntity
         if ($product->getCode() !== null) {
             $this->setCode($product->getCode());
         }
+        if ($product->getTypeId() !== null) {
+            $this->setTypeId($product->getTypeId());
+        }
         if ($product->getName() !== null) {
             $this->setName($product->getName());
         }
@@ -178,6 +199,7 @@ class ProductEntity
     {
         $product = new Product();
         $product->setId($this->getId());
+        $product->setTypeId($this->getTypeId());
         $product->setCode($this->getCode());
         $product->setName($this->getName());
         $product->setCategoryId($this->getCategoryId());

@@ -219,9 +219,9 @@ class EFactController extends BaseController
                 ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
                 ->setMtoIGV($sale['header']['doc_igv_amount'])
                 ->setTotalImpuestos($sale['header']['doc_total_taxes'])
-                ->setSumOtrosCargos(($sale['header']['doc_sale_amount'] / ($divisor)) * $rc)
-                ->setValorVenta($sale['header']['doc_sale_value'])
-                ->setSubTotal($sale['header']['doc_sale_amount'] - ($sale['header']['doc_sale_amount'] / $divisor) * $rc)
+                ->setSumOtrosCargos($sale['header']['doc_taxed_amount'] * $rc)
+                ->setValorVenta($sale['header']['doc_sale_value'] - $sale['header']['doc_discount_amount'])
+                ->setSubTotal($sale['header']['doc_sale_amount'] - $sale['header']['doc_taxed_amount'] * $rc)
                 ->setMtoImpVenta($sale['header']['doc_sale_amount'])
                 ->setCompany($this->getCompany())
                 ->setCargos([
@@ -279,7 +279,7 @@ class EFactController extends BaseController
                 ->setMtoOperGravadas($sale['header']['doc_taxed_amount'])
                 ->setMtoIGV($sale['header']['doc_igv_amount'])
                 ->setTotalImpuestos($sale['header']['doc_total_taxes'])
-                ->setValorVenta($sale['header']['doc_sale_value'])
+                ->setValorVenta($sale['header']['doc_taxed_amount'])
                 ->setSubTotal($sale['header']['doc_sale_amount'])
                 ->setMtoImpVenta($sale['header']['doc_sale_amount'])
                 ->setCompany($this->getCompany());
@@ -313,13 +313,12 @@ class EFactController extends BaseController
         if ($sale['header']['doc_discount_percent'] > 0) {
             $invoice->setDescuentos([
                 (new Charge())
-                    ->setCodTipo('03')
-                    ->setMontoBase($sale['header']['doc_sale_amount'])
-                    ->setFactor($sale['header']['doc_discount_percent'] / 100)
+                    ->setCodTipo('02')
+                    ->setMontoBase($sale['header']['doc_discount_amount'])
+                    ->setFactor(1)
                     ->setMonto($sale['header']['doc_discount_amount'])
             ]);
-            $invoice->setSumOtrosDescuentos($sale['header']['doc_discount_amount']);
-            $invoice->setMtoImpVenta($sale['header']['doc_sale_amount'] - $sale['header']['doc_discount_amount']);
+            $invoice->setMtoImpVenta($sale['header']['doc_sale_amount']);
         }
 
         $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);

@@ -10,6 +10,8 @@ class Product
 {
     #[SerializedName('producto_id')]
     private ?string $id = null;
+    #[SerializedName('tipo_id')]
+    private ?string $typeId = null;
     #[SerializedName('codigo')]
     private ?string $code = null;
     #[SerializedName('descripcion')]
@@ -37,6 +39,22 @@ class Product
     public function setId(?string $id): void
     {
         $this->id = $id;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTypeId(): ?string
+    {
+        return $this->typeId;
+    }
+
+    /**
+     * @param string|null $typeId
+     */
+    public function setTypeId(?string $typeId): void
+    {
+        $this->typeId = $typeId;
     }
 
     /**
