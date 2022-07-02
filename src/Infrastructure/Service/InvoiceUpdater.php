@@ -22,7 +22,7 @@ class InvoiceUpdater
         $pending = $this->connection->fetchAllAssociative('select * from comprobante where envio_sunat is null');
         foreach ($pending as $invoice) {
             $sale = $this->connection->fetchAssociative("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($invoice['movimiento_id']));
-            $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'], $sale['igv'], $sale['recargo_consumo']);
+            $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'] ?? 0.0, $sale['igv'], $sale['recargo_consumo'] ?? 0.0);
             $invoiceAmounts = $invoiceCalculator->calculate();
             $this->connection->executeStatement('
                 update 
