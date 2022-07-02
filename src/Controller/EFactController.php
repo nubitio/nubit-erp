@@ -227,9 +227,9 @@ class EFactController extends BaseController
                 ->setCargos([
                     (new Charge())
                         ->setCodTipo('46')
-                        ->setMontoBase($sale['header']['doc_sale_value'])
+                        ->setMontoBase($sale['header']['doc_taxed_amount'])
                         ->setFactor($rc)
-                        ->setMonto(($sale['header']['doc_sale_amount'] / $divisor) * $rc)
+                        ->setMonto($sale['header']['doc_taxed_amount'] * $rc)
                 ]);
 
             for ($i = 0; $i < count($sale['detail']); $i++) {
