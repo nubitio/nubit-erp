@@ -66,6 +66,7 @@ class ProductoController extends BaseController
     public function add()
     {
         $_POST['producto_id'] = Uuid::v4();
+        $_POST['tipo_id'] = 2;
         if (!empty($_FILES['imagen']['name'])) {
             $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
         }

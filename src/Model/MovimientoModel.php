@@ -2,9 +2,9 @@
 
 namespace App\Model;
 
+use App\Domain\Invoice\InvoiceCalculator;
 use App\Util\TipoDoc;
 use DB\SQL\Mapper;
-use mysql_xdevapi\Exception;
 use PDO;
 use Symfony\Component\Uid\Uuid;
 
@@ -21,14 +21,13 @@ class MovimientoModel extends BaseModel
         $this->dao = new Mapper($this->db, 'movimiento');
         $this->cajaModel = new CajaModel();
         $this->optionsDao = new OptionsModel();
-
     }
 
     public function getOption($name)
     {
         try {
             return $this->optionsDao->getByName($name);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->app->error(500, "No se pudo obtener la opcion {$name}");
         }
     }
@@ -273,9 +272,15 @@ class MovimientoModel extends BaseModel
             $detalle = $_POST['detalle'];
 
             for ($i = 0; $i < count($detalle['producto']); $i++) {
-                if (!isset($detalle['descuento'][$i]) || $detalle['descuento'][$i] == '') {$detalle['descuento'][$i] = 0.00;}
-                if (!isset($detalle['unitario'][$i]) || $detalle['unitario'][$i] == '') {$detalle['unitario'][$i] = 0.00;}
-                if (!isset($detalle['total'][$i]) || $detalle['total'][$i] == '') {$detalle['total'][$i] = 0.00;}
+                if (!isset($detalle['descuento'][$i]) || $detalle['descuento'][$i] == '') {
+                    $detalle['descuento'][$i] = 0.00;
+                }
+                if (!isset($detalle['unitario'][$i]) || $detalle['unitario'][$i] == '') {
+                    $detalle['unitario'][$i] = 0.00;
+                }
+                if (!isset($detalle['total'][$i]) || $detalle['total'][$i] == '') {
+                    $detalle['total'][$i] = 0.00;
+                }
 
                 $query_parts[] = "('" . $uuid . "', '" . $detalle['producto'][$i] . "', '" . $detalle['cantidad'][$i] . "', '" . $detalle['unitario'][$i] . "', '" . $detalle['descuento'][$i] . "', '" . $detalle['total'][$i] . "')";
                 if ($this->dao->orden_id > 0) {
@@ -544,9 +549,12 @@ class MovimientoModel extends BaseModel
 
     public function makeInvoice($id): array
     {
+        $sale = $this->db->exec("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($id));
+        $invoiceCalculator = new InvoiceCalculator($sale[0]['total'], $sale[0]['descuento'], $sale[0]['igv'], $sale[0]['recargo_consumo']);
+        $invoiceAmounts = $invoiceCalculator->calculate();
         try {
             $this->db->exec('update movimiento set has_invoice = 1 where movimiento_id = ?', [$id]);
-            $result = $this->db->exec('CALL sp_make_invoice(?,?)', [$id, $this->current_local_id]);
+            $result = $this->db->exec('CALL sp_make_invoice(?,?,?,?,?,?,?)', [$id, $this->current_local_id, $invoiceAmounts->getSubtotal(), $invoiceAmounts->getTaxedAmount(), $invoiceAmounts->getDiscountAmount(), $invoiceAmounts->getTax(), $invoiceAmounts->getTotal()]);
             return ["success" => true, "data" => $result, "msg" => 'Comprobante registrado'];
         } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
