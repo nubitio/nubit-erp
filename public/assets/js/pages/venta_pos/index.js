@@ -126,7 +126,7 @@ app.venta = (function () {
             {
                 type: window.FormType.HIDDEN,
                 label: 'Total',
-                name: 'total',
+                name: 'gravada',
                 align: 'right',
                 visible: true,
             },
