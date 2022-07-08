@@ -130,6 +130,14 @@ class MovimientoModel extends BaseModel
         return $this->db->exec("select movimiento_id, concat(iserie, '-', inumero) as comprobante from vw_movimiento where inumero > 0");
     }
 
+    public function get_notelist()
+    {
+        return $this->db->exec("select vm.movimiento_id, concat(vm.iserie, '-', vm.inumero) AS comprobante 
+          FROM vw_movimiento vm
+          LEFT JOIN nota nt ON (nt.movimiento_id = vm.movimiento_id)
+          WHERE vm.inumero > 0 AND vm.estado = 2 AND nt.serie IS NULL");
+    }
+
     public function getprecio($id)
     {
         $result = $this->db->exec("
