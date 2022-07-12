@@ -14,12 +14,17 @@ app.proveedor = (function () {
     let init = function () {
         let fields = [
             {
+                type: window.FormType.HIDDEN,
+                name: 'proveedor_id',
+                isKey: true,
+                visible: false
+            },
+            {
                 type: window.FormType.TEXT,
                 label: 'RUC/DNI',
                 name: 'ruc',
                 required: true,
                 validators: ['validCustomerId'],
-                isKey: true,
                 visible: true
             },
             {
@@ -37,7 +42,13 @@ app.proveedor = (function () {
                 required: false,
                 visible: true
             },
-            {type: window.FormType.TEXT, label: 'Teléfono', name: 'telefono', required: false, visible: true},
+            {
+                type: window.FormType.TEXT,
+                label: 'Teléfono',
+                name: 'telefono',
+                required: false,
+                visible: true
+            },
             {
                 type: window.FormType.SWITCH,
                 label: 'Activo',
