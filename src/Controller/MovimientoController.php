@@ -129,6 +129,11 @@ class MovimientoController extends BaseController
         $this->json($this->model->get_list());
     }
 
+    function get_notelist()
+    {
+        $this->json($this->model->get_notelist());
+    }
+
     function getprecio()
     {
         $id = $this->app->get('PARAMS.producto_id');

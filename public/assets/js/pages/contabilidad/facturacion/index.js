@@ -64,8 +64,8 @@ app.facturacion = (function () {
                 title: 'Numero',
                 sortable: true
             }, {
-                field: 'estado',
-                title: 'Anulado',
+                field: 'envio_sunat_nota',
+                title: 'Nota Credito',
                 sortable: true,
                 width: 80,
                 align: 'center',
@@ -177,16 +177,18 @@ app.facturacion = (function () {
 
     function anulado_formatter(value, row) {
         if (value === null) {
-            value = -1
+            return '<span class="badge rounded-pill bg-secondary">NO</span>';
         } else {
             value = Number(value);
         }
-        if (value === 1) {
-            return '<span class="badge rounded-pill bg-success">NO</span>';
-        } else if (value === 2) {
-            return '<span class="badge rounded-pill bg-danger">SI</span>';
-        } else {
-            return '';
+        if (value === 0) {
+            return '<span class="badge rounded-pill bg-success">ENVIADO</span>';
+        } else if (value < 2000) {
+            return '<span class="badge rounded-pill bg-warning">ERRONEO</span>';
+        } else if (value >= 2000 && value < 4000) {
+            return '<span class="badge rounded-pill bg-danger">RECHAZADO</span>';
+        } else if (value >= 4000) {
+            return '<span class="badge rounded-pill bg-info">OBSERVADO</span>';
         }
     }
 
@@ -197,7 +199,7 @@ app.facturacion = (function () {
             value = Number(value);
         }
         if (value === -1) {
-            return '<span class="badge rounded-pill bg-secondary">PENDIENTE</span>';
+            return '<span class="badge rounded-pill bg-primary">PENDIENTE</span>';
         } else if (value === 0) {
             return '<span class="badge rounded-pill bg-success">ENVIADO</span>';
         } else if (value < 2000) {

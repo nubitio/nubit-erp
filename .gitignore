@@ -32,3 +32,6 @@
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+#external files
+desktop.ini

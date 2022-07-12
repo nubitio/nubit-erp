@@ -25,7 +25,7 @@ class CreditNoteModel extends BaseModel
         if ($obj) {
             return $obj[0]['serie'];
         } else {
-            throw new \Exception("No associated series found");
+            throw new \Exception("No existe una serie asociada para este documento, asociala en el submódulo de configuración > local comprobante");
         }
     }
 
