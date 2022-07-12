@@ -139,7 +139,7 @@ app.nota = (function () {
             width: "100%",
             label: "Comprobante",
             labelPosition: "top",
-            url: 'invoice/list',
+            url: 'invoice/noteList',
             method: 'get',
             valueField: 'movimiento_id',
             textField: 'comprobante',
