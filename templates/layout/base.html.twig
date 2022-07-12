@@ -46,13 +46,9 @@
         <a href="#" class="easyui-menubutton menu-user"
            data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ session.usuario }}</a>
         <div id="user_menu" style="width:165px;">
-            <div data-options="iconCls:'fa fa-home fa-fw'" onclick="app.home.change_local()">Cambiar
-                Local
-            </div>
+            <div data-options="iconCls:'fa fa-home fa-fw'" onclick="app.home.change_local()">Cambiar Local</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar
-                Contraseña
-            </div>
+            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar Contraseña</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-power-off fa-fw'" onclick="window.location = ('logout')">Salir</div>
         </div>
