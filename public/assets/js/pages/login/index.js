@@ -137,7 +137,6 @@ app.login = (function () {
                         show_info("Bienvenido!");
                         window.location.href = "home";
                         localStorage.setItem('session', JSON.stringify(response.data));
-                        window.location.href = window.location.href;
                     }
                 })
                 .fail(function (xhr, status, error) {
