@@ -10,7 +10,7 @@ webpack_build:
     - npm run build
   artifacts:
     paths:
-      - build
+      - public/build
 
 deploy_staging:
   stage: deploy
@@ -19,6 +19,7 @@ deploy_staging:
     - apt update && apt install openssh-client rsync
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | ssh-add -
+    - mkdir -p ~/.ssh
     - echo "$SSH_HOST_KEY" > ~/.ssh/known_hosts
   script:
     - composer install
