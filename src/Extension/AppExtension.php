@@ -18,9 +18,10 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
-            'app'  => [
+            'app'    => [
                 'user'    => [],
                 'session' => $_SESSION,
+                'env'     => $_ENV,
             ],
             'option' => $this->optionBuilder->buildOptions(),
         ];
