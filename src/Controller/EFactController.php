@@ -17,6 +17,8 @@ use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
+use Greenter\Model\Voided\Voided;
+use Greenter\Model\Voided\VoidedDetail;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Greenter\Report\HtmlReport;
@@ -437,6 +439,55 @@ class EFactController extends BaseController
         // Guardar CDR
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $note->getName() . '.zip', $result->getCdrZip());
         return ["success" => true, "id" => $sale['note']['nota_id'], "hash" => $this->getHash($note), "code" => $result->getCdrResponse()->getCode(), "msg" => $result->getCdrResponse()->getDescription()];
+    }
+
+    public function makeVoided($sale)
+    {
+        $detail1 = new VoidedDetail();
+        $detail1
+            ->setTipoDoc('01') // Factura
+            ->setSerie('F001')
+            ->setCorrelativo('1')
+            ->setDesMotivoBaja('ERROR EN CÁLCULOS'); // Motivo por el cual se da de baja.
+
+        $detail2 = new VoidedDetail();
+        $detail2
+            ->setTipoDoc('07') // Nota de Crédito
+            ->setSerie('FC01')
+            ->setCorrelativo('2')
+            ->setDesMotivoBaja('ERROR DE RUC');
+
+        $cDeBaja = new Voided();
+        $cDeBaja
+            ->setCorrelativo('00001') // Correlativo, necesario para diferenciar c. de baja de en un mismo día.
+            ->setFecGeneracion(new \DateTime('2020-08-01')) // Fecha de emisión de los comprobantes a dar de baja
+            ->setFecComunicacion(new \DateTime('2020-08-02')) // Fecha de envio de la C. de baja
+            ->setCompany($this->getCompany())
+            ->setDetails([$detail1, $detail2]);
+
+        $result = $this->see->send($cDeBaja);
+        // Guardar XML
+        file_put_contents( $this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
+
+        if (!$result->isSuccess()) {
+            // Si hubo error al conectarse al servicio de SUNAT.
+            var_dump($result->getError());
+            exit();
+        }
+
+        $ticket = $result->getTicket();
+        echo 'Ticket : '.$ticket.PHP_EOL;
+
+        $statusResult = $this->see->getStatus($ticket);
+        if (!$statusResult->isSuccess()) {
+            // Si hubo error al conectarse al servicio de SUNAT.
+            var_dump($statusResult->getError());
+            return;
+        }
+
+        echo $statusResult->getCdrResponse()->getDescription();
+        // Guardar CDR
+        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
     }
 
     public function makeSummary($data, $correlative, $type = '03')
