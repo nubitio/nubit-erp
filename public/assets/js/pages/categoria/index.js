@@ -36,6 +36,12 @@ app.categoria = (function () {
                 visible: false
             },
             {
+                type: window.FormType.FILE,
+                label: 'Imagen',
+                name: 'imagen',
+                required: false
+            },
+            {
                 type: window.FormType.HIDDEN,
                 label: 'Padre',
                 name: 'padre',
