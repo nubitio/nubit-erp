@@ -396,14 +396,6 @@ app.venta = (function () {
         if (row) {
             $.messager.prompt('Confirmar', 'Ingrese un motivo', function (r) {
                 if (r) {
-                    /*
-                    fetch('venta/anular/' + row.movimiento_id)
-                        .then(response => response.json())
-                        .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
-                        .catch(error => show_error(error));
-                        })
-                    */
-
                     $.post('venta/anular/' + row.movimiento_id, {motivo: r})
                         .done(function (result) {
                             if (result.success) {
@@ -416,7 +408,6 @@ app.venta = (function () {
                         .fail(function (xhr, status, error) {
                             show_error(error);
                         });
-
                 }
             });
         } else {
