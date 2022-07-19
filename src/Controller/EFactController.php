@@ -524,7 +524,7 @@ class EFactController extends BaseController
         $resumen
             ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
-            ->setCorrelativo('001') // Correlativo, necesario para diferenciar de otros Resumen diario del mismo día.
+            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d')), 3, '0', STR_PAD_LEFT)) // Correlativo, necesario para diferenciar de otros Resumen diario del mismo día.
             ->setCompany($this->getCompany())
             ->setDetails($detailVoided);
 
@@ -550,7 +550,7 @@ class EFactController extends BaseController
 
         echo $statusResult->getCdrResponse()->getDescription();
         // Guardar CDR
-        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
+         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
     }
 
     public function makeSummary($data, $correlative, $type = '03')
