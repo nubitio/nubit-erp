@@ -43,6 +43,23 @@ class SummaryModel extends BaseModel
         }
     }
 
+    function  getVoided()
+    {
+        try {
+            $data = $this->db->exec("
+                SELECT
+                    total,
+                    subtotal,
+                    gravada,
+                    rc,
+                    
+                    ");
+        } catch (\Exception $e) {
+            return 0;
+        }
+    }
+
+
     function getPendingNotes()
     {
         try {
@@ -82,6 +99,25 @@ class SummaryModel extends BaseModel
                 ORDER BY
                     fecha
             ", [$this->current_local_id, $date]);
+            return ["success" => true, "data" => $data];
+        } catch (Exception $e) {
+            return ["success" => false, "data" => null, "msg" => $e->getMessage()];
+        }
+    }
+
+    function getComprobanteVoided($id)
+    {
+        try {
+            $data = $this->db->exec("
+                SELECT
+                    * 
+                FROM
+                    comprobante 
+                WHERE
+                    serie LIKE 'B0%'
+                AND
+                    movimiento_id = ?
+            ", $id);
             return ["success" => true, "data" => $data];
         } catch (Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
