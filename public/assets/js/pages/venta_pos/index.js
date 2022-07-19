@@ -412,7 +412,10 @@ app.venta = (function () {
                     if (row.cliente_id.length == 11)
                     {
                         let anular_sunat = async () => {
-                            const baja = await fetch('/venta/anular/voided/' + row.movimiento_id);
+                            const baja = await fetch('/venta/anular/voided/' + row.movimiento_id)
+                                .then(response => response.json())
+                                .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
+                                .catch(error => show_error(error));
                             console.log(baja);
                         }
                         anular_sunat();

@@ -19,6 +19,16 @@ class SummaryModel extends BaseModel
         }
     }
 
+    public function getNextNumberVoided($date)
+    {
+        $result = $this->db->exec("select COUNT(*)+1 AS correlative from movimiento where estado = 2 and fecha = ?", [$date]);
+        if ($result) {
+            return $result[0]['correlative'];
+        } else {
+            throw new Exception("Unable to get the next number");
+        }
+    }
+
     function getPending()
     {
         try {
