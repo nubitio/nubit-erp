@@ -408,6 +408,31 @@ app.venta = (function () {
                         .fail(function (xhr, status, error) {
                             show_error(error);
                         });
+
+                    if (row.cliente_id.length == 11)
+                    {
+                        let anular_sunat = async () => {
+                            const baja = await fetch('/venta/anular/voided/' + row.movimiento_id);
+                            console.log(baja);
+                        }
+                        anular_sunat();
+                    }
+                    if (row.cliente_id.length == 8)
+                    {
+                        fetch('invoice/summary/sendVoided/' + row.movimiento_id)
+                            .then(response => response.json())
+                            .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
+                            .catch(error => show_error(error))
+                            .finally(() => {
+                                dlg.dialog('hideMask');
+                                dlg.dialog('close');
+                            })
+                    }
+
+
+
+
+
                 }
             });
         } else {

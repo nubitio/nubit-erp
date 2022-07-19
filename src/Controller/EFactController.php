@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Invoice\Consult;
 use App\Model\BotModel;
 use App\Model\OptionsModel;
+use App\Model\ComprobanteModel;
+use App\Model\SummaryModel;
 use DateTime;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
@@ -32,6 +34,8 @@ class EFactController extends BaseController
 {
     private See $see;
     private OptionsModel $optionsDao;
+    private ComprobanteModel $comprobanteModel;
+    private SummaryModel $summaryModel;
     private BotModel $botModel;
 
     public function __construct()
@@ -39,6 +43,8 @@ class EFactController extends BaseController
         parent::__construct();
         $this->see = new See();
         $this->optionsDao = new OptionsModel();
+        $this->comprobanteModel = new ComprobanteModel();
+        $this->summaryModel = new SummaryModel();
         $this->botModel = new BotModel();
 
         if ($this->app->get('EFACT_MODE') == 'PROD') {
@@ -441,33 +447,90 @@ class EFactController extends BaseController
         return ["success" => true, "id" => $sale['note']['nota_id'], "hash" => $this->getHash($note), "code" => $result->getCdrResponse()->getCode(), "msg" => $result->getCdrResponse()->getDescription()];
     }
 
-    public function makeVoided($sale)
+    public function makeVoided()
     {
-        $detail1 = new VoidedDetail();
-        $detail1
-            ->setTipoDoc('01') // Factura
-            ->setSerie('F001')
-            ->setCorrelativo('1')
-            ->setDesMotivoBaja('ERROR EN CÁLCULOS'); // Motivo por el cual se da de baja.
+        $id = $this->app->get("PARAMS.id");
+        $sale = $this->botModel->getOne($id);
 
-        $detail2 = new VoidedDetail();
-        $detail2
-            ->setTipoDoc('07') // Nota de Crédito
-            ->setSerie('FC01')
-            ->setCorrelativo('2')
-            ->setDesMotivoBaja('ERROR DE RUC');
+        $detail = new VoidedDetail();
+        $detail
+            ->setTipoDoc($sale['data']['header']['doc_type'])
+            ->setSerie($sale['data']['header']['doc_series'])
+            ->setCorrelativo($sale['data']['header']['doc_number'])
+            ->setDesMotivoBaja($sale['data']['header']['doc_notes']);
 
         $cDeBaja = new Voided();
         $cDeBaja
-            ->setCorrelativo('00001') // Correlativo, necesario para diferenciar c. de baja de en un mismo día.
-            ->setFecGeneracion(new \DateTime('2020-08-01')) // Fecha de emisión de los comprobantes a dar de baja
-            ->setFecComunicacion(new \DateTime('2020-08-02')) // Fecha de envio de la C. de baja
+            ->setCorrelativo($sale['data']['header']['doc_type'])
+            ->setFecGeneracion(new \DateTime($sale['data']['header']['date_comprobante']))
+            ->setFecComunicacion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setCompany($this->getCompany())
-            ->setDetails([$detail1, $detail2]);
+            ->setDetails([$detail]);
 
         $result = $this->see->send($cDeBaja);
         // Guardar XML
         file_put_contents( $this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
+
+        if (!$result->isSuccess()) {
+            // Si hubo error al conectarse al servicio de SUNAT.
+            var_dump($result->getError());
+            exit();
+        }
+
+        $ticket = $result->getTicket();
+        $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        echo 'Ticket-baja : '.$ticket.PHP_EOL;
+        sleep(30);
+
+
+        $statusResult = $this->see->getStatus($ticket);
+        if (!$statusResult->isSuccess()) {
+            // Si hubo error al conectarse al servicio de SUNAT.
+            var_dump($statusResult->getError());
+            return;
+        }
+
+        echo $statusResult->getCdrResponse()->getDescription();
+        // Guardar CDR
+        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
+    }
+
+    public function makeVoidedSummary()
+    {
+        $id = $this->app->get("PARAMS.id");
+        $sale = $this->botModel->getOne($id);
+        $data = $this->summaryModel->getComprobanteVoided($id);
+
+        $detailVoided = [];
+        foreach ($data['data'] as $item){
+            $detail = new SummaryDetail();
+            $detail
+                ->setTipoDoc('03') // Boleta
+                ->setSerieNro($item['serie'] . '-' . $item['numero'])
+                ->setEstado('3') // Anulación
+                ->setClienteTipo('1')
+                ->setClienteNro('00000000')
+                ->setTotal($item['total'])
+                ->setMtoOperGravadas($item['gravada'])
+                ->setMtoOperInafectas(0.00)
+                ->setMtoOperExoneradas(0.00)
+                ->setMtoOtrosCargos($item['rc'])
+                ->setMtoIGV($item['igv']);
+            $detailVoided[] = $detail;
+        }
+
+
+        $resumen = new Summary();
+        $resumen
+            ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
+            ->setFecResumen(new \DateTime(date('Y-m-d')))
+            ->setCorrelativo('001') // Correlativo, necesario para diferenciar de otros Resumen diario del mismo día.
+            ->setCompany($this->getCompany())
+            ->setDetails($detailVoided);
+
+        $result = $this->see->send($resumen);
+        // Guardar XML
+        file_put_contents($this->app->get('EFACT_DIR') . $resumen->getName().'.xml', $this->see->getFactory()->getLastXml());
 
         if (!$result->isSuccess()) {
             // Si hubo error al conectarse al servicio de SUNAT.
@@ -487,7 +550,7 @@ class EFactController extends BaseController
 
         echo $statusResult->getCdrResponse()->getDescription();
         // Guardar CDR
-        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
+        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
     }
 
     public function makeSummary($data, $correlative, $type = '03')
