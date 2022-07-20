@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Invoice\Consult;
 use App\Model\BotModel;
 use App\Model\OptionsModel;
+use App\Model\ComprobanteModel;
+use App\Model\SummaryModel;
 use DateTime;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
@@ -17,6 +19,8 @@ use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
+use Greenter\Model\Voided\Voided;
+use Greenter\Model\Voided\VoidedDetail;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Greenter\Report\HtmlReport;
@@ -30,6 +34,8 @@ class EFactController extends BaseController
 {
     private See $see;
     private OptionsModel $optionsDao;
+    private ComprobanteModel $comprobanteModel;
+    private SummaryModel $summaryModel;
     private BotModel $botModel;
 
     public function __construct()
@@ -37,6 +43,8 @@ class EFactController extends BaseController
         parent::__construct();
         $this->see = new See();
         $this->optionsDao = new OptionsModel();
+        $this->comprobanteModel = new ComprobanteModel();
+        $this->summaryModel = new SummaryModel();
         $this->botModel = new BotModel();
 
         if ($this->app->get('EFACT_MODE') == 'PROD') {
@@ -437,6 +445,120 @@ class EFactController extends BaseController
         // Guardar CDR
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $note->getName() . '.zip', $result->getCdrZip());
         return ["success" => true, "id" => $sale['note']['nota_id'], "hash" => $this->getHash($note), "code" => $result->getCdrResponse()->getCode(), "msg" => $result->getCdrResponse()->getDescription()];
+    }
+
+    public function makeVoided()
+    {
+        $id = $this->app->get("PARAMS.id");
+        $sale = $this->botModel->getOne($id);
+
+        $detail = new VoidedDetail();
+        $detail
+            ->setTipoDoc($sale['data']['header']['doc_type'])
+            ->setSerie($sale['data']['header']['doc_series'])
+            ->setCorrelativo($sale['data']['header']['doc_number'])
+            ->setDesMotivoBaja($sale['data']['header']['doc_notes']);
+
+        $cDeBaja = new Voided();
+        $cDeBaja
+            ->setCorrelativo($sale['data']['header']['doc_type'])
+            ->setFecGeneracion(new \DateTime($sale['data']['header']['date_comprobante']))
+            ->setFecComunicacion(new \DateTime($sale['data']['header']['date_comprobante']))
+            ->setCompany($this->getCompany())
+            ->setDetails([$detail]);
+
+        $result = $this->see->send($cDeBaja);
+        // Guardar XML
+        file_put_contents( $this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
+        if (!$result->isSuccess()) {
+            return [
+                    "success" => false,
+                    "ticket" => null,
+                    "id" => null,
+                    "hash" => $this->getHash($cDeBaja),
+                    "code" => $result->getError()->getCode(),
+                    "msg" => $result->getError()->getMessage()];
+        }
+
+        $ticket = $result->getTicket();
+        $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        sleep(30);
+
+        $statusResult = $this->see->getStatus($ticket);
+        if (!$statusResult->isSuccess()) {
+            return [
+                    "success" => false,
+                    "ticket" => $ticket,
+                    "id" => $statusResult->getCdrResponse()->getId(),
+                    "hash" => $this->getHash($cDeBaja),
+                    "code" => $statusResult->getError()->getCode(),
+                    "msg" => $statusResult->getError()->getMessage()];
+        }
+        // Guardar CDR
+        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
+    }
+
+    public function makeVoidedSummary()
+    {
+        $id = $this->app->get("PARAMS.id");
+        $sale = $this->botModel->getOne($id);
+        $data = $this->summaryModel->getComprobanteVoided($id);
+
+        $detailVoided = [];
+        foreach ($data['data'] as $item){
+            $detail = new SummaryDetail();
+            $detail
+                ->setTipoDoc('03') // Boleta
+                ->setSerieNro($item['serie'] . '-' . $item['numero'])
+                ->setEstado('3') // Anulación
+                ->setClienteTipo('1')
+                ->setClienteNro('00000000')
+                ->setTotal($item['total'])
+                ->setMtoOperGravadas($item['gravada'])
+                ->setMtoOperInafectas(0.00)
+                ->setMtoOperExoneradas(0.00)
+                ->setMtoOtrosCargos($item['rc'])
+                ->setMtoIGV($item['igv']);
+            $detailVoided[] = $detail;
+        }
+
+        $resumen = new Summary();
+        $resumen
+            ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
+            ->setFecResumen(new \DateTime(date('Y-m-d')))
+            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d')), 3, '0', STR_PAD_LEFT))
+            ->setCompany($this->getCompany())
+            ->setDetails($detailVoided);
+
+        $result = $this->see->send($resumen);
+        // Guardar XML
+        file_put_contents($this->app->get('EFACT_DIR') . $resumen->getName().'.xml', $this->see->getFactory()->getLastXml());
+        if (!$result->isSuccess()) {
+            return [
+                "success" => false,
+                "ticket" => null,
+                "id" => null,
+                "hash" => $this->getHash($resumen),
+                "code" => $result->getError()->getCode(),
+                "msg" => $result->getError()->getMessage()];
+        }
+
+        $ticket = $result->getTicket();
+        $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        sleep(30);
+
+        $statusResult = $this->see->getStatus($ticket);
+        if (!$statusResult->isSuccess()) {
+            return [
+                "success" => false,
+                "ticket" => $ticket,
+                "id" => $statusResult->getCdrResponse()->getId(),
+                "hash" => $this->getHash($resumen),
+                "code" => $statusResult->getError()->getCode(),
+                "msg" => $statusResult->getError()->getMessage()];
+        }
+        // Guardar CDR
+         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
     }
 
     public function makeSummary($data, $correlative, $type = '03')

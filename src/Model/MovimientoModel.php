@@ -135,7 +135,7 @@ class MovimientoModel extends BaseModel
         return $this->db->exec("select vm.movimiento_id, concat(vm.iserie, '-', vm.inumero) AS comprobante 
           FROM vw_movimiento vm
           LEFT JOIN nota nt ON (nt.movimiento_id = vm.movimiento_id)
-          WHERE vm.inumero > 0 AND vm.estado = 2 AND nt.envio_sunat != 0");
+          WHERE vm.inumero > 0 AND nt.envio_sunat IS NULL OR nt.envio_sunat > 0");
     }
 
     public function getprecio($id)

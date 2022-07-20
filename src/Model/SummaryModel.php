@@ -19,6 +19,16 @@ class SummaryModel extends BaseModel
         }
     }
 
+    public function getNextNumberVoided($date)
+    {
+        $result = $this->db->exec("select COUNT(*)+1 AS correlative from movimiento where estado = 2 and fecha = ?", [$date]);
+        if ($result) {
+            return $result[0]['correlative'];
+        } else {
+            throw new Exception("Unable to get the next number");
+        }
+    }
+
     function getPending()
     {
         try {
@@ -82,6 +92,25 @@ class SummaryModel extends BaseModel
                 ORDER BY
                     fecha
             ", [$this->current_local_id, $date]);
+            return ["success" => true, "data" => $data];
+        } catch (Exception $e) {
+            return ["success" => false, "data" => null, "msg" => $e->getMessage()];
+        }
+    }
+
+    function getComprobanteVoided($id)
+    {
+        try {
+            $data = $this->db->exec("
+                SELECT
+                    * 
+                FROM
+                    comprobante 
+                WHERE
+                    serie LIKE 'B0%'
+                AND
+                    movimiento_id = ?
+            ", $id);
             return ["success" => true, "data" => $data];
         } catch (Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
