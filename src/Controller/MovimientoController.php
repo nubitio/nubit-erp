@@ -193,7 +193,6 @@ class MovimientoController extends BaseController
     {
         $id = $this->app->get('PARAMS.id');
         $data = $this->model->anular($id);
-
         $this->json($data);
     }
 

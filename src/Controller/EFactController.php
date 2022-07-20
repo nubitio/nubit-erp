@@ -470,27 +470,30 @@ class EFactController extends BaseController
         $result = $this->see->send($cDeBaja);
         // Guardar XML
         file_put_contents( $this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
-
         if (!$result->isSuccess()) {
-            // Si hubo error al conectarse al servicio de SUNAT.
-            var_dump($result->getError());
-            exit();
+            return [
+                    "success" => false,
+                    "ticket" => null,
+                    "id" => null,
+                    "hash" => $this->getHash($cDeBaja),
+                    "code" => $result->getError()->getCode(),
+                    "msg" => $result->getError()->getMessage()];
         }
 
         $ticket = $result->getTicket();
         $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
-        echo 'Ticket-baja : '.$ticket.PHP_EOL;
         sleep(30);
-
 
         $statusResult = $this->see->getStatus($ticket);
         if (!$statusResult->isSuccess()) {
-            // Si hubo error al conectarse al servicio de SUNAT.
-            var_dump($statusResult->getError());
-            return;
+            return [
+                    "success" => false,
+                    "ticket" => $ticket,
+                    "id" => $statusResult->getCdrResponse()->getId(),
+                    "hash" => $this->getHash($cDeBaja),
+                    "code" => $statusResult->getError()->getCode(),
+                    "msg" => $statusResult->getError()->getMessage()];
         }
-
-        echo $statusResult->getCdrResponse()->getDescription();
         // Guardar CDR
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
     }
@@ -519,36 +522,41 @@ class EFactController extends BaseController
             $detailVoided[] = $detail;
         }
 
-
         $resumen = new Summary();
         $resumen
             ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
-            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d')), 3, '0', STR_PAD_LEFT)) // Correlativo, necesario para diferenciar de otros Resumen diario del mismo día.
+            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d')), 3, '0', STR_PAD_LEFT))
             ->setCompany($this->getCompany())
             ->setDetails($detailVoided);
 
         $result = $this->see->send($resumen);
         // Guardar XML
         file_put_contents($this->app->get('EFACT_DIR') . $resumen->getName().'.xml', $this->see->getFactory()->getLastXml());
-
         if (!$result->isSuccess()) {
-            // Si hubo error al conectarse al servicio de SUNAT.
-            var_dump($result->getError());
-            exit();
+            return [
+                "success" => false,
+                "ticket" => null,
+                "id" => null,
+                "hash" => $this->getHash($resumen),
+                "code" => $result->getError()->getCode(),
+                "msg" => $result->getError()->getMessage()];
         }
 
         $ticket = $result->getTicket();
-        echo 'Ticket : '.$ticket.PHP_EOL;
+        $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        sleep(30);
 
         $statusResult = $this->see->getStatus($ticket);
         if (!$statusResult->isSuccess()) {
-            // Si hubo error al conectarse al servicio de SUNAT.
-            var_dump($statusResult->getError());
-            return;
+            return [
+                "success" => false,
+                "ticket" => $ticket,
+                "id" => $statusResult->getCdrResponse()->getId(),
+                "hash" => $this->getHash($resumen),
+                "code" => $statusResult->getError()->getCode(),
+                "msg" => $statusResult->getError()->getMessage()];
         }
-
-        echo $statusResult->getCdrResponse()->getDescription();
         // Guardar CDR
          file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
     }

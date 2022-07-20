@@ -53,23 +53,6 @@ class SummaryModel extends BaseModel
         }
     }
 
-    function  getVoided()
-    {
-        try {
-            $data = $this->db->exec("
-                SELECT
-                    total,
-                    subtotal,
-                    gravada,
-                    rc,
-                    
-                    ");
-        } catch (\Exception $e) {
-            return 0;
-        }
-    }
-
-
     function getPendingNotes()
     {
         try {
