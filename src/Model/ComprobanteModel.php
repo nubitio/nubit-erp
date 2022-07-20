@@ -73,4 +73,9 @@ class ComprobanteModel extends BaseModel
             FROM tipo_comprobante
         ");
     }
+
+    public function ticketVoidedUpdate($ticket ,$receiptId)
+    {
+        $this->db->exec("UPDATE comprobante SET ticket_baja = ? WHERE movimiento_id = ?", array($ticket, $receiptId));
+    }
 }
