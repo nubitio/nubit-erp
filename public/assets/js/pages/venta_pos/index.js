@@ -431,11 +431,6 @@ app.venta = (function () {
                                 dlg.dialog('close');
                             })
                     }
-
-
-
-
-
                 }
             });
         } else {

@@ -83,7 +83,6 @@ app.home = (function () {
                         lbl_local.html(row.descripcion);
                         loadPage('dashboard', 'dashboard');
                         localStorage.setItem('session', JSON.stringify(response.data));
-                        location.reload();
                     }
                 })
                 .fail(function (xhr, status, error) {
