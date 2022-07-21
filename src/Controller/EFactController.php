@@ -461,7 +461,7 @@ class EFactController extends BaseController
 
         $cDeBaja = new Voided();
         $cDeBaja
-            ->setCorrelativo($sale['data']['header']['doc_type'])
+            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT))
             ->setFecGeneracion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setFecComunicacion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setCompany($this->getCompany())
@@ -482,7 +482,7 @@ class EFactController extends BaseController
 
         $ticket = $result->getTicket();
         $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
-        sleep(30);
+        sleep(5);
 
         $statusResult = $this->see->getStatus($ticket);
         if (!$statusResult->isSuccess()) {
@@ -526,7 +526,7 @@ class EFactController extends BaseController
         $resumen
             ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
-            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d')), 3, '0', STR_PAD_LEFT))
+            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),0), 3, '0', STR_PAD_LEFT))
             ->setCompany($this->getCompany())
             ->setDetails($detailVoided);
 
@@ -545,7 +545,7 @@ class EFactController extends BaseController
 
         $ticket = $result->getTicket();
         $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
-        sleep(30);
+        sleep(5);
 
         $statusResult = $this->see->getStatus($ticket);
         if (!$statusResult->isSuccess()) {
@@ -576,10 +576,10 @@ class EFactController extends BaseController
                 ->setEstado('1')
                 ->setClienteNro($item['cliente_id'])
                 ->setTotal($item['total'])
-                ->setMtoOperGravadas($item['subtotal'])
+                ->setMtoOperGravadas($item['gravada'])
                 ->setMtoOperInafectas(0.0)
                 ->setMtoOperExoneradas(0.0)
-                ->setMtoOtrosCargos(0.0)
+                ->setMtoOtrosCargos($item['rc'])
                 ->setMtoIGV($item['igv']);
             if ($type == '07') {
                 $affectedDoc = new Document();
