@@ -19,9 +19,11 @@ class SummaryModel extends BaseModel
         }
     }
 
-    public function getNextNumberVoided($date)
-    {
-        $result = $this->db->exec("select COUNT(*)+1 AS correlative from movimiento where estado = 2 and fecha = ?", [$date]);
+    public function getNextNumberVoided($date, $type)
+    {   //BOLETAS:0, FACTURAS:1
+        $result = $type == 0?
+            $this->db->exec("select COUNT(*)+1 AS correlative from vw_movimiento where estado = 2 and fecha = ? and iserie like 'B0%'", [$date]):
+            $this->db->exec("select COUNT(*)+1 AS correlative from vw_movimiento where estado = 2 and fecha = ? and iserie like 'F0%'", [$date]);
         if ($result) {
             return $result[0]['correlative'];
         } else {
