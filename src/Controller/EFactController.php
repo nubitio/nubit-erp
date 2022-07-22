@@ -512,7 +512,7 @@ class EFactController extends BaseController
                 ->setSerieNro($item['serie'] . '-' . $item['numero'])
                 ->setEstado('3') // Anulación
                 ->setClienteTipo('1')
-                ->setClienteNro('00000000')
+                ->setClienteNro($item['cliente_id'])
                 ->setTotal($item['total'])
                 ->setMtoOperGravadas($item['gravada'])
                 ->setMtoOperInafectas(0.00)
