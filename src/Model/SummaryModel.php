@@ -19,9 +19,35 @@ class SummaryModel extends BaseModel
         }
     }
 
-    public function getNextNumberVoided($date)
-    {
-        $result = $this->db->exec("select COUNT(*)+1 AS correlative from movimiento where estado = 2 and fecha = ?", [$date]);
+    public function searchVoidedCorrelative($date, $id, $type){
+        $result = $this->db->exec("
+            select
+                movimiento_id,
+                iserie,
+                inumero,
+                cliente,
+                fecha,
+                glosa,
+                numero,
+                row_number() OVER (ORDER BY date_created) AS NP,
+                date_created
+            from vw_movimiento
+            where fecha = ?
+            and estado = 2
+            and iserie like ?
+            order by date_created desc", [$id, $date, $type]);
+        if ($result) {
+            return $result[0]['NP'];
+        } else {
+            throw new Exception("Unable to get the next number");
+        }
+    }
+
+    public function getNextNumberVoided($date, $type)
+    {   //BOLETAS:0, FACTURAS:1
+        $result = $type == 0?
+            $this->db->exec("select COUNT(*)+1 AS correlative from vw_movimiento where estado = 2 and fecha = ? and iserie like 'B0%'", [$date]):
+            $this->db->exec("select COUNT(*)+1 AS correlative from vw_movimiento where estado = 2 and fecha = ? and iserie like 'F0%'", [$date]);
         if ($result) {
             return $result[0]['correlative'];
         } else {
