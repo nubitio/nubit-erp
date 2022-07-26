@@ -426,10 +426,6 @@ app.venta = (function () {
                             .then(response => response.json())
                             .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
                             .catch(error => show_error(error))
-                            .finally(() => {
-                                dlg.dialog('hideMask');
-                                dlg.dialog('close');
-                            })
                     }
                 }
             });
