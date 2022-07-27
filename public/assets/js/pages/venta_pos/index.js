@@ -399,6 +399,7 @@ app.venta = (function () {
                     $.post('venta/anular/' + row.movimiento_id, {motivo: r})
                         .done(function (result) {
                             if (result.success) {
+                                setVoided(row);
                                 dataGrid.reload();
                                 show_info(result.msg);
                             } else {
@@ -408,29 +409,28 @@ app.venta = (function () {
                         .fail(function (xhr, status, error) {
                             show_error(error);
                         });
-
-                    if (row.cliente_id.length == 11)
-                    {
-                        let anular_sunat = async () => {
-                            const baja = await fetch('/venta/anular/voided/' + row.movimiento_id)
-                                .then(response => response.json())
-                                .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
-                                .catch(error => show_error(error));
-                            console.log(baja);
-                        }
-                        anular_sunat();
-                    }
-                    if (row.cliente_id.length == 8)
-                    {
-                        fetch('invoice/summary/sendVoided/' + row.movimiento_id)
-                            .then(response => response.json())
-                            .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
-                            .catch(error => show_error(error))
-                    }
                 }
             });
         } else {
             show_info('Seleccione un registro');
+        }
+    }
+
+    function setVoided(row)
+    {
+        if (row.cliente_id.length == 11)
+        {
+            fetch('/venta/anular/voided/' + row.movimiento_id)
+                .then(response => response.json())
+                .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
+                .catch(error => show_error(error));
+        }
+        if (row.cliente_id.length == 8)
+        {
+            fetch('invoice/summary/sendVoided/' + row.movimiento_id)
+                .then(response => response.json())
+                .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
+                .catch(error => show_error(error))
         }
     }
 
