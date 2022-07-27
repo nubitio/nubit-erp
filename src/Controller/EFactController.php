@@ -459,9 +459,12 @@ class EFactController extends BaseController
             ->setCorrelativo($sale['data']['header']['doc_number'])
             ->setDesMotivoBaja($sale['data']['header']['doc_notes']);
 
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT);
+        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],5,'0', STR_PAD_LEFT);
+
         $cDeBaja = new Voided();
         $cDeBaja
-            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT))
+            ->setCorrelativo($sequenceVoidedCorrelative.$numberInvoiceCorrelative)
             ->setFecGeneracion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setFecComunicacion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setCompany($this->getCompany())
@@ -522,11 +525,14 @@ class EFactController extends BaseController
             $detailVoided[] = $detail;
         }
 
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 2, '0', STR_PAD_LEFT);
+        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],6,'0', STR_PAD_LEFT);
+
         $resumen = new Summary();
         $resumen
             ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
-            ->setCorrelativo(str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),0), 3, '0', STR_PAD_LEFT))
+            ->setCorrelativo($sequenceVoidedCorrelative.$numberInvoiceCorrelative)
             ->setCompany($this->getCompany())
             ->setDetails($detailVoided);
 
