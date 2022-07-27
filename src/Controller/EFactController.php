@@ -525,8 +525,8 @@ class EFactController extends BaseController
             $detailVoided[] = $detail;
         }
 
-        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT);
-        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],5,'0', STR_PAD_LEFT);
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 2, '0', STR_PAD_LEFT);
+        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],6,'0', STR_PAD_LEFT);
 
         $resumen = new Summary();
         $resumen
