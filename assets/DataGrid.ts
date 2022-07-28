@@ -138,6 +138,7 @@ export default class DataGrid {
             this.toolbar.push(button);
         });
         this.dataGrid.datagrid({'toolbar': this.toolbar});
+        this.dataGrid.datagrid('enableFilter', []);
     }
 
     getIdField() {

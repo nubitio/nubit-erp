@@ -1,4 +1,8 @@
-$primary: darken(#428bca, 20%);
+$primary: darken(#61afef, 20%);
+$success: darken(#98c379, 20%);
+$info: darken(#56b6c2, 20%);
+$warning: darken(#e5c07b, 20%);
+$danger: darken(#e06c75, 20%);
 
 @import "~bootstrap/scss/bootstrap";
 @import "~@fortawesome/fontawesome-free/scss/regular";
