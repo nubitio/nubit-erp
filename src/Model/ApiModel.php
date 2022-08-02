@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Domain\Invoice\InvoiceCalculator;
+use Symfony\Component\Uid\Uuid;
 
 class ApiModel extends BaseModel
 {
@@ -43,6 +44,7 @@ class ApiModel extends BaseModel
     {
         $repository = new \DB\SQL\Mapper($this->db, 'categoria');
         $repository->copyfrom($category);
+        $repository->categoria_id = Uuid::v4();
         $repository->estado = 1;
         try {
             $repository->save();
@@ -131,11 +133,16 @@ class ApiModel extends BaseModel
         }
     }
 
-    public function getAllProducts()
+    public function getAllProducts($local_id): array
     {
-        return $this->db->exec('select * from vw_producto');
+        $sql= "
+               select * 
+               from vw_producto vw
+               where 
+                   vw.local_id=?
+               ";
+        return $this->db->exec($sql,[$local_id]);
     }
-
     public function getOneProduct($id)
     {
         $data = $this->db->exec('select * from vw_producto where producto_id = ?', [$id]);
@@ -146,33 +153,53 @@ class ApiModel extends BaseModel
         }
     }
 
-    public function createProduct($product): array
+    public function createProduct($local_id,$product): array
     {
         $repository = new \DB\SQL\Mapper($this->db, 'producto');
         $repository->copyfrom($product);
+        $repository->producto_id = Uuid::v4();
         $repository->tipo_id = 2;
         $repository->estado = 1;
         try {
             $repository->save();
-            $product['producto_id'] = $repository->producto_id;
+            $ext = new \DB\SQL\Mapper($this->db, 'producto_local');
+            $ext->local_id = $local_id;
+            $ext->producto_id = $repository->producto_id;
+            $ext->precio = $repository->precio;
+            $ext->activo = 1;
+            $ext->save();
             return ['success' => true, 'data' => $product, 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
 
-    public function updateProduct($id, $product): array
+    public function updateProduct($local_id,$id, $product): array
     {
         $repository = new \DB\SQL\Mapper($this->db, 'producto');
         $repository->load(['producto_id = ?', $id]);
         $repository->copyfrom($product);
         try {
             $repository->update();
+            $ext = new \DB\SQL\Mapper($this->db, 'producto_local');
+            $ext->load(array('local_id=? and producto_id=?', $local_id, $repository->producto_id));
+
+            if (!$ext->dry()) {
+                $ext->precio = $repository->precio;
+                $ext->update();
+            } else {
+                $ext->local_id = $local_id;
+                $ext->producto_id = $repository->producto_id;
+                $ext->precio = $repository->precio;
+                $ext->activo = 1;
+                $ext->save();
+            }
             return ['success' => true, 'data' => $product, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
+
 
     public function deleteProduct($id): array
     {
@@ -459,7 +486,7 @@ class ApiModel extends BaseModel
                tc.codigo,
                tc.descripcion,
                lc.serie,
-               sum( c.total ) AS total 
+               IFNULL(sum( c.total ),0) AS totalComprobanteSoles 
         FROM local_comprobante lc
         INNER JOIN tipo_comprobante tc ON tc.codigo = lc.tipo_comprobante_id
         LEFT JOIN comprobante c ON lc.serie = c.serie 
@@ -471,7 +498,7 @@ class ApiModel extends BaseModel
         return $this->db->exec($sql, [$local_id]);
     }
 
-    public function getUrlCustomer()
+    public function getImageCustomer($ruc)
     {
         $sql = "
         SELECT
@@ -479,22 +506,38 @@ class ApiModel extends BaseModel
                cl.razon_social as nombre,
                IFNULL( cl.imagen ,concat('https://i.pravatar.cc/',cl.ruc)) as imagen
         FROM cliente cl   
+        WHERE 
+            cl.ruc=?
         ";
 
-        return $this->db->exec($sql);
+        return $this->db->exec($sql,[$ruc]);
     }
 
-    public function getUrlProduct()
+    public function getImageProduct($id)
     {
         $sql = "
         SELECT
             p.descripcion as nombre,
-            p.imagen as imagen
-        
+            p.imagen as imagen       
         FROM vw_producto p
+        WHERE
+            p.producto_id=?
         ";
 
-        return $this->db->exec($sql);
+        return $this->db->exec($sql,[$id]);
+    }
+    public function getImageCategory($id)
+    {
+        $sql = "
+        SELECT
+            c.descripcion as nombre,
+            IFNULL( c.imagen ,concat('https://ui-avatars.com/api/?name=',c.descripcion)) as imagen    
+        FROM categoria c
+        WHERE
+            c.categoria_id=?
+        ";
+
+        return $this->db->exec($sql,[$id]);
     }
 
 
