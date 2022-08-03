@@ -31,6 +31,7 @@ export default class Dialog {
                 text: Constants.TEXT_CANCEL,
                 handler: function () {
                     ref.hide();
+                    window.Observer.notify(EventType.CANCEL);
                 }
             }, {
                 id: 'positive-button',

@@ -8,10 +8,12 @@ import {FormType} from "./FormType";
 import {Constants} from "./Constants";
 import ThemeManager from "./ThemeManager";
 import Customer from "./pages/Customer";
+import Drawer from "./Drawer";
 
 window.Observer = new Observable();
 window.DataGrid = DataGrid;
 window.Dialog = Dialog;
+window.Drawer = Drawer;
 window.Form = Form;
 window.EventType = EventType;
 window.FormType = FormType;

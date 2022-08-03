@@ -62,13 +62,11 @@
     <div id="home_local">
         <div id="home_lista_local"></div>
     </div>
-    <div id="drawer" style="z-index: 9999"></div>
 </div>
 <script>
     let layout = $('#layout-container');
     let sidebar = $('#sidebar');
     let content = $('#content');
-    let drawer = $('#drawer');
     let themeIcon = $('#theme-icon');
     let current;
 
@@ -85,10 +83,6 @@
             loadingMessage: '',
             onBeforeLoad: function () {
                 $(this).panel('showMask', 'Cargando...');
-                drawer.drawer('destroy');
-                drawer.drawer({
-                    width: 350,
-                })
             },
             onLoad: function () {
                 $(this).panel('hideMask');
@@ -99,10 +93,6 @@
                     sidebar.sidemenu('select', selectedMenu);
                 }
             }
-        });
-
-        drawer.drawer({
-            width: 350,
         });
 
         $.get('getmenu')
@@ -183,6 +173,7 @@
             localStorage.removeItem('selectedMenu');
         }
         if (url !== current) {
+            window.Observer.notify(window.EventType.DESTROY, url);
             window.Observer.unsubscribeAll();
             let state = {url: url, text: title};
             window.history.pushState({item: state}, title, '#' + url);

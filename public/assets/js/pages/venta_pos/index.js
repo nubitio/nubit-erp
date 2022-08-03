@@ -211,18 +211,6 @@ app.venta = (function () {
 
         dataGrid.addToolbarButtons(toolbarButtons);
 
-        let viewportHeight = window.innerHeight;
-        let customer = new window.app.customer('drawer', {width: '100%', maxHeight: viewportHeight, modal: false});
-        customer.init();
-        customer.renderDialog();
-
-        window.Observer.subscribe(window.EventType.SUCCESS, (data) => {
-            cbo_cliente.combobox('reload');
-            console.log(data);
-            cbo_cliente.combobox('setValue', data || '');
-            drawer.drawer('close');
-        })
-
         dlg.dialog({
             width: 700,
             height: 500,
@@ -255,6 +243,17 @@ app.venta = (function () {
             }
         });
 
+        let drawer = new window.Drawer();
+        let viewportHeight = window.innerHeight;
+        let customer = new window.app.customer(drawer.id, {width: '100%', maxHeight: viewportHeight, modal: false});
+        customer.init();
+        customer.renderDialog();
+
+        window.Observer.subscribe(window.EventType.SUCCESS, (data) => {
+            cbo_cliente.combobox('reload');
+            cbo_cliente.combobox('setValue', data || '');
+        });
+
         cbo_cliente.combobox({
             width: '100%',
             label: 'Cliente',
@@ -270,7 +269,7 @@ app.venta = (function () {
                 iconCls: ICON_ADD,
                 handler: function (e) {
                     window.Observer.notify(window.EventType.ADD, {route: customer.ROUTES.ADD});
-                    drawer.drawer('expand');
+                    drawer.show();
                 }
             }]
         });

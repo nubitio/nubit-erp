@@ -8,4 +8,8 @@ export enum EventType {
     SUCCESS = 'on:success',
     ERROR = 'on:error',
     THEME_CHANGE = 'on:theme:change',
+    CANCEL = 'on:cancel',
+    INIT = 'on:init',
+    LOAD = 'on:load',
+    DESTROY = 'on:destroy',
 }
