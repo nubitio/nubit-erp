@@ -8,8 +8,7 @@ use App\Model\ApiModel;
 use App\Model\BotModel;
 use App\Model\UsuarioModel;
 use Firebase\JWT\JWT;
-use mysql_xdevapi\Exception;
-use PhpOffice\PhpSpreadsheet\Calculation\Category;
+
 
 class ApiController extends BaseController
 {
