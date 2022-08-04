@@ -114,11 +114,11 @@ app.caja_consulta = (function () {
 
     function tipo_styler(value, row, index) {
         if (value == 1 || value == 'Total Ingresos') {
-            return 'background-color:#eeeeec;color:#63b343;';
+            return 'color:#63b343;';
         } else if (value == 2 || value == 'Total Egresos') {
-            return 'background-color:#eeeeec;color:#dd4850;';
+            return 'color:#dd4850;';
         } else if (value == 'Total Efectivo') {
-            return 'background-color:#eeeeec;color:#546885;';
+            return 'color:#546885;';
         }
     }
 
