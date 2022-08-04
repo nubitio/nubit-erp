@@ -162,6 +162,7 @@ class ApiModel extends BaseModel
         $repository->estado = 1;
         try {
             $repository->save();
+            $product['producto_id']=$repository->producto_id;
             $ext = new \DB\SQL\Mapper($this->db, 'producto_local');
             $ext->local_id = $local_id;
             $ext->producto_id = $repository->producto_id;
