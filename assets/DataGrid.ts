@@ -1,10 +1,11 @@
 import {Constants} from "./Constants";
 import {EventType} from "./EventType";
 import {SharedUtils} from "./SharedUtils";
+import {Field} from "./Field";
 
 export default class DataGrid {
     private container: HTMLElement;
-    private fields: any;
+    private fields: Field[];
     private options: any;
     private dataGrid: JQuery;
     private defaultToolbar: any[];
@@ -142,7 +143,7 @@ export default class DataGrid {
     }
 
     getIdField() {
-        let idField = this.fields.find(field => field.isKey === true);
+        let idField = this.fields.find(field => field.isIdentity === true);
         return idField.name;
     }
 

@@ -16,7 +16,7 @@ app.operacion = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'operacion_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

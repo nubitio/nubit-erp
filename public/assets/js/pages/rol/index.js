@@ -21,7 +21,7 @@ app.rol = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'rol_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

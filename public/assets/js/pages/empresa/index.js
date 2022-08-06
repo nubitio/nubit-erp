@@ -19,7 +19,7 @@ app.empresa = (function () {
                 name: 'ruc',
                 required: true,
                 validators: ['validCustomerId'],
-                isKey: true,
+                isIdentity: true,
                 visible: true
             },
             {

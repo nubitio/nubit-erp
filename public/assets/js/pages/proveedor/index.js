@@ -16,7 +16,7 @@ app.proveedor = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'proveedor_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

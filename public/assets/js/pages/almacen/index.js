@@ -19,7 +19,7 @@ app.almacen = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'almacen_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

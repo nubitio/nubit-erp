@@ -4,10 +4,12 @@ import Form from "../Form";
 import {FormType} from "../FormType";
 import {SharedUtils} from "../SharedUtils";
 import {Constants} from "../Constants";
+import {Field} from "../Field";
+import {FieldBuilder} from "../FieldBuilder";
 
 export default class Customer {
     private container: string;
-    private fields: any = {};
+    private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
@@ -30,43 +32,41 @@ export default class Customer {
     }
 
     init() {
-        this.fields = [
-            {
-                type: FormType.TEXT,
-                label: 'RUC/DNI',
-                name: 'ruc',
-                required: true,
-                validators: ['validCustomerId'],
-                isKey: true,
-                visible: true
-            },
-            {
-                type: FormType.TEXTAREA,
-                label: 'Cliente',
-                name: 'razon_social',
-                required: true,
-                width: 100,
-                visible: true
-            },
-            {
-                type: FormType.TEXTAREA,
-                label: 'Domicilio',
-                name: 'domicilio_fiscal',
-                required: false,
-                visible: true
-            },
-            {type: FormType.TEXT, label: 'Teléfono', name: 'telefono', required: false, visible: true},
-            {type: FormType.TEXT, label: 'Correo', name: 'email', required: false, visible: true},
-            {
-                type: FormType.SWITCH,
-                label: 'Activo',
-                name: 'estado',
-                required: true,
-                visible: true,
-                formatter: SharedUtils.activeFormatter,
-                defaultValue: true
-            },
-        ];
+        this.fields.push(new FieldBuilder()
+            .isIdentity(true)
+            .name('ruc')
+            .label('RUC/DNI')
+            .validators(['validCustomerId'])
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.TEXTAREA)
+            .name('razon_social')
+            .label('Cliente')
+            .width(100)
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.TEXTAREA)
+            .name('domicilio_fiscal')
+            .label('Domicilio')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .name('telefono')
+            .label('Teléfono')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .name('email')
+            .label('Email')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.SWITCH)
+            .name('estado')
+            .label('Activo')
+            .align('center')
+            .formatter(SharedUtils.activeFormatter)
+            .defaultValue(true)
+            .build());
     };
 
     render() {
@@ -88,7 +88,7 @@ export default class Customer {
 
         this.form = new Form(this.dialog.id, this.fields);
 
-        let rucField = this.form.field.ruc.textbox({
+        let rucField = this.form.getField('ruc').textbox({
             icons: [{
                 iconCls: Constants.ICON_SEARCH,
                 handler: function (e) {
