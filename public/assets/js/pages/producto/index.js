@@ -18,7 +18,7 @@ app.producto = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'producto_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

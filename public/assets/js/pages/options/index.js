@@ -16,7 +16,7 @@ app.options = (function () {
                 type: window.FormType.HIDDEN,
                 label: 'Id',
                 name: 'id',
-                isKey: true,
+                isIdentity: true,
                 visible: true
             },
             {

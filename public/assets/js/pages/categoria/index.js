@@ -17,7 +17,7 @@ app.categoria = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'categoria_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

@@ -2,11 +2,12 @@ import {Constants} from "./Constants";
 import {FormType} from "./FormType";
 import {SharedUtils} from "./SharedUtils";
 import {EventType} from "./EventType";
+import {Field} from "./Field";
 
 export default class Form {
     private container: HTMLElement;
     private form: JQuery;
-    private fields: any;
+    private fields: Field[];
     private formFields: any = {};
     private route: null;
 
@@ -180,12 +181,19 @@ export default class Form {
     }
 
     getIdField() {
-        let idField = this.fields.find(field => field.isKey === true);
+        let idField = this.fields.find(field => field.isIdentity === true);
         return idField.name;
     }
 
+    /**
+     * @deprecated use getField instead
+     */
     get field() {
         return this.formFields || {};
+    }
+
+    getField(name): JQuery {
+        return this.formFields[name] || {};
     }
 
     add(route) {

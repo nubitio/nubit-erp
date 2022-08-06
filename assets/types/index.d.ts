@@ -1,5 +1,4 @@
 import ThemeManager from "../ThemeManager";
-import Drawer from "../Drawer";
 
 export {};
 

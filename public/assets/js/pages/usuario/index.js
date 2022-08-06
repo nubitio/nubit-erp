@@ -18,7 +18,7 @@ app.usuario = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'usuario_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {

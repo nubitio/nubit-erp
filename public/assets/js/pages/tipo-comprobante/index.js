@@ -18,7 +18,7 @@ app.comprobante = (function () {
                 label: 'Código',
                 name: 'codigo',
                 required: true,
-                isKey: true,
+                isIdentity: true,
                 visible: true
             },
             {

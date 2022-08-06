@@ -79,7 +79,7 @@ app.venta = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'movimiento_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {
@@ -246,7 +246,6 @@ app.venta = (function () {
         let drawer = new window.Drawer();
         let viewportHeight = window.innerHeight;
         let customer = new window.app.customer(drawer.id, {width: '100%', maxHeight: viewportHeight, modal: false});
-        customer.init();
         customer.renderDialog();
 
         window.Observer.subscribe(window.EventType.SUCCESS, (data) => {

@@ -19,7 +19,7 @@ app.local_comprobante = (function () {
             {
                 type: window.FormType.HIDDEN,
                 name: 'local_id',
-                isKey: true,
+                isIdentity: true,
                 visible: false
             },
             {
