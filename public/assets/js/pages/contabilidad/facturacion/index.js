@@ -69,8 +69,15 @@ app.facturacion = (function () {
                 sortable: true,
                 width: 80,
                 align: 'center',
+                formatter: nota_formatter
+            },{
+                field: 'estado',
+                title: 'Anulado',
+                sortable: true,
+                width: 80,
+                align: 'center',
                 formatter: anulado_formatter
-            }, {
+            },{
                 field: 'envio_sunat',
                 title: 'Enviado',
                 sortable: true,
