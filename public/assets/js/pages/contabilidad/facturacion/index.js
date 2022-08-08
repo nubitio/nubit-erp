@@ -182,7 +182,15 @@ app.facturacion = (function () {
         }
     }
 
-    function anulado_formatter(value, row) {
+    function anulado_formatter(value){
+        if (value === 1){
+            return '<span class="badge rounded-pill bg-success">NO</span>';
+        } else {
+            return '<span class="badge rounded-pill bg-danger">SI</span>';
+        }
+    }
+
+    function nota_formatter(value, row) {
         if (value === null) {
             return '<span class="badge rounded-pill bg-secondary">NO</span>';
         } else {
