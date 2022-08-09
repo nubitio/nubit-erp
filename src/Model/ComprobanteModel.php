@@ -10,7 +10,7 @@ class ComprobanteModel extends BaseModel
     public function __construct()
     {
         parent::__construct();
-        $this->dao = new \DB\SQL\Mapper($this->db, 'comprobante');
+        $this->dao = new \DB\SQL\Mapper($this->db, 'tipo_comprobante');
     }
 
     public function all()
@@ -44,7 +44,7 @@ class ComprobanteModel extends BaseModel
 
     public function edit($id)
     {
-        $this->dao->load(array('tipo_comprobante_id=?', $id));
+        $this->dao->load(array('codigo=?', $id));
         $this->dao->copyFrom('POST');
         try {
             $this->dao->update();
@@ -56,7 +56,7 @@ class ComprobanteModel extends BaseModel
 
     public function delete($id)
     {
-        $this->dao->load(array('tipo_comprobante_id=?', $id));
+        $this->dao->load(array('codigo=?', $id));
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
