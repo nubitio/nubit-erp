@@ -602,7 +602,14 @@ class EFactController extends BaseController
 
         $summary = new Summary();
 
-        $summary->setFecGeneracion(new \DateTime($data[0]['fecha']))
+        function warningValidator()
+        {
+            if (isset($data[0]['fecha'])) {
+                return $data[0]['fecha'] ?? null;
+            }
+        }
+
+        $summary->setFecGeneracion(new \DateTime(warningValidator()))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
             ->setCorrelativo($correlative)
             ->setCompany($this->getCompany())
