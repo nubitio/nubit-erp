@@ -35,19 +35,15 @@ class LocalComprobanteController extends BaseController
 
     public function edit()
     {
-        $local = $this->app->get('PARAMS.local');
-        $tipo = $this->app->get('PARAMS.tipo');
-        $serie = $this->app->get('PARAMS.serie');
-        $data = $this->model->edit($local, $tipo, $serie);
+        $id = $this->app->get('PARAMS.id');
+        $data = $this->model->edit($id);
         $this->json($data);
     }
 
     public function delete()
     {
-        $local = $this->app->get('PARAMS.local');
-        $tipo = $this->app->get('PARAMS.tipo');
-        $serie = $this->app->get('PARAMS.serie');
-        $data = $this->model->delete($local, $tipo, $serie);
+        $id = $this->app->get('PARAMS.id');
+        $data = $this->model->delete($id);
         $this->json($data);
     }
 }
