@@ -29,9 +29,9 @@ class LocalComprobanteModel extends BaseModel
         }
     }
 
-    public function edit($local, $tipo, $serie)
+    public function edit($id)
     {
-        $this->dao->load(array('local_id=? and tipo_comprobante_id=? and serie=?', $local, $tipo, $serie));
+        $this->dao->load(array('id=?', $id));
         $this->dao->copyFrom('POST');
         try {
             $this->dao->update();
@@ -41,9 +41,9 @@ class LocalComprobanteModel extends BaseModel
         }
     }
 
-    public function delete($local, $tipo, $serie)
+    public function delete($id)
     {
-        $this->dao->load(array('local_id=? and tipo_comprobante_id=? and serie=?', $local, $tipo, $serie));
+        $this->dao->load(array('id=?', $id));
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');

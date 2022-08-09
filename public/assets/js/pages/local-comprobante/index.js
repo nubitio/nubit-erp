@@ -18,7 +18,7 @@ app.local_comprobante = (function () {
         let fields = [
             {
                 type: window.FormType.HIDDEN,
-                name: 'local_id',
+                name: 'id',
                 isIdentity: true,
                 visible: false
             },
