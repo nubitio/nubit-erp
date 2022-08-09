@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Model\ComprobanteModel;
-use Template;
 
 class ComprobanteController extends BaseController
 {
@@ -44,6 +43,9 @@ class ComprobanteController extends BaseController
     public function edit()
     {
         $id = $this->app->get('PARAMS.id');
+        if (!isset($_POST['estado'])) {
+            $_POST['estado'] = 0;
+        }
         $data = $this->model->edit($id);
         $this->json($data);
     }
@@ -59,7 +61,7 @@ class ComprobanteController extends BaseController
     {
         $data = $this->model->exportar();
         $extras = [
-            'title' => 'LISTA DE DOCUMENTOS',
+            'title'    => 'LISTA DE DOCUMENTOS',
             'subtitle' => ''
         ];
         $this->export($data, $extras);
