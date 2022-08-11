@@ -232,6 +232,7 @@ class ApiController extends BaseController
     {
         $local_id = $this->app->get('PARAMS.local_id');
         $result = $this->apiDao->createProduct($local_id,$this->body);
+
         if ($result['success']) {
             $this->app->status(201);
             $this->json($result['data']);
@@ -246,6 +247,7 @@ class ApiController extends BaseController
         $local_id = $this->app->get('PARAMS.local_id');
         $id = $this->app->get('PARAMS.id');
         $result = $this->apiDao->updateProduct($local_id,$id, $this->body);
+
         if ($result['success']) {
             $this->app->status(200);
             $this->json($result['data']);
