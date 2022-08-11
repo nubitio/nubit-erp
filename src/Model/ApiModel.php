@@ -156,17 +156,21 @@ class ApiModel extends BaseModel
     public function createProduct($local_id,$product): array
     {
         $repository = new \DB\SQL\Mapper($this->db, 'producto');
+        $imagen = $repository->imagen;
         $repository->copyfrom($product);
         $repository->producto_id = Uuid::v4();
+        $repository->imagen = $imagen;
         $repository->tipo_id = 2;
         $repository->estado = 1;
         try {
             $repository->save();
             $product['producto_id']=$repository->producto_id;
+            $product['imagen']=$repository->imagen;
             $ext = new \DB\SQL\Mapper($this->db, 'producto_local');
             $ext->local_id = $local_id;
             $ext->producto_id = $repository->producto_id;
             $ext->precio = $repository->precio;
+            $ext->imagen = $repository->imagen;
             $ext->activo = 1;
             $ext->save();
             return ['success' => true, 'data' => $product, 'msg' => 'Registro insertado'];
@@ -179,7 +183,9 @@ class ApiModel extends BaseModel
     {
         $repository = new \DB\SQL\Mapper($this->db, 'producto');
         $repository->load(['producto_id = ?', $id]);
+        $imagen = $repository->imagen;
         $repository->copyfrom($product);
+        $repository->imagen=$imagen;
         try {
             $repository->update();
             $ext = new \DB\SQL\Mapper($this->db, 'producto_local');
@@ -192,6 +198,7 @@ class ApiModel extends BaseModel
                 $ext->local_id = $local_id;
                 $ext->producto_id = $repository->producto_id;
                 $ext->precio = $repository->precio;
+                $ext->imagen = $repository->imagen;
                 $ext->activo = 1;
                 $ext->save();
             }
