@@ -3,6 +3,7 @@
 
 use App\Command\DemoCommand;
 use App\Command\InvoiceUpdateCommand;
+use App\Command\MakeCrudCommand;
 use App\Command\SendEmailCommand;
 use App\Command\SendSmsCommand;
 use App\Command\SendWhatsAppCommand;
@@ -36,6 +37,7 @@ $commandLoader = new ContainerCommandLoader(
         'app:send-email'     => SendEmailCommand::class,
         'app:send-sms'       => SendSmsCommand::class,
         'app:send-whatsapp'  => SendWhatsAppCommand::class,
+        'app:make-crud'      => MakeCrudCommand::class,
     ]
 );
 

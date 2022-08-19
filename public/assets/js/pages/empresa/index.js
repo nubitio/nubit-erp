@@ -14,12 +14,17 @@ app.empresa = (function () {
     let init = function (){
         let fields = [
             {
+                type: window.FormType.HIDDEN,
+                name: 'empresa_id',
+                isIdentity: true,
+                visible: false
+            },
+            {
                 type: window.FormType.TEXT,
                 label: 'RUC',
                 name: 'ruc',
                 required: true,
                 validators: ['validCustomerId'],
-                isIdentity: true,
                 visible: true
             },
             {
