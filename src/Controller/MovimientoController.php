@@ -6,17 +6,19 @@ include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
 
 use App\Model\BotModel;
 use App\Model\MovimientoModel;
+use App\Model\NotaModel;
+use App\Model\OptionsModel;
 use Neodynamic\SDK\Web\WebClientPrint;
 use NumberFormatter;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Template;
-use App\Model\OptionsModel;
 
 class MovimientoController extends BaseController
 {
 
     private MovimientoModel $model;
+    private NotaModel $noteModel;
     private BotModel $botModel;
     private EFactController $efact;
 
@@ -24,6 +26,7 @@ class MovimientoController extends BaseController
     {
         parent::__construct();
         $this->model = new MovimientoModel();
+        $this->noteModel = new NotaModel();
         $this->botModel = new BotModel();
         $this->efact = new EFactController();
         $this->optionsDao = new OptionsModel();
@@ -66,9 +69,9 @@ class MovimientoController extends BaseController
         $this->app->set('wcpscript2', $printScrip);
         $this->app->set('session_id', $sessionId);
         $this->render('venta/index.html.twig', [
-            'session_id' => $sessionId,
+            'session_id'           => $sessionId,
             'printDetectionScript' => $printDetectionScript,
-            'printScript' => $printScrip
+            'printScript'          => $printScrip
         ]);
     }
 
@@ -212,9 +215,9 @@ class MovimientoController extends BaseController
             array_push($result, $row);
         }
         $extras = [
-            'title' => 'REPORTE DE KARDEX',
+            'title'    => 'REPORTE DE KARDEX',
             'subtitle' => 'PRODUCTO: ' . $info[0]['producto'] . ', DEL ' . $fi . ' Al ' . $ff,
-            'sumcols' => []
+            'sumcols'  => []
         ];
         $this->export($result, $extras, $info[0]['saldo']);
     }
@@ -228,9 +231,9 @@ class MovimientoController extends BaseController
         $data = $this->model->reporte_kardex($almacen, $categoria, $fi, $ff);
         if (count($data) > 0) {
             $extras = [
-                'title' => 'REPORTE DE KARDEX',
+                'title'    => 'REPORTE DE KARDEX',
                 'subtitle' => 'DEL ' . $fi . ' Al ' . $ff,
-                'sumcols' => []
+                'sumcols'  => []
             ];
             $this->export($data, $extras);
         } else {
@@ -257,7 +260,7 @@ class MovimientoController extends BaseController
         $cmds .= $newLine;
         $cmds .= str_pad('Telefono ' . $cabecera['telefono'], 33, " ", STR_PAD_BOTH);
         $cmds .= $newLine;
-        if (strlen($cabecera['ruc_cliente'])>=9) {
+        if (strlen($cabecera['ruc_cliente']) >= 9) {
             $tipo = 'FACTURA ELECTRONICA';
         } else {
             $tipo = 'BOLETA ELECTRONICA';
@@ -323,11 +326,11 @@ class MovimientoController extends BaseController
         if (1 == 1) {
             $igv = 0.18;
             $app_option_rc_get = (int)$this->getOption('app_option_rc');
-            $rc = $app_option_rc_get/100;
+            $rc = $app_option_rc_get / 100;
             $divisor = 1 + $igv + $rc;
             $valor_venta = $total / $divisor;
-            $valor_igv = $valor_venta*$igv;
-            $valor_rc = $valor_venta*$rc;
+            $valor_igv = $valor_venta * $igv;
+            $valor_rc = $valor_venta * $rc;
 
             $str_opg = $this->money_pen($valor_venta);
             $str_igv = $this->money_pen($valor_igv);
@@ -346,9 +349,8 @@ class MovimientoController extends BaseController
             $cmds .= str_pad('IGV 18%', 23) . str_pad($str_igv, 10, " ", STR_PAD_LEFT);
             $cmds .= $newLine;
 
-            if($app_option_rc_get>=1)
-            {
-                $cmds .= str_pad('RC '.$app_option_rc_get.'%: ', 23) . str_pad($str_rc, 10, " ", STR_PAD_LEFT);
+            if ($app_option_rc_get >= 1) {
+                $cmds .= str_pad('RC ' . $app_option_rc_get . '%: ', 23) . str_pad($str_rc, 10, " ", STR_PAD_LEFT);
                 $cmds .= $newLine;
             }
             $cmds .= str_pad('TOTAL', 23) . str_pad($str_total, 10, " ", STR_PAD_LEFT);
@@ -407,74 +409,92 @@ class MovimientoController extends BaseController
 
     public function send_email()
     {
-        $this->json(["success" => false, "msg" => 'Error del servidor de correos', "data" => null]);
-        exit();
         $id = $this->app->get('PARAMS.id');
 
-        $data = $this->model->ticket_cabecera($id);
-        if ($data['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
-            $tipo_id = '01';
-            $tipo = 'FACTURA';
-        } else {
-            $tipo_id = '03';
-            $tipo = 'BOLETA';
+        $data = $this->botModel->getOne($id);
+        $receipt = $data['data'];
+
+        if (!$receipt) {
+            $receipt = $this->noteModel->getOne($id);
         }
-
-        $mail = new PHPMailer(true);
-
-        try {
-            //Server settings
-            $mail->SMTPDebug = 0;
-            $mail->isSMTP();
-            $mail->Host = 'mail.jgm90.com';
-            $mail->SMTPAuth = true;
-            $mail->Username = 'facturacion@compuexpress.pe';
-            $mail->Password = 'Admin.3000';
-            $mail->SMTPSecure = 'tls';
-            $mail->Port = 587;
-
-            //Recipients
-            $mail->setFrom('facturacion@compuexpress.pe', 'Facturacion');
-            if ($this->app->get('EFACT_MODE') == 'PROD') {
-                if (!empty($data['email_cliente'])) {
-                    $mail->addAddress($data['email_cliente']);
-                } else {
-                    $mail->addAddress('contabilidadjpaqp@gmail.com');
-                }
-                $mail->addCC('contabilidadjpaqp@gmail.com');
-                $mail->addBCC('adm.jpaqp@gmail.com');
+        if ($data) {
+            if ($data['header']['doc_type'] == '01') {
+                $type = 'FACTURA';
+            } else if ($data['header']['doc_type'] == '03') {
+                $type = 'BOLETA';
+            } else if ($data['header']['doc_type'] == '07') {
+                $type = 'NOTA DE CRÉDITO';
+            } else if ($data['header']['doc_type'] == '08') {
+                $type = 'NOTA DE DÉBITO';
             } else {
-                $mail->addAddress('johangm90@gmail.com');
+                $type = '';
             }
 
-            // Content
-            $mail->isHTML(true);
-            $mail->CharSet = 'UTF-8';
-            $mail->Subject = '13 Monjas: Tu comprobante de pago electrónico - ' . $data['serie'] . '-' . $data['numero'];
-            // Attachments
-            $xml = $this->app->get('EFACT_DIR') . $data['ruc_empresa'] . '-' . $tipo_id . '-' . $data['serie'] . '-' . $data['numero'] . '.xml';
-            $pdf = $this->app->get('EFACT_DIR') . $data['ruc_empresa'] . '-' . $tipo_id . '-' . $data['serie'] . '-' . $data['numero'] . '.pdf';
-            $mail->addAttachment($xml);
-            $mail->addAttachment($pdf);
+            $mail = new PHPMailer(true);
 
-            $template = new Template();
-            $this->app->set('logo', $this->app->get('BASE_URL') . 'src/assets/images/logo.png');
-            $this->app->set('tipo', $tipo);
-            $this->app->set('serie', $data['serie']);
-            $this->app->set('numero', $data['numero']);
-            $fecha = date("d/m/Y", strtotime($data['fecha']));
-            $this->app->set('fecha_emision', $fecha);
-            $this->app->set('monto_total', $this->money_pen($data['total']));
-            $url = $this->app->get('BASE_URL') . 'invoice/' . $id;
-            $this->app->set('invoice_url', $url);
-            $message = $template->render('templates/efact/efact.html');
-            $mail->Body = $message;
-            $mail->AltBody = '13 Monjas: Tu comprobante de pago electrónico - ' . $data['serie'] . '-' . $data['numero'];
+            try {
+                //Server settings
+                $mail->SMTPDebug = 0;
+                $mail->isSMTP();
+                $mail->Host = $_ENV['SMTP_HOST'];
+                $mail->SMTPAuth = true;
+                $mail->Username = $_ENV['SMTP_USER'];
+                $mail->Password = $_ENV['SMTP_PASS'];
+                $mail->SMTPSecure = 'tls';
+                $mail->Port = $_ENV['SMTP_PORT'];
 
-            $mail->send();
-            $this->json(["success" => true, "msg" => "Mensaje enviado", "data" => null]);
-        } catch (Exception $e) {
-            $this->json(["success" => false, "msg" => $mail->ErrorInfo, "data" => null]);
+                //Recipients
+                $mail->setFrom($_ENV['SMTP_USER'], $this->getOption('company_name'));
+
+                if ($this->app->get('EFACT_MODE') == 'PROD') {
+                    if (!empty($data['header']['email_cliente'])) {
+                        $mail->addAddress($data['header']['email_cliente']);
+                    } else {
+                        $mail->addAddress($this->getOption('email_accounting'));
+                    }
+                    $mail->addCC($this->getOption('email_accounting'));
+                    $mail->addBCC($this->getOption('app_alert_recipient'));
+                } else {
+                    $mail->addAddress('johangm90@gmail.com');
+                }
+
+                // Content
+                $mail->isHTML(true);
+                $mail->CharSet = 'UTF-8';
+                $mail->Subject = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $data['header']['iserie'] . '-' . $data['header']['inumero'];
+
+                // Attachments
+                $xml = $this->app->get('EFACT_DIR') . $data['header']['company_id'] . '-' . $data['header']['doc_type'] . '-' . $data['iserie'] . '-' . $data['inumero'] . '.xml';
+                $pdf = $this->app->get('EFACT_DIR') . $data['header']['company_id'] . '-' . $data['header']['doc_type'] . '-' . $data['iserie'] . '-' . $data['inumero'] . '.pdf';
+
+                $mail->addAttachment($xml);
+                $mail->addAttachment($pdf);
+
+                $template = new Template();
+                $this->app->set('logo', $this->app->get('BASE_URL') . 'src/assets/images/logo.png');
+                $this->app->set('tipo', $type);
+                $this->app->set('serie', $data['header']['iserie']);
+                $this->app->set('numero', $data['header']['inumero']);
+                $fecha = date("d/m/Y", strtotime($data['fecha']));
+                $this->app->set('fecha_emision', $fecha);
+                $this->app->set('monto_total', $this->money_pen($data['total']));
+                $url = $this->app->get('BASE_URL') . 'invoice/' . $id;
+                $this->app->set('invoice_url', $url);
+                $this->app->set('company', $this->getOption('company_name'));
+                $this->app->set('company_address', $data['direccion_empresa']);
+                $this->app->set('base_url', $this->app->get('BASE_URL'));
+                $message = $template->render('reportes/efact/efact.html');
+
+                $mail->Body = $message;
+                $mail->AltBody = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $data['iserie'] . '-' . $data['inumero'];
+                $mail->send();
+
+                $this->json(["success" => true, "message" => "Mensaje enviado."]);
+            } catch (Exception $e) {
+                $this->json(["success" => false, "message" => "Mailer Error: {$mail->ErrorInfo}"]);
+            }
+        } else {
+            $this->json(["success" => false, "message" => "Document not found"]);
         }
     }
 
@@ -496,14 +516,15 @@ class MovimientoController extends BaseController
         $this->app->set('total', $this->money_pen($total));
         $this->app->set('obs', $sale['cabecera']['glosa']);
         $content = $this->renderView('reportes/invoice.html.twig', [
-            'title'  => 'Nota de pedido',
-            'logo'   => $this->base64($logo_path),
-            'header' => $sale['cabecera'],
-            'detail' => $sale['detalle'],
+            'title'           => 'Nota de pedido',
+            'logo'            => $this->base64($logo_path),
+            'header'          => $sale['cabecera'],
+            'detail'          => $sale['detalle'],
             'valor_descuento' => $this->money_pen($discountAmount),
-            'total' =>  $this->money_pen($total),
+            'total'           => $this->money_pen($total),
         ]);
-        $this->report($content);    }
+        $this->report($content);
+    }
 
     function makeInvoice()
     {
@@ -521,10 +542,6 @@ class MovimientoController extends BaseController
 
     public function getOption($name)
     {
-        try {
-            return $this->optionsDao->getByName($name);
-        } catch (Exception $e) {
-            $this->app->error(500, "No se pudo obtener la opcion {$name}");
-        }
+        return $this->optionsDao->getByName($name);
     }
 }

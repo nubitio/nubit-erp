@@ -70,8 +70,7 @@ class ProductRepository implements IProductRepository
           from producto p
             inner join producto_local pl on pl.producto_id=p.producto_id
           where
-            p.tipo_id = 2
-            and p.estado = 1
+            p.estado = 1
             and pl.activo = 1
             and pl.local_id = ?
           order by
