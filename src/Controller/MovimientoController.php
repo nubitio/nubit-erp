@@ -448,12 +448,12 @@ class MovimientoController extends BaseController
 
                 if ($this->app->get('EFACT_MODE') == 'PROD') {
                     if (!empty($receipt['header']['client_email'])) {
-                        $mail->addAddress($receipt['header']['client_email`']);
+                        $mail->addAddress($receipt['header']['client_email']);
                     } else {
                         $mail->addAddress($this->getOption('email_accounting'));
                     }
                     $mail->addCC($this->getOption('email_accounting'));
-                    $mail->addBCC($this->getOption('app_alert_recipient'));
+                    $mail->addBCC($this->getOption('app_alert_recipients'));
                 } else {
                     $mail->addAddress('johangm90@gmail.com');
                 }
@@ -471,7 +471,7 @@ class MovimientoController extends BaseController
                 $mail->addAttachment($pdf);
 
                 $template = new Template();
-                $this->app->set('logo', $this->app->get('BASE_URL') . 'src/assets/images/logo.png');
+                $this->app->set('logo', $this->app->get('BASE_URL') . 'assets/images/logo.png');
                 $this->app->set('tipo', $type);
                 $this->app->set('serie', $receipt['header']['doc_series']);
                 $this->app->set('numero', $receipt['header']['doc_number']);
