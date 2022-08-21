@@ -417,14 +417,14 @@ class MovimientoController extends BaseController
         if (!$receipt) {
             $receipt = $this->noteModel->getOne($id);
         }
-        if ($data) {
-            if ($data['header']['doc_type'] == '01') {
+        if ($receipt) {
+            if ($receipt['header']['doc_type'] == '01') {
                 $type = 'FACTURA';
-            } else if ($data['header']['doc_type'] == '03') {
+            } else if ($receipt['header']['doc_type'] == '03') {
                 $type = 'BOLETA';
-            } else if ($data['header']['doc_type'] == '07') {
+            } else if ($receipt['header']['doc_type'] == '07') {
                 $type = 'NOTA DE CRÉDITO';
-            } else if ($data['header']['doc_type'] == '08') {
+            } else if ($receipt['header']['doc_type'] == '08') {
                 $type = 'NOTA DE DÉBITO';
             } else {
                 $type = '';
@@ -447,8 +447,8 @@ class MovimientoController extends BaseController
                 $mail->setFrom($_ENV['SMTP_USER'], $this->getOption('company_name'));
 
                 if ($this->app->get('EFACT_MODE') == 'PROD') {
-                    if (!empty($data['header']['email_cliente'])) {
-                        $mail->addAddress($data['header']['email_cliente']);
+                    if (!empty($receipt['header']['client_email'])) {
+                        $mail->addAddress($receipt['header']['client_email`']);
                     } else {
                         $mail->addAddress($this->getOption('email_accounting'));
                     }
@@ -461,11 +461,11 @@ class MovimientoController extends BaseController
                 // Content
                 $mail->isHTML(true);
                 $mail->CharSet = 'UTF-8';
-                $mail->Subject = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $data['header']['iserie'] . '-' . $data['header']['inumero'];
+                $mail->Subject = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $receipt['header']['doc_series'] . '-' . $receipt['header']['doc_number'];
 
                 // Attachments
-                $xml = $this->app->get('EFACT_DIR') . $data['header']['company_id'] . '-' . $data['header']['doc_type'] . '-' . $data['iserie'] . '-' . $data['inumero'] . '.xml';
-                $pdf = $this->app->get('EFACT_DIR') . $data['header']['company_id'] . '-' . $data['header']['doc_type'] . '-' . $data['iserie'] . '-' . $data['inumero'] . '.pdf';
+                $xml = $this->app->get('EFACT_DIR') . $receipt['header']['company_id'] . '-' . $receipt['header']['doc_type'] . '-' . $receipt['header']['doc_series'] . '-' . $receipt['header']['doc_number'] . '.xml';
+                $pdf = $this->app->get('EFACT_DIR') . $receipt['header']['company_id'] . '-' . $receipt['header']['doc_type'] . '-' . $receipt['header']['doc_series'] . '-' . $receipt['header']['doc_number'] . '.pdf';
 
                 $mail->addAttachment($xml);
                 $mail->addAttachment($pdf);
@@ -473,28 +473,28 @@ class MovimientoController extends BaseController
                 $template = new Template();
                 $this->app->set('logo', $this->app->get('BASE_URL') . 'src/assets/images/logo.png');
                 $this->app->set('tipo', $type);
-                $this->app->set('serie', $data['header']['iserie']);
-                $this->app->set('numero', $data['header']['inumero']);
-                $fecha = date("d/m/Y", strtotime($data['fecha']));
+                $this->app->set('serie', $receipt['header']['doc_series']);
+                $this->app->set('numero', $receipt['header']['doc_number']);
+                $fecha = date("d/m/Y", strtotime($receipt['header']['doc_date']));
                 $this->app->set('fecha_emision', $fecha);
-                $this->app->set('monto_total', $this->money_pen($data['total']));
+                $this->app->set('monto_total', $this->money_pen($receipt['header']['doc_sale_amount']));
                 $url = $this->app->get('BASE_URL') . 'invoice/' . $id;
                 $this->app->set('invoice_url', $url);
                 $this->app->set('company', $this->getOption('company_name'));
-                $this->app->set('company_address', $data['direccion_empresa']);
+                $this->app->set('company_address', $receipt['header']['company_address']);
                 $this->app->set('base_url', $this->app->get('BASE_URL'));
                 $message = $template->render('reportes/efact/efact.html');
 
                 $mail->Body = $message;
-                $mail->AltBody = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $data['iserie'] . '-' . $data['inumero'];
+                $mail->AltBody = $this->getOption('company_name') . ': Tu comprobante de pago electrónico - ' . $receipt['header']['doc_series'] . '-' . $receipt['header']['doc_number'];
                 $mail->send();
 
-                $this->json(["success" => true, "message" => "Mensaje enviado."]);
+                $this->json(["success" => true, "msg" => "Mensaje enviado."]);
             } catch (Exception $e) {
-                $this->json(["success" => false, "message" => "Mailer Error: {$mail->ErrorInfo}"]);
+                $this->json(["success" => false, "msg" => "Mailer Error: {$mail->ErrorInfo}"]);
             }
         } else {
-            $this->json(["success" => false, "message" => "Document not found"]);
+            $this->json(["success" => false, "msg" => "Document not found"]);
         }
     }
 
