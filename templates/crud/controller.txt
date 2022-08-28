@@ -1,0 +1,60 @@
+<?php
+
+namespace App\{{module}}\Application;
+
+use App\Controller\BaseController;
+use App\{{module}}\Domain\{{module}}GetAllUseCase;
+use App\{{module}}\Domain\{{module}}CreateUseCase;
+use App\{{module}}\Domain\{{module}}UpdateUseCase;
+use App\{{module}}\Domain\{{module}}DeleteUseCase;
+use App\{{module}}\Domain\{{module}};
+use App\Util\Constants;
+
+class {{module}}Controller extends BaseController
+{
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function index()
+    {
+        $this->render('{{l-module}}/index.html.twig');
+    }
+
+    public function getAll()
+    {
+        $getAllUseCase = $this->container->get({{module}}GetAllUseCase::class);
+        $this->json($getAllUseCase());
+    }
+
+    public function add()
+    {
+        /**
+         * @var {{module}} $entity
+         */
+        $entity = $this->serializer->deserialize(json_encode($_POST), {{module}}::class, 'json');
+        $createUseCase = $this->container->get({{module}}CreateUseCase::class);
+        $createUseCase($entity);
+        $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
+    }
+
+    public function edit()
+    {
+        /**
+         * @var {{module}} $entity
+         */
+        $entity = $this->serializer->deserialize(json_encode($_POST), {{module}}::class, 'json');
+        $updateUseCase = $this->container->get({{module}}UpdateUseCase::class);
+        $updateUseCase($entity);
+        $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
+    }
+
+    public function delete()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $deleteUseCase = $this->container->get({{module}}DeleteUseCase::class);
+        $deleteUseCase($id);
+        $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+}
