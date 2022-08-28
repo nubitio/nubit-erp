@@ -1,0 +1,5 @@
+<div id="wrapper" class="wrapper"></div>
+<script>
+    const {{l-module}} = new window.app.{{l-module}}('wrapper');
+    {{l-module}}.render();
+</script>

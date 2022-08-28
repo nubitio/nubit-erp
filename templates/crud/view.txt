@@ -1,0 +1,55 @@
+import DataGrid from "../DataGrid";
+import Dialog from "../Dialog";
+import Form from "../Form";
+import {FormType} from "../FormType";
+import {SharedUtils} from "../SharedUtils";
+import {Constants} from "../Constants";
+import {Field} from "../Field";
+import {FieldBuilder} from "../FieldBuilder";
+
+export default class {{module}} {
+    private container: string;
+    private fields: Field[] = [];
+    private dataGrid: DataGrid;
+    private dialog: Dialog;
+    private form: Form;
+    private options: any = {};
+
+    public ROUTES = {
+        ADD: '{{l-module}}/add/',
+        EDIT: '{{l-module}}/edit/',
+        DELETE: '{{l-module}}/delete/',
+    }
+
+    constructor(container, options) {
+        this.container = container;
+        this.dataGrid = null;
+        this.dialog = null;
+        this.form = null;
+        this.options = options;
+        this.init();
+    }
+
+    init() {
+{{fields}}
+    };
+
+    render() {
+        this.renderDataGrid();
+        this.renderDialog();
+    }
+
+    renderDataGrid() {
+        this.dataGrid = new DataGrid(this.container, this.fields, {
+            title: '{{module}}',
+            url: '{{l-module}}/get',
+            routes: this.ROUTES,
+        });
+    }
+
+    renderDialog() {
+        this.dialog = new Dialog(this.container, this.options);
+
+        this.form = new Form(this.dialog.id, this.fields);
+    }
+}

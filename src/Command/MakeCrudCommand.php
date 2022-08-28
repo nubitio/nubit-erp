@@ -31,90 +31,166 @@ class MakeCrudCommand extends Command
             $io->title('Crud generator');
             $io->text('This will generate a crud for a given entity');
             $tables = $this->connection->getSchemaManager()->listTableNames();
-            $table = $io->choice('Please select the table', $tables);
-            $columns = $this->connection->getSchemaManager()->listTableColumns($table);
-            $fields = [];
+            $tableName = $io->choice('Please select the table', $tables);
+            $table = $this->connection->getSchemaManager()->listTableDetails($tableName);
+            $columns = $table->getColumns();
+            $columnNames = [];
             foreach ($columns as $column) {
-                $fields[] = $column->getName();
+                $columnNames[] = $column->getName();
             }
-            $fields = implode(', ', $fields);
-            $io->text($fields);
-            //create the entity class file in src/Infrastructure/Entity
-            //mkdir('src/Infrastructure/Entity', 0777, true);
-            //$file = fopen('src/Infrastructure/Entity/' . $table . '.php', 'w');
-            $io->text('This is the generated code');
-            $io->text('<?php');
-            $io->text('');
-            $io->text('namespace App\Controller;');
-            $io->text('');
-            $io->text('use App\Entity\\' . ucfirst($table) . ';');
-            $io->text('');
-            $io->text('class ' . ucfirst($table) . 'Controller extends AbstractController');
-            $io->text('{');
-            $io->text('    public function index()');
-            $io->text('    {');
-            $io->text('        $' . $table . ' = $this->getDoctrine()->getRepository(\\' . ucfirst($table) . '::class)->findAll();');
-            $io->text('        return $this->render(\'index.html.twig\', [');
-            $io->text('            \'' . $table . '\' => $' . $table . ',');
-            $io->text('        ]);');
-            $io->text('    }');
-            $io->text('');
-            $io->text('    public function new()');
-            $io->text('    {');
-            $io->text('        $' . $table . ' = new \\' . ucfirst($table) . '();');
-            $io->text('        $form = $this->createForm(\\' . ucfirst($table) . 'Type::class, $' . $table . ');');
-            $io->text('        $form->handleRequest($request);');
-            $io->text('        if ($form->isSubmitted() && $form->isValid()) {');
-            $io->text('            $entityManager = $this->getDoctrine()->getManager();');
-            $io->text('            $entityManager->persist($' . $table . ');');
-            $io->text('            $entityManager->flush();');
-            $io->text('            return $this->redirectToRoute(\'' . $table . '\');');
-            $io->text('        }');
-            $io->text('        return $this->render(\'new.html.twig\', [');
-            $io->text('            \'form\' => $form->createView(),');
-            $io->text('        ]);');
-            $io->text('    }');
-            $io->text('');
-            $io->text('    public function show($id)');
-            $io->text('    {');
-            $io->text('        $' . $table . ' = $this->getDoctrine()->getRepository(\\' . ucfirst($table) . '::class)->find($id);');
-            $io->text('        return $this->render(\'show.html.twig\', [');
-            $io->text('            \'' . $table . '\' => $' . $table . ',');
-            $io->text('        ]);');
-            $io->text('    }');
-            $io->text('');
-            $io->text('    public function edit($id)');
-            $io->text('    {');
-            $io->text('        $' . $table . ' = $this->getDoctrine()->getRepository(\\' . ucfirst($table) . '::class)->find($id);');
-            $io->text('        $form = $this->createForm(\\' . ucfirst($table) . 'Type::class, $' . $table . ');');
-            $io->text('        $form->handleRequest($request);');
-            $io->text('        if ($form->isSubmitted() && $form->isValid()) {');
-            $io->text('            $entityManager = $this->getDoctrine()->getManager();');
-            $io->text('            $entityManager->persist($' . $table . ');');
-            $io->text('            $entityManager->flush();');
-            $io->text('            return $this->redirectToRoute(\'' . $table . '\');');
-            $io->text('        }');
-            $io->text('        return $this->render(\'edit.html.twig\', [');
-            $io->text('            \'form\' => $form->createView(),');
-            $io->text('        ]);');
-            $io->text('    }');
-            $io->text('');
-            $io->text('    public function delete($id)');
-            $io->text('    {');
-            $io->text('        $' . $table . ' = $this->getDoctrine()->getRepository(\\' . ucfirst($table) . '::class)->find($id);');
-            $io->text('        $entityManager = $this->getDoctrine()->getManager();');
-            $io->text('        $entityManager->remove($' . $table . ');');
-            $io->text('        $entityManager->flush();');
-            $io->text('        return $this->redirectToRoute(\'' . $table . '\');');
-            $io->text('    }');
-            $io->text('}');
-            $io->text('');
-            $io->text('?>');
+            $primaryKey = $table->getPrimaryKey();
+            $foreignKeys = $table->getForeignKeys();
+            $module = $io->ask('Module name');
+            $sortColumn = $io->choice('Sort column', $columnNames);
+            $ignoredColumns = ['id', strtolower($module) . '_id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+            $modulePath = dirname(__DIR__, 2) . '/src/' . $module;
+            $tsPath = dirname(__DIR__, 2) . '/assets/pages/';
+            $domainPath = $modulePath . '/Domain/';
+            $infrastructurePath = $modulePath . '/Infrastructure/';
+            $applicationPath = $modulePath . '/Application/';
+            $htmlPath = dirname(__DIR__, 2) . '/templates/' . strtolower($module) . '/';
+            if (!is_dir($tsPath)) {
+                mkdir($tsPath, 0777, true);
+            }
+            if (!is_dir($domainPath)) {
+                mkdir($domainPath, 0777, true);
+            }
+            if (!is_dir($infrastructurePath)) {
+                mkdir($infrastructurePath, 0777, true);
+            }
+            if (!is_dir($applicationPath)) {
+                mkdir($applicationPath, 0777, true);
+            }
+            if (!is_dir($htmlPath)) {
+                mkdir($htmlPath, 0777, true);
+            }
+            $controllerPath = $applicationPath . $module . 'Controller' . '.php';
+            $controllerTemplate = dirname(__DIR__, 2) . '/templates/crud/controller.txt';
+            $controllerContent = file_get_contents($controllerTemplate);
+            $controllerContent = str_replace('{{module}}', $module, $controllerContent);
+            $controllerContent = str_replace('{{l-module}}', strtolower($module), $controllerContent);
+            file_put_contents($controllerPath, $controllerContent);
+            $repositoryInterfacePath = $domainPath . $module . 'RepositoryInterface' . '.php';
+            $repositoryInterfaceTemplate = dirname(__DIR__, 2) . '/templates/crud/repository-interface.txt';
+            $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
+            $repositoryInterfaceContent = str_replace('{{module}}', $module, $repositoryInterfaceContent);
+            $repositoryInterfaceContent = str_replace('{{l-module}}', strtolower($module), $repositoryInterfaceContent);
+            file_put_contents($repositoryInterfacePath, $repositoryInterfaceContent);
+            $repositoryPath = $infrastructurePath . $module . 'Repository' . '.php';
+            $repositoryTemplate = dirname(__DIR__, 2) . '/templates/crud/repository.txt';
+            $repositoryContent = file_get_contents($repositoryTemplate);
+            $repositoryContent = str_replace('{{module}}', $module, $repositoryContent);
+            $repositoryContent = str_replace('{{l-module}}', strtolower($module), $repositoryContent);
+            $repositoryContent = str_replace('{{table}}', $tableName, $repositoryContent);
+            $repositoryContent = str_replace('{{sortColumn}}', $sortColumn, $repositoryContent);
+            file_put_contents($repositoryPath, $repositoryContent);
+            $createUseCasePath = $domainPath . $module . 'CreateUseCase' . '.php';
+            $createUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/create.txt';
+            $createUseCaseContent = file_get_contents($createUseCaseTemplate);
+            $createUseCaseContent = str_replace('{{module}}', $module, $createUseCaseContent);
+            $createUseCaseContent = str_replace('{{l-module}}', strtolower($module), $createUseCaseContent);
+            file_put_contents($createUseCasePath, $createUseCaseContent);
+            $updateUseCasePath = $domainPath . $module . 'UpdateUseCase' . '.php';
+            $updateUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/update.txt';
+            $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
+            $updateUseCaseContent = str_replace('{{module}}', $module, $updateUseCaseContent);
+            $updateUseCaseContent = str_replace('{{l-module}}', strtolower($module), $updateUseCaseContent);
+            file_put_contents($updateUseCasePath, $updateUseCaseContent);
+            $deleteUseCasePath = $domainPath . $module . 'DeleteUseCase' . '.php';
+            $deleteUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/delete.txt';
+            $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
+            $deleteUseCaseContent = str_replace('{{module}}', $module, $deleteUseCaseContent);
+            file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
+            $getAllUseCasePath = $domainPath . $module . 'GetAllUseCase' . '.php';
+            $getAllUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/get-all.txt';
+            $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
+            $getAllUseCaseContent = str_replace('{{module}}', $module, $getAllUseCaseContent);
+            file_put_contents($getAllUseCasePath, $getAllUseCaseContent);
+            $modelPath = $domainPath . $module . '.php';
+            $modelTemplate = dirname(__DIR__, 2) . '/templates/crud/model.txt';
+            $modelContent = file_get_contents($modelTemplate);
+            $modelContent = str_replace('{{module}}', $module, $modelContent);
+            $modelFields = "";
+            foreach ($columns as $column) {
+                $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
+                $modelFields .= "        public " . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ",\n";
+            }
+            $modelContent = str_replace('{{fields}}', $modelFields, $modelContent);
+            file_put_contents($modelPath, $modelContent);
+            $entityPath = $infrastructurePath . $module . 'Entity' . '.php';
+            $entityTemplate = dirname(__DIR__, 2) . '/templates/crud/entity.txt';
+            $entityContent = file_get_contents($entityTemplate);
+            $entityContent = str_replace('{{module}}', $module, $entityContent);
+            $entityContent = str_replace('{{l-module}}', strtolower($module), $entityContent);
+            $entityContent = str_replace('{{table}}', $tableName, $entityContent);
+            $entityFields = "";
+            $mapToDomainModelFields = "";
+            $mapFromDomainModelFields = "";
+            foreach ($columns as $column) {
+                if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                    $entityFields .= "    #[Id]\n";
+                }
+                $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
+                $entityFields .= "    private " . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
+                $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
+                $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . strtolower($module) . "->" . $column->getName() . ";\n";
+            }
+            $entityContent = str_replace('{{fields}}', $entityFields, $entityContent);
+            $entityContent = str_replace('{{mapToDomainModelFields}}', $mapToDomainModelFields, $entityContent);
+            $entityContent = str_replace('{{mapFromDomainModelFields}}', $mapFromDomainModelFields, $entityContent);
+            file_put_contents($entityPath, $entityContent);
+            $viewPath = $tsPath . $module . '.ts';
+            $viewTemplate = dirname(__DIR__, 2) . '/templates/crud/view.txt';
+            $viewContent = file_get_contents($viewTemplate);
+            $viewContent = str_replace('{{module}}', $module, $viewContent);
+            $viewContent = str_replace('{{l-module}}', strtolower($module), $viewContent);
+            $viewFields = "";
+            foreach ($columns as $column) {
+                $field = "        this.fields.push(new FieldBuilder()\n";
+                $formType = match ($column->getType()->getName()) {
+                    'integer' => "FormType.NUMBER",
+                    'boolean' => "FormType.SWITCH",
+                    'date' => "FormType.DATE",
+                    default => "FormType.TEXT"
+                };
+                if (in_array($column, $foreignKeys)) {
+                    $formType = "FormType.SELECT";
+                }
+                $field .= "            .type(" . $formType . ")\n";
+                if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                    $field .= "            .isIdentity(true)\n";
+                }
+                $field .= "            .name('" . $column->getName() . "')\n";
+                $field .= "            .label('" . ucfirst(str_replace('_', ' ', $column->getName())) . "')\n";
+                if ($column->getNotnull()) {
+                    $field .= "            .required(true)\n";
+                }
+                $field .= "            .build());\n";
+                $viewFields .= $field;
+            }
+            $viewContent = str_replace('{{fields}}', $viewFields, $viewContent);
+            file_put_contents($viewPath, $viewContent);
+            $twigPath = $htmlPath . 'index.html.twig';
+            $twigTemplate = dirname(__DIR__, 2) . '/templates/crud/index.txt';
+            $twigContent = file_get_contents($twigTemplate);
+            $twigContent = str_replace('{{module}}', $module, $twigContent);
+            $twigContent = str_replace('{{l-module}}', strtolower($module), $twigContent);
+            file_put_contents($twigPath, $twigContent);
             $io->success('Success');
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $io->error('Error ' . $e->getMessage());
             return Command::FAILURE;
         }
+    }
+
+    private function getType($type): string
+    {
+        return match ($type) {
+            'integer' => 'int',
+            'boolean' => 'bool',
+            'date' => 'DateTime',
+            default => 'string',
+        };
     }
 }

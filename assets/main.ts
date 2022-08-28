@@ -9,6 +9,7 @@ import {Constants} from "./Constants";
 import ThemeManager from "./ThemeManager";
 import Customer from "./pages/Customer";
 import Drawer from "./Drawer";
+import User from "./pages/User";
 
 window.Observer = new Observable();
 window.DataGrid = DataGrid;
@@ -22,3 +23,4 @@ window.ThemeManager = new ThemeManager();
 window.app = window.app || {};
 
 window.app.customer = Customer;
+window.app.user = User;

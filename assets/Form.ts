@@ -84,6 +84,9 @@ export default class Form {
                 case FormType.TEXTAREA:
                     this.buildTextAreaInput(field);
                     break;
+                case FormType.DATE:
+                    this.buildDateInput(field);
+                    break;
                 case FormType.NUMBER:
                     this.buildNumberInput(field);
                     break;
@@ -134,6 +137,17 @@ export default class Form {
             height: field.height || 90,
             multiline: true,
             validType: field.validators,
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildDateInput(field) {
+        let input = $('#' + field.name);
+        input.datebox({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
             required: field.required,
         });
         this.formFields[field.name] = input;

@@ -1,0 +1,14 @@
+<?php
+
+namespace App\User\Domain;
+
+interface UserRepositoryInterface
+{
+    public function getAll(?string $filter = null): array;
+
+    public function insert(User $user): void;
+
+    public function update(User $user): void;
+
+    public function delete(string $id): void;
+}
