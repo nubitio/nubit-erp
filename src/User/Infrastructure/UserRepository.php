@@ -26,7 +26,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('usuario', 'username', filter: $filter);
+        return $this->dataGridLoader->load('usuario', 'password', filter: $filter);
     }
 
     /**
