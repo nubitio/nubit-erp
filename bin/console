@@ -3,11 +3,11 @@
 
 use App\Command\DemoCommand;
 use App\Command\InvoiceUpdateCommand;
-use App\Command\MakeCrudCommand;
 use App\Command\SendEmailCommand;
 use App\Command\SendSmsCommand;
 use App\Command\SendWhatsAppCommand;
 use App\Domain\Compiler\RemoveUnwantedServices;
+use App\Maker\MakeCrudCommand;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;

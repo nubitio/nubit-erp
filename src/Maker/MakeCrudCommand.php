@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App\Maker;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Command\Command;
@@ -65,19 +65,19 @@ class MakeCrudCommand extends Command
                 mkdir($htmlPath, 0777, true);
             }
             $controllerPath = $applicationPath . $module . 'Controller' . '.php';
-            $controllerTemplate = dirname(__DIR__, 2) . '/templates/crud/controller.txt';
+            $controllerTemplate = dirname(__FILE__) . '/templates/crud/controller.txt';
             $controllerContent = file_get_contents($controllerTemplate);
             $controllerContent = str_replace('{{module}}', $module, $controllerContent);
             $controllerContent = str_replace('{{l-module}}', strtolower($module), $controllerContent);
             file_put_contents($controllerPath, $controllerContent);
             $repositoryInterfacePath = $domainPath . $module . 'RepositoryInterface' . '.php';
-            $repositoryInterfaceTemplate = dirname(__DIR__, 2) . '/templates/crud/repository-interface.txt';
+            $repositoryInterfaceTemplate = dirname(__FILE__) . '/templates/crud/repository-interface.txt';
             $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
             $repositoryInterfaceContent = str_replace('{{module}}', $module, $repositoryInterfaceContent);
             $repositoryInterfaceContent = str_replace('{{l-module}}', strtolower($module), $repositoryInterfaceContent);
             file_put_contents($repositoryInterfacePath, $repositoryInterfaceContent);
             $repositoryPath = $infrastructurePath . $module . 'Repository' . '.php';
-            $repositoryTemplate = dirname(__DIR__, 2) . '/templates/crud/repository.txt';
+            $repositoryTemplate = dirname(__FILE__) . '/templates/crud/repository.txt';
             $repositoryContent = file_get_contents($repositoryTemplate);
             $repositoryContent = str_replace('{{module}}', $module, $repositoryContent);
             $repositoryContent = str_replace('{{l-module}}', strtolower($module), $repositoryContent);
@@ -85,29 +85,29 @@ class MakeCrudCommand extends Command
             $repositoryContent = str_replace('{{sortColumn}}', $sortColumn, $repositoryContent);
             file_put_contents($repositoryPath, $repositoryContent);
             $createUseCasePath = $domainPath . $module . 'CreateUseCase' . '.php';
-            $createUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/create.txt';
+            $createUseCaseTemplate = dirname(__FILE__) . '/templates/crud/create.txt';
             $createUseCaseContent = file_get_contents($createUseCaseTemplate);
             $createUseCaseContent = str_replace('{{module}}', $module, $createUseCaseContent);
             $createUseCaseContent = str_replace('{{l-module}}', strtolower($module), $createUseCaseContent);
             file_put_contents($createUseCasePath, $createUseCaseContent);
             $updateUseCasePath = $domainPath . $module . 'UpdateUseCase' . '.php';
-            $updateUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/update.txt';
+            $updateUseCaseTemplate = dirname(__FILE__) . '/templates/crud/update.txt';
             $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
             $updateUseCaseContent = str_replace('{{module}}', $module, $updateUseCaseContent);
             $updateUseCaseContent = str_replace('{{l-module}}', strtolower($module), $updateUseCaseContent);
             file_put_contents($updateUseCasePath, $updateUseCaseContent);
             $deleteUseCasePath = $domainPath . $module . 'DeleteUseCase' . '.php';
-            $deleteUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/delete.txt';
+            $deleteUseCaseTemplate = dirname(__FILE__) . '/templates/crud/delete.txt';
             $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
             $deleteUseCaseContent = str_replace('{{module}}', $module, $deleteUseCaseContent);
             file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
             $getAllUseCasePath = $domainPath . $module . 'GetAllUseCase' . '.php';
-            $getAllUseCaseTemplate = dirname(__DIR__, 2) . '/templates/crud/get-all.txt';
+            $getAllUseCaseTemplate = dirname(__FILE__) . '/templates/crud/get-all.txt';
             $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
             $getAllUseCaseContent = str_replace('{{module}}', $module, $getAllUseCaseContent);
             file_put_contents($getAllUseCasePath, $getAllUseCaseContent);
             $modelPath = $domainPath . $module . '.php';
-            $modelTemplate = dirname(__DIR__, 2) . '/templates/crud/model.txt';
+            $modelTemplate = dirname(__FILE__) . '/templates/crud/model.txt';
             $modelContent = file_get_contents($modelTemplate);
             $modelContent = str_replace('{{module}}', $module, $modelContent);
             $modelFields = "";
@@ -118,7 +118,7 @@ class MakeCrudCommand extends Command
             $modelContent = str_replace('{{fields}}', $modelFields, $modelContent);
             file_put_contents($modelPath, $modelContent);
             $entityPath = $infrastructurePath . $module . 'Entity' . '.php';
-            $entityTemplate = dirname(__DIR__, 2) . '/templates/crud/entity.txt';
+            $entityTemplate = dirname(__FILE__) . '/templates/crud/entity.txt';
             $entityContent = file_get_contents($entityTemplate);
             $entityContent = str_replace('{{module}}', $module, $entityContent);
             $entityContent = str_replace('{{l-module}}', strtolower($module), $entityContent);
@@ -140,12 +140,15 @@ class MakeCrudCommand extends Command
             $entityContent = str_replace('{{mapFromDomainModelFields}}', $mapFromDomainModelFields, $entityContent);
             file_put_contents($entityPath, $entityContent);
             $viewPath = $tsPath . $module . '.ts';
-            $viewTemplate = dirname(__DIR__, 2) . '/templates/crud/view.txt';
+            $viewTemplate = dirname(__FILE__) . '/templates/crud/view.txt';
             $viewContent = file_get_contents($viewTemplate);
             $viewContent = str_replace('{{module}}', $module, $viewContent);
             $viewContent = str_replace('{{l-module}}', strtolower($module), $viewContent);
             $viewFields = "";
             foreach ($columns as $column) {
+                if (in_array($column->getName(), $ignoredColumns)) {
+                    continue;
+                }
                 $field = "        this.fields.push(new FieldBuilder()\n";
                 $formType = match ($column->getType()->getName()) {
                     'integer' => "FormType.NUMBER",
@@ -171,7 +174,7 @@ class MakeCrudCommand extends Command
             $viewContent = str_replace('{{fields}}', $viewFields, $viewContent);
             file_put_contents($viewPath, $viewContent);
             $twigPath = $htmlPath . 'index.html.twig';
-            $twigTemplate = dirname(__DIR__, 2) . '/templates/crud/index.txt';
+            $twigTemplate = dirname(__FILE__) . '/templates/crud/index.txt';
             $twigContent = file_get_contents($twigTemplate);
             $twigContent = str_replace('{{module}}', $module, $twigContent);
             $twigContent = str_replace('{{l-module}}', strtolower($module), $twigContent);
