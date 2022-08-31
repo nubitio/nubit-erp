@@ -324,9 +324,10 @@ class MovimientoController extends BaseController
         }
         //if ($cabecera['operacion_id'] == '37b1e294-c224-11e7-91af-5600005a2745') {
         if (1 == 1) {
-            $igv = 0.18;
+            $app_option_igv_get = (int)$this->getOption('app_option_igv');
             $app_option_rc_get = (int)$this->getOption('app_option_rc');
             $rc = $app_option_rc_get / 100;
+            $igv = $app_option_igv_get / 100;
             $divisor = 1 + $igv + $rc;
             $valor_venta = $total / $divisor;
             $valor_igv = $valor_venta * $igv;
@@ -346,7 +347,7 @@ class MovimientoController extends BaseController
             $cmds .= $newLine;
             $cmds .= str_pad('OP. EXONERADA', 23) . str_pad('S/ 0.00', 10, " ", STR_PAD_LEFT);
             $cmds .= $newLine;
-            $cmds .= str_pad('IGV 18%', 23) . str_pad($str_igv, 10, " ", STR_PAD_LEFT);
+            $cmds .= str_pad('IGV ' . $app_option_igv_get . '%: ', 23) . str_pad($str_igv, 10, " ", STR_PAD_LEFT);
             $cmds .= $newLine;
 
             if ($app_option_rc_get >= 1) {
