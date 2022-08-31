@@ -203,9 +203,10 @@ class EFactController extends BaseController
         $invoice = (new Invoice());
         $items = [];
 
+        $app_option_igv_get = (int)$this->getOption('app_option_igv');
         $app_option_rc_get = (int)$this->getOption('app_option_rc');
         if ($app_option_rc_get >= 1) {
-            $igv = 0.18;
+            $igv = $app_option_igv_get /100;
             $rc = $app_option_rc_get / 100;
             $divisor = 1 + $igv + $rc;//1.23
             $venta_total = $sale['header']['doc_sale_amount'];//123
@@ -241,7 +242,7 @@ class EFactController extends BaseController
                 ]);
 
             for ($i = 0; $i < count($sale['detail']); $i++) {
-                $igv = 0.18;
+                $igv = $app_option_igv_get / 100;
                 $rc = $app_option_rc_get / 100;
                 //$divisor = 1 + $igv;
                 $divisor = 1 + $igv + $rc;//1.23
@@ -258,7 +259,7 @@ class EFactController extends BaseController
                     ->setMtoValorUnitario(number_format($valor_venta, 2, '.', ''))
                     ->setDescripcion($sale['detail'][$i]['product'])
                     ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
-                    ->setPorcentajeIgv(18.00)// 18%
+                    ->setPorcentajeIgv($app_option_igv_get)
                     ->setIgv(number_format($monto_igv, 2, '.', ''))
                     ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
                     ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
@@ -268,7 +269,7 @@ class EFactController extends BaseController
             }
         } else //not rc charge
         {
-            $igv = 0.18;
+            $igv = $app_option_igv_get/100;
             $divisor = 1 + $igv;
             $valor_venta = $sale['header']['doc_sale_amount'] / $divisor;
             $valor_igv = $valor_venta * $igv;
@@ -293,7 +294,7 @@ class EFactController extends BaseController
                 ->setCompany($this->getCompany());
 
             for ($i = 0; $i < count($sale['detail']); $i++) {
-                $igv = 0.18;
+                $igv = $app_option_igv_get/100;
                 //$rc = 0.05;
                 $divisor = 1 + $igv;
                 //$divisor = 1 + $igv + $rc;
@@ -308,7 +309,7 @@ class EFactController extends BaseController
                     ->setMtoValorUnitario(number_format($valor_venta, 2, '.', ''))
                     ->setDescripcion($sale['detail'][$i]['product'])
                     ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
-                    ->setPorcentajeIgv(18.00)// 18%
+                    ->setPorcentajeIgv($app_option_igv_get)
                     ->setIgv(number_format($monto_igv, 2, '.', ''))
                     ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
                     ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
@@ -368,6 +369,7 @@ class EFactController extends BaseController
     public function buildNote($sale)
     {
         // Cliente
+        $app_option_igv_get = (int)$this->getOption('app_option_igv');
         $client = new Client();
         $client->setTipoDoc($sale['header']['client_doc_type'])
             ->setNumDoc($sale['header']['client_doc_number'])
@@ -395,7 +397,7 @@ class EFactController extends BaseController
 
         $items = [];
         for ($i = 0; $i < count($sale['detail']); $i++) {
-            $igv = 0.18;
+            $igv = $app_option_igv_get;
             $divisor = 1 + $igv;
             $valor_venta = $sale['detail'][$i]['price'] / $divisor;
             $valor_igv = $valor_venta * $igv;
@@ -407,7 +409,7 @@ class EFactController extends BaseController
                 ->setCantidad($sale['detail'][$i]['quantity'])
                 ->setDescripcion($sale['detail'][$i]['product'])
                 ->setMtoBaseIgv(number_format($monto_base_igv, 2, '.', ''))
-                ->setPorcentajeIgv(18.00)// 18%
+                ->setPorcentajeIgv($app_option_igv_get)
                 ->setIgv(number_format($monto_igv, 2, '.', ''))
                 ->setTipAfeIgv($sale['detail'][$i]['tax_type'])
                 ->setTotalImpuestos(number_format($monto_igv, 2, '.', ''))
