@@ -132,15 +132,16 @@ class PrintESCPOSController extends BaseController
                 $valor_rc = 0;
 
                 $app_option_rc_get = (int)$this->getOption('app_option_rc');
+                $app_option_igv_get = (int)$this->getOption('app_option_igv');
                 if ($app_option_rc_get >= 1) {
-                    $igv = 0.18;
+                    $igv = $app_option_igv_get / 100;
                     $rc = $app_option_rc_get / 100;
                     $divisor = 1 + $igv + $rc;
                     $valor_venta = $total / $divisor;
                     $valor_igv = $valor_venta * $igv;
                     $valor_rc = $valor_venta * $rc;
                 } else {
-                    $igv = 0.18;
+                    $igv = $app_option_igv_get / 100;
                     $divisor = 1 + $igv;
                     $valor_venta = $total / $divisor;
                     $valor_igv = $valor_venta * $igv;
@@ -156,7 +157,7 @@ class PrintESCPOSController extends BaseController
                     $printer->text(new SaleItem('OP. GRAVADA', $str_opg));
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
-                    $printer->text(new SaleItem('IGV 18%', $str_igv));
+                    $printer->text(new SaleItem('IGV '.$app_option_igv_get.'% :', $str_igv));
                     if ($app_option_rc_get >= 1) {
                         $printer->text(new SaleItem('RC' . $app_option_rc_get . '% :', $str_consumo));
                     }
