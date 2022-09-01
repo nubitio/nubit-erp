@@ -157,7 +157,7 @@ class PrintESCPOSController extends BaseController
                     $printer->text(new SaleItem('OP. GRAVADA', $str_opg));
                     $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
                     $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
-                    $printer->text(new SaleItem('IGV'. $app_option_igv_get . '% :', $str_igv));
+                    $printer->text(new SaleItem('IGV '.$app_option_igv_get.'% :', $str_igv));
                     if ($app_option_rc_get >= 1) {
                         $printer->text(new SaleItem('RC' . $app_option_rc_get . '% :', $str_consumo));
                     }
