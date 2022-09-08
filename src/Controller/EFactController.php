@@ -461,12 +461,11 @@ class EFactController extends BaseController
             ->setCorrelativo($sale['data']['header']['doc_number'])
             ->setDesMotivoBaja($sale['data']['header']['doc_notes']);
 
-        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT);
-        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],5,'0', STR_PAD_LEFT);
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'],1), 3, '0', STR_PAD_LEFT);
 
         $cDeBaja = new Voided();
         $cDeBaja
-            ->setCorrelativo($numberInvoiceCorrelative)
+            ->setCorrelativo($sequenceVoidedCorrelative)
             ->setFecGeneracion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setFecComunicacion(new \DateTime($sale['data']['header']['date_comprobante']))
             ->setCompany($this->getCompany())
@@ -487,6 +486,7 @@ class EFactController extends BaseController
 
         $ticket = $result->getTicket();
         $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        $this->comprobanteModel->correlativeVoidedUpdate($sequenceVoidedCorrelative, $sale['data']['header']['movimiento_id']);
         sleep(5);
 
         $statusResult = $this->see->getStatus($ticket);
@@ -527,14 +527,13 @@ class EFactController extends BaseController
             $detailVoided[] = $detail;
         }
 
-        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided(date('Y-m-d'),1), 3, '0', STR_PAD_LEFT);
-        $numberInvoiceCorrelative = str_pad($sale['data']['header']['doc_number'],5,'0', STR_PAD_LEFT);
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'],0), 3, '0', STR_PAD_LEFT);
 
         $resumen = new Summary();
         $resumen
             ->setFecGeneracion(new \DateTime($data['data'][0]['fecha']))
-            ->setFecResumen(new \DateTime(date('Y-m-d')))
-            ->setCorrelativo($numberInvoiceCorrelative)
+            ->setFecResumen(new \DateTime($data['data'][0]['fecha']))
+            ->setCorrelativo($sequenceVoidedCorrelative)
             ->setCompany($this->getCompany())
             ->setDetails($detailVoided);
 
@@ -553,6 +552,8 @@ class EFactController extends BaseController
 
         $ticket = $result->getTicket();
         $this->comprobanteModel->ticketVoidedUpdate($ticket, $sale['data']['header']['movimiento_id']);
+        $this->comprobanteModel->correlativeVoidedUpdate($sequenceVoidedCorrelative, $sale['data']['header']['movimiento_id']);
+
         sleep(5);
 
         $statusResult = $this->see->getStatus($ticket);

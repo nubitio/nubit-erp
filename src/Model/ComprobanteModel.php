@@ -78,4 +78,9 @@ class ComprobanteModel extends BaseModel
     {
         $this->db->exec("UPDATE comprobante SET ticket_baja = ? WHERE movimiento_id = ?", array($ticket, $receiptId));
     }
+
+    public function correlativeVoidedUpdate($correlative, $receiptId)
+    {
+        $this->db->exec("UPDATE comprobante SET correlativo_baja = ? WHERE movimiento_id = ?", array($correlative, $receiptId));
+    }
 }
