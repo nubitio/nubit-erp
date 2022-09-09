@@ -26,7 +26,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('usuario', 'password', filter: $filter);
+        return $this->dataGridLoader->load('usuario', 'username', filter: $filter);
     }
 
     /**
@@ -45,7 +45,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function update(User $user): void
     {
-        $entity = $this->entityManager->find(UserEntity::class, $user->getId());
+        $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
         $entity->mapFromDomainModel($user);
         $this->entityManager->flush();
     }

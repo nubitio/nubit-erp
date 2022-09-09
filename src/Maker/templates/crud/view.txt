@@ -16,7 +16,7 @@ export default class {{module}} {
     private options: any = {};
 
     public ROUTES = {
-        ADD: '{{l-module}}/add/',
+        ADD: '{{l-module}}/add',
         EDIT: '{{l-module}}/edit/',
         DELETE: '{{l-module}}/delete/',
     }

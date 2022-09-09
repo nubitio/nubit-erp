@@ -22,25 +22,29 @@
     "greenter/htmltopdf": "^4.3",
     "greenter/report": "^4.3",
     "twig/twig": "^3.3",
-    "symfony/twig-bridge": "^5.3",
-    "symfony/asset": "^5.3",
-    "symfony/dependency-injection": "^5.3",
-    "symfony/config": "^5.3",
+    "symfony/twig-bridge": "^6.1",
+    "symfony/asset": "^6.1",
     "doctrine/orm": "2.11.*",
-    "symfony/dotenv": "^5.3",
-    "symfony/console": "^5.3",
+    "symfony/dotenv": "^6.1",
+    "symfony/console": "^6.1",
     "lavary/crunz": "^3.0",
     "symfony/webpack-encore-bundle": "^1.14",
-    "symfony/uid": "^5.4",
+    "symfony/uid": "^6.1",
     "sentry/sdk": "^3.1",
-    "symfony/error-handler": "^5.4",
     "symfony/serializer": "^6.0",
     "symfony/property-access": "^6.0",
     "symfony/validator": "^6.0",
     "symfony/cache": "^6.0",
     "doctrine/annotations": "^1.13",
-    "symfony/event-dispatcher": "^6.0",
-    "symfony/string": "^6.0"
+    "symfony/event-dispatcher": "^6.1",
+    "symfony/string": "^6.1",
+    "symfony/http-foundation": "^6.1",
+    "symfony/routing": "^6.1",
+    "symfony/error-handler": "^6.1",
+    "symfony/config": "^6.1",
+    "symfony/dependency-injection": "^6.1",
+    "symfony/http-kernel": "^6.1",
+    "monolog/monolog": "^3.2"
   },
   "authors": [
     {
@@ -54,6 +58,7 @@
     }
   },
   "require-dev": {
-    "symfony/var-dumper": "^5.3"
+    "symfony/var-dumper": "^6.1",
+    "phpunit/phpunit": "^9.5"
   }
 }

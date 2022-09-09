@@ -18,18 +18,21 @@ use Symfony\Bridge\Twig\Extension\AssetExtension;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
-class BaseController
+abstract class BaseController
 {
     protected Base $app;
-    private Environment $twig;
+    protected Environment $twig;
     protected ContainerInterface $container;
     protected OptionsModel $options;
     protected SerializerService $serializer;
     protected UploaderHelper $uploader;
+    protected Request $request;
     protected $current_user_id;
     protected $current_local_id;
     protected $current_almacen_id;
@@ -70,6 +73,8 @@ class BaseController
         $this->current_user_id = $this->app->get('SESSION.usuario_id');
         $this->current_local_id = $this->app->get('SESSION.local_id');
         $this->current_almacen_id = $this->app->get('SESSION.default_almacen');
+
+        $this->request = $app->get('request');
     }
 
     public function render(string $view, array $parameters = [])
@@ -91,10 +96,14 @@ class BaseController
         }
     }
 
-    public function json($data)
+    public function json(mixed $data, int $status = 200, array $headers = [], array $context = [])
     {
-        header('content-type: application/json; charset=utf-8');
-        echo json_encode($data);
+        $json = $this->serializer->serialize($data, 'json', array_merge([
+            'json_encode_options' => JsonResponse::DEFAULT_ENCODING_OPTIONS,
+        ], $context));
+
+        $response = new JsonResponse($json, $status, $headers, true);
+        $response->send();
     }
 
     public function export($data, $extras, $kardex = null)

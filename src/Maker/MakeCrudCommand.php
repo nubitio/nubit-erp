@@ -42,7 +42,8 @@ class MakeCrudCommand extends Command
             $foreignKeys = $table->getForeignKeys();
             $module = $io->ask('Module name');
             $sortColumn = $io->choice('Sort column', $columnNames);
-            $ignoredColumns = ['id', strtolower($module) . '_id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
+            $ignoredColumns = ['created_at', 'updated_at', 'created_by', 'updated_by', 'date_created', 'date_updated'];
+            $configPath = dirname(__DIR__, 2) . '/config/';
             $modulePath = dirname(__DIR__, 2) . '/src/' . $module;
             $tsPath = dirname(__DIR__, 2) . '/assets/pages/';
             $domainPath = $modulePath . '/Domain/';
@@ -69,6 +70,7 @@ class MakeCrudCommand extends Command
             $controllerContent = file_get_contents($controllerTemplate);
             $controllerContent = str_replace('{{module}}', $module, $controllerContent);
             $controllerContent = str_replace('{{l-module}}', strtolower($module), $controllerContent);
+            $controllerContent = str_replace('{{table_id}}', $primaryKey->getColumns()[0], $controllerContent);
             file_put_contents($controllerPath, $controllerContent);
             $repositoryInterfacePath = $domainPath . $module . 'RepositoryInterface' . '.php';
             $repositoryInterfaceTemplate = dirname(__FILE__) . '/templates/crud/repository-interface.txt';
@@ -82,6 +84,7 @@ class MakeCrudCommand extends Command
             $repositoryContent = str_replace('{{module}}', $module, $repositoryContent);
             $repositoryContent = str_replace('{{l-module}}', strtolower($module), $repositoryContent);
             $repositoryContent = str_replace('{{table}}', $tableName, $repositoryContent);
+            $repositoryContent = str_replace('{{table_id}}', $primaryKey->getColumns()[0], $repositoryContent);
             $repositoryContent = str_replace('{{sortColumn}}', $sortColumn, $repositoryContent);
             file_put_contents($repositoryPath, $repositoryContent);
             $createUseCasePath = $domainPath . $module . 'CreateUseCase' . '.php';
@@ -113,7 +116,7 @@ class MakeCrudCommand extends Command
             $modelFields = "";
             foreach ($columns as $column) {
                 $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
-                $modelFields .= "        public " . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ",\n";
+                $modelFields .= "        public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ",\n";
             }
             $modelContent = str_replace('{{fields}}', $modelFields, $modelContent);
             file_put_contents($modelPath, $modelContent);
@@ -129,9 +132,10 @@ class MakeCrudCommand extends Command
             foreach ($columns as $column) {
                 if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                     $entityFields .= "    #[Id]\n";
+                    $entityFields .= "    #[GeneratedValue]\n";
                 }
                 $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
-                $entityFields .= "    private " . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
+                $entityFields .= "    private ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
                 $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
                 $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . strtolower($module) . "->" . $column->getName() . ";\n";
             }
@@ -159,10 +163,12 @@ class MakeCrudCommand extends Command
                 if (in_array($column, $foreignKeys)) {
                     $formType = "FormType.SELECT";
                 }
-                $field .= "            .type(" . $formType . ")\n";
                 if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                    $formType = "FormType.HIDDEN";
                     $field .= "            .isIdentity(true)\n";
+                    $field .= "            .visible(false)\n";
                 }
+                $field .= "            .type(" . $formType . ")\n";
                 $field .= "            .name('" . $column->getName() . "')\n";
                 $field .= "            .label('" . ucfirst(str_replace('_', ' ', $column->getName())) . "')\n";
                 if ($column->getNotnull()) {
@@ -192,7 +198,7 @@ class MakeCrudCommand extends Command
         return match ($type) {
             'integer' => 'int',
             'boolean' => 'bool',
-            'date' => 'DateTime',
+            'date', 'datetime' => '\DateTime',
             default => 'string',
         };
     }

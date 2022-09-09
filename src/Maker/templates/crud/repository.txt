@@ -45,7 +45,7 @@ class {{module}}Repository implements {{module}}RepositoryInterface
      */
     public function update({{module}} ${{l-module}}): void
     {
-        $entity = $this->entityManager->find({{module}}Entity::class, ${{l-module}}->getId());
+        $entity = $this->entityManager->find({{module}}Entity::class, ${{l-module}}->{{table_id}});
         $entity->mapFromDomainModel(${{l-module}});
         $this->entityManager->flush();
     }

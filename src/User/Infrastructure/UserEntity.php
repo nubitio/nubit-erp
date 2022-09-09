@@ -6,6 +6,7 @@ use App\Domain\Annotation\IgnoreAutowire;
 use App\User\Domain\User;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
+use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
@@ -15,22 +16,23 @@ use Doctrine\ORM\Mapping\Table;
 class UserEntity
 {
     #[Id]
+    #[GeneratedValue]
     #[Column(name: "usuario_id", type: "integer")]
-    private int $usuario_id;
+    private ?int $usuario_id;
     #[Column(name: "username", type: "string")]
-    private string $username;
+    private ?string $username;
     #[Column(name: "password", type: "string")]
-    private string $password;
-    #[Column(name: "estado", type: "integer")]
-    private int $estado;
+    private ?string $password;
+    #[Column(name: "estado", type: "boolean")]
+    private ?bool $estado;
     #[Column(name: "date_created", type: "datetime")]
-    private string $date_created;
+    private ?\DateTime $date_created;
     #[Column(name: "date_updated", type: "datetime")]
-    private string $date_updated;
+    private ?\DateTime $date_updated;
     #[Column(name: "pin", type: "string")]
-    private string $pin;
+    private ?string $pin;
     #[Column(name: "rol_id", type: "integer")]
-    private int $rol_id;
+    private ?int $rol_id;
 
     public function mapToDomainModel(): User
     {
