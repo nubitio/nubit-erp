@@ -1,11 +1,25 @@
 <?php
 
 use App\Domain\Compiler\RemoveUnwantedServices;
+use App\Kernel;
+use App\Routing\AnnotatedRouteControllerLoader;
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\HttpCache\Esi;
+use Symfony\Component\HttpKernel\HttpCache\HttpCache;
+use Symfony\Component\HttpKernel\HttpCache\Store;
+use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
 
 require_once("../vendor/autoload.php");
 
@@ -36,6 +50,29 @@ try {
 $containerBuilder->addCompilerPass(new RemoveUnwantedServices());
 $containerBuilder->compile();
 
+$loader = new AnnotationDirectoryLoader(
+    new FileLocator(dirname(__FILE__, 2) . '/src'),
+    new AnnotatedRouteControllerLoader(new AnnotationReader())
+);
+
+$routes = $loader->load(dirname(__FILE__, 2) . '/src');
+$request = Request::createFromGlobals();
+
+$kernel = new Kernel($routes, $containerBuilder);
+
+try {
+    $response = $kernel->handle($request);
+    if ($response->getStatusCode() === 200) {
+        $response->send();
+        exit();
+    }
+} catch (Exception $e) {
+    if (!$e instanceof NotFoundHttpException) {
+        throw $e;
+    }
+}
+
+$app->set('request', $request);
 $app->set('di', $containerBuilder);
 
 $app->set('CONTAINER', function ($class) use ($containerBuilder) {

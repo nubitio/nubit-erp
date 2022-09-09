@@ -2,13 +2,16 @@
 
 namespace App\User\Application;
 
-use App\Controller\BaseController;
+use App\Base\BaseController;
 use App\User\Domain\UserGetAllUseCase;
 use App\User\Domain\UserCreateUseCase;
 use App\User\Domain\UserUpdateUseCase;
 use App\User\Domain\UserDeleteUseCase;
 use App\User\Domain\User;
 use App\Util\Constants;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends BaseController
 {
@@ -17,44 +20,49 @@ class UserController extends BaseController
         parent::__construct();
     }
 
-    public function index()
+    #[Route('/user', name: 'user_index', methods: ['GET'])]
+    public function index(): Response
     {
-        $this->render('user/index.html.twig');
+        return $this->render('user/index.html.twig');
     }
 
-    public function getAll()
+    #[Route('/user/get', name: 'user_list', methods: ['POST'])]
+    public function getAll(): Response
     {
         $getAllUseCase = $this->container->get(UserGetAllUseCase::class);
-        $this->json($getAllUseCase());
+        return $this->json($getAllUseCase());
     }
 
-    public function add()
+    #[Route('/user/add', name: 'user_create', methods: ['POST'])]
+    public function add(Request $request): Response
     {
         /**
-         * @var User $entity
+         * @var User $user
          */
-        $entity = $this->serializer->deserialize(json_encode($_POST), User::class, 'json');
+        $user = $this->serializer->deserialize(json_encode($request->request->all()), User::class, 'json');
         $createUseCase = $this->container->get(UserCreateUseCase::class);
-        $createUseCase($entity);
-        $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
+        $createUseCase($user);
+        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    public function edit()
+    #[Route('/user/edit/{id}', name: 'user_update', methods: ['POST'])]
+    public function edit(Request $request, $id): Response
     {
+        $request->request->add(['usuario_id' => $id]);
         /**
-         * @var User $entity
+         * @var User $user
          */
-        $entity = $this->serializer->deserialize(json_encode($_POST), User::class, 'json');
+        $user = $this->serializer->deserialize(json_encode($request->request->all()), User::class, 'json');
         $updateUseCase = $this->container->get(UserUpdateUseCase::class);
-        $updateUseCase($entity);
-        $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
+        $updateUseCase($user);
+        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    public function delete()
+    #[Route('/user/delete/{id}', name: 'user_delete', methods: ['POST'])]
+    public function delete($id): Response
     {
-        $id = $this->app->get('PARAMS.id');
         $deleteUseCase = $this->container->get(UserDeleteUseCase::class);
         $deleteUseCase($id);
-        $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

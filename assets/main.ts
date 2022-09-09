@@ -10,6 +10,8 @@ import ThemeManager from "./ThemeManager";
 import Customer from "./pages/Customer";
 import Drawer from "./Drawer";
 import User from "./pages/User";
+import Warehouse from "./pages/Warehouse";
+import Company from "./pages/Company";
 
 window.Observer = new Observable();
 window.DataGrid = DataGrid;
@@ -24,3 +26,5 @@ window.app = window.app || {};
 
 window.app.customer = Customer;
 window.app.user = User;
+window.app.warehouse = Warehouse;
+window.app.company = Company;

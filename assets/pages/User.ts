@@ -16,7 +16,7 @@ export default class User {
     private options: any = {};
 
     public ROUTES = {
-        ADD: 'user/add/',
+        ADD: 'user/add',
         EDIT: 'user/edit/',
         DELETE: 'user/delete/',
     }
@@ -32,8 +32,9 @@ export default class User {
 
     init() {
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
             .isIdentity(true)
+            .visible(false)
+            .type(FormType.HIDDEN)
             .name('usuario_id')
             .label('Usuario id')
             .required(true)
@@ -49,19 +50,9 @@ export default class User {
             .label('Password')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.SWITCH)
             .name('estado')
             .label('Estado')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('date_created')
-            .label('Date created')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('date_updated')
-            .label('Date updated')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
