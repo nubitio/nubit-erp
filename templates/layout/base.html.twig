@@ -4,29 +4,31 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ title }}</title>
+    <title>{% block title %}{% endblock %}</title>
     <!-- Icons -->
     <link rel="shortcut icon" href="{{ asset('assets/images/logo.png') }}">
     <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/lightbox.min.css') }}">
-    {{ encore_entry_link_tags('main') }}
-    <!-- build:js ../assets/js/lib.min.js -->
-    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
-    <script src="{{ asset('assets/js/easyui-lang-es.js') }}"></script>
-    <script src="{{ asset('assets/js/datagrid-detailview.js') }}"></script>
-    <script src="{{ asset('assets/js/datagrid-filter.js') }}"></script>
-    <script src="{{ asset('assets/js/highcharts.js') }}"></script>
-    <script src="{{ asset('assets/js/highcharts-more.js') }}"></script>
-    <script src="{{ asset('assets/js/dumbbell.js') }}"></script>
-    <script src="{{ asset('assets/js/lollipop.js') }}"></script>
-    <script src="{{ asset('assets/js/solid-gauge.js') }}"></script>
-    <script src="{{ asset('assets/js/exporting.js') }}"></script>
-    <script src="{{ asset('assets/js/lightbox.min.js') }}"></script>
-    <script src="{{ asset('assets/js/config.js') }}"></script>
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-    {{ encore_entry_script_tags('main') }}
-    <!-- endbuild -->
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('assets/css/lightbox.min.css') }}">
+        {{ encore_entry_link_tags('main') }}
+    {% endblock stylesheets %}
+    {% block javascripts %}
+        <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
+        <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
+        <script src="{{ asset('assets/js/easyui-lang-es.js') }}"></script>
+        <script src="{{ asset('assets/js/datagrid-detailview.js') }}"></script>
+        <script src="{{ asset('assets/js/datagrid-filter.js') }}"></script>
+        <script src="{{ asset('assets/js/highcharts.js') }}"></script>
+        <script src="{{ asset('assets/js/highcharts-more.js') }}"></script>
+        <script src="{{ asset('assets/js/dumbbell.js') }}"></script>
+        <script src="{{ asset('assets/js/lollipop.js') }}"></script>
+        <script src="{{ asset('assets/js/solid-gauge.js') }}"></script>
+        <script src="{{ asset('assets/js/exporting.js') }}"></script>
+        <script src="{{ asset('assets/js/lightbox.min.js') }}"></script>
+        <script src="{{ asset('assets/js/config.js') }}"></script>
+        <script src="{{ asset('assets/js/main.js') }}"></script>
+        {{ encore_entry_script_tags('main') }}
+    {% endblock javascripts %}
 </head>
 <body class="easyui-layout" id="layout-container">
 <div data-options="region: 'north', border: false" class="primary-dark" style="height: 56px;">
@@ -34,9 +36,9 @@
         <div class="easyui-linkbutton menu-bars" data-options="plain: true" onclick="toggle()">
             <i class="fa fa-bars fa-lg"></i>
         </div>
-        <a href="home"><img style="height:56px;" src="{{ asset('assets/images/logo.png') }}" alt="logo"></a>
+        <a href="/"><img style="height:56px;" src="{{ asset('assets/images/logo.png') }}" alt="logo"></a>
         <span id="home_local_title" style="margin-left: 20px;"><i
-                    class="fa fa-home"></i> {{ session.local }}</span>
+                    class="fa fa-home"></i> {{ app.session.local }}</span>
     </div>
     <div class="float-end">
         <button class="btn md-btn-plain" onclick="window.ThemeManager.toggle()">
@@ -44,11 +46,13 @@
         </button>
         <img src="" alt="" style="height: 56px">
         <a href="#" class="easyui-menubutton menu-user"
-           data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ session.usuario }}</a>
+           data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ app.session.usuario }}</a>
         <div id="user_menu" style="width:165px;">
             <div data-options="iconCls:'fa fa-home fa-fw'" onclick="app.home.change_local()">Cambiar Local</div>
             <div class="menu-sep"></div>
-            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar Contraseña</div>
+            <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar
+                Contraseña
+            </div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-power-off fa-fw'" onclick="window.location = ('logout')">Salir</div>
         </div>
@@ -58,7 +62,8 @@
     <div id="sidebar" style="min-height: 100vh;"></div>
 </div>
 <div data-options="region:'center', border: true">
-    <div id="content"></div>
+    {% block body %}
+    {% endblock %}
     <div id="home_local">
         <div id="home_lista_local"></div>
     </div>
@@ -66,34 +71,14 @@
 <script>
     let layout = $('#layout-container');
     let sidebar = $('#sidebar');
-    let content = $('#content');
     let themeIcon = $('#theme-icon');
     let current;
 
-    window.onpopstate = function (event) {
-        if (event.state) {
-            loadPage(event.state.item.url, history.state.item.text);
-        }
-    };
-
     window.onload = function () {
-        content.panel({
-            fit: true,
-            border: false,
-            loadingMessage: '',
-            onBeforeLoad: function () {
-                $(this).panel('showMask', 'Cargando...');
-            },
-            onLoad: function () {
-                $(this).panel('hideMask');
-                $('.wrapper').animate({"opacity": 1});
-                $('#wrapper').animate({"opacity": 1});
-                let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
-                if (selectedMenu !== null) {
-                    sidebar.sidemenu('select', selectedMenu);
-                }
-            }
-        });
+        $('.wrapper').animate({"opacity": 1});
+        $('#wrapper').animate({"opacity": 1});
+
+        let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
 
         $.get('getmenu')
             .done(function (response) {
@@ -114,24 +99,24 @@
                     border: false,
                     multiple: false,
                     onSelect: function (item) {
+                        if (selectedMenu.url === item.url) {
+                            return;
+                        }
                         localStorage.setItem('selectedMenu', JSON.stringify(item));
-                        loadPage(item.url, item.text, true);
+                        window.location.href = item.url;
                     }
                 });
 
                 let sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
                 setSidebarCollapsed(sidebarCollapsed === 'true');
+
+                if (selectedMenu !== null) {
+                    sidebar.sidemenu('setSelected', selectedMenu);
+                }
             })
             .fail(function (xhr, status, error) {
                 console.log(error);
             });
-
-        if (history.state) {
-            let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
-            loadPage(history.state.item.url, history.state.item.text, selectedMenu !== null);
-        } else {
-            loadPage('dashboard', 'dashboard');
-        }
 
         window.Observer.subscribe(window.EventType.THEME_CHANGE, (theme) => {
             if (theme === 'dark') {
@@ -151,7 +136,7 @@
         let opts = sidebar.sidemenu('options');
         setSidebarCollapsed(!opts.collapsed);
         let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
-        sidebar.sidemenu('select', selectedMenu);
+        sidebar.sidemenu('setSelected', selectedMenu);
     }
 
     function setSidebarCollapsed(collapse) {
@@ -166,21 +151,6 @@
             width: opts.collapsed ? 50 : 250
         });
         localStorage.setItem('sidebarCollapsed', opts.collapsed);
-    }
-
-    function loadPage(url, title, isMenu = false) {
-        if (!isMenu) {
-            localStorage.removeItem('selectedMenu');
-        }
-        if (url !== current) {
-            window.Observer.notify(window.EventType.DESTROY, url);
-            window.Observer.unsubscribeAll();
-            let state = {url: url, text: title};
-            window.history.pushState({item: state}, title, '#' + url);
-            current = url;
-            $('.wrapper').animate({"opacity": 0});
-            content.panel('refresh', url);
-        }
     }
 </script>
 <script src="{{ asset('assets/js/pages/layout/home.js') }}"></script>

@@ -14,6 +14,10 @@ export class FieldBuilder {
             align: 'left',
             sortable: false,
             validators: [],
+            url: '',
+            textField: '',
+            valueField: '',
+            data: [],
             formatter: null,
             visible: true,
             defaultValue: null,
@@ -58,6 +62,26 @@ export class FieldBuilder {
 
     validators(validators: string[]): FieldBuilder {
         this._field.validators = validators;
+        return this;
+    }
+
+    url(url: string): FieldBuilder {
+        this._field.url = url;
+        return this;
+    }
+
+    textField(textField: string): FieldBuilder {
+        this._field.textField = textField;
+        return this;
+    }
+
+    valueField(valueField: string): FieldBuilder {
+        this._field.valueField = valueField;
+        return this;
+    }
+
+    data(data: any[]): FieldBuilder {
+        this._field.data = data;
         return this;
     }
 

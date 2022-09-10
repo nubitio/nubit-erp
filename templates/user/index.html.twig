@@ -1,5 +1,14 @@
-<div id="wrapper" class="wrapper"></div>
-<script>
-    const user = new window.app.user('wrapper');
-    user.render();
-</script>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Usuarios{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const user = new window.app.user('wrapper');
+            user.render();
+        });
+    </script>
+{% endblock %}

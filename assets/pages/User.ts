@@ -43,16 +43,13 @@ export default class User {
             .type(FormType.TEXT)
             .name('username')
             .label('Username')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.PASSWORD)
             .name('password')
             .label('Password')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('estado')
-            .label('Estado')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -60,11 +57,26 @@ export default class User {
             .label('Pin')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.ENTITY)
             .name('rol_id')
-            .label('Rol id')
+            .label('RolController')
+            .url('api/rol')
+            .textField('descripcion')
+            .valueField('rol_id')
+            .visible(false)
             .build());
-
+        this.fields.push(new FieldBuilder()
+            .type(FormType.HIDDEN)
+            .name('rol')
+            .label('Rol')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.SWITCH)
+            .name('estado')
+            .label('Activo')
+            .formatter(SharedUtils.activeFormatter)
+            .defaultValue(true)
+            .build());
     };
 
     render() {
@@ -74,7 +86,7 @@ export default class User {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'User',
+            title: 'Usuarios',
             url: 'user/get',
             routes: this.ROUTES,
         });

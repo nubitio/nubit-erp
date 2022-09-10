@@ -1,10 +1,13 @@
 export enum FormType {
     HIDDEN = 'hidden',
     TEXT = 'text',
+    PASSWORD = 'password',
     TEXTAREA = 'textarea',
     DATE = 'date',
     NUMBER = 'number',
     SELECT = 'select',
+    ENUM = 'enum',
+    ENTITY = 'entity',
     CHECK = 'check',
     RADIO = 'radio',
     SWITCH = 'switch',

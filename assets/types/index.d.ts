@@ -26,6 +26,7 @@ declare global {
         linkbutton: any;
         filebox: any;
         textbox: any;
+        passwordbox: any;
         datebox: any;
         numberbox: any;
         combobox: any;

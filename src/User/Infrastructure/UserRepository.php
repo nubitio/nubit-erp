@@ -2,9 +2,9 @@
 
 namespace App\User\Infrastructure;
 
-use App\User\Domain\UserRepositoryInterface;
-use App\User\Domain\User;
 use App\Infrastructure\Common\DataGridLoader;
+use App\User\Domain\User;
+use App\User\Domain\UserRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -26,7 +26,7 @@ class UserRepository implements UserRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('usuario', 'username', filter: $filter);
+        return $this->dataGridLoader->load('vw_usuario', 'username', filter: $filter);
     }
 
     /**
@@ -36,6 +36,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $entity = new UserEntity();
         $entity->mapFromDomainModel($user);
+        $entity->password = password_hash($user->password, PASSWORD_DEFAULT);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -46,6 +47,11 @@ class UserRepository implements UserRepositoryInterface
     public function update(User $user): void
     {
         $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
+        if ($user->password !== null && $user->password !== '') {
+            $user->password = password_hash($user->password, PASSWORD_DEFAULT);
+        } else {
+            $user->password = $entity->password;
+        }
         $entity->mapFromDomainModel($user);
         $this->entityManager->flush();
     }

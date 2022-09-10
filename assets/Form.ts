@@ -81,6 +81,9 @@ export default class Form {
                 case FormType.TEXT:
                     this.buildTextInput(field);
                     break;
+                case FormType.PASSWORD:
+                    this.buildPasswordInput(field);
+                    break;
                 case FormType.TEXTAREA:
                     this.buildTextAreaInput(field);
                     break;
@@ -92,6 +95,12 @@ export default class Form {
                     break;
                 case FormType.SELECT:
                     this.buildSelectInput(field);
+                    break;
+                case FormType.ENUM:
+                    this.buildEnumInput(field);
+                    break;
+                case FormType.ENTITY:
+                    this.buildEntityInput(field);
                     break;
                 case FormType.SWITCH:
                     this.buildSwitchInput(field);
@@ -123,6 +132,17 @@ export default class Form {
             label: field.label,
             labelPosition: 'top',
             validType: field.validators,
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildPasswordInput(field) {
+        let input = $('#' + field.name);
+        input.passwordbox({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -181,6 +201,37 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
+    buildEnumInput(field) {
+        let input = $('#' + field.name);
+        input.combobox({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            data: field.data,
+            panelHeight: 200,
+            limitToList: true,
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildEntityInput(field) {
+        let input = $('#' + field.name);
+        input.combobox({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            url: field.url,
+            method: 'get',
+            valueField: field.valueField,
+            textField: field.textField,
+            panelHeight: 200,
+            limitToList: true,
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
     buildSwitchInput(field) {
         let input = $('#' + field.name);
         input.switchbutton({
@@ -224,6 +275,11 @@ export default class Form {
     }
 
     edit(route, row) {
+        this.fields.forEach(field => {
+            if (field.type === FormType.PASSWORD) {
+                row[field.name] = '';
+            }
+        });
         this.form.form('load', row);
         this.route = route + row[this.getIdField()];
     }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Compiler\RemoveUnwantedServices;
+use App\Domain\Compiler\TagControllerServices;
 use App\Kernel;
 use App\Routing\AnnotatedRouteControllerLoader;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -9,17 +10,9 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
-use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\HttpCache\Esi;
-use Symfony\Component\HttpKernel\HttpCache\HttpCache;
-use Symfony\Component\HttpKernel\HttpCache\Store;
 use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
-use Symfony\Component\Routing\Matcher\UrlMatcher;
-use Symfony\Component\Routing\RequestContext;
 
 require_once("../vendor/autoload.php");
 
