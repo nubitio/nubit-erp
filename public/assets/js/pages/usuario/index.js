@@ -37,7 +37,7 @@ app.usuario = (function () {
             },
             {
                 type: window.FormType.SELECT,
-                label: 'Rol',
+                label: 'RolController',
                 name: 'rol_id',
                 data: rolName,
                 required: true,
@@ -45,7 +45,7 @@ app.usuario = (function () {
             },
             {
                 type: window.FormType.HIDDEN,
-                label: 'Rol',
+                label: 'RolController',
                 name: 'rol',
                 visible: true
             },

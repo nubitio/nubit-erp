@@ -18,21 +18,21 @@ class UserEntity
     #[Id]
     #[GeneratedValue]
     #[Column(name: "usuario_id", type: "integer")]
-    private ?int $usuario_id;
+    public ?int $usuario_id;
     #[Column(name: "username", type: "string")]
-    private ?string $username;
+    public ?string $username;
     #[Column(name: "password", type: "string")]
-    private ?string $password;
+    public ?string $password;
     #[Column(name: "estado", type: "boolean")]
-    private ?bool $estado;
+    public ?bool $estado;
     #[Column(name: "date_created", type: "datetime")]
-    private ?\DateTime $date_created;
+    public ?\DateTime $date_created;
     #[Column(name: "date_updated", type: "datetime")]
-    private ?\DateTime $date_updated;
+    public ?\DateTime $date_updated;
     #[Column(name: "pin", type: "string")]
-    private ?string $pin;
+    public ?string $pin;
     #[Column(name: "rol_id", type: "integer")]
-    private ?int $rol_id;
+    public ?int $rol_id;
 
     public function mapToDomainModel(): User
     {

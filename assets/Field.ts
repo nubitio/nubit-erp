@@ -9,6 +9,10 @@ export interface Field {
     align: string;
     sortable: boolean;
     validators: string[];
+    url: string;
+    textField: string;
+    valueField: string;
+    data: any[];
     formatter: any;
     visible: boolean;
     defaultValue: any;

@@ -6,6 +6,7 @@ import {SharedUtils} from "../SharedUtils";
 import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {ConsultService} from "../services/consult.service";
 
 export default class Company {
     private container: string;
@@ -14,6 +15,7 @@ export default class Company {
     private dialog: Dialog;
     private form: Form;
     private options: any = {};
+    private consultService: ConsultService = new ConsultService();
 
     public ROUTES = {
         ADD: 'company/add',
@@ -48,16 +50,12 @@ export default class Company {
             .type(FormType.TEXT)
             .name('razon_social')
             .label('Razon social')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('nombre_comercial')
             .label('Nombre comercial')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('ubigeo')
-            .label('Ubigeo')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -70,31 +68,17 @@ export default class Company {
             .label('Telefono')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.FILE)
             .name('logo')
             .label('Logo')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('certificado')
-            .label('Certificado')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('sunat_user')
-            .label('Sunat user')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('sunat_password')
-            .label('Sunat password')
-            .build());
-        this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
             .name('estado')
-            .label('Estado')
+            .label('Activo')
+            .formatter(SharedUtils.activeFormatter)
+            .defaultValue(true)
             .build());
-
     };
 
     render() {
@@ -104,15 +88,40 @@ export default class Company {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Company',
+            title: 'Empresas',
             url: 'company/get',
             routes: this.ROUTES,
         });
     }
 
     renderDialog() {
+        let ref = this;
         this.dialog = new Dialog(this.container, this.options);
 
         this.form = new Form(this.dialog.id, this.fields);
+
+        let rucField = this.form.getField('ruc').textbox({
+            icons: [{
+                iconCls: Constants.ICON_SEARCH,
+                handler: function (e) {
+                    ref.getRucInfo(rucField.textbox('getValue'));
+                }
+            }]
+        });
+
+        rucField.textbox('textbox').bind('keyup', function (e) {
+            if (e.keyCode === 13) {
+                ref.getRucInfo(rucField.textbox('getValue'));
+            }
+        });
+    }
+
+    getRucInfo(ruc: string) {
+        this.consultService.consultRuc(ruc)
+            .subscribe((data) => {
+                this.form.getField('razon_social').textbox('setValue', data.razonSocial);
+                this.form.getField('nombre_comercial').textbox('setValue', data.nombreComercial);
+                this.form.getField('domicilio_fiscal').textbox('setValue', data.direccion);
+            });
     }
 }

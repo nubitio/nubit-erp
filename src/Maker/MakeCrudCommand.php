@@ -135,7 +135,7 @@ class MakeCrudCommand extends Command
                     $entityFields .= "    #[GeneratedValue]\n";
                 }
                 $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
-                $entityFields .= "    private ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
+                $entityFields .= "    public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
                 $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
                 $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . strtolower($module) . "->" . $column->getName() . ";\n";
             }

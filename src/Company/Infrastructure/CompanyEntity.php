@@ -18,29 +18,29 @@ class CompanyEntity
     #[Id]
     #[GeneratedValue]
     #[Column(name: "empresa_id", type: "string")]
-    private ?string $empresa_id;
+    public ?string $empresa_id;
     #[Column(name: "ruc", type: "string")]
-    private ?string $ruc;
+    public ?string $ruc;
     #[Column(name: "razon_social", type: "string")]
-    private ?string $razon_social;
+    public ?string $razon_social;
     #[Column(name: "nombre_comercial", type: "string")]
-    private ?string $nombre_comercial;
+    public ?string $nombre_comercial;
     #[Column(name: "ubigeo", type: "string")]
-    private ?string $ubigeo;
+    public ?string $ubigeo;
     #[Column(name: "domicilio_fiscal", type: "string")]
-    private ?string $domicilio_fiscal;
+    public ?string $domicilio_fiscal;
     #[Column(name: "telefono", type: "string")]
-    private ?string $telefono;
+    public ?string $telefono;
     #[Column(name: "logo", type: "string")]
-    private ?string $logo;
+    public ?string $logo;
     #[Column(name: "certificado", type: "string")]
-    private ?string $certificado;
+    public ?string $certificado;
     #[Column(name: "sunat_user", type: "string")]
-    private ?string $sunat_user;
+    public ?string $sunat_user;
     #[Column(name: "sunat_password", type: "string")]
-    private ?string $sunat_password;
+    public ?string $sunat_password;
     #[Column(name: "estado", type: "boolean")]
-    private ?bool $estado;
+    public ?bool $estado;
 
     public function mapToDomainModel(): Company
     {

@@ -157,7 +157,7 @@ $.extend($.fn.validatebox.defaults.rules, {
 });
 
 $.extend($.fn.sidemenu.methods, {
-    select: function (jq, item) {
+    setSelected: function (jq, item) {
         let accordion = $('.sidemenu .accordion');
         accordion.accordion('select', item.parent);
         let selected = accordion.accordion('getPanel', item.parent);
