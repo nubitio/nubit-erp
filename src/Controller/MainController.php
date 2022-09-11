@@ -29,14 +29,7 @@ class MainController extends BaseController
     function index()
     {
         if ($this->check_local()) {
-            $rol_id = $this->app->get('SESSION.rol_id');
-            $menus = $this->menu->lista_rol($rol_id);
-            $this->app->set('menus', $menus);
-            $this->app->set('view', 'dashboard/index.html');
-            $this->render('layout/base.html.twig', [
-                'title'   => $this->app->get('TITLE'),
-                'session' => $this->app->get('SESSION')
-            ]);
+            $this->render('dashboard/index.html.twig');
         } else {
             $this->app->clear('SESSION');
             $this->app->reroute('/login');

@@ -20,6 +20,7 @@ import VoucherType from "./pages/VoucherType";
 import VoucherSeries from "./pages/VoucherSeries";
 import Supplier from "./pages/Supplier";
 import Product from "./pages/Product";
+import Sale from "./pages/Sale";
 
 window.Observer = new Observable();
 window.DataGrid = DataGrid;
@@ -44,3 +45,4 @@ window.app.vouchertype = VoucherType;
 window.app.voucherseries = VoucherSeries;
 window.app.supplier = Supplier;
 window.app.product = Product;
+window.app.sale = Sale;
