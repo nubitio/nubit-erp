@@ -6,7 +6,7 @@ use App\Domain\Service\SerializerService;
 use App\Extension\AppExtension;
 use App\Model\OptionsModel;
 use App\Service\OptionBuilder;
-use App\Service\UploaderHelper;
+use App\Service\FileUploader;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -31,7 +31,7 @@ abstract class BaseController
     protected ContainerInterface $container;
     protected OptionsModel $options;
     protected SerializerService $serializer;
-    protected UploaderHelper $uploader;
+    protected FileUploader $uploader;
     protected Request $request;
     protected $current_user_id;
     protected $current_local_id;
@@ -68,7 +68,7 @@ abstract class BaseController
 
         $this->options = new OptionsModel();
         $this->serializer = $this->container->get(SerializerService::class);
-        $this->uploader = $this->container->get(UploaderHelper::class);
+        $this->uploader = $this->container->get(FileUploader::class);
 
         $this->current_user_id = $this->app->get('SESSION.usuario_id');
         $this->current_local_id = $this->app->get('SESSION.local_id');

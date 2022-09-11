@@ -1,5 +1,14 @@
-<div id="wrapper" class="wrapper"></div>
-<script>
-    const warehouse = new window.app.warehouse('wrapper');
-    warehouse.render();
-</script>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Warehouse{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const warehouse = new window.app.warehouse('wrapper');
+            warehouse.render();
+        });
+    </script>
+{% endblock %}

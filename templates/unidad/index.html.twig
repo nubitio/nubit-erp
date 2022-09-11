@@ -1,15 +1,19 @@
-<div class="wrapper">
-    <table id="unidad_dg"></table>
-    <!-- Dialogo -->
-    <div id="unidad_dlg">
-        <form class="fm" id="unidad_fm" method="post" novalidate>
-            <div class="fitem">
-                <input id="unidad_descripcion" name="descripcion">
-            </div>
-            <div class="fitem">
-                <input id="unidad_estado" name="estado">
-            </div>
-        </form>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Unidad{% endblock %}
+{% block body %}
+    <div class="wrapper">
+        <table id="unidad_dg"></table>
+        <!-- Dialogo -->
+        <div id="unidad_dlg">
+            <form class="fm" id="unidad_fm" method="post" novalidate>
+                <div class="fitem">
+                    <input id="unidad_descripcion" name="descripcion">
+                </div>
+                <div class="fitem">
+                    <input id="unidad_estado" name="estado">
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-<script src="{{ asset('assets/js/pages/unidad/index.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/unidad/index.js') }}"></script>
+{% endblock %}

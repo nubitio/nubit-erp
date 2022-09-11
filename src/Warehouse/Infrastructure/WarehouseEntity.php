@@ -18,17 +18,17 @@ class WarehouseEntity
     #[Id]
     #[GeneratedValue]
     #[Column(name: "almacen_id", type: "string")]
-    private ?string $almacen_id;
+    public ?string $almacen_id;
     #[Column(name: "local_id", type: "string")]
-    private ?string $local_id;
+    public ?string $local_id;
     #[Column(name: "descripcion", type: "string")]
-    private ?string $descripcion;
+    public ?string $descripcion;
     #[Column(name: "tipo_id", type: "integer")]
-    private ?int $tipo_id;
+    public ?int $tipo_id;
     #[Column(name: "is_default", type: "boolean")]
-    private ?bool $is_default;
+    public ?bool $is_default;
     #[Column(name: "estado", type: "boolean")]
-    private ?bool $estado;
+    public ?bool $estado;
 
     public function mapToDomainModel(): Warehouse
     {

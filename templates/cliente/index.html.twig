@@ -1,6 +1,12 @@
-<div id="wrapper" class="wrapper">
-</div>
-<script>
-    const customer = new window.app.customer('wrapper');
-    customer.render();
-</script>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Cliente{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper">
+    </div>
+    <script>
+        window.addEventListener('load', function () {
+            const customer = new window.app.customer('wrapper');
+            customer.render();
+        });
+    </script>
+{% endblock %}

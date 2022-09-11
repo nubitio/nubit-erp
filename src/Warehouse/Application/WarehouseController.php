@@ -2,13 +2,16 @@
 
 namespace App\Warehouse\Application;
 
-use App\Controller\BaseController;
+use App\Base\BaseController;
 use App\Warehouse\Domain\WarehouseGetAllUseCase;
 use App\Warehouse\Domain\WarehouseCreateUseCase;
 use App\Warehouse\Domain\WarehouseUpdateUseCase;
 use App\Warehouse\Domain\WarehouseDeleteUseCase;
 use App\Warehouse\Domain\Warehouse;
 use App\Util\Constants;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class WarehouseController extends BaseController
 {
@@ -17,45 +20,49 @@ class WarehouseController extends BaseController
         parent::__construct();
     }
 
-    public function index()
+    #[Route('/warehouse', name: 'warehouse_index', methods: ['GET'])]
+    public function index(): Response
     {
-        $this->render('warehouse/index.html.twig');
+        return $this->render('warehouse/index.html.twig');
     }
 
-    public function getAll()
+    #[Route('/warehouse/get', name: 'warehouse_list', methods: ['POST'])]
+    public function getAll(): Response
     {
         $getAllUseCase = $this->container->get(WarehouseGetAllUseCase::class);
-        $this->json($getAllUseCase());
+        return $this->json($getAllUseCase());
     }
 
-    public function add()
+    #[Route('/warehouse/add', name: 'warehouse_create', methods: ['POST'])]
+    public function add(Request $request): Response
     {
         /**
          * @var Warehouse $warehouse
          */
-        $warehouse = $this->serializer->deserialize(json_encode($_POST), Warehouse::class, 'json');
+        $warehouse = $this->serializer->deserialize(json_encode($request->request->all()), Warehouse::class, 'json');
         $createUseCase = $this->container->get(WarehouseCreateUseCase::class);
         $createUseCase($warehouse);
-        $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
+        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    public function edit()
+    #[Route('/warehouse/edit/{id}', name: 'warehouse_update', methods: ['POST'])]
+    public function edit(Request $request, $id): Response
     {
-        $_POST['almacen_id'] = $this->app->get('PARAMS.id');
+        $request->request->add(['almacen_id' => $id]);
         /**
          * @var Warehouse $warehouse
          */
-        $warehouse = $this->serializer->deserialize(json_encode($_POST), Warehouse::class, 'json');
+        $warehouse = $this->serializer->deserialize(json_encode($request->request->all()), Warehouse::class, 'json');
         $updateUseCase = $this->container->get(WarehouseUpdateUseCase::class);
         $updateUseCase($warehouse);
-        $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
+        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    public function delete()
+    #[Route('/warehouse/delete/{id}', name: 'warehouse_delete', methods: ['POST'])]
+    public function delete($id): Response
     {
-        $id = $this->app->get('PARAMS.id');
         $deleteUseCase = $this->container->get(WarehouseDeleteUseCase::class);
         $deleteUseCase($id);
-        $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }
