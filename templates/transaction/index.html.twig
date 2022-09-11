@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Transaction{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const transaction = new window.app.transaction('wrapper');
+            transaction.render();
+        });
+    </script>
+{% endblock %}

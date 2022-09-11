@@ -68,7 +68,7 @@ class ProductoController extends BaseController
         $_POST['producto_id'] = Uuid::v4();
         $_POST['tipo_id'] = 2;
         if (!empty($_FILES['imagen']['name'])) {
-            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+            $_POST['imagen'] = $this->uploader->upload($_FILES['imagen'], 'uploads/images');
         }
         /**
          * @var Product $product
@@ -83,7 +83,7 @@ class ProductoController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $_POST['producto_id'] = $id;
         if (!empty($_FILES['imagen']['name'])) {
-            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+            $_POST['imagen'] = $this->uploader->upload($_FILES['imagen'], 'uploads/images');
         }
         /**
          * @var Product $product

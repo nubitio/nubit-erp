@@ -1,3 +1,14 @@
-<div id="wrapper" class="wrapper">
-</div>
-<script src="{{ asset('assets/js/pages/local/index.js') }}"></script>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Local{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const local = new window.app.local('wrapper');
+            local.render();
+        });
+    </script>
+{% endblock %}

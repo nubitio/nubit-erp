@@ -1,0 +1,24 @@
+<?php
+
+namespace App\VoucherSeries\Domain;
+
+use App\Domain\Annotation\IgnoreAutowire;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+
+#[IgnoreAutowire]
+class VoucherSeries
+{
+    public function __construct(
+        #[SerializedName('local_id')]
+        public ?string $local_id,
+        #[SerializedName('tipo_comprobante_id')]
+        public ?string $tipo_comprobante_id,
+        #[SerializedName('serie')]
+        public ?string $serie,
+        #[SerializedName('serie_asociada')]
+        public ?string $serie_asociada,
+
+    )
+    {
+    }
+}

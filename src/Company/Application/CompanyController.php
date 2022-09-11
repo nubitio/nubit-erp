@@ -3,11 +3,12 @@
 namespace App\Company\Application;
 
 use App\Base\BaseController;
-use App\Company\Domain\CompanyGetAllUseCase;
-use App\Company\Domain\CompanyCreateUseCase;
-use App\Company\Domain\CompanyUpdateUseCase;
-use App\Company\Domain\CompanyDeleteUseCase;
 use App\Company\Domain\Company;
+use App\Company\Domain\CompanyCreateUseCase;
+use App\Company\Domain\CompanyDeleteUseCase;
+use App\Company\Domain\CompanyGetAllUseCase;
+use App\Company\Domain\CompanyUpdateUseCase;
+use App\Service\FileUploader;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,6 +37,12 @@ class CompanyController extends BaseController
     #[Route('/company/add', name: 'company_create', methods: ['POST'])]
     public function add(Request $request): Response
     {
+        $fileUploader = $this->container->get(FileUploader::class);
+        $logoFile = $request->files->get('logo');
+        if ($logoFile) {
+            $logo = $fileUploader->upload($logoFile, Constants::IMAGE_UPLOAD_DIR);
+            $request->request->set('logo', $logo);
+        }
         /**
          * @var Company $company
          */
@@ -48,6 +55,12 @@ class CompanyController extends BaseController
     #[Route('/company/edit/{id}', name: 'company_update', methods: ['POST'])]
     public function edit(Request $request, $id): Response
     {
+        $fileUploader = $this->container->get(FileUploader::class);
+        $logoFile = $request->files->get('logo');
+        if ($logoFile) {
+            $logo = $fileUploader->upload($logoFile, Constants::IMAGE_UPLOAD_DIR);
+            $request->request->set('logo', $logo);
+        }
         $request->request->add(['empresa_id' => $id]);
         /**
          * @var Company $company

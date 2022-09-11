@@ -1,7 +1,11 @@
-<div id="wrapper" class="wrapper">
-    <!-- Dialogo permiso -->
-    <div id="rol_menu_dlg">
-        <table id="rol_menu_tg"></table>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Rol{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper">
+        <!-- Dialogo permiso -->
+        <div id="rol_menu_dlg">
+            <table id="rol_menu_tg"></table>
+        </div>
     </div>
-</div>
-<script src="{{ asset('assets/js/pages/rol/index.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/rol/index.js') }}" defer></script>
+{% endblock %}

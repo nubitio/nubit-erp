@@ -130,7 +130,7 @@ class ApiController extends BaseController
     {
         $_POST['categoria_id'] = $this->app->get('PARAMS.id');
         if (!empty($_FILES['imagen']['name'])) {
-            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+            $_POST['imagen'] = $this->uploader->upload($_FILES['imagen'], 'uploads/images');
         }
         /**
          * @var Category $category
@@ -199,7 +199,7 @@ class ApiController extends BaseController
     {
         $_POST['customer_id'] = $this->app->get('PARAMS.id');
         if (!empty($_FILES['imagen']['name'])) {
-            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+            $_POST['imagen'] = $this->uploader->upload($_FILES['imagen'], 'uploads/images');
         }
         /**
          * @var Customer $customer
@@ -275,7 +275,7 @@ class ApiController extends BaseController
     {
         $_POST['producto_id'] = $this->app->get('PARAMS.id');
         if (!empty($_FILES['imagen']['name'])) {
-            $_POST['imagen'] = $this->uploader->uploadFile($_FILES['imagen'], 'uploads/images');
+            $_POST['imagen'] = $this->uploader->upload($_FILES['imagen'], 'uploads/images');
         }
 
         /**

@@ -3,7 +3,6 @@ import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
 import {SharedUtils} from "../SharedUtils";
-import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
@@ -16,7 +15,7 @@ export default class Warehouse {
     private options: any = {};
 
     public ROUTES = {
-        ADD: 'warehouse/add/',
+        ADD: 'warehouse/add',
         EDIT: 'warehouse/edit/',
         DELETE: 'warehouse/delete/',
     }
@@ -40,15 +39,23 @@ export default class Warehouse {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.ENTITY)
             .name('local_id')
-            .label('Local id')
+            .label('Local')
+            .required(true)
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.HIDDEN)
+            .name('local')
+            .label('Local')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('descripcion')
             .label('Descripcion')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NUMBER)
@@ -63,9 +70,10 @@ export default class Warehouse {
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
             .name('estado')
-            .label('Estado')
+            .label('Activo')
+            .formatter(SharedUtils.activeFormatter)
+            .defaultValue(true)
             .build());
-
     };
 
     render() {
@@ -75,7 +83,7 @@ export default class Warehouse {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Warehouse',
+            title: 'Almacenes',
             url: 'warehouse/get',
             routes: this.ROUTES,
         });

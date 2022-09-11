@@ -13,4 +13,16 @@ export class SharedUtils {
             return '<span class="badge rounded-pill bg-danger">NO</span>';
         }
     }
+
+    static imageFormatter(image, name, path = '') {
+        if (image) {
+            return `<a href="${path}${image}" data-lightbox="${name}">
+                    <img src="${path}${image}" style="width: 30px; height: 30px;"  alt=""/>
+                </a>`;
+        } else {
+            return `<a href="https://ui-avatars.com/api/?name=${name}" data-lightbox="${name}">
+                    <img src="https://ui-avatars.com/api/?name=${name}" style="width: 30px; height: 30px;"  alt=""/>
+                </a>`;
+        }
+    }
 }

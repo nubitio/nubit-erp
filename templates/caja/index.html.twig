@@ -1,32 +1,36 @@
-<div class="wrapper">
-    <form id="caja_fm_pr" method="post" novalidate style="visibility: hidden">
-        <input type="hidden" name="caja_id" id="caja_id">
-    </form>
-    <table id="caja_dg" data-options="border:false"></table>
-    <!-- Dialogo -->
-    <div id="caja_dlg">
-        <form class="fm" id="caja_fm" method="post" novalidate>
-            <div class="fitem">
-                <input id="caja_tipo" name="tipo_id">
-            </div>
-            <div class="fitem">
-                <input id="caja_descripcion" name="descripcion">
-            </div>
-            <div class="fitem">
-                <input id="caja_referencia" name="referencia">
-            </div>
-            <div class="fitem">
-                <input id="caja_monto" name="monto">
-            </div>
+{% extends 'layout/base.html.twig' %}
+{% block title %}Caja{% endblock %}
+{% block body %}
+    <div class="wrapper">
+        <form id="caja_fm_pr" method="post" novalidate style="visibility: hidden">
+            <input type="hidden" name="caja_id" id="caja_id">
         </form>
+        <table id="caja_dg" data-options="border:false"></table>
+        <!-- Dialogo -->
+        <div id="caja_dlg">
+            <form class="fm" id="caja_fm" method="post" novalidate>
+                <div class="fitem">
+                    <input id="caja_tipo" name="tipo_id">
+                </div>
+                <div class="fitem">
+                    <input id="caja_descripcion" name="descripcion">
+                </div>
+                <div class="fitem">
+                    <input id="caja_referencia" name="referencia">
+                </div>
+                <div class="fitem">
+                    <input id="caja_monto" name="monto">
+                </div>
+            </form>
+        </div>
+        <!--Dialogo Abrir caja-->
+        <div id="abrir_dlg">
+            <form class="fm" id="abrir_fm" method="post" novalidate>
+                <div class="fitem">
+                    <input id="saldo_inicial" name="saldo_inicial">
+                </div>
+            </form>
+        </div>
     </div>
-    <!--Dialogo Abrir caja-->
-    <div id="abrir_dlg">
-        <form class="fm" id="abrir_fm" method="post" novalidate>
-            <div class="fitem">
-                <input id="saldo_inicial" name="saldo_inicial">
-            </div>
-        </form>
-    </div>
-</div>
-<script src="{{ asset('assets/js/pages/caja/index.js') }}"></script>
+    <script src="{{ asset('assets/js/pages/caja/index.js') }}"></script>
+{% endblock %}
