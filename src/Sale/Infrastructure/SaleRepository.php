@@ -26,7 +26,7 @@ class SaleRepository implements SaleRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('movimiento', 'date_created', filter: $filter);
+        return $this->dataGridLoader->load('vw_movimiento', 'date_created', filter: $filter);
     }
 
     /**

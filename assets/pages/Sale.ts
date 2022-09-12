@@ -2,10 +2,9 @@ import DataGrid from "../DataGrid";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
-import {SharedUtils} from "../SharedUtils";
-import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {SharedUtils} from "../SharedUtils";
 
 export default class Sale {
     private container: string;
@@ -43,21 +42,25 @@ export default class Sale {
             .type(FormType.TEXT)
             .name('operacion_id')
             .label('Operacion id')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('almacen_id')
             .label('Almacen id')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('cliente_id')
             .label('Cliente id')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('tipo_id')
             .label('Tipo id')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.DATE)
@@ -65,76 +68,53 @@ export default class Sale {
             .label('Fecha')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('proveedor_id')
-            .label('Proveedor id')
+            .type(FormType.HIDDEN)
+            .name('cliente')
+            .label('Cliente')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('tipo_pago')
-            .label('Tipo pago')
+            .label('Pago')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('tipo_tarjeta')
             .label('Tipo tarjeta')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.HIDDEN)
             .name('serie')
-            .label('Serie')
+            .label('Voucher')
+            .formatter(SharedUtils.voucherFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('numero')
-            .label('Numero')
+            .type(FormType.HIDDEN)
+            .name('iserie')
+            .label('Comprobante')
+            .formatter(SharedUtils.invoiceFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('descuento')
-            .label('Descuento')
+            .type(FormType.HIDDEN)
+            .name('gravada')
+            .label('Total')
+            .align('right')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('glosa')
             .label('Glosa')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('orden_id')
-            .label('Orden id')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('has_invoice')
-            .label('Has invoice')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('is_consume')
-            .label('Is consume')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('caja_id')
-            .label('Caja id')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
             .name('estado')
             .label('Estado')
+            .formatter(SharedUtils.invoiceStatusFormatter)
+            .align('center')
             .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('igv')
-            .label('Igv')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('recargo_consumo')
-            .label('Recargo consumo')
-            .build());
-
     };
 
     render() {

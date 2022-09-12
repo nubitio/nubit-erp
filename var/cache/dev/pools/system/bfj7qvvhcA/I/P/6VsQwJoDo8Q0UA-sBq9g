@@ -1,0 +1,3 @@
+<?php //App%255CUtil%255CSluggerFactory%2523createSlugger
+
+return [PHP_INT_MAX, []];

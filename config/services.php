@@ -30,7 +30,7 @@ return function (ContainerConfigurator $configurator) {
         ->public();
 
     $services->load('App\\', '../src/')
-        ->exclude('../src/{Entity,Util,WebClientPrint.php}');
+        ->exclude('../src/{Entity,Util,Extension,Kernel,php,WebClientPrint.php}');
 
     $services->set(EntityManagerInterface::class)
         ->factory([DataBaseFactory::class, 'createManager']);

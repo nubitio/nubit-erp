@@ -1,0 +1,3 @@
+<?php //App%255CDomain%255CEntryFactory%2523create
+
+return [PHP_INT_MAX, []];

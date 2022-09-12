@@ -1,0 +1,3 @@
+<?php //App%255CDomain%255CCommon%255CEmailDto%2523getBcc
+
+return [PHP_INT_MAX, []];

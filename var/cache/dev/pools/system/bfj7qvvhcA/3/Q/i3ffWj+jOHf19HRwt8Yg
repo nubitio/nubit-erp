@@ -1,0 +1,3 @@
+<?php //App%255CUnit%255CInfrastructure%255CUnitEntity
+
+return [PHP_INT_MAX, []];

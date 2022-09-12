@@ -31,14 +31,14 @@ class MainController extends BaseController
         if ($this->check_local()) {
             $this->render('dashboard/index.html.twig');
         } else {
-            $this->app->clear('SESSION');
+            $this->session->clear();
             $this->app->reroute('/login');
         }
     }
 
     function check_local()
     {
-        if (!empty($this->app->get('SESSION.local_id'))) {
+        if (!empty($this->session->get('local_id'))) {
             return true;
         } else {
             return false;
@@ -51,16 +51,16 @@ class MainController extends BaseController
         if (!empty($local_id)) {
             $local = $this->local->get_by_id($local_id);
             $almacen = $this->almacen->get_by_local($local_id);
-            $this->app->set('SESSION.local_id', $local_id);
-            $this->app->set('SESSION.local', $local[0]['descripcion']);
-            $this->app->set('SESSION.default_almacen', $almacen[0]['almacen_id']);
+            $this->session->set('local_id', $local_id);
+            $this->session->set('local', $local[0]['descripcion']);
+            $this->session->set('default_almacen', $almacen[0]['almacen_id']);
             $data = [
-                "usuario_id" => $this->app->get('SESSION.usuario_id'),
-                "usuario"    => $this->app->get('SESSION.usuario'),
-                "rol_id"     => $this->app->get('SESSION.rol_id'),
-                "local_id"   => $this->app->get('SESSION.local_id'),
-                "local"      => $this->app->get('SESSION.local'),
-                "almacen_id" => $this->app->get('SESSION.default_almacen')
+                "usuario_id" => $this->session->get('usuario_id'),
+                "usuario"    => $this->session->get('usuario'),
+                "rol_id"     => $this->session->get('rol_id'),
+                "local_id"   => $this->session->get('local_id'),
+                "local"      => $this->session->get('local'),
+                "almacen_id" => $this->session->get('default_almacen')
             ];
             $this->json(array('success' => true, "data" => $data));
         } else {
@@ -75,7 +75,7 @@ class MainController extends BaseController
 
     function get_menu()
     {
-        $rol = $this->app->get('SESSION.rol_id');
+        $rol = $this->session->get('rol_id');
         $result = $this->menu->lista_rol($rol);
         if ($result["success"]) {
             $data = [];

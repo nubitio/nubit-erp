@@ -1,47 +1,15 @@
 #!/usr/bin/env php
 <?php
 
-use App\Command\DemoCommand;
-use App\Command\InvoiceCalculatorCommand;
-use App\Command\InvoiceUpdateCommand;
-use App\Command\SendEmailCommand;
-use App\Command\SendSmsCommand;
-use App\Command\SendWhatsAppCommand;
-use App\Domain\Compiler\RemoveUnwantedServices;
-use App\Maker\MakeCrudCommand;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\Console\Application;
-use Symfony\Component\Console\CommandLoader\ContainerCommandLoader;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
+use App\Kernel;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Dotenv\Dotenv;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
-$app = new Application();
-
 $dotenv = new Dotenv();
 $dotenv->loadEnv(__DIR__ . '/../.env');
 
-$containerBuilder = new ContainerBuilder();
-
-$loader = new PhpFileLoader($containerBuilder, new FileLocator(__DIR__));
-$loader->load(__DIR__ . '/../config/services.php');
-
-$containerBuilder->addCompilerPass(new RemoveUnwantedServices());
-$containerBuilder->compile();
-
-$commandLoader = new ContainerCommandLoader(
-    $containerBuilder, [
-        'app:run-demo'       => DemoCommand::class,
-        'app:update-invoice' => InvoiceUpdateCommand::class,
-        'app:send-email'     => SendEmailCommand::class,
-        'app:send-sms'       => SendSmsCommand::class,
-        'app:send-whatsapp'  => SendWhatsAppCommand::class,
-        'app:make-crud'      => MakeCrudCommand::class,
-        'app:invoice-calc'      => InvoiceCalculatorCommand::class,
-    ]
-);
-
-$app->setCommandLoader($commandLoader);
+$kernel = new Kernel('dev', true);
+$app = new Application($kernel);
 $app->run();

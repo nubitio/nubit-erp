@@ -1,23 +1,43 @@
 <?php
 
+use App\Domain\Compiler\RemoveUnwantedControllers;
 use App\Domain\Compiler\RemoveUnwantedServices;
-use App\Domain\Compiler\TagControllerServices;
 use App\Kernel;
-use App\Routing\AnnotatedRouteControllerLoader;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
 
 require_once("../vendor/autoload.php");
 
 $dotenv = new Dotenv();
 $dotenv->loadEnv(__DIR__ . '/../.env');
+
+$session = new Session();
+$session->start();
+
+$request = Request::createFromGlobals();
+$request->setSession($session);
+
+$kernel = new Kernel('dev', true);
+
+try {
+    $response = $kernel->handle($request);
+    if ($response->getStatusCode() !== 404) {
+        $response->send();
+        $kernel->terminate($request, $response);
+        exit();
+    }
+} catch (Exception $e) {
+    dd($e);
+    if (!$e instanceof NotFoundHttpException) {
+        throw $e;
+    }
+}
 
 // Retrieve instance of the framework
 /** @var Base $app */
@@ -41,29 +61,8 @@ try {
 }
 
 $containerBuilder->addCompilerPass(new RemoveUnwantedServices());
+$containerBuilder->addCompilerPass(new RemoveUnwantedControllers());
 $containerBuilder->compile();
-
-$loader = new AnnotationDirectoryLoader(
-    new FileLocator(dirname(__FILE__, 2) . '/src'),
-    new AnnotatedRouteControllerLoader(new AnnotationReader())
-);
-
-$routes = $loader->load(dirname(__FILE__, 2) . '/src');
-$request = Request::createFromGlobals();
-
-$kernel = new Kernel($routes, $containerBuilder);
-
-try {
-    $response = $kernel->handle($request);
-    if ($response->getStatusCode() === 200) {
-        $response->send();
-        exit();
-    }
-} catch (Exception $e) {
-    if (!$e instanceof NotFoundHttpException) {
-        throw $e;
-    }
-}
 
 $app->set('request', $request);
 $app->set('di', $containerBuilder);

@@ -1,0 +1,3 @@
+<?php //App%255CUser%255CInfrastructure%255CUserEntity%2523mapToDomainModel
+
+return [PHP_INT_MAX, []];

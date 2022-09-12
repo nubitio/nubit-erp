@@ -1,0 +1,3 @@
+<?php //App%255CSale%255CInfrastructure%255CSaleEntity
+
+return [PHP_INT_MAX, []];
