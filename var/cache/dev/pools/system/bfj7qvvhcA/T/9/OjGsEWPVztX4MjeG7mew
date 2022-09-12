@@ -1,0 +1,3 @@
+<?php //App%255CLocal%255CApplication%255CLocalController%2523delete
+
+return [PHP_INT_MAX, []];

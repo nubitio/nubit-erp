@@ -1,0 +1,3 @@
+<?php //App%255CLocal%255CDomain%255CLocalUpdateUseCase
+
+return [PHP_INT_MAX, []];

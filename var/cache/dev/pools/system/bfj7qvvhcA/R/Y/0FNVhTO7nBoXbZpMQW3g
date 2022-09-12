@@ -1,0 +1,3 @@
+<?php //App%255CCommand%255CSendSmsCommand
+
+return [PHP_INT_MAX, []];

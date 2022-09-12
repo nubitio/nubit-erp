@@ -1,0 +1,3 @@
+<?php //Symfony%255CContracts%255CEventDispatcher%255CEvent%2523stopPropagation
+
+return [PHP_INT_MAX, []];

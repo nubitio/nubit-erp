@@ -1,0 +1,3 @@
+<?php //%5BC%5DApp%255CDomain%255CCompiler%255CRemoveUnwantedControllers
+
+return [PHP_INT_MAX, 1662958108];

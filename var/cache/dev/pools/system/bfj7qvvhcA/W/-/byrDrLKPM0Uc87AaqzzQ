@@ -1,0 +1,3 @@
+<?php //App%255CCommand%255CInvoiceCalculatorCommand%2523configure
+
+return [PHP_INT_MAX, []];

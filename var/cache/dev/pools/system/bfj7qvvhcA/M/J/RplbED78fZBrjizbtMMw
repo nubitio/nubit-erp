@@ -1,0 +1,3 @@
+<?php //App%255CDomain%255CInvoice%255CInvoiceAmounts%2523setDiscountAmount
+
+return [PHP_INT_MAX, []];

@@ -1,0 +1,3 @@
+<?php //App%255CController%255CApiController%2523getWeeklySales
+
+return [PHP_INT_MAX, []];

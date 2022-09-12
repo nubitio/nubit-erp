@@ -25,4 +25,35 @@ export class SharedUtils {
                 </a>`;
         }
     }
+
+    static voucherFormatter(value, row) {
+        if (value !== null) {
+            return '<a href="/sale/order/' + row.movimiento_id + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row.serie + '-' + row.numero + '</a>';
+        } else {
+            return '';
+        }
+    }
+
+    static invoiceFormatter(value, row) {
+        if (value !== null) {
+            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + row.iserie + '-' + row.inumero + '</a>';
+        } else {
+            return '';
+        }
+    }
+
+    static invoiceStatusFormatter(value, row) {
+        if (value === null) {
+            value = -1
+        } else {
+            value = Number(value);
+        }
+        if (value === 1) {
+            return '<span class="badge rounded-pill bg-success">INGRESADO</span>';
+        } else if (value === 2) {
+            return '<span class="badge rounded-pill bg-danger">ANULADO</span>';
+        } else {
+            return '';
+        }
+    }
 }

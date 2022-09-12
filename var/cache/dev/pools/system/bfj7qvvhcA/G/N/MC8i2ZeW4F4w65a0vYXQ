@@ -1,0 +1,3 @@
+<?php //App%255CController%255CSyncController%2523sync_server
+
+return [PHP_INT_MAX, []];

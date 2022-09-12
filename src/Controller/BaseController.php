@@ -5,8 +5,8 @@ namespace App\Controller;
 use App\Domain\Service\SerializerService;
 use App\Extension\AppExtension;
 use App\Model\OptionsModel;
-use App\Service\OptionBuilder;
 use App\Service\FileUploader;
+use App\Service\OptionBuilder;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -20,6 +20,7 @@ use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\Asset\VersionStrategy\StaticVersionStrategy;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\WebpackEncoreBundle\Twig\EntryFilesTwigExtension;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -33,13 +34,14 @@ abstract class BaseController
     protected SerializerService $serializer;
     protected FileUploader $uploader;
     protected Request $request;
+    protected Session $session;
     protected $current_user_id;
     protected $current_local_id;
     protected $current_almacen_id;
 
     public function beforeroute()
     {
-        if ($this->app->get('SESSION.usuario') === null) {
+        if ($this->session->get('usuario') === null) {
             $this->app->reroute('/login');
             exit;
         }
@@ -53,6 +55,8 @@ abstract class BaseController
         date_default_timezone_set('America/Lima');
         setlocale(LC_NUMERIC, 'C');
         $this->container = $app->get('di');
+        $this->request = $app->get('request');
+        $this->session = $this->request->getSession();
 
         $loader = new FilesystemLoader('../templates');
         $this->twig = new Environment($loader, [
@@ -64,17 +68,15 @@ abstract class BaseController
         $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy($assetsVersion, '%s?version=%s')))));
         $optionBuilder = $this->container->get(OptionBuilder::class);
         $this->twig->addExtension(new EntryFilesTwigExtension($app->get('di')));
-        $this->twig->addExtension(new AppExtension($optionBuilder));
+        $this->twig->addExtension(new AppExtension($optionBuilder, $this->session));
 
         $this->options = new OptionsModel();
         $this->serializer = $this->container->get(SerializerService::class);
         $this->uploader = $this->container->get(FileUploader::class);
 
-        $this->current_user_id = $this->app->get('SESSION.usuario_id');
-        $this->current_local_id = $this->app->get('SESSION.local_id');
-        $this->current_almacen_id = $this->app->get('SESSION.default_almacen');
-
-        $this->request = $app->get('request');
+        $this->current_user_id = $this->session->get('usuario_id');
+        $this->current_local_id = $this->session->get('local_id');
+        $this->current_almacen_id = $this->session->get('default_almacen');
     }
 
     public function render(string $view, array $parameters = [])

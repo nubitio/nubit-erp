@@ -1,0 +1,3 @@
+<?php //App%255CCommand%255CDemoCommand%2523configure
+
+return [PHP_INT_MAX, []];

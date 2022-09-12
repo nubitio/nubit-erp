@@ -1,0 +1,3 @@
+<?php //App%255CMaker%255CMakeCrudCommand%2523makeRepository
+
+return [PHP_INT_MAX, []];

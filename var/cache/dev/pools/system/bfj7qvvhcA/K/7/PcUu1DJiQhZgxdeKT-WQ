@@ -1,0 +1,3 @@
+<?php //Twig%255CExtension%255CAbstractExtension%2523getNodeVisitors
+
+return [PHP_INT_MAX, []];

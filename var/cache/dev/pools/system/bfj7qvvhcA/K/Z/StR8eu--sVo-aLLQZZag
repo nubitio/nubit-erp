@@ -1,0 +1,3 @@
+<?php //App%255CEvent%255CProductDeletedEvent
+
+return [PHP_INT_MAX, []];

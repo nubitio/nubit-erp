@@ -15,11 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class {{module}}Controller extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     #[Route('/{{l-module}}', name: '{{l-module}}_index', methods: ['GET'])]
     public function index(): Response
     {
@@ -27,41 +22,37 @@ class {{module}}Controller extends BaseController
     }
 
     #[Route('/{{l-module}}/get', name: '{{l-module}}_list', methods: ['POST'])]
-    public function getAll(): Response
+    public function getAll({{module}}GetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get({{module}}GetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 
     #[Route('/{{l-module}}/add', name: '{{l-module}}_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    public function add(Request $request, {{module}}CreateUseCase $createUseCase): Response
     {
         /**
          * @var {{module}} ${{l-module}}
          */
         ${{l-module}} = $this->serializer->deserialize(json_encode($request->request->all()), {{module}}::class, 'json');
-        $createUseCase = $this->container->get({{module}}CreateUseCase::class);
         $createUseCase(${{l-module}});
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     #[Route('/{{l-module}}/edit/{id}', name: '{{l-module}}_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    public function edit(Request $request, {{module}}UpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['{{table_id}}' => $id]);
         /**
          * @var {{module}} ${{l-module}}
          */
         ${{l-module}} = $this->serializer->deserialize(json_encode($request->request->all()), {{module}}::class, 'json');
-        $updateUseCase = $this->container->get({{module}}UpdateUseCase::class);
         $updateUseCase(${{l-module}});
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
     #[Route('/{{l-module}}/delete/{id}', name: '{{l-module}}_delete', methods: ['POST'])]
-    public function delete($id): Response
+    public function delete({{module}}DeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get({{module}}DeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }

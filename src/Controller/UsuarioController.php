@@ -53,7 +53,7 @@ class UsuarioController extends BaseController
 
     public function login()
     {
-        if ($this->app->get('SESSION.usuario') !== null) {
+        if ($this->session->get('usuario') !== null) {
             $this->app->reroute('/home');
             exit;
         } else {
@@ -74,9 +74,9 @@ class UsuarioController extends BaseController
             $this->json(array('msg' => 'Usuario y/o Contraseña Erroneos'));
         } else {
             if ($user['estado'] == 1 && password_verify($password, $user['password'])) {
-                $this->app->set('SESSION.usuario_id', $user['usuario_id']);
-                $this->app->set('SESSION.usuario', $user['username']);
-                $this->app->set('SESSION.rol_id', $user['rol_id']);
+                $this->session->set('usuario_id', $user['usuario_id']);
+                $this->session->set('usuario', $user['username']);
+                $this->session->set('rol_id', $user['rol_id']);
                 $this->json(array('success' => true, 'msg' => 'Bienvenido.'));
             } else {
                 $this->json(array('msg' => 'Usuario y/o Contraseña Incorrectos'));
@@ -134,7 +134,7 @@ class UsuarioController extends BaseController
 
     public function changePassword()
     {
-        $id = $this->app->get('SESSION.usuario_id');
+        $id = $this->session->get('usuario_id');
         $user = $this->model->getById($id);
         if (password_verify($_POST['actual'], $user['password'])) {
             $this->json($this->model->changePassword($id));

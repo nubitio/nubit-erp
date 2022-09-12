@@ -3,41 +3,86 @@
 namespace App;
 
 use App\Domain\Annotation\IgnoreAutowire;
-use Psr\Container\ContainerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
-use Symfony\Component\HttpKernel\Controller\ControllerResolver;
-use Symfony\Component\HttpKernel\EventListener\ResponseListener;
-use Symfony\Component\HttpKernel\EventListener\RouterListener;
-use Symfony\Component\HttpKernel\HttpKernel;
-use Symfony\Component\Routing\Matcher\UrlMatcher;
-use Symfony\Component\Routing\RequestContext;
+use App\Domain\Compiler\RemoveUnwantedServices;
+use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
+use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Bundle\MonologBundle\MonologBundle;
+use Symfony\Bundle\TwigBundle\TwigBundle;
+use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Symfony\WebpackEncoreBundle\WebpackEncoreBundle;
 
 #[IgnoreAutowire]
-class Kernel extends HttpKernel
+class Kernel extends BaseKernel
 {
-    private static ContainerInterface $container;
+    use MicroKernelTrait;
 
-    public function __construct($routes, ContainerInterface $container)
+    public function registerBundles(): array
     {
-        self::$container = $container;
-        $context = new RequestContext();
-        $matcher = new UrlMatcher($routes, $context);
-        $requestStack = new RequestStack();
+        $bundles = [
+            new FrameworkBundle(),
+            new TwigBundle(),
+            new WebpackEncoreBundle(),
+            new MonologBundle(),
+        ];
 
-        $controllerResolver = new ControllerResolver();
-        $argumentResolver = new ArgumentResolver();
+        if ('dev' === $this->getEnvironment()) {
+            $bundles[] = new WebProfilerBundle();
+        }
 
-        $dispatcher = new EventDispatcher();
-        $dispatcher->addSubscriber(new RouterListener($matcher, $requestStack));
-        $dispatcher->addSubscriber(new ResponseListener('UTF-8'));
-
-        parent::__construct($dispatcher, $controllerResolver, $requestStack, $argumentResolver);
+        return $bundles;
     }
 
-    public static function getContainer(): ContainerInterface
+    protected function build(ContainerBuilder $container)
     {
-        return self::$container;
+        $container->addCompilerPass(new RemoveUnwantedServices());
+        //$container->registerExtension(new AppExtension());
+    }
+
+    protected function configureContainer(ContainerConfigurator $container): void
+    {
+        //$container->import(dirname(__DIR__) . '/config/framework.php');
+        $container->extension('framework', [
+            'secret'   => '%env(APP_SECRET)%',
+            'profiler' => [
+                'only_exceptions' => false,
+            ],
+        ]);
+
+        $container->extension('webpack_encore', [
+            'output_path' => '%kernel.project_dir%/public/build'
+        ]);
+
+        $container->import(dirname(__DIR__) . '/config/services.php');
+
+        if (isset($this->bundles['WebProfilerBundle'])) {
+            $container->extension('web_profiler', [
+                'toolbar'             => true,
+                'intercept_redirects' => false,
+            ]);
+        }
+    }
+
+    protected function configureRoutes(RoutingConfigurator $routes): void
+    {
+        if (isset($this->bundles['WebProfilerBundle'])) {
+            $routes->import('@WebProfilerBundle/Resources/config/routing/wdt.xml')->prefix('/_wdt');
+            $routes->import('@WebProfilerBundle/Resources/config/routing/profiler.xml')->prefix('/_profiler');
+        }
+
+        $routes->import(dirname(__DIR__) . '/src/', 'attribute');
+    }
+
+    public function getCacheDir(): string
+    {
+        return __DIR__ . '/../var/cache/' . $this->getEnvironment();
+    }
+
+    public function getLogDir(): string
+    {
+        return __DIR__ . '/../var/log';
     }
 }
