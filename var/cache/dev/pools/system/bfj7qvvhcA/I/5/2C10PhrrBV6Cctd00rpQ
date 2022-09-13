@@ -1,3 +1,0 @@
-<?php //App%255CDomain%255CCompiler%255CRemoveUnwantedControllers
-
-return [PHP_INT_MAX, []];

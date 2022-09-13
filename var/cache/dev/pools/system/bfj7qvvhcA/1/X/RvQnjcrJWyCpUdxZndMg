@@ -1,3 +1,0 @@
-<?php //App%255CEventListener%255CProductSubscriber%2523onProductUpdated
-
-return [PHP_INT_MAX, []];

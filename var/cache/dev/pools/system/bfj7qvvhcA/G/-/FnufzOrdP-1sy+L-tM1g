@@ -1,3 +1,0 @@
-<?php //App%255CTransaction%255CDomain%255CTransactionUpdateUseCase
-
-return [PHP_INT_MAX, []];

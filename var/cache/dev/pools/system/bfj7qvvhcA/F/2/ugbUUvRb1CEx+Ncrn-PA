@@ -1,3 +1,0 @@
-<?php //App%255CCommand%255CSendWhatsAppCommand
-
-return [PHP_INT_MAX, []];
