@@ -1,3 +1,0 @@
-<?php //Symfony%255CComponent%255CConsole%255CCommand%255CCommand%2523getApplication
-
-return [PHP_INT_MAX, []];

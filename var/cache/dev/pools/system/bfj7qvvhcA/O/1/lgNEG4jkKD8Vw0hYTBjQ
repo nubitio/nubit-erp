@@ -1,3 +1,0 @@
-<?php //App%255CTransaction%255CInfrastructure%255CTransactionRepository
-
-return [PHP_INT_MAX, []];

@@ -1,3 +1,0 @@
-<?php //App%255CTransaction%255CInfrastructure%255CTransactionEntity%2523mapFromDomainModel
-
-return [PHP_INT_MAX, []];

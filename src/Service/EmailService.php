@@ -19,7 +19,7 @@ class EmailService
         $this->mailer->Host = $_ENV['SMTP_HOST'];
         $this->mailer->Port = $_ENV['SMTP_PORT'];
         $this->mailer->Username = $_ENV['SMTP_USER'];
-        $this->mailer->Password = $_ENV['SMTP_PASSWORD'];
+        $this->mailer->Password = $_ENV['SMTP_PASS'];
         if ($_ENV['APP_ENV']) {
             $this->mailer->SMTPDebug = 2;
         }

@@ -4,6 +4,7 @@ namespace App\Maker;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\Table;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -48,9 +49,6 @@ class MakeCrudCommand extends Command
             $infrastructurePath = $modulePath . '/Infrastructure/';
             $applicationPath = $modulePath . '/Application/';
             $htmlPath = dirname(__DIR__, 2) . '/templates/' . strtolower($module) . '/';
-            if (!is_dir($tsPath)) {
-                mkdir($tsPath, 0777, true);
-            }
             if (!is_dir($domainPath)) {
                 mkdir($domainPath, 0777, true);
             }
@@ -59,9 +57,6 @@ class MakeCrudCommand extends Command
             }
             if (!is_dir($applicationPath)) {
                 mkdir($applicationPath, 0777, true);
-            }
-            if (!is_dir($htmlPath)) {
-                mkdir($htmlPath, 0777, true);
             }
             $this->makeController($applicationPath, $module, $table);
             $this->makeRepositoryInterface($domainPath, $module);
@@ -74,6 +69,12 @@ class MakeCrudCommand extends Command
             $this->makeRepository($infrastructurePath, $module, $table, $sortColumn);
             $confirm = $io->confirm('Do you want to generate the view files?');
             if ($confirm) {
+                if (!is_dir($tsPath)) {
+                    mkdir($tsPath, 0777, true);
+                }
+                if (!is_dir($htmlPath)) {
+                    mkdir($htmlPath, 0777, true);
+                }
                 $this->makeView($tsPath, $module, $table, $ignoredColumns);
                 $this->makeTemplate($htmlPath, $module);
             }

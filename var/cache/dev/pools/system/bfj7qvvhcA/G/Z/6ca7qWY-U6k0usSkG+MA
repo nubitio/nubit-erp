@@ -1,3 +1,0 @@
-<?php //App%255CService%255COptionBuilder%2523buildOptions
-
-return [PHP_INT_MAX, []];

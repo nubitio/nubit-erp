@@ -12,6 +12,7 @@ use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class CompanyController extends BaseController
 {
@@ -28,12 +29,13 @@ class CompanyController extends BaseController
     }
 
     #[Route('/company/add', name: 'company_create', methods: ['POST'])]
-    public function add(Request $request, CompanyCreateUseCase $createUseCase): Response
+    public function add(Request $request, CompanyCreateUseCase $createUseCase, SerializerInterface $serializer): Response
     {
         /**
          * @var Company $company
          */
-        $company = $this->serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
+        $company = $serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
+        dd($company);
         $createUseCase($company);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
