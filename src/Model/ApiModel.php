@@ -440,7 +440,7 @@ class ApiModel extends BaseModel
         inner join producto p on md.producto_id = p.producto_id
         where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
         group by p.descripcion, p.producto_id
-        order by total 
+        order by total desc
         limit 10
         ";
         return $this->db->exec($sql);
@@ -460,7 +460,7 @@ class ApiModel extends BaseModel
         inner join producto p on md.producto_id = p.producto_id
         where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
         group by p.descripcion, p.producto_id
-        order by total desc
+        order by total
         limit 10
         ";
         return $this->db->exec($sql);
