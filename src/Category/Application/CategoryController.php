@@ -16,9 +16,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CategoryController extends BaseController
 {
-    public function __construct()
+    private FileUploader $fileUploader;
+
+    public function __construct(FileUploader $fileUploader)
     {
         parent::__construct();
+        $this->fileUploader = $fileUploader;
     }
 
     #[Route('/category', name: 'category_index', methods: ['GET'])]
@@ -35,47 +38,43 @@ class CategoryController extends BaseController
     }
 
     #[Route('/category/add', name: 'category_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    public function add(Request $request, CategoryCreateUseCase $createUseCase): Response
     {
-        $fileUploader = $this->container->get(FileUploader::class);
-        $imageFile = $request->files->get('imagen');
-        if ($imageFile) {
-            $image = $fileUploader->upload($imageFile, Constants::IMAGE_UPLOAD_DIR);
-            $request->request->set('imagen', $image);
-        }
+        $this->uploadImage($request);
         /**
          * @var Category $category
          */
         $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
-        $createUseCase = $this->container->get(CategoryCreateUseCase::class);
         $createUseCase($category);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     #[Route('/category/edit/{id}', name: 'category_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    public function edit(Request $request, CategoryUpdateUseCase $updateUseCase, $id): Response
     {
-        $fileUploader = $this->container->get(FileUploader::class);
-        $imageFile = $request->files->get('imagen');
-        if ($imageFile) {
-            $image = $fileUploader->upload($imageFile, Constants::IMAGE_UPLOAD_DIR);
-            $request->request->set('imagen', $image);
-        }
+        $this->uploadImage($request);
         $request->request->add(['categoria_id' => $id]);
         /**
          * @var Category $category
          */
         $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
-        $updateUseCase = $this->container->get(CategoryUpdateUseCase::class);
         $updateUseCase($category);
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
     #[Route('/category/delete/{id}', name: 'category_delete', methods: ['POST'])]
-    public function delete($id): Response
+    public function delete(CategoryDeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get(CategoryDeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    private function uploadImage(Request $request): void
+    {
+        $imageFile = $request->files->get('imagen');
+        if ($imageFile) {
+            $image = $this->fileUploader->upload($imageFile, Constants::IMAGE_UPLOAD_DIR);
+            $request->request->set('imagen', $image);
+        }
     }
 }

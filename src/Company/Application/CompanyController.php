@@ -3,19 +3,27 @@
 namespace App\Company\Application;
 
 use App\Base\BaseController;
-use App\Company\Domain\CompanyGetAllUseCase;
-use App\Company\Domain\CompanyCreateUseCase;
-use App\Company\Domain\CompanyUpdateUseCase;
-use App\Company\Domain\CompanyDeleteUseCase;
 use App\Company\Domain\Company;
+use App\Company\Domain\CompanyCreateUseCase;
+use App\Company\Domain\CompanyDeleteUseCase;
+use App\Company\Domain\CompanyGetAllUseCase;
+use App\Company\Domain\CompanyUpdateUseCase;
+use App\Service\FileUploader;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class CompanyController extends BaseController
 {
+    private FileUploader $fileUploader;
+
+    public function __construct(FileUploader $fileUploader)
+    {
+        parent::__construct();
+        $this->fileUploader = $fileUploader;
+    }
+
     #[Route('/company', name: 'company_index', methods: ['GET'])]
     public function index(): Response
     {
@@ -29,13 +37,13 @@ class CompanyController extends BaseController
     }
 
     #[Route('/company/add', name: 'company_create', methods: ['POST'])]
-    public function add(Request $request, CompanyCreateUseCase $createUseCase, SerializerInterface $serializer): Response
+    public function add(Request $request, CompanyCreateUseCase $createUseCase): Response
     {
+        $this->uploadLogo($request);
         /**
          * @var Company $company
          */
-        $company = $serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
-        dd($company);
+        $company = $this->serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
         $createUseCase($company);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
@@ -43,6 +51,7 @@ class CompanyController extends BaseController
     #[Route('/company/edit/{id}', name: 'company_update', methods: ['POST'])]
     public function edit(Request $request, CompanyUpdateUseCase $updateUseCase, $id): Response
     {
+        $this->uploadLogo($request);
         $request->request->add(['empresa_id' => $id]);
         /**
          * @var Company $company
@@ -57,5 +66,14 @@ class CompanyController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    private function uploadLogo(Request $request): void
+    {
+        $logoFile = $request->files->get('logo');
+        if ($logoFile) {
+            $logo = $this->fileUploader->upload($logoFile, Constants::IMAGE_UPLOAD_DIR);
+            $request->request->set('logo', $logo);
+        }
     }
 }
