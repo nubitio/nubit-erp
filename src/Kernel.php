@@ -44,7 +44,6 @@ class Kernel extends BaseKernel
 
     protected function configureContainer(ContainerConfigurator $container): void
     {
-        //$container->import(dirname(__DIR__) . '/config/framework.php');
         $container->extension('framework', [
             'secret'   => '%env(APP_SECRET)%',
             'profiler' => [
