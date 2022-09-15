@@ -31,9 +31,8 @@ class CategoryController extends BaseController
     }
 
     #[Route('/category/get', name: 'category_list', methods: ['POST'])]
-    public function getAll(): Response
+    public function getAll(CategoryGetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get(CategoryGetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 

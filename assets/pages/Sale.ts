@@ -5,6 +5,7 @@ import {FormType} from "../FormType";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 import {SharedUtils} from "../SharedUtils";
+import {Constants} from "../Constants";
 
 export default class Sale {
     private container: string;
@@ -86,13 +87,13 @@ export default class Sale {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
-            .name('serie')
+            .name('numero')
             .label('Voucher')
             .formatter(SharedUtils.voucherFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
-            .name('iserie')
+            .name('inumero')
             .label('Comprobante')
             .formatter(SharedUtils.invoiceFormatter)
             .build());
@@ -123,10 +124,66 @@ export default class Sale {
     }
 
     renderDataGrid() {
+        let toolbarButtons = [
+            {
+                text: Constants.TEXT_ADD,
+                iconCls: Constants.ICON_ADD,
+                handler: function () {
+                    //venta_nuevo(false);
+                }
+            }, {
+                text: 'Vista Previa',
+                iconCls: 'fas fa-eye fa-1x text-info',
+                handler: function () {
+                    //venta_preview();
+                }
+            }, {
+                text: 'Imprimir',
+                iconCls: 'fas fa-print fa-1x text-primary',
+                handler: function () {
+                    //venta_print();
+                }
+            }, {
+                text: 'Anular',
+                iconCls: Constants.ICON_DELETE,
+                handler: function () {
+                    //venta_anular();
+                }
+            }, {
+                text: 'Comprobante',
+                iconCls: Constants.ICON_INVOICE,
+                handler: function () {
+                    //makeInvoice();
+                }
+            }
+        ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Ventas',
             url: 'sale/get',
-            routes: this.ROUTES,
+            routes: {},
+            toolbar: toolbarButtons,
+            subGrid: {
+                url: 'api/sale/detail/',
+                columns: [
+                    {
+                        field: 'producto',
+                        title: 'Producto',
+                        width: 100
+                    }, {
+                        field: 'cantidad',
+                        title: 'Cantidad',
+                        align: 'center'
+                    }, {
+                        field: 'precio_unitario',
+                        title: 'Unitario',
+                        align: 'right'
+                    }, {
+                        field: 'precio_total',
+                        title: 'Total',
+                        align: 'right'
+                    }
+                ],
+            }
         });
     }
 
