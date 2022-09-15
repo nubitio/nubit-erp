@@ -18,8 +18,8 @@ export default class DataGrid {
         this.options = options;
         this.dataGrid = null;
         this.defaultToolbar = [];
-        this.toolbar = null;
-        this.columns = null;
+        this.toolbar = [];
+        this.columns = [];
         this.init();
     }
 
@@ -128,7 +128,14 @@ export default class DataGrid {
 
         this.defaultToolbar.pop();
 
-        this.toolbar = this.options.toolbar || this.defaultToolbar;
+        this.options.toolbar?.forEach(item => {
+            if (this.defaultToolbar.length > 0) {
+                this.defaultToolbar.push('-');
+            }
+            this.defaultToolbar.push(item);
+        });
+
+        this.toolbar = this.defaultToolbar;
     }
 
     addToolbarButtons(buttons) {
@@ -149,8 +156,7 @@ export default class DataGrid {
 
     private setupDataGrid() {
         let ref = this;
-
-        this.dataGrid.datagrid({
+        let gridOptions = {
             title: this.options.title,
             url: this.options.url,
             remoteFilter: true,
@@ -159,25 +165,17 @@ export default class DataGrid {
             onDblClickRow: function (index, row) {
                 window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, row: row});
             }
-        });
-
-        if (this.options.subGrid) {
-            this.setupSubGrid(this.options.subGrid);
         }
-
-        this.dataGrid.datagrid('enableFilter', []);
-    }
-
-    private setupSubGrid(subGrid) {
-        let ref = this;
-        this.dataGrid.datagrid({
-            view: window.detailview,
-            detailFormatter: function (index, row) {
+        let subGrid = this.options.subGrid;
+        if (subGrid) {
+            gridOptions['view'] = window.detailview
+            gridOptions['detailFormatter'] = function (index, row) {
                 return '<div style="padding:2px"><table class="ddv"></table></div>';
-            },
-            onExpandRow: function (index, row) {
+            }
+            gridOptions['onExpandRow'] = function (index, row) {
                 let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
                 ddv.datagrid({
+                    method: 'get',
                     url: subGrid.url + row[ref.getIdField()],
                     loadMsg: 'Procesando, por favor espere ...',
                     height: 'auto',
@@ -198,7 +196,10 @@ export default class DataGrid {
                 });
                 ref.dataGrid.datagrid('fixDetailRowHeight', index);
             }
-        });
+        }
+        this.dataGrid.datagrid(gridOptions);
+
+        this.dataGrid.datagrid('enableFilter', []);
     }
 
     reload() {

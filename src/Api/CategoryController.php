@@ -11,10 +11,10 @@ class CategoryController extends BaseController
 {
     private Connection $connection;
 
-    public function __construct()
+    public function __construct(Connection $connection)
     {
         parent::__construct();
-        $this->connection = $this->container->get(Connection::class);
+        $this->connection = $connection;
     }
 
     #[Route('/api/category', name: 'api_category_get', methods: ['GET'])]

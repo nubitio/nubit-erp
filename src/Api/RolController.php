@@ -11,10 +11,10 @@ class RolController extends BaseController
 {
     private Connection $connection;
 
-    public function __construct()
+    public function __construct(Connection $connection)
     {
         parent::__construct();
-        $this->connection = $this->container->get(Connection::class);
+        $this->connection = $connection;
     }
 
     #[Route('/api/rol', name: 'api_rol_get', methods: ['GET'])]

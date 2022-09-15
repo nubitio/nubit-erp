@@ -59,7 +59,7 @@ export default class User {
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('rol_id')
-            .label('RolController')
+            .label('Rol')
             .url('api/rol')
             .textField('descripcion')
             .valueField('rol_id')
