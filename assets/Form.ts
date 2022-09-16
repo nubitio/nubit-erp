@@ -1,20 +1,23 @@
 import {Constants} from "./Constants";
 import {FormType} from "./FormType";
-import {SharedUtils} from "./SharedUtils";
+import {SharedUtils} from "./utils/SharedUtils";
 import {EventType} from "./EventType";
 import {Field} from "./Field";
+import {DateUtils} from "./utils/DateUtils";
 
 export default class Form {
     private container: HTMLElement;
-    private form: JQuery;
     private fields: Field[];
+    private options: any = {};
+    private form: JQuery;
     private formFields: any = {};
     private route: null;
 
-    constructor(container, fields) {
+    constructor(container, fields, options = {}) {
         this.container = document.getElementById(container);
-        this.form = null;
         this.fields = fields;
+        this.options = options || {};
+        this.form = null;
         this.formFields = {};
         this.route = null;
         this.init();
@@ -35,18 +38,53 @@ export default class Form {
         this.container.appendChild(form);
         this.form = $('#' + form.id);
 
+        if (this.options.hasDetail) {
+            let row = document.createElement('div');
+            row.classList.add('row');
+            form.appendChild(row);
+
+            let leftCol = document.createElement('div');
+            leftCol.classList.add('col-md-4');
+            row.appendChild(leftCol);
+
+            let rightCol = document.createElement('div');
+            rightCol.classList.add('col-md-8');
+            row.appendChild(rightCol);
+
+            this.buildFields(leftCol);
+
+            let addRowBtn = document.createElement('button');
+            addRowBtn.setAttribute('type', 'button');
+            addRowBtn.setAttribute('class', 'btn btn-primary');
+            addRowBtn.innerHTML = 'Agregar';
+            addRowBtn.addEventListener('click', () => {
+                window.Observer.publish(EventType.ADD, {route: this.options.detailRoute});
+            });
+            rightCol.appendChild(addRowBtn);
+
+            let detailTable = document.createElement('table');
+            detailTable.setAttribute('id', 'detailTable');
+            detailTable.setAttribute('class', 'table table-striped table-bordered');
+            rightCol.appendChild(detailTable);
+        } else {
+            this.buildFields(form);
+        }
+    }
+
+    private buildFields(container) {
         this.fields.forEach(field => {
-            if (field.type !== FormType.HIDDEN) {
-                let fieldContainer = document.createElement('div');
-                fieldContainer.setAttribute('class', 'mb-2');
-
-                let input = document.createElement('input');
-                input.setAttribute('id', field.name);
-                input.setAttribute('name', field.name);
-
-                fieldContainer.appendChild(input);
-                form.appendChild(fieldContainer);
+            if (field.type === FormType.HIDDEN) {
+                return;
             }
+            let fieldContainer = document.createElement('div');
+            fieldContainer.setAttribute('class', 'mb-2');
+
+            let input = document.createElement('input');
+            input.setAttribute('id', field.name);
+            input.setAttribute('name', field.name);
+
+            fieldContainer.appendChild(input);
+            container.appendChild(fieldContainer);
         });
     }
 
@@ -168,6 +206,8 @@ export default class Form {
             width: '100%',
             label: field.label,
             labelPosition: 'top',
+            formatter: DateUtils.dateFormatter,
+            parser: DateUtils.dateParser,
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -266,10 +306,22 @@ export default class Form {
         this.route = route;
 
         this.fields.forEach(field => {
-            if (field.type === FormType.SWITCH) {
-                if (field.defaultValue) {
-                    this.formFields[field.name].switchbutton('check');
-                }
+            if (!field.defaultValue) {
+                return;
+            }
+            switch (field.type) {
+                case FormType.TEXT:
+                    this.getField(field.name).textbox('setValue', field.defaultValue);
+                    break;
+                case FormType.DATE:
+                    this.getField(field.name).datebox('setValue', field.defaultValue);
+                    break;
+                case FormType.ENTITY:
+                    this.getField(field.name).combobox('select', field.defaultValue);
+                    break;
+                case FormType.SWITCH:
+                    this.getField(field.name).switchbutton('check');
+                    break;
             }
         });
     }

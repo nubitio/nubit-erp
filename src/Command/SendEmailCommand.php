@@ -4,14 +4,18 @@ namespace App\Command;
 
 use App\Domain\Common\EmailDto;
 use App\Service\EmailService;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'notify:email',
+    description: 'Send email',
+)]
 class SendEmailCommand extends Command
 {
-    protected static $defaultName = 'app:send-email';
     private EmailService $emailService;
 
     public function __construct(EmailService $emailService)

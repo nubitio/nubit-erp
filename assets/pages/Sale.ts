@@ -4,8 +4,10 @@ import Form from "../Form";
 import {FormType} from "../FormType";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../SharedUtils";
+import {SharedUtils} from "../utils/SharedUtils";
 import {Constants} from "../Constants";
+import {EventType} from "../EventType";
+import {StorageUtils} from "../utils/StorageUtils";
 
 export default class Sale {
     private container: string;
@@ -26,7 +28,7 @@ export default class Sale {
         this.dataGrid = null;
         this.dialog = null;
         this.form = null;
-        this.options = options;
+        this.options = options || {};
         this.init();
     }
 
@@ -40,33 +42,32 @@ export default class Sale {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('operacion_id')
-            .label('Operacion id')
-            .visible(false)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('almacen_id')
-            .label('Almacen id')
-            .visible(false)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('cliente_id')
-            .label('Cliente id')
-            .visible(false)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('tipo_id')
-            .label('Tipo id')
-            .visible(false)
-            .build());
-        this.fields.push(new FieldBuilder()
             .type(FormType.DATE)
             .name('fecha')
             .label('Fecha')
+            .defaultValue('Today')
+            .build());
+        let session = StorageUtils.getItem('session');
+        let localId = session['local_id'];
+        let warehouseUrl = `api/local/${localId}/warehouse`;
+        this.fields.push(new FieldBuilder()
+            .type(FormType.ENTITY)
+            .name('almacen_id')
+            .label('Almacen')
+            .url(warehouseUrl)
+            .valueField('almacen_id')
+            .textField('descripcion')
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.ENTITY)
+            .name('cliente_id')
+            .label('Cliente')
+            .url('api/customer')
+            .valueField('ruc')
+            .textField('razon_social')
+            .defaultValue('00000000')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
@@ -75,15 +76,13 @@ export default class Sale {
             .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.ENTITY)
             .name('tipo_pago')
-            .label('Pago')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('tipo_tarjeta')
-            .label('Tipo tarjeta')
-            .visible(false)
+            .label('Metodo de pago')
+            .url('api/payment-method')
+            .valueField('id')
+            .textField('name')
+            .defaultValue('1')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
@@ -104,13 +103,13 @@ export default class Sale {
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.TEXTAREA)
             .name('glosa')
-            .label('Glosa')
+            .label('Nota')
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FormType.HIDDEN)
             .name('estado')
             .label('Estado')
             .formatter(SharedUtils.invoiceStatusFormatter)
@@ -124,12 +123,13 @@ export default class Sale {
     }
 
     renderDataGrid() {
+        let ref = this;
         let toolbarButtons = [
             {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    //venta_nuevo(false);
+                    window.Observer.notify(EventType.ADD, {route: ref.ROUTES.ADD});
                 }
             }, {
                 text: 'Vista Previa',
@@ -157,6 +157,7 @@ export default class Sale {
                 }
             }
         ];
+
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Ventas',
             url: 'sale/get',
@@ -188,8 +189,9 @@ export default class Sale {
     }
 
     renderDialog() {
+        this.options['width'] = 800;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {hasDetail: true});
     }
 }

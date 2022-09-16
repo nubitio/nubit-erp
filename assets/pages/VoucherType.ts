@@ -2,7 +2,7 @@ import DataGrid from "../DataGrid";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
-import {SharedUtils} from "../SharedUtils";
+import {SharedUtils} from "../utils/SharedUtils";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
