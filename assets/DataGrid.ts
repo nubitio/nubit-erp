@@ -1,6 +1,6 @@
 import {Constants} from "./Constants";
 import {EventType} from "./EventType";
-import {SharedUtils} from "./SharedUtils";
+import {SharedUtils} from "./utils/SharedUtils";
 import {Field} from "./Field";
 
 export default class DataGrid {

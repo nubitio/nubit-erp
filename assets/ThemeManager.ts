@@ -1,4 +1,4 @@
-import {SharedUtils} from "./SharedUtils";
+import {SharedUtils} from "./utils/SharedUtils";
 import {EventType} from "./EventType";
 
 export default class ThemeManager {

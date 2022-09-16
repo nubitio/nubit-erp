@@ -36,6 +36,7 @@ class SaleRepository implements SaleRepositoryInterface
     {
         $entity = new SaleEntity();
         $entity->mapFromDomainModel($sale);
+        $entity->tipo_id = 2;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }

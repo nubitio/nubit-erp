@@ -10,9 +10,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'make:crud',
+    description: 'Create CRUD',
+)]
 class MakeCrudCommand extends Command
 {
-    protected static $defaultName = 'app:make-crud';
     private Connection $connection;
 
     public function __construct(Connection $connection)

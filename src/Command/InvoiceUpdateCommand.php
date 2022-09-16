@@ -3,14 +3,18 @@
 namespace App\Command;
 
 use App\Infrastructure\Service\InvoiceUpdater;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
+#[AsCommand(
+    name: 'invoice:update',
+    description: 'Invoice update values',
+)]
 class InvoiceUpdateCommand extends Command
 {
-    protected static $defaultName = 'app:update-invoice';
     private InvoiceUpdater $invoiceUpdater;
 
     public function __construct(InvoiceUpdater $invoiceUpdater)
