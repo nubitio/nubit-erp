@@ -12,6 +12,7 @@ import {StorageUtils} from "../utils/StorageUtils";
 export default class Sale {
     private container: string;
     private fields: Field[] = [];
+    private detailFields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
@@ -115,6 +116,30 @@ export default class Sale {
             .formatter(SharedUtils.invoiceStatusFormatter)
             .align('center')
             .build());
+
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.ENTITY)
+            .name('producto')
+            .label('Producto')
+            .build());
+
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NUMBER)
+            .name('cantidad')
+            .label('Cantidad')
+            .build());
+
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NUMBER)
+            .name('precio')
+            .label('Precio')
+            .build());
+
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NUMBER)
+            .name('total')
+            .label('Total')
+            .build());
     };
 
     render() {
@@ -192,6 +217,6 @@ export default class Sale {
         this.options['width'] = 800;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, {hasDetail: true});
+        this.form = new Form(this.dialog.id, this.fields, this.detailFields);
     }
 }
