@@ -8,14 +8,18 @@ import {DateUtils} from "./utils/DateUtils";
 export default class Form {
     private container: HTMLElement;
     private fields: Field[];
+    private detailFields: Field[];
+    private copyDetailFields: Field[];
     private options: any = {};
     private form: JQuery;
     private formFields: any = {};
     private route: null;
+    private rowIndex = 0;
 
-    constructor(container, fields, options = {}) {
+    constructor(container, fields, detailFields = [], options = {}) {
         this.container = document.getElementById(container);
         this.fields = fields;
+        this.detailFields = detailFields || [];
         this.options = options || {};
         this.form = null;
         this.formFields = {};
@@ -24,8 +28,9 @@ export default class Form {
     }
 
     init() {
+        this.copyDetailFields = [...this.detailFields];
         this.setupView();
-        this.buildFormFields();
+        this.buildFormFields(this.fields);
         this.setupObservers();
     }
 
@@ -38,7 +43,7 @@ export default class Form {
         this.container.appendChild(form);
         this.form = $('#' + form.id);
 
-        if (this.options.hasDetail) {
+        if (this.copyDetailFields.length > 0) {
             let row = document.createElement('div');
             row.classList.add('row');
             form.appendChild(row);
@@ -51,14 +56,14 @@ export default class Form {
             rightCol.classList.add('col-md-8');
             row.appendChild(rightCol);
 
-            this.buildFields(leftCol);
+            this.buildFields(leftCol, this.fields);
 
             let addRowBtn = document.createElement('button');
             addRowBtn.setAttribute('type', 'button');
             addRowBtn.setAttribute('class', 'btn btn-primary');
             addRowBtn.innerHTML = 'Agregar';
             addRowBtn.addEventListener('click', () => {
-                window.Observer.publish(EventType.ADD, {route: this.options.detailRoute});
+                this.addRow();
             });
             rightCol.appendChild(addRowBtn);
 
@@ -66,22 +71,50 @@ export default class Form {
             detailTable.setAttribute('id', 'detailTable');
             detailTable.setAttribute('class', 'table table-striped table-bordered');
             rightCol.appendChild(detailTable);
+
+            let tableRow = document.createElement('tr');
+            detailTable.appendChild(tableRow);
+
+            this.copyDetailFields.forEach(field => {
+                let tableHeader = document.createElement('th');
+                tableHeader.innerHTML = field.label;
+                tableRow.appendChild(tableHeader);
+            });
         } else {
-            this.buildFields(form);
+            this.buildFields(form, this.fields);
         }
     }
 
-    private buildFields(container) {
-        this.fields.forEach(field => {
+    private addRow() {
+        this.rowIndex++;
+        let detailTable = document.getElementById('detailTable');
+        let tableRow = document.createElement('tr');
+        tableRow.setAttribute('id', 'detailRow' + this.rowIndex);
+        detailTable.appendChild(tableRow);
+        console.log(this.detailFields);
+        this.buildFields(tableRow, this.copyDetailFields, 'td', this.rowIndex);
+        console.log(this.detailFields);
+        let rowFields = [...this.detailFields];
+        rowFields.forEach(field => {
+            field.name = field.name + this.rowIndex;
+            field.label = '';
+        });
+        this.buildFormFields(rowFields);
+    }
+
+    private buildFields(container, fields, containerType = 'div', rowIndex = null) {
+        fields.forEach(field => {
             if (field.type === FormType.HIDDEN) {
                 return;
             }
-            let fieldContainer = document.createElement('div');
-            fieldContainer.setAttribute('class', 'mb-2');
+            let fieldContainer = document.createElement(containerType);
+            if (containerType === 'div') {
+                fieldContainer.setAttribute('class', 'mb-2');
+            }
 
             let input = document.createElement('input');
-            input.setAttribute('id', field.name);
-            input.setAttribute('name', field.name);
+            input.setAttribute('id', field.name + (rowIndex ? rowIndex : ''));
+            input.setAttribute('name', field.name + (rowIndex ? '[]' : ''));
 
             fieldContainer.appendChild(input);
             container.appendChild(fieldContainer);
@@ -110,8 +143,8 @@ export default class Form {
         });
     }
 
-    buildFormFields() {
-        this.fields.forEach(field => {
+    buildFormFields(fields: Field[]) {
+        fields.forEach(field => {
             switch (field.type) {
                 case FormType.FILE:
                     this.buildFileInput(field);

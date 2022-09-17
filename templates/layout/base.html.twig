@@ -99,7 +99,7 @@
                     border: false,
                     multiple: false,
                     onSelect: function (item) {
-                        if (selectedMenu.url === item.url) {
+                        if (selectedMenu !== null && selectedMenu.url === item.url) {
                             return;
                         }
                         localStorage.setItem('selectedMenu', JSON.stringify(item));

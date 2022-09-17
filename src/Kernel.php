@@ -75,14 +75,4 @@ class Kernel extends BaseKernel
 
         $routes->import(dirname(__DIR__) . '/src/', 'attribute');
     }
-
-    public function getCacheDir(): string
-    {
-        return __DIR__ . '/../var/cache/' . $this->getEnvironment();
-    }
-
-    public function getLogDir(): string
-    {
-        return __DIR__ . '/../var/log';
-    }
 }
