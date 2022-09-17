@@ -43,4 +43,12 @@ class ApiController extends BaseController
         $data = $this->connection->fetchAllAssociative("SELECT * FROM payment_type where active = 1");
         return $this->json($data);
     }
+
+    #[Route('/api/warehouse/{id}/product', name: 'api_product_get', methods: ['GET'])]
+    public function getProduct($id): JsonResponse
+    {
+        //$data = $this->connection->fetchAllAssociative("SELECT * FROM producto where almacen_id = ? and estado = 1", [$id]);
+        $data = $this->connection->fetchAllAssociative("SELECT * FROM producto where estado = 1");
+        return $this->json($data);
+    }
 }

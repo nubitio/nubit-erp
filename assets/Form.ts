@@ -7,19 +7,18 @@ import {DateUtils} from "./utils/DateUtils";
 
 export default class Form {
     private container: HTMLElement;
-    private fields: Field[];
-    private detailFields: Field[];
-    private copyDetailFields: Field[];
+    private readonly fields: Field[];
+    private readonly detailFields: Field[];
     private options: any = {};
     private form: JQuery;
-    private formFields: any = {};
+    private readonly formFields: any = {};
     private route: null;
     private rowIndex = 0;
 
-    constructor(container, fields, detailFields = [], options = {}) {
+    constructor(container, fields: Field[], detailFields: Field[] = [], options = {}) {
         this.container = document.getElementById(container);
         this.fields = fields;
-        this.detailFields = detailFields || [];
+        this.detailFields = detailFields;
         this.options = options || {};
         this.form = null;
         this.formFields = {};
@@ -28,7 +27,6 @@ export default class Form {
     }
 
     init() {
-        this.copyDetailFields = [...this.detailFields];
         this.setupView();
         this.buildFormFields(this.fields);
         this.setupObservers();
@@ -43,7 +41,7 @@ export default class Form {
         this.container.appendChild(form);
         this.form = $('#' + form.id);
 
-        if (this.copyDetailFields.length > 0) {
+        if (this.detailFields.length > 0) {
             let row = document.createElement('div');
             row.classList.add('row');
             form.appendChild(row);
@@ -58,6 +56,21 @@ export default class Form {
 
             this.buildFields(leftCol, this.fields);
 
+            let headerContainer = document.createElement('div');
+            headerContainer.classList.add('mb-2');
+
+            let headerTitle = document.createElement('h4');
+            headerTitle.innerHTML = 'Detalle';
+
+            let leftItems = document.createElement('div');
+            leftItems.classList.add('float-start');
+
+            let rightItems = document.createElement('div');
+            rightItems.classList.add('float-end');
+
+            let clearFix = document.createElement('div');
+            clearFix.classList.add('clearfix');
+
             let addRowBtn = document.createElement('button');
             addRowBtn.setAttribute('type', 'button');
             addRowBtn.setAttribute('class', 'btn btn-primary');
@@ -65,21 +78,39 @@ export default class Form {
             addRowBtn.addEventListener('click', () => {
                 this.addRow();
             });
-            rightCol.appendChild(addRowBtn);
+
+            leftItems.appendChild(headerTitle);
+            rightItems.appendChild(addRowBtn);
+
+            headerContainer.appendChild(leftItems);
+            headerContainer.appendChild(rightItems);
+            headerContainer.appendChild(clearFix);
+            rightCol.appendChild(headerContainer);
 
             let detailTable = document.createElement('table');
             detailTable.setAttribute('id', 'detailTable');
-            detailTable.setAttribute('class', 'table table-striped table-bordered');
+            detailTable.setAttribute('class', 'table table-bordered');
             rightCol.appendChild(detailTable);
 
-            let tableRow = document.createElement('tr');
-            detailTable.appendChild(tableRow);
+            let tableHead = document.createElement('thead');
 
-            this.copyDetailFields.forEach(field => {
+            let tableRow = document.createElement('tr');
+
+            this.detailFields.forEach(field => {
                 let tableHeader = document.createElement('th');
                 tableHeader.innerHTML = field.label;
                 tableRow.appendChild(tableHeader);
             });
+
+            let tableHeader = document.createElement('th');
+            tableRow.appendChild(tableHeader);
+
+            tableHead.appendChild(tableRow);
+            detailTable.appendChild(tableHead);
+
+            let tableBody = document.createElement('tbody');
+            tableBody.setAttribute('id', 'detailTableBody');
+            detailTable.appendChild(tableBody);
         } else {
             this.buildFields(form, this.fields);
         }
@@ -87,19 +118,28 @@ export default class Form {
 
     private addRow() {
         this.rowIndex++;
-        let detailTable = document.getElementById('detailTable');
+        let detailTableBody = document.getElementById('detailTableBody');
         let tableRow = document.createElement('tr');
         tableRow.setAttribute('id', 'detailRow' + this.rowIndex);
-        detailTable.appendChild(tableRow);
-        console.log(this.detailFields);
-        this.buildFields(tableRow, this.copyDetailFields, 'td', this.rowIndex);
-        console.log(this.detailFields);
-        let rowFields = [...this.detailFields];
+        detailTableBody.appendChild(tableRow);
+
+        let rowFields = this.detailFields.map(field => {
+            return Object.assign({}, field);
+        }) as Field[];
+
+        this.buildFields(tableRow, rowFields, 'td', this.rowIndex);
+
         rowFields.forEach(field => {
             field.name = field.name + this.rowIndex;
             field.label = '';
         });
+
         this.buildFormFields(rowFields);
+    }
+
+    private removeRow(rowIndex) {
+        let row = document.getElementById('detailRow' + rowIndex);
+        row.parentNode.removeChild(row);
     }
 
     private buildFields(container, fields, containerType = 'div', rowIndex = null) {
@@ -119,6 +159,19 @@ export default class Form {
             fieldContainer.appendChild(input);
             container.appendChild(fieldContainer);
         });
+
+        if (containerType === 'td') {
+            let fieldContainer = document.createElement(containerType);
+            let removeBtn = document.createElement('button');
+            removeBtn.setAttribute('type', 'button');
+            removeBtn.setAttribute('class', 'btn btn-danger');
+            removeBtn.innerHTML = '<i class="fa fa-trash"></i>';
+            removeBtn.addEventListener('click', () => {
+                this.removeRow(rowIndex);
+            });
+            fieldContainer.appendChild(removeBtn);
+            container.appendChild(fieldContainer);
+        }
     }
 
     setupObservers() {
@@ -250,6 +303,7 @@ export default class Form {
         let input = $('#' + field.name);
         input.numberbox({
             width: '100%',
+            minWidth: 50,
             label: field.label,
             labelPosition: 'top',
             min: 0,
@@ -292,6 +346,7 @@ export default class Form {
         let input = $('#' + field.name);
         input.combobox({
             width: '100%',
+            minWidth: 200,
             label: field.label,
             labelPosition: 'top',
             url: field.url,

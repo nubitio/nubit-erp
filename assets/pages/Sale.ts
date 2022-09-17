@@ -121,6 +121,9 @@ export default class Sale {
             .type(FormType.ENTITY)
             .name('producto')
             .label('Producto')
+            .url('api/warehouse/1/product')
+            .valueField('producto_id')
+            .textField('descripcion')
             .build());
 
         this.detailFields.push(new FieldBuilder()
