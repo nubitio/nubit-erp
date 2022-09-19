@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class SaleDetailEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: "movimiento_id", type: "string")]
     public ?string $movimiento_id;
     #[Column(name: "producto_id", type: "string")]

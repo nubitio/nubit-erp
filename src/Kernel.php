@@ -4,6 +4,8 @@ namespace App;
 
 use App\Domain\Annotation\IgnoreAutowire;
 use App\Domain\Compiler\RemoveUnwantedServices;
+use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\MonologBundle\MonologBundle;
@@ -27,6 +29,8 @@ class Kernel extends BaseKernel
             new TwigBundle(),
             new WebpackEncoreBundle(),
             new MonologBundle(),
+            new DoctrineBundle(),
+            new DebugBundle(),
         ];
 
         if ('dev' === $this->getEnvironment()) {
@@ -52,11 +56,50 @@ class Kernel extends BaseKernel
             ],
         ]);
 
+        $container->extension('doctrine', [
+            'dbal' => [
+                'url' => '%env(resolve:DATABASE_URL)%',
+            ],
+            'orm'  => [
+                'auto_generate_proxy_classes' => true,
+                'naming_strategy'             => 'doctrine.orm.naming_strategy.underscore_number_aware',
+                'auto_mapping'                => true,
+                'mappings'                    => [
+                    'App' => [
+                        'is_bundle' => false,
+                        'type'      => 'attribute',
+                        'dir'       => '%kernel.project_dir%/src/',
+                        'prefix'    => 'App',
+                        'alias'     => 'App',
+                    ],
+                ],
+            ],
+        ]);
+
+        $container->extension('monolog', [
+            'handlers' => [
+                'main' => [
+                    'type'  => 'stream',
+                    'path'  => '%kernel.logs_dir%/%kernel.environment%.log',
+                    'level' => 'debug',
+                ],
+            ],
+        ]);
+
+        $container->extension('twig', [
+            'default_path'     => '%kernel.project_dir%/templates',
+            'debug'            => '%kernel.debug%',
+            'strict_variables' => '%kernel.debug%',
+            'globals'          => [
+                'settings' => '@App\Service\SettingsService',
+            ],
+        ]);
+
         $container->extension('webpack_encore', [
             'output_path' => '%kernel.project_dir%/public/build'
         ]);
 
-        $container->import(dirname(__DIR__) . '/config/services.php');
+        $container->import(dirname(__DIR__) . '/config/di.php');
 
         if (isset($this->bundles['WebProfilerBundle'])) {
             $container->extension('web_profiler', [

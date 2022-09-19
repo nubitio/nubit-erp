@@ -21,6 +21,8 @@ export class FieldBuilder {
             formatter: null,
             visible: true,
             defaultValue: null,
+            onChange: null,
+            onSelect: null,
             required: false,
         };
     }
@@ -97,6 +99,16 @@ export class FieldBuilder {
 
     defaultValue(defaultValue: any): FieldBuilder {
         this._field.defaultValue = defaultValue;
+        return this;
+    }
+
+    onChange(onChange: any): FieldBuilder {
+        this._field.onChange = onChange;
+        return this;
+    }
+
+    onSelect(onSelect: any): FieldBuilder {
+        this._field.onSelect = onSelect;
         return this;
     }
 

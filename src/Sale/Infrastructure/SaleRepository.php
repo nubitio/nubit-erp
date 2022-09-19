@@ -2,9 +2,10 @@
 
 namespace App\Sale\Infrastructure;
 
-use App\Sale\Domain\SaleRepositoryInterface;
-use App\Sale\Domain\Sale;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Sale\Domain\Sale;
+use App\Sale\Domain\SaleRepositoryInterface;
+use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -34,11 +35,25 @@ class SaleRepository implements SaleRepositoryInterface
      */
     public function insert(Sale $sale): void
     {
-        $entity = new SaleEntity();
-        $entity->mapFromDomainModel($sale);
-        $entity->tipo_id = 2;
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+        try {
+            $this->connection->beginTransaction();
+            $entity = new SaleEntity();
+            $entity->mapFromDomainModel($sale);
+            $this->entityManager->persist($entity);
+            $this->entityManager->flush();
+            foreach ($sale->items as $item) {
+                $detailEntity = new SaleDetailEntity();
+                $detailEntity->mapFromDomainModel($item);
+                $detailEntity->movimiento_id = $entity->movimiento_id;
+                $this->entityManager->persist($detailEntity);
+            }
+            $this->entityManager->flush();
+            $this->entityManager->clear();
+            $this->connection->commit();
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
     }
 
     /**

@@ -2,31 +2,31 @@
 
 namespace App\Extension;
 
-use App\Service\OptionBuilder;
+use App\Service\SettingsService;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
-    protected OptionBuilder $optionBuilder;
+    protected SettingsService $settings;
     protected SessionInterface $session;
 
-    public function __construct(OptionBuilder $optionBuilder, SessionInterface $session)
+    public function __construct(SettingsService $settings, SessionInterface $session)
     {
-        $this->optionBuilder = $optionBuilder;
+        $this->settings = $settings;
         $this->session = $session;
     }
 
     public function getGlobals(): array
     {
         return [
-            'app'    => [
+            'app'     => [
                 'user'    => [],
                 'session' => $this->session,
                 'env'     => $_ENV,
             ],
-            'option' => $this->optionBuilder->buildOptions(),
+            'settings' => $this->settings,
         ];
     }
 }

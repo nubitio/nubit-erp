@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class SaleEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: "movimiento_id", type: "string")]
     public ?string $movimiento_id;
     #[Column(name: "operacion_id", type: "string")]
@@ -51,8 +50,8 @@ class SaleEntity
     public ?bool $is_consume;
     #[Column(name: "caja_id", type: "string")]
     public ?string $caja_id;
-    #[Column(name: "estado", type: "boolean")]
-    public ?bool $estado;
+    #[Column(name: "estado", type: "integer")]
+    public ?int $estado;
     #[Column(name: "date_created", type: "datetime")]
     public ?\DateTime $date_created;
     #[Column(name: "date_updated", type: "datetime")]
@@ -93,7 +92,6 @@ class SaleEntity
             $this->updated_by,
             $this->igv,
             $this->recargo_consumo,
-
         );
     }
 

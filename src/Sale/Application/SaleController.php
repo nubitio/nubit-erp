@@ -3,15 +3,21 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
-use App\Sale\Domain\SaleGetAllUseCase;
-use App\Sale\Domain\SaleCreateUseCase;
-use App\Sale\Domain\SaleUpdateUseCase;
-use App\Sale\Domain\SaleDeleteUseCase;
+use App\Sale\DocType;
 use App\Sale\Domain\Sale;
+use App\Sale\Domain\SaleCreateUseCase;
+use App\Sale\Domain\SaleDeleteUseCase;
+use App\Sale\Domain\SaleGetAllUseCase;
+use App\Sale\Domain\SaleUpdateUseCase;
+use App\Sale\SaleUtils;
+use App\SaleDetail\Domain\SaleDetail;
+use App\Service\SettingsService;
 use App\Util\Constants;
+use App\Util\TipoDoc;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Uid\Uuid;
 
 class SaleController extends BaseController
 {
@@ -29,12 +35,25 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/add', name: 'sale_create', methods: ['POST'])]
-    public function add(Request $request, SaleCreateUseCase $createUseCase): Response
+    public function add(Request $request, SaleCreateUseCase $createUseCase, SaleUtils $saleUtils): Response
     {
+        $saleId = Uuid::v4();
+        $request->request->set('movimiento_id', $saleId);
         /**
          * @var Sale $sale
          */
         $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
+        $sale = $saleUtils->fillSaleValues($sale, DocType::NOTA_VENTA, $request->getSession());
+        $detail = $request->get('detail');
+        $detailItems = [];
+        foreach ($detail as $item) {
+            /**
+             * @var SaleDetail $saleDetail
+             */
+            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
+            $detailItems[] = $saleDetail;
+        }
+        $sale->items = $detailItems;
         $createUseCase($sale);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
