@@ -119,7 +119,7 @@ export default class Sale {
 
         this.detailFields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('producto')
+            .name('producto_id')
             .label('Producto')
             .url('api/warehouse/1/product')
             .valueField('producto_id')
@@ -134,13 +134,14 @@ export default class Sale {
 
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
-            .name('precio')
+            .name('precio_unitario')
             .label('Precio')
+            .onChange((newValue, oldValue) => this.onPriceChange(newValue, oldValue))
             .build());
 
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
-            .name('total')
+            .name('precio_total')
             .label('Total')
             .build());
     };
@@ -217,9 +218,29 @@ export default class Sale {
     }
 
     renderDialog() {
-        this.options['width'] = 800;
+        this.options['width'] = 900;
         this.dialog = new Dialog(this.container, this.options);
 
         this.form = new Form(this.dialog.id, this.fields, this.detailFields);
+
+        let customerField = this.form.getField('cliente_id').combobox({
+            icons: [{
+                iconCls: 'fas fa-plus fa-1x',
+                handler: function (e) {
+                    alert('add');
+                }
+            }]
+        });
+    }
+
+    private onPriceChange(newValue, oldValue) {
+        console.log(newValue);
+        alert('price change');
+        /*let price = field.getValue();
+        let quantityField = this.form.getField('cantidad');
+        let quantity = quantityField.getValue();
+        let totalField = this.form.getField('precio_total');
+        let total = price * quantity;
+        totalField.setValue(total);*/
     }
 }

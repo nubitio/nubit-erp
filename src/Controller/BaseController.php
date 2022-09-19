@@ -6,7 +6,7 @@ use App\Domain\Service\SerializerService;
 use App\Extension\AppExtension;
 use App\Model\OptionsModel;
 use App\Service\FileUploader;
-use App\Service\OptionBuilder;
+use App\Service\SettingsService;
 use Base;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -66,7 +66,7 @@ abstract class BaseController
 
         $assetsVersion = "v$_ENV[APP_VERSION]";
         $this->twig->addExtension(new AssetExtension(new Packages(new PathPackage('', new StaticVersionStrategy($assetsVersion, '%s?version=%s')))));
-        $optionBuilder = $this->container->get(OptionBuilder::class);
+        $optionBuilder = $this->container->get(SettingsService::class);
         $this->twig->addExtension(new EntryFilesTwigExtension($app->get('di')));
         $this->twig->addExtension(new AppExtension($optionBuilder, $this->session));
 

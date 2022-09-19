@@ -16,5 +16,7 @@ export interface Field {
     formatter: any;
     visible: boolean;
     defaultValue: any;
+    onChange: any;
+    onSelect: any;
     required: boolean;
 }

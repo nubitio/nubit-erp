@@ -4,6 +4,7 @@ use App\Domain\EntryFactory;
 use App\Domain\EntryLookupFactory;
 use App\Domain\PackageFactory;
 use App\Event\EventDispatcherFactory;
+use App\Infrastructure\CacheFactory;
 use App\Infrastructure\DataBaseFactory;
 use App\Util\SluggerFactory;
 use Doctrine\DBAL\Connection;
@@ -15,6 +16,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupCollectionInterface;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupInterface;
 use Symfony\WebpackEncoreBundle\Asset\TagRenderer;
@@ -31,6 +33,9 @@ return function (ContainerConfigurator $configurator) {
 
     $services->load('App\\', '../src/')
         ->exclude('../src/{Entity,Util,Extension,Kernel,php,WebClientPrint.php}');
+
+    $services->set(CacheInterface::class)
+        ->factory([CacheFactory::class, 'create']);
 
     $services->set(EntityManagerInterface::class)
         ->factory([DataBaseFactory::class, 'createManager']);

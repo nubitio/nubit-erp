@@ -26,6 +26,7 @@ export default class Dialog {
             width: this.options.width || 400,
             maxHeight: this.options.maxHeight || 550,
             modal: this.options.modal || true,
+            closable: this.options.closable || true,
             buttons: [{
                 id: 'negative-button',
                 text: Constants.TEXT_CANCEL,

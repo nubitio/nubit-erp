@@ -1076,3 +1076,11 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 ::-webkit-scrollbar-thumb:hover {
   background-color: #a8bbbf;
 }
+
+.panel-tool a {
+  text-decoration: none;
+}
+
+.panel-tool a:hover {
+  color: var(--text-color);
+}

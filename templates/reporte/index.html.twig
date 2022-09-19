@@ -21,7 +21,7 @@
             <div data-options="iconCls:'fa fa-file color-yellow'" onclick="app.reporte.rpt_ventas_anuladas()">
                 Ventas anuladas
             </div>
-            {% if option.show_airport_report == 'true' %}
+            {% if settings.get('show_airport_report') == 'true' %}
                 <div data-options="iconCls:'fa fa-file color-green'" onclick="app.reporte.rpt_aeropuerto()">
                     Reporte aeropuerto
                 </div>

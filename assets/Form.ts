@@ -29,6 +29,34 @@ export default class Form {
     init() {
         this.setupView();
         this.buildFormFields(this.fields);
+
+        let ref = this;
+        this.form.form({
+            iframe: false,
+            onSubmit: function () {
+                let valid = ref.form.form('validate');
+                if (valid) {
+                    window.Observer.notify(EventType.LOADING, true);
+                }
+                return valid;
+            },
+            success: function (result) {
+                try {
+                    result = JSON.parse(result);
+                    if (result.success) {
+                        window.Observer.notify(EventType.SUCCESS, result.data || {});
+                        SharedUtils.showMessage('Info', result.msg);
+                    } else {
+                        SharedUtils.showMessage('Error', result.msg);
+                    }
+                } catch (e) {
+                    SharedUtils.showMessage('Error', e);
+                } finally {
+                    window.Observer.notify(EventType.LOADING, false);
+                }
+            }
+        });
+
         this.setupObservers();
     }
 
@@ -154,8 +182,12 @@ export default class Form {
 
             let input = document.createElement('input');
             input.setAttribute('id', field.name + (rowIndex ? rowIndex : ''));
-            input.setAttribute('name', field.name + (rowIndex ? '[]' : ''));
-
+            if (containerType === 'td') {
+                let index = rowIndex - 1;
+                input.setAttribute('name', `detail[${index}][${field.name}]`);
+            } else {
+                input.setAttribute('name', field.name);
+            }
             fieldContainer.appendChild(input);
             container.appendChild(fieldContainer);
         });
@@ -299,16 +331,21 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildNumberInput(field) {
+    buildNumberInput(field: Field) {
         let input = $('#' + field.name);
         input.numberbox({
             width: '100%',
-            minWidth: 50,
+            minWidth: 60,
             label: field.label,
             labelPosition: 'top',
             min: 0,
             precision: 2,
             validType: field.validators,
+            onChange: (newValue, oldValue) => {
+                if (field.onChange) {
+                    field.onChange(newValue, oldValue);
+                }
+            },
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -390,6 +427,9 @@ export default class Form {
     }
 
     add(route) {
+        let detailTableBody = document.getElementById('detailTableBody');
+        detailTableBody.innerHTML = '';
+        this.rowIndex = 0;
         this.form.form('clear');
         this.route = route;
 
@@ -425,32 +465,8 @@ export default class Form {
     }
 
     save() {
-        let ref = this;
-
         this.form.form('submit', {
             url: this.route,
-            onSubmit: function () {
-                let valid = ref.form.form('validate');
-                if (valid) {
-                    window.Observer.notify(EventType.LOADING, true);
-                }
-                return valid;
-            },
-            success: function (result) {
-                try {
-                    result = JSON.parse(result);
-                    if (result.success) {
-                        window.Observer.notify(EventType.SUCCESS, result.data || {});
-                        SharedUtils.showMessage('Info', result.msg);
-                    } else {
-                        SharedUtils.showMessage('Error', result.msg);
-                    }
-                } catch (e) {
-                    SharedUtils.showMessage('Error', e);
-                } finally {
-                    window.Observer.notify(EventType.LOADING, false);
-                }
-            }
         });
     }
 
