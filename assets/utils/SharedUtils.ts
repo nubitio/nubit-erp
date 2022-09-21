@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export class SharedUtils {
     static showMessage(title: String, message: string) {
         ($ as any).messager.show({
@@ -55,5 +57,11 @@ export class SharedUtils {
         } else {
             return '';
         }
+    }
+
+    static async loadData(url): Promise<any[]> {
+        return await axios.get(url).then(response => {
+            return response.data;
+        });
     }
 }

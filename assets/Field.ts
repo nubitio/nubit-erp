@@ -15,7 +15,7 @@ export interface Field {
     data: any[];
     formatter: any;
     visible: boolean;
-    defaultValue: any;
+    defaultValue: string | number | boolean;
     onChange: any;
     onSelect: any;
     required: boolean;

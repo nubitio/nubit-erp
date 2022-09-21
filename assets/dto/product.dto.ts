@@ -1,4 +1,4 @@
-interface Product {
+export interface ProductDto {
     producto_id: string;
     imagen: string;
     imagen_url: string;

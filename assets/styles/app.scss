@@ -435,7 +435,6 @@ label {
   color: var(--text-color) !important;
   background-color: var(--background-color);
   background-clip: padding-box;
-  border: 1px solid var(--border-color);
   border-radius: .25rem;
 }
 
@@ -718,28 +717,12 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .combo-arrow {
   opacity: 1;
-  border: 1px solid var(--border-color);
   filter: alpha(opacity=100);
-  background: var(--background-color) !important;
-}
-
-.combo-arrow::after {
-  display: inline-block;
-  vertical-align: top;
-  border-style: solid;
-  transform: rotate(45deg);
-  width: 8px;
-  height: 8px;
-  content: '';
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  margin-top: -5px;
-  border-width: 0 1px 1px 0;
+  background-color: var(--primary-color-dark) !important;
 }
 
 .combo-arrow:hover {
-  background-color: var(--background-color);
+  background-color: var(--background-color) !important;
 }
 
 .pagination .l-btn {

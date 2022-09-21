@@ -8,6 +8,10 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Constants} from "../Constants";
 import {EventType} from "../EventType";
 import {StorageUtils} from "../utils/StorageUtils";
+import {ProductDto} from "../dto/product.dto";
+import {ProductService} from "../services/product.service";
+import Customer from "./Customer";
+import Drawer from "../Drawer";
 
 export default class Sale {
     private container: string;
@@ -17,6 +21,7 @@ export default class Sale {
     private dialog: Dialog;
     private form: Form;
     private options: any = {};
+    private productService = new ProductService();
 
     public ROUTES = {
         ADD: 'sale/add',
@@ -118,27 +123,23 @@ export default class Sale {
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FormType.SELECT)
             .name('producto_id')
             .label('Producto')
-            .url('api/warehouse/1/product')
             .valueField('producto_id')
             .textField('descripcion')
             .build());
-
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .build());
-
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('precio_unitario')
             .label('Precio')
             .onChange((newValue, oldValue) => this.onPriceChange(newValue, oldValue))
             .build());
-
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('precio_total')
@@ -147,11 +148,18 @@ export default class Sale {
     };
 
     render() {
-        this.renderDataGrid();
-        this.renderDialog();
+        this.productService.getProducts('1').subscribe((data: ProductDto[]) => {
+            this.detailFields.forEach((field) => {
+                if (field.name === 'producto_id') {
+                    field.data = data;
+                }
+            });
+            this.renderDataGrid();
+            this.renderDialog();
+        });
     }
 
-    renderDataGrid() {
+    private renderDataGrid() {
         let ref = this;
         let toolbarButtons = [
             {
@@ -217,17 +225,21 @@ export default class Sale {
         });
     }
 
-    renderDialog() {
+    private renderDialog() {
         this.options['width'] = 900;
         this.dialog = new Dialog(this.container, this.options);
 
         this.form = new Form(this.dialog.id, this.fields, this.detailFields);
 
+        let drawer = new Drawer();
+        let customer = new Customer(drawer.id, {});
+        customer.renderDialog();
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: function (e) {
-                    alert('add');
+                    window.Observer.notify(EventType.ADD, {route: customer.ROUTES.ADD});
+                    drawer.show();
                 }
             }]
         });
@@ -235,7 +247,6 @@ export default class Sale {
 
     private onPriceChange(newValue, oldValue) {
         console.log(newValue);
-        alert('price change');
         /*let price = field.getValue();
         let quantityField = this.form.getField('cantidad');
         let quantity = quantityField.getValue();

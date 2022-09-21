@@ -63,7 +63,8 @@ export default class Form {
     setupView() {
         let form = document.createElement('form');
         form.classList.add('fm');
-        form.setAttribute('id', 'form');
+        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        form.setAttribute('id', 'form' + randomId);
         form.setAttribute('method', 'post');
         form.setAttribute('enctype', 'multipart/form-data');
         this.container.appendChild(form);
@@ -355,9 +356,12 @@ export default class Form {
         let input = $('#' + field.name);
         input.combobox({
             width: '100%',
+            minWidth: 200,
             label: field.label,
             labelPosition: 'top',
             data: field.data,
+            valueField: field.valueField || 'value',
+            textField: field.textField || 'text',
             panelHeight: 200,
             limitToList: true,
             required: field.required,
@@ -428,13 +432,15 @@ export default class Form {
 
     add(route) {
         let detailTableBody = document.getElementById('detailTableBody');
-        detailTableBody.innerHTML = '';
+        if (detailTableBody) {
+            detailTableBody.innerHTML = '';
+        }
         this.rowIndex = 0;
         this.form.form('clear');
         this.route = route;
 
         this.fields.forEach(field => {
-            if (!field.defaultValue) {
+            if (field.defaultValue === null) {
                 return;
             }
             switch (field.type) {
