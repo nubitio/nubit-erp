@@ -4,18 +4,21 @@ namespace App\Controller;
 
 use App\Model\BotModel;
 use App\Model\NotaModel;
+use App\Model\ComprobanteModel;
 use Template;
 
 class InvoiceController extends BaseController
 {
     private BotModel $botModel;
     private NotaModel $noteModel;
+    private ComprobanteModel $comprobanteModel;
 
     public function __construct()
     {
         parent::__construct();
         $this->botModel = new BotModel();
         $this->noteModel = new NotaModel();
+        $this->comprobanteModel = new ComprobanteModel();
     }
 
     function beforeroute()
@@ -23,10 +26,8 @@ class InvoiceController extends BaseController
         // avoid redirect to login
     }
 
-    public function index()
+    function render_invoice_files($id)
     {
-        $id = $this->app->get('PARAMS.id');
-
         $data = $this->botModel->getOne($id);
         $receipt = $data['data'];
 
@@ -61,6 +62,26 @@ class InvoiceController extends BaseController
         $this->app->set('xml', $xml);
         $this->app->set('cdr', $cdr);
         echo $template->render('invoice/index.html.twig');
+    }
+
+    function search()
+    {
+        $type = $this->app->get('PARAMS.type');
+        $serie = $this->app->get('PARAMS.serie');
+        $number = $this->app->get('PARAMS.number');
+        $total = $this->app->get('PARAMS.total');
+        $date = $this->app->get('PARAMS.date');
+
+        $movimiento_id = $this->comprobanteModel->movimiento_id($type, $serie, $number, $total, $date);
+
+        $id = $movimiento_id[0]['movimiento_id'];
+        $this->render_invoice_files($id);
+    }
+
+    public function index()
+    {
+        $id = $this->app->get('PARAMS.id');
+        $this->render_invoice_files($id);
     }
 
     public function download()
