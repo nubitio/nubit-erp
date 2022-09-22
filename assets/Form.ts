@@ -159,7 +159,7 @@ export default class Form {
         this.buildFields(tableRow, rowFields, 'td', this.rowIndex);
 
         rowFields.forEach(field => {
-            field.name = field.name + this.rowIndex;
+            field.name = field.name + '-' + this.rowIndex;
             field.label = '';
         });
 
@@ -182,7 +182,7 @@ export default class Form {
             }
 
             let input = document.createElement('input');
-            input.setAttribute('id', field.name + (rowIndex ? rowIndex : ''));
+            input.setAttribute('id', field.name + (rowIndex ? '-' + rowIndex : ''));
             if (containerType === 'td') {
                 let index = rowIndex - 1;
                 input.setAttribute('name', `detail[${index}][${field.name}]`);
@@ -364,6 +364,12 @@ export default class Form {
             textField: field.textField || 'text',
             panelHeight: 200,
             limitToList: true,
+            onSelect: (record) => {
+                if (field.onSelect) {
+                    let row = this.getRowFormFieldsByName(field.name);
+                    field.onSelect(record, row);
+                }
+            },
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -412,6 +418,18 @@ export default class Form {
             required: field.required,
         });
         this.formFields[field.name] = input;
+    }
+
+    private getRowFormFieldsByName(name: string): any {
+        let formFields = {};
+        let rowIndex = name.split('-')[1];
+        for (let key in this.formFields) {
+            let index = key.split('-')[1];
+            if (index == rowIndex) {
+                formFields[key] = this.formFields[key];
+            }
+        }
+        return formFields;
     }
 
     getIdField() {

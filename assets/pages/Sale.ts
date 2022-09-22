@@ -128,6 +128,7 @@ export default class Sale {
             .label('Producto')
             .valueField('producto_id')
             .textField('descripcion')
+            .onSelect((value, row) => this.onSelectProduct(value, row))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
@@ -243,6 +244,21 @@ export default class Sale {
                 }
             }]
         });
+    }
+
+    private onSelectProduct(record, row) {
+        for (let key in row) {
+            let name = key.split('-')[0];
+            if (name === 'cantidad') {
+                row[key].numberbox('setValue', 1);
+            }
+            if (name === 'precio_unitario') {
+                row[key].numberbox('setValue', record.precio);
+            }
+            if (name === 'precio_total') {
+                row[key].numberbox('setValue', record.precio);
+            }
+        }
     }
 
     private onPriceChange(newValue, oldValue) {
