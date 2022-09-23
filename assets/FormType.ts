@@ -5,6 +5,7 @@ export enum FormType {
     TEXTAREA = 'textarea',
     DATE = 'date',
     NUMBER = 'number',
+    CURRENCY = 'currency',
     SELECT = 'select',
     ENUM = 'enum',
     ENTITY = 'entity',

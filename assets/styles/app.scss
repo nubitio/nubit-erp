@@ -370,6 +370,18 @@ pre {
   margin-bottom: 15px;
 }
 
+.btn-accent {
+  background: rgb(var(--accent-color));
+  color: var(--accent-color-contrast);
+  border: 1px solid rgb(var(--accent-color-dark)) !important;
+}
+
+.btn-accent:hover {
+  background-color: rgb(var(--accent-color-dark)) !important;
+  color: var(--accent-color-contrast) !important;
+  border: 1px solid rgb(var(--accent-color)) !important;
+}
+
 .md-btn {
   background: rgb(var(--accent-color));
   color: var(--accent-color-contrast) !important;

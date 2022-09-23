@@ -89,7 +89,7 @@ export default class Form {
             headerContainer.classList.add('mb-2');
 
             let headerTitle = document.createElement('h4');
-            headerTitle.innerHTML = 'Detalle';
+            headerTitle.innerHTML = 'Items';
 
             let leftItems = document.createElement('div');
             leftItems.classList.add('float-start');
@@ -250,6 +250,9 @@ export default class Form {
                 case FormType.NUMBER:
                     this.buildNumberInput(field);
                     break;
+                case FormType.CURRENCY:
+                    this.buildCurrencyInput(field);
+                    break;
                 case FormType.SELECT:
                     this.buildSelectInput(field);
                     break;
@@ -340,11 +343,30 @@ export default class Form {
             label: field.label,
             labelPosition: 'top',
             min: 0,
+            validType: field.validators,
+            onChange: (newValue, oldValue) => {
+                if (field.onChange) {
+                    field.onChange(newValue, oldValue, field);
+                }
+            },
+            required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildCurrencyInput(field: Field) {
+        let input = $('#' + field.name);
+        input.numberbox({
+            width: '100%',
+            minWidth: 80,
+            label: field.label,
+            labelPosition: 'top',
+            min: 0,
             precision: 2,
             validType: field.validators,
             onChange: (newValue, oldValue) => {
                 if (field.onChange) {
-                    field.onChange(newValue, oldValue);
+                    field.onChange(newValue, oldValue, field);
                 }
             },
             required: field.required,
@@ -366,8 +388,7 @@ export default class Form {
             limitToList: true,
             onSelect: (record) => {
                 if (field.onSelect) {
-                    let row = this.getRowFormFieldsByName(field.name);
-                    field.onSelect(record, row);
+                    field.onSelect(record, field);
                 }
             },
             required: field.required,
@@ -420,11 +441,10 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    private getRowFormFieldsByName(name: string): any {
+    getRowFormFieldsByIndex(rowIndex: number): any {
         let formFields = {};
-        let rowIndex = name.split('-')[1];
         for (let key in this.formFields) {
-            let index = key.split('-')[1];
+            let index = Number(key.split('-')[1]);
             if (index == rowIndex) {
                 formFields[key] = this.formFields[key];
             }
