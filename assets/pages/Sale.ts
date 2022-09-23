@@ -52,6 +52,7 @@ export default class Sale {
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
+            .required(true)
             .build());
         let session = StorageUtils.getItem('session');
         let localId = session['local_id'];
@@ -64,6 +65,7 @@ export default class Sale {
             .valueField('almacen_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -74,6 +76,7 @@ export default class Sale {
             .textField('razon_social')
             .defaultValue('00000000')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
@@ -89,6 +92,7 @@ export default class Sale {
             .valueField('id')
             .textField('name')
             .defaultValue('1')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
@@ -128,21 +132,23 @@ export default class Sale {
             .label('Producto')
             .valueField('producto_id')
             .textField('descripcion')
-            .onSelect((value, row) => this.onSelectProduct(value, row))
+            .onSelect((record, field) => this.onSelectProduct(record, field))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .onChange((newValue, oldValue, field) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.CURRENCY)
             .name('precio_unitario')
             .label('Precio')
-            .onChange((newValue, oldValue) => this.onPriceChange(newValue, oldValue))
+            .onChange((newValue, oldValue, field) => this.onPriceChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
             .build());
@@ -246,28 +252,28 @@ export default class Sale {
         });
     }
 
-    private onSelectProduct(record, row) {
-        for (let key in row) {
-            let name = key.split('-')[0];
-            if (name === 'cantidad') {
-                row[key].numberbox('setValue', 1);
-            }
-            if (name === 'precio_unitario') {
-                row[key].numberbox('setValue', record.precio);
-            }
-            if (name === 'precio_total') {
-                row[key].numberbox('setValue', record.precio);
-            }
-        }
+    private onSelectProduct(record, field) {
+        console.log(field);
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(index);
+        console.log(row);
+        row['cantidad-' + index].numberbox('setValue', 1);
+        row['precio_unitario-' + index].numberbox('setValue', record.precio);
+        row['precio_total-' + index].numberbox('setValue', record.precio);
     }
 
-    private onPriceChange(newValue, oldValue) {
-        console.log(newValue);
-        /*let price = field.getValue();
-        let quantityField = this.form.getField('cantidad');
-        let quantity = quantityField.getValue();
-        let totalField = this.form.getField('precio_total');
-        let total = price * quantity;
-        totalField.setValue(total);*/
+    private onQuantityChange(newValue, oldValue, field) {
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(index);
+        let price = row['precio_unitario-' + index].numberbox('getValue');
+        row['precio_total-' + index].numberbox('setValue', Number(newValue * price).toFixed(2));
+    }
+
+    private onPriceChange(newValue, oldValue, field) {
+        console.log(field);
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(index);
+        let quantity = row['cantidad-' + index].numberbox('getValue');
+        row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
     }
 }
