@@ -74,6 +74,19 @@ class ComprobanteModel extends BaseModel
         ");
     }
 
+    public function movimiento_id($type, $serie, $number, $total, $date)
+    {
+        return $this->db->exec("
+            SELECT movimiento_id
+            FROM comprobante
+            WHERE tipo_comprobante_id = ?
+            AND serie = ?
+            AND numero = ?
+            AND total = ?
+            AND fecha = ?", array($type, $serie, $number, $total, $date)
+        );
+    }
+
     public function ticketVoidedUpdate($ticket ,$receiptId)
     {
         $this->db->exec("UPDATE comprobante SET ticket_baja = ? WHERE movimiento_id = ?", array($ticket, $receiptId));
