@@ -1,5 +1,5 @@
 import './styles/app.scss';
-import Observable from "./Observable";
+import {bus} from "./EventBus";
 import DataGrid from "./DataGrid";
 import Dialog from "./Dialog";
 import Form from "./Form";
@@ -22,7 +22,7 @@ import Supplier from "./pages/Supplier";
 import Product from "./pages/Product";
 import Sale from "./pages/Sale";
 
-window.Observer = new Observable();
+window.Observer = bus;
 window.DataGrid = DataGrid;
 window.Dialog = Dialog;
 window.Drawer = Drawer;

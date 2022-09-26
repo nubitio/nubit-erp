@@ -18,5 +18,6 @@ export interface Field {
     defaultValue: string | number | boolean;
     onChange: any;
     onSelect: any;
+    readonly: boolean;
     required: boolean;
 }

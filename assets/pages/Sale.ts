@@ -12,6 +12,8 @@ import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 import Customer from "./Customer";
 import Drawer from "../Drawer";
+import {Action} from "../Action";
+import {bus} from "../EventBus";
 
 export default class Sale {
     private container: string;
@@ -151,6 +153,7 @@ export default class Sale {
             .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
+            .readonly(true)
             .build());
     };
 
@@ -173,7 +176,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    window.Observer.notify(EventType.ADD, {route: ref.ROUTES.ADD});
+                    bus.trigger(new Action(EventType.ADD, {route: ref.ROUTES.ADD}));
                 }
             }, {
                 text: 'Vista Previa',
@@ -236,16 +239,16 @@ export default class Sale {
         this.options['width'] = 900;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, this.detailFields);
+        this.form = new Form(this.dialog.id, this.fields, this.detailFields, {routes: this.ROUTES});
 
         let drawer = new Drawer();
-        let customer = new Customer(drawer.id, {});
+        let customer = new Customer(drawer.id, {width: '100%', height: '100%', modal: true});
         customer.renderDialog();
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: function (e) {
-                    window.Observer.notify(EventType.ADD, {route: customer.ROUTES.ADD});
+                    bus.trigger(new Action(EventType.ADD, {route: customer.ROUTES.ADD}));
                     drawer.show();
                 }
             }]
@@ -253,10 +256,8 @@ export default class Sale {
     }
 
     private onSelectProduct(record, field) {
-        console.log(field);
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(index);
-        console.log(row);
         row['cantidad-' + index].numberbox('setValue', 1);
         row['precio_unitario-' + index].numberbox('setValue', record.precio);
         row['precio_total-' + index].numberbox('setValue', record.precio);
@@ -270,7 +271,6 @@ export default class Sale {
     }
 
     private onPriceChange(newValue, oldValue, field) {
-        console.log(field);
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(index);
         let quantity = row['cantidad-' + index].numberbox('getValue');

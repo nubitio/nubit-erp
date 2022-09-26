@@ -1,9 +1,9 @@
-import {Constants} from "./Constants";
 import {FormType} from "./FormType";
 import {SharedUtils} from "./utils/SharedUtils";
 import {EventType} from "./EventType";
 import {Field} from "./Field";
 import {DateUtils} from "./utils/DateUtils";
+import {bus} from "./EventBus";
 
 export default class Form {
     private container: HTMLElement;
@@ -216,17 +216,31 @@ export default class Form {
             this.edit(data.route, data.row);
         });
 
-        window.Observer.subscribe(EventType.DELETE, (data) => {
-            this.delete(data.route, data.row);
-        });
-
         window.Observer.subscribe(EventType.SAVE, () => {
-            this.save();
+            this.submit();
         });
 
-        window.Observer.subscribe(EventType.EXPORT, (data) => {
-            window.open(data.route);
-        });
+        bus.on(
+            event => event.name === EventType.ADD,
+            (event) => {
+                console.log(event);
+                this.add();
+            }
+        )
+
+        bus.on(
+            event => event.name === EventType.EDIT,
+            (event) => {
+                this.edit(null, event.data.row);
+            }
+        )
+
+        bus.on(
+            event => event.name === EventType.SAVE,
+            (event) => {
+                this.submit();
+            }
+        )
     }
 
     buildFormFields(fields: Field[]) {
@@ -369,6 +383,7 @@ export default class Form {
                     field.onChange(newValue, oldValue, field);
                 }
             },
+            readonly: field.readonly,
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -468,14 +483,14 @@ export default class Form {
         return this.formFields[name] || {};
     }
 
-    add(route) {
+    add(route = null) {
         let detailTableBody = document.getElementById('detailTableBody');
         if (detailTableBody) {
             detailTableBody.innerHTML = '';
         }
         this.rowIndex = 0;
         this.form.form('clear');
-        this.route = route;
+        this.route = this.options.routes.ADD || route;
 
         this.fields.forEach(field => {
             if (field.defaultValue === null) {
@@ -498,39 +513,19 @@ export default class Form {
         });
     }
 
-    edit(route, row) {
+    edit(route = null, row) {
         this.fields.forEach(field => {
             if (field.type === FormType.PASSWORD) {
                 row[field.name] = '';
             }
         });
         this.form.form('load', row);
-        this.route = route + row[this.getIdField()];
+        this.route = (this.options.routes.EDIT || route) + row[this.getIdField()];
     }
 
-    save() {
+    submit() {
         this.form.form('submit', {
             url: this.route,
-        });
-    }
-
-    delete(route, row) {
-        let ref = this;
-        ($ as any).messager.confirm('Confirmar', Constants.TEXT_CONFIRM, function (r) {
-            if (r) {
-                $.post(route + row[ref.getIdField()])
-                    .done(function (result) {
-                        if (result.success) {
-                            window.Observer.notify(EventType.SUCCESS);
-                            SharedUtils.showMessage('Info', result.msg);
-                        } else {
-                            SharedUtils.showMessage('Error', result.msg);
-                        }
-                    })
-                    .fail(function (xhr, status, error) {
-                        SharedUtils.showMessage('Error', error);
-                    });
-            }
         });
     }
 }
