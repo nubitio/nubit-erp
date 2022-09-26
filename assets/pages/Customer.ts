@@ -86,7 +86,7 @@ export default class Customer {
         let ref = this;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, [], {routes: this.ROUTES});
 
         let rucField = this.form.getField('ruc').textbox({
             icons: [{

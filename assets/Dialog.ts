@@ -1,6 +1,7 @@
 import {Constants} from "./Constants";
 import {Animation} from "./Animation";
 import {EventType} from "./EventType";
+import {bus} from "./EventBus";
 
 export default class Dialog {
     private container: HTMLElement;
@@ -8,6 +9,7 @@ export default class Dialog {
     private dialog: JQuery;
     private positiveButton: JQuery;
     private negativeButton: JQuery;
+    private isShowing: boolean = false;
 
     constructor(container, options = {}) {
         this.container = document.getElementById(container);
@@ -21,6 +23,7 @@ export default class Dialog {
     init() {
         this.setupView();
         let ref = this;
+        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
         this.dialog.dialog({
             width: this.options.width || 400,
@@ -28,14 +31,14 @@ export default class Dialog {
             modal: this.options.modal || true,
             closable: this.options.closable || true,
             buttons: [{
-                id: 'negative-button',
+                id: 'negative-button' + randomId,
                 text: Constants.TEXT_CANCEL,
                 handler: function () {
                     ref.hide();
                     window.Observer.notify(EventType.CANCEL);
                 }
             }, {
-                id: 'positive-button',
+                id: 'positive-button' + randomId,
                 text: Constants.TEXT_SAVE,
                 handler: function () {
                     window.Observer.notify(EventType.SAVE);
@@ -44,10 +47,14 @@ export default class Dialog {
             onOpen: function () {
                 ref.dialog.dialog('center');
                 ref.dialog.parent().animateCss(Animation.DIALOG_OPEN_ANIMATION);
-                ref.positiveButton = $('#positive-button');
-                ref.negativeButton = $('#negative-button');
+                ref.positiveButton = $('#positive-button' + randomId);
+                ref.negativeButton = $('#negative-button' + randomId);
                 ref.positiveButton.addClass('md-btn');
                 ref.negativeButton.addClass('md-btn-plain');
+                ref.isShowing = true;
+            },
+            onClose: function () {
+                ref.isShowing = false;
             }
         });
 
@@ -67,6 +74,13 @@ export default class Dialog {
             this.show('Nuevo');
         });
 
+        bus.on(
+            event => event.name === EventType.ADD,
+            (event) => {
+                this.show('Nuevo');
+            }
+        );
+
         window.Observer.subscribe(EventType.EDIT, (data) => {
             this.show('Editar');
         });
@@ -85,10 +99,16 @@ export default class Dialog {
     }
 
     show(title) {
+        if (this.isShowing) {
+            return;
+        }
         this.dialog.dialog('open').dialog('setTitle', title);
     }
 
     hide() {
+        if (!this.isShowing) {
+            return;
+        }
         this.dialog.dialog('close');
     }
 

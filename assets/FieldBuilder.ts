@@ -23,6 +23,7 @@ export class FieldBuilder {
             defaultValue: null,
             onChange: null,
             onSelect: null,
+            readonly: false,
             required: false,
         };
     }
@@ -109,6 +110,11 @@ export class FieldBuilder {
 
     onSelect(onSelect: any): FieldBuilder {
         this._field.onSelect = onSelect;
+        return this;
+    }
+
+    readonly(readonly: boolean): FieldBuilder {
+        this._field.readonly = readonly;
         return this;
     }
 
