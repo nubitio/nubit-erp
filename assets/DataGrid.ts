@@ -42,7 +42,7 @@ export default class DataGrid {
     }
 
     setupObservers() {
-        window.Observer.subscribe(EventType.SUCCESS, (data) => {
+        window.observer.subscribe(EventType.SUCCESS, (data) => {
             this.reload();
         });
 
@@ -87,7 +87,7 @@ export default class DataGrid {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    window.Observer.notify(EventType.ADD, {route: ref.options.routes.ADD});
+                    window.observer.notify(EventType.ADD, {route: ref.options.routes.ADD});
                     bus.trigger(new Action(EventType.ADD, {route: ref.options.routes.ADD}));
                 }
             });
@@ -101,7 +101,7 @@ export default class DataGrid {
                 handler: function () {
                     let row = ref.dataGrid.datagrid('getSelected');
                     if (row) {
-                        window.Observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, row: row});
+                        window.observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, row: row});
                         bus.trigger(new Action(EventType.EDIT, {route: ref.options.routes.EDIT, row: row}));
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro para editar');

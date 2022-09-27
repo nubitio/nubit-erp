@@ -2,6 +2,7 @@ import {Constants} from "./Constants";
 import {Animation} from "./Animation";
 import {EventType} from "./EventType";
 import {bus} from "./EventBus";
+import {Action} from "./Action";
 
 export default class Dialog {
     private container: HTMLElement;
@@ -35,13 +36,15 @@ export default class Dialog {
                 text: Constants.TEXT_CANCEL,
                 handler: function () {
                     ref.hide();
-                    window.Observer.notify(EventType.CANCEL);
+                    window.observer.notify(EventType.CANCEL);
+                    bus.trigger(new Action(EventType.CANCEL));
                 }
             }, {
                 id: 'positive-button' + randomId,
                 text: Constants.TEXT_SAVE,
                 handler: function () {
-                    window.Observer.notify(EventType.SAVE);
+                    window.observer.notify(EventType.SAVE);
+                    bus.trigger(new Action(EventType.SAVE));
                 }
             }],
             onOpen: function () {
@@ -55,6 +58,8 @@ export default class Dialog {
             },
             onClose: function () {
                 ref.isShowing = false;
+                window.observer.notify(EventType.CANCEL);
+                bus.trigger(new Action(EventType.CANCEL));
             }
         });
 
@@ -70,9 +75,28 @@ export default class Dialog {
     }
 
     setupObservers() {
-        window.Observer.subscribe(EventType.ADD, (data) => {
+        window.observer.subscribe(EventType.ADD, (data) => {
             this.show('Nuevo');
         });
+
+        window.observer.subscribe(EventType.EDIT, (data) => {
+            this.show('Editar');
+        });
+
+        window.observer.subscribe(EventType.LOADING, (isLoading) => {
+            this.setLoading(isLoading);
+        });
+
+        window.observer.subscribe(EventType.SUCCESS, (data) => {
+            this.hide();
+        });
+
+        bus.on(
+            event => event.name === EventType.OPEN,
+            (event) => {
+                this.show('Nuevo');
+            }
+        );
 
         bus.on(
             event => event.name === EventType.ADD,
@@ -80,18 +104,6 @@ export default class Dialog {
                 this.show('Nuevo');
             }
         );
-
-        window.Observer.subscribe(EventType.EDIT, (data) => {
-            this.show('Editar');
-        });
-
-        window.Observer.subscribe(EventType.LOADING, (isLoading) => {
-            this.setLoading(isLoading);
-        });
-
-        window.Observer.subscribe(EventType.SUCCESS, (data) => {
-            this.hide();
-        });
     }
 
     get id() {

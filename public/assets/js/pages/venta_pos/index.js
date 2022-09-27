@@ -248,7 +248,7 @@ app.venta = (function () {
         let customer = new window.app.customer(drawer.id, {width: '100%', maxHeight: viewportHeight, modal: false});
         customer.renderDialog();
 
-        window.Observer.subscribe(window.EventType.SUCCESS, (data) => {
+        window.observer.subscribe(window.EventType.SUCCESS, (data) => {
             cbo_cliente.combobox('reload');
             cbo_cliente.combobox('setValue', data || '');
         });
@@ -267,7 +267,7 @@ app.venta = (function () {
             icons: [{
                 iconCls: ICON_ADD,
                 handler: function (e) {
-                    window.Observer.notify(window.EventType.ADD, {route: customer.ROUTES.ADD});
+                    window.observer.notify(window.EventType.ADD, {route: customer.ROUTES.ADD});
                     drawer.show();
                 }
             }]
