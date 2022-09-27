@@ -1,4 +1,5 @@
 export enum EventType {
+    OPEN = 'on:open',
     ADD = 'on:add',
     EDIT = 'on:edit',
     SAVE = 'on:save',

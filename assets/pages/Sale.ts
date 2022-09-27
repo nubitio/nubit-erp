@@ -11,7 +11,7 @@ import {StorageUtils} from "../utils/StorageUtils";
 import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 import Customer from "./Customer";
-import Drawer from "../Drawer";
+import {drawer} from "../Drawer";
 import {Action} from "../Action";
 import {bus} from "../EventBus";
 
@@ -241,14 +241,13 @@ export default class Sale {
 
         this.form = new Form(this.dialog.id, this.fields, this.detailFields, {routes: this.ROUTES});
 
-        let drawer = new Drawer();
         let customer = new Customer(drawer.id, {width: '100%', height: '100%', modal: true});
         customer.renderDialog();
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: function (e) {
-                    bus.trigger(new Action(EventType.ADD, {route: customer.ROUTES.ADD}));
+                    bus.trigger(new Action(EventType.OPEN));
                     drawer.show();
                 }
             }]

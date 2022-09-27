@@ -36,7 +36,7 @@ export default class Form {
             onSubmit: function () {
                 let valid = ref.form.form('validate');
                 if (valid) {
-                    window.Observer.notify(EventType.LOADING, true);
+                    window.observer.notify(EventType.LOADING, true);
                 }
                 return valid;
             },
@@ -44,7 +44,7 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        window.Observer.notify(EventType.SUCCESS, result.data || {});
+                        window.observer.notify(EventType.SUCCESS, result.data || {});
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);
@@ -52,7 +52,7 @@ export default class Form {
                 } catch (e) {
                     SharedUtils.showMessage('Error', e);
                 } finally {
-                    window.Observer.notify(EventType.LOADING, false);
+                    window.observer.notify(EventType.LOADING, false);
                 }
             }
         });
@@ -208,22 +208,21 @@ export default class Form {
     }
 
     setupObservers() {
-        window.Observer.subscribe(EventType.ADD, (data) => {
+        window.observer.subscribe(EventType.ADD, (data) => {
             this.add(data.route);
         });
 
-        window.Observer.subscribe(EventType.EDIT, (data) => {
+        window.observer.subscribe(EventType.EDIT, (data) => {
             this.edit(data.route, data.row);
         });
 
-        window.Observer.subscribe(EventType.SAVE, () => {
+        window.observer.subscribe(EventType.SAVE, () => {
             this.submit();
         });
 
         bus.on(
             event => event.name === EventType.ADD,
             (event) => {
-                console.log(event);
                 this.add();
             }
         )

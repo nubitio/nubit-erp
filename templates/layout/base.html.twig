@@ -118,7 +118,7 @@
                 console.log(error);
             });
 
-        window.Observer.subscribe(window.EventType.THEME_CHANGE, (theme) => {
+        window.observer.subscribe(window.EventType.THEME_CHANGE, (theme) => {
             if (theme === 'dark') {
                 themeIcon.removeClass('fa-moon').addClass('fa-sun');
             } else {

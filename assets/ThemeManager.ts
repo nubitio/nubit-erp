@@ -30,7 +30,7 @@ export default class ThemeManager {
             document.body.classList.add(ThemeManager.CLASS.LIGHT);
         }
 
-        window.Observer.notify(EventType.THEME_CHANGE, theme);
+        window.observer.notify(EventType.THEME_CHANGE, theme);
     }
 
     toggle() {
@@ -47,7 +47,7 @@ export default class ThemeManager {
             document.body.classList.add(ThemeManager.CLASS.DARK);
         }
 
-        window.Observer.notify(EventType.THEME_CHANGE, newTheme);
+        window.observer.notify(EventType.THEME_CHANGE, newTheme);
     }
 
     getAccentColor() {

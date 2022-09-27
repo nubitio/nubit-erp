@@ -48,7 +48,7 @@ app.dashboard = (function () {
         lapseSelector.combobox('select', 'week');
         fetchData();
 
-        window.Observer.subscribe(window.EventType.THEME_CHANGE, () => {
+        window.observer.subscribe(window.EventType.THEME_CHANGE, () => {
             setupTheme();
 
             if (dataLoaded) {
@@ -64,11 +64,11 @@ app.dashboard = (function () {
             }
         });
 
-        window.Observer.subscribe('on:rotation-data:loaded', () => {
+        window.observer.subscribe('on:rotation-data:loaded', () => {
             drawRotationCharts();
         });
 
-        window.Observer.subscribe('on:bi-data:loaded', () => {
+        window.observer.subscribe('on:bi-data:loaded', () => {
             drawCharts();
         });
 
@@ -238,7 +238,7 @@ app.dashboard = (function () {
                 lessSoldProductsData = lessSoldData;
                 rotationDataLoaded = true;
 
-                window.Observer.notify('on:rotation-data:loaded');
+                window.observer.notify('on:rotation-data:loaded');
                 dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => show_error(err))
@@ -264,7 +264,7 @@ app.dashboard = (function () {
             invoiceCountPerMonthData = result[3];
             dataLoaded = true;
 
-            window.Observer.notify('on:bi-data:loaded');
+            window.observer.notify('on:bi-data:loaded');
         });
     }
 

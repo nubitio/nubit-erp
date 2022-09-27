@@ -4,10 +4,10 @@ export {};
 
 declare global {
     interface Window {
-        Observer: any;
+        observer: any;
         DataGrid: any;
         Dialog: any;
-        Drawer: any;
+        drawer: any;
         Form: any;
         EventType: any;
         FormType: any;

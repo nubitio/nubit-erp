@@ -1,6 +1,7 @@
 import {EventType} from "./EventType";
+import {bus} from "./EventBus";
 
-export default class Drawer {
+class Drawer {
     private options: any = {};
     private drawer: JQuery;
 
@@ -30,17 +31,26 @@ export default class Drawer {
     }
 
     setupObservers() {
-        window.Observer.subscribe(EventType.SUCCESS, (data) => {
-            this.hide();
-        })
+        bus.on(
+            action => action.name === EventType.SUCCESS,
+            (action) => {
+                this.hide();
+            }
+        )
 
-        window.Observer.subscribe(EventType.CANCEL, (data) => {
-            this.hide();
-        })
+        bus.on(
+            action => action.name === EventType.CANCEL,
+            (action) => {
+                this.hide();
+            }
+        )
 
-        window.Observer.subscribe(EventType.DESTROY, (data) => {
-            this.drawer.drawer('destroy');
-        })
+        bus.on(
+            action => action.name === EventType.DESTROY,
+            (action) => {
+                this.drawer.drawer('destroy');
+            }
+        )
     }
 
     get id() {
@@ -56,3 +66,5 @@ export default class Drawer {
         this.drawer.drawer('collapse');
     }
 }
+
+export const drawer = new Drawer();
