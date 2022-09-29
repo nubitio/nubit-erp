@@ -98,7 +98,10 @@ export default class Customer {
         this.options['events'] = Customer.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, [], {routes: this.ROUTES, events: Customer.EVENTS});
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: this.ROUTES,
+            events: Customer.EVENTS
+        });
 
         let rucField = this.form.getField('ruc').textbox({
             icons: [{

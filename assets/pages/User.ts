@@ -106,7 +106,7 @@ export default class User {
         this.options['events'] = User.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, [], {
+        this.form = new Form(this.dialog.id, this.fields, {
             routes: this.ROUTES,
             events: User.EVENTS
         });

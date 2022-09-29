@@ -25,7 +25,7 @@ export default class DataGrid {
         this.toolbar = [];
         this.columns = [];
         this.routes = options.routes;
-        this.events = options.events || {};
+        this.events = options.events;
         this.init();
     }
 

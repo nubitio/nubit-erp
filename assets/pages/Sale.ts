@@ -24,7 +24,7 @@ export default class Sale {
     private options: any = {};
     private productService = new ProductService();
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'sale/add',
         EDIT: 'sale/edit/',
         DELETE: 'sale/delete/',
@@ -175,7 +175,6 @@ export default class Sale {
             .label('Precio')
             .onChange((newValue, oldValue, field) => this.onPriceChange(newValue, oldValue, field))
             .build());
-        //rxjs on change
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_total')
@@ -204,7 +203,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.emit(new Action(Sale.EVENTS.ADD, {route: ref.ROUTES.ADD}));
+                    bus.emit(new Action(Sale.EVENTS.ADD, {route: Sale.ROUTES.ADD}));
                 }
             }, {
                 text: 'Vista Previa',
@@ -270,9 +269,10 @@ export default class Sale {
         this.options['events'] = Sale.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, this.detailFields, {
-            routes: this.ROUTES,
-            events: Sale.EVENTS
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Sale.ROUTES,
+            events: Sale.EVENTS,
+            detailFields: this.detailFields,
         });
 
         let drawer = new Drawer({events: Customer.EVENTS});

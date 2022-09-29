@@ -20,7 +20,7 @@ export default class Dialog {
         this.dialog = null;
         this.positiveButton = null;
         this.negativeButton = null;
-        this.events = options.events || {};
+        this.events = options.events;
         this.init();
     }
 
