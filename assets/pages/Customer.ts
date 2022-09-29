@@ -22,6 +22,16 @@ export default class Customer {
         EXPORT: 'cliente/exportar/',
     }
 
+    static EVENTS = {
+        ADD: 'customer:add',
+        EDIT: 'customer:edit',
+        DELETE: 'customer:delete',
+        SAVE: 'customer:save',
+        CANCEL: 'customer:cancel',
+        SUCCESS: 'customer:success',
+        LOADING: 'customer:loading',
+    }
+
     constructor(container, options) {
         this.container = container;
         this.dataGrid = null;
@@ -79,14 +89,16 @@ export default class Customer {
             title: 'Clientes',
             url: 'cliente/get',
             routes: this.ROUTES,
+            events: Customer.EVENTS,
         });
     }
 
     renderDialog() {
         let ref = this;
+        this.options['events'] = Customer.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, [], {routes: this.ROUTES});
+        this.form = new Form(this.dialog.id, this.fields, [], {routes: this.ROUTES, events: Customer.EVENTS});
 
         let rucField = this.form.getField('ruc').textbox({
             icons: [{

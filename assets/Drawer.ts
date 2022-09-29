@@ -1,13 +1,14 @@
-import {EventType} from "./EventType";
 import {bus} from "./EventBus";
 
-class Drawer {
+export class Drawer {
     private options: any = {};
     private drawer: JQuery;
+    private events: any = {};
 
-    constructor(options = {}) {
+    constructor(options: any = {}) {
         this.options = options || {};
         this.drawer = null;
+        this.events = options.events || {};
         this.init();
     }
 
@@ -32,21 +33,21 @@ class Drawer {
 
     setupObservers() {
         bus.on(
-            action => action.name === EventType.SUCCESS,
+            action => action.name === this.events.SUCCESS,
             (action) => {
                 this.hide();
             }
         )
 
         bus.on(
-            action => action.name === EventType.CANCEL,
+            action => action.name === this.events.CANCEL,
             (action) => {
                 this.hide();
             }
         )
 
         bus.on(
-            action => action.name === EventType.DESTROY,
+            action => action.name === this.events.DESTROY,
             (action) => {
                 this.drawer.drawer('destroy');
             }
@@ -66,5 +67,3 @@ class Drawer {
         this.drawer.drawer('collapse');
     }
 }
-
-export const drawer = new Drawer();

@@ -118,13 +118,16 @@
                 console.log(error);
             });
 
-        window.observer.subscribe(window.EventType.THEME_CHANGE, (theme) => {
-            if (theme === 'dark') {
-                themeIcon.removeClass('fa-moon').addClass('fa-sun');
-            } else {
-                themeIcon.removeClass('fa-sun').addClass('fa-moon');
+        window.observer.on(
+            action => action.name === window.EventType.THEME_CHANGE,
+            (theme) => {
+                if (theme === 'dark') {
+                    themeIcon.removeClass('fa-moon').addClass('fa-sun');
+                } else {
+                    themeIcon.removeClass('fa-sun').addClass('fa-moon');
+                }
             }
-        });
+        );
     };
 
     window.onresize = function () {

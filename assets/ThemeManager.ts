@@ -1,5 +1,7 @@
 import {SharedUtils} from "./utils/SharedUtils";
 import {EventType} from "./EventType";
+import {bus} from "./EventBus";
+import {Action} from "./Action";
 
 export default class ThemeManager {
     private accentColor: string;
@@ -30,7 +32,7 @@ export default class ThemeManager {
             document.body.classList.add(ThemeManager.CLASS.LIGHT);
         }
 
-        window.observer.notify(EventType.THEME_CHANGE, theme);
+        bus.emit(new Action(EventType.THEME_CHANGE, theme));
     }
 
     toggle() {
@@ -47,7 +49,7 @@ export default class ThemeManager {
             document.body.classList.add(ThemeManager.CLASS.DARK);
         }
 
-        window.observer.notify(EventType.THEME_CHANGE, newTheme);
+        bus.emit(new Action(EventType.THEME_CHANGE, newTheme));
     }
 
     getAccentColor() {

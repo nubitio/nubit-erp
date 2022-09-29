@@ -48,29 +48,37 @@ app.dashboard = (function () {
         lapseSelector.combobox('select', 'week');
         fetchData();
 
-        window.observer.subscribe(window.EventType.THEME_CHANGE, () => {
-            setupTheme();
+        window.observer.on(
+            action => action.name === window.EventType.THEME_CHANGE,
+            () => {
+                setupTheme();
+                if (dataLoaded) {
+                    drawCharts();
+                } else {
+                    fetchData();
+                }
 
-            if (dataLoaded) {
-                drawCharts();
-            } else {
-                fetchData();
+                if (rotationDataLoaded) {
+                    drawRotationCharts();
+                } else {
+                    getRotationInfo('week');
+                }
             }
+        );
 
-            if (rotationDataLoaded) {
+        window.observer.on(
+            action => action.name === 'on:rotation-data:loaded',
+            () => {
                 drawRotationCharts();
-            } else {
-                getRotationInfo('week');
             }
-        });
+        );
 
-        window.observer.subscribe('on:rotation-data:loaded', () => {
-            drawRotationCharts();
-        });
-
-        window.observer.subscribe('on:bi-data:loaded', () => {
-            drawCharts();
-        });
+        window.observer.on(
+            action => action.name === 'on:bi-data:loaded',
+            () => {
+                drawCharts();
+            }
+        );
 
         window.setInterval(() => {
             fetchData();
@@ -238,7 +246,7 @@ app.dashboard = (function () {
                 lessSoldProductsData = lessSoldData;
                 rotationDataLoaded = true;
 
-                window.observer.notify('on:rotation-data:loaded');
+                window.observer.emit('on:rotation-data:loaded');
                 dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => show_error(err))
@@ -264,7 +272,7 @@ app.dashboard = (function () {
             invoiceCountPerMonthData = result[3];
             dataLoaded = true;
 
-            window.observer.notify('on:bi-data:loaded');
+            window.observer.emit('on:bi-data:loaded');
         });
     }
 

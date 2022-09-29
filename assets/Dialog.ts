@@ -1,8 +1,8 @@
 import {Constants} from "./Constants";
 import {Animation} from "./Animation";
-import {EventType} from "./EventType";
 import {bus} from "./EventBus";
 import {Action} from "./Action";
+import {SharedUtils} from "./utils/SharedUtils";
 
 export default class Dialog {
     private container: HTMLElement;
@@ -11,20 +11,22 @@ export default class Dialog {
     private positiveButton: JQuery;
     private negativeButton: JQuery;
     private isShowing: boolean = false;
+    private randomId: string = SharedUtils.randomId();
+    private events: any = {};
 
-    constructor(container, options = {}) {
+    constructor(container, options: any = {}) {
         this.container = document.getElementById(container);
         this.options = options || {};
         this.dialog = null;
         this.positiveButton = null;
         this.negativeButton = null;
+        this.events = options.events || {};
         this.init();
     }
 
     init() {
         this.setupView();
         let ref = this;
-        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 
         this.dialog.dialog({
             width: this.options.width || 400,
@@ -32,34 +34,30 @@ export default class Dialog {
             modal: this.options.modal || true,
             closable: this.options.closable || true,
             buttons: [{
-                id: 'negative-button' + randomId,
+                id: 'negative-button' + this.randomId,
                 text: Constants.TEXT_CANCEL,
                 handler: function () {
                     ref.hide();
-                    window.observer.notify(EventType.CANCEL);
-                    bus.trigger(new Action(EventType.CANCEL));
                 }
             }, {
-                id: 'positive-button' + randomId,
+                id: 'positive-button' + this.randomId,
                 text: Constants.TEXT_SAVE,
                 handler: function () {
-                    window.observer.notify(EventType.SAVE);
-                    bus.trigger(new Action(EventType.SAVE));
+                    bus.emit(new Action(ref.events.SAVE));
                 }
             }],
             onOpen: function () {
                 ref.dialog.dialog('center');
                 ref.dialog.parent().animateCss(Animation.DIALOG_OPEN_ANIMATION);
-                ref.positiveButton = $('#positive-button' + randomId);
-                ref.negativeButton = $('#negative-button' + randomId);
+                ref.positiveButton = $('#positive-button' + ref.randomId);
+                ref.negativeButton = $('#negative-button' + ref.randomId);
                 ref.positiveButton.addClass('md-btn');
                 ref.negativeButton.addClass('md-btn-plain');
                 ref.isShowing = true;
             },
             onClose: function () {
                 ref.isShowing = false;
-                window.observer.notify(EventType.CANCEL);
-                bus.trigger(new Action(EventType.CANCEL));
+                bus.emit(new Action(ref.events.CANCEL));
             }
         });
 
@@ -68,40 +66,37 @@ export default class Dialog {
 
     setupView() {
         let dialog = document.createElement('div');
-        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        dialog.setAttribute('id', randomId);
+        dialog.setAttribute('id', this.randomId);
         this.container.appendChild(dialog);
         this.dialog = $('#' + dialog.id);
     }
 
     setupObservers() {
-        window.observer.subscribe(EventType.ADD, (data) => {
-            this.show('Nuevo');
-        });
-
-        window.observer.subscribe(EventType.EDIT, (data) => {
-            this.show('Editar');
-        });
-
-        window.observer.subscribe(EventType.LOADING, (isLoading) => {
-            this.setLoading(isLoading);
-        });
-
-        window.observer.subscribe(EventType.SUCCESS, (data) => {
-            this.hide();
-        });
-
         bus.on(
-            event => event.name === EventType.OPEN,
+            event => event.name === this.events.ADD,
             (event) => {
                 this.show('Nuevo');
             }
         );
 
         bus.on(
-            event => event.name === EventType.ADD,
+            event => event.name === this.events.EDIT,
             (event) => {
-                this.show('Nuevo');
+                this.show('Editar');
+            }
+        );
+
+        bus.on(
+            event => event.name === this.events.LOADING,
+            (event) => {
+                this.setLoading(event.data);
+            }
+        );
+
+        bus.on(
+            event => event.name === this.events.SUCCESS,
+            (event) => {
+                this.hide();
             }
         );
     }

@@ -1,6 +1,8 @@
-import axios from "axios";
-
 export class SharedUtils {
+    static randomId(): string {
+        return Math.random().toString(36).substring(2, 15);
+    }
+
     static showMessage(title: String, message: string) {
         ($ as any).messager.show({
             title: title,
@@ -57,11 +59,5 @@ export class SharedUtils {
         } else {
             return '';
         }
-    }
-
-    static async loadData(url): Promise<any[]> {
-        return await axios.get(url).then(response => {
-            return response.data;
-        });
     }
 }

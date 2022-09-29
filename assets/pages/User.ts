@@ -3,7 +3,6 @@ import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
 import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
@@ -21,7 +20,17 @@ export default class User {
         DELETE: 'user/delete/',
     }
 
-    constructor(container, options) {
+    static readonly EVENTS = {
+        ADD: 'user:add',
+        EDIT: 'user:edit',
+        DELETE: 'user:delete',
+        SAVE: 'user:save',
+        CANCEL: 'user:cancel',
+        SUCCESS: 'user:success',
+        LOADING: 'user:loading',
+    }
+
+    constructor(container, options: any = {}) {
         this.container = container;
         this.dataGrid = null;
         this.dialog = null;
@@ -89,12 +98,17 @@ export default class User {
             title: 'Usuarios',
             url: 'user/get',
             routes: this.ROUTES,
+            events: User.EVENTS,
         });
     }
 
     renderDialog() {
+        this.options['events'] = User.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, [], {
+            routes: this.ROUTES,
+            events: User.EVENTS
+        });
     }
 }

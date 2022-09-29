@@ -6,12 +6,11 @@ import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 import {SharedUtils} from "../utils/SharedUtils";
 import {Constants} from "../Constants";
-import {EventType} from "../EventType";
 import {StorageUtils} from "../utils/StorageUtils";
 import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 import Customer from "./Customer";
-import {drawer} from "../Drawer";
+import {Drawer} from "../Drawer";
 import {Action} from "../Action";
 import {bus} from "../EventBus";
 
@@ -29,6 +28,16 @@ export default class Sale {
         ADD: 'sale/add',
         EDIT: 'sale/edit/',
         DELETE: 'sale/delete/',
+    }
+
+    static readonly EVENTS = {
+        ADD: 'sale:add',
+        EDIT: 'sale:edit',
+        DELETE: 'sale:delete',
+        SAVE: 'sale:save',
+        CANCEL: 'sale:cancel',
+        SUCCESS: 'sale:success',
+        LOADING: 'sale:loading',
     }
 
     constructor(container, options) {
@@ -121,6 +130,23 @@ export default class Sale {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
+            .type(FormType.NUMBER)
+            .col(6)
+            .name('descuento')
+            .label('Descuento %')
+            .defaultValue(0)
+            .onChange(this.onTotalChange.bind(this))
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.CURRENCY)
+            .col(6)
+            .name('total')
+            .label('Total')
+            .visible(false)
+            .disabled(true)
+            .build());
+        this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
             .name('estado')
             .label('Estado')
@@ -149,11 +175,13 @@ export default class Sale {
             .label('Precio')
             .onChange((newValue, oldValue, field) => this.onPriceChange(newValue, oldValue, field))
             .build());
+        //rxjs on change
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
             .readonly(true)
+            .onChange((newValue, oldValue, field) => this.onTotalChange(newValue, oldValue, field))
             .build());
     };
 
@@ -176,7 +204,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.trigger(new Action(EventType.ADD, {route: ref.ROUTES.ADD}));
+                    bus.emit(new Action(Sale.EVENTS.ADD, {route: ref.ROUTES.ADD}));
                 }
             }, {
                 text: 'Vista Previa',
@@ -209,6 +237,7 @@ export default class Sale {
             title: 'Ventas',
             url: 'sale/get',
             routes: {},
+            events: Sale.EVENTS,
             toolbar: toolbarButtons,
             subGrid: {
                 url: 'api/sale/detail/',
@@ -237,21 +266,41 @@ export default class Sale {
 
     private renderDialog() {
         this.options['width'] = 900;
+        this.options['maxHeight'] = 600;
+        this.options['events'] = Sale.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, this.detailFields, {routes: this.ROUTES});
+        this.form = new Form(this.dialog.id, this.fields, this.detailFields, {
+            routes: this.ROUTES,
+            events: Sale.EVENTS
+        });
 
+        let drawer = new Drawer({events: Customer.EVENTS});
         let customer = new Customer(drawer.id, {width: '100%', height: '100%', modal: true});
         customer.renderDialog();
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: function (e) {
-                    bus.trigger(new Action(EventType.OPEN));
+                    bus.emit(new Action(Customer.EVENTS.ADD));
                     drawer.show();
                 }
             }]
         });
+        bus.on(
+            action => action.name == Customer.EVENTS.SUCCESS,
+            (action: Action) => {
+                customerField.combobox('reload');
+                customerField.combobox('setValue', action.data || '');
+                drawer.hide();
+            }
+        );
+        bus.on(
+            action => action.name == Form.EVENTS.ROW_REMOVED,
+            (action: Action) => {
+                this.calculateGrandTotal();
+            }
+        );
     }
 
     private onSelectProduct(record, field) {
@@ -274,5 +323,21 @@ export default class Sale {
         let row = this.form.getRowFormFieldsByIndex(index);
         let quantity = row['cantidad-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
+    }
+
+    private onTotalChange(newValue, oldValue, field) {
+        this.calculateGrandTotal()
+    }
+
+    private calculateGrandTotal() {
+        let total = 0;
+        let formFields = this.form.getDetailFormFields();
+        for (let key in formFields) {
+            if (key.startsWith('precio_total-')) {
+                total += Number(formFields[key].numberbox('getValue'));
+            }
+        }
+        total -= Number(this.form.getField('descuento').numberbox('getValue'));
+        this.form.getField('total').numberbox('setValue', total);
     }
 }
