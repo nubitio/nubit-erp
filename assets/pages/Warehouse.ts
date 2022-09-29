@@ -2,9 +2,9 @@ import DataGrid from "../DataGrid";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {SharedUtils} from "../utils/SharedUtils";
 
 export default class Warehouse {
     private container: string;
@@ -14,10 +14,20 @@ export default class Warehouse {
     private form: Form;
     private options: any = {};
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'warehouse/add',
         EDIT: 'warehouse/edit/',
         DELETE: 'warehouse/delete/',
+    }
+
+    static readonly EVENTS = {
+        ADD: 'warehouse:add',
+        EDIT: 'warehouse:edit',
+        DELETE: 'warehouse:delete',
+        SAVE: 'warehouse:save',
+        CANCEL: 'warehouse:cancel',
+        SUCCESS: 'warehouse:success',
+        LOADING: 'warehouse:loading',
     }
 
     constructor(container, options) {
@@ -37,35 +47,23 @@ export default class Warehouse {
             .name('almacen_id')
             .label('Almacen id')
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
-            .name('local_id')
-            .label('Local')
-            .required(true)
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
-            .name('local')
-            .label('Local')
+            .type(FormType.TEXT)
+            .name('local_id')
+            .label('Local id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('descripcion')
             .label('Descripcion')
-            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('tipo_id')
             .label('Tipo id')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('is_default')
-            .label('Is default')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
@@ -83,15 +81,21 @@ export default class Warehouse {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Almacenes',
+            title: 'Warehouse',
             url: 'warehouse/get',
-            routes: this.ROUTES,
+            routes: Warehouse.ROUTES,
+            events: Warehouse.EVENTS,
         });
     }
 
     renderDialog() {
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Warehouse.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Warehouse.ROUTES,
+            events: Warehouse.EVENTS,
+        });
     }
 }

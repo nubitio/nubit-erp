@@ -2,8 +2,6 @@ import DataGrid from "../DataGrid";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
-import {SharedUtils} from "../SharedUtils";
-import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
@@ -15,10 +13,20 @@ export default class {{module}} {
     private form: Form;
     private options: any = {};
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: '{{l-module}}/add',
         EDIT: '{{l-module}}/edit/',
         DELETE: '{{l-module}}/delete/',
+    }
+
+    static readonly EVENTS = {
+        ADD: '{{l-module}}:add',
+        EDIT: '{{l-module}}:edit',
+        DELETE: '{{l-module}}:delete',
+        SAVE: '{{l-module}}:save',
+        CANCEL: '{{l-module}}:cancel',
+        SUCCESS: '{{l-module}}:success',
+        LOADING: '{{l-module}}:loading',
     }
 
     constructor(container, options) {
@@ -43,13 +51,19 @@ export default class {{module}} {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: '{{module}}',
             url: '{{l-module}}/get',
-            routes: this.ROUTES,
+            routes: {{module}}.ROUTES,
+            events: {{module}}.EVENTS,
         });
     }
 
     renderDialog() {
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: {{module}}.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: {{module}}.ROUTES,
+            events: {{module}}.EVENTS,
+        });
     }
 }

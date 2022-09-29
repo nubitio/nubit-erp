@@ -22,15 +22,15 @@ export default class Form {
         ROW_REMOVED: 'on:row:removed',
     }
 
-    constructor(container, fields: Field[], detailFields: Field[] = [], options: any = {}) {
+    constructor(container, fields: Field[], options: any = {}) {
         this.container = document.getElementById(container);
         this.fields = fields;
-        this.detailFields = detailFields;
+        this.detailFields = options.detailFields || [];
         this.options = options || {};
         this.form = null;
         this.formFields = {};
         this.route = null;
-        this.events = options.events || {};
+        this.events = options.events;
         this.init();
     }
 
