@@ -4,11 +4,9 @@ import {Action} from "./Action";
 type Predicate<T> = (item: T) => boolean;
 
 class EventBus<T> {
-    private observers: any[];
     private events: Subject<T>;
 
     constructor() {
-        this.observers = [];
         this.events = new Subject();
     }
 
@@ -19,31 +17,9 @@ class EventBus<T> {
             .subscribe();
     }
 
-    trigger(item: T) {
+    emit(item: T) {
+        console.log(item)
         this.events.next(item);
-    }
-
-    /**
-     * @deprecated(Use listen instead)
-     */
-    subscribe(name, callback) {
-        let f = {name: name, callback: callback};
-        this.observers.push(f);
-    }
-
-    unsubscribe(name) {
-        this.observers = this.observers.filter(subscriber => subscriber.name !== name);
-    }
-
-    /**
-     * @deprecated(Use trigger instead)
-     */
-    notify(name, data) {
-        this.observers.forEach(observer => {
-            if (observer.name === name) {
-                observer.callback(data)
-            }
-        });
     }
 }
 

@@ -8,6 +8,7 @@ export class FieldBuilder {
         this._field = {
             isIdentity: false,
             type: FormType.TEXT,
+            col: 12,
             name: '',
             label: '',
             width: null,
@@ -24,6 +25,7 @@ export class FieldBuilder {
             onChange: null,
             onSelect: null,
             readonly: false,
+            disabled: false,
             required: false,
         };
     }
@@ -35,6 +37,11 @@ export class FieldBuilder {
 
     type(type: FormType): FieldBuilder {
         this._field.type = type;
+        return this;
+    }
+
+    col(col: number): FieldBuilder {
+        this._field.col = col;
         return this;
     }
 
@@ -115,6 +122,11 @@ export class FieldBuilder {
 
     readonly(readonly: boolean): FieldBuilder {
         this._field.readonly = readonly;
+        return this;
+    }
+
+    disabled(disabled: boolean): FieldBuilder {
+        this._field.disabled = disabled;
         return this;
     }
 

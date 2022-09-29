@@ -248,10 +248,13 @@ app.venta = (function () {
         let customer = new window.app.customer(drawer.id, {width: '100%', maxHeight: viewportHeight, modal: false});
         customer.renderDialog();
 
-        window.observer.subscribe(window.EventType.SUCCESS, (data) => {
-            cbo_cliente.combobox('reload');
-            cbo_cliente.combobox('setValue', data || '');
-        });
+        window.observer.on(
+            action => action.name === window.EventType.SUCCESS,
+            (data) => {
+                cbo_cliente.combobox('reload');
+                cbo_cliente.combobox('setValue', data || '');
+            }
+        );
 
         cbo_cliente.combobox({
             width: '100%',
@@ -267,7 +270,7 @@ app.venta = (function () {
             icons: [{
                 iconCls: ICON_ADD,
                 handler: function (e) {
-                    window.observer.notify(window.EventType.ADD, {route: customer.ROUTES.ADD});
+                    window.observer.emit(window.EventType.ADD, {route: customer.ROUTES.ADD});
                     drawer.show();
                 }
             }]
@@ -414,17 +417,14 @@ app.venta = (function () {
         }
     }
 
-    function setVoided(row)
-    {
-        if (row.cliente_id.length == 11)
-        {
+    function setVoided(row) {
+        if (row.cliente_id.length == 11) {
             fetch('/venta/anular/voided/' + row.movimiento_id)
                 .then(response => response.json())
                 .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))
                 .catch(error => show_error(error));
         }
-        if (row.cliente_id.length == 8)
-        {
+        if (row.cliente_id.length == 8) {
             fetch('invoice/summary/sendVoided/' + row.movimiento_id)
                 .then(response => response.json())
                 .then(result => (result.success) ? show_info(result.msg) : show_error(result.msg))

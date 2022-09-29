@@ -1,5 +1,4 @@
 import {Constants} from "./Constants";
-import {EventType} from "./EventType";
 import {SharedUtils} from "./utils/SharedUtils";
 import {Field} from "./Field";
 import axios from "axios";
@@ -14,6 +13,8 @@ export default class DataGrid {
     private defaultToolbar: any[];
     private toolbar: any[];
     private columns: any[];
+    private routes: any = {};
+    private events: any = {};
 
     constructor(container, fields, options) {
         this.container = document.getElementById(container);
@@ -23,6 +24,8 @@ export default class DataGrid {
         this.defaultToolbar = [];
         this.toolbar = [];
         this.columns = [];
+        this.routes = options.routes;
+        this.events = options.events || {};
         this.init();
     }
 
@@ -42,12 +45,8 @@ export default class DataGrid {
     }
 
     setupObservers() {
-        window.observer.subscribe(EventType.SUCCESS, (data) => {
-            this.reload();
-        });
-
         bus.on(
-            event => event.name === EventType.SUCCESS,
+            event => event.name === this.events.SUCCESS,
             (event) => {
                 this.reload();
             }
@@ -87,8 +86,7 @@ export default class DataGrid {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    window.observer.notify(EventType.ADD, {route: ref.options.routes.ADD});
-                    bus.trigger(new Action(EventType.ADD, {route: ref.options.routes.ADD}));
+                    bus.emit(new Action(ref.events.ADD, {route: ref.routes.ADD}));
                 }
             });
             this.defaultToolbar.push('-');
@@ -101,8 +99,7 @@ export default class DataGrid {
                 handler: function () {
                     let row = ref.dataGrid.datagrid('getSelected');
                     if (row) {
-                        window.observer.notify(EventType.EDIT, {route: ref.options.routes.EDIT, row: row});
-                        bus.trigger(new Action(EventType.EDIT, {route: ref.options.routes.EDIT, row: row}));
+                        bus.emit(new Action(ref.events.EDIT, {route: ref.routes.EDIT, row: row}));
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro para editar');
                     }
@@ -118,7 +115,7 @@ export default class DataGrid {
                 handler: function () {
                     let row = ref.dataGrid.datagrid('getSelected');
                     if (row) {
-                        ref.delete(ref.options.routes.DELETE, row);
+                        ref.delete(ref.routes.DELETE, row);
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro para eliminar');
                     }

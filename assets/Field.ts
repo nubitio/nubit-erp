@@ -3,6 +3,7 @@ import {FormType} from "./FormType";
 export interface Field {
     isIdentity: boolean;
     type: FormType;
+    col: number;
     name: string;
     label: string;
     width: number;
@@ -19,5 +20,6 @@ export interface Field {
     onChange: any;
     onSelect: any;
     readonly: boolean;
+    disabled: boolean;
     required: boolean;
 }

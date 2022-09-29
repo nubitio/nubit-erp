@@ -1,9 +1,9 @@
 import {FormType} from "./FormType";
 import {SharedUtils} from "./utils/SharedUtils";
-import {EventType} from "./EventType";
 import {Field} from "./Field";
 import {DateUtils} from "./utils/DateUtils";
 import {bus} from "./EventBus";
+import {Action} from "./Action";
 
 export default class Form {
     private container: HTMLElement;
@@ -14,8 +14,15 @@ export default class Form {
     private readonly formFields: any = {};
     private route: null;
     private rowIndex = 0;
+    private randomId: string = SharedUtils.randomId();
+    private events: any = {};
 
-    constructor(container, fields: Field[], detailFields: Field[] = [], options = {}) {
+    static readonly EVENTS = {
+        ROW_ADDED: 'on:row:added',
+        ROW_REMOVED: 'on:row:removed',
+    }
+
+    constructor(container, fields: Field[], detailFields: Field[] = [], options: any = {}) {
         this.container = document.getElementById(container);
         this.fields = fields;
         this.detailFields = detailFields;
@@ -23,6 +30,7 @@ export default class Form {
         this.form = null;
         this.formFields = {};
         this.route = null;
+        this.events = options.events || {};
         this.init();
     }
 
@@ -36,7 +44,7 @@ export default class Form {
             onSubmit: function () {
                 let valid = ref.form.form('validate');
                 if (valid) {
-                    window.observer.notify(EventType.LOADING, true);
+                    bus.emit(new Action(ref.events.LOADING, true));
                 }
                 return valid;
             },
@@ -44,7 +52,7 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        window.observer.notify(EventType.SUCCESS, result.data || {});
+                        bus.emit(new Action(ref.events.SUCCESS, result.data || {}));
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);
@@ -52,7 +60,7 @@ export default class Form {
                 } catch (e) {
                     SharedUtils.showMessage('Error', e);
                 } finally {
-                    window.observer.notify(EventType.LOADING, false);
+                    bus.emit(new Action(ref.events.LOADING, false));
                 }
             }
         });
@@ -63,8 +71,7 @@ export default class Form {
     setupView() {
         let form = document.createElement('form');
         form.classList.add('fm');
-        let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        form.setAttribute('id', 'form' + randomId);
+        form.setAttribute('id', 'form' + this.randomId);
         form.setAttribute('method', 'post');
         form.setAttribute('enctype', 'multipart/form-data');
         this.container.appendChild(form);
@@ -79,11 +86,15 @@ export default class Form {
             leftCol.classList.add('col-md-4');
             row.appendChild(leftCol);
 
+            let rowContainer = document.createElement('div');
+            rowContainer.classList.add('row');
+            leftCol.appendChild(rowContainer);
+
             let rightCol = document.createElement('div');
             rightCol.classList.add('col-md-8');
             row.appendChild(rightCol);
 
-            this.buildFields(leftCol, this.fields);
+            this.buildFields(rowContainer, this.fields);
 
             let headerContainer = document.createElement('div');
             headerContainer.classList.add('mb-2');
@@ -117,7 +128,7 @@ export default class Form {
             rightCol.appendChild(headerContainer);
 
             let detailTable = document.createElement('table');
-            detailTable.setAttribute('id', 'detailTable');
+            detailTable.setAttribute('id', 'detailTable' + this.randomId);
             detailTable.setAttribute('class', 'table table-bordered');
             rightCol.appendChild(detailTable);
 
@@ -138,7 +149,7 @@ export default class Form {
             detailTable.appendChild(tableHead);
 
             let tableBody = document.createElement('tbody');
-            tableBody.setAttribute('id', 'detailTableBody');
+            tableBody.setAttribute('id', 'detailTableBody' + this.randomId);
             detailTable.appendChild(tableBody);
         } else {
             this.buildFields(form, this.fields);
@@ -147,7 +158,7 @@ export default class Form {
 
     private addRow() {
         this.rowIndex++;
-        let detailTableBody = document.getElementById('detailTableBody');
+        let detailTableBody = document.getElementById('detailTableBody' + this.randomId);
         let tableRow = document.createElement('tr');
         tableRow.setAttribute('id', 'detailRow' + this.rowIndex);
         detailTableBody.appendChild(tableRow);
@@ -164,11 +175,19 @@ export default class Form {
         });
 
         this.buildFormFields(rowFields);
+        bus.emit(new Action(Form.EVENTS.ROW_ADDED, this.rowIndex));
     }
 
     private removeRow(rowIndex) {
         let row = document.getElementById('detailRow' + rowIndex);
         row.parentNode.removeChild(row);
+        for (let key in this.formFields) {
+            let index = key.split('-')[1];
+            if (index == rowIndex) {
+                delete this.formFields[key];
+            }
+        }
+        bus.emit(new Action(Form.EVENTS.ROW_REMOVED, rowIndex));
     }
 
     private buildFields(container, fields, containerType = 'div', rowIndex = null) {
@@ -178,7 +197,7 @@ export default class Form {
             }
             let fieldContainer = document.createElement(containerType);
             if (containerType === 'div') {
-                fieldContainer.setAttribute('class', 'mb-2');
+                fieldContainer.setAttribute('class', 'mb-2 col-md-' + field.col);
             }
 
             let input = document.createElement('input');
@@ -208,34 +227,22 @@ export default class Form {
     }
 
     setupObservers() {
-        window.observer.subscribe(EventType.ADD, (data) => {
-            this.add(data.route);
-        });
-
-        window.observer.subscribe(EventType.EDIT, (data) => {
-            this.edit(data.route, data.row);
-        });
-
-        window.observer.subscribe(EventType.SAVE, () => {
-            this.submit();
-        });
-
         bus.on(
-            event => event.name === EventType.ADD,
+            event => event.name === this.events.ADD,
             (event) => {
                 this.add();
             }
         )
 
         bus.on(
-            event => event.name === EventType.EDIT,
+            event => event.name === this.events.EDIT,
             (event) => {
                 this.edit(null, event.data.row);
             }
         )
 
         bus.on(
-            event => event.name === EventType.SAVE,
+            event => event.name === this.events.SAVE,
             (event) => {
                 this.submit();
             }
@@ -383,6 +390,7 @@ export default class Form {
                 }
             },
             readonly: field.readonly,
+            disabled: field.disabled,
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -455,6 +463,17 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
+    getDetailFormFields(): any {
+        let formFields = {};
+        for (let key in this.formFields) {
+            let index = Number(key.split('-')[1]);
+            if (index > 0) {
+                formFields[key] = this.formFields[key];
+            }
+        }
+        return formFields;
+    }
+
     getRowFormFieldsByIndex(rowIndex: number): any {
         let formFields = {};
         for (let key in this.formFields) {
@@ -483,7 +502,7 @@ export default class Form {
     }
 
     add(route = null) {
-        let detailTableBody = document.getElementById('detailTableBody');
+        let detailTableBody = document.getElementById('detailTableBody' + this.randomId);
         if (detailTableBody) {
             detailTableBody.innerHTML = '';
         }
