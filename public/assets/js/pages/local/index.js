@@ -7,6 +7,16 @@ app.local = (function () {
         EXPORT: 'local/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'local:add',
+        EDIT: 'local:edit',
+        DELETE: 'local:delete',
+        SAVE: 'local:save',
+        CANCEL: 'local:cancel',
+        SUCCESS: 'local:success',
+        LOADING: 'local:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -75,11 +85,17 @@ app.local = (function () {
             title: 'Locales',
             url: 'local/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

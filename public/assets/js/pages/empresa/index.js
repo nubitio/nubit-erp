@@ -7,11 +7,21 @@ app.empresa = (function () {
         EXPORT: 'empresa/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'empresa:add',
+        EDIT: 'empresa:edit',
+        DELETE: 'empresa:delete',
+        SAVE: 'empresa:save',
+        CANCEL: 'empresa:cancel',
+        SUCCESS: 'empresa:success',
+        LOADING: 'empresa:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
 
-    let init = function (){
+    let init = function () {
         let fields = [
             {
                 type: window.FormType.HIDDEN,
@@ -75,11 +85,17 @@ app.empresa = (function () {
             title: 'Empresas',
             url: 'empresa/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
         form.field.ruc.textbox('textbox').bind('keyup', function (e) {
             console.log(e);

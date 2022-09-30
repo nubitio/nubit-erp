@@ -7,6 +7,16 @@ app.comprobante = (function () {
         EXPORT: 'comprobante/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'comprobante:add',
+        EDIT: 'comprobante:edit',
+        DELETE: 'comprobante:delete',
+        SAVE: 'comprobante:save',
+        CANCEL: 'comprobante:cancel',
+        SUCCESS: 'comprobante:success',
+        LOADING: 'comprobante:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -40,16 +50,21 @@ app.comprobante = (function () {
             }
         ];
 
-        dataGrid = new window.DataGrid('wrapper', fields,
-            {
-                title: 'Tipos de comprobantes SUNAT',
-                url: 'comprobante/get',
-                routes: ROUTES,
-            });
+        dataGrid = new window.DataGrid('wrapper', fields, {
+            title: 'Tipos de comprobantes SUNAT',
+            url: 'comprobante/get',
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

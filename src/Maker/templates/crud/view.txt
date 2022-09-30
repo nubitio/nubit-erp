@@ -6,12 +6,11 @@ import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
 export default class {{module}} {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
     static readonly ROUTES = {
         ADD: '{{l-module}}/add',
@@ -29,12 +28,8 @@ export default class {{module}} {
         LOADING: '{{l-module}}:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 

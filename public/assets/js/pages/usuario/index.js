@@ -6,6 +6,16 @@ app.usuario = (function () {
         DELETE: 'usuario/delete/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'user:add',
+        EDIT: 'user:edit',
+        DELETE: 'user:delete',
+        SAVE: 'user:save',
+        CANCEL: 'user:cancel',
+        SUCCESS: 'user:success',
+        LOADING: 'user:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -14,7 +24,6 @@ app.usuario = (function () {
         let rolName = await loadData('rol/lista/1/0', 'rol_id', 'descripcion');
 
         let fields = [
-
             {
                 type: window.FormType.HIDDEN,
                 name: 'usuario_id',
@@ -64,10 +73,17 @@ app.usuario = (function () {
             title: 'Usuarios',
             url: 'usuario/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
-        form = new window.Form(dialog.id, fields);
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
+
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

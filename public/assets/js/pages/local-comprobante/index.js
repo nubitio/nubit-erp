@@ -6,6 +6,16 @@ app.local_comprobante = (function () {
         DELETE: 'local-comprobante/delete/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'local-comprobante:add',
+        EDIT: 'local-comprobante:edit',
+        DELETE: 'local-comprobante:delete',
+        SAVE: 'local-comprobante:save',
+        CANCEL: 'local-comprobante:cancel',
+        SUCCESS: 'local-comprobante:success',
+        LOADING: 'local-comprobante:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -13,7 +23,7 @@ app.local_comprobante = (function () {
     let init = async function () {
         let empresaName = await loadData('empresa/lista/1/0', 'empresa_id', 'razon_social');
         let localName = await loadData('local/lista/1/0', 'local_id', 'descripcion');
-        let comprobanteName=await loadData('comprobante/lista/1/0', 'codigo', 'descripcion');
+        let comprobanteName = await loadData('comprobante/lista/1/0', 'codigo', 'descripcion');
 
         let fields = [
             {
@@ -94,11 +104,17 @@ app.local_comprobante = (function () {
             title: 'local comprobante ',
             url: 'local-comprobante/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

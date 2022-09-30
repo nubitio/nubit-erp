@@ -13,6 +13,7 @@ class ApiController extends BaseController
 
     public function __construct(Connection $connection)
     {
+        parent::__construct();
         $this->connection = $connection;
     }
 

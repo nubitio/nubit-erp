@@ -9,13 +9,12 @@ import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 
 export default class Purchase {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private detailFields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
     private productService = new ProductService();
 
     static readonly ROUTES = {
@@ -32,12 +31,8 @@ export default class Purchase {
         LOADING: 'purchase:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
