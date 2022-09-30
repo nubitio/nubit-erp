@@ -21,11 +21,12 @@ import VoucherSeries from "./pages/VoucherSeries";
 import Supplier from "./pages/Supplier";
 import Product from "./pages/Product";
 import Sale from "./pages/Sale";
+import Purchase from "./pages/Purchase";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
 window.Dialog = Dialog;
-window.drawer = Drawer;
+window.Drawer = Drawer;
 window.Form = Form;
 window.EventType = EventType;
 window.FormType = FormType;
@@ -46,3 +47,4 @@ window.app.voucherseries = VoucherSeries;
 window.app.supplier = Supplier;
 window.app.product = Product;
 window.app.sale = Sale;
+window.app.purchase = Purchase;

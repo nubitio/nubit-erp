@@ -7,7 +7,7 @@ declare global {
         observer: any;
         DataGrid: any;
         Dialog: any;
-        drawer: any;
+        Drawer: any;
         Form: any;
         EventType: any;
         FormType: any;
