@@ -246,7 +246,7 @@ app.dashboard = (function () {
                 lessSoldProductsData = lessSoldData;
                 rotationDataLoaded = true;
 
-                window.observer.emit('on:rotation-data:loaded');
+                window.observer.emit({name: 'on:rotation-data:loaded'});
                 dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => show_error(err))
@@ -272,7 +272,7 @@ app.dashboard = (function () {
             invoiceCountPerMonthData = result[3];
             dataLoaded = true;
 
-            window.observer.emit('on:bi-data:loaded');
+            window.observer.emit({name: 'on:bi-data:loaded'});
         });
     }
 

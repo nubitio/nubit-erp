@@ -135,7 +135,7 @@ export default class Sale {
             .name('descuento')
             .label('Descuento %')
             .defaultValue(0)
-            .onChange(this.onTotalChange.bind(this))
+            .onChange(this.calculateGrandTotal.bind(this))
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
@@ -180,7 +180,7 @@ export default class Sale {
             .name('precio_total')
             .label('Total')
             .readonly(true)
-            .onChange((newValue, oldValue, field) => this.onTotalChange(newValue, oldValue, field))
+            .onChange(this.calculateGrandTotal.bind(this))
             .build());
     };
 
@@ -323,10 +323,6 @@ export default class Sale {
         let row = this.form.getRowFormFieldsByIndex(index);
         let quantity = row['cantidad-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
-    }
-
-    private onTotalChange(newValue, oldValue, field) {
-        this.calculateGrandTotal()
     }
 
     private calculateGrandTotal() {

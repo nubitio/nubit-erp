@@ -15,11 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class SupplierController extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     #[Route('/supplier', name: 'supplier_index', methods: ['GET'])]
     public function index(): Response
     {
@@ -27,41 +22,37 @@ class SupplierController extends BaseController
     }
 
     #[Route('/supplier/get', name: 'supplier_list', methods: ['POST'])]
-    public function getAll(): Response
+    public function getAll(SupplierGetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get(SupplierGetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 
     #[Route('/supplier/add', name: 'supplier_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    public function add(Request $request, SupplierCreateUseCase $createUseCase): Response
     {
         /**
          * @var Supplier $supplier
          */
         $supplier = $this->serializer->deserialize(json_encode($request->request->all()), Supplier::class, 'json');
-        $createUseCase = $this->container->get(SupplierCreateUseCase::class);
         $createUseCase($supplier);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     #[Route('/supplier/edit/{id}', name: 'supplier_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    public function edit(Request $request, SupplierUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['proveedor_id' => $id]);
         /**
          * @var Supplier $supplier
          */
         $supplier = $this->serializer->deserialize(json_encode($request->request->all()), Supplier::class, 'json');
-        $updateUseCase = $this->container->get(SupplierUpdateUseCase::class);
         $updateUseCase($supplier);
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
     #[Route('/supplier/delete/{id}', name: 'supplier_delete', methods: ['POST'])]
-    public function delete($id): Response
+    public function delete(SupplierDeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get(SupplierDeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }

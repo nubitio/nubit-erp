@@ -95,8 +95,9 @@ export default class Customer {
 
     renderDialog() {
         let ref = this;
-        this.options['events'] = Customer.EVENTS;
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Customer.EVENTS,
+        });
 
         this.form = new Form(this.dialog.id, this.fields, {
             routes: this.ROUTES,

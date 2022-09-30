@@ -7,6 +7,16 @@ app.proveedor = (function () {
         EXPORT: 'proveedor/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'supplier:add',
+        EDIT: 'supplier:edit',
+        DELETE: 'supplier:delete',
+        SAVE: 'supplier:save',
+        CANCEL: 'supplier:cancel',
+        SUCCESS: 'supplier:success',
+        LOADING: 'supplier:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -64,11 +74,17 @@ app.proveedor = (function () {
             title: 'Proveedores',
             url: 'proveedor/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
         form.field.ruc.textbox('textbox').bind('keyup', function (e) {
             console.log(e);
