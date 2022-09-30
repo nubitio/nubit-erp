@@ -7,6 +7,16 @@ app.operacion = (function () {
         EXPORT: 'operacion/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'operacion:add',
+        EDIT: 'operacion:edit',
+        DELETE: 'operacion:delete',
+        SAVE: 'operacion:save',
+        CANCEL: 'operacion:cancel',
+        SUCCESS: 'operacion:success',
+        LOADING: 'operacion:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -55,16 +65,21 @@ app.operacion = (function () {
             }
         ];
 
-        dataGrid = new window.DataGrid('wrapper', fields,
-            {
-                title: 'Operaciones',
-                url: 'operacion/get',
-                routes: ROUTES,
-            });
+        dataGrid = new window.DataGrid('wrapper', fields, {
+            title: 'Operaciones',
+            url: 'operacion/get',
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
     return {
         init: init

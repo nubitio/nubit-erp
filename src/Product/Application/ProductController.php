@@ -15,11 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ProductController extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     #[Route('/product', name: 'product_index', methods: ['GET'])]
     public function index(): Response
     {
@@ -27,41 +22,37 @@ class ProductController extends BaseController
     }
 
     #[Route('/product/get', name: 'product_list', methods: ['POST'])]
-    public function getAll(): Response
+    public function getAll(ProductGetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get(ProductGetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 
     #[Route('/product/add', name: 'product_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    public function add(Request $request, ProductCreateUseCase $createUseCase): Response
     {
         /**
          * @var Product $product
          */
         $product = $this->serializer->deserialize(json_encode($request->request->all()), Product::class, 'json');
-        $createUseCase = $this->container->get(ProductCreateUseCase::class);
         $createUseCase($product);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     #[Route('/product/edit/{id}', name: 'product_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    public function edit(Request $request, ProductUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['producto_id' => $id]);
         /**
          * @var Product $product
          */
         $product = $this->serializer->deserialize(json_encode($request->request->all()), Product::class, 'json');
-        $updateUseCase = $this->container->get(ProductUpdateUseCase::class);
         $updateUseCase($product);
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
     #[Route('/product/delete/{id}', name: 'product_delete', methods: ['POST'])]
-    public function delete($id): Response
+    public function delete(ProductDeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get(ProductDeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }

@@ -6,6 +6,16 @@ app.options = (function () {
         DELETE: 'option/delete/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'option:add',
+        EDIT: 'option:edit',
+        DELETE: 'option:delete',
+        SAVE: 'option:save',
+        CANCEL: 'option:cancel',
+        SUCCESS: 'option:success',
+        LOADING: 'option:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -36,16 +46,21 @@ app.options = (function () {
             }
         ];
 
-        dataGrid = new window.DataGrid('wrapper', fields,
-            {
-                title: 'Options',
-                url: 'option/get',
-                routes: ROUTES,
-            });
+        dataGrid = new window.DataGrid('wrapper', fields, {
+            title: 'Options',
+            url: 'option/get',
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

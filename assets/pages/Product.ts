@@ -2,31 +2,35 @@ import DataGrid from "../DataGrid";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {SharedUtils} from "../utils/SharedUtils";
 
 export default class Product {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'product/add',
         EDIT: 'product/edit/',
         DELETE: 'product/delete/',
     }
 
-    constructor(container, options) {
+    static readonly EVENTS = {
+        ADD: 'product:add',
+        EDIT: 'product:edit',
+        DELETE: 'product:delete',
+        SAVE: 'product:save',
+        CANCEL: 'product:cancel',
+        SUCCESS: 'product:success',
+        LOADING: 'product:loading',
+    }
+
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -53,11 +57,21 @@ export default class Product {
             .type(FormType.TEXT)
             .name('descripcion')
             .label('Descripcion')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.ENTITY)
             .name('categoria_id')
-            .label('Categoria id')
+            .label('Categoria')
+            .url('api/category')
+            .valueField('categoria_id')
+            .textField('descripcion')
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.HIDDEN)
+            .name('categoria')
+            .label('Categoria')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -65,36 +79,23 @@ export default class Product {
             .label('Unidad id')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('destino_id')
-            .label('Destino id')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('stock_minimo')
-            .label('Stock minimo')
-            .build());
-        this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('precio')
             .label('Precio')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('precio_compra')
-            .label('Precio compra')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.FILE)
             .name('imagen')
             .label('Imagen')
+            .formatter((val, row) => SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/'))
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.SWITCH)
             .name('estado')
-            .label('Estado')
+            .label('Activo')
+            .formatter(SharedUtils.activeFormatter)
+            .defaultValue(true)
             .build());
-
     };
 
     render() {
@@ -106,13 +107,19 @@ export default class Product {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Product',
             url: 'product/get',
-            routes: this.ROUTES,
+            routes: Product.ROUTES,
+            events: Product.EVENTS,
         });
     }
 
     renderDialog() {
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Product.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Product.ROUTES,
+            events: Product.EVENTS,
+        });
     }
 }

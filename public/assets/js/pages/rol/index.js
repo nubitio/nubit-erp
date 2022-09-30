@@ -6,6 +6,16 @@ app.rol = (function () {
         DELETE: 'rol/delete/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'rol:add',
+        EDIT: 'rol:edit',
+        DELETE: 'rol:delete',
+        SAVE: 'rol:save',
+        CANCEL: 'rol:cancel',
+        SUCCESS: 'rol:success',
+        LOADING: 'rol:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -44,14 +54,22 @@ app.rol = (function () {
             title: 'Roles',
             url: 'rol/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
-        form = new window.Form(dialog.id, fields);
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
+
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
 
         //AGREGA BOTTON PERMISO//
-        let toolbarButtons=[
-            {text: 'Permisos',
+        let toolbarButtons = [
+            {
+                text: 'Permisos',
                 iconCls: 'fas fa-user-shield fa-1x',
                 handler: function () {
                     permisos()

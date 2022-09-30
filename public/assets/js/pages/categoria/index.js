@@ -6,6 +6,16 @@ app.categoria = (function () {
         DELETE: 'categoria/delete/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'categoria:add',
+        EDIT: 'categoria:edit',
+        DELETE: 'categoria:delete',
+        SAVE: 'categoria:save',
+        CANCEL: 'categoria:cancel',
+        SUCCESS: 'categoria:success',
+        LOADING: 'categoria:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -62,11 +72,17 @@ app.categoria = (function () {
             title: 'Categorias',
             url: 'categoria/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

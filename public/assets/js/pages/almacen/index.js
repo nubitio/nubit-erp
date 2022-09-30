@@ -7,6 +7,16 @@ app.almacen = (function () {
         EXPORT: 'almacen/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'almacen:add',
+        EDIT: 'almacen:edit',
+        DELETE: 'almacen:delete',
+        SAVE: 'almacen:save',
+        CANCEL: 'almacen:cancel',
+        SUCCESS: 'almacen:success',
+        LOADING: 'almacen:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -92,11 +102,17 @@ app.almacen = (function () {
             title: 'Almacenes',
             url: 'almacen/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {

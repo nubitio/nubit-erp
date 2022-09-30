@@ -7,6 +7,16 @@ app.producto = (function () {
         EXPORT: 'producto/exportar/',
     });
 
+    const EVENTS = Object.freeze({
+        ADD: 'producto:add',
+        EDIT: 'producto:edit',
+        DELETE: 'producto:delete',
+        SAVE: 'producto:save',
+        CANCEL: 'producto:cancel',
+        SUCCESS: 'producto:success',
+        LOADING: 'producto:loading',
+    });
+
     let dataGrid = null;
     let dialog = null;
     let form = null;
@@ -68,11 +78,17 @@ app.producto = (function () {
             title: 'Productos',
             url: 'producto/get',
             routes: ROUTES,
+            events: EVENTS,
         });
 
-        dialog = new window.Dialog('wrapper');
+        dialog = new window.Dialog('wrapper', {
+            events: EVENTS,
+        });
 
-        form = new window.Form(dialog.id, fields);
+        form = new window.Form(dialog.id, fields, {
+            routes: ROUTES,
+            events: EVENTS,
+        });
     };
 
     return {
