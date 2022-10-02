@@ -26,7 +26,7 @@ class WarehouseRepository implements WarehouseRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('almacen', 'descripcion', filter: $filter);
+        return $this->dataGridLoader->load('vw_almacen', 'descripcion', filter: $filter);
     }
 
     /**

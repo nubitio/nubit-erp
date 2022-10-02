@@ -34,11 +34,11 @@ class VoucherTypeEntity
         );
     }
 
-    public function mapFromDomainModel(VoucherType $vouchertype): VoucherTypeEntity
+    public function mapFromDomainModel(VoucherType $voucherType): VoucherTypeEntity
     {
-        $this->codigo = $vouchertype->codigo;
-        $this->descripcion = $vouchertype->descripcion;
-        $this->estado = $vouchertype->estado;
+        $this->codigo = $voucherType->codigo;
+        $this->descripcion = $voucherType->descripcion;
+        $this->estado = $voucherType->estado;
 
         return $this;
     }

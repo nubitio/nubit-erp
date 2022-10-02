@@ -51,7 +51,7 @@ class MakeCrudCommand extends Command
             $domainPath = $modulePath . '/Domain/';
             $infrastructurePath = $modulePath . '/Infrastructure/';
             $applicationPath = $modulePath . '/Application/';
-            $htmlPath = dirname(__DIR__, 2) . '/templates/' . strtolower($module) . '/';
+            $htmlPath = dirname(__DIR__, 2) . '/templates/' . $this->toKebabCase($module) . '/';
             if (!is_dir($domainPath)) {
                 mkdir($domainPath, 0777, true);
             }
@@ -93,10 +93,11 @@ class MakeCrudCommand extends Command
     {
         $primaryKey = $table->getPrimaryKey();
         $controllerPath = $path . $module . 'Controller' . '.php';
-        $controllerTemplate = dirname(__FILE__) . '/templates/crud/controller.txt';
+        $controllerTemplate = dirname(__FILE__) . '/skeleton/crud/controller.tpl';
         $controllerContent = file_get_contents($controllerTemplate);
         $controllerContent = str_replace('{{module}}', $module, $controllerContent);
-        $controllerContent = str_replace('{{l-module}}', strtolower($module), $controllerContent);
+        $controllerContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $controllerContent);
+        $controllerContent = str_replace('{{kebabModule}}', $this->toKebabCase($module), $controllerContent);
         $controllerContent = str_replace('{{table_id}}', $primaryKey->getColumns()[0], $controllerContent);
         file_put_contents($controllerPath, $controllerContent);
     }
@@ -104,37 +105,37 @@ class MakeCrudCommand extends Command
     private function makeRepositoryInterface(string $path, string $module): void
     {
         $repositoryInterfacePath = $path . $module . 'RepositoryInterface' . '.php';
-        $repositoryInterfaceTemplate = dirname(__FILE__) . '/templates/crud/repository-interface.txt';
+        $repositoryInterfaceTemplate = dirname(__FILE__) . '/skeleton/crud/repository-interface.tpl';
         $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
         $repositoryInterfaceContent = str_replace('{{module}}', $module, $repositoryInterfaceContent);
-        $repositoryInterfaceContent = str_replace('{{l-module}}', strtolower($module), $repositoryInterfaceContent);
+        $repositoryInterfaceContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $repositoryInterfaceContent);
         file_put_contents($repositoryInterfacePath, $repositoryInterfaceContent);
     }
 
     private function makeCreateUseCase(string $path, string $module): void
     {
         $createUseCasePath = $path . $module . 'CreateUseCase' . '.php';
-        $createUseCaseTemplate = dirname(__FILE__) . '/templates/crud/create.txt';
+        $createUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/create.tpl';
         $createUseCaseContent = file_get_contents($createUseCaseTemplate);
         $createUseCaseContent = str_replace('{{module}}', $module, $createUseCaseContent);
-        $createUseCaseContent = str_replace('{{l-module}}', strtolower($module), $createUseCaseContent);
+        $createUseCaseContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $createUseCaseContent);
         file_put_contents($createUseCasePath, $createUseCaseContent);
     }
 
     private function makeUpdateUseCase(string $path, string $module): void
     {
         $updateUseCasePath = $path . $module . 'UpdateUseCase' . '.php';
-        $updateUseCaseTemplate = dirname(__FILE__) . '/templates/crud/update.txt';
+        $updateUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/update.tpl';
         $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
         $updateUseCaseContent = str_replace('{{module}}', $module, $updateUseCaseContent);
-        $updateUseCaseContent = str_replace('{{l-module}}', strtolower($module), $updateUseCaseContent);
+        $updateUseCaseContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $updateUseCaseContent);
         file_put_contents($updateUseCasePath, $updateUseCaseContent);
     }
 
     private function makeDeleteUseCase(string $path, string $module): void
     {
         $deleteUseCasePath = $path . $module . 'DeleteUseCase' . '.php';
-        $deleteUseCaseTemplate = dirname(__FILE__) . '/templates/crud/delete.txt';
+        $deleteUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/delete.tpl';
         $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
         $deleteUseCaseContent = str_replace('{{module}}', $module, $deleteUseCaseContent);
         file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
@@ -143,7 +144,7 @@ class MakeCrudCommand extends Command
     private function makeGetAllUseCase(string $path, string $module): void
     {
         $getAllUseCasePath = $path . $module . 'GetAllUseCase' . '.php';
-        $getAllUseCaseTemplate = dirname(__FILE__) . '/templates/crud/get-all.txt';
+        $getAllUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-all.tpl';
         $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
         $getAllUseCaseContent = str_replace('{{module}}', $module, $getAllUseCaseContent);
         file_put_contents($getAllUseCasePath, $getAllUseCaseContent);
@@ -153,7 +154,7 @@ class MakeCrudCommand extends Command
     {
         $columns = $table->getColumns();
         $modelPath = $path . $module . '.php';
-        $modelTemplate = dirname(__FILE__) . '/templates/crud/model.txt';
+        $modelTemplate = dirname(__FILE__) . '/skeleton/crud/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
         $modelContent = str_replace('{{module}}', $module, $modelContent);
         $modelFields = "";
@@ -170,10 +171,10 @@ class MakeCrudCommand extends Command
         $columns = $table->getColumns();
         $primaryKey = $table->getPrimaryKey();
         $entityPath = $path . $module . 'Entity' . '.php';
-        $entityTemplate = dirname(__FILE__) . '/templates/crud/entity.txt';
+        $entityTemplate = dirname(__FILE__) . '/skeleton/crud/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
         $entityContent = str_replace('{{module}}', $module, $entityContent);
-        $entityContent = str_replace('{{l-module}}', strtolower($module), $entityContent);
+        $entityContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $entityContent);
         $entityContent = str_replace('{{table}}', $table->getName(), $entityContent);
         $entityFields = "";
         $mapToDomainModelFields = "";
@@ -186,7 +187,7 @@ class MakeCrudCommand extends Command
             $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
             $entityFields .= "    public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
             $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
-            $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . strtolower($module) . "->" . $column->getName() . ";\n";
+            $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . $this->toCamelCase($module) . "->" . $column->getName() . ";\n";
         }
         $entityContent = str_replace('{{fields}}', $entityFields, $entityContent);
         $entityContent = str_replace('{{mapToDomainModelFields}}', $mapToDomainModelFields, $entityContent);
@@ -198,10 +199,10 @@ class MakeCrudCommand extends Command
     {
         $primaryKey = $table->getPrimaryKey();
         $repositoryPath = $path . $module . 'Repository' . '.php';
-        $repositoryTemplate = dirname(__FILE__) . '/templates/crud/repository.txt';
+        $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/repository.tpl';
         $repositoryContent = file_get_contents($repositoryTemplate);
         $repositoryContent = str_replace('{{module}}', $module, $repositoryContent);
-        $repositoryContent = str_replace('{{l-module}}', strtolower($module), $repositoryContent);
+        $repositoryContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $table->getName(), $repositoryContent);
         $repositoryContent = str_replace('{{table_id}}', $primaryKey->getColumns()[0], $repositoryContent);
         $repositoryContent = str_replace('{{sortColumn}}', $sortColumn, $repositoryContent);
@@ -214,10 +215,10 @@ class MakeCrudCommand extends Command
         $primaryKey = $table->getPrimaryKey();
         $foreignKeys = $table->getForeignKeys();
         $viewPath = $path . $module . '.ts';
-        $viewTemplate = dirname(__FILE__) . '/templates/crud/view.txt';
+        $viewTemplate = dirname(__FILE__) . '/skeleton/crud/view.tpl';
         $viewContent = file_get_contents($viewTemplate);
         $viewContent = str_replace('{{module}}', $module, $viewContent);
-        $viewContent = str_replace('{{l-module}}', strtolower($module), $viewContent);
+        $viewContent = str_replace('{{kebabModule}}', $this->toKebabCase($module), $viewContent);
         $viewFields = "";
         foreach ($columns as $column) {
             if (in_array($column->getName(), $ignoredColumns)) {
@@ -254,10 +255,10 @@ class MakeCrudCommand extends Command
     private function makeTemplate(string $path, string $module): void
     {
         $twigPath = $path . 'index.html.twig';
-        $twigTemplate = dirname(__FILE__) . '/templates/crud/index.txt';
+        $twigTemplate = dirname(__FILE__) . '/skeleton/crud/index.tpl';
         $twigContent = file_get_contents($twigTemplate);
         $twigContent = str_replace('{{module}}', $module, $twigContent);
-        $twigContent = str_replace('{{l-module}}', strtolower($module), $twigContent);
+        $twigContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $twigContent);
         file_put_contents($twigPath, $twigContent);
     }
 
@@ -269,5 +270,17 @@ class MakeCrudCommand extends Command
             'date', 'datetime' => '\DateTime',
             default => 'string',
         };
+    }
+
+    private function toCamelCase(string $str): string
+    {
+        $str = str_replace(' ', '', ucwords(str_replace('_', ' ', $str)));
+        $str[0] = strtolower($str[0]);
+        return $str;
+    }
+
+    private function toKebabCase(string $str): string
+    {
+        return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $str));
     }
 }

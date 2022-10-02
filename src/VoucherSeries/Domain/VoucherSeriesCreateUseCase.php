@@ -11,8 +11,8 @@ class VoucherSeriesCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherSeries $voucherseries): void
+    public function __invoke(VoucherSeries $voucherSeries): void
     {
-        $this->repository->insert($voucherseries);
+        $this->repository->insert($voucherSeries);
     }
 }

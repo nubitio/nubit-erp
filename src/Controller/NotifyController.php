@@ -100,7 +100,7 @@ class NotifyController extends BaseController
         $this->app->set('subtitle', 'Hola, a continuación la fecha y hora de la última sincronización por local');
         $this->app->set('data', $info);
 
-        $body = $template->render('templates/alert.html');
+        $body = $template->render('skeleton/alert.html');
 
         $message['body'] = $body;
         $message['altbody'] = 'Notificación de sincronización';

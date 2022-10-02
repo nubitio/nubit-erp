@@ -15,53 +15,44 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class VoucherSeriesController extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    #[Route('/voucherseries', name: 'voucherseries_index', methods: ['GET'])]
+    #[Route('/voucher-series', name: 'voucher-series_index', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('voucherseries/index.html.twig');
+        return $this->render('voucher-series/index.html.twig');
     }
 
-    #[Route('/voucherseries/get', name: 'voucherseries_list', methods: ['POST'])]
-    public function getAll(): Response
+    #[Route('/voucher-series/get', name: 'voucher-series_list', methods: ['POST'])]
+    public function getAll(VoucherSeriesGetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get(VoucherSeriesGetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 
-    #[Route('/voucherseries/add', name: 'voucherseries_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    #[Route('/voucher-series/add', name: 'voucher-series_create', methods: ['POST'])]
+    public function add(Request $request, VoucherSeriesCreateUseCase $createUseCase): Response
     {
         /**
-         * @var VoucherSeries $voucherseries
+         * @var VoucherSeries $voucherSeries
          */
-        $voucherseries = $this->serializer->deserialize(json_encode($request->request->all()), VoucherSeries::class, 'json');
-        $createUseCase = $this->container->get(VoucherSeriesCreateUseCase::class);
-        $createUseCase($voucherseries);
+        $voucherSeries = $this->serializer->deserialize(json_encode($request->request->all()), VoucherSeries::class, 'json');
+        $createUseCase($voucherSeries);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/voucherseries/edit/{id}', name: 'voucherseries_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    #[Route('/voucher-series/edit/{id}', name: 'voucher-series_update', methods: ['POST'])]
+    public function edit(Request $request, VoucherSeriesUpdateUseCase $updateUseCase, $id): Response
     {
-        $request->request->add(['local_id' => $id]);
+        $request->request->add(['id' => $id]);
         /**
-         * @var VoucherSeries $voucherseries
+         * @var VoucherSeries $voucherSeries
          */
-        $voucherseries = $this->serializer->deserialize(json_encode($request->request->all()), VoucherSeries::class, 'json');
-        $updateUseCase = $this->container->get(VoucherSeriesUpdateUseCase::class);
-        $updateUseCase($voucherseries);
+        $voucherSeries = $this->serializer->deserialize(json_encode($request->request->all()), VoucherSeries::class, 'json');
+        $updateUseCase($voucherSeries);
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/voucherseries/delete/{id}', name: 'voucherseries_delete', methods: ['POST'])]
-    public function delete($id): Response
+    #[Route('/voucher-series/delete/{id}', name: 'voucher-series_delete', methods: ['POST'])]
+    public function delete(VoucherSeriesDeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get(VoucherSeriesDeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }

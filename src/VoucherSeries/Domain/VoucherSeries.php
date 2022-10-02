@@ -9,6 +9,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class VoucherSeries
 {
     public function __construct(
+        #[SerializedName('id')]
+        public ?int $id,
         #[SerializedName('local_id')]
         public ?string $local_id,
         #[SerializedName('tipo_comprobante_id')]
@@ -17,6 +19,8 @@ class VoucherSeries
         public ?string $serie,
         #[SerializedName('serie_asociada')]
         public ?string $serie_asociada,
+        #[SerializedName('active')]
+        public ?bool $active,
 
     )
     {

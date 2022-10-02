@@ -32,10 +32,10 @@ class VoucherTypeRepository implements VoucherTypeRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function insert(VoucherType $vouchertype): void
+    public function insert(VoucherType $voucherType): void
     {
         $entity = new VoucherTypeEntity();
-        $entity->mapFromDomainModel($vouchertype);
+        $entity->mapFromDomainModel($voucherType);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -43,10 +43,10 @@ class VoucherTypeRepository implements VoucherTypeRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function update(VoucherType $vouchertype): void
+    public function update(VoucherType $voucherType): void
     {
-        $entity = $this->entityManager->find(VoucherTypeEntity::class, $vouchertype->codigo);
-        $entity->mapFromDomainModel($vouchertype);
+        $entity = $this->entityManager->find(VoucherTypeEntity::class, $voucherType->codigo);
+        $entity->mapFromDomainModel($voucherType);
         $this->entityManager->flush();
     }
 
