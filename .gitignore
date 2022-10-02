@@ -2,14 +2,15 @@
 /.env.local
 /.env.local.php
 /.env.*.local
-/vendor/
 /public/tmp/
 /node_modules/
 /public/build/
 /dist/
 /config/config.ini
 /config/certificate_prod.pem
+/public/bundles/
 /var/
+/vendor/
 
 ### JetBrains template
 # User-specific stuff

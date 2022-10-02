@@ -17,6 +17,8 @@ class VoucherSeriesEntity
 {
     #[Id]
     #[GeneratedValue]
+    #[Column(name: "id", type: "integer")]
+    public ?int $id;
     #[Column(name: "local_id", type: "string")]
     public ?string $local_id;
     #[Column(name: "tipo_comprobante_id", type: "string")]
@@ -25,24 +27,30 @@ class VoucherSeriesEntity
     public ?string $serie;
     #[Column(name: "serie_asociada", type: "string")]
     public ?string $serie_asociada;
+    #[Column(name: "active", type: "boolean")]
+    public ?bool $active;
 
     public function mapToDomainModel(): VoucherSeries
     {
         return new VoucherSeries(
+            $this->id,
             $this->local_id,
             $this->tipo_comprobante_id,
             $this->serie,
             $this->serie_asociada,
+            $this->active,
 
         );
     }
 
-    public function mapFromDomainModel(VoucherSeries $voucherseries): VoucherSeriesEntity
+    public function mapFromDomainModel(VoucherSeries $voucherSeries): VoucherSeriesEntity
     {
-        $this->local_id = $voucherseries->local_id;
-        $this->tipo_comprobante_id = $voucherseries->tipo_comprobante_id;
-        $this->serie = $voucherseries->serie;
-        $this->serie_asociada = $voucherseries->serie_asociada;
+        $this->id = $voucherSeries->id;
+        $this->local_id = $voucherSeries->local_id;
+        $this->tipo_comprobante_id = $voucherSeries->tipo_comprobante_id;
+        $this->serie = $voucherSeries->serie;
+        $this->serie_asociada = $voucherSeries->serie_asociada;
+        $this->active = $voucherSeries->active;
 
         return $this;
     }

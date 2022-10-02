@@ -7,12 +7,11 @@ import {FieldBuilder} from "../FieldBuilder";
 import {SharedUtils} from "../utils/SharedUtils";
 
 export default class Warehouse {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
     static readonly ROUTES = {
         ADD: 'warehouse/add',
@@ -30,12 +29,8 @@ export default class Warehouse {
         LOADING: 'warehouse:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -50,20 +45,27 @@ export default class Warehouse {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.ENTITY)
             .name('local_id')
-            .label('Local id')
+            .label('Local')
+            .url('api/local')
+            .valueField('local_id')
+            .textField('descripcion')
             .required(true)
+            .visible(false)
+            .build());
+
+        this.fields.push(new FieldBuilder()
+            .type(FormType.HIDDEN)
+            .name('local')
+            .label('Local')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('descripcion')
             .label('Descripcion')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('tipo_id')
-            .label('Tipo id')
+            .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)

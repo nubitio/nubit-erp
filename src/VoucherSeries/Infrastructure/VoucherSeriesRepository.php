@@ -26,16 +26,16 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('vw_local_comprobante', 'serie', filter: $filter);
+        return $this->dataGridLoader->load('vw_local_comprobante', 'local', filter: $filter);
     }
 
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function insert(VoucherSeries $voucherseries): void
+    public function insert(VoucherSeries $voucherSeries): void
     {
         $entity = new VoucherSeriesEntity();
-        $entity->mapFromDomainModel($voucherseries);
+        $entity->mapFromDomainModel($voucherSeries);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -43,10 +43,10 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function update(VoucherSeries $voucherseries): void
+    public function update(VoucherSeries $voucherSeries): void
     {
-        $entity = $this->entityManager->find(VoucherSeriesEntity::class, $voucherseries->local_id);
-        $entity->mapFromDomainModel($voucherseries);
+        $entity = $this->entityManager->find(VoucherSeriesEntity::class, $voucherSeries->id);
+        $entity->mapFromDomainModel($voucherSeries);
         $this->entityManager->flush();
     }
 

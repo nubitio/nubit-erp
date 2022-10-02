@@ -15,53 +15,44 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class VoucherTypeController extends BaseController
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
-    #[Route('/vouchertype', name: 'vouchertype_index', methods: ['GET'])]
+    #[Route('/voucher-type', name: 'voucher-type_index', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('vouchertype/index.html.twig');
+        return $this->render('voucher-type/index.html.twig');
     }
 
-    #[Route('/vouchertype/get', name: 'vouchertype_list', methods: ['POST'])]
-    public function getAll(): Response
+    #[Route('/voucher-type/get', name: 'voucher-type_list', methods: ['POST'])]
+    public function getAll(VoucherTypeGetAllUseCase $getAllUseCase): Response
     {
-        $getAllUseCase = $this->container->get(VoucherTypeGetAllUseCase::class);
         return $this->json($getAllUseCase());
     }
 
-    #[Route('/vouchertype/add', name: 'vouchertype_create', methods: ['POST'])]
-    public function add(Request $request): Response
+    #[Route('/voucher-type/add', name: 'voucher-type_create', methods: ['POST'])]
+    public function add(Request $request, VoucherTypeCreateUseCase $createUseCase): Response
     {
         /**
-         * @var VoucherType $vouchertype
+         * @var VoucherType $voucherType
          */
-        $vouchertype = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
-        $createUseCase = $this->container->get(VoucherTypeCreateUseCase::class);
-        $createUseCase($vouchertype);
+        $voucherType = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
+        $createUseCase($voucherType);
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/vouchertype/edit/{id}', name: 'vouchertype_update', methods: ['POST'])]
-    public function edit(Request $request, $id): Response
+    #[Route('/voucher-type/edit/{id}', name: 'voucher-type_update', methods: ['POST'])]
+    public function edit(Request $request, VoucherTypeUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['codigo' => $id]);
         /**
-         * @var VoucherType $vouchertype
+         * @var VoucherType $voucherType
          */
-        $vouchertype = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
-        $updateUseCase = $this->container->get(VoucherTypeUpdateUseCase::class);
-        $updateUseCase($vouchertype);
+        $voucherType = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
+        $updateUseCase($voucherType);
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/vouchertype/delete/{id}', name: 'vouchertype_delete', methods: ['POST'])]
-    public function delete($id): Response
+    #[Route('/voucher-type/delete/{id}', name: 'voucher-type_delete', methods: ['POST'])]
+    public function delete(VoucherTypeDeleteUseCase $deleteUseCase, $id): Response
     {
-        $deleteUseCase = $this->container->get(VoucherTypeDeleteUseCase::class);
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }

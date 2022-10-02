@@ -425,7 +425,7 @@ export default class Form {
             label: field.label,
             labelPosition: 'top',
             data: field.data,
-            panelHeight: 200,
+            panelHeight: 'auto',
             limitToList: true,
             required: field.required,
         });

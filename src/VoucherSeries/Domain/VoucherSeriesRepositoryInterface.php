@@ -6,9 +6,9 @@ interface VoucherSeriesRepositoryInterface
 {
     public function getAll(?string $filter = null): array;
 
-    public function insert(VoucherSeries $voucherseries): void;
+    public function insert(VoucherSeries $voucherSeries): void;
 
-    public function update(VoucherSeries $voucherseries): void;
+    public function update(VoucherSeries $voucherSeries): void;
 
     public function delete(string $id): void;
 }

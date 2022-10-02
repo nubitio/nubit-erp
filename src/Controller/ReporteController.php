@@ -152,7 +152,7 @@ class ReporteController extends BaseController
             $extra = "Del " . $fecha;
             $this->app->set('extra', $extra);
             $template = new Template;
-            echo $template->render('templates/asistencia_diaria.html');
+            echo $template->render('skeleton/asistencia_diaria.html');
         } else {
             echo "No se encontraron registros";
         }
@@ -189,7 +189,7 @@ class ReporteController extends BaseController
             }
             $this->app->set('extra', $extra);
             $template = new Template;
-            echo $template->render('templates/asistencia_mensual.html');
+            echo $template->render('skeleton/asistencia_mensual.html');
         } else {
             echo "No se encontraron registros";
         }
@@ -211,7 +211,7 @@ class ReporteController extends BaseController
             }
             $this->app->set('extra', $extra);
             $template = new Template;
-            echo $template->render('templates/asistencia_resumen.html');
+            echo $template->render('skeleton/asistencia_resumen.html');
         } else {
             echo "No se encontraron registros";
         }

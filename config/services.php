@@ -15,6 +15,7 @@ use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Security\Http\Logout\LogoutUrlGenerator;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\WebpackEncoreBundle\Asset\EntrypointLookupCollectionInterface;
@@ -71,4 +72,6 @@ return function (ContainerConfigurator $configurator) {
         ->arg('$packages', new Reference(Packages::class))
         ->arg('$defaultAttributes', [])
         ->arg('$defaultScriptAttributes', ['defer' => true]);
+
+    $services->set('security.logout_url_generator', LogoutUrlGenerator::class);
 };

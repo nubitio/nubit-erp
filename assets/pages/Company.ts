@@ -9,26 +9,31 @@ import {FieldBuilder} from "../FieldBuilder";
 import {ConsultService} from "../services/consult.service";
 
 export default class Company {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
     private consultService: ConsultService = new ConsultService();
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'company/add',
         EDIT: 'company/edit/',
         DELETE: 'company/delete/',
     }
 
-    constructor(container, options) {
+    static readonly EVENTS = {
+        ADD: 'company:add',
+        EDIT: 'company:edit',
+        DELETE: 'company:delete',
+        SAVE: 'company:save',
+        CANCEL: 'company:cancel',
+        SUCCESS: 'company:success',
+        LOADING: 'company:loading',
+    }
+
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -45,12 +50,13 @@ export default class Company {
             .type(FormType.TEXT)
             .name('ruc')
             .label('Ruc')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('razon_social')
             .label('Razon social')
-            .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -61,6 +67,7 @@ export default class Company {
             .type(FormType.TEXT)
             .name('domicilio_fiscal')
             .label('Domicilio fiscal')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -93,15 +100,21 @@ export default class Company {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Empresas',
             url: 'company/get',
-            routes: this.ROUTES,
+            routes: Company.ROUTES,
+            events: Company.EVENTS,
         });
     }
 
     renderDialog() {
         let ref = this;
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Company.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Company.ROUTES,
+            events: Company.EVENTS,
+        });
 
         let rucField = this.form.getField('ruc').textbox({
             icons: [{

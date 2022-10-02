@@ -5,10 +5,12 @@ namespace App;
 use App\Domain\Annotation\IgnoreAutowire;
 use App\Domain\Compiler\RemoveUnwantedServices;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle;
 use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Bundle\MonologBundle\MonologBundle;
+use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
 use Symfony\Bundle\WebProfilerBundle\WebProfilerBundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -26,11 +28,13 @@ class Kernel extends BaseKernel
     {
         $bundles = [
             new FrameworkBundle(),
-            new TwigBundle(),
-            new WebpackEncoreBundle(),
-            new MonologBundle(),
             new DoctrineBundle(),
             new DebugBundle(),
+            new TwigBundle(),
+            new WebpackEncoreBundle(),
+            new SecurityBundle(),
+            new MonologBundle(),
+            new EasyAdminBundle(),
         ];
 
         if ('dev' === $this->getEnvironment()) {
@@ -54,6 +58,28 @@ class Kernel extends BaseKernel
             'profiler'             => [
                 'only_exceptions' => false,
             ],
+        ]);
+
+        $container->extension('security', [
+            'providers' => [
+                'in_memory' => [
+                    'memory' => null,
+                ],
+            ],
+            'firewalls' => [
+                'dev' => [
+                    'pattern' => '^/(_(profiler|wdt)|css|images|js)/',
+                    'security' => false,
+                ],
+                'main' => [
+                    'lazy'      => true,
+                    'provider'  => 'in_memory',
+                ],
+            ],
+            /*'access_control' => [
+                ['path' => '^/admin', 'roles' => 'ROLE_ADMIN'],
+                ['path' => '^/login', 'roles' => 'IS_AUTHENTICATED_ANONYMOUSLY'],
+            ],*/
         ]);
 
         $container->extension('doctrine', [

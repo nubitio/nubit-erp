@@ -7,25 +7,30 @@ import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
 export default class Category {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'category/add',
         EDIT: 'category/edit/',
         DELETE: 'category/delete/',
     }
 
-    constructor(container, options) {
+    static readonly EVENTS = {
+        ADD: 'category:add',
+        EDIT: 'category:edit',
+        DELETE: 'category:delete',
+        SAVE: 'category:save',
+        CANCEL: 'category:cancel',
+        SUCCESS: 'category:success',
+        LOADING: 'category:loading',
+    }
+
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -80,13 +85,19 @@ export default class Category {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Categorias',
             url: 'category/get',
-            routes: this.ROUTES,
+            routes: Category.ROUTES,
+            events: Category.EVENTS,
         });
     }
 
     renderDialog() {
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Category.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Category.ROUTES,
+            events: Category.EVENTS,
+        });
     }
 }

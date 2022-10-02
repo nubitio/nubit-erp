@@ -7,25 +7,30 @@ import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 
 export default class Local {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
-    public ROUTES = {
+    static readonly ROUTES = {
         ADD: 'local/add',
         EDIT: 'local/edit/',
         DELETE: 'local/delete/',
     }
 
-    constructor(container, options) {
+    static readonly EVENTS = {
+        ADD: 'local:add',
+        EDIT: 'local:edit',
+        DELETE: 'local:delete',
+        SAVE: 'local:save',
+        CANCEL: 'local:cancel',
+        SUCCESS: 'local:success',
+        LOADING: 'local:loading',
+    }
+
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -46,6 +51,7 @@ export default class Local {
             .valueField('empresa_id')
             .textField('razon_social')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.HIDDEN)
@@ -56,12 +62,13 @@ export default class Local {
             .type(FormType.TEXT)
             .name('descripcion')
             .label('Descripcion')
-            .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('direccion')
             .label('Direccion')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -86,13 +93,19 @@ export default class Local {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Locales',
             url: 'local/get',
-            routes: this.ROUTES,
+            routes: Local.ROUTES,
+            events: Local.EVENTS,
         });
     }
 
     renderDialog() {
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: Local.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id, this.fields, {
+            routes: Local.ROUTES,
+            events: Local.EVENTS,
+        });
     }
 }

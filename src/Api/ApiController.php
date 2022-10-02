@@ -66,4 +66,18 @@ class ApiController extends BaseController
         $data = $this->connection->fetchAllAssociative("SELECT * FROM proveedor where estado = 1");
         return $this->json($data);
     }
+
+    #[Route('/api/local', name: 'api_local_get', methods: ['GET'])]
+    public function getLocal(): JsonResponse
+    {
+        $data = $this->connection->fetchAllAssociative("SELECT * FROM local where estado = 1");
+        return $this->json($data);
+    }
+
+    #[Route('/api/voucher-type', name: 'api_voucher-type_get', methods: ['GET'])]
+    public function getVoucherType(): JsonResponse
+    {
+        $data = $this->connection->fetchAllAssociative("SELECT * FROM tipo_comprobante where estado = 1");
+        return $this->json($data);
+    }
 }

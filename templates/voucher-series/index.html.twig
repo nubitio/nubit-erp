@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}VoucherSeries{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const voucherSeries = new window.app.voucherSeries('wrapper');
+            voucherSeries.render();
+        });
+    </script>
+{% endblock %}

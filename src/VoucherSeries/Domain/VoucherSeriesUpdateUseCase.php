@@ -11,8 +11,8 @@ class VoucherSeriesUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherSeries $voucherseries): void
+    public function __invoke(VoucherSeries $voucherSeries): void
     {
-        $this->repository->update($voucherseries);
+        $this->repository->update($voucherSeries);
     }
 }
