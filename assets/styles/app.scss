@@ -1047,9 +1047,14 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   border-color: var(--border-color);
 }
 
-.tree-file {
-  background: transparent !important;
-  margin-right: 0;
+.tree-node-selected {
+  background: rgb(var(--accent-color)) !important;
+  color: var(--accent-color-contrast);
+}
+
+.tree-node-hover {
+  background: var(--primary-color-dark);
+  color: var(--text-color);
 }
 
 /*scrollbar*/

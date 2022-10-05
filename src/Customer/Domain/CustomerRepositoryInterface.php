@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Customer\Domain;
+
+interface CustomerRepositoryInterface
+{
+    public function getAll(?string $filter = null): array;
+
+    public function insert(Customer $customer): void;
+
+    public function update(Customer $customer): void;
+
+    public function delete(string $id): void;
+}

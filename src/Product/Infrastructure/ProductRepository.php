@@ -26,7 +26,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('producto', 'descripcion', filter: $filter);
+        return $this->dataGridLoader->load('vw_producto', 'descripcion', filter: $filter);
     }
 
     /**

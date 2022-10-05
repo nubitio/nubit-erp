@@ -56,8 +56,8 @@ class RolController extends BaseController
 
     public function get_mr()
     {
-        if (isset($_POST['rol_id'])) {
-            $result = $this->rol->get_mr($_POST['rol_id']);
+        if (isset($_GET['rol_id'])) {
+            $result = $this->rol->get_mr($_GET['rol_id']);
             if ($result["success"]) {
                 $data = [];
                 $i = 0;

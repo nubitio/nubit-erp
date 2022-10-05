@@ -15,13 +15,12 @@ import {Action} from "../Action";
 import {bus} from "../EventBus";
 
 export default class Sale {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private detailFields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
     private productService = new ProductService();
 
     static readonly ROUTES = {
@@ -40,12 +39,8 @@ export default class Sale {
         LOADING: 'sale:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options || {};
         this.init();
     }
 
@@ -264,10 +259,11 @@ export default class Sale {
     }
 
     private renderDialog() {
-        this.options['width'] = 900;
-        this.options['maxHeight'] = 600;
-        this.options['events'] = Sale.EVENTS;
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            width: 900,
+            maxHeight: 600,
+            events: Sale.EVENTS
+        });
 
         this.form = new Form(this.dialog.id, this.fields, {
             routes: Sale.ROUTES,
@@ -276,8 +272,8 @@ export default class Sale {
         });
 
         let drawer = new Drawer({events: Customer.EVENTS});
-        let customer = new Customer(drawer.id, {width: '100%', height: '100%', modal: true});
-        customer.renderDialog();
+        let customer = new Customer(drawer.id);
+        customer.renderDialog({width: '100%', height: window.innerHeight, modal: false});
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',

@@ -20,7 +20,7 @@ class CategoryController extends BaseController
     #[Route('/api/category', name: 'api_category_get', methods: ['GET'])]
     public function index(): JsonResponse
     {
-        $data = $this->connection->fetchAllAssociative("SELECT * FROM categoria where ifnull(parent_id, '') = ''");
+        $data = $this->connection->fetchAllAssociative("SELECT * FROM categoria where estado = 1");
         return $this->json($data);
     }
 }

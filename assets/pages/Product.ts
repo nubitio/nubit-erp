@@ -49,9 +49,19 @@ export default class Product {
             .label('Codigo')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.ENUM)
             .name('tipo_id')
-            .label('Tipo id')
+            .label('Tipo')
+            .data([
+                {value: 1, text: 'Fisico'},
+                {value: 2, text: 'Servicio'},
+            ])
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.HIDDEN)
+            .name('tipo')
+            .label('Tipo')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -72,11 +82,6 @@ export default class Product {
             .type(FormType.HIDDEN)
             .name('categoria')
             .label('Categoria')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('unidad_id')
-            .label('Unidad id')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)

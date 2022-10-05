@@ -30,6 +30,7 @@ export default class Dialog {
 
         this.dialog.dialog({
             width: this.options.width || 400,
+            height: this.options.height || 'auto',
             maxHeight: this.options.maxHeight || 550,
             modal: this.options.modal || true,
             closable: this.options.closable || true,

@@ -32,5 +32,6 @@ declare global {
         combobox: any;
         switchbutton: any;
         animateCss: any;
+        tree: any;
     }
 }
