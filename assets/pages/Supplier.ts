@@ -11,12 +11,11 @@ import {bus} from "../EventBus";
 import {Action} from "../Action";
 
 export default class Supplier {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
     private consultService: ConsultService = new ConsultService();
 
     static readonly ROUTES = {
@@ -36,12 +35,8 @@ export default class Supplier {
         LOADING: 'supplier:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -64,13 +59,13 @@ export default class Supplier {
             .type(FormType.TEXTAREA)
             .name('razon_social')
             .label('Proveedor')
-            .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('domicilio_fiscal')
             .label('Dirección')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)

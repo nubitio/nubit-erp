@@ -6,23 +6,24 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Constants} from "../Constants";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {ConsultService} from "../services/consult.service";
 
 export default class Customer {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
+    private consultService = new ConsultService();
 
-    public ROUTES = {
-        ADD: 'cliente/add/',
-        EDIT: 'cliente/edit/',
-        DELETE: 'cliente/delete/',
-        EXPORT: 'cliente/exportar/',
+    public readonly ROUTES = {
+        ADD: 'customer/add/',
+        EDIT: 'customer/edit/',
+        DELETE: 'customer/delete/',
+        EXPORT: 'customer/export/',
     }
 
-    static EVENTS = {
+    static readonly EVENTS = {
         ADD: 'customer:add',
         EDIT: 'customer:edit',
         DELETE: 'customer:delete',
@@ -32,12 +33,8 @@ export default class Customer {
         LOADING: 'customer:loading',
     }
 
-    constructor(container, options) {
+    constructor(container) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
-        this.options = options;
         this.init();
     }
 
@@ -53,13 +50,13 @@ export default class Customer {
             .type(FormType.TEXTAREA)
             .name('razon_social')
             .label('Cliente')
-            .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)
             .name('domicilio_fiscal')
             .label('Domicilio')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
             .name('telefono')
@@ -87,15 +84,18 @@ export default class Customer {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Clientes',
-            url: 'cliente/get',
+            url: 'customer/get',
             routes: this.ROUTES,
             events: Customer.EVENTS,
         });
     }
 
-    renderDialog() {
+    renderDialog(options: any = {}) {
         let ref = this;
         this.dialog = new Dialog(this.container, {
+            width: options.width || 550,
+            height: options.height || 400,
+            modal: options.modal || true,
             events: Customer.EVENTS,
         });
 
@@ -121,36 +121,26 @@ export default class Customer {
     }
 
     consult() {
-        let doc = this.form.field.ruc.textbox('getValue');
-        let apiUrl = ''
-        let dialogTitle = ''
+        let doc = this.form.getField('ruc').textbox('getValue');
         if (doc.length === 11) {
-            dialogTitle = 'Consultando RUC';
-            apiUrl = 'api/ruc/';
-        } else {
-            dialogTitle = 'Consultando DNI';
-            apiUrl = 'api/dni/'
-        }
-        this.dialog.setLoading(true, dialogTitle);
-        fetch(apiUrl + doc)
-            .then(response => response.json())
-            .then(data => {
+            this.dialog.setLoading(true, 'Consultando RUC...');
+            this.consultService.consultRuc(doc)
+                .subscribe((response) => {
                     this.dialog.setLoading(false);
-                    if (doc.length === 11) {
-                        if (data.estado === 'ACTIVO') {
-                            this.form.field.razon_social.textbox('setValue', data.razonSocial);
-                            this.form.field.domicilio_fiscal.textbox('setValue', data.direccion);
-                        } else {
-                            SharedUtils.showMessage('Error', 'El RUC no está activo');
-                        }
+                    if (response.estado === 'ACTIVO') {
+                        this.form.getField('razon_social').textbox('setValue', response.razonSocial);
+                        this.form.getField('domicilio_fiscal').textbox('setValue', response.direccion);
                     } else {
-                        this.form.field.razon_social.textbox('setValue', data.nombres + ' ' + data.apellidoPaterno + ' ' + data.apellidoMaterno);
+                        SharedUtils.showMessage('Error', 'El RUC ingresado no se encuentra activo');
                     }
-                }
-            )
-            .catch(error => {
-                this.dialog.setLoading(false);
-                SharedUtils.showMessage('Error', error.message);
-            });
+                })
+        } else {
+            this.dialog.setLoading(true, 'Consultando DNI...');
+            this.consultService.consultDni(doc)
+                .subscribe((response) => {
+                    this.dialog.setLoading(false);
+                    this.form.getField('razon_social').textbox('setValue', response.nombres + ' ' + response.apellidoPaterno + ' ' + response.apellidoMaterno);
+                })
+        }
     }
 }

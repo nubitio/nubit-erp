@@ -23,6 +23,8 @@ import Sale from "./pages/Sale";
 import Purchase from "./pages/Purchase";
 import Config from "./pages/Config";
 import Operation from "./pages/Operation";
+import Role from "./pages/Role";
+import Cashbox from "./pages/Cashbox";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -50,3 +52,5 @@ window.app.product = Product;
 window.app.sale = Sale;
 window.app.purchase = Purchase;
 window.app.config = Config;
+window.app.role = Role;
+window.app.cashbox = Cashbox;
