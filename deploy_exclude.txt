@@ -12,6 +12,7 @@ README.md
 Dockerfile
 docker-compose.yml
 node_modules/
+var/
 
 public/assets/images/logo.png
 config/config.ini
