@@ -23,7 +23,7 @@ $session->start();
 $request = Request::createFromGlobals();
 $request->setSession($session);
 
-$kernel = new Kernel('dev', true);
+$kernel = new Kernel($_ENV['APP_ENV'], true);
 
 try {
     $response = $kernel->handle($request);
@@ -72,7 +72,7 @@ $app->set('CONTAINER', function ($class) use ($containerBuilder) {
 });
 
 if ($_ENV['APP_ENV'] != 'dev') {
-    \Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
+    //\Sentry\init(['dsn' => 'https://709d3ebb8c184de9a5e579946b6e210b@o1246433.ingest.sentry.io/6405961']);
 } else {
     Debug::enable();
 }
