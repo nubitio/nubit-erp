@@ -2,7 +2,10 @@
 
 namespace App\Cashbox\Domain;
 
+use App\CashboxDetail\Domain\CashboxDetail;
 use App\Domain\Annotation\IgnoreAutowire;
+use App\Local\Domain\Local;
+use App\User\Domain\User;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -10,19 +13,51 @@ class Cashbox
 {
     public function __construct(
         #[SerializedName('caja_id')]
-        public ?string $caja_id,
+        public ?string    $caja_id,
         #[SerializedName('local_id')]
-        public ?string $local_id,
+        public ?string    $local_id,
         #[SerializedName('apertura')]
         public ?\DateTime $apertura,
         #[SerializedName('cierre')]
         public ?\DateTime $cierre,
         #[SerializedName('usuario_id')]
-        public ?int $usuario_id,
+        public ?int       $usuario_id,
         #[SerializedName('estado')]
-        public ?bool $estado,
-
+        public ?bool      $estado,
+        public Local      $local,
+        public User       $user,
+        /**
+         * @var CashboxDetail[] $items
+         */
+        public            $items = [],
     )
     {
+    }
+
+    public function getIncome(): float
+    {
+        $income = 0;
+        foreach ($this->items as $item) {
+            if ($item->tipo_id == 1) {
+                $income += $item->monto;
+            }
+        }
+        return $income;
+    }
+
+    public function getOutcome(): float
+    {
+        $outcome = 0;
+        foreach ($this->items as $item) {
+            if ($item->tipo_id == 2) {
+                $outcome += $item->monto;
+            }
+        }
+        return $outcome;
+    }
+
+    public function getBalance(): float
+    {
+        return $this->getIncome() - $this->getOutcome();
     }
 }

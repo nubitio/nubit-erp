@@ -25,6 +25,7 @@ import Config from "./pages/Config";
 import Operation from "./pages/Operation";
 import Role from "./pages/Role";
 import Cashbox from "./pages/Cashbox";
+import CashboxConsult from "./pages/CashboxConsult";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -54,3 +55,4 @@ window.app.purchase = Purchase;
 window.app.config = Config;
 window.app.role = Role;
 window.app.cashbox = Cashbox;
+window.app.cashBoxConsult = CashboxConsult;

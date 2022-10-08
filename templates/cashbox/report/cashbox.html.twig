@@ -21,8 +21,8 @@
                 </td>
                 <td class="text-right">
                     <h4>{{ title }}</h4>
-                    <p>Local: {{ header['local'] }}</p>
-                    Cajero(a): <span class="text-uppercase">{{ header['usuario'] }}</span>
+                    <p>Local: {{ cashbox.local.descripcion|default('') }}</p>
+                    Cajero(a): <span class="text-uppercase">{{ cashbox.user.username|default('') }}</span>
                 </td>
             </tr>
         </table>
@@ -30,14 +30,14 @@
         <table class="table table-borderless mb-4">
             <tr>
                 <td style="width: 65%">
-                    <div>Apertura: {{ header['apertura']|date("d/m/Y H:i") }}</div>
-                    {% if header['cierre'] %}
-                        <div>Cierre: {{ header['cierre']|date('d/m/Y H:i') }}</div>
+                    <div>Apertura: {{ cashbox.apertura|date("d/m/Y H:i") }}</div>
+                    {% if cashbox.cierre %}
+                        <div>Cierre: {{ cashbox.cierre|date('d/m/Y H:i') }}</div>
                     {% endif %}
                 </td>
                 <td>
-                    <div>Total ingresos: {{ header['ingresos'] }}</div>
-                    <div>Total egresos: {{ header['egresos'] }}</div>
+                    <div>Total ingresos: {{ cashbox.income|default(0.0) }}</div>
+                    <div>Total egresos: {{ cashbox.outcome|default(0.0) }}</div>
                 </td>
             </tr>
         </table>
@@ -53,13 +53,13 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for item in detail %}
+                {% for item in cashbox.items %}
                     <tr>
-                        <td class="text-center">{{ counter }}</td>
-                        <td>{{ item['descripcion'] }}</td>
-                        <td class="text-right">{{ (item['tipo_id'] == 1) ? item['monto'] : '-' }}</td>
-                        <td class="text-right">{{ (item['tipo_id'] == 2) ? item['monto'] : '-' }}</td>
-                        <td>{{ item['referencia'] }}</td>
+                        <td class="text-center">{{ item.uid }}</td>
+                        <td>{{ item.descripcion }}</td>
+                        <td class="text-right">{{ (item.tipo_id == 1) ? item.monto : '-' }}</td>
+                        <td class="text-right">{{ (item.tipo_id == 2) ? item.monto : '-' }}</td>
+                        <td>{{ item.referencia }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -75,7 +75,7 @@
                         <td class="left">
                             <strong class="text-dark">Saldo final</strong></td>
                         <td class="right">
-                            <strong class="text-dark">{{ header['saldo_final'] }}</strong>
+                            <strong class="text-dark">{{ cashbox.balance|default(0.0) }}</strong>
                         </td>
                     </tr>
                     </tbody>
@@ -83,7 +83,7 @@
             </div>
         </div>
         <hr>
-        <p class="mb-0">{{ obs }}</p>
+        <p class="mb-0">{{ obs|default('') }}</p>
     </div>
 </div>
 </body>

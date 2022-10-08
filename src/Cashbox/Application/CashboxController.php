@@ -3,14 +3,18 @@
 namespace App\Cashbox\Application;
 
 use App\Base\BaseController;
-use App\Cashbox\Domain\CashboxGetAllUseCase;
-use App\Cashbox\Domain\CashboxCreateUseCase;
-use App\Cashbox\Domain\CashboxUpdateUseCase;
-use App\Cashbox\Domain\CashboxDeleteUseCase;
 use App\Cashbox\Domain\Cashbox;
+use App\Cashbox\Domain\CashboxCreateUseCase;
+use App\Cashbox\Domain\CashboxDeleteUseCase;
+use App\Cashbox\Domain\CashboxGetAllUseCase;
+use App\Cashbox\Domain\CashboxGetInfoReceiptUseCase;
+use App\Cashbox\Domain\CashboxGetOneUseCase;
+use App\Cashbox\Domain\CashboxUpdateUseCase;
+use App\Service\PdfExporter;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class CashboxController extends BaseController
@@ -21,10 +25,17 @@ class CashboxController extends BaseController
         return $this->render('cashbox/index.html.twig');
     }
 
-    #[Route('/cashbox/get', name: 'cashbox_list', methods: ['POST'])]
-    public function getAll(CashboxGetAllUseCase $getAllUseCase): Response
+    #[Route('/cashbox-consult', name: 'cashbox_consult', methods: ['GET'])]
+    public function consult(): Response
     {
-        return $this->json($getAllUseCase());
+        return $this->render('cashbox/consult.html.twig');
+    }
+
+    #[Route('/cashbox/get', name: 'cashbox_list', methods: ['POST'])]
+    public function getAll(Request $request, CashboxGetAllUseCase $getAllUseCase): Response
+    {
+        $filter = sprintf("local_id = '%s'", $request->getSession()->get('local_id'));
+        return $this->json($getAllUseCase($filter));
     }
 
     #[Route('/cashbox/add', name: 'cashbox_create', methods: ['POST'])]
@@ -55,5 +66,33 @@ class CashboxController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]
+    public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, $id): StreamedResponse
+    {
+        $cashBox = $getOneUseCase($id);
+
+        $content = $this->renderView('cashbox/report/cashbox.html.twig', [
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'cashbox' => $cashBox,
+        ]);
+        return $exporter->export($content, 'caja_' . $id);
+    }
+
+    #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
+    public function report(Request $request, CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, $id): StreamedResponse
+    {
+        $cashBox = $getOneUseCase($id);
+        $infoReceipt = $getInfoReceiptUseCase($id);
+
+        $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'cashbox' => $cashBox,
+            'receipt' => $infoReceipt,
+        ]);
+        return $exporter->export($content, 'caja_' . $id);
     }
 }
