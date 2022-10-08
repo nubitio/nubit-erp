@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class LocalEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: "local_id", type: "string")]
     public ?string $local_id;
     #[Column(name: "empresa_id", type: "string")]

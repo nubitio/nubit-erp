@@ -2,8 +2,8 @@
 
 namespace App\Cashbox\Infrastructure;
 
-use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\Cashbox\Domain\Cashbox;
+use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,7 +26,38 @@ class CashboxRepository implements CashboxRepositoryInterface
      */
     public function getAll(?string $filter = null): array
     {
-        return $this->dataGridLoader->load('caja', 'apertura', filter: $filter);
+        return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
+    }
+
+    public function getOne(string $id): Cashbox
+    {
+        $entity = $this->entityManager->find(CashboxEntity::class, $id);
+        return $entity->mapToDomainModel();
+    }
+
+    /**
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function getInfoByReceiptType(string $id): array
+    {
+        $sql = "
+            SELECT
+                tc.descripcion AS tipo,
+                c.serie,
+                min( c.numero ) AS desde,
+                max( c.numero ) AS hasta,
+                sum( c.total - c.discount_amount ) AS total 
+            FROM
+                comprobante c
+                INNER JOIN tipo_comprobante tc ON tc.codigo = c.tipo_comprobante_id
+                INNER JOIN movimiento m ON m.movimiento_id = c.movimiento_id 
+            WHERE
+                m.caja_id = ? 
+            GROUP BY
+                tc.codigo
+        ";
+
+        return $this->connection->fetchAllAssociative($sql, [$id]);
     }
 
     /**

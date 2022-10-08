@@ -80,4 +80,11 @@ class ApiController extends BaseController
         $data = $this->connection->fetchAllAssociative("SELECT * FROM tipo_comprobante where estado = 1");
         return $this->json($data);
     }
+
+    #[Route('/api/cashbox/detail/{id}', name: 'api_cashbox_detail_get', methods: ['GET'])]
+    public function getCashBoxDetail($id): JsonResponse
+    {
+        $data = $this->connection->fetchAllAssociative('SELECT * FROM caja_detalle where caja_id = ?', [$id]);
+        return $this->json($data);
+    }
 }
