@@ -38,7 +38,7 @@ export default class Warehouse {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('almacen_id')
             .label('Almacen id')
             .required(true)
@@ -56,7 +56,7 @@ export default class Warehouse {
             .build());
 
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('local')
             .label('Local')
             .build());

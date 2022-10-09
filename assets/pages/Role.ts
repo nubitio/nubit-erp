@@ -42,7 +42,7 @@ export default class Role {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('rol_id')
             .label('Rol id')
             .required(true)

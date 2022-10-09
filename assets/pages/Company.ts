@@ -41,7 +41,7 @@ export default class Company {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('empresa_id')
             .label('Empresa id')
             .required(true)

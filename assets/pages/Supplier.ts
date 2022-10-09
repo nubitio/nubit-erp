@@ -44,7 +44,7 @@ export default class Supplier {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('proveedor_id')
             .label('Proveedor id')
             .required(true)

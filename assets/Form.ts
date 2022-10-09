@@ -192,11 +192,11 @@ export default class Form {
 
     private buildFields(container, fields, containerType = 'div', rowIndex = null) {
         fields.forEach(field => {
-            if (field.type === FormType.HIDDEN) {
+            if (field.type === FormType.NONE) {
                 return;
             }
             let fieldContainer = document.createElement(containerType);
-            if (containerType === 'div') {
+            if (containerType === 'div' && !field.hidden) {
                 fieldContainer.setAttribute('class', 'mb-2 col-md-' + field.col);
             }
 
@@ -314,6 +314,9 @@ export default class Form {
             validType: field.validators,
             required: field.required,
         });
+        if (field.hidden) {
+            input.textbox('hide');
+        }
         this.formFields[field.name] = input;
     }
 

@@ -38,7 +38,7 @@ export default class Product {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('producto_id')
             .label('Producto id')
             .required(true)
@@ -59,7 +59,7 @@ export default class Product {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('tipo')
             .label('Tipo')
             .build());
@@ -79,7 +79,7 @@ export default class Product {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('categoria')
             .label('Categoria')
             .build());

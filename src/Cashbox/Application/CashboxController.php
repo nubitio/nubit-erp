@@ -51,7 +51,6 @@ class CashboxController extends BaseController
             'caja_id' => $cashBox->caja_id,
             'fecha' => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
-            'usuario_id' => $cashBox->usuario_id,
         ];
         $data['rows'] = $cashBox->items;
         $data['footer'] = [

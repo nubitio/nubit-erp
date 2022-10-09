@@ -21,5 +21,6 @@ export interface Field {
     onSelect: any;
     readonly: boolean;
     disabled: boolean;
+    hidden: boolean;
     required: boolean;
 }

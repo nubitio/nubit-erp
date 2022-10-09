@@ -38,7 +38,7 @@ export default class VoucherSeries {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('id')
             .label('Id')
             .required(true)
@@ -54,7 +54,7 @@ export default class VoucherSeries {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('local')
             .label('Local')
             .build());
@@ -69,7 +69,7 @@ export default class VoucherSeries {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('tipo_comprobante')
             .label('Tipo comprobante')
             .width(100)

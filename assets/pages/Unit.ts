@@ -34,7 +34,7 @@ export default class Unit {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('unidad_id')
             .label('Unidad id')
             .required(true)

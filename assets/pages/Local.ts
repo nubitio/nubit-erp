@@ -38,7 +38,7 @@ export default class Local {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('local_id')
             .label('Local id')
             .required(true)
@@ -54,7 +54,7 @@ export default class Local {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('empresa')
             .label('Empresa')
             .build());

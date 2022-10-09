@@ -171,6 +171,21 @@ $.extend($.fn.sidemenu.methods, {
     }
 });
 
+$.extend($.fn.textbox.methods, {
+    show: function(jq){
+        return jq.each(function(){
+            $(this).next().show();
+            $($(this).textbox('label')).show();
+        })
+    },
+    hide: function(jq){
+        return jq.each(function(){
+            $(this).next().hide();
+            $($(this).textbox('label')).hide();
+        })
+    }
+})
+
 function rucValidator(ruc) {
     let rucCopy = ruc;
     let validStartWith = [10, 15, 16, 17, 20];
