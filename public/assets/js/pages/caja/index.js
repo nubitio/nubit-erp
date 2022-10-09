@@ -89,7 +89,7 @@ app.caja = (function () {
         });
     };
 
-    function load_datagrid(caja) {
+    function  load_datagrid(caja) {
         dg.datagrid({
             title: `Caja - ${caja.fecha}`,
             url: 'caja/detalle/' + caja.caja_id,

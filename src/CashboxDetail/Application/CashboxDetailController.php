@@ -15,12 +15,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class CashboxDetailController extends BaseController
 {
-    #[Route('/cashbox-detail', name: 'cashbox-detail_index', methods: ['GET'])]
-    public function index(): Response
-    {
-        return $this->render('cashbox-detail/index.html.twig');
-    }
-
     #[Route('/cashbox-detail/get', name: 'cashbox-detail_list', methods: ['POST'])]
     public function getAll(CashboxDetailGetAllUseCase $getAllUseCase): Response
     {

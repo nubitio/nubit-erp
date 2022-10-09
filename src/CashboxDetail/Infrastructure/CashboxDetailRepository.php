@@ -2,8 +2,8 @@
 
 namespace App\CashboxDetail\Infrastructure;
 
-use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
 use App\CashboxDetail\Domain\CashboxDetail;
+use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,6 +34,9 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
      */
     public function insert(CashboxDetail $cashboxDetail): void
     {
+        $nextIndex = $this->connection->fetchOne('SELECT MAX(uid) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
+        $cashboxDetail->uid = $nextIndex;
+        dd($cashboxDetail);
         $entity = new CashboxDetailEntity();
         $entity->mapFromDomainModel($cashboxDetail);
         $this->entityManager->persist($entity);

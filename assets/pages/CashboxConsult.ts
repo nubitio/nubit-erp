@@ -106,8 +106,8 @@ export default class CashboxConsult {
                 url: 'api/cashbox/detail/',
                 columns: [
                     {field: 'tipo_id', title: 'Tipo', formatter: this.typeFormatter},
-                    {field: 'descripcion', title: 'Descripcion'},
-                    {field: 'referencia', title: 'Referencia', width: 100},
+                    {field: 'descripcion', title: 'Concepto'},
+                    {field: 'referencia', title: 'Observaciones', width: 100},
                     {field: 'monto', title: 'Monto', align: 'right'},
                 ]
             }

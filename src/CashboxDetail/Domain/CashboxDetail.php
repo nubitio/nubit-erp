@@ -23,7 +23,6 @@ class CashboxDetail
         public ?string $referencia,
         #[SerializedName('monto')]
         public ?string $monto,
-        public $cashbox,
     )
     {
     }

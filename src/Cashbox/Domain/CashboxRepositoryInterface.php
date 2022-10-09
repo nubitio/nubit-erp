@@ -8,6 +8,8 @@ interface CashboxRepositoryInterface
 
     public function getOne(string $id): Cashbox;
 
+    public function getLast(string $localId, int $userId): Cashbox;
+
     public function getInfoByReceiptType(string $id): array;
 
     public function insert(Cashbox $cashbox): void;

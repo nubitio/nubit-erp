@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[IgnoreAutowire]
 #[Entity]
@@ -48,7 +49,6 @@ class CashboxDetailEntity
             $this->descripcion,
             $this->referencia,
             $this->monto,
-            $this->cashbox,
         );
     }
 
@@ -61,7 +61,6 @@ class CashboxDetailEntity
         $this->descripcion = $cashboxDetail->descripcion;
         $this->referencia = $cashboxDetail->referencia;
         $this->monto = $cashboxDetail->monto;
-        $this->cashbox = $cashboxDetail->cashbox;
 
         return $this;
     }

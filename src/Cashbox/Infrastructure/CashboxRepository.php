@@ -35,6 +35,16 @@ class CashboxRepository implements CashboxRepositoryInterface
         return $entity->mapToDomainModel();
     }
 
+    public function getLast(string $localId, int $userId): Cashbox
+    {
+        $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
+            'local_id' => $localId,
+            'usuario_id' => $userId,
+            'estado' => 1
+        ]);
+        return $entity->mapToDomainModel();
+    }
+
     /**
      * @throws \Doctrine\DBAL\Exception
      */

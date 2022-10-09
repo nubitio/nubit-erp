@@ -8,6 +8,7 @@ use App\Cashbox\Domain\CashboxCreateUseCase;
 use App\Cashbox\Domain\CashboxDeleteUseCase;
 use App\Cashbox\Domain\CashboxGetAllUseCase;
 use App\Cashbox\Domain\CashboxGetInfoReceiptUseCase;
+use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Cashbox\Domain\CashboxGetOneUseCase;
 use App\Cashbox\Domain\CashboxUpdateUseCase;
 use App\Service\PdfExporter;
@@ -36,6 +37,38 @@ class CashboxController extends BaseController
     {
         $filter = sprintf("local_id = '%s'", $request->getSession()->get('local_id'));
         return $this->json($getAllUseCase($filter));
+    }
+
+    #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET', 'POST'])]
+    public function getLast(Request $request, CashboxGetLastUseCase $getLastUseCase): Response
+    {
+        $localId = $request->getSession()->get('local_id');
+        $userId = $request->getSession()->get('usuario_id');
+        $cashBox = $getLastUseCase($localId, $userId);
+        $data = [];
+
+        $data['header'] = [
+            'caja_id' => $cashBox->caja_id,
+            'fecha' => $cashBox->apertura->format('Y-m-d'),
+            'apertura' => $cashBox->apertura->format('H:i:s'),
+            'usuario_id' => $cashBox->usuario_id,
+        ];
+        $data['rows'] = $cashBox->items;
+        $data['footer'] = [
+            [
+                'descripcion' => 'Ingresos',
+                'monto'       => $cashBox->getIncome(),
+            ],
+            [
+                'descripcion' => 'Egresos',
+                'monto'       => $cashBox->getOutcome(),
+            ],
+            [
+                'descripcion' => 'Total',
+                'monto'       => $cashBox->getBalance(),
+            ],
+        ];
+        return $this->json($data);
     }
 
     #[Route('/cashbox/add', name: 'cashbox_create', methods: ['POST'])]

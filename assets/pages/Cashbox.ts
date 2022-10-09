@@ -13,9 +13,9 @@ export default class Cashbox {
     private form: Form;
 
     static readonly ROUTES = {
-        ADD: 'cashbox/add',
-        EDIT: 'cashbox/edit/',
-        DELETE: 'cashbox/delete/',
+        ADD: 'cashbox-detail/add',
+        EDIT: 'cashbox-detail/edit/',
+        DELETE: 'cashbox-detail/delete/',
     }
 
     static readonly EVENTS = {
@@ -43,31 +43,35 @@ export default class Cashbox {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('local_id')
-            .label('Local id')
+            .type(FormType.ENUM)
+            .name('tipo_id')
+            .label('Tipo')
+            .data([
+                {value: 1, text: 'INGRESO'},
+                {value: 2, text: 'EGRESO'},
+            ])
+            .formatter(this.typeFormatter)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
-            .name('apertura')
-            .label('Apertura')
+            .name('descripcion')
+            .label('Concepto')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('cierre')
-            .label('Cierre')
+            .type(FormType.TEXTAREA)
+            .name('referencia')
+            .label('Observaciones')
+            .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('usuario_id')
-            .label('Usuario id')
+            .type(FormType.CURRENCY)
+            .name('monto')
+            .label('Monto')
+            .align('right')
+            .required(true)
             .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('estado')
-            .label('Estado')
-            .build());
-
     };
 
     render() {
@@ -76,11 +80,24 @@ export default class Cashbox {
     }
 
     renderDataGrid() {
+        let toolbar = [
+            {
+                text: 'Cerrar caja',
+                iconCls: 'fa fa-lock fa-1x text-info',
+                handler: () => {
+
+                }
+            }
+        ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Cashbox',
-            url: 'cashbox/get',
+            url: 'cashbox/last',
             routes: Cashbox.ROUTES,
             events: Cashbox.EVENTS,
+            toolbar: toolbar,
+            pagination: false,
+            showFooter: true,
+            filter: false,
         });
     }
 
@@ -93,5 +110,17 @@ export default class Cashbox {
             routes: Cashbox.ROUTES,
             events: Cashbox.EVENTS,
         });
+    }
+
+    private typeFormatter(value, row, index) {
+        value = Number(value);
+        if (value === 1) {
+            value = '<span class="badge rounded-pill bg-success">INGRESO</span>';
+        } else if (value === 2) {
+            value = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
+        } else {
+            value = '';
+        }
+        return value;
     }
 }
