@@ -171,6 +171,8 @@ export default class DataGrid {
             remoteFilter: true,
             toolbar: this.toolbar,
             columns: [this.columns],
+            pagination: this.options.pagination ?? true,
+            showFooter: this.options.showFooter ?? false,
         }
         let subGrid = this.options.subGrid;
         if (subGrid) {
@@ -204,8 +206,9 @@ export default class DataGrid {
             }
         }
         this.dataGrid.datagrid(gridOptions);
-
-        this.dataGrid.datagrid('enableFilter', []);
+        if (this.options.filter ?? true) {
+            this.dataGrid.datagrid('enableFilter', this.options.filter ?? []);
+        }
     }
 
     reload() {
