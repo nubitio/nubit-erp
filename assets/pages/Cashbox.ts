@@ -37,9 +37,10 @@ export default class Cashbox {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.TEXT)
             .name('caja_id')
-            .label('Caja id')
+            .label('Caja')
+            .hidden(true)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -98,6 +99,13 @@ export default class Cashbox {
             pagination: false,
             showFooter: true,
             filter: false,
+            onLoadSuccess: (data) => {
+                this.fields.forEach(field => {
+                    if (field.name === 'caja_id') {
+                        field.defaultValue = data['header']['caja_id'];
+                    }
+                });
+            }
         });
     }
 

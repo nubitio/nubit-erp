@@ -43,7 +43,7 @@ export default class User {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('usuario_id')
             .label('Usuario id')
             .required(true)
@@ -75,7 +75,7 @@ export default class User {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('rol')
             .label('Rol')
             .build());

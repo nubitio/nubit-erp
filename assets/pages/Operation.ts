@@ -38,7 +38,7 @@ export default class Operation {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('operacion_id')
             .label('Operacion id')
             .required(true)

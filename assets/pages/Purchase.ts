@@ -40,7 +40,7 @@ export default class Purchase {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('movimiento_id')
             .label('Movimiento id')
             .required(true)
@@ -62,7 +62,7 @@ export default class Purchase {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('operacion')
             .label('Operacion')
             .width(100)
@@ -80,7 +80,7 @@ export default class Purchase {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('almacen')
             .label('Almacen')
             .build());

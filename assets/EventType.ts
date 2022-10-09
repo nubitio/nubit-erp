@@ -1,5 +1,4 @@
 export enum EventType {
-    OPEN = 'on:open',
     ADD = 'on:add',
     EDIT = 'on:edit',
     SAVE = 'on:save',
@@ -10,7 +9,5 @@ export enum EventType {
     ERROR = 'on:error',
     THEME_CHANGE = 'on:theme:change',
     CANCEL = 'on:cancel',
-    INIT = 'on:init',
-    LOAD = 'on:load',
     DESTROY = 'on:destroy',
 }

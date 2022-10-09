@@ -37,7 +37,7 @@ export default class Config {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('id')
             .label('Id')
             .required(true)

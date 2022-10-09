@@ -77,20 +77,20 @@ app.venta = (function () {
         options = JSON.parse(localStorage.getItem('options'));
         let fields = [
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 name: 'movimiento_id',
                 isIdentity: true,
                 visible: false
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Fecha',
                 name: 'fecha',
                 required: true,
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Cliente',
                 name: 'cliente',
                 width: 200,
@@ -98,7 +98,7 @@ app.venta = (function () {
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Pago',
                 name: 'tipo_pago',
                 formatter: tipopagocell,
@@ -106,7 +106,7 @@ app.venta = (function () {
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Nota',
                 name: 'serie',
                 align: 'center',
@@ -115,7 +115,7 @@ app.venta = (function () {
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Comprobante',
                 name: 'iserie',
                 align: 'center',
@@ -124,14 +124,14 @@ app.venta = (function () {
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Total',
                 name: 'gravada',
                 align: 'right',
                 visible: true,
             },
             {
-                type: window.FormType.HIDDEN,
+                type: window.FormType.NONE,
                 label: 'Estado',
                 name: 'estado',
                 align: 'center',

@@ -38,7 +38,7 @@ export default class Category {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('categoria_id')
             .label('Categoria id')
             .required(true)

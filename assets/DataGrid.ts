@@ -173,6 +173,9 @@ export default class DataGrid {
             columns: [this.columns],
             pagination: this.options.pagination ?? true,
             showFooter: this.options.showFooter ?? false,
+            onLoadSuccess: function (data) {
+                ref.options.onLoadSuccess?.(data);
+            }
         }
         let subGrid = this.options.subGrid;
         if (subGrid) {

@@ -26,6 +26,7 @@ export class FieldBuilder {
             onSelect: null,
             readonly: false,
             disabled: false,
+            hidden: false,
             required: false,
         };
     }
@@ -127,6 +128,11 @@ export class FieldBuilder {
 
     disabled(disabled: boolean): FieldBuilder {
         this._field.disabled = disabled;
+        return this;
+    }
+
+    hidden(hidden: boolean): FieldBuilder {
+        this._field.hidden = hidden;
         return this;
     }
 

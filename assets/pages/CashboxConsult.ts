@@ -23,7 +23,7 @@ export default class CashboxConsult {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.HIDDEN)
+            .type(FormType.NONE)
             .name('caja_id')
             .label('Caja')
             .required(true)

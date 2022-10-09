@@ -1,5 +1,5 @@
 export enum FormType {
-    HIDDEN = 'hidden',
+    NONE = 'none',
     TEXT = 'text',
     PASSWORD = 'password',
     TEXTAREA = 'textarea',

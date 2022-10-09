@@ -2,6 +2,7 @@
 
 namespace App\CashboxDetail\Infrastructure;
 
+use App\Cashbox\Infrastructure\CashboxEntity;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
@@ -34,11 +35,12 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
      */
     public function insert(CashboxDetail $cashboxDetail): void
     {
-        $nextIndex = $this->connection->fetchOne('SELECT MAX(uid) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
+        $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
+        $cashBox = $this->entityManager->getReference(CashboxEntity::class, $cashboxDetail->caja_id);
         $cashboxDetail->uid = $nextIndex;
-        dd($cashboxDetail);
         $entity = new CashboxDetailEntity();
         $entity->mapFromDomainModel($cashboxDetail);
+        $entity->cashbox = $cashBox;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
