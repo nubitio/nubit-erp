@@ -45,7 +45,7 @@ class SaleDetailController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/saledetail/edit/{id}', name: 'saledetail_update', methods: ['POST'])]
+    #[Route('/saledetail/edit/{id}', name: 'saledetail_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, $id): Response
     {
         $request->request->add(['movimiento_id' => $id]);
@@ -58,7 +58,7 @@ class SaleDetailController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/saledetail/delete/{id}', name: 'saledetail_delete', methods: ['POST'])]
+    #[Route('/saledetail/delete/{id}', name: 'saledetail_delete', methods: ['DELETE', 'POST'])]
     public function delete($id): Response
     {
         $deleteUseCase = $this->container->get(SaleDetailDeleteUseCase::class);

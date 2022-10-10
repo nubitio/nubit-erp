@@ -38,7 +38,7 @@ class ConfigController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/config/edit/{id}', name: 'config_update', methods: ['POST'])]
+    #[Route('/config/edit/{id}', name: 'config_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, ConfigUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['id' => $id]);
@@ -50,7 +50,7 @@ class ConfigController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/config/delete/{id}', name: 'config_delete', methods: ['POST'])]
+    #[Route('/config/delete/{id}', name: 'config_delete', methods: ['DELETE', 'POST'])]
     public function delete(ConfigDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

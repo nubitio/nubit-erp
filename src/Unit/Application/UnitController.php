@@ -45,7 +45,7 @@ class UnitController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/unit/edit/{id}', name: 'unit_update', methods: ['POST'])]
+    #[Route('/unit/edit/{id}', name: 'unit_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, $id): Response
     {
         $request->request->add(['unidad_id' => $id]);
@@ -58,7 +58,7 @@ class UnitController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/unit/delete/{id}', name: 'unit_delete', methods: ['POST'])]
+    #[Route('/unit/delete/{id}', name: 'unit_delete', methods: ['DELETE', 'POST'])]
     public function delete($id): Response
     {
         $deleteUseCase = $this->container->get(UnitDeleteUseCase::class);

@@ -38,7 +38,7 @@ class OperationController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/operation/edit/{id}', name: 'operation_update', methods: ['POST'])]
+    #[Route('/operation/edit/{id}', name: 'operation_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, OperationUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['operacion_id' => $id]);
@@ -50,7 +50,7 @@ class OperationController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/operation/delete/{id}', name: 'operation_delete', methods: ['POST'])]
+    #[Route('/operation/delete/{id}', name: 'operation_delete', methods: ['DELETE', 'POST'])]
     public function delete(OperationDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

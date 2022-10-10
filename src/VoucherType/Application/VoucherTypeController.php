@@ -38,7 +38,7 @@ class VoucherTypeController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/voucher-type/edit/{id}', name: 'voucher-type_update', methods: ['POST'])]
+    #[Route('/voucher-type/edit/{id}', name: 'voucher-type_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, VoucherTypeUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['codigo' => $id]);
@@ -50,7 +50,7 @@ class VoucherTypeController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/voucher-type/delete/{id}', name: 'voucher-type_delete', methods: ['POST'])]
+    #[Route('/voucher-type/delete/{id}', name: 'voucher-type_delete', methods: ['DELETE', 'POST'])]
     public function delete(VoucherTypeDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

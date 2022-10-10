@@ -8,7 +8,7 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Drawer} from "../Drawer";
 import {bus} from "../EventBus";
 import {Action} from "../Action";
-import axios from "axios";
+import {httpClient} from "../utils/HttpClient";
 
 export default class Role {
     private readonly container: string;
@@ -141,15 +141,12 @@ export default class Role {
                 drawer.show();
                 permissionsTree.tree('loadData', []);
                 bus.emit(new Action(EVENTS.LOADING, true));
-                axios.get('role-menu/get', {params: {roleId: row.rol_id}})
-                    .then(function (response) {
-                        permissionsTree.tree('loadData', response.data);
+                httpClient.get<any>('role-menu/get', {params: {roleId: row['rol_id']}}).subscribe(
+                    response => {
+                        permissionsTree.tree('loadData', response);
                         bus.emit(new Action(EVENTS.LOADING, false));
-                    })
-                    .catch(function (error) {
-                        SharedUtils.showMessage('Error', error);
-                        bus.emit(new Action(EVENTS.LOADING, false));
-                    })
+                    }
+                )
             }
         )
 
@@ -159,16 +156,14 @@ export default class Role {
                 let row = this.dataGrid.selectedRow;
                 let selected = permissionsTree.tree('getChecked', ['checked', 'indeterminate']);
                 let permissions = selected.map((obj) => obj.id);
-                axios.post('role-menu/add', {roleId: row.rol_id, permissions: permissions})
-                    .then(function (response) {
-                        SharedUtils.showMessage('Info', response.data.msg);
+                httpClient.post<any>('role-menu/add', {roleId: row.rol_id, permissions: permissions}).subscribe(
+                    response => {
+                        SharedUtils.showMessage('Info', response.msg);
                         permissionsDialog.hide();
                         drawer.hide();
                         bus.emit(new Action(EVENTS.SUCCESS, true));
-                    })
-                    .catch(function (error) {
-                        SharedUtils.showMessage('Error', error);
-                    })
+                    }
+                )
             }
         )
     }

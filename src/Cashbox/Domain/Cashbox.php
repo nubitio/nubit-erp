@@ -23,9 +23,9 @@ class Cashbox
         #[SerializedName('usuario_id')]
         public ?int       $usuario_id,
         #[SerializedName('estado')]
-        public ?bool      $estado,
-        public Local      $local,
-        public User       $user,
+        public ?int       $estado,
+        public ?Local     $local,
+        public ?User      $user,
         /**
          * @var CashboxDetail[] $items
          */

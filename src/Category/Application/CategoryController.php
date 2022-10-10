@@ -48,7 +48,7 @@ class CategoryController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/category/edit/{id}', name: 'category_update', methods: ['POST'])]
+    #[Route('/category/edit/{id}', name: 'category_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, CategoryUpdateUseCase $updateUseCase, $id): Response
     {
         $this->uploadImage($request);
@@ -61,7 +61,7 @@ class CategoryController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/category/delete/{id}', name: 'category_delete', methods: ['POST'])]
+    #[Route('/category/delete/{id}', name: 'category_delete', methods: ['DELETE', 'POST'])]
     public function delete(CategoryDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

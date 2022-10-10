@@ -32,8 +32,8 @@ class CashboxEntity
     public ?\DateTime $cierre;
     #[Column(name: "usuario_id", type: "integer")]
     public ?int $usuario_id;
-    #[Column(name: "estado", type: "boolean")]
-    public ?bool $estado;
+    #[Column(name: "estado", type: "integer")]
+    public ?int $estado;
     #[ManyToOne(targetEntity: LocalEntity::class)]
     #[JoinColumn(name: "local_id", referencedColumnName: "local_id")]
     public LocalEntity $local;
@@ -68,12 +68,12 @@ class CashboxEntity
 
     public function mapFromDomainModel(Cashbox $cashbox): CashboxEntity
     {
-        $this->caja_id = $cashbox->caja_id;
-        $this->local_id = $cashbox->local_id;
-        $this->apertura = $cashbox->apertura;
-        $this->cierre = $cashbox->cierre;
-        $this->usuario_id = $cashbox->usuario_id;
-        $this->estado = $cashbox->estado;
+        $this->caja_id = $cashbox->caja_id ?? $this->caja_id;
+        $this->local_id = $cashbox->local_id ?? $this->local_id;
+        $this->apertura = $cashbox->apertura ?? $this->apertura;
+        $this->cierre = $cashbox->cierre ?? $this->cierre;
+        $this->usuario_id = $cashbox->usuario_id ?? $this->usuario_id;
+        $this->estado = $cashbox->estado ?? $this->estado;
 
         return $this;
     }

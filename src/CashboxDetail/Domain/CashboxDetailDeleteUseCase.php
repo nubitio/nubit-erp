@@ -11,7 +11,7 @@ class CashboxDetailDeleteUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): void
+    public function __invoke(int $id): void
     {
         $this->repository->delete($id);
     }

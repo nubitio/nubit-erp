@@ -38,7 +38,7 @@ class {{module}}Controller extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/{{kebabModule}}/edit/{id}', name: '{{kebabModule}}_update', methods: ['POST'])]
+    #[Route('/{{kebabModule}}/edit/{id}', name: '{{kebabModule}}_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, {{module}}UpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['{{table_id}}' => $id]);
@@ -50,7 +50,7 @@ class {{module}}Controller extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/{{kebabModule}}/delete/{id}', name: '{{kebabModule}}_delete', methods: ['POST'])]
+    #[Route('/{{kebabModule}}/delete/{id}', name: '{{kebabModule}}_delete', methods: ['DELETE', 'POST'])]
     public function delete({{module}}DeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

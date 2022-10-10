@@ -187,7 +187,7 @@ class MakeCrudCommand extends Command
             $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
             $entityFields .= "    public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
             $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
-            $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . $this->toCamelCase($module) . "->" . $column->getName() . ";\n";
+            $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . $this->toCamelCase($module) . "->" . $column->getName() . " ?? \$this->" . $column->getName() . ";\n";
         }
         $entityContent = str_replace('{{fields}}', $entityFields, $entityContent);
         $entityContent = str_replace('{{mapToDomainModelFields}}', $mapToDomainModelFields, $entityContent);

@@ -38,7 +38,7 @@ class VoucherSeriesController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/voucher-series/edit/{id}', name: 'voucher-series_update', methods: ['POST'])]
+    #[Route('/voucher-series/edit/{id}', name: 'voucher-series_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, VoucherSeriesUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['id' => $id]);
@@ -50,7 +50,7 @@ class VoucherSeriesController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/voucher-series/delete/{id}', name: 'voucher-series_delete', methods: ['POST'])]
+    #[Route('/voucher-series/delete/{id}', name: 'voucher-series_delete', methods: ['DELETE', 'POST'])]
     public function delete(VoucherSeriesDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

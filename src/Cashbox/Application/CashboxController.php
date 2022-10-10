@@ -45,11 +45,18 @@ class CashboxController extends BaseController
         $localId = $request->getSession()->get('local_id');
         $userId = $request->getSession()->get('usuario_id');
         $cashBox = $getLastUseCase($localId, $userId);
+
+        if (!$cashBox) {
+            return $this->json([
+                'header' => [], 'rows' => [], 'footer' => []
+            ]);
+        }
+
         $data = [];
 
         $data['header'] = [
-            'caja_id' => $cashBox->caja_id,
-            'fecha' => $cashBox->apertura->format('Y-m-d'),
+            'caja_id'  => $cashBox->caja_id,
+            'fecha'    => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
         ];
         $data['rows'] = $cashBox->items;
@@ -81,7 +88,7 @@ class CashboxController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/cashbox/edit/{id}', name: 'cashbox_update', methods: ['POST'])]
+    #[Route('/cashbox/edit/{id}', name: 'cashbox_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, CashboxUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['caja_id' => $id]);
@@ -93,7 +100,7 @@ class CashboxController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/cashbox/delete/{id}', name: 'cashbox_delete', methods: ['POST'])]
+    #[Route('/cashbox/delete/{id}', name: 'cashbox_delete', methods: ['DELETE', 'POST'])]
     public function delete(CashboxDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

@@ -48,7 +48,7 @@ class ProductController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/product/edit/{id}', name: 'product_update', methods: ['POST'])]
+    #[Route('/product/edit/{id}', name: 'product_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, ProductUpdateUseCase $updateUseCase, $id): Response
     {
         $this->uploadImage($request);
@@ -61,7 +61,7 @@ class ProductController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/product/delete/{id}', name: 'product_delete', methods: ['POST'])]
+    #[Route('/product/delete/{id}', name: 'product_delete', methods: ['DELETE', 'POST'])]
     public function delete(ProductDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

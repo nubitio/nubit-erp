@@ -38,7 +38,7 @@ class CustomerController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/customer/edit/{id}', name: 'customer_update', methods: ['POST'])]
+    #[Route('/customer/edit/{id}', name: 'customer_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, CustomerUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['ruc' => $id]);
@@ -50,7 +50,7 @@ class CustomerController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/customer/delete/{id}', name: 'customer_delete', methods: ['POST'])]
+    #[Route('/customer/delete/{id}', name: 'customer_delete', methods: ['DELETE', 'POST'])]
     public function delete(CustomerDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
