@@ -48,7 +48,7 @@ class CompanyController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/company/edit/{id}', name: 'company_update', methods: ['POST'])]
+    #[Route('/company/edit/{id}', name: 'company_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, CompanyUpdateUseCase $updateUseCase, $id): Response
     {
         $this->uploadLogo($request);
@@ -61,7 +61,7 @@ class CompanyController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/company/delete/{id}', name: 'company_delete', methods: ['POST'])]
+    #[Route('/company/delete/{id}', name: 'company_delete', methods: ['DELETE', 'POST'])]
     public function delete(CompanyDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

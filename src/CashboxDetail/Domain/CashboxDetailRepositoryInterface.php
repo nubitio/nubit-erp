@@ -10,5 +10,5 @@ interface CashboxDetailRepositoryInterface
 
     public function update(CashboxDetail $cashboxDetail): void;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 }

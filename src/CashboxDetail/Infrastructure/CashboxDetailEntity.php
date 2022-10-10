@@ -3,8 +3,8 @@
 namespace App\CashboxDetail\Infrastructure;
 
 use App\Cashbox\Infrastructure\CashboxEntity;
-use App\Domain\Annotation\IgnoreAutowire;
 use App\CashboxDetail\Domain\CashboxDetail;
+use App\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -12,7 +12,6 @@ use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 
 #[IgnoreAutowire]
 #[Entity]
@@ -55,7 +54,7 @@ class CashboxDetailEntity
     public function mapFromDomainModel(CashboxDetail $cashboxDetail): CashboxDetailEntity
     {
         $this->id = $cashboxDetail->id;
-        $this->uid = $cashboxDetail->uid;
+        $this->uid = $cashboxDetail->uid ?? $this->uid;
         $this->caja_id = $cashboxDetail->caja_id;
         $this->tipo_id = $cashboxDetail->tipo_id;
         $this->descripcion = $cashboxDetail->descripcion;

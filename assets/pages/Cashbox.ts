@@ -4,6 +4,8 @@ import Form from "../Form";
 import {FormType} from "../FormType";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {messenger} from "../utils/Messenger";
+import {httpClient} from "../utils/HttpClient";
 
 export default class Cashbox {
     private readonly container: string;
@@ -36,6 +38,13 @@ export default class Cashbox {
     init() {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
+            .visible(false)
+            .type(FormType.NONE)
+            .name('id')
+            .label('Id')
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
             .visible(false)
             .type(FormType.TEXT)
             .name('caja_id')
@@ -86,7 +95,7 @@ export default class Cashbox {
                 text: 'Cerrar caja',
                 iconCls: 'fa fa-lock fa-1x text-info',
                 handler: () => {
-
+                    this.closeCashbox();
                 }
             }
         ];
@@ -130,5 +139,24 @@ export default class Cashbox {
             value = '';
         }
         return value;
+    }
+
+    private closeCashbox() {
+        messenger.confirm(
+            'Cerrar caja',
+            '¿Está seguro de cerrar la caja?',
+            (r) => {
+                if (r) {
+                    let cashboxId = this.dataGrid.data['header']['caja_id'];
+                    const params = new URLSearchParams();
+                    params.append('estado', '2');
+                    httpClient.put<any>('cashbox/edit/' + cashboxId, params).subscribe(
+                        (response) => {
+                            messenger.show('Cerrar caja', response.message);
+                            this.dataGrid.reload();
+                        }
+                    )
+                }
+            });
     }
 }

@@ -38,7 +38,7 @@ class SupplierController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/supplier/edit/{id}', name: 'supplier_update', methods: ['POST'])]
+    #[Route('/supplier/edit/{id}', name: 'supplier_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, SupplierUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['proveedor_id' => $id]);
@@ -50,7 +50,7 @@ class SupplierController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/supplier/delete/{id}', name: 'supplier_delete', methods: ['POST'])]
+    #[Route('/supplier/delete/{id}', name: 'supplier_delete', methods: ['DELETE', 'POST'])]
     public function delete(SupplierDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

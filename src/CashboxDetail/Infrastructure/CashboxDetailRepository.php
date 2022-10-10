@@ -8,6 +8,7 @@ use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 class CashboxDetailRepository implements CashboxDetailRepositoryInterface
 {
@@ -32,6 +33,7 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
 
     /**
      * @throws \Doctrine\DBAL\Exception
+     * @throws ORMException
      */
     public function insert(CashboxDetail $cashboxDetail): void
     {
@@ -50,12 +52,12 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
      */
     public function update(CashboxDetail $cashboxDetail): void
     {
-        $entity = $this->entityManager->find(CashboxDetailEntity::class, $cashboxDetail->uid);
+        $entity = $this->entityManager->find(CashboxDetailEntity::class, $cashboxDetail->id);
         $entity->mapFromDomainModel($cashboxDetail);
         $this->entityManager->flush();
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(CashboxDetailEntity::class, $id);
         $this->entityManager->remove($entity);

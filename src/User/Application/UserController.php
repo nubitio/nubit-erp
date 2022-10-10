@@ -43,7 +43,7 @@ class UserController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/user/edit/{id}', name: 'user_update', methods: ['POST'])]
+    #[Route('/user/edit/{id}', name: 'user_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, UserUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['usuario_id' => $id]);
@@ -55,7 +55,7 @@ class UserController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/user/delete/{id}', name: 'user_delete', methods: ['POST'])]
+    #[Route('/user/delete/{id}', name: 'user_delete', methods: ['DELETE', 'POST'])]
     public function delete(UserDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

@@ -53,7 +53,7 @@ class PurchaseController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/purchase/edit/{id}', name: 'purchase_update', methods: ['POST'])]
+    #[Route('/purchase/edit/{id}', name: 'purchase_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, PurchaseUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['movimiento_id' => $id]);
@@ -65,7 +65,7 @@ class PurchaseController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/purchase/delete/{id}', name: 'purchase_delete', methods: ['POST'])]
+    #[Route('/purchase/delete/{id}', name: 'purchase_delete', methods: ['DELETE', 'POST'])]
     public function delete(PurchaseDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

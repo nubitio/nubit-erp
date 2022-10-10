@@ -38,7 +38,7 @@ class WarehouseController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/warehouse/edit/{id}', name: 'warehouse_update', methods: ['POST'])]
+    #[Route('/warehouse/edit/{id}', name: 'warehouse_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, WarehouseUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['almacen_id' => $id]);
@@ -50,7 +50,7 @@ class WarehouseController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/warehouse/delete/{id}', name: 'warehouse_delete', methods: ['POST'])]
+    #[Route('/warehouse/delete/{id}', name: 'warehouse_delete', methods: ['DELETE', 'POST'])]
     public function delete(WarehouseDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);

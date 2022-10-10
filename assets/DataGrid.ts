@@ -1,16 +1,17 @@
 import {Constants} from "./Constants";
 import {SharedUtils} from "./utils/SharedUtils";
 import {Field} from "./Field";
-import axios from "axios";
 import {bus} from "./EventBus";
 import {Action} from "./Action";
+import {messenger} from "./utils/Messenger";
+import {httpClient} from "./utils/HttpClient";
 
 export default class DataGrid {
     private container: HTMLElement;
     private fields: Field[];
     private options: any;
     private dataGrid: JQuery;
-    private defaultToolbar: any[];
+    private readonly defaultToolbar: any[];
     private toolbar: any[];
     private columns: any[];
     private routes: any = {};
@@ -59,6 +60,14 @@ export default class DataGrid {
 
     get selectedRow() {
         return this.dataGrid.datagrid('getSelected') || null;
+    }
+
+    get selectedRows() {
+        return this.dataGrid.datagrid('getSelections');
+    }
+
+    get data() {
+        return this.dataGrid.datagrid('getData');
     }
 
     setupColumns() {
@@ -220,21 +229,17 @@ export default class DataGrid {
 
     delete(route, row) {
         let ref = this;
-        ($ as any).messager.confirm('Confirmar', Constants.TEXT_CONFIRM, function (r) {
-            if (r) {
-                axios.post(route + row[ref.getIdField()])
-                    .then(function (response) {
-                        if (response.data.success) {
-                            SharedUtils.showMessage('Info', response.data.msg);
+        messenger.confirm(
+            'Confirmación',
+            '¿Está seguro de eliminar el registro?',
+            function (r) {
+                if (r) {
+                    httpClient.delete<any>(route + row[ref.getIdField()]).subscribe(
+                        (response) => {
                             ref.reload();
-                        } else {
-                            SharedUtils.showMessage('Error', response.data.msg);
-                        }
-                    }).catch(function (error) {
-                        SharedUtils.showMessage('Error', error);
-                    }
-                );
-            }
-        });
+                            SharedUtils.showMessage('Info', response.msg);
+                        });
+                }
+            });
     }
 }

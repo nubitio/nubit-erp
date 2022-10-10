@@ -38,7 +38,7 @@ class RoleController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
-    #[Route('/role/edit/{id}', name: 'role_update', methods: ['POST'])]
+    #[Route('/role/edit/{id}', name: 'role_update', methods: ['PUT', 'POST'])]
     public function edit(Request $request, RoleUpdateUseCase $updateUseCase, $id): Response
     {
         $request->request->add(['rol_id' => $id]);
@@ -50,7 +50,7 @@ class RoleController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
-    #[Route('/role/delete/{id}', name: 'role_delete', methods: ['POST'])]
+    #[Route('/role/delete/{id}', name: 'role_delete', methods: ['DELETE', 'POST'])]
     public function delete(RoleDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
