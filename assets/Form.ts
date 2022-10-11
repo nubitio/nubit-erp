@@ -228,21 +228,21 @@ export default class Form {
 
     setupObservers() {
         bus.on(
-            event => event.name === this.events.ADD,
+            event => event.name === this.events?.ADD,
             (event) => {
                 this.add();
             }
         )
 
         bus.on(
-            event => event.name === this.events.EDIT,
+            event => event.name === this.events?.EDIT,
             (event) => {
                 this.edit(null, event.data.row);
             }
         )
 
         bus.on(
-            event => event.name === this.events.SAVE,
+            event => event.name === this.events?.SAVE,
             (event) => {
                 this.submit();
             }

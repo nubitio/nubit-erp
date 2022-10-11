@@ -6,6 +6,8 @@ import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../utils/HttpClient";
+import {bus} from "../EventBus";
+import {Action} from "../Action";
 
 export default class Cashbox {
     private readonly container: string;
@@ -87,6 +89,7 @@ export default class Cashbox {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        this.setupOpenCashBox();
     }
 
     renderDataGrid() {
@@ -114,6 +117,7 @@ export default class Cashbox {
                         field.defaultValue = data['header']['caja_id'];
                     }
                 });
+                this.checkCashbox();
             }
         });
     }
@@ -141,6 +145,59 @@ export default class Cashbox {
         return value;
     }
 
+    private checkCashbox(): void {
+        let cashboxId = this.dataGrid.data['header']['caja_id'];
+        if (cashboxId === undefined) {
+            bus.emit(new Action('cashbox-open:add'));
+        }
+    }
+
+    private setupOpenCashBox() {
+        let initialAmount = 0;
+        let events = {
+            ADD: 'cashbox-open:add',
+            EDIT: 'cashbox-open:edit',
+            DELETE: 'cashbox-open:delete',
+            SAVE: 'cashbox-open:save',
+            CANCEL: 'cashbox-open:cancel',
+            SUCCESS: 'cashbox-open:success',
+            LOADING: 'cashbox-open:loading',
+        }
+        let dialog = new Dialog(this.container, {
+            events: events,
+        });
+        let form = new Form(dialog.id, [
+            new FieldBuilder()
+                .type(FormType.CURRENCY)
+                .name('monto_inicial')
+                .label('Monto inicial')
+                .align('right')
+                .required(true)
+                .defaultValue(initialAmount)
+                .build(),
+        ]);
+
+        bus.on(
+            action => action.name === events.SAVE,
+            (action) => {
+                let params = new URLSearchParams();
+                params.append('monto_inicial', form.getField('monto_inicial').numberbox('getValue'));
+                httpClient.post('cashbox/open', params).subscribe(
+                    (response) => {
+                        bus.emit(new Action(events.SUCCESS));
+                    }
+                );
+            }
+        );
+
+        bus.on(
+            action => action.name === events.CANCEL,
+            (action) => {
+                this.dataGrid.reload();
+            }
+        );
+    }
+
     private closeCashbox() {
         messenger.confirm(
             'Cerrar caja',
@@ -157,6 +214,7 @@ export default class Cashbox {
                         }
                     )
                 }
-            });
+            }
+        );
     }
 }

@@ -13,19 +13,19 @@ class Cashbox
 {
     public function __construct(
         #[SerializedName('caja_id')]
-        public ?string    $caja_id,
+        public ?string    $caja_id = null,
         #[SerializedName('local_id')]
-        public ?string    $local_id,
+        public ?string    $local_id = null,
         #[SerializedName('apertura')]
-        public ?\DateTime $apertura,
+        public ?\DateTime $apertura = null,
         #[SerializedName('cierre')]
-        public ?\DateTime $cierre,
+        public ?\DateTime $cierre = null,
         #[SerializedName('usuario_id')]
-        public ?int       $usuario_id,
+        public ?int       $usuario_id = null,
         #[SerializedName('estado')]
-        public ?int       $estado,
-        public ?Local     $local,
-        public ?User      $user,
+        public ?int       $estado = null,
+        public ?Local     $local = null,
+        public ?User      $user = null,
         /**
          * @var CashboxDetail[] $items
          */

@@ -71,7 +71,7 @@ class CashboxEntity
         $this->caja_id = $cashbox->caja_id ?? $this->caja_id;
         $this->local_id = $cashbox->local_id ?? $this->local_id;
         $this->apertura = $cashbox->apertura ?? $this->apertura;
-        $this->cierre = $cashbox->cierre ?? $this->cierre;
+        $this->cierre = $cashbox->cierre ?? $this->cierre ?? null;
         $this->usuario_id = $cashbox->usuario_id ?? $this->usuario_id;
         $this->estado = $cashbox->estado ?? $this->estado;
 

@@ -11,12 +11,14 @@ use App\Cashbox\Domain\CashboxGetInfoReceiptUseCase;
 use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Cashbox\Domain\CashboxGetOneUseCase;
 use App\Cashbox\Domain\CashboxUpdateUseCase;
+use App\CashboxDetail\Domain\CashboxDetail;
 use App\Service\PdfExporter;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Uid\Uuid;
 
 class CashboxController extends BaseController
 {
@@ -75,6 +77,31 @@ class CashboxController extends BaseController
             ],
         ];
         return $this->json($data);
+    }
+
+    #[Route('/cashbox/open', name: 'cashbox_open', methods: ['POST'])]
+    public function open(Request $request, CashboxCreateUseCase $createUseCase): Response
+    {
+        $cashBoxId = Uuid::v4();
+        $cashBoxDetail = new CashboxDetail(
+            uid: 1,
+            caja_id: $cashBoxId,
+            tipo_id: 1,
+            descripcion: 'Fondo de caja',
+            monto: $request->request->get('monto_inicial'),
+        );
+
+        $cashBox = new Cashbox(
+            caja_id: $cashBoxId,
+            local_id: $request->getSession()->get('local_id'),
+            apertura: new \DateTime(),
+            usuario_id: $request->getSession()->get('usuario_id'),
+            estado: 1,
+            items: [$cashBoxDetail],
+        );
+
+        $createUseCase($cashBox);
+        return $this->json(['success' => true, 'caja_id' => $cashBoxId]);
     }
 
     #[Route('/cashbox/add', name: 'cashbox_create', methods: ['POST'])]

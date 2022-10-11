@@ -78,7 +78,7 @@
         $('.wrapper').animate({"opacity": 1});
         $('#wrapper').animate({"opacity": 1});
 
-        let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
+        let selectedMenu = location.pathname.split('/')[1];
 
         $.get('getmenu')
             .done(function (response) {
@@ -92,6 +92,7 @@
                     }
                     menu.push(item);
                 });
+                localStorage.setItem('menu', JSON.stringify(menu));
 
                 sidebar.sidemenu({
                     data: menu,
@@ -99,10 +100,9 @@
                     border: false,
                     multiple: false,
                     onSelect: function (item) {
-                        if (selectedMenu !== null && selectedMenu.url === item.url) {
+                        if (selectedMenu !== null && selectedMenu === item.url) {
                             return;
                         }
-                        localStorage.setItem('selectedMenu', JSON.stringify(item));
                         window.location.href = item.url;
                     }
                 });
@@ -110,8 +110,10 @@
                 let sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
                 setSidebarCollapsed(sidebarCollapsed === 'true');
 
-                if (selectedMenu !== null) {
-                    sidebar.sidemenu('setSelected', selectedMenu);
+                if (selectedMenu !== '') {
+                    let menu = JSON.parse(localStorage.getItem('menu'));
+                    let item = menu.flatMap(item => item.children).find(item => item.url === selectedMenu);
+                    sidebar.sidemenu('setSelected', item);
                 }
             })
             .fail(function (xhr, status, error) {
@@ -138,8 +140,12 @@
     function toggle() {
         let opts = sidebar.sidemenu('options');
         setSidebarCollapsed(!opts.collapsed);
-        let selectedMenu = JSON.parse(localStorage.getItem('selectedMenu'));
-        sidebar.sidemenu('setSelected', selectedMenu);
+        let selectedMenu = location.pathname.split('/')[1];
+        if (selectedMenu !== '') {
+            let menu = JSON.parse(localStorage.getItem('menu'));
+            let item = menu.flatMap(item => item.children).find(item => item.url === selectedMenu);
+            sidebar.sidemenu('setSelected', item);
+        }
     }
 
     function setSidebarCollapsed(collapse) {
