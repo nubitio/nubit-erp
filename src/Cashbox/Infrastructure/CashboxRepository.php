@@ -4,7 +4,10 @@ namespace App\Cashbox\Infrastructure;
 
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
+use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Local\Infrastructure\LocalEntity;
+use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -77,7 +80,17 @@ class CashboxRepository implements CashboxRepositoryInterface
     {
         $entity = new CashboxEntity();
         $entity->mapFromDomainModel($cashbox);
+        $entity->local = $this->entityManager->getReference(LocalEntity::class, $cashbox->local_id);
+        $entity->user = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario_id);
         $this->entityManager->persist($entity);
+        if ($cashbox->items) {
+            foreach ($cashbox->items as $item) {
+                $itemEntity = new CashboxDetailEntity();
+                $itemEntity->mapFromDomainModel($item);
+                $itemEntity->cashbox = $entity;
+                $this->entityManager->persist($itemEntity);
+            }
+        }
         $this->entityManager->flush();
     }
 
