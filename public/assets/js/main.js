@@ -158,28 +158,30 @@ $.extend($.fn.validatebox.defaults.rules, {
 
 $.extend($.fn.sidemenu.methods, {
     setSelected: function (jq, item) {
-        let accordion = $('.sidemenu .accordion');
-        accordion.accordion('select', item.parent);
-        let selected = accordion.accordion('getPanel', item.parent);
-        $('.sidemenu .accordion .accordion-header').each((index, element) => {
-            $(element).removeClass('accordion-header-selected')
-        });
-        selected.prev().addClass('accordion-header-selected');
-        let tree = selected.find('.tree');
-        let node = tree.tree('find', {text: item.text});
-        tree.tree('select', node.target);
+        if (item) {
+            let accordion = $('.sidemenu .accordion');
+            accordion.accordion('select', item.parent);
+            let selected = accordion.accordion('getPanel', item.parent);
+            $('.sidemenu .accordion .accordion-header').each((index, element) => {
+                $(element).removeClass('accordion-header-selected')
+            });
+            selected.prev().addClass('accordion-header-selected');
+            let tree = selected.find('.tree');
+            let node = tree.tree('find', {text: item.text});
+            tree.tree('select', node.target);
+        }
     }
 });
 
 $.extend($.fn.textbox.methods, {
-    show: function(jq){
-        return jq.each(function(){
+    show: function (jq) {
+        return jq.each(function () {
             $(this).next().show();
             $($(this).textbox('label')).show();
         })
     },
-    hide: function(jq){
-        return jq.each(function(){
+    hide: function (jq) {
+        return jq.each(function () {
             $(this).next().hide();
             $($(this).textbox('label')).hide();
         })
