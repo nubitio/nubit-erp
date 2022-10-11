@@ -171,7 +171,6 @@ export default class Cashbox {
                 .type(FormType.CURRENCY)
                 .name('monto_inicial')
                 .label('Monto inicial')
-                .align('right')
                 .required(true)
                 .defaultValue(initialAmount)
                 .build(),
@@ -207,6 +206,7 @@ export default class Cashbox {
                     let cashboxId = this.dataGrid.data['header']['caja_id'];
                     const params = new URLSearchParams();
                     params.append('estado', '2');
+                    params.append('cierre', new Date().toISOString());
                     httpClient.put<any>('cashbox/edit/' + cashboxId, params).subscribe(
                         (response) => {
                             messenger.show('Cerrar caja', response.message);

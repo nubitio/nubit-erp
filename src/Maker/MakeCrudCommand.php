@@ -235,7 +235,7 @@ class MakeCrudCommand extends Command
                 $formType = "FormType.SELECT";
             }
             if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $formType = "FormType.HIDDEN";
+                $formType = "FormType.NONE";
                 $field .= "            .isIdentity(true)\n";
                 $field .= "            .visible(false)\n";
             }
