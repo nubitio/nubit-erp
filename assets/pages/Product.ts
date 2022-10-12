@@ -57,6 +57,7 @@ export default class Product {
                 {value: 2, text: 'Servicio'},
             ])
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -68,6 +69,7 @@ export default class Product {
             .name('descripcion')
             .label('Descripcion')
             .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -77,6 +79,7 @@ export default class Product {
             .valueField('categoria_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -87,6 +90,7 @@ export default class Product {
             .type(FormType.TEXT)
             .name('precio')
             .label('Precio')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.FILE)
