@@ -11,7 +11,7 @@ class CashboxDetailGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?string $filter = null): array
+    public function __invoke(?array $filter = null): array
     {
         return $this->repository->getAll($filter);
     }

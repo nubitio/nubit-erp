@@ -11,9 +11,7 @@ use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\SaleUtils;
 use App\SaleDetail\Domain\SaleDetail;
-use App\Service\SettingsService;
 use App\Util\Constants;
-use App\Util\TipoDoc;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -30,8 +28,18 @@ class SaleController extends BaseController
     #[Route('/sale/get', name: 'sale_list', methods: ['POST'])]
     public function getAll(Request $request, SaleGetAllUseCase $getAllUseCase): Response
     {
-        $filter = sprintf("tipo_id = 2 and local_id = '%s'", $request->getSession()->get('local_id'));
-        return $this->json($getAllUseCase($filter));
+        return $this->json($getAllUseCase([
+            [
+                'field' => 'tipo_id',
+                'op'    => 'equal',
+                'value' => 2
+            ],
+            [
+                'field' => 'local_id',
+                'op'    => 'equal',
+                'value' => $request->getSession()->get('local_id')
+            ]
+        ]));
     }
 
     #[Route('/sale/add', name: 'sale_create', methods: ['POST'])]

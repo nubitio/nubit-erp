@@ -4,7 +4,7 @@ namespace App\Supplier\Domain;
 
 interface SupplierRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Supplier $supplier): void;
 

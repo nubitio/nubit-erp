@@ -24,7 +24,7 @@ class CustomerRepository implements CustomerRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAll(?string $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('cliente', 'razon_social', filter: $filter);
     }

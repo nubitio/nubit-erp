@@ -4,7 +4,7 @@ namespace App\Local\Domain;
 
 interface LocalRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Local $local): void;
 

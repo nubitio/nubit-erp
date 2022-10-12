@@ -4,7 +4,7 @@ namespace App\Unit\Domain;
 
 interface UnitRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Unit $unit): void;
 

@@ -3,14 +3,16 @@
 namespace App\Customer\Application;
 
 use App\Base\BaseController;
-use App\Customer\Domain\CustomerGetAllUseCase;
-use App\Customer\Domain\CustomerCreateUseCase;
-use App\Customer\Domain\CustomerUpdateUseCase;
-use App\Customer\Domain\CustomerDeleteUseCase;
 use App\Customer\Domain\Customer;
+use App\Customer\Domain\CustomerCreateUseCase;
+use App\Customer\Domain\CustomerDeleteUseCase;
+use App\Customer\Domain\CustomerGetAllUseCase;
+use App\Customer\Domain\CustomerUpdateUseCase;
+use App\Service\XlsExporter;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class CustomerController extends BaseController
@@ -55,5 +57,13 @@ class CustomerController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/customer/export', name: 'customer_export', methods: ['GET'])]
+    public function export(Request $request, CustomerGetAllUseCase $getAllUseCase, XlsExporter $exporter): StreamedResponse
+    {
+        $filterRules = json_decode($request->query->get('filterRules'), true);
+        $customers = $getAllUseCase($filterRules);
+        return $exporter->export($customers['rows'], 'customers');
     }
 }

@@ -4,7 +4,7 @@ namespace App\Purchase\Domain;
 
 interface PurchaseRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Purchase $purchase): void;
 

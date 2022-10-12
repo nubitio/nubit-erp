@@ -4,7 +4,7 @@ namespace App\Operation\Domain;
 
 interface OperationRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Operation $operation): void;
 

@@ -4,7 +4,7 @@ namespace App\Company\Domain;
 
 interface CompanyRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Company $company): void;
 

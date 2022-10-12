@@ -27,7 +27,7 @@ class CashboxRepository implements CashboxRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAll(?string $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
     }

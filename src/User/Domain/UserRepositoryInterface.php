@@ -4,7 +4,7 @@ namespace App\User\Domain;
 
 interface UserRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(User $user): void;
 

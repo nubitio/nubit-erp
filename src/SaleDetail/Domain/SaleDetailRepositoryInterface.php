@@ -4,7 +4,7 @@ namespace App\SaleDetail\Domain;
 
 interface SaleDetailRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(SaleDetail $saledetail): void;
 
