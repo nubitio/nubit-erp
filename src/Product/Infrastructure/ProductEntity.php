@@ -64,7 +64,7 @@ class ProductEntity
     public function mapFromDomainModel(Product $product): ProductEntity
     {
         $this->producto_id = $product->producto_id;
-        $this->codigo = $product->codigo;
+        $this->codigo = $product->codigo ?: null;
         $this->tipo_id = $product->tipo_id;
         $this->descripcion = $product->descripcion;
         $this->categoria_id = $product->categoria_id;
