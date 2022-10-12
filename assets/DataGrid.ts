@@ -138,7 +138,8 @@ export default class DataGrid {
                 text: Constants.TEXT_EXPORT,
                 iconCls: Constants.ICON_XLS,
                 handler: function () {
-                    window.open(ref.options.routes.EXPORT);
+                    let filterRules = ref.dataGrid.datagrid('options').filterRules
+                    window.open(ref.options.routes.EXPORT + '?filterRules=' + encodeURIComponent(JSON.stringify(filterRules)));
                 }
             });
             this.defaultToolbar.push('-');

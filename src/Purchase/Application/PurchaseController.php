@@ -26,8 +26,18 @@ class PurchaseController extends BaseController
     #[Route('/purchase/get', name: 'purchase_list', methods: ['POST'])]
     public function getAll(Request $request, PurchaseGetAllUseCase $getAllUseCase): Response
     {
-        $filter = sprintf("tipo_id = 1 and local_id = '%s'", $request->getSession()->get('local_id'));
-        return $this->json($getAllUseCase($filter));
+        return $this->json($getAllUseCase([
+            [
+                'field' => 'tipo_id',
+                'op'    => 'equal',
+                'value' => 1
+            ],
+            [
+                'field' => 'local_id',
+                'op'    => 'equal',
+                'value' => $request->getSession()->get('local_id')
+            ]
+        ]));
     }
 
     #[Route('/purchase/add', name: 'purchase_create', methods: ['POST'])]

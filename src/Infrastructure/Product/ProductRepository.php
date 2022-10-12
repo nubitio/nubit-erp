@@ -30,7 +30,7 @@ class ProductRepository implements IProductRepository
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAll(?string $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         $table = "
             SELECT

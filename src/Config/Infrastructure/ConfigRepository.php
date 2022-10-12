@@ -24,7 +24,7 @@ class ConfigRepository implements ConfigRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAll(?string $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('options', 'name', filter: $filter);
     }

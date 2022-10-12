@@ -4,7 +4,7 @@ namespace App\Customer\Domain;
 
 interface CustomerRepositoryInterface
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function insert(Customer $customer): void;
 

@@ -16,7 +16,7 @@ class DataGridLoader
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function load($table, $sort, $order = 'ASC', $filter = null): array
+    public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
@@ -34,12 +34,9 @@ class DataGridLoader
             $sort_items[] = "$column $type";
         }
         $order_str = join(',', $sort_items);
-        if (!empty($filterRules)) {
-            $filterRules = json_decode($filterRules, true);
-            $where = $this->filterQuery($filterRules);
-        }
-        if ($filter != null) {
-            $where .= " AND " . $filter;
+        if (!empty($filterRules) || $filter != null) {
+            $filterRules = json_decode($filterRules, true) ?? [];
+            $where = $this->buildFilterQuery([...$filterRules, ...$filter ?? []]);
         }
         $row = $this->connection->fetchNumeric("SELECT count(*) FROM $table WHERE $where");
         $result["total"] = $row[0];
@@ -56,7 +53,7 @@ class DataGridLoader
         return $result;
     }
 
-    public function filterQuery($filterArray): string
+    public function buildFilterQuery($filterArray): string
     {
         $numFilter = count($filterArray);
         $where = "1=1";

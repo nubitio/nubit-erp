@@ -4,7 +4,7 @@ namespace App\Domain\Product;
 
 interface IProductRepository
 {
-    public function getAll(?string $filter = null): array;
+    public function getAll(?array $filter = null): array;
 
     public function getAllForExport(string $localId): array;
 

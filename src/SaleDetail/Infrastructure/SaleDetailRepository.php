@@ -24,7 +24,7 @@ class SaleDetailRepository implements SaleDetailRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function getAll(?string $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('movimiento_detalle', 'producto_id', filter: $filter);
     }
