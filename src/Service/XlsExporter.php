@@ -2,10 +2,12 @@
 
 namespace App\Service;
 
+use App\Util\ColorUtils;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -27,8 +29,9 @@ class XlsExporter
         $accentColor = $this->settingsService->get('app_theme_accent_color');
         $arr = explode(' ', $accentColor);
         $accentColor = dechex($arr[0]) . dechex($arr[1]) . dechex($arr[2]);
-
-        $contrastColor = $this->settingsService->get('app_theme_contrast_color');
+        $lightenAccentColor = ColorUtils::lightenColor($accentColor, 60);
+        $lightenAccentColor = str_replace('#', '', $lightenAccentColor);
+        $contrastColor = ColorUtils::contrastColor($accentColor);
         $contrastColor = str_replace('#', '', $contrastColor);
 
         $headers = [];
@@ -42,8 +45,8 @@ class XlsExporter
 
         $columnLetters = range('A', 'Z');
         $headerStyle = [
-            'font' => [
-                'bold' => true,
+            'font'      => [
+                'bold'  => true,
                 'color' => [
                     'rgb' => $contrastColor,
                 ],
@@ -51,18 +54,37 @@ class XlsExporter
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
             ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
+            'fill'      => [
+                'fillType'   => Fill::FILL_SOLID,
                 'startColor' => [
                     'argb' => 'FF' . $accentColor,
                 ],
             ],
-            'borders' => [
+            'borders'   => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
                 ],
             ],
         ];
+
+        $borderStyle = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color'       => [
+                        'argb' => 'FF' . $accentColor,
+                    ],
+                ]
+            ]
+        ];
+
+        $zebraStyle = new Conditional();
+        $zebraStyle->setConditionType(Conditional::CONDITION_EXPRESSION);
+        $zebraStyle->setOperatorType(Conditional::OPERATOR_EQUAL);
+        $zebraStyle->addCondition('MOD(ROW(),2)=0');
+        $zebraStyle->getStyle()->getFill()->setFillType(Fill::FILL_SOLID);
+        $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB('FF' . $lightenAccentColor);
+        $zebraStyle->getStyle()->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()
@@ -79,6 +101,12 @@ class XlsExporter
 
         $spreadsheet->getActiveSheet()->getStyle('A1:' . $columnLetters[count($headers) - 1] . '1')
             ->applyFromArray($headerStyle);
+
+        $spreadsheet->getActiveSheet()->getStyle('A2:' . $columnLetters[count($headers) - 1] . count($data))
+            ->setConditionalStyles([$zebraStyle]);
+
+        $spreadsheet->getActiveSheet()->getStyle('A2:' . $columnLetters[count($headers) - 1] . count($data))
+            ->applyFromArray($borderStyle);
 
         $writer = new Xlsx($spreadsheet);
         $response = new StreamedResponse(function () use ($writer) {
