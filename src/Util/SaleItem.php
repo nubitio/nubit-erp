@@ -2,8 +2,6 @@
 
 namespace App\Util;
 
-use Base;
-
 class SaleItem
 {
     private $name;
@@ -19,8 +17,7 @@ class SaleItem
 
     public function __toString()
     {
-        $app = Base::instance();
-        $line_width = $app->get('LINE_WIDTH');
+        $line_width = $_ENV['PRINTER_LINE_WIDTH'];
         $rightCols = round(20 / 100 * $line_width);
         $leftCols = round(80 / 100 * $line_width);
         if ($this->dollarSign) {

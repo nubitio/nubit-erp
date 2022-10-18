@@ -1,0 +1,17 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Sale Consult{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const saleConsult = new window.app.saleConsult('wrapper');
+            //delayed load
+            setTimeout(function () {
+                saleConsult.render();
+            }, 1000);
+        });
+    </script>
+{% endblock %}

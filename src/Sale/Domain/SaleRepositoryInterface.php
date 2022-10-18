@@ -6,6 +6,8 @@ interface SaleRepositoryInterface
 {
     public function getAll(?array $filter = null): array;
 
+    public function getOneById(string $id): array;
+
     public function insert(Sale $sale): void;
 
     public function update(Sale $sale): void;

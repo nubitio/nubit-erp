@@ -2,13 +2,13 @@
 
 namespace App\Controller;
 
-include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
+include_once(dirname(__FILE__, 3) . '/src/WebClientPrint/WebClientPrint.php');
 
 use App\Model\BotModel;
 use App\Model\MovimientoModel;
 use App\Model\NotaModel;
 use App\Model\OptionsModel;
-use Neodynamic\SDK\Web\WebClientPrint;
+use App\WebClientPrint\WebClientPrint;
 use NumberFormatter;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;

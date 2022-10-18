@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 //Includes WebClientPrint classes
-include_once(dirname(__FILE__, 3) . '/public/WebClientPrint.php');
+include_once(dirname(__FILE__, 3) . '/src/WebClientPrint/WebClientPrint.php');
 
-use Neodynamic\SDK\Web\WebClientPrint;
+use App\WebClientPrint\WebClientPrint;
 
 class WebClientPrintController extends BaseController
 {

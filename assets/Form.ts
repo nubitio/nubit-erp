@@ -244,7 +244,9 @@ export default class Form {
         bus.on(
             event => event.name === this.events?.SAVE,
             (event) => {
-                this.submit();
+                if (!this.options.preventDefault) {
+                    this.submit();
+                }
             }
         )
     }
@@ -511,7 +513,7 @@ export default class Form {
         }
         this.rowIndex = 0;
         this.form.form('clear');
-        this.route = this.options.routes.ADD || route;
+        this.route = this.options.routes?.ADD || route;
 
         this.fields.forEach(field => {
             if (field.defaultValue === null) {
@@ -541,12 +543,24 @@ export default class Form {
             }
         });
         this.form.form('load', row);
-        this.route = (this.options.routes.EDIT || route) + row[this.getIdField()];
+        this.route = (this.options.routes?.EDIT || route) + row[this.getIdField()];
     }
 
     submit() {
         this.form.form('submit', {
             url: this.route,
         });
+    }
+
+    getData() {
+        return this.form.serialize();
+    }
+
+    clear() {
+        this.form.form('clear');
+    }
+
+    reset() {
+        this.form.form('reset');
     }
 }

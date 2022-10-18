@@ -6,7 +6,6 @@ use App\Domain\Annotation\IgnoreAutowire;
 use App\Sale\Domain\Sale;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
@@ -108,7 +107,7 @@ class SaleEntity
         $this->tipo_tarjeta = $sale->tipo_tarjeta;
         $this->serie = $sale->serie;
         $this->numero = $sale->numero;
-        $this->descuento = $sale->descuento;
+        $this->descuento = $sale->descuento ?: 0.00;
         $this->glosa = $sale->glosa;
         $this->orden_id = $sale->orden_id;
         $this->has_invoice = $sale->has_invoice;
