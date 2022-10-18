@@ -11,10 +11,17 @@ use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\SaleUtils;
 use App\SaleDetail\Domain\SaleDetail;
+use App\Service\PdfExporter;
+use App\Service\XlsExporter;
 use App\Util\Constants;
+use App\WebClientPrint\WebClientPrint;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Uuid;
 
 class SaleController extends BaseController
@@ -22,7 +29,19 @@ class SaleController extends BaseController
     #[Route('/sale', name: 'sale_index', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('sale/index.html.twig');
+        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
+        $printScript = WebClientPrint::createScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), $this->generateUrl('wcp_print', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
+
+        return $this->render('sale/index.html.twig', [
+            'printDetectionScript' => $printDetectionScript,
+            'printScript'          => $printScript,
+        ]);
+    }
+
+    #[Route('/sale-consult', name: 'sale_consult', methods: ['GET'])]
+    public function consult(): Response
+    {
+        return $this->render('sale/consult.html.twig');
     }
 
     #[Route('/sale/get', name: 'sale_list', methods: ['POST'])]
@@ -83,5 +102,49 @@ class SaleController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    /**
+     * @throws Exception
+     */
+    #[Route('/sale/consult', name: 'sale_report', methods: ['GET'])]
+    public function report(Request $request, XlsExporter $xlsExporter, PdfExporter $pdfExporter, Connection $connection): StreamedResponse
+    {
+        $report = $request->get('report');
+        $dateFrom = $request->get('date-from');
+        $dateTo = $request->get('date-to');
+        $localId = $request->getSession()->get('local_id');
+        $params = [
+            'local_id'  => $localId,
+            'date_from' => $dateFrom,
+            'date_to'   => $dateTo
+        ];
+        switch ($report) {
+            case 'sale-by-product':
+                $data = $connection->executeQuery('CALL sp_reporte_venta_por_producto(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_ventas_por_producto');
+                break;
+            case 'detailed-sales':
+                $data = $connection->executeQuery('CALL sp_reporte_venta_por_producto(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_ventas_detallado');
+                break;
+            case 'accounting-report':
+                $data = $connection->executeQuery('CALL sp_reporte_contable(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_ventas_contable');
+                break;
+            case 'airport-report':
+                $data = $connection->executeQuery('CALL sp_reporte_app(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_ventas_aeropuerto');
+                break;
+            case 'voided-sales':
+                $data = $connection->executeQuery('CALL sp_reporte_anulados(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_ventas_anuladas');
+                break;
+            case 'credit-notes':
+                $data = $connection->executeQuery('CALL sp_reporte_notasCredito(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_notas_de_credito');
+                break;
+        }
+        return $reportFile;
     }
 }

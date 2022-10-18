@@ -4,7 +4,26 @@
     <div id="wrapper" class="wrapper"></div>
 {% endblock %}
 {% block javascripts %}
+    <script>
+        var wcppPingTimeout_ms = 60000; //60 sec
+        var wcppPingTimeoutStep_ms = 500; //0.5 sec
+
+        function wcppDetectOnSuccess() {
+            var wcppVer = arguments[0];
+            console.log(wcppVer);
+            if (wcppVer.substring(0, 1) === "6")
+                console.log("WCPP version 6 detected");
+            else
+                wcppDetectOnFailure();
+        }
+
+        function wcppDetectOnFailure() {
+            console.log('Web Client Print Service is not installed!');
+        }
+    </script>
     {{ parent() }}
+    {{ printDetectionScript | raw }}
+    {{ printScript | raw }}
     <script>
         window.addEventListener('load', function () {
             const sale = new window.app.sale('wrapper');

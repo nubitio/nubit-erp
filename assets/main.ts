@@ -26,6 +26,7 @@ import Operation from "./pages/Operation";
 import Role from "./pages/Role";
 import Cashbox from "./pages/Cashbox";
 import CashboxConsult from "./pages/CashboxConsult";
+import SaleConsult from "./pages/SaleConsult";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -51,6 +52,7 @@ window.app.voucherSeries = VoucherSeries;
 window.app.supplier = Supplier;
 window.app.product = Product;
 window.app.sale = Sale;
+window.app.saleConsult = SaleConsult;
 window.app.purchase = Purchase;
 window.app.config = Config;
 window.app.role = Role;

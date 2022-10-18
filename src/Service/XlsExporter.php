@@ -84,7 +84,6 @@ class XlsExporter
         $zebraStyle->addCondition('MOD(ROW(),2)=0');
         $zebraStyle->getStyle()->getFill()->setFillType(Fill::FILL_SOLID);
         $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB('FF' . $lightenAccentColor);
-        $zebraStyle->getStyle()->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()

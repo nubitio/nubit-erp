@@ -93,9 +93,9 @@ export default class Customer {
     renderDialog(options: any = {}) {
         let ref = this;
         this.dialog = new Dialog(this.container, {
-            width: options.width || 550,
-            height: options.height || 400,
-            modal: options.modal || true,
+            width: options.width ?? 400,
+            height: options.height ?? 550,
+            modal: options.modal ?? true,
             events: Customer.EVENTS,
         });
 

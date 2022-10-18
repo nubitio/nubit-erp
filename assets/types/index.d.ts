@@ -34,4 +34,6 @@ declare global {
         animateCss: any;
         tree: any;
     }
+
+    const jsWebClientPrint: any;
 }

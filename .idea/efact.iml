@@ -78,7 +78,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/dasprid/enum" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/nelexa/zip" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/mike42/escpos-php" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/lavary/crunz" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/ezyang/htmlpurifier" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bcosca/fatfree-core" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/bcosca/fatfree" />
@@ -160,6 +159,8 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-intl-icu" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/translation" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/form" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/mike42/gfx-php" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/crunzphp/crunz" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -7,6 +7,7 @@ use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 class SaleRepository implements SaleRepositoryInterface
@@ -28,6 +29,20 @@ class SaleRepository implements SaleRepositoryInterface
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function getOneById(string $id): array
+    {
+        $header = $this->connection->executeQuery('CALL sp_sale_header(?)', [$id])->fetchAssociative();
+        $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
+
+        return [
+            'header'  => $header,
+            'details' => $details
+        ];
     }
 
     /**

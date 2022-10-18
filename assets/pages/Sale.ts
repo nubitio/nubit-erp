@@ -13,6 +13,8 @@ import Customer from "./Customer";
 import {Drawer} from "../Drawer";
 import {Action} from "../Action";
 import {bus} from "../EventBus";
+import {messenger} from "../utils/Messenger";
+import {SaleService} from "../services/sale.service";
 
 export default class Sale {
     private readonly container: string;
@@ -22,6 +24,7 @@ export default class Sale {
     private dialog: Dialog;
     private form: Form;
     private productService = new ProductService();
+    private saleService = new SaleService();
 
     static readonly ROUTES = {
         ADD: 'sale/add',
@@ -204,25 +207,25 @@ export default class Sale {
                 text: 'Vista Previa',
                 iconCls: 'fas fa-eye fa-1x text-info',
                 handler: function () {
-                    //venta_preview();
+                    ref.printPreview()
                 }
             }, {
                 text: 'Imprimir',
                 iconCls: 'fas fa-print fa-1x text-primary',
                 handler: function () {
-                    //venta_print();
+                    ref.print();
                 }
             }, {
                 text: 'Anular',
                 iconCls: Constants.ICON_DELETE,
                 handler: function () {
-                    //venta_anular();
+                    ref.voidSale();
                 }
             }, {
                 text: 'Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
-                    //makeInvoice();
+                    ref.makeInvoice();
                 }
             }
         ];
@@ -331,5 +334,68 @@ export default class Sale {
         }
         total -= Number(this.form.getField('descuento').numberbox('getValue'));
         this.form.getField('total').numberbox('setValue', total);
+    }
+
+    private printPreview() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Debe seleccionar una venta');
+            return
+        }
+        let url = 'sale/print/' + selected.id;
+        window.open(url, '_blank');
+    }
+
+    private print(sale: any = null) {
+        let selected = this.dataGrid.selectedRow ?? sale;
+        if (!selected) {
+            messenger.show('Información', 'Debe seleccionar una venta');
+            return
+        }
+        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + selected['movimiento_id']);
+    }
+
+    private voidSale() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione una venta');
+            return;
+        }
+        if (selected['estado'] == 2) {
+            messenger.show('Información', 'La venta ya se encuentra anulada');
+            return;
+        }
+        messenger.prompt('Confirmar', 'Ingrese un motivo', (reason) => {
+            let id = selected.id;
+            if (reason) {
+                this.saleService.voidSale(id, reason).subscribe((data) => {
+                    this.dataGrid.reload();
+                    messenger.show('Información', 'Venta anulada');
+                });
+            }
+        });
+    }
+
+    private makeInvoice() {
+        let row = this.dataGrid.selectedRow;
+        if (!row) {
+            messenger.show('Información', 'Seleccione una venta para generar el comprobante');
+            return;
+        }
+        if (row['comprobante_id']) {
+            messenger.show('Información', 'El comprobante ya fue generado');
+            return;
+        }
+        let confirmMessage = '';
+        if (row['cliente_id'].length === 11) {
+            confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+        } else {
+            confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+        }
+        messenger.confirm('Confirmar', confirmMessage, function (r) {
+            if (r) {
+                //createInvoice(row)
+            }
+        })
     }
 }

@@ -28,25 +28,31 @@ export default class Dialog {
         this.setupView();
         let ref = this;
 
+        let buttons = [];
+        if (this.options.closable ?? true) {
+            buttons.push({
+                id: 'negative-button' + this.randomId,
+                text: this.options.negativeText ?? Constants.TEXT_CANCEL,
+                handler: () => {
+                    ref.hide();
+                }
+            });
+        }
+        buttons.push({
+            id: 'positive-button' + this.randomId,
+            text: this.options.positiveText ?? Constants.TEXT_SAVE,
+            handler: () => {
+                bus.emit(new Action(this.events.SAVE));
+            }
+        });
+
         this.dialog.dialog({
             width: this.options.width || 400,
             height: this.options.height || 'auto',
             maxHeight: this.options.maxHeight || 550,
             modal: this.options.modal || true,
-            closable: this.options.closable || true,
-            buttons: [{
-                id: 'negative-button' + this.randomId,
-                text: Constants.TEXT_CANCEL,
-                handler: function () {
-                    ref.hide();
-                }
-            }, {
-                id: 'positive-button' + this.randomId,
-                text: Constants.TEXT_SAVE,
-                handler: function () {
-                    bus.emit(new Action(ref.events.SAVE));
-                }
-            }],
+            closable: this.options.closable ?? true,
+            buttons: buttons,
             onOpen: function () {
                 ref.dialog.dialog('center');
                 ref.dialog.parent().animateCss(Animation.DIALOG_OPEN_ANIMATION);
@@ -76,7 +82,7 @@ export default class Dialog {
         bus.on(
             event => event.name === this.events.ADD,
             (event) => {
-                this.show('Nuevo');
+                this.show(event.data.title ?? 'Nuevo');
             }
         );
 
