@@ -8,7 +8,7 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Constants} from "../Constants";
 import {ConsultService} from "../services/consult.service";
 import {bus} from "../EventBus";
-import {Action} from "../Action";
+import {Event} from "../Event";
 
 export default class Supplier {
     private readonly container: string;
@@ -123,12 +123,12 @@ export default class Supplier {
     }
 
     private getRucInfo(ruc: string) {
-        bus.emit(new Action(Supplier.EVENTS.LOADING, true));
+        bus.emit(new Event(Supplier.EVENTS.LOADING, true));
         this.consultService.consultRuc(ruc)
             .subscribe((data) => {
                 this.form.getField('razon_social').textbox('setValue', data.razonSocial);
                 this.form.getField('domicilio_fiscal').textbox('setValue', data.direccion);
-                bus.emit(new Action(Supplier.EVENTS.LOADING, false));
+                bus.emit(new Event(Supplier.EVENTS.LOADING, false));
             });
     }
 }

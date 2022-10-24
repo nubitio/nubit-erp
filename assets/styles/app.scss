@@ -1085,3 +1085,15 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 .panel-tool a:hover {
   color: var(--text-color);
 }
+
+.table-nm {
+  margin-bottom: 0;
+}
+
+.row-bb {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.row-bt {
+  border-top: 1px solid #dee2e6;
+}

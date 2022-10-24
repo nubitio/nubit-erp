@@ -8,6 +8,7 @@ use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleCreateUseCase;
 use App\Sale\Domain\SaleDeleteUseCase;
 use App\Sale\Domain\SaleGetAllUseCase;
+use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\SaleUtils;
 use App\SaleDetail\Domain\SaleDetail;
@@ -15,6 +16,7 @@ use App\Service\PdfExporter;
 use App\Service\XlsExporter;
 use App\Util\Constants;
 use App\WebClientPrint\WebClientPrint;
+use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -146,5 +148,28 @@ class SaleController extends BaseController
                 break;
         }
         return $reportFile;
+    }
+
+    #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
+    public function print(Request $request, $id, SaleGetOneById $getOneById): Response
+    {
+        $sale = $getOneById($id);
+        $qr = '';
+        if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
+            $qr = (new QRCode)->render($sale['header']['doc_qr_data']);
+        }
+        return $this->render('sale/report/invoice.html.twig', [
+            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'qr'   => $qr,
+            'sale' => $sale
+        ]);
+    }
+
+    #[Route('/sale/void/{id}', name: 'sale_report', methods: ['POST'])]
+    public function void(Request $request, SaleUpdateUseCase $voidUseCase, $id): Response
+    {
+        dd($request->getContent());
+        $voidUseCase($id);
+        return $this->json(['success' => true, 'msg' => Constants::VOIDED_TEXT]);
     }
 }

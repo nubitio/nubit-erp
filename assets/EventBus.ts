@@ -1,5 +1,5 @@
 import {filter, Subject, Subscription, tap} from "rxjs";
-import {Action} from "./Action";
+import {Event} from "./Event";
 
 type Predicate<T> = (item: T) => boolean;
 
@@ -23,4 +23,4 @@ class EventBus<T> {
     }
 }
 
-export const bus = new EventBus<Action>();
+export const bus = new EventBus<Event>();

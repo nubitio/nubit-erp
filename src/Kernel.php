@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 use Symfony\WebpackEncoreBundle\WebpackEncoreBundle;
+use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 
 #[IgnoreAutowire]
 class Kernel extends BaseKernel
@@ -31,6 +32,7 @@ class Kernel extends BaseKernel
             new DoctrineBundle(),
             new DebugBundle(),
             new TwigBundle(),
+            new TwigExtraBundle(),
             new WebpackEncoreBundle(),
             new SecurityBundle(),
             new MonologBundle(),
@@ -67,13 +69,13 @@ class Kernel extends BaseKernel
                 ],
             ],
             'firewalls' => [
-                'dev' => [
-                    'pattern' => '^/(_(profiler|wdt)|css|images|js)/',
+                'dev'  => [
+                    'pattern'  => '^/(_(profiler|wdt)|css|images|js)/',
                     'security' => false,
                 ],
                 'main' => [
-                    'lazy'      => true,
-                    'provider'  => 'in_memory',
+                    'lazy'     => true,
+                    'provider' => 'in_memory',
                 ],
             ],
             /*'access_control' => [

@@ -3,7 +3,7 @@ import {SharedUtils} from "./utils/SharedUtils";
 import {Field} from "./Field";
 import {DateUtils} from "./utils/DateUtils";
 import {bus} from "./EventBus";
-import {Action} from "./Action";
+import {Event} from "./Event";
 
 export default class Form {
     private container: HTMLElement;
@@ -44,7 +44,7 @@ export default class Form {
             onSubmit: function () {
                 let valid = ref.form.form('validate');
                 if (valid) {
-                    bus.emit(new Action(ref.events.LOADING, true));
+                    bus.emit(new Event(ref.events.LOADING, true));
                 }
                 return valid;
             },
@@ -52,7 +52,7 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        bus.emit(new Action(ref.events.SUCCESS, result.data || {}));
+                        bus.emit(new Event(ref.events.SUCCESS, result.data || {}));
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);
@@ -60,7 +60,7 @@ export default class Form {
                 } catch (e) {
                     SharedUtils.showMessage('Error', e);
                 } finally {
-                    bus.emit(new Action(ref.events.LOADING, false));
+                    bus.emit(new Event(ref.events.LOADING, false));
                 }
             }
         });
@@ -175,7 +175,7 @@ export default class Form {
         });
 
         this.buildFormFields(rowFields);
-        bus.emit(new Action(Form.EVENTS.ROW_ADDED, this.rowIndex));
+        bus.emit(new Event(Form.EVENTS.ROW_ADDED, this.rowIndex));
     }
 
     private removeRow(rowIndex) {
@@ -187,7 +187,7 @@ export default class Form {
                 delete this.formFields[key];
             }
         }
-        bus.emit(new Action(Form.EVENTS.ROW_REMOVED, rowIndex));
+        bus.emit(new Event(Form.EVENTS.ROW_REMOVED, rowIndex));
     }
 
     private buildFields(container, fields, containerType = 'div', rowIndex = null) {

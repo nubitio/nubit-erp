@@ -11,7 +11,7 @@ import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 import Customer from "./Customer";
 import {Drawer} from "../Drawer";
-import {Action} from "../Action";
+import {Event} from "../Event";
 import {bus} from "../EventBus";
 import {messenger} from "../utils/Messenger";
 import {SaleService} from "../services/sale.service";
@@ -201,7 +201,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.emit(new Action(Sale.EVENTS.ADD, {route: Sale.ROUTES.ADD}));
+                    bus.emit(new Event(Sale.EVENTS.ADD, {route: Sale.ROUTES.ADD}));
                 }
             }, {
                 text: 'Vista Previa',
@@ -281,14 +281,14 @@ export default class Sale {
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: function (e) {
-                    bus.emit(new Action(Customer.EVENTS.ADD));
+                    bus.emit(new Event(Customer.EVENTS.ADD));
                     drawer.show();
                 }
             }]
         });
         bus.on(
             action => action.name == Customer.EVENTS.SUCCESS,
-            (action: Action) => {
+            (action: Event) => {
                 customerField.combobox('reload');
                 customerField.combobox('setValue', action.data || '');
                 drawer.hide();
@@ -296,7 +296,7 @@ export default class Sale {
         );
         bus.on(
             action => action.name == Form.EVENTS.ROW_REMOVED,
-            (action: Action) => {
+            (action: Event) => {
                 this.calculateGrandTotal();
             }
         );
@@ -342,8 +342,22 @@ export default class Sale {
             messenger.show('Información', 'Debe seleccionar una venta');
             return
         }
-        let url = 'sale/print/' + selected.id;
-        window.open(url, '_blank');
+        let url = 'sale/print/' + selected['movimiento_id'];
+        let previewDialog = new Dialog(this.container, {
+            width: 300,
+            height: 500,
+            title: 'Vista Previa',
+            modal: true,
+            href: url,
+            positiveText: 'Imprimir',
+            preventDefault: true,
+        });
+        previewDialog.show()
+
+        previewDialog.onPositiveClick(() => {
+            this.print();
+            previewDialog.hide();
+        });
     }
 
     private print(sale: any = null) {
@@ -366,7 +380,7 @@ export default class Sale {
             return;
         }
         messenger.prompt('Confirmar', 'Ingrese un motivo', (reason) => {
-            let id = selected.id;
+            let id = selected['movimiento_id'];
             if (reason) {
                 this.saleService.voidSale(id, reason).subscribe((data) => {
                     this.dataGrid.reload();

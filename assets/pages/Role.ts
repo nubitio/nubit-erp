@@ -7,7 +7,7 @@ import {FieldBuilder} from "../FieldBuilder";
 import {SharedUtils} from "../utils/SharedUtils";
 import {Drawer} from "../Drawer";
 import {bus} from "../EventBus";
-import {Action} from "../Action";
+import {Event} from "../Event";
 import {httpClient} from "../utils/HttpClient";
 
 export default class Role {
@@ -70,7 +70,7 @@ export default class Role {
                 handler: () => {
                     let row = this.dataGrid.selectedRow;
                     if (row) {
-                        bus.emit(new Action('permission:load', row));
+                        bus.emit(new Event('permission:load', row));
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro');
                     }
@@ -135,16 +135,16 @@ export default class Role {
 
         bus.on(
             action => action.name === 'permission:load',
-            (action: Action) => {
+            (action: Event) => {
                 let row = action.data;
                 permissionsDialog.show('Permisos del rol ' + row.descripcion);
                 drawer.show();
                 permissionsTree.tree('loadData', []);
-                bus.emit(new Action(EVENTS.LOADING, true));
+                bus.emit(new Event(EVENTS.LOADING, true));
                 httpClient.get<any>('role-menu/get', {params: {roleId: row['rol_id']}}).subscribe(
                     response => {
                         permissionsTree.tree('loadData', response);
-                        bus.emit(new Action(EVENTS.LOADING, false));
+                        bus.emit(new Event(EVENTS.LOADING, false));
                     }
                 )
             }
@@ -161,7 +161,7 @@ export default class Role {
                         SharedUtils.showMessage('Info', response.msg);
                         permissionsDialog.hide();
                         drawer.hide();
-                        bus.emit(new Action(EVENTS.SUCCESS, true));
+                        bus.emit(new Event(EVENTS.SUCCESS, true));
                     }
                 )
             }

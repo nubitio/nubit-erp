@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
+          integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+
+    <title>{{ sale.header.doc_series }} - {{ sale.header.doc_number }}</title>
+    <style>
+        .table-nm {
+            margin-bottom: 0;
+        }
+
+        .row-bb {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .row-bt {
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid p-0">
+    <table class="table table-sm table-borderless table-nm">
+        <tr>
+            <td class="text-center" style="width: 50%">
+                <img src="{{ logo }}" alt="Logo" style="position: relative; max-height: 100px">
+            </td>
+        </tr>
+        <tr class="row-border">
+            <td class="text-center">
+                {{ sale.header.company_name }}<br>
+                RUC: {{ sale.header.company_id }}<br>
+                {{ sale.header.company_address }}<br>
+                {{ sale.header.company_phone }}<br>
+            </td>
+        </tr>
+        <tr class="row-bt row-bb">
+            <td class="text-center">
+                {% if sale.header.doc_type == '01' %}
+                    <h5>FACTURA ELECTRONICA</h5>
+                {% elseif sale.header.doc_type == '03' %}
+                    <h5>BOLETA ELECTRONICA</h5>
+                {% else %}
+                    <h5>NOTA DE VENTA</h5>
+                {% endif %}
+                <strong>{{ sale.header.doc_series }} - {{ sale.header.doc_number }}</strong>
+            </td>
+        </tr>
+        <tr class="row-bb">
+            <td>
+                Fecha: {{ sale.header.doc_date }}<br>
+                Moneda: Soles
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Cliente: {{ sale.header.client_name }}<br>
+                RUC: {{ sale.header.client_doc_number }}<br>
+                Dirección: {{ sale.header.client_address }}<br>
+            </td>
+        </tr>
+    </table>
+    <div class="table-responsive-sm">
+        <table class="table table-sm table-borderless table-nm">
+            <thead>
+            <tr class="row-bt row-bb">
+                <th>Description</th>
+                <th class="text-right text-end">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in sale.details %}
+                <tr>
+                    <td class="left">{{ item['quantity'] }} {{ item['product'] }}</td>
+                    <td class="text-right text-end">{{ item['price'] }}</td>
+                </tr>
+            {% endfor %}
+            <tr class="row-bt"></tr>
+            {% if sale.header.doc_discount_percent > 0 %}
+                <tr>
+                    <td class="left">Dscto.</td>
+                    <td class="text-right text-end">-{{ valor_descuento }}</td>
+                </tr>
+            {% endif %}
+            {% if sale.header.doc_type != '00' %}
+                <tr>
+                    <td class="left">OP. Gravada.</td>
+                    <td class="text-right text-end">{{ sale.header.doc_sale_value }}</td>
+                </tr>
+                <tr>
+                    <td class="left">OP. Inafecta.</td>
+                    <td class="text-right text-end">0.00</td>
+                </tr>
+                <tr>
+                    <td class="left">OP. Exonerada.</td>
+                    <td class="text-right text-end">0.00</td>
+                </tr>
+                <tr>
+                    <td class="left">IGV.</td>
+                    <td class="text-right text-end">{{ sale.header.doc_total_taxes }}</td>
+                </tr>
+            {% endif %}
+            <tr class="row-bb">
+                <td class="left">
+                    <strong>Total</strong></td>
+                <td class="text-right text-end">
+                    <strong>{{ sale.header.doc_sale_amount }}</strong>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <table class="table table-sm table-borderless">
+        <tbody>
+        <tr class="row-bb">
+            <td class="text-center">
+                <strong>SON: {{ sale.header.doc_sale_amount|format_number(style='spellout', locale='es')|upper }}</strong>
+            </td>
+        </tr>
+        {% if sale.header.doc_type != '00' %}
+            <tr>
+                <td class="text-center">
+                    <img src="{{ qr|default('') }}" alt="QR" style="position: relative; max-height: 120px"><br>
+                    Resumen: {{ sale.header.doc_digest }}
+                    <p>Representacion impresa del comprobante electronico, consulte en https://fe.efact.com/</p>
+                </td>
+            </tr>
+        {% endif %}
+        <tr>
+            <td class="text-center">
+                {{ "now"|date("d/m/Y H:i:s") }}<br>
+                ** Gracias por su preferencia **
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

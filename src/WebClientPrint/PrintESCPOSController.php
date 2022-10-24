@@ -143,8 +143,7 @@ class PrintESCPOSController extends BaseController
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         if ($header['doc_type'] != DocType::NOTA_VENTA->value) {
             if ($_ENV['PRINTER_PRINT_QR']) {
-                $qr_data = $header['client_doc_number'] . "|" . $header['doc_type'] . "|" . $header['doc_series'] . "|" . $header['doc_number'] . "|" . $str_igv . "|" . $str_total . "|" . $header['doc_date'] . "|0|0|" . $header['doc_digest'];
-                $printer->qrCode($qr_data, Printer::QR_ECLEVEL_L, 8);
+                $printer->qrCode($header['doc_qr_data'], Printer::QR_ECLEVEL_L, 8);
             }
             $printer->feed();
             $printer->text("Resumen: " . $header['doc_digest'] . "\n");
@@ -169,8 +168,6 @@ class PrintESCPOSController extends BaseController
         } else {
             $cpj->clientPrinter = new InstalledPrinter($printerName);
         }
-        echo '<pre>' . $cpj->printerCommands . '</pre>';
-        exit();
         return new Response($cpj->sendToClient(), 200, ['Content-Type' => 'application/octet-stream']);
     }
 }

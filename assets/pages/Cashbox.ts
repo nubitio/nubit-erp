@@ -7,7 +7,7 @@ import {FieldBuilder} from "../FieldBuilder";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../utils/HttpClient";
 import {bus} from "../EventBus";
-import {Action} from "../Action";
+import {Event} from "../Event";
 
 export default class Cashbox {
     private readonly container: string;
@@ -148,7 +148,7 @@ export default class Cashbox {
     private checkCashbox(): void {
         let cashboxId = this.dataGrid.data['header']['caja_id'];
         if (cashboxId === undefined) {
-            bus.emit(new Action('cashbox-open:add'));
+            bus.emit(new Event('cashbox-open:add'));
         }
     }
 
@@ -183,7 +183,7 @@ export default class Cashbox {
                 params.append('monto_inicial', form.getField('monto_inicial').numberbox('getValue'));
                 httpClient.post('cashbox/open', params).subscribe(
                     (response) => {
-                        bus.emit(new Action(events.SUCCESS));
+                        bus.emit(new Event(events.SUCCESS));
                     }
                 );
             }
