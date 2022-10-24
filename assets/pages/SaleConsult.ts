@@ -4,7 +4,7 @@ import {FormType} from "../FormType";
 import Dialog from "../Dialog";
 import Form from "../Form";
 import {bus} from "../EventBus";
-import {Action} from "../Action";
+import {Event} from "../Event";
 
 export default class SaleConsult {
     private readonly container: HTMLElement;
@@ -79,6 +79,6 @@ export default class SaleConsult {
             }
         );
 
-        bus.emit(new Action(SaleConsult.EVENTS.ADD, {title: 'Reporte de ventas'}));
+        bus.emit(new Event(SaleConsult.EVENTS.ADD, {title: 'Reporte de ventas'}));
     }
 }

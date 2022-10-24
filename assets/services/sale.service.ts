@@ -4,6 +4,6 @@ import {Observable} from "rxjs";
 export class SaleService {
 
     voidSale(saleId: string, reason: string): Observable<any> {
-        return httpClient.post(`/api/sale/${saleId}/void`, {reason});
+        return httpClient.post(`/sale/void/${saleId}`, {reason});
     }
 }

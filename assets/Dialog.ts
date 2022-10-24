@@ -1,7 +1,7 @@
 import {Constants} from "./Constants";
 import {Animation} from "./Animation";
 import {bus} from "./EventBus";
-import {Action} from "./Action";
+import {Event} from "./Event";
 import {SharedUtils} from "./utils/SharedUtils";
 
 export default class Dialog {
@@ -12,7 +12,7 @@ export default class Dialog {
     private negativeButton: JQuery;
     private isShowing: boolean = false;
     private randomId: string = SharedUtils.randomId();
-    private events: any = {};
+    private events: any = null;
 
     constructor(container, options: any = {}) {
         this.container = document.getElementById(container);
@@ -20,7 +20,7 @@ export default class Dialog {
         this.dialog = null;
         this.positiveButton = null;
         this.negativeButton = null;
-        this.events = options.events;
+        this.events = options.events ?? null;
         this.init();
     }
 
@@ -42,16 +42,20 @@ export default class Dialog {
             id: 'positive-button' + this.randomId,
             text: this.options.positiveText ?? Constants.TEXT_SAVE,
             handler: () => {
-                bus.emit(new Action(this.events.SAVE));
+                if (this.events?.SAVE) {
+                    bus.emit(new Event(this.events?.SAVE));
+                }
             }
         });
 
         this.dialog.dialog({
+            title: this.options.title ?? 'Nuevo',
             width: this.options.width || 400,
             height: this.options.height || 'auto',
             maxHeight: this.options.maxHeight || 550,
             modal: this.options.modal || true,
             closable: this.options.closable ?? true,
+            href: this.options.href ?? null,
             buttons: buttons,
             onOpen: function () {
                 ref.dialog.dialog('center');
@@ -64,7 +68,9 @@ export default class Dialog {
             },
             onClose: function () {
                 ref.isShowing = false;
-                bus.emit(new Action(ref.events.CANCEL));
+                if (ref.events?.CANCEL) {
+                    bus.emit(new Event(ref.events?.CANCEL));
+                }
             }
         });
 
@@ -80,28 +86,28 @@ export default class Dialog {
 
     setupObservers() {
         bus.on(
-            event => event.name === this.events.ADD,
+            event => event.name === this.events?.ADD,
             (event) => {
                 this.show(event.data.title ?? 'Nuevo');
             }
         );
 
         bus.on(
-            event => event.name === this.events.EDIT,
+            event => event.name === this.events?.EDIT,
             (event) => {
                 this.show('Editar');
             }
         );
 
         bus.on(
-            event => event.name === this.events.LOADING,
+            event => event.name === this.events?.LOADING,
             (event) => {
                 this.setLoading(event.data);
             }
         );
 
         bus.on(
-            event => event.name === this.events.SUCCESS,
+            event => event.name === this.events?.SUCCESS,
             (event) => {
                 this.hide();
             }
@@ -112,11 +118,11 @@ export default class Dialog {
         return this.dialog.attr('id');
     }
 
-    show(title) {
+    show(title = 'Nuevo') {
         if (this.isShowing) {
             return;
         }
-        this.dialog.dialog('open').dialog('setTitle', title);
+        this.dialog.dialog('open').dialog('setTitle', this.options.title ?? title);
     }
 
     hide() {
@@ -138,5 +144,9 @@ export default class Dialog {
             this.positiveButton.linkbutton({text: Constants.TEXT_SAVE});
             this.dialog.dialog('hideMask');
         }
+    }
+
+    onPositiveClick(callback: () => void) {
+        this.positiveButton.on('click', callback);
     }
 }

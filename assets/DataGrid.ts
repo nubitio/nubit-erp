@@ -2,7 +2,7 @@ import {Constants} from "./Constants";
 import {SharedUtils} from "./utils/SharedUtils";
 import {Field} from "./Field";
 import {bus} from "./EventBus";
-import {Action} from "./Action";
+import {Event} from "./Event";
 import {messenger} from "./utils/Messenger";
 import {httpClient} from "./utils/HttpClient";
 
@@ -95,7 +95,7 @@ export default class DataGrid {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.emit(new Action(ref.events.ADD, {route: ref.routes.ADD}));
+                    bus.emit(new Event(ref.events.ADD, {route: ref.routes.ADD}));
                 }
             });
             this.defaultToolbar.push('-');
@@ -108,7 +108,7 @@ export default class DataGrid {
                 handler: function () {
                     let row = ref.dataGrid.datagrid('getSelected');
                     if (row) {
-                        bus.emit(new Action(ref.events.EDIT, {route: ref.routes.EDIT, row: row}));
+                        bus.emit(new Event(ref.events.EDIT, {route: ref.routes.EDIT, row: row}));
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro para editar');
                     }

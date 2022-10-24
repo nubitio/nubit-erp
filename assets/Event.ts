@@ -1,4 +1,4 @@
-export class Action {
+export class Event {
     name: string;
     data: any = {};
 
