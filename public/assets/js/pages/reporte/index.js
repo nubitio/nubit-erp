@@ -78,6 +78,16 @@ app.reporte = (function () {
         }
     };
 
+    var rpt_notaventa = function reporte_notaventa() {
+        var fi = db_fecha_inicio.datebox('getValue');
+        var ff = db_fecha_fin.datebox('getValue');
+        if (fi && ff) {
+            window.open('reporte/notaventa/' + fi + '/' + ff);
+        } else {
+            show_info('Ingrese las Fechas');
+        }
+    };
+
     var rpt_contable = function reporte_contable() {
         var fi = db_fecha_inicio.datebox('getValue');
         var ff = db_fecha_fin.datebox('getValue');
@@ -123,6 +133,7 @@ app.reporte = (function () {
         rpt_articulo: rpt_articulo,
         rpt_detallado: rpt_detallado,
         rpt_dia: rpt_dia,
+        rpt_notaventa: rpt_notaventa,
         rpt_contable: rpt_contable,
         rpt_aeropuerto: rpt_aeropuerto,
         rpt_ventas_anuladas: rpt_ventas_anuladas,
