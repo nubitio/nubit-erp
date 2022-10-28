@@ -78,6 +78,19 @@ class ReporteController extends BaseController
         $this->export($data, $extras);
     }
 
+    public function reporte_notaventa()
+    {
+        $fi = $this->app->get('PARAMS.fi');
+        $ff = $this->app->get('PARAMS.ff');
+        $data = $this->model->notaventa($fi, $ff);
+        $extras = [
+            'title' => 'REPORTE DE VENTAS DE NOTAS DE PEDIDO',
+            'subtitle' => 'PERIODO ' . $fi . ' AL ' . $ff,
+            'sumcols' => [6, 7, 8]
+        ];
+        $this->export($data, $extras);
+    }
+
     public function reporte_contable()
     {
         $fi = $this->app->get('PARAMS.fi');

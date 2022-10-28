@@ -112,6 +112,12 @@ class ReporteModel extends BaseModel
         return $result;
     }
 
+    public function notaventa($fi, $ff)
+    {
+        $result = $this->db->exec("call sp_reporte_notaventa(?,?,?)", array($fi, $ff, $this->current_local_id));
+        return $result;
+    }
+
     public function contable($fi, $ff)
     {
         $result = $this->db->exec("call sp_reporte_contable(?,?,?)", array($fi, $ff, $this->current_local_id));
