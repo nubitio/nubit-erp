@@ -88,7 +88,7 @@ export default class Dialog {
         bus.on(
             event => event.name === this.events?.ADD,
             (event) => {
-                this.show(event.data.title ?? 'Nuevo');
+                this.show(event.data?.title ?? 'Nuevo');
             }
         );
 

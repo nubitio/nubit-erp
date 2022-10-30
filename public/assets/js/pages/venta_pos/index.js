@@ -243,16 +243,25 @@ app.venta = (function () {
             }
         });
 
-        let drawer = new window.Drawer();
-        let viewportHeight = window.innerHeight;
-        let customer = new window.app.customer(drawer.id, {width: '100%', maxHeight: viewportHeight, modal: false});
-        customer.renderDialog();
+        let drawer = new window.Drawer({
+            events: {
+                ADD: 'customer:add',
+                EDIT: 'customer:edit',
+                DELETE: 'customer:delete',
+                SAVE: 'customer:save',
+                CANCEL: 'customer:cancel',
+                SUCCESS: 'customer:success',
+                LOADING: 'customer:loading',
+            }
+        });
+        let customer = new window.app.customer(drawer.id);
+        customer.renderDialog({width: '100%', height: window.innerHeight, modal: false});
 
         window.observer.on(
-            action => action.name === window.EventType.SUCCESS,
-            (data) => {
+            event => event.name === 'customer:success',
+            (event) => {
                 cbo_cliente.combobox('reload');
-                cbo_cliente.combobox('setValue', data || '');
+                cbo_cliente.combobox('setValue', event.data || '');
             }
         );
 
@@ -270,7 +279,7 @@ app.venta = (function () {
             icons: [{
                 iconCls: ICON_ADD,
                 handler: function (e) {
-                    window.observer.emit(window.EventType.ADD, {route: customer.ROUTES.ADD});
+                    window.observer.emit({name: 'customer:add'});
                     drawer.show();
                 }
             }]
