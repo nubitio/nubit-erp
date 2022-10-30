@@ -19,13 +19,13 @@ WebClientPrint::$wcpCacheFolder = 'wcpcache/';
  * internal cache.
  *
  * @author Neodynamic <http://neodynamic.com/support>
- * @copyright (c) 2021, Neodynamic SRL
+ * @copyright (c) 2018, Neodynamic SRL
  * @license http://neodynamic.com/eula Neodynamic EULA
  */
 class WebClientPrint
 {
 
-    const VERSION = '6.0.0.0';
+    const VERSION = '4.0.18.0';
     const CLIENT_PRINT_JOB = 'clientPrint';
     const WCP = 'WEB_CLIENT_PRINT';
     const WCP_SCRIPT_AXD_GET_PRINTERS = 'getPrinters';
@@ -92,7 +92,7 @@ class WebClientPrint
 
             $dataWCPP_VER = $cache_info[self::WCP_CACHE_WCPP_VER];
             $dataPRINTERS = $cache_info[self::WCP_CACHE_PRINTERS];
-            $dataPRINTERSINFO = $cache_info[self::WCP_CACHE_PRINTERSINFO];
+            $dataPRINTERS = $cache_info[self::WCP_CACHE_PRINTERSINFO];
         }
 
         if ($key === self::WCP_CACHE_WCPP_VER) {
@@ -251,7 +251,7 @@ class WebClientPrint
             $dynamicIframeId = 'i' . substr(uniqid(), 0, 3);
             $absoluteWcpAxd = $webClientPrintControllerAbsoluteUrl . '?' . self::SID . '=' . $curSID;
 
-            $s1 = 'dmFyIGpzV0NQUD0oZnVuY3Rpb24oKXt2YXIgc2V0PDw8LU5FTy1IVE1MLUlELT4+Pj1mdW5jdGlvbigpe3ZhciBlbD1kb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnPDw8LU5FTy1IVE1MLUlELT4+PicpO2lmKHdpbmRvdy5jaHJvbWUpe2VsLmhyZWY9J3dlYmNsaWVudHByaW50dmk6Jythcmd1bWVudHNbMF07dmFyIGV2T2JqPWRvY3VtZW50LmNyZWF0ZUV2ZW50KCdNb3VzZUV2ZW50cycpO2V2T2JqLmluaXRFdmVudCgnY2xpY2snLHRydWUsdHJ1ZSk7ZWwuZGlzcGF0Y2hFdmVudChldk9iail9ZWxzZXtlbC5zcmM9J3dlYmNsaWVudHByaW50dmk6Jythcmd1bWVudHNbMF19fTtyZXR1cm57aW5pdDpmdW5jdGlvbigpe2lmKHdpbmRvdy5jaHJvbWUpe3ZhciBhRWw9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnYScpO2FFbC5pZD0nPDw8LU5FTy1IVE1MLUlELT4+Pic7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhRWwpfWVsc2V7dmFyIGlmRWw9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnaWZyYW1lJyk7aWZFbC5pZD0nPDw8LU5FTy1IVE1MLUlELT4+Pic7aWZFbC5uYW1lPSc8PDwtTkVPLUhUTUwtSUQtPj4+JztpZkVsLndpZHRoPTE7aWZFbC5oZWlnaHQ9MTtpZkVsLnN0eWxlLnZpc2liaWxpdHk9J2hpZGRlbic7aWZFbC5zdHlsZS5wb3NpdGlvbj0nYWJzb2x1dGUnO2RvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoaWZFbCl9fSxwaW5nOmZ1bmN0aW9uKCl7c2V0PDw8LU5FTy1IVE1MLUlELT4+PignPDw8LU5FTy1QSU5HLVVSTC0+Pj4nKyhhcmd1bWVudHMubGVuZ3RoPT0xPycmJythcmd1bWVudHNbMF06JycpKTt2YXIgZGVsYXlfbXM9KHR5cGVvZiB3Y3BwUGluZ0RlbGF5X21zPT09J3VuZGVmaW5lZCcpPzA6d2NwcFBpbmdEZWxheV9tcztpZihkZWxheV9tcz4wKXtzZXRUaW1lb3V0KGZ1bmN0aW9uKCl7dmFyIHhocj1uZXcgWE1MSHR0cFJlcXVlc3QoKTt4aHIub25yZWFkeXN0YXRlY2hhbmdlPWZ1bmN0aW9uKCl7aWYoeGhyLnJlYWR5U3RhdGU9PTQmJnhoci5zdGF0dXM9PTIwMCl7dmFyIGRhdGE9eGhyLnJlc3BvbnNlVGV4dDtpZihkYXRhLmxlbmd0aD4wKXt3Y3BwRGV0ZWN0T25TdWNjZXNzKGRhdGEpfWVsc2V7d2NwcERldGVjdE9uRmFpbHVyZSgpfX19O3hoci5vcGVuKCdHRVQnLCc8PDwtTkVPLVVTRVItSEFTLVdDUFAtPj4+Jyk7eGhyLnNlbmQoKX0sZGVsYXlfbXMpfWVsc2V7dmFyIGZuY1dDUFA9c2V0SW50ZXJ2YWwoZ2V0V0NQUFZlcix3Y3BwUGluZ1RpbWVvdXRTdGVwX21zKTt2YXIgd2NwcF9jb3VudD0wO2Z1bmN0aW9uIGdldFdDUFBWZXIoKXtpZih3Y3BwX2NvdW50PD13Y3BwUGluZ1RpbWVvdXRfbXMpe3ZhciB4aHI9bmV3IFhNTEh0dHBSZXF1ZXN0KCk7eGhyLm9ucmVhZHlzdGF0ZWNoYW5nZT1mdW5jdGlvbigpe2lmKHhoci5yZWFkeVN0YXRlPT00JiZ4aHIuc3RhdHVzPT0yMDApe3ZhciBkYXRhPXhoci5yZXNwb25zZVRleHQ7aWYoZGF0YS5sZW5ndGg+MCl7Y2xlYXJJbnRlcnZhbChmbmNXQ1BQKTt3Y3BwRGV0ZWN0T25TdWNjZXNzKGRhdGEpfX19O3hoci5vcGVuKCdHRVQnLCc8PDwtTkVPLVVTRVItSEFTLVdDUFAtPj4+Jyk7eGhyLnNlbmQoeydfJzoobmV3IERhdGUoKS5nZXRUaW1lKCkpfSk7d2NwcF9jb3VudCs9d2NwcFBpbmdUaW1lb3V0U3RlcF9tc31lbHNle2NsZWFySW50ZXJ2YWwoZm5jV0NQUCk7d2NwcERldGVjdE9uRmFpbHVyZSgpfX19fX19KSgpO2RvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ0RPTUNvbnRlbnRMb2FkZWQnLGZ1bmN0aW9uKCl7anNXQ1BQLmluaXQoKTtqc1dDUFAucGluZygpfSk7';
+            $s1 = 'dmFyIGpzV0NQUD0oZnVuY3Rpb24oKXt2YXIgc2V0PDw8LU5FTy1IVE1MLUlELT4+Pj1mdW5jdGlvbigpe2lmKHdpbmRvdy5jaHJvbWUpeyQoJyM8PDwtTkVPLUhUTUwtSUQtPj4+JykuYXR0cignaHJlZicsJ3dlYmNsaWVudHByaW50aXY6Jythcmd1bWVudHNbMF0pO3ZhciBhPSQoJ2EjPDw8LU5FTy1IVE1MLUlELT4+PicpWzBdO3ZhciBldk9iaj1kb2N1bWVudC5jcmVhdGVFdmVudCgnTW91c2VFdmVudHMnKTtldk9iai5pbml0RXZlbnQoJ2NsaWNrJyx0cnVlLHRydWUpO2EuZGlzcGF0Y2hFdmVudChldk9iail9ZWxzZXskKCcjPDw8LU5FTy1IVE1MLUlELT4+PicpLmF0dHIoJ3NyYycsJ3dlYmNsaWVudHByaW50aXY6Jythcmd1bWVudHNbMF0pfX07cmV0dXJue2luaXQ6ZnVuY3Rpb24oKXtpZih3aW5kb3cuY2hyb21lKXskKCc8YSAvPicse2lkOic8PDwtTkVPLUhUTUwtSUQtPj4+J30pLmFwcGVuZFRvKCdib2R5Jyl9ZWxzZXskKCc8aWZyYW1lIC8+Jyx7bmFtZTonPDw8LU5FTy1IVE1MLUlELT4+PicsaWQ6Jzw8PC1ORU8tSFRNTC1JRC0+Pj4nLHdpZHRoOicxJyxoZWlnaHQ6JzEnLHN0eWxlOid2aXNpYmlsaXR5OmhpZGRlbjtwb3NpdGlvbjphYnNvbHV0ZSd9KS5hcHBlbmRUbygnYm9keScpfX0scGluZzpmdW5jdGlvbigpe3NldDw8PC1ORU8tSFRNTC1JRC0+Pj4oJzw8PC1ORU8tUElORy1VUkwtPj4+JysoYXJndW1lbnRzLmxlbmd0aD09MT8nJicrYXJndW1lbnRzWzBdOicnKSk7dmFyIGRlbGF5X21zPSh0eXBlb2Ygd2NwcFBpbmdEZWxheV9tcz09PSd1bmRlZmluZWQnKT8wOndjcHBQaW5nRGVsYXlfbXM7aWYoZGVsYXlfbXM+MCl7c2V0VGltZW91dChmdW5jdGlvbigpeyQuZ2V0KCc8PDwtTkVPLVVTRVItSEFTLVdDUFAtPj4+JyxmdW5jdGlvbihkYXRhKXtpZihkYXRhLmxlbmd0aD4wKXt3Y3BwRGV0ZWN0T25TdWNjZXNzKGRhdGEpfWVsc2V7d2NwcERldGVjdE9uRmFpbHVyZSgpfX0pfSxkZWxheV9tcyl9ZWxzZXt2YXIgZm5jV0NQUD1zZXRJbnRlcnZhbChnZXRXQ1BQVmVyLHdjcHBQaW5nVGltZW91dFN0ZXBfbXMpO3ZhciB3Y3BwX2NvdW50PTA7ZnVuY3Rpb24gZ2V0V0NQUFZlcigpe2lmKHdjcHBfY291bnQ8PXdjcHBQaW5nVGltZW91dF9tcyl7JC5nZXQoJzw8PC1ORU8tVVNFUi1IQVMtV0NQUC0+Pj4nLHsnXyc6JC5ub3coKX0sZnVuY3Rpb24oZGF0YSl7aWYoZGF0YS5sZW5ndGg+MCl7Y2xlYXJJbnRlcnZhbChmbmNXQ1BQKTt3Y3BwRGV0ZWN0T25TdWNjZXNzKGRhdGEpfX0pO3djcHBfY291bnQrPXdjcHBQaW5nVGltZW91dFN0ZXBfbXN9ZWxzZXtjbGVhckludGVydmFsKGZuY1dDUFApO3djcHBEZXRlY3RPbkZhaWx1cmUoKX19fX19fSkoKTskKGRvY3VtZW50KS5yZWFkeShmdW5jdGlvbigpe2pzV0NQUC5pbml0KCk7anNXQ1BQLnBpbmcoKX0pOw==';
 
             $s2 = base64_decode($s1);
             $s2 = str_replace('<<<-NEO-HTML-ID->>>', $dynamicIframeId, $s2);
@@ -278,7 +278,7 @@ class WebClientPrint
             $wcpHandlerGetWcppVer = $absoluteWcpAxd . '?' . self::WCP . '&' . self::WCP_SCRIPT_AXD_GET_WCPPVERSION . '&' . self::SID . '=';
             $sessionIDVal = $qs[self::SID];
 
-            $s1 = 'dmFyIGpzV2ViQ2xpZW50UHJpbnQ9KGZ1bmN0aW9uKCl7dmFyIGdldFJlcT1mdW5jdGlvbih1cmwsb25TdWNjZXNzLG9uRmFpbHVyZSxvbkNsZWFuKXt2YXIgeGhyPW5ldyBYTUxIdHRwUmVxdWVzdCgpO3hoci5vbnJlYWR5c3RhdGVjaGFuZ2U9ZnVuY3Rpb24oKXtpZih4aHIucmVhZHlTdGF0ZT09NCYmeGhyLnN0YXR1cz09MjAwKXt2YXIgZGF0YT14aHIucmVzcG9uc2VUZXh0O2lmKGRhdGEubGVuZ3RoPjApe2lmKG9uQ2xlYW4pY2xlYXJJbnRlcnZhbChvbkNsZWFuKTtpZihvblN1Y2Nlc3Mpb25TdWNjZXNzKGRhdGEpfWVsc2V7aWYob25GYWlsdXJlKW9uRmFpbHVyZSgpfX19O3hoci5vcGVuKCdHRVQnLHVybCk7eGhyLnNlbmQoeydfJzoobmV3IERhdGUoKS5nZXRUaW1lKCkpfSl9O3ZhciBzZXRBPWZ1bmN0aW9uKCl7dmFyIGVfaWQ9J2lkXycrbmV3IERhdGUoKS5nZXRUaW1lKCk7aWYod2luZG93LmNocm9tZSl7dmFyIGFFbD1kb2N1bWVudC5jcmVhdGVFbGVtZW50KCdhJyk7YUVsLmlkPWVfaWQ7YUVsLmhyZWY9J3dlYmNsaWVudHByaW50dmk6Jythcmd1bWVudHNbMF07dmFyIGV2T2JqPWRvY3VtZW50LmNyZWF0ZUV2ZW50KCdNb3VzZUV2ZW50cycpO2V2T2JqLmluaXRFdmVudCgnY2xpY2snLHRydWUsdHJ1ZSk7YUVsLmRpc3BhdGNoRXZlbnQoZXZPYmopO2RvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoYUVsKX1lbHNle3ZhciBpZkVsPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2lmcmFtZScpO2lmRWwuaWQ9ZV9pZDtpZkVsLm5hbWU9ZV9pZDtpZkVsLndpZHRoPTE7aWZFbC5oZWlnaHQ9MTtpZkVsLnN0eWxlLnZpc2liaWxpdHk9J2hpZGRlbic7aWZFbC5zdHlsZS5wb3NpdGlvbj0nYWJzb2x1dGUnO2lmRWwuc3JjPSd3ZWJjbGllbnRwcmludHZpOicrYXJndW1lbnRzWzBdO2RvY3VtZW50LmJvZHkuYXBwZW5kQ2hpbGQoaWZFbCl9c2V0VGltZW91dChmdW5jdGlvbigpe2RvY3VtZW50LmJvZHkucmVtb3ZlQ2hpbGQoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoZV9pZCkpfSw1MDAwKX07cmV0dXJue3ByaW50OmZ1bmN0aW9uKCl7c2V0QSgnVVJMX1BSSU5UX0pPQicrKGFyZ3VtZW50cy5sZW5ndGg9PTE/JyYnK2FyZ3VtZW50c1swXTonJykpfSxnZXRQcmludGVyczpmdW5jdGlvbigpe3NldEEoJ1VSTF9XQ1BfQVhEX1dJVEhfR0VUX1BSSU5URVJTX0NPTU1BTkQnKyc8PDwtTkVPLVNFU1NJT04tSUQtPj4+Jyk7dmFyIGRlbGF5X21zPSh0eXBlb2Ygd2NwcEdldFByaW50ZXJzRGVsYXlfbXM9PT0ndW5kZWZpbmVkJyk/MDp3Y3BwR2V0UHJpbnRlcnNEZWxheV9tcztpZihkZWxheV9tcz4wKXtzZXRUaW1lb3V0KGZ1bmN0aW9uKCl7Z2V0UmVxKCdVUkxfV0NQX0FYRF9HRVRfUFJJTlRFUlMnKyc8PDwtTkVPLVNFU1NJT04tSUQtPj4+Jyx3Y3BHZXRQcmludGVyc09uU3VjY2Vzcyx3Y3BHZXRQcmludGVyc09uRmFpbHVyZSl9LGRlbGF5X21zKX1lbHNle3ZhciBmbmNHZXRQcmludGVycz1zZXRJbnRlcnZhbChnZXRDbGllbnRQcmludGVycyx3Y3BwR2V0UHJpbnRlcnNUaW1lb3V0U3RlcF9tcyk7dmFyIHdjcHBfY291bnQ9MDtmdW5jdGlvbiBnZXRDbGllbnRQcmludGVycygpe2lmKHdjcHBfY291bnQ8PXdjcHBHZXRQcmludGVyc1RpbWVvdXRfbXMpe2dldFJlcSgnVVJMX1dDUF9BWERfR0VUX1BSSU5URVJTJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+Picsd2NwR2V0UHJpbnRlcnNPblN1Y2Nlc3MsbnVsbCxmbmNHZXRQcmludGVycyk7d2NwcF9jb3VudCs9d2NwcEdldFByaW50ZXJzVGltZW91dFN0ZXBfbXN9ZWxzZXtjbGVhckludGVydmFsKGZuY0dldFByaW50ZXJzKTt3Y3BHZXRQcmludGVyc09uRmFpbHVyZSgpfX19fSxnZXRQcmludGVyc0luZm86ZnVuY3Rpb24oKXtzZXRBKCdVUkxfV0NQX0FYRF9XSVRIX0dFVF9QUklOVEVSU0lORk9fQ09NTUFORCcrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nKTt2YXIgZGVsYXlfbXM9KHR5cGVvZiB3Y3BwR2V0UHJpbnRlcnNEZWxheV9tcz09PSd1bmRlZmluZWQnKT8wOndjcHBHZXRQcmludGVyc0RlbGF5X21zO2lmKGRlbGF5X21zPjApe3NldFRpbWVvdXQoZnVuY3Rpb24oKXtnZXRSZXEoJ1VSTF9XQ1BfQVhEX0dFVF9QUklOVEVSU0lORk8nKyc8PDwtTkVPLVNFU1NJT04tSUQtPj4+Jyx3Y3BHZXRQcmludGVyc09uU3VjY2Vzcyx3Y3BHZXRQcmludGVyc09uRmFpbHVyZSl9LGRlbGF5X21zKX1lbHNle3ZhciBmbmNHZXRQcmludGVyc0luZm89c2V0SW50ZXJ2YWwoZ2V0Q2xpZW50UHJpbnRlcnNJbmZvLHdjcHBHZXRQcmludGVyc1RpbWVvdXRTdGVwX21zKTt2YXIgd2NwcF9jb3VudD0wO2Z1bmN0aW9uIGdldENsaWVudFByaW50ZXJzSW5mbygpe2lmKHdjcHBfY291bnQ8PXdjcHBHZXRQcmludGVyc1RpbWVvdXRfbXMpe2dldFJlcSgnVVJMX1dDUF9BWERfR0VUX1BSSU5URVJTSU5GTycrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nLHdjcEdldFByaW50ZXJzT25TdWNjZXNzLG51bGwsZm5jR2V0UHJpbnRlcnNJbmZvKTt3Y3BwX2NvdW50Kz13Y3BwR2V0UHJpbnRlcnNUaW1lb3V0U3RlcF9tc31lbHNle2NsZWFySW50ZXJ2YWwoZm5jR2V0UHJpbnRlcnNJbmZvKTt3Y3BHZXRQcmludGVyc09uRmFpbHVyZSgpfX19fSxnZXRXY3BwVmVyOmZ1bmN0aW9uKCl7c2V0QSgnVVJMX1dDUF9BWERfV0lUSF9HRVRfV0NQUFZFUlNJT05fQ09NTUFORCcrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nKTt2YXIgZGVsYXlfbXM9KHR5cGVvZiB3Y3BwR2V0VmVyRGVsYXlfbXM9PT0ndW5kZWZpbmVkJyk/MDp3Y3BwR2V0VmVyRGVsYXlfbXM7aWYoZGVsYXlfbXM+MCl7c2V0VGltZW91dChmdW5jdGlvbigpe2dldFJlcSgnVVJMX1dDUF9BWERfR0VUX1dDUFBWRVJTSU9OJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+Picsd2NwR2V0V2NwcFZlck9uU3VjY2Vzcyx3Y3BHZXRXY3BwVmVyT25GYWlsdXJlKX0sZGVsYXlfbXMpfWVsc2V7dmFyIGZuY1dDUFA9c2V0SW50ZXJ2YWwoZ2V0Q2xpZW50VmVyLHdjcHBHZXRWZXJUaW1lb3V0U3RlcF9tcyk7dmFyIHdjcHBfY291bnQ9MDtmdW5jdGlvbiBnZXRDbGllbnRWZXIoKXtpZih3Y3BwX2NvdW50PD13Y3BwR2V0VmVyVGltZW91dF9tcyl7Z2V0UmVxKCdVUkxfV0NQX0FYRF9HRVRfV0NQUFZFUlNJT04nKyc8PDwtTkVPLVNFU1NJT04tSUQtPj4+Jyx3Y3BHZXRXY3BwVmVyT25TdWNjZXNzLG51bGwsZm5jV0NQUCk7d2NwcF9jb3VudCs9d2NwcEdldFZlclRpbWVvdXRTdGVwX21zfWVsc2V7Y2xlYXJJbnRlcnZhbChmbmNXQ1BQKTt3Y3BHZXRXY3BwVmVyT25GYWlsdXJlKCl9fX19LHNlbmQ6ZnVuY3Rpb24oKXtzZXRBLmFwcGx5KHRoaXMsYXJndW1lbnRzKX19fSkoKTs=';
+            $s1 = 'dmFyIGpzV2ViQ2xpZW50UHJpbnQ9KGZ1bmN0aW9uKCl7dmFyIHNldEE9ZnVuY3Rpb24oKXt2YXIgZV9pZD0naWRfJytuZXcgRGF0ZSgpLmdldFRpbWUoKTtpZih3aW5kb3cuY2hyb21lKXskKCdib2R5JykuYXBwZW5kKCc8YSBpZD1cIicrZV9pZCsnXCI+PC9hPicpOyQoJyMnK2VfaWQpLmF0dHIoJ2hyZWYnLCd3ZWJjbGllbnRwcmludGl2OicrYXJndW1lbnRzWzBdKTt2YXIgYT0kKCdhIycrZV9pZClbMF07dmFyIGV2T2JqPWRvY3VtZW50LmNyZWF0ZUV2ZW50KCdNb3VzZUV2ZW50cycpO2V2T2JqLmluaXRFdmVudCgnY2xpY2snLHRydWUsdHJ1ZSk7YS5kaXNwYXRjaEV2ZW50KGV2T2JqKX1lbHNleyQoJ2JvZHknKS5hcHBlbmQoJzxpZnJhbWUgbmFtZT1cIicrZV9pZCsnXCIgaWQ9XCInK2VfaWQrJ1wiIHdpZHRoPVwiMVwiIGhlaWdodD1cIjFcIiBzdHlsZT1cInZpc2liaWxpdHk6aGlkZGVuO3Bvc2l0aW9uOmFic29sdXRlXCIgLz4nKTskKCcjJytlX2lkKS5hdHRyKCdzcmMnLCd3ZWJjbGllbnRwcmludGl2OicrYXJndW1lbnRzWzBdKX1zZXRUaW1lb3V0KGZ1bmN0aW9uKCl7JCgnIycrZV9pZCkucmVtb3ZlKCl9LDUwMDApfTtyZXR1cm57cHJpbnQ6ZnVuY3Rpb24oKXtzZXRBKCdVUkxfUFJJTlRfSk9CJysoYXJndW1lbnRzLmxlbmd0aD09MT8nJicrYXJndW1lbnRzWzBdOicnKSl9LGdldFByaW50ZXJzOmZ1bmN0aW9uKCl7c2V0QSgnVVJMX1dDUF9BWERfV0lUSF9HRVRfUFJJTlRFUlNfQ09NTUFORCcrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nKTt2YXIgZGVsYXlfbXM9KHR5cGVvZiB3Y3BwR2V0UHJpbnRlcnNEZWxheV9tcz09PSd1bmRlZmluZWQnKT8wOndjcHBHZXRQcmludGVyc0RlbGF5X21zO2lmKGRlbGF5X21zPjApe3NldFRpbWVvdXQoZnVuY3Rpb24oKXskLmdldCgnVVJMX1dDUF9BWERfR0VUX1BSSU5URVJTJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+PicsZnVuY3Rpb24oZGF0YSl7aWYoZGF0YS5sZW5ndGg+MCl7d2NwR2V0UHJpbnRlcnNPblN1Y2Nlc3MoZGF0YSl9ZWxzZXt3Y3BHZXRQcmludGVyc09uRmFpbHVyZSgpfX0pfSxkZWxheV9tcyl9ZWxzZXt2YXIgZm5jR2V0UHJpbnRlcnM9c2V0SW50ZXJ2YWwoZ2V0Q2xpZW50UHJpbnRlcnMsd2NwcEdldFByaW50ZXJzVGltZW91dFN0ZXBfbXMpO3ZhciB3Y3BwX2NvdW50PTA7ZnVuY3Rpb24gZ2V0Q2xpZW50UHJpbnRlcnMoKXtpZih3Y3BwX2NvdW50PD13Y3BwR2V0UHJpbnRlcnNUaW1lb3V0X21zKXskLmdldCgnVVJMX1dDUF9BWERfR0VUX1BSSU5URVJTJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+PicseydfJzokLm5vdygpfSxmdW5jdGlvbihkYXRhKXtpZihkYXRhLmxlbmd0aD4wKXtjbGVhckludGVydmFsKGZuY0dldFByaW50ZXJzKTt3Y3BHZXRQcmludGVyc09uU3VjY2VzcyhkYXRhKX19KTt3Y3BwX2NvdW50Kz13Y3BwR2V0UHJpbnRlcnNUaW1lb3V0U3RlcF9tc31lbHNle2NsZWFySW50ZXJ2YWwoZm5jR2V0UHJpbnRlcnMpO3djcEdldFByaW50ZXJzT25GYWlsdXJlKCl9fX19LGdldFByaW50ZXJzSW5mbzpmdW5jdGlvbigpe3NldEEoJ1VSTF9XQ1BfQVhEX1dJVEhfR0VUX1BSSU5URVJTSU5GT19DT01NQU5EJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+PicpO3ZhciBkZWxheV9tcz0odHlwZW9mIHdjcHBHZXRQcmludGVyc0RlbGF5X21zPT09J3VuZGVmaW5lZCcpPzA6d2NwcEdldFByaW50ZXJzRGVsYXlfbXM7aWYoZGVsYXlfbXM+MCl7c2V0VGltZW91dChmdW5jdGlvbigpeyQuZ2V0KCdVUkxfV0NQX0FYRF9HRVRfUFJJTlRFUlNJTkZPJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+PicsZnVuY3Rpb24oZGF0YSl7aWYoZGF0YS5sZW5ndGg+MCl7d2NwR2V0UHJpbnRlcnNPblN1Y2Nlc3MoZGF0YSl9ZWxzZXt3Y3BHZXRQcmludGVyc09uRmFpbHVyZSgpfX0pfSxkZWxheV9tcyl9ZWxzZXt2YXIgZm5jR2V0UHJpbnRlcnNJbmZvPXNldEludGVydmFsKGdldENsaWVudFByaW50ZXJzSW5mbyx3Y3BwR2V0UHJpbnRlcnNUaW1lb3V0U3RlcF9tcyk7dmFyIHdjcHBfY291bnQ9MDtmdW5jdGlvbiBnZXRDbGllbnRQcmludGVyc0luZm8oKXtpZih3Y3BwX2NvdW50PD13Y3BwR2V0UHJpbnRlcnNUaW1lb3V0X21zKXskLmdldCgnVVJMX1dDUF9BWERfR0VUX1BSSU5URVJTSU5GTycrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nLHsnXyc6JC5ub3coKX0sZnVuY3Rpb24oZGF0YSl7aWYoZGF0YS5sZW5ndGg+MCl7Y2xlYXJJbnRlcnZhbChmbmNHZXRQcmludGVyc0luZm8pO3djcEdldFByaW50ZXJzT25TdWNjZXNzKGRhdGEpfX0pO3djcHBfY291bnQrPXdjcHBHZXRQcmludGVyc1RpbWVvdXRTdGVwX21zfWVsc2V7Y2xlYXJJbnRlcnZhbChmbmNHZXRQcmludGVyc0luZm8pO3djcEdldFByaW50ZXJzT25GYWlsdXJlKCl9fX19LGdldFdjcHBWZXI6ZnVuY3Rpb24oKXtzZXRBKCdVUkxfV0NQX0FYRF9XSVRIX0dFVF9XQ1BQVkVSU0lPTl9DT01NQU5EJysnPDw8LU5FTy1TRVNTSU9OLUlELT4+PicpO3ZhciBkZWxheV9tcz0odHlwZW9mIHdjcHBHZXRWZXJEZWxheV9tcz09PSd1bmRlZmluZWQnKT8wOndjcHBHZXRWZXJEZWxheV9tcztpZihkZWxheV9tcz4wKXtzZXRUaW1lb3V0KGZ1bmN0aW9uKCl7JC5nZXQoJ1VSTF9XQ1BfQVhEX0dFVF9XQ1BQVkVSU0lPTicrJzw8PC1ORU8tU0VTU0lPTi1JRC0+Pj4nLGZ1bmN0aW9uKGRhdGEpe2lmKGRhdGEubGVuZ3RoPjApe3djcEdldFdjcHBWZXJPblN1Y2Nlc3MoZGF0YSl9ZWxzZXt3Y3BHZXRXY3BwVmVyT25GYWlsdXJlKCl9fSl9LGRlbGF5X21zKX1lbHNle3ZhciBmbmNXQ1BQPXNldEludGVydmFsKGdldENsaWVudFZlcix3Y3BwR2V0VmVyVGltZW91dFN0ZXBfbXMpO3ZhciB3Y3BwX2NvdW50PTA7ZnVuY3Rpb24gZ2V0Q2xpZW50VmVyKCl7aWYod2NwcF9jb3VudDw9d2NwcEdldFZlclRpbWVvdXRfbXMpeyQuZ2V0KCdVUkxfV0NQX0FYRF9HRVRfV0NQUFZFUlNJT04nKyc8PDwtTkVPLVNFU1NJT04tSUQtPj4+Jyx7J18nOiQubm93KCl9LGZ1bmN0aW9uKGRhdGEpe2lmKGRhdGEubGVuZ3RoPjApe2NsZWFySW50ZXJ2YWwoZm5jV0NQUCk7d2NwR2V0V2NwcFZlck9uU3VjY2VzcyhkYXRhKX19KTt3Y3BwX2NvdW50Kz13Y3BwR2V0VmVyVGltZW91dFN0ZXBfbXN9ZWxzZXtjbGVhckludGVydmFsKGZuY1dDUFApO3djcEdldFdjcHBWZXJPbkZhaWx1cmUoKX19fX0sc2VuZDpmdW5jdGlvbigpe3NldEEuYXBwbHkodGhpcyxhcmd1bWVudHMpfX19KSgpOw==';
 
             $s2 = base64_decode($s1);
             $s2 = str_replace('URL_PRINT_JOB', $clientPrintJobUrl, $s2);
@@ -371,39 +371,6 @@ class WebClientPrint
 }
 
 /**
- * Specifies the printer's double-sided (duplex) printing capability.
- */
-class Duplex
-{
-    /**
-     * Use default value from driver.
-     */
-    const DEF = 0;
-    /**
-     * Use single-sided printing.
-     */
-    const SIMPLEX = 1;
-    /**
-     * Use double-sided printing with vertical page turning.
-     */
-    const VERTICAL = 2;
-    /**
-     * Use double-sided printing with horizontal page turning.
-     */
-    const HORIZONTAL = 3;
-
-    public static function parse($val)
-    {
-        if ($val === 'DEF') return 0;
-        if ($val === 'SIMPLEX') return 1;
-        if ($val === 'VERTICAL') return 2;
-        if ($val === 'HORIZONTAL') return 3;
-        return 0;
-    }
-}
-
-
-/**
  * The base class for all kind of printers supported at the client side.
  */
 abstract class ClientPrinter
@@ -464,13 +431,6 @@ class InstalledPrinter extends ClientPrinter
      */
     public $paperName = '';
 
-    /**
-     * Gets or sets the printer's double-sided (duplex) printing capability. Default is the current printer's driver setting.
-     * DEF = 0, SIMPLEX = 1, VERTICAL = 2, HORIZONTAL = 3
-     * @var integer
-     */
-    public $duplex = Duplex::DEF;
-
 
     /**
      * Creates an instance of the InstalledPrinter class with the specified printer name.
@@ -508,8 +468,6 @@ class InstalledPrinter extends ClientPrinter
         } else {
             $serData .= Utils::SER_SEP . 'def';
         }
-
-        $serData .= Utils::SER_SEP . ((int)$this->duplex);
 
         return $serData;
     }
@@ -700,7 +658,7 @@ class SerialPortParity
         if ($val === 'EVEN') return 2;
         if ($val === 'MARK') return 3;
         if ($val === 'SPACE') return 4;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
 
@@ -720,7 +678,7 @@ class SerialPortStopBits
         if ($val === 'ONE') return 1;
         if ($val === 'TWO') return 2;
         if ($val === 'ONE_POINT_FIVE') return 3;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
 
@@ -740,106 +698,15 @@ class SerialPortHandshake
         if ($val === 'XON_XOFF') return 1;
         if ($val === 'REQUEST_TO_SEND') return 2;
         if ($val === 'REQUEST_TO_SEND_XON_XOFF') return 3;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
-
-/**
- * It specifies encryption metadata.
- */
-class EncryptMetadata
-{
-
-    /**
-     * Gets the RSA Public Key in Base64 format.
-     */
-    public $publicKeyBase64 = '';
-    /**
-     * Gets the RSA Public Key Signature in Base64 format.
-     */
-    public $publicKeySignatureBase64 = '';
-    /**
-     * Gets or sets the password used to derive the encryption key. It must be 100 ASCII chars/bytes max.
-     */
-    public $password = '';
-    /**
-     * Gets or sets the salt used to derive the key. It must be 100 ASCII chars/bytes max.
-     */
-    public $salt = '';
-    /**
-     * Gets or sets the Initialization Vector to be used for the encryption algorithm. It must be 32 ASCII chars/bytes.
-     */
-    public $iv = '';
-    /**
-     * Gets or sets the number of iterations to derive the key. Minimum is 1000.
-     */
-    public $iterations = 1000;
-
-
-    /**
-     *
-     * @param type $pubKeyBase64 The RSA Public Key in Base64 format sent by WCPP Client Utility.
-     * @param type $pubKeySignatureKeyBase64 The RSA Public Key Signature in Base64 format sent by WCPP Client Utility.
-     */
-    public function __construct($pubKeyBase64, $pubKeySignatureKeyBase64)
-    {
-        $this->publicKeyBase64 = $pubKeyBase64;
-        $this->publicKeySignatureBase64 = $pubKeySignatureKeyBase64;
-    }
-
-    public function serialize()
-    {
-
-        $this->validateMetadata();
-
-        $sep = '|';
-
-        $buffer = base64_encode(SecUtils::rsaVerifyAndEncrypt($this->publicKeyBase64, $this->publicKeySignatureBase64, $this->password));
-        $buffer .= $sep;
-        $buffer .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->publicKeyBase64, $this->publicKeySignatureBase64, $this->salt));
-        $buffer .= $sep;
-        $buffer .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->publicKeyBase64, $this->publicKeySignatureBase64, $this->iv));
-        $buffer .= $sep;
-        $buffer .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->publicKeyBase64, $this->publicKeySignatureBase64, strval($this->iterations)));
-
-        return $buffer;
-    }
-
-    public function validateMetadata()
-    {
-        if (Utils::isNullOrEmptyString($this->password)) {
-            $this->password = Utils::genRandomString(33, 126, 32);
-        } else if (strlen($this->password) > 100) {
-            throw new Exception("Password cannot be greater than 100 ASCII chars/bytes.");
-        }
-
-        if (Utils::isNullOrEmptyString($this->salt)) {
-            $this->salt = Utils::genRandomString(33, 126, 32);
-        } else if (strlen($this->salt) > 100) {
-            throw new Exception("Salt cannot be greater than 100 ASCII chars/bytes.");
-        }
-
-        if (Utils::isNullOrEmptyString($this->iv)) {
-            $this->iv = Utils::genRandomString(33, 126, 16);
-        } else if (strlen($this->iv) > 16) {
-            throw new Exception("IV cannot be greater than 16 ASCII chars/bytes.");
-        }
-
-        if ($this->iterations < 1000) {
-            $this->iterations = 1000;
-        }
-    }
-}
-
 
 /**
  * It represents a file in the server that will be printed at the client side.
  */
 class PrintFile
 {
-
-    public $fileIsPasswordProtected = false;
-    public $fileExtension = '';
 
     /**
      * Gets or sets the path of the file at the server side that will be printed at the client side.
@@ -863,17 +730,6 @@ class PrintFile
      * @var integer
      */
     public $copies = 1;
-    /**
-     * Gets or sets the Encryption Metadata.
-     * @var EncryptMetadata
-     */
-    public $encryptMetadata = null;
-
-    /**
-     * Gets or sets whether to delete this file from the client device after printing it. Default is true.
-     * @var boolean
-     */
-    public $deleteAfterPrinting = true;
 
     const PREFIX = 'wcpPF:';
     const SEP = '|';
@@ -895,60 +751,23 @@ class PrintFile
     public function serialize()
     {
         $file = str_replace('\\', 'BACKSLASHCHAR', $this->fileName);
-        $pfc = '';
         if ($this->copies > 1) {
             $pfc = 'PFC=' . $this->copies;
+            $file = substr($file, 0, strrpos($file, '.')) . $pfc . substr($file, strrpos($file, '.'));
         }
-        $df = 'DEL=F';
-        if ($this->deleteAfterPrinting) {
-            $df = '';
-        }
-
-        $fn = $file;
-        $ext = '';
-        if (strrpos($fn, '.') > 0) {
-            $fn = substr($fn, 0, strrpos($fn, '.'));
-            $ext = substr($file, strrpos($file, '.'));
-        }
-
-        if (Utils::isNullOrEmptyString($this->fileExtension)) {
-            $file = $fn . $pfc . $df . $ext;
-        } else {
-            $file = $fn . $pfc . $df . $this->fileExtension;
-        }
-
-        $fileContent = $this->getFileContent();
-
-        if ($this->encryptMetadata != null &&
-            Utils::isNullOrEmptyString($this->encryptMetadata->publicKeyBase64) == false &&
-            $this->fileIsPasswordProtected == false) {
-
-            //validate Encrypt Metadata
-            $this->encryptMetadata->validateMetadata();
-            //Encrypt content
-            $fileContent = SecUtils::aesEncrypt($fileContent,
-                $this->encryptMetadata->password,
-                $this->encryptMetadata->salt,
-                $this->encryptMetadata->iv,
-                $this->encryptMetadata->iterations);
-
-        }
-
-        return self::PREFIX . $file . self::SEP . $fileContent;
+        return self::PREFIX . $file . self::SEP . $this->getFileContent();
     }
 
     public function getFileContent()
     {
+        $content = $this->fileBinaryContent;
         if (!Utils::isNullOrEmptyString($this->filePath)) {
             $handle = fopen($this->filePath, 'rb');
             $content = fread($handle, filesize($this->filePath));
             fclose($handle);
-        } else {
-            $content = $this->fileBinaryContent;
         }
         return $content;
     }
-
 }
 
 /**
@@ -979,29 +798,7 @@ class PrintRotation
         if ($val === 'Rot90') return 1;
         if ($val === 'Rot180') return 2;
         if ($val === 'Rot270') return 3;
-        return 0;
-    }
-}
-
-/**
- * Specifies the print sizing option.
- */
-class Sizing
-{
-    /**
-     * The content is printed based on its actual size.
-     */
-    const None = 0;
-    /**
-     * The content is printed to fit the printable area.
-     */
-    const Fit = 1;
-
-    public static function parse($val)
-    {
-        if ($val === 'None') return 0;
-        if ($val === 'Fit') return 1;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
 
@@ -1041,49 +838,16 @@ class PrintFilePDF extends PrintFile
      */
     public $printRotation = PrintRotation::None;
 
-    /**
-     * Gets or sets the password for this PDF file.
-     * @var string
-     */
-    public $password = '';
-
-    /**
-     * Gets or sets whether to perform manual duplex printing. Default is False. Manual duplex lets you print on both sides of a sheet by ordering the print job so that after the first half of the print job has been printed, the job can be flipped over for the second side printing.
-     * @var boolean
-     */
-    public $duplexPrinting = false;
-
-    /**
-     * Gets or sets the dialog message to prompt to the user to flip pages after first half of print job has been printed. Default is an empty string.
-     * @var string
-     */
-    public $duplexPrintingDialogMessage = '';
-
-    /**
-     * Gets or sets whether to automatically select the print orientation (Portrait or Landscape) that best matches the content. Default is False.
-     * @var boolean
-     */
-    public $autoRotate = false;
-
-    /**
-     * Gets or sets whether to center the content. Default is False.
-     * @var boolean
-     */
-    public $autoCenter = false;
-
-    /**
-     * Gets or sets the print sizing option. Default is Fit.
-     * @var integer
-     */
-    public $sizing = Sizing::Fit;
-
 
     public function serialize()
     {
+        $file = str_replace('\\', 'BACKSLASHCHAR', $this->fileName);
+        if ($this->copies > 1) {
+            $pfc = 'PFC=' . $this->copies;
+            $file = substr($file, 0, strrpos($file, '.')) . $pfc . substr($file, strrpos($file, '.'));
+        }
 
-        $this->fileExtension = '.wpdf';
-
-        return parent::serialize();
+        return self::PREFIX . $file . '.wpdf' . self::SEP . $this->getFileContent();
     }
 
     public function getFileContent()
@@ -1103,9 +867,9 @@ class PrintFilePDF extends PrintFile
                         }
                     }
                 }
-            } else {
+            } else
                 throw new Exception("The specified PageRange is not valid.");
-            }
+
         }
 
         $metadata = ($this->printAsGrayscale ? '1' : '0');
@@ -1113,161 +877,16 @@ class PrintFilePDF extends PrintFile
         $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($pr) ? 'A' : $pr);
         $metadata .= Utils::SER_SEP . ($this->printInReverseOrder ? '1' : '0');
         $metadata .= Utils::SER_SEP . $this->printRotation;
-        $metadata .= Utils::SER_SEP;
 
-        $this->fileIsPasswordProtected = !Utils::isNullOrEmptyString($this->password);
-
-        if ($this->fileIsPasswordProtected == false) {
-            $metadata .= 'N';
-        } else {
-            if (Utils::isNullOrEmptyString($this->encryptMetadata->publicKeyBase64) == false) {
-                $metadata .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->encryptMetadata->publicKeyBase64, $this->encryptMetadata->publicKeySignatureBase64, $this->password));
-            } else {
-                $metadata .= base64_encode($this->password);
-            }
-        }
-
-        $metadata .= Utils::SER_SEP . ($this->duplexPrinting ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($this->duplexPrintingDialogMessage) ? 'D' : base64_encode($this->duplexPrintingDialogMessage));
-        $metadata .= Utils::SER_SEP . ($this->autoRotate ? '1' : '0');
-        $metadata .= Utils::SER_SEP . ($this->autoCenter ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (strval(Sizing::parse($this->sizing)));
-
-        $metadataLength = strlen($metadata);
-        $metadata .= Utils::SER_SEP;
-        $metadataLength++;
-        $metadataLength += strlen(strval($metadataLength));
-        $metadata .= strval($metadataLength);
-
+        $content = $this->fileBinaryContent;
         if (!Utils::isNullOrEmptyString($this->filePath)) {
             $handle = fopen($this->filePath, 'rb');
             $content = fread($handle, filesize($this->filePath));
             fclose($handle);
-        } else {
-            $content = $this->fileBinaryContent;
         }
-        return $content . $metadata;
+        return $metadata . chr(10) . $content;
     }
 }
-
-/**
- * It represents a TIF file in the server that will be printed at the client side.
- */
-class PrintFileTIF extends PrintFile
-{
-
-    /**
-     * Gets or sets whether to print the TIF document with color images, texts, or other objects as shades of gray. Default is False.
-     * @var boolean
-     */
-    public $printAsGrayscale = false;
-
-    /**
-     * Gets or sets a subset of pages to print. It can be individual page numbers, a range, or a combination. For example: 1, 5-10, 25, 50. Default is an empty string which means print all pages.
-     * @var string
-     */
-    public $pagesRange = '';
-
-    /**
-     * Gets or sets whether pages are printed in reverse order. Default is False.
-     * @var boolean
-     */
-    public $printInReverseOrder = false;
-
-    /**
-     * Gets or sets the print rotation. Default is None.
-     * @var integer
-     */
-    public $printRotation = PrintRotation::None;
-
-    /**
-     * Gets or sets whether to perform manual duplex printing. Default is False. Manual duplex lets you print on both sides of a sheet by ordering the print job so that after the first half of the print job has been printed, the job can be flipped over for the second side printing.
-     * @var boolean
-     */
-    public $duplexPrinting = false;
-
-    /**
-     * Gets or sets the dialog message to prompt to the user to flip pages after first half of print job has been printed. Default is an empty string.
-     * @var string
-     */
-    public $duplexPrintingDialogMessage = '';
-
-    /**
-     * Gets or sets whether to automatically select the print orientation (Portrait or Landscape) that best matches the content. Default is False.
-     * @var boolean
-     */
-    public $autoRotate = false;
-
-    /**
-     * Gets or sets whether to center the content. Default is False.
-     * @var boolean
-     */
-    public $autoCenter = false;
-
-    /**
-     * Gets or sets the print sizing option. Default is Fit.
-     * @var integer
-     */
-    public $sizing = Sizing::Fit;
-
-
-    public function serialize()
-    {
-
-        $this->fileExtension = '.wtif';
-
-        return parent::serialize();
-    }
-
-    public function getFileContent()
-    {
-
-        $pr = urldecode($this->pagesRange);
-        if (!Utils::isNullOrEmptyString($pr)) {
-            if (preg_match('/^(?!([ \d]*-){2})\d+(?: *[-,] *\d+)*$/', $pr)) {
-                //validate range
-                $ranges = explode(',', str_replace(' ', '', $pr)); //remove any space chars
-
-                for ($i = 0; $i < count($ranges); $i++) {
-                    if (strpos($ranges[$i], '-') > 0) {
-                        $pages = explode('-', $ranges[$i]);
-                        if (intval($pages[0]) > intval($pages[1])) {
-                            throw new Exception("The specified PageRange is not valid.");
-                        }
-                    }
-                }
-            } else {
-                throw new Exception("The specified PageRange is not valid.");
-            }
-        }
-
-        $metadata = ($this->printAsGrayscale ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($pr) ? 'A' : $pr);
-        $metadata .= Utils::SER_SEP . ($this->printInReverseOrder ? '1' : '0');
-        $metadata .= Utils::SER_SEP . $this->printRotation;
-        $metadata .= Utils::SER_SEP . ($this->duplexPrinting ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($this->duplexPrintingDialogMessage) ? 'D' : base64_encode($this->duplexPrintingDialogMessage));
-        $metadata .= Utils::SER_SEP . ($this->autoRotate ? '1' : '0');
-        $metadata .= Utils::SER_SEP . ($this->autoCenter ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (strval(Sizing::parse($this->sizing)));
-
-        $metadataLength = strlen($metadata);
-        $metadata .= Utils::SER_SEP;
-        $metadataLength++;
-        $metadataLength += strlen(strval($metadataLength));
-        $metadata .= strval($metadataLength);
-
-        if (!Utils::isNullOrEmptyString($this->filePath)) {
-            $handle = fopen($this->filePath, 'rb');
-            $content = fread($handle, filesize($this->filePath));
-            fclose($handle);
-        } else {
-            $content = $this->fileBinaryContent;
-        }
-        return $content . $metadata;
-    }
-}
-
 
 /**
  * Specifies the print orientation.
@@ -1287,7 +906,7 @@ class PrintOrientation
     {
         if ($val === 'Portrait') return 0;
         if ($val === 'Landscape') return 1;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
 
@@ -1312,11 +931,6 @@ class TextAlignment
      * Justify alignment
      */
     const Justify = 3;
-    /**
-     * No alignment
-     */
-    const None = 4;
-
 
     public static function parse($val)
     {
@@ -1324,8 +938,7 @@ class TextAlignment
         if ($val === 'Center') return 1;
         if ($val === 'Right') return 2;
         if ($val === 'Justify') return 3;
-        if ($val === 'None') return 4;
-        return 0;
+        throw new Exception('Invalid value');
     }
 }
 
@@ -1422,11 +1035,13 @@ class PrintFileTXT extends PrintFile
 
     public function serialize()
     {
-        $this->fileIsPasswordProtected = false;
+        $file = str_replace('\\', 'BACKSLASHCHAR', $this->fileName);
+        if ($this->copies > 1) {
+            $pfc = 'PFC=' . $this->copies;
+            $file = substr($file, 0, strrpos($file, '.')) . $pfc . substr($file, strrpos($file, '.'));
+        }
 
-        $this->fileExtension = '.wtxt';
-
-        return parent::serialize();
+        return self::PREFIX . $file . '.wtxt' . self::SEP . $this->getFileContent();
     }
 
     public function getFileContent()
@@ -1448,253 +1063,19 @@ class PrintFileTXT extends PrintFile
 
         $content = $this->textContent;
         if (Utils::isNullOrEmptyString($content)) {
+            $content = $this->fileBinaryContent;
             if (!Utils::isNullOrEmptyString($this->filePath)) {
                 $handle = fopen($this->filePath, 'rb');
                 $content = fread($handle, filesize($this->filePath));
                 fclose($handle);
-            } else {
-                $content = $this->fileBinaryContent;
             }
         }
 
-        if (Utils::isNullOrEmptyString($content)) {
+        if (Utils::isNullOrEmptyString($content))
             throw new Exception('The specified Text file is empty and cannot be printed.');
-        }
 
         return $metadata . chr(10) . $content;
     }
-}
-
-
-/**
- * It represents a DOC file in the server that will be printed at the client side.
- */
-class PrintFileDOC extends PrintFile
-{
-
-    /**
-     * Gets or sets a subset of pages to print. It can be individual page numbers, a range, or a combination. For example: 1, 5-10, 25, 50. Default is an empty string which means print all pages.
-     * @var string
-     */
-    public $pagesRange = '';
-
-    /**
-     * Gets or sets whether pages are printed in reverse order. Default is False.
-     * @var boolean
-     */
-    public $printInReverseOrder = false;
-
-    /**
-     * Gets or sets the password for this PDF file.
-     * @var string
-     */
-    public $password = '';
-
-    /**
-     * Gets or sets whether to perform manual duplex printing. Default is False. Manual duplex lets you print on both sides of a sheet by ordering the print job so that after the first half of the print job has been printed, the job can be flipped over for the second side printing.
-     * @var boolean
-     */
-    public $duplexPrinting = false;
-
-    /**
-     * Gets or sets the dialog message to prompt to the user to flip pages after first half of print job has been printed. Default is an empty string.
-     * @var string
-     */
-    public $duplexPrintingDialogMessage = '';
-
-
-    public function serialize()
-    {
-        $this->fileExtension = '.wdoc';
-
-        return parent::serialize();
-    }
-
-    public function getFileContent()
-    {
-
-        $pr = urldecode($this->pagesRange);
-        if (!Utils::isNullOrEmptyString($pr)) {
-            if (preg_match('/^(?!([ \d]*-){2})\d+(?: *[-,] *\d+)*$/', $pr)) {
-                //validate range
-                $ranges = explode(',', str_replace(' ', '', $pr)); //remove any space chars
-
-                for ($i = 0; $i < count($ranges); $i++) {
-                    if (strpos($ranges[$i], '-') > 0) {
-                        $pages = explode('-', $ranges[$i]);
-                        if (intval($pages[0]) > intval($pages[1])) {
-                            throw new Exception("The specified PageRange is not valid.");
-                        }
-                    }
-                }
-            } else
-                throw new Exception("The specified PageRange is not valid.");
-
-        }
-
-        $metadata = (Utils::isNullOrEmptyString($pr) ? 'A' : $pr);
-        $metadata .= Utils::SER_SEP . ($this->printInReverseOrder ? '1' : '0');
-        $metadata .= Utils::SER_SEP;
-
-        $this->fileIsPasswordProtected = !Utils::isNullOrEmptyString($this->password);
-
-        if ($this->fileIsPasswordProtected == false) {
-            $metadata .= 'N';
-        } else {
-            if (Utils::isNullOrEmptyString($this->encryptMetadata->publicKeyBase64) == false) {
-                $metadata .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->encryptMetadata->publicKeyBase64, $this->encryptMetadata->publicKeySignatureBase64, $this->password));
-            } else {
-                $metadata .= base64_encode($this->password);
-            }
-        }
-
-        $metadata .= Utils::SER_SEP . ($this->duplexPrinting ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($this->duplexPrintingDialogMessage) ? 'D' : base64_encode($this->duplexPrintingDialogMessage));
-
-        $metadataLength = strlen($metadata);
-        $metadata .= Utils::SER_SEP;
-        $metadataLength++;
-        $metadataLength += strlen(strval($metadataLength));
-        $metadata .= strval($metadataLength);
-
-
-        if (!Utils::isNullOrEmptyString($this->filePath)) {
-            $handle = fopen($this->filePath, 'rb');
-            $content = fread($handle, filesize($this->filePath));
-            fclose($handle);
-        } else {
-            $content = $this->fileBinaryContent;
-        }
-
-        return $content . $metadata;
-    }
-}
-
-
-/**
- * It represents a XLS file in the server that will be printed at the client side.
- */
-class PrintFileXLS extends PrintFile
-{
-
-    /**
-     * Gets or sets the number of the page at which to start printing. Default is 0 (zero) which means printing starts at the beginning.
-     * @var integer
-     */
-    public $pagesFrom = 0;
-
-    /**
-     * Gets or sets the number of the last page to print. Default is 0 (zero) which means printing ends with the last page.
-     * @var integer
-     */
-    public $pagesTo = 0;
-
-
-    /**
-     * Gets or sets the password for this PDF file.
-     * @var string
-     */
-    public $password = '';
-
-    /**
-     * Gets or sets whether to perform manual duplex printing. Default is False. Manual duplex lets you print on both sides of a sheet by ordering the print job so that after the first half of the print job has been printed, the job can be flipped over for the second side printing.
-     * @var boolean
-     */
-    public $duplexPrinting = false;
-
-    /**
-     * Gets or sets the dialog message to prompt to the user to flip pages after first half of print job has been printed. Default is an empty string.
-     * @var string
-     */
-    public $duplexPrintingDialogMessage = '';
-
-
-    public function serialize()
-    {
-        $this->fileExtension = '.wxls';
-
-        return parent::serialize();
-    }
-
-    public function getFileContent()
-    {
-
-        $metadata = strval($this->pagesFrom);
-        $metadata .= Utils::SER_SEP . strval($this->pagesTo);
-        $metadata .= Utils::SER_SEP;
-
-        $this->fileIsPasswordProtected = !Utils::isNullOrEmptyString($this->password);
-
-        if ($this->fileIsPasswordProtected == false) {
-            $metadata .= 'N';
-        } else {
-            if (Utils::isNullOrEmptyString($this->encryptMetadata->publicKeyBase64) == false) {
-                $metadata .= base64_encode(SecUtils::rsaVerifyAndEncrypt($this->encryptMetadata->publicKeyBase64, $this->encryptMetadata->publicKeySignatureBase64, $this->password));
-            } else {
-                $metadata .= base64_encode($this->password);
-            }
-        }
-
-        $metadata .= Utils::SER_SEP . ($this->duplexPrinting ? '1' : '0');
-        $metadata .= Utils::SER_SEP . (Utils::isNullOrEmptyString($this->duplexPrintingDialogMessage) ? 'D' : base64_encode($this->duplexPrintingDialogMessage));
-
-        $metadataLength = strlen($metadata);
-        $metadata .= Utils::SER_SEP;
-        $metadataLength++;
-        $metadataLength += strlen(strval($metadataLength));
-        $metadata .= strval($metadataLength);
-
-        if (!Utils::isNullOrEmptyString($this->filePath)) {
-            $handle = fopen($this->filePath, 'rb');
-            $content = fread($handle, filesize($this->filePath));
-            fclose($handle);
-        } else {
-            $content = $this->fileBinaryContent;
-        }
-
-        return $content . $metadata;
-    }
-}
-
-/**
- * Utility class for encrypting file content and passwords.
- */
-class SecUtils
-{
-
-    private static function getPubKey()
-    {
-        return '<RSAKeyValue><Modulus>reXqa092+txbh684R9kUsMMIG2UTEJQChhFkZ3u/kg1OsPAspaWnjRgecq1lTKIbppPXa4NztFNPw5c7W6sN+3GiuRAbOT6E+ynQIyo298znCoeW+W93WZ8imF32HwWn9lUvI6VFJULwjZ16G91ok/YPTuREc8ri7jclC3ie8g0=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>';
-    }
-
-    public static function rsaVerifyAndEncrypt($pubKeyBase64, $pubKeySignatureBase64, $dataToEncrypt)
-    {
-        $rsa = new \phpseclib\Crypt\RSA();
-        $rsa->loadKey(self::getPubKey());
-        $rsa->setSignatureMode(2); //SIGNATURE_PKCS1
-        if ($rsa->verify(base64_decode($pubKeyBase64), base64_decode($pubKeySignatureBase64))) {
-            $rsa->loadKey(base64_decode($pubKeyBase64));
-            $rsa->setEncryptionMode(2);//ENCRYPTION_PKCS1
-            return $rsa->encrypt($dataToEncrypt);
-        } else {
-            throw new Exception('Cannot verify the provided RSA Public Key.');
-        }
-    }
-
-    public static function aesEncrypt($dataToEncrypt, $password, $salt, $iv, $iterations)
-    {
-        $aes = new \phpseclib\Crypt\AES(\phpseclib\Crypt\AES::MODE_CBC);
-        $aes->setPassword($password,
-            'pbkdf2' /* key extension algorithm */,
-            'sha1' /* hash algorithm */,
-            $salt,
-            $iterations,
-            256 / 8
-        );
-        $aes->setIV($iv);
-        return $aes->encrypt($dataToEncrypt);
-    }
-
 }
 
 /**
@@ -1788,54 +1169,6 @@ class Utils
         return substr($s1, 0, strlen($s2)) === $s2;
     }
 
-    public static function genRandomString($asciiCharStart = 33, $asciiCharEnd = 126, $charsCount = 32)
-    {
-
-        $allowed_chars = '';
-        for ($i = $asciiCharStart; $i <= $asciiCharEnd; $i++) {
-            $allowed_chars .= chr($i);
-        }
-
-        $len = strlen($allowed_chars);
-        $random_string = '';
-        for ($i = 0; $i < $charsCount; $i++) {
-            $random_string .= $allowed_chars[mt_rand(0, $len - 1)];
-        }
-
-        return $random_string;
-    }
-
-    public static function getLicense()
-    {
-        $lo = WebClientPrint::$licenseOwner;
-        $lk = WebClientPrint::$licenseKey;
-
-        $uid = substr(uniqid(), 0, 8);
-
-        $buffer = 'php>';
-
-        if (Utils::isNullOrEmptyString($lo)) {
-            $buffer .= substr(uniqid(), 0, 8);
-        } else {
-            $buffer .= $lo;
-        }
-
-        $buffer .= chr(124); //pipe separator
-
-        $license_hash = '';
-
-        if (Utils::isNullOrEmptyString($lk)) {
-            $license_hash = substr(uniqid(), 0, 8);
-        } else {
-            $license_hash = hash('sha256', $lk . $uid, false);
-        }
-
-        $buffer .= $license_hash;
-        $buffer .= chr(124); //pipe separator
-        $buffer .= $uid;
-
-        return $buffer;
-    }
 }
 
 /**
@@ -1927,9 +1260,6 @@ class ClientPrintJob
                     }
                     if (is_a($printFile, 'PrintFilePDF')) $file .= '.wpdf';
                     if (is_a($printFile, 'PrintFileTXT')) $file .= '.wtxt';
-                    if (is_a($printFile, 'PrintFileDOC')) $file .= '.wdoc';
-                    if (is_a($printFile, 'PrintFileXLS')) $file .= '.wxls';
-                    if (is_a($printFile, 'PrintFileTIF')) $file .= '.wtif';
 
                     $zip->addFromString($file, $printFile->getFileContent());
                 }
@@ -1953,7 +1283,19 @@ class ClientPrintJob
 
         $arrIdx2 = Utils::intToArray(strlen($buffer));
 
-        $buffer .= Utils::getLicense();
+        $lo = '';
+        if (Utils::isNullOrEmptyString(WebClientPrint::$licenseOwner)) {
+            $lo = substr(uniqid(), 0, 8);
+        } else {
+            $lo = 'php>' . base64_encode(WebClientPrint::$licenseOwner);
+        }
+        $lk = '';
+        if (Utils::isNullOrEmptyString(WebClientPrint::$licenseKey)) {
+            $lk = substr(uniqid(), 0, 8);
+        } else {
+            $lk = WebClientPrint::$licenseKey;
+        }
+        $buffer .= $lo . chr(124) . $lk;
 
         return $cpjHeader . $arrIdx1 . $arrIdx2 . $buffer;
     }
@@ -2019,9 +1361,6 @@ class ClientPrintJobGroup
                             }
                             if (is_a($printFile, 'PrintFilePDF')) $file .= '.wpdf';
                             if (is_a($printFile, 'PrintFileTXT')) $file .= '.wtxt';
-                            if (is_a($printFile, 'PrintFileDOC')) $file .= '.wdoc';
-                            if (is_a($printFile, 'PrintFileXLS')) $file .= '.wxls';
-                            if (is_a($printFile, 'PrintFileTIF')) $file .= '.wtif';
 
                             $zip->addFromString($file, $printFile->getFileContent());
                         }
@@ -2051,7 +1390,19 @@ class ClientPrintJobGroup
             }
 
 
-            $buffer .= Utils::getLicense();
+            $lo = '';
+            if (Utils::isNullOrEmptyString(WebClientPrint::$licenseOwner)) {
+                $lo = substr(uniqid(), 0, 8);
+            } else {
+                $lo = 'php>' . base64_encode(WebClientPrint::$licenseOwner);
+            }
+            $lk = '';
+            if (Utils::isNullOrEmptyString(WebClientPrint::$licenseKey)) {
+                $lk = substr(uniqid(), 0, 8);
+            } else {
+                $lk = WebClientPrint::$licenseKey;
+            }
+            $buffer .= $lo . chr(124) . $lk;
 
             return $cpjgHeader . $dataPartIndexes . $buffer;
 
