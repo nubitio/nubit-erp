@@ -658,7 +658,7 @@ app.venta = (function () {
     function venta_print() {
         let row = dataGrid.selectedRow;
         if (row) {
-            jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + row.movimiento_id);
+            jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + row.movimiento_id);
         } else {
             show_info('Seleccione un registro');
         }
@@ -666,7 +666,7 @@ app.venta = (function () {
 
     function imprimir_ticket(ticket, digest) {
         //jsWebClientPrint.print('useDefaultPrinter=' + $('#useDefaultPrinter').attr('checked') + '&printerName=' + $('#installedPrinterName').val());
-        jsWebClientPrint.print('useDefaultPrinter=checked&ticket=' + ticket + "&digest=" + digest);
+        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + ticket + "&digest=" + digest);
     }
 
     function makeInvoice() {

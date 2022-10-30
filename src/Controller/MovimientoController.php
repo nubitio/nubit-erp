@@ -62,8 +62,8 @@ class MovimientoController extends BaseController
 
     function venta()
     {
-        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->action('WebClientPrintController'), session_id());
-        $printScrip = WebClientPrint::createScript($this->action('WebClientPrintController'), $this->action('PrintESCPOSController'), session_id());
+        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->action('wcp'), session_id());
+        $printScrip = WebClientPrint::createScript($this->action('wcp'), $this->action('wcp/print'), session_id());
         $sessionId = session_id();
         $this->app->set('wcpscript1', $printDetectionScript);
         $this->app->set('wcpscript2', $printScrip);
