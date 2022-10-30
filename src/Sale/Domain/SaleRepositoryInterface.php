@@ -13,4 +13,6 @@ interface SaleRepositoryInterface
     public function update(Sale $sale): void;
 
     public function delete(string $id): void;
+
+    public function void(Sale $sale): void;
 }
