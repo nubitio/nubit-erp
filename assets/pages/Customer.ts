@@ -17,10 +17,10 @@ export default class Customer {
     private consultService = new ConsultService();
 
     public readonly ROUTES = {
-        ADD: 'customer/add/',
+        ADD: 'customer/add',
         EDIT: 'customer/edit/',
         DELETE: 'customer/delete/',
-        EXPORT: 'customer/export/',
+        EXPORT: 'customer/export',
     }
 
     static readonly EVENTS = {
