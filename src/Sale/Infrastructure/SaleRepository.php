@@ -87,4 +87,14 @@ class SaleRepository implements SaleRepositoryInterface
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    public function void(Sale $sale): void
+    {
+        $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
+        $entity->estado = 2;
+        $entity->glosa = $sale->glosa;
+        $entity->updated_by = $sale->updated_by;
+        $entity->date_updated = new \DateTime();
+        $this->entityManager->flush();
+    }
 }
