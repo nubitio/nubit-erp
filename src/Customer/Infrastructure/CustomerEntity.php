@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class CustomerEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: "ruc", type: "string")]
     public ?string $ruc;
     #[Column(name: "razon_social", type: "string")]
