@@ -381,7 +381,7 @@ app.venta = (function () {
     function showOptions(venta) {
         try {
             let cabecera = venta.cabecera;
-            imprimir_ticket(cabecera.movimiento_id, "");
+            imprimir_ticket(cabecera.movimiento_id);
         } catch (e) {
             show_error(e)
         }
@@ -673,9 +673,8 @@ app.venta = (function () {
         }
     }
 
-    function imprimir_ticket(ticket, digest) {
-        //jsWebClientPrint.print('useDefaultPrinter=' + $('#useDefaultPrinter').attr('checked') + '&printerName=' + $('#installedPrinterName').val());
-        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + ticket + "&digest=" + digest);
+    function imprimir_ticket(ticket) {
+        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + ticket);
     }
 
     function makeInvoice() {
