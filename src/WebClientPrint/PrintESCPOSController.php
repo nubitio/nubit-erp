@@ -89,9 +89,9 @@ class PrintESCPOSController extends BaseController
 
         for ($i = 0; $i < count($details); $i++) {
             $str_left = floor($details[$i]['quantity']) . ' ' . $details[$i]['product'];
-            $item = new SaleItem($str_left, $details[$i]['price']);
+            $item = new SaleItem($str_left, $details[$i]['total']);
             $printer->text($item);
-            $total += $details[$i]['price'];
+            $total += $details[$i]['total'];
         }
         if ($header['doc_discount_percent'] > 0) {
             $discount = $total * $header['doc_discount_percent'] / 100;

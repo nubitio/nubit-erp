@@ -78,7 +78,7 @@
             {% for item in sale.details %}
                 <tr>
                     <td class="left">{{ item['quantity'] }} {{ item['product'] }}</td>
-                    <td class="text-right text-end">{{ item['price'] }}</td>
+                    <td class="text-right text-end">{{ item['total'] }}</td>
                 </tr>
             {% endfor %}
             <tr class="row-bt"></tr>
