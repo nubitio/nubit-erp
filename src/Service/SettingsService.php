@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Symfony\Contracts\Cache\CacheInterface;
 
 class SettingsService
@@ -28,6 +29,9 @@ class SettingsService
         });
     }
 
+    /**
+     * @throws Exception
+     */
     public function set(string $key, $value): void
     {
         $this->db->executeStatement('INSERT INTO options (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', [$key, $value, $value]);

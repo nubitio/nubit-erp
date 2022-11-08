@@ -3,6 +3,7 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Invoice\Domain\VoidedCreateUseCase;
 use App\Sale\DocType;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleCreateUseCase;
@@ -10,7 +11,6 @@ use App\Sale\Domain\SaleDeleteUseCase;
 use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleUpdateUseCase;
-use App\Sale\Domain\SaleVoidUseCase;
 use App\Sale\SaleUtils;
 use App\SaleDetail\Domain\SaleDetail;
 use App\Service\PdfExporter;
@@ -167,16 +167,9 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
-    public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
+    public function void(Request $request, VoidedCreateUseCase $createUseCase, $id): Response
     {
-        $request->request->add(['movimiento_id' => $id]);
-        $request->request->add(['glosa' => json_decode($request->getContent())->reason]);
-        $request->request->add(['updated_by' => $request->getSession()->get('usuario_id')]);
-        /**
-         * @var Sale $sale
-         */
-        $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
-        $voidUseCase($sale);
+        $createUseCase($id, json_decode($request->getContent())->reason);
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }
 }

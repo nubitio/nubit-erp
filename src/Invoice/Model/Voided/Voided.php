@@ -7,8 +7,8 @@ use App\Invoice\Model\Company\Company;
 class Voided
 {
     public string $correlativo;
-    public string $fecGeneracion;
-    public string $fecComunicacion;
+    public \DateTimeInterface $fecGeneracion;
+    public \DateTimeInterface $fecComunicacion;
     public Company $company;
     /** @var VoidedDetail[] */
     public array $details;
