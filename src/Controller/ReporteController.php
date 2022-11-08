@@ -84,7 +84,7 @@ class ReporteController extends BaseController
         $ff = $this->app->get('PARAMS.ff');
         $data = $this->model->notaventa($fi, $ff);
         $extras = [
-            'title' => 'REPORTE DE VENTAS DE NOTAS DE PEDIDO',
+            'title' => 'NOTAS DE PEDIDO',
             'subtitle' => 'PERIODO ' . $fi . ' AL ' . $ff,
             'sumcols' => [6, 7, 8]
         ];
@@ -97,7 +97,7 @@ class ReporteController extends BaseController
         $ff = $this->app->get('PARAMS.ff');
         $data = $this->model->contable($fi, $ff);
         $extras = [
-            'title' => 'REPORTE DE VENTAS CONTABLE',
+            'title' => 'VENTA CONTABLE',
             'subtitle' => 'PERIODO ' . $fi . ' AL ' . $ff,
             'sumcols' => [6, 7, 8]
         ];
