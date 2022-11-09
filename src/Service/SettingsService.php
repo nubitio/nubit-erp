@@ -5,6 +5,7 @@ namespace App\Service;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 class SettingsService
 {
@@ -19,7 +20,8 @@ class SettingsService
 
     public function get(string $key, $default = null)
     {
-        return $this->cache->get($key, function () use ($key, $default) {
+        return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
+            $item->expiresAfter(3600);
             $value = $this->db->fetchOne('SELECT value FROM options WHERE name = ?', [$key]);
             if ($value === false) {
                 return $default;

@@ -2,6 +2,7 @@
 
 namespace App\Invoice\Domain;
 
+use App\Invoice\Model\Voided\Response\VoidedResponse;
 use App\Invoice\Model\Voided\Voided;
 use App\Invoice\Model\Voided\VoidedDetail;
 use App\Sale\Domain\SaleRepositoryInterface;
@@ -26,16 +27,14 @@ class VoidedCreateUseCase
     public function __invoke(string $saleId, string $reason): void
     {
         $sale = $this->saleRepository->getOneById($saleId);
-        match ($sale['header']['doc_type']) {
+        $response = match ($sale['header']['doc_type']) {
             '01' => $this->voidInvoice($sale),
             '03' => $this->voidTicket($sale),
             default => true,
         };
-        dd($sale);
-        $this->voidedRepository->insert($voided);
     }
 
-    public function voidInvoice(array $sale): void
+    public function voidInvoice(array $sale): VoidedResponse
     {
         $voidedDetail = new VoidedDetail();
         $voidedDetail->tipoDoc = $sale['header']['doc_type'];
@@ -49,11 +48,10 @@ class VoidedCreateUseCase
         $voided->fecComunicacion = new \DateTime($sale['header']['doc_date']);
         $voided->company = $this->invoiceUtils->getCompany();
         $voided->details = [$voidedDetail];
-        $response = $this->voidedRepository->voidInvoice($voided);
-        dd($response);
+        return $this->voidedRepository->voidInvoice($voided);
     }
 
-    public function voidTicket(array $sale): void
+    public function voidTicket(array $sale): VoidedResponse
     {
         $voidedDetail = new VoidedDetail();
         $voidedDetail->tipoDoc = $sale['header']['doc_type'];
