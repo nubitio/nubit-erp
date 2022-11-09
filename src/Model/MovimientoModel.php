@@ -48,7 +48,7 @@ class MovimientoModel extends BaseModel
 
     public function ventas()
     {
-        $format = "operacion like 'VENTA%%' and local_id = '%s'";
+        $format = "tipo_id = 2 and local_id = '%s'";
         $filter = sprintf($format, $this->current_local_id);
         return $this->utils->setUp('vw_movimiento', 'date_created', 'DESC', $filter);
     }

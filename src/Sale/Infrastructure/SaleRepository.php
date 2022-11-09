@@ -45,6 +45,13 @@ class SaleRepository implements SaleRepositoryInterface
         ];
     }
 
+    public function getOne(string $id): Sale
+    {
+        /** @var SaleEntity $saleEntity */
+        $saleEntity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
+        return $saleEntity->mapToDomainModel();
+    }
+
     /**
      * @throws \Doctrine\DBAL\Exception
      */
