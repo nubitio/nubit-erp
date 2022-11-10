@@ -112,8 +112,8 @@
 
                 if (selectedMenu !== '') {
                     let menu = JSON.parse(localStorage.getItem('menu'));
-                    let item = menu.flatMap(item => item.children).find(item => item.url === selectedMenu);
-                    sidebar.sidemenu('setSelected', item);
+                    let item = menu.flatMap(item => item.children ?? []).find(item => item.url === selectedMenu);
+                    sidebar.sidemenu('setSelected', item ?? menu[0]);
                 }
             })
             .fail(function (xhr, status, error) {
@@ -143,8 +143,8 @@
         let selectedMenu = location.pathname.split('/')[1];
         if (selectedMenu !== '') {
             let menu = JSON.parse(localStorage.getItem('menu'));
-            let item = menu.flatMap(item => item.children).find(item => item.url === selectedMenu);
-            sidebar.sidemenu('setSelected', item);
+            let item = menu.flatMap(item => item.children ?? []).find(item => item.url === selectedMenu);
+            sidebar.sidemenu('setSelected', item ?? menu[0]);
         }
     }
 
