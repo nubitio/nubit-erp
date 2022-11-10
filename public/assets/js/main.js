@@ -165,10 +165,10 @@ $.extend($.fn.sidemenu.methods, {
             $('.sidemenu .accordion .accordion-header').each((index, element) => {
                 $(element).removeClass('accordion-header-selected')
             });
-            selected.prev().addClass('accordion-header-selected');
-            let tree = selected.find('.tree');
-            let node = tree.tree('find', {text: item.text});
-            tree.tree('select', node.target);
+            selected?.prev().addClass('accordion-header-selected');
+            let tree = selected?.find('.tree');
+            let node = tree?.tree('find', {text: item.text});
+            tree?.tree('select', node?.target);
         }
     }
 });
