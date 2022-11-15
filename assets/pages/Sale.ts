@@ -102,6 +102,12 @@ export default class Sale {
             .textField('name')
             .defaultValue('1')
             .required(true)
+            .visible(false)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('payment_type')
+            .label('Metodo de pago')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
