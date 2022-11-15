@@ -5,14 +5,14 @@
 {% endblock %}
 {% block javascripts %}
     <script>
-        var wcppPingTimeout_ms = 60000; //60 sec
-        var wcppPingTimeoutStep_ms = 500; //0.5 sec
+        var wcppPingTimeout_ms = 30000; //30 sec
+        var wcppPingTimeoutStep_ms = 1000; //1 sec
 
         function wcppDetectOnSuccess() {
             var wcppVer = arguments[0];
             console.log(wcppVer);
-            if (wcppVer.substring(0, 1) === "6")
-                console.log("WCPP version 6 detected");
+            if (wcppVer.substring(0, 1) === "4")
+                console.log("WCPP version 4 detected");
             else
                 wcppDetectOnFailure();
         }

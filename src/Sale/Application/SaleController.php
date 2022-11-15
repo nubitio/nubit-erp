@@ -159,10 +159,35 @@ class SaleController extends BaseController
         if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
             $qr = (new QRCode)->render($sale['header']['doc_qr_data']);
         }
-        return $this->render('sale/report/invoice.html.twig', [
-            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+        $logo = base64_encode(file_get_contents('assets/images/logo.png'));
+        $content = $this->render('sale/report/invoice.html.twig', [
+            'logo' => "data:image/png;base64,{$logo}",
             'qr'   => $qr,
             'sale' => $sale
+        ]);
+
+        $preview = $request->get('preview');
+
+        if ($preview) {
+            return $content;
+        }
+
+        $pageHeight = 150;
+        if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
+            $pageHeight = 220;
+        }
+
+        $items = count($sale['details']);
+
+        $pageHeight += $items * 5;
+
+        $pdfExporter = new PdfExporter();
+        return $pdfExporter->export($content->getContent(), 'invoice', [
+            'no-outline',
+            'page-width'   => '80mm',
+            'page-height'  => $pageHeight . 'mm',
+            'margin-left'  => 0,
+            'margin-right' => 0,
         ]);
     }
 

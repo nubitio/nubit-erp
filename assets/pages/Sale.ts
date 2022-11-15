@@ -344,18 +344,18 @@ export default class Sale {
         }
         let url = 'sale/print/' + selected['movimiento_id'];
         let previewDialog = new Dialog(this.container, {
-            width: 300,
+            width: 350,
             height: 500,
             title: 'Vista Previa',
             modal: true,
-            href: url,
-            positiveText: 'Imprimir',
+            href: url + '?preview=true',
+            positiveText: 'Ver PDF',
             preventDefault: true,
         });
         previewDialog.show()
 
         previewDialog.onPositiveClick(() => {
-            this.print();
+            window.open(url, '_blank');
             previewDialog.hide();
         });
     }
