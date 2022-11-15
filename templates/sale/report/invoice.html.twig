@@ -94,7 +94,7 @@
             {% if sale.header.doc_discount_percent > 0 %}
                 <tr>
                     <td class="left">Dscto.</td>
-                    <td class="text-right text-end">-{{ valor_descuento }}</td>
+                    <td class="text-right text-end">-{{ sale.header.doc_discount_amount }}</td>
                 </tr>
             {% endif %}
             {% if sale.header.doc_type != '00' %}
