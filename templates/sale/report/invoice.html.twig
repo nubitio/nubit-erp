@@ -65,7 +65,9 @@
         <tr>
             <td>
                 Cliente: {{ sale.header.client_name }}<br>
-                RUC: {{ sale.header.client_doc_number }}<br>
+                {% if sale.header.doc_type != '00' %}
+                    RUC: {{ sale.header.client_doc_number }}<br>
+                {% endif %}
                 Dirección: {{ sale.header.client_address }}<br>
             </td>
         </tr>
@@ -74,14 +76,14 @@
         <table class="table table-sm table-borderless table-nm">
             <thead>
             <tr class="row-bt row-bb">
-                <th>Description</th>
-                <th class="text-right text-end">Total</th>
+                <th># Descripcion</th>
+                <th class="text-right text-end">S/</th>
             </tr>
             </thead>
             <tbody>
             {% for item in sale.details %}
                 <tr>
-                    <td class="left">{{ item['quantity'] }} {{ item['product'] }}</td>
+                    <td class="left">{{ item['quantity']|round }} {{ item['product'] }}</td>
                     <td class="text-right text-end">{{ item['total'] }}</td>
                 </tr>
             {% endfor %}
@@ -143,6 +145,7 @@
         {% endif %}
         <tr>
             <td class="text-center">
+                <p></p>
                 {{ "now"|date("d/m/Y H:i:s") }}<br>
                 ** Gracias por su preferencia **
             </td>
