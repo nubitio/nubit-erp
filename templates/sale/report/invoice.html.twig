@@ -11,6 +11,10 @@
 
     <title>{{ sale.header.doc_series }} - {{ sale.header.doc_number }}</title>
     <style>
+        .table {
+            font-size: 12px;
+        }
+
         .table-nm {
             margin-bottom: 0;
         }
@@ -54,7 +58,7 @@
         </tr>
         <tr class="row-bb">
             <td>
-                Fecha: {{ sale.header.doc_date }}<br>
+                Fecha: {{ sale.header.doc_date|date('d/m/Y') }}<br>
                 Moneda: Soles
             </td>
         </tr>
@@ -81,7 +85,10 @@
                     <td class="text-right text-end">{{ item['total'] }}</td>
                 </tr>
             {% endfor %}
-            <tr class="row-bt"></tr>
+            <tr class="row-bt">
+                <td></td>
+                <td></td>
+            </tr>
             {% if sale.header.doc_discount_percent > 0 %}
                 <tr>
                     <td class="left">Dscto.</td>
@@ -106,7 +113,7 @@
                     <td class="text-right text-end">{{ sale.header.doc_total_taxes }}</td>
                 </tr>
             {% endif %}
-            <tr class="row-bb">
+            <tr>
                 <td class="left">
                     <strong>Total</strong></td>
                 <td class="text-right text-end">
@@ -118,16 +125,18 @@
     </div>
     <table class="table table-sm table-borderless">
         <tbody>
-        <tr class="row-bb">
+        <tr class="row-bt row-bb">
             <td class="text-center">
-                <strong>SON: {{ sale.header.doc_sale_amount|format_number(style='spellout', locale='es')|upper }}</strong>
+                {% set total = sale.header.doc_sale_amount|split('.') %}
+                <strong>SON: {{ total[0]|format_number(style='spellout', locale='es')|upper }} Y {{ total[1] }}
+                    /100</strong>
             </td>
         </tr>
         {% if sale.header.doc_type != '00' %}
             <tr>
                 <td class="text-center">
                     <img src="{{ qr|default('') }}" alt="QR" style="position: relative; max-height: 120px"><br>
-                    Resumen: {{ sale.header.doc_digest }}
+                    <p>Resumen: {{ sale.header.doc_digest }}</p>
                     <p>Representacion impresa del comprobante electronico, consulte en https://fe.efact.com/</p>
                 </td>
             </tr>

@@ -56,7 +56,8 @@
     "easycorp/easyadmin-bundle": "^4.3",
     "twig/extra-bundle": "^3.4",
     "twig/intl-extra": "^3.4",
-    "chillerlan/php-qrcode": "^4.3"
+    "chillerlan/php-qrcode": "^4.3",
+    "mikehaertl/phpwkhtmltopdf": "^2.5"
   },
   "authors": [
     {
