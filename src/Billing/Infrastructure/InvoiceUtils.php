@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Invoice\Infrastructure;
+namespace App\Billing\Infrastructure;
 
-use App\Invoice\Domain\InvoiceUtilsInterface;
-use App\Invoice\Model\Company\Address;
-use App\Invoice\Model\Company\Company;
+use App\Billing\Domain\InvoiceUtilsInterface;
+use App\Billing\Model\Company\Address;
+use App\Billing\Model\Company\Company;
 use App\Service\SettingsService;
 
 class InvoiceUtils implements InvoiceUtilsInterface

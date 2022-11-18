@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Invoice\Domain;
+namespace App\Billing\Domain;
 
-use App\Invoice\Model\Voided\Response\VoidedResponse;
-use App\Invoice\Model\Voided\Voided;
+use App\Billing\Model\Voided\Response\VoidedResponse;
+use App\Billing\Model\Voided\Voided;
 
 interface VoidedRepositoryInterface
 {

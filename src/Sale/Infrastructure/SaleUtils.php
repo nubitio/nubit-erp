@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Sale;
+namespace App\Sale\Infrastructure;
 
+use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use App\Service\SettingsService;
 use App\Util\Constants;

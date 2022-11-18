@@ -3,15 +3,16 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
-use App\Invoice\Domain\VoidedCreateUseCase;
-use App\Sale\DocType;
+use App\Billing\Domain\VoidedCreateUseCase;
+use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleCreateUseCase;
 use App\Sale\Domain\SaleDeleteUseCase;
 use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleUpdateUseCase;
-use App\Sale\SaleUtils;
+use App\Sale\Domain\SaleVoidUseCase;
+use App\Sale\Infrastructure\SaleUtils;
 use App\SaleDetail\Domain\SaleDetail;
 use App\Service\PdfExporter;
 use App\Service\XlsExporter;
@@ -192,9 +193,9 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
-    public function void(Request $request, VoidedCreateUseCase $createUseCase, $id): Response
+    public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
     {
-        $createUseCase($id, json_decode($request->getContent())->reason);
+        $voidUseCase($id, json_decode($request->getContent())->reason);
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }
 }

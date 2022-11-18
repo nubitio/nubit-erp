@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Invoice\Domain;
+namespace App\Billing\Domain;
 
-use App\Invoice\Model\Company\Company;
+use App\Billing\Model\Company\Company;
 
 interface InvoiceUtilsInterface
 {

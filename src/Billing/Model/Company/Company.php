@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Invoice\Model\Company;
+namespace App\Billing\Model\Company;
 
 class Company
 {
