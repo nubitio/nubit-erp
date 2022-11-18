@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Invoice\Infrastructure;
+namespace App\Billing\Infrastructure;
 
 use App\Domain\Service\SerializerService;
-use App\Invoice\Domain\VoidedRepositoryInterface;
-use App\Invoice\Model\Voided\Response\VoidedResponse;
-use App\Invoice\Model\Voided\Voided;
+use App\Billing\Domain\VoidedRepositoryInterface;
+use App\Billing\Model\Voided\Response\VoidedResponse;
+use App\Billing\Model\Voided\Voided;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;

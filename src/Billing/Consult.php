@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Invoice;
+namespace App\Billing;
 
 use Greenter\Ws\Services\ConsultCdrService;
 use Greenter\Ws\Services\SoapClient;

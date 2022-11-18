@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Invoice\Model\Voided\Response;
+namespace App\Billing\Model\Voided\Response;
 
 class Error
 {

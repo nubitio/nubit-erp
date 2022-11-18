@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Sale;
+namespace App\Sale\Domain;
 
 enum DocType: string
 {

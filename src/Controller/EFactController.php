@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Invoice\Consult;
+use App\Billing\Consult;
 use App\Model\BotModel;
 use App\Model\OptionsModel;
 use App\Model\ComprobanteModel;

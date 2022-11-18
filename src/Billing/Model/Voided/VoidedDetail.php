@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Invoice\Model\Voided;
+namespace App\Billing\Model\Voided;
 
 class VoidedDetail
 {
