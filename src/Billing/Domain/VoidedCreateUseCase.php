@@ -2,7 +2,7 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Voided\Response\VoidedResponse;
+use App\Billing\Model\Response\DocumentResponse;
 use App\Billing\Model\Voided\Voided;
 use App\Billing\Model\Voided\VoidedDetail;
 use App\Sale\Domain\SaleRepositoryInterface;
@@ -24,7 +24,7 @@ class VoidedCreateUseCase
         $this->invoiceUtils = $invoiceUtils;
     }
 
-    public function __invoke(string $saleId, string $reason): VoidedResponse
+    public function __invoke(string $saleId, string $reason): DocumentResponse
     {
         $sale = $this->saleRepository->getOneById($saleId);
 

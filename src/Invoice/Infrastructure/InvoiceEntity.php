@@ -90,7 +90,6 @@ class InvoiceEntity
             $this->mensaje_sunat,
             $this->created_at,
             $this->updated_at,
-
         );
     }
 

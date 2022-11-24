@@ -195,7 +195,8 @@ class SaleController extends BaseController
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
     public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
     {
-        $voidUseCase($id, json_decode($request->getContent())->reason);
+        $userId = $request->getSession()->get('usuario_id');
+        $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }
 }

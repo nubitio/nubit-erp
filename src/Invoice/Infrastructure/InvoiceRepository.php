@@ -2,9 +2,9 @@
 
 namespace App\Invoice\Infrastructure;
 
-use App\Invoice\Domain\InvoiceRepositoryInterface;
-use App\Invoice\Domain\Invoice;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Invoice\Domain\Invoice;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -27,6 +27,19 @@ class InvoiceRepository implements InvoiceRepositoryInterface
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('comprobante', 'created_at', filter: $filter);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getOne(string $saleId): Invoice
+    {
+        /** @var InvoiceEntity $invoiceEntity */
+        $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $saleId]);
+        if (!$invoiceEntity) {
+            throw new \Exception('Invoice not found');
+        }
+        return $invoiceEntity->mapToDomainModel();
     }
 
     /**

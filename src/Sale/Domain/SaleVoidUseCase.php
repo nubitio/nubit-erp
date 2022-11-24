@@ -2,43 +2,85 @@
 
 namespace App\Sale\Domain;
 
+use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
-use App\Invoice\Domain\InvoiceUpdateUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 
 class SaleVoidUseCase
 {
-    private SaleRepositoryInterface $repository;
+    private SaleRepositoryInterface $saleRepository;
+    private InvoiceRepositoryInterface $invoiceRepository;
     private VoidedCreateUseCase $voidedCreateUseCase;
-    private InvoiceUpdateUseCase $invoiceUpdateUseCase;
+    private SummaryCreateUseCase $summaryCreateUseCase;
 
     public function __construct(
-        SaleRepositoryInterface $repository,
-        VoidedCreateUseCase     $voidedCreateUseCase,
-        InvoiceUpdateUseCase    $invoiceUpdateUseCase
+        SaleRepositoryInterface $saleRepository,
+        InvoiceRepositoryInterface $invoiceRepository,
+        VoidedCreateUseCase $voidedCreateUseCase,
+        SummaryCreateUseCase $summaryCreateUseCase
     )
     {
-        $this->repository = $repository;
+        $this->saleRepository = $saleRepository;
+        $this->invoiceRepository = $invoiceRepository;
         $this->voidedCreateUseCase = $voidedCreateUseCase;
-        $this->invoiceUpdateUseCase = $invoiceUpdateUseCase;
+        $this->summaryCreateUseCase = $summaryCreateUseCase;
     }
 
     /**
      * @throws \Exception
      */
-    public function __invoke(string $saleId, string $reason): void
+    public function __invoke(string $saleId, string $reason, int $userId): void
     {
-        $sale = $this->repository->getOneById($saleId);
+        $receipt = $this->saleRepository->getOneById($saleId);
+        $sale = $this->saleRepository->getOne($saleId);
 
-        if ($sale['header']['doc_type'] === DocType::FACTURA->value) {
-            $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
-            if ($response->sunatResponse->success) {
-                $xmlFile = base64_decode($response->xml);
-                file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $xmlFile);
-            } else {
-                throw new \Exception($response->sunatResponse->error->message);
-            }
+        if ($receipt['header']['doc_type'] === DocType::FACTURA->value) {
+            $this->voidInvoice($saleId, $reason);
+        } else if ($receipt['header']['doc_type'] === DocType::BOLETA->value) {
+            $this->voidReceipt($saleId);
+        }
+
+        $sale->glosa = $reason;
+        $sale->estado = 2;
+        $sale->updated_by = $userId;
+        $sale->date_updated = new \DateTime();
+
+        $this->saleRepository->update($sale);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function voidInvoice(string $saleId, string $reason): void
+    {
+        $invoice = $this->invoiceRepository->getOne($saleId);
+
+        $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
+        if ($response->sunatResponse->success) {
+            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->correlativo_baja = explode('-', $response->name)[3];
+            $this->invoiceRepository->update($invoice);
         } else {
-            throw new \Exception('Unsupported document type');
+            throw new \Exception($response->sunatResponse->error->message);
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function voidReceipt(string $saleId): void
+    {
+        $invoice = $this->invoiceRepository->getOne($saleId);
+
+        $response = $this->summaryCreateUseCase->__invoke($saleId);
+        if ($response->sunatResponse->success) {
+            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->correlativo_baja = explode('-', $response->name)[3];
+            $this->invoiceRepository->update($invoice);
+        } else {
+            throw new \Exception($response->sunatResponse->error->message);
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Billing\Model\Voided\Response;
+namespace App\Billing\Model\Response;
 
 class SunatResponse
 {
