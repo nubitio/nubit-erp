@@ -2,10 +2,11 @@
 
 namespace App\Billing\Infrastructure;
 
-use App\Domain\Service\SerializerService;
 use App\Billing\Domain\VoidedRepositoryInterface;
-use App\Billing\Model\Voided\Response\VoidedResponse;
+use App\Billing\Model\Response\DocumentResponse;
+use App\Billing\Model\Response\StatusResponse;
 use App\Billing\Model\Voided\Voided;
+use App\Domain\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,7 +49,7 @@ class VoidedRepository implements VoidedRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function voidInvoice(Voided $voided): VoidedResponse
+    public function voidInvoice(Voided $voided): DocumentResponse
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($voided, 'json');
@@ -59,8 +60,24 @@ class VoidedRepository implements VoidedRepositoryInterface
             'body'    => $requestBody,
         ]);
         $responseBody = $response->getContent();
-        /** @var VoidedResponse $voidedResponse */
-        $voidedResponse = $this->serializer->deserialize($responseBody, VoidedResponse::class, 'json');
-        return $voidedResponse;
+        /** @var DocumentResponse $documentResponse */
+        $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+        return $documentResponse;
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
+    public function getStatus(string $ticket, string $ruc): StatusResponse
+    {
+        $httpClient = HttpClient::create();
+        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/voided/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
+        $responseBody = $response->getContent();
+        /** @var StatusResponse $statusResponse */
+        $statusResponse = $this->serializer->deserialize($responseBody, StatusResponse::class, 'json');
+        return $statusResponse;
     }
 }

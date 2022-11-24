@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Billing\Model\Voided\Response;
+namespace App\Billing\Model\Response;
 
-class VoidedResponse
+class DocumentResponse
 {
     public string $name;
     public string $xml;

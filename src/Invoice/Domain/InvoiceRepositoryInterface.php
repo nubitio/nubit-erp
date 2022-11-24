@@ -6,6 +6,8 @@ interface InvoiceRepositoryInterface
 {
     public function getAll(?array $filter = null): array;
 
+    public function getOne(string $saleId): Invoice;
+
     public function insert(Invoice $invoice): void;
 
     public function update(Invoice $invoice): void;
