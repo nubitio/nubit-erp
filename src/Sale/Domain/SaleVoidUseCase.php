@@ -14,10 +14,10 @@ class SaleVoidUseCase
     private SummaryCreateUseCase $summaryCreateUseCase;
 
     public function __construct(
-        SaleRepositoryInterface $saleRepository,
+        SaleRepositoryInterface    $saleRepository,
         InvoiceRepositoryInterface $invoiceRepository,
-        VoidedCreateUseCase $voidedCreateUseCase,
-        SummaryCreateUseCase $summaryCreateUseCase
+        VoidedCreateUseCase        $voidedCreateUseCase,
+        SummaryCreateUseCase       $summaryCreateUseCase
     )
     {
         $this->saleRepository = $saleRepository;
@@ -60,6 +60,7 @@ class SaleVoidUseCase
             file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
+            $invoice->updated_at = new \DateTime();
             $this->invoiceRepository->update($invoice);
         } else {
             throw new \Exception($response->sunatResponse->error->message);
@@ -78,6 +79,7 @@ class SaleVoidUseCase
             file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
+            $invoice->updated_at = new \DateTime();
             $this->invoiceRepository->update($invoice);
         } else {
             throw new \Exception($response->sunatResponse->error->message);

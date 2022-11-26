@@ -30,19 +30,18 @@ class SummaryCreateUseCase
     public function __invoke(string $saleId): DocumentResponse
     {
         $sale = $this->saleRepository->getOneById($saleId);
-        dd($sale);
         $summaryDetail = new SummaryDetail();
         $summaryDetail->tipoDoc = $sale['header']['doc_type'];
         $summaryDetail->serieNro = $sale['header']['doc_series'] . '-' . $sale['header']['doc_number'];
         $summaryDetail->estado = '3';
         $summaryDetail->clienteTipo = $sale['header']['client_doc_type'];
         $summaryDetail->clienteNro = $sale['header']['client_doc_number'];
-        $summaryDetail->total = $sale['header']['doc_total'];
-        $summaryDetail->mtoOperGravadas = $sale['header']['doc_total'];
+        $summaryDetail->total = $sale['header']['doc_sale_amount'];
+        $summaryDetail->mtoOperGravadas = $sale['header']['doc_taxed_amount'];
         $summaryDetail->mtoOperInafectas = 0;
         $summaryDetail->mtoOperExoneradas = 0;
         $summaryDetail->mtoOtrosCargos = 0;
-        $summaryDetail->mtoIgv = $sale['header']['doc_igv'];
+        $summaryDetail->mtoIgv = $sale['header']['doc_igv_amount'];
         $summary = new Summary();
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate($sale['header']['doc_date']);
         $summary->correlativo = $lastCorrelative + 1;
