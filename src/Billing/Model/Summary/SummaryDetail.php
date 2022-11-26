@@ -13,16 +13,16 @@ class SummaryDetail
     public Document $docReferencia;
     public SummaryPerception $percepcion;
     public string $estado;
-    public int $total;
-    public int $mtoOperGravadas;
-    public int $mtoOperInafectas;
-    public int $mtoOperExoneradas;
-    public int $mtoOperExportacion;
-    public int $mtoOperGratuitas;
-    public int $mtoOtrosCargos;
-    public int $mtoIgv;
-    public int $mtoIvap;
-    public int $mtoIcbper;
-    public int $mtoIsc;
-    public int $mtoOtrosTributos;
+    public float $total;
+    public float $mtoOperGravadas;
+    public float $mtoOperInafectas;
+    public float $mtoOperExoneradas;
+    public float $mtoOperExportacion;
+    public float $mtoOperGratuitas;
+    public float $mtoOtrosCargos;
+    public float $mtoIgv;
+    public float $mtoIvap;
+    public float $mtoIcbper;
+    public float $mtoIsc;
+    public float $mtoOtrosTributos;
 }
