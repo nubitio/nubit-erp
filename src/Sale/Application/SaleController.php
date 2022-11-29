@@ -3,13 +3,13 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
-use App\Billing\Domain\VoidedCreateUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleCreateUseCase;
 use App\Sale\Domain\SaleDeleteUseCase;
 use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleGetOneById;
+use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
 use App\Sale\Infrastructure\SaleUtils;
@@ -198,5 +198,13 @@ class SaleController extends BaseController
         $userId = $request->getSession()->get('usuario_id');
         $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
+    }
+
+    #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['GET'])]
+    public function invoice(Request $request, SaleInvoiceUseCase $saleInvoiceUseCase, $id): Response
+    {
+        $userId = $request->getSession()->get('usuario_id');
+        $saleInvoiceUseCase($id, $userId);
+        return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
     }
 }

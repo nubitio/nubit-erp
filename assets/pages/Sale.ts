@@ -389,14 +389,15 @@ export default class Sale {
             let id = selected['movimiento_id'];
             if (reason) {
                 this.saleService.voidSale(id, reason).subscribe((data) => {
-                    this.dataGrid.reload();
                     messenger.show('Información', 'Venta anulada');
+                    this.dataGrid.reload();
                 });
             }
         });
     }
 
     private makeInvoice() {
+        let ref = this;
         let row = this.dataGrid.selectedRow;
         if (!row) {
             messenger.show('Información', 'Seleccione una venta para generar el comprobante');
@@ -406,6 +407,11 @@ export default class Sale {
             messenger.show('Información', 'El comprobante ya fue generado');
             return;
         }
+        if (row['estado'] == 2) {
+            messenger.show('Información', 'La venta se encuentra anulada');
+            return;
+        }
+        let url = 'sale/invoice/' + row['movimiento_id'];
         let confirmMessage = '';
         if (row['cliente_id'].length === 11) {
             confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
@@ -414,7 +420,10 @@ export default class Sale {
         }
         messenger.confirm('Confirmar', confirmMessage, function (r) {
             if (r) {
-                //createInvoice(row)
+                ref.saleService.makeInvoice(row['movimiento_id']).subscribe((data) => {
+                    messenger.show('Información', 'Comprobante generado');
+                    ref.dataGrid.reload();
+                });
             }
         })
     }
