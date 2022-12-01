@@ -411,7 +411,6 @@ export default class Sale {
             messenger.show('Información', 'La venta se encuentra anulada');
             return;
         }
-        let url = 'sale/invoice/' + row['movimiento_id'];
         let confirmMessage = '';
         if (row['cliente_id'].length === 11) {
             confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
