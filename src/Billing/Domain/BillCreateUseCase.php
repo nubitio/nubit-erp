@@ -54,12 +54,12 @@ class BillCreateUseCase
         $bill->mtoIgv = $sale['header']['doc_igv_amount'];
         $bill->totalImpuestos = $sale['header']['doc_total_taxes'];
         $bill->sumOtrosCargos = $sale['header']['doc_other_charges'] ?? null;
-        $bill->valorVenta = $sale['header']['doc_sale_value'];
-        $bill->subTotal = $sale['header']['doc_sale_amount'];
+        $bill->valorVenta = $sale['header']['doc_sale_value'] - $sale['header']['doc_discount_amount'];
+        $bill->subTotal = $sale['header']['doc_sale_amount'] - $sale['header']['doc_other_charges'];
         $bill->mtoImpVenta = $sale['header']['doc_sale_amount'];
         $bill->company = $this->billUtils->getCompany();
 
-        if ($sale['header']['doc_other_charges'] ?? null) {
+        if ($sale['header']['doc_other_charges'] > 0) {
             $charge = new Charge();
             $charge->codTipo = '46';
             $charge->montoBase = $sale['header']['doc_taxed_amount'];
@@ -68,7 +68,7 @@ class BillCreateUseCase
             $bill->cargos = [$charge];
         }
 
-        if ($sale['header']['doc_discount'] ?? null) {
+        if ($sale['header']['doc_discount_amount'] > 0) {
             $charge = new Charge();
             $charge->codTipo = '02';
             $charge->montoBase = $sale['header']['doc_discount_amount'];
@@ -91,7 +91,7 @@ class BillCreateUseCase
             $item->tipAfeIgv = $value['tax_type'];
             $item->totalImpuestos = $value['tax_amount'];
             $item->mtoValorVenta = $value['taxed_amount'];
-            $item->mtoPrecioUnitario = $value['price'];
+            $item->mtoPrecioUnitario = $value['unit_price'];
             $details[] = $item;
         }
         $bill->details = $details;
