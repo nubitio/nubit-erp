@@ -8,6 +8,8 @@ interface InvoiceRepositoryInterface
 
     public function getOne(string $saleId): Invoice;
 
+    public function create(string $saleId, string $localId): void;
+
     public function insert(Invoice $invoice): void;
 
     public function update(Invoice $invoice): void;

@@ -4,7 +4,7 @@ namespace App\Billing\Domain;
 
 use App\Billing\Model\Company\Company;
 
-interface InvoiceUtilsInterface
+interface BillUtilsInterface
 {
     public function getCompany(): Company;
 }

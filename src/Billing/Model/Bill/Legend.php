@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Billing\Model\Invoice;
+namespace App\Billing\Model\Bill;
 
 class Legend
 {

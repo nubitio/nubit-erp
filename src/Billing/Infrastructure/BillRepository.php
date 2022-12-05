@@ -2,8 +2,8 @@
 
 namespace App\Billing\Infrastructure;
 
-use App\Billing\Domain\InvoiceRepositoryInterface;
-use App\Billing\Model\Invoice\Invoice;
+use App\Billing\Domain\BillRepositoryInterface;
+use App\Billing\Model\Bill\Bill;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Domain\Service\SerializerService;
 use Doctrine\DBAL\Connection;
@@ -14,7 +14,7 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class InvoiceRepository implements InvoiceRepositoryInterface
+class BillRepository implements BillRepositoryInterface
 {
     private Connection $connection;
     private EntityManagerInterface $entityManager;
@@ -37,7 +37,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function createInvoice(Invoice $invoice): DocumentResponse
+    public function createBill(Bill $invoice): DocumentResponse
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
