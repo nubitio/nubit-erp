@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Billing\Model\Invoice;
+namespace App\Billing\Model\Bill;
 
-class InvoiceDetail
+class BillDetail
 {
     public string $unidad;
     public int $cantidad;

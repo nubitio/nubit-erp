@@ -7,4 +7,6 @@ class SunatResponse
     public bool $success;
     public Error $error;
     public string $ticket;
+    public string $cdrZip;
+    public CdrResponse $cdrResponse;
 }

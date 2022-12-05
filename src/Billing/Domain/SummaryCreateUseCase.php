@@ -11,12 +11,12 @@ class SummaryCreateUseCase
 {
     private SummaryRepositoryInterface $summaryRepository;
     private SaleRepositoryInterface $saleRepository;
-    private InvoiceUtilsInterface $invoiceUtils;
+    private BillUtilsInterface $invoiceUtils;
 
     public function __construct(
         SummaryRepositoryInterface $summaryRepository,
         SaleRepositoryInterface    $saleRepository,
-        InvoiceUtilsInterface      $invoiceUtils
+        BillUtilsInterface $invoiceUtils
     )
     {
         $this->summaryRepository = $summaryRepository;

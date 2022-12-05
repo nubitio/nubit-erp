@@ -2,6 +2,7 @@
 
 namespace App\Invoice\Infrastructure;
 
+use App\Domain\Invoice\InvoiceCalculator;
 use App\Infrastructure\Common\DataGridLoader;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
@@ -40,6 +41,21 @@ class InvoiceRepository implements InvoiceRepositoryInterface
             throw new \Exception('Invoice not found');
         }
         return $invoiceEntity->mapToDomainModel();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function create(string $saleId, string $localId): void
+    {
+        $sale = $this->connection->executeQuery("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($saleId))->fetchAssociative();
+        if ($sale['has_invoice'] === '1') {
+            return;
+        }
+        $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'] ?? 0.0, $sale['igv'], $sale['recargo_consumo'] ?? 0.0);
+        $invoiceAmounts = $invoiceCalculator->calculate();
+        $this->connection->executeQuery('update movimiento set has_invoice = 1 where movimiento_id = ?', [$saleId]);
+        $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?)', [$saleId, $localId, $invoiceAmounts->getSubtotal(), $invoiceAmounts->getTaxedAmount(), $invoiceAmounts->getDiscountAmount(), $invoiceAmounts->getTax(), $invoiceAmounts->getTotal()]);
     }
 
     /**

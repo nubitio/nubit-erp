@@ -203,8 +203,8 @@ class SaleController extends BaseController
     #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['POST'])]
     public function invoice(Request $request, SaleInvoiceUseCase $saleInvoiceUseCase, $id): Response
     {
-        $userId = $request->getSession()->get('usuario_id');
-        $saleInvoiceUseCase($id, $userId);
+        $localId = $request->getSession()->get('local_id');
+        $saleInvoiceUseCase($id, $localId);
         return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
     }
 }

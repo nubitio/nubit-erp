@@ -11,12 +11,12 @@ class VoidedCreateUseCase
 {
     private VoidedRepositoryInterface $voidedRepository;
     private SaleRepositoryInterface $saleRepository;
-    private InvoiceUtilsInterface $invoiceUtils;
+    private BillUtilsInterface $invoiceUtils;
 
     public function __construct(
         VoidedRepositoryInterface $voidedRepository,
         SaleRepositoryInterface   $saleRepository,
-        InvoiceUtilsInterface     $invoiceUtils
+        BillUtilsInterface $invoiceUtils
     )
     {
         $this->voidedRepository = $voidedRepository;

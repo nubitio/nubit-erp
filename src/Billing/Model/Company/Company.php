@@ -2,6 +2,8 @@
 
 namespace App\Billing\Model\Company;
 
+use App\Billing\Model\Address\Address;
+
 class Company
 {
     public string $ruc;

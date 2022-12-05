@@ -2,12 +2,12 @@
 
 namespace App\Billing\Infrastructure;
 
-use App\Billing\Domain\InvoiceUtilsInterface;
-use App\Billing\Model\Company\Address;
+use App\Billing\Domain\BillUtilsInterface;
+use App\Billing\Model\Address\Address;
 use App\Billing\Model\Company\Company;
 use App\Service\SettingsService;
 
-class InvoiceUtils implements InvoiceUtilsInterface
+class BillUtils implements BillUtilsInterface
 {
     private SettingsService $settingsService;
 

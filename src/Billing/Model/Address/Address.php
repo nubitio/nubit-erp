@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Billing\Model\Company;
+namespace App\Billing\Model\Address;
 
 class Address
 {
