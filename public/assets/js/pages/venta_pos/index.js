@@ -698,7 +698,7 @@ app.venta = (function () {
 
     function createInvoice(sale) {
         if (sale.comprobante_id === null) {
-            fetch('sale/invoice/' + sale.movimiento_id)
+            fetch('venta/bill/' + sale.movimiento_id)
                 .then(response => response.json())
                 .then(result => show_info(result.msg))
                 .catch(error => show_error(error))

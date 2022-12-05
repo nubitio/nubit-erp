@@ -4,7 +4,7 @@ namespace App\Billing\Model\Bill;
 
 class PaymentTerms
 {
-    protected ?string $moneda;
-    protected ?string $tipo;
-    protected ?float $monto;
+    public ?string $moneda;
+    public ?string $tipo;
+    public ?float $monto;
 }
