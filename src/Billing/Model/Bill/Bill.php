@@ -19,7 +19,7 @@ class Bill
     public string $tipoMoneda;
     public ?float $sumOtrosCargos = null;
     public float $mtoOperGravadas;
-    public float $mtoIgv;
+    public float $mtoIGV;
     public float $totalImpuestos;
     public float $valorVenta;
     public float $subTotal;

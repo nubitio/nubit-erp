@@ -21,7 +21,6 @@ class SaleInvoiceUseCase
     {
         $this->invoiceRepository->create($saleId, $localId);
         $response = $this->billCreateUseCase->__invoke($saleId);
-        file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
         if ($response->sunatResponse->success) {
             file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
             $cdr = base64_decode($response->sunatResponse->cdrZip);

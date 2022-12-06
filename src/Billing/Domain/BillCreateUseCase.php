@@ -6,10 +6,12 @@ use App\Billing\Model\Address\Address;
 use App\Billing\Model\Bill\Bill;
 use App\Billing\Model\Bill\BillDetail;
 use App\Billing\Model\Bill\Charge;
+use App\Billing\Model\Bill\Legend;
 use App\Billing\Model\Bill\PagoContado;
 use App\Billing\Model\Client\Client;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Sale\Domain\SaleRepositoryInterface;
+use NumberFormatter;
 
 class BillCreateUseCase
 {
@@ -51,7 +53,7 @@ class BillCreateUseCase
         $bill->tipoMoneda = $sale['header']['doc_currency'];
         $bill->client = $customer;
         $bill->mtoOperGravadas = $sale['header']['doc_taxed_amount'];
-        $bill->mtoIgv = $sale['header']['doc_igv_amount'];
+        $bill->mtoIGV = $sale['header']['doc_igv_amount'];
         $bill->totalImpuestos = $sale['header']['doc_total_taxes'];
         $bill->sumOtrosCargos = $sale['header']['doc_other_charges'] ?? null;
         $bill->valorVenta = $sale['header']['doc_sale_value'] - $sale['header']['doc_discount_amount'];
@@ -94,7 +96,18 @@ class BillCreateUseCase
             $item->mtoPrecioUnitario = $value['unit_price'];
             $details[] = $item;
         }
+
+        $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
+        $parts = explode('.', $sale['header']['doc_sale_amount']);
+        $amount = $formatter->format($parts[0]);
+        $strTotal = mb_strtoupper('SON ' . $amount . " CON " . $parts[1] . "/100 SOLES");
+
+        $legend = new Legend();
+        $legend->code = '1000';
+        $legend->value = $strTotal;
+
         $bill->details = $details;
+        $bill->legends = [$legend];
         $response = $this->billRepository->createBill($bill);
         $response->name = $bill->getName();
 
