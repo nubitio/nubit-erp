@@ -108,9 +108,6 @@ class SaleController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
-    /**
-     * @throws Exception
-     */
     #[Route('/sale/consult', name: 'sale_report', methods: ['GET'])]
     public function report(Request $request, XlsExporter $xlsExporter, PdfExporter $pdfExporter, Connection $connection): StreamedResponse
     {

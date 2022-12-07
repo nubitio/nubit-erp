@@ -9,28 +9,19 @@ use App\Billing\Model\Bill\Charge;
 use App\Billing\Model\Bill\Legend;
 use App\Billing\Model\Bill\PagoContado;
 use App\Billing\Model\Client\Client;
-use App\Billing\Model\Response\DocumentResponse;
 use App\Sale\Domain\SaleRepositoryInterface;
 use NumberFormatter;
 
 class BillCreateUseCase
 {
-    private BillRepositoryInterface $billRepository;
-    private SaleRepositoryInterface $saleRepository;
-    private BillUtilsInterface $billUtils;
-
     public function __construct(
-        BillRepositoryInterface $billRepository,
-        SaleRepositoryInterface $saleRepository,
-        BillUtilsInterface      $billUtils
+        private readonly SaleRepositoryInterface $saleRepository,
+        private readonly BillUtilsInterface      $billUtils,
     )
     {
-        $this->billRepository = $billRepository;
-        $this->saleRepository = $saleRepository;
-        $this->billUtils = $billUtils;
     }
 
-    public function __invoke(string $saleId): DocumentResponse
+    public function __invoke(string $saleId): Bill
     {
         $sale = $this->saleRepository->getOneById($saleId);
         $customerAddress = new Address();
@@ -80,7 +71,7 @@ class BillCreateUseCase
         }
 
         $details = [];
-        foreach ($sale['details'] as $key => $value) {
+        foreach ($sale['details'] as $value) {
             $item = new BillDetail();
             $item->codProducto = $value['code'] ?? "";
             $item->unidad = 'NIU';
@@ -108,9 +99,7 @@ class BillCreateUseCase
 
         $bill->details = $details;
         $bill->legends = [$legend];
-        $response = $this->billRepository->createBill($bill);
-        $response->name = $bill->getName();
 
-        return $response;
+        return $bill;
     }
 }

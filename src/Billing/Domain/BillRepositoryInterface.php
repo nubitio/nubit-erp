@@ -7,5 +7,7 @@ use App\Billing\Model\Response\DocumentResponse;
 
 interface BillRepositoryInterface
 {
-    function createBill(Bill $invoice): DocumentResponse;
+    function sendBill(Bill $invoice): DocumentResponse;
+
+    function getPdf(Bill $invoice): string;
 }
