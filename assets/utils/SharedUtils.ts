@@ -40,7 +40,7 @@ export class SharedUtils {
 
     static invoiceFormatter(value, row) {
         if (value !== null) {
-            return '<a href="/invoice/download/' + row.movimiento_id + '/pdf?mode=preview" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + row.iserie + '-' + row.inumero + '</a>';
+            return '<a href="/invoice/' + row['movimiento_id'] + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + row['iserie'] + '-' + row['inumero'] + '</a>';
         } else {
             return '';
         }

@@ -37,7 +37,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function createBill(Bill $invoice): DocumentResponse
+    public function sendBill(Bill $invoice): DocumentResponse
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
@@ -51,5 +51,24 @@ class BillRepository implements BillRepositoryInterface
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
         return $documentResponse;
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
+    public function getPdf(Bill $invoice): string
+    {
+        $httpClient = HttpClient::create();
+        $requestBody = $this->serializer->serialize($invoice, 'json');
+        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/pdf?token=123456', [
+            'headers' => [
+                'Content-Type' => 'application/json'
+            ],
+            'body'    => $requestBody,
+        ]);
+        return $response->getContent();
     }
 }

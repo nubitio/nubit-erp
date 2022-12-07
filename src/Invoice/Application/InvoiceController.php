@@ -3,14 +3,16 @@
 namespace App\Invoice\Application;
 
 use App\Base\BaseController;
-use App\Invoice\Domain\InvoiceGetAllUseCase;
-use App\Invoice\Domain\InvoiceCreateUseCase;
-use App\Invoice\Domain\InvoiceUpdateUseCase;
-use App\Invoice\Domain\InvoiceDeleteUseCase;
+use App\Billing\Domain\BillPdfUseCase;
 use App\Invoice\Domain\Invoice;
+use App\Invoice\Domain\InvoiceCreateUseCase;
+use App\Invoice\Domain\InvoiceDeleteUseCase;
+use App\Invoice\Domain\InvoiceGetAllUseCase;
+use App\Invoice\Domain\InvoiceUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class InvoiceController extends BaseController
@@ -55,5 +57,27 @@ class InvoiceController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
+    public function pdf(Request $request, BillPdfUseCase $billPdfUseCase, $id): StreamedResponse
+    {
+        $preview = $request->query->get('preview', false);
+
+        $fileResponse = $billPdfUseCase($id);
+
+        $response = new StreamedResponse();
+        $response->setCallback(function () use ($fileResponse) {
+            echo $fileResponse->file;
+        });
+
+        $response->headers->set('Content-Type', 'application/pdf');
+        $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
+
+        if (!$preview) {
+            $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
+        }
+
+        return $response;
     }
 }
