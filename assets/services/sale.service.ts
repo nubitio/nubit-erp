@@ -10,4 +10,12 @@ export class SaleService {
     makeInvoice(saleId: string): Observable<any> {
         return httpClient.post(`/sale/invoice/${saleId}`);
     }
+
+    notifyInvoice(saleId: string): Observable<any> {
+        return httpClient.post(`/sale/notify/${saleId}`);
+    }
+
+    consultInvoice(saleId: string): Observable<any> {
+        return httpClient.post(`/sale/consult/${saleId}`);
+    }
 }
