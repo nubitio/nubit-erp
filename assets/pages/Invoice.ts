@@ -4,6 +4,9 @@ import Form from "../Form";
 import {FormType} from "../FormType";
 import {Field} from "../Field";
 import {FieldBuilder} from "../FieldBuilder";
+import {SharedUtils} from "../utils/SharedUtils";
+import {messenger} from "../utils/Messenger";
+import {SaleService} from "../services/sale.service";
 
 export default class Invoice {
     private readonly container: string;
@@ -11,12 +14,9 @@ export default class Invoice {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
+    private saleService: SaleService = new SaleService();
 
-    static readonly ROUTES = {
-        ADD: 'invoice/add',
-        EDIT: 'invoice/edit/',
-        DELETE: 'invoice/delete/',
-    }
+    static readonly ROUTES = {}
 
     static readonly EVENTS = {
         ADD: 'invoice:add',
@@ -43,24 +43,24 @@ export default class Invoice {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('movimiento_id')
-            .label('Movimiento id')
+            .type(FormType.DATE)
+            .name('fecha')
+            .label('Fecha')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('cliente_id')
-            .label('Cliente id')
+            .label('DNI/RUC')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
-            .name('tipo_comprobante_id')
-            .label('Tipo comprobante id')
+            .name('cliente')
+            .label('Cliente')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
-            .name('fecha')
-            .label('Fecha')
+            .type(FormType.TEXT)
+            .name('tipo_comprobante')
+            .label('Tipo')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -73,54 +73,23 @@ export default class Invoice {
             .label('Numero')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
-            .name('inafecto')
-            .label('Inafecto')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('subtotal')
-            .label('Subtotal')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('gravada')
-            .label('Gravada')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('igv')
-            .label('Igv')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('rc')
-            .label('Rc')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.CURRENCY)
             .name('total')
             .label('Total')
+            .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
-            .name('discount_percent')
-            .label('Discount percent')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('discount_amount')
-            .label('Discount amount')
+            .type(FormType.NONE)
+            .name('nota')
+            .label('NC')
+            .align('center')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
-            .name('voided')
-            .label('Voided')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
-            .name('digest')
-            .label('Digest')
+            .name('estado')
+            .label('Anulado')
+            .formatter(SharedUtils.voidedFormatter)
+            .align('center')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -129,13 +98,10 @@ export default class Invoice {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
-            .name('correlativo_baja')
-            .label('Correlativo baja')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
             .name('envio_sunat')
             .label('Envio sunat')
+            .formatter(SharedUtils.billStatusFormatter)
+            .align('center')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -151,11 +117,39 @@ export default class Invoice {
     }
 
     renderDataGrid() {
+        let toolbar = [
+            {
+                text: 'Enviar a SUNAT',
+                iconCls: 'fas fa-cloud-upload fa-1x text-info',
+                handler: () => {
+                    this.send();
+                }
+            }, {
+                text: 'Enviar por correo',
+                iconCls: 'fas fa-envelope fa-1x text-success',
+                handler: () => {
+                    this.notify();
+                }
+            }, {
+                text: 'Ver',
+                iconCls: 'fas fa-eye fa-1x text-primary',
+                handler: () => {
+                    this.view();
+                }
+            }, {
+                text: 'Consultar CDR',
+                iconCls: 'fas fa-search fa-1x text-warning',
+                handler: () => {
+                    this.consult();
+                }
+            }
+        ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Invoice',
             url: 'invoice/get',
             routes: Invoice.ROUTES,
             events: Invoice.EVENTS,
+            toolbar: toolbar,
         });
     }
 
@@ -167,6 +161,63 @@ export default class Invoice {
         this.form = new Form(this.dialog.id, this.fields, {
             routes: Invoice.ROUTES,
             events: Invoice.EVENTS,
+        });
+    }
+
+    send() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+        if (selected['envio_sunat'] === '0') {
+            messenger.show('Información', 'El comprobante ya fue enviado a SUNAT');
+            return;
+        }
+        this.dataGrid.showLoading('Enviando comprobante a SUNAT...');
+        this.saleService.makeInvoice(selected['movimiento_id']).subscribe((data) => {
+            this.dataGrid.hideLoading();
+            messenger.show('Información', 'Comprobante enviado a SUNAT');
+            this.dataGrid.reload();
+        });
+    }
+
+    notify() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+
+        this.dataGrid.showLoading('Enviando comprobante por correo...');
+        this.saleService.notifyInvoice(selected['movimiento_id']).subscribe((data) => {
+            this.dataGrid.hideLoading();
+            messenger.show('Información', 'Comprobante enviado por correo');
+            this.dataGrid.reload();
+        });
+    }
+
+    view() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+        window.open('invoice/' + selected['movimiento_id']);
+    }
+
+    consult() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+
+        this.dataGrid.showLoading('Consultando CDR...');
+        this.saleService.consultInvoice(selected['movimiento_id']).subscribe((data) => {
+            this.dataGrid.hideLoading();
+            messenger.show('Información', 'CDR actualizado');
+            this.dataGrid.reload();
         });
     }
 }

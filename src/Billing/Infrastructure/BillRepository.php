@@ -49,7 +49,7 @@ class BillRepository implements BillRepositoryInterface
             'headers' => [
                 'Content-Type' => 'application/json'
             ],
-            'body' => $requestBody,
+            'body'    => $requestBody,
         ]);
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
@@ -70,7 +70,7 @@ class BillRepository implements BillRepositoryInterface
             user: new User(
                 extras: [
                     new Extra('FORMA DE PAGO', 'CONTADO'),
-                    new Extra('OBS', 'OBSERVACIONES'),
+                    new Extra('OBS', $invoice->obs),
                 ],
             )
         ));
@@ -80,7 +80,7 @@ class BillRepository implements BillRepositoryInterface
             'headers' => [
                 'Content-Type' => 'application/json'
             ],
-            'body' => $requestBody,
+            'body'    => $requestBody,
         ]);
 
         return $response->getContent();

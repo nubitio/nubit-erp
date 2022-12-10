@@ -6,6 +6,7 @@ export const Constants = {
     TEXT_SAVE: 'Guardar',
     TEXT_CANCEL: 'Cerrar',
     TEXT_CONFIRM: '¿Está seguro que desea eliminar este registro?',
+    TEXT_LOADING: 'Procesando, por favor espere...',
 
     ICON_ADD: 'fas fa-plus fa-1x text-primary',
     ICON_EDIT: 'fas fa-pen fa-1x text-warning',

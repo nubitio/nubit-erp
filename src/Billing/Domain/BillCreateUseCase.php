@@ -99,6 +99,7 @@ class BillCreateUseCase
 
         $bill->details = $details;
         $bill->legends = [$legend];
+        $bill->obs = $sale['header']['doc_notes'] ?? null;
 
         return $bill;
     }

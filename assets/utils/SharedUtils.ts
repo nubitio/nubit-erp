@@ -60,4 +60,31 @@ export class SharedUtils {
             return '';
         }
     }
+
+    static billStatusFormatter(value, row) {
+        if (value === null) {
+            value = -1
+        } else {
+            value = Number(value);
+        }
+        if (value === -1) {
+            return '<span class="badge rounded-pill bg-primary">PENDIENTE</span>';
+        } else if (value === 0) {
+            return '<span class="badge rounded-pill bg-success">ENVIADO</span>';
+        } else if (value < 2000) {
+            return '<span class="badge rounded-pill bg-warning">ERRONEO</span>';
+        } else if (value >= 2000 && value < 4000) {
+            return '<span class="badge rounded-pill bg-danger">RECHAZADO</span>';
+        } else if (value >= 4000) {
+            return '<span class="badge rounded-pill bg-info">OBSERVADO</span>';
+        }
+    }
+
+    static voidedFormatter(value){
+        if (value === 1){
+            return '<span class="badge rounded-pill bg-success">NO</span>';
+        } else {
+            return '<span class="badge rounded-pill bg-danger">SI</span>';
+        }
+    }
 }

@@ -243,4 +243,14 @@ export default class DataGrid {
                 }
             });
     }
+
+    showLoading(msg) {
+        this.dataGrid.datagrid('options').loadMsg = msg;
+        this.dataGrid.datagrid('loading');
+    }
+
+    hideLoading() {
+        this.dataGrid.datagrid('loaded');
+        this.dataGrid.datagrid('options').loadMsg = Constants.TEXT_LOADING;
+    }
 }

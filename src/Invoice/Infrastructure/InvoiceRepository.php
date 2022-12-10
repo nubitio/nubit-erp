@@ -27,7 +27,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      */
     public function getAll(?array $filter = null): array
     {
-        return $this->dataGridLoader->load('comprobante', 'created_at', filter: $filter);
+        return $this->dataGridLoader->load('vw_comprobante', 'created_at', 'desc', filter: $filter);
     }
 
     /**

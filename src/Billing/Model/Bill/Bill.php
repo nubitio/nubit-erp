@@ -32,6 +32,7 @@ class Bill
     public array $details;
     /** @var Legend[] */
     public array $legends;
+    public ?string $obs = null;
 
     public function getName(): string
     {
