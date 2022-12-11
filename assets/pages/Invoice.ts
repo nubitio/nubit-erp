@@ -7,6 +7,7 @@ import {FieldBuilder} from "../FieldBuilder";
 import {SharedUtils} from "../utils/SharedUtils";
 import {messenger} from "../utils/Messenger";
 import {SaleService} from "../services/sale.service";
+import {InvoiceService} from "../services/invoice.service";
 
 export default class Invoice {
     private readonly container: string;
@@ -15,6 +16,7 @@ export default class Invoice {
     private dialog: Dialog;
     private form: Form;
     private saleService: SaleService = new SaleService();
+    private invoiceService: InvoiceService = new InvoiceService();
 
     static readonly ROUTES = {}
 
@@ -214,7 +216,7 @@ export default class Invoice {
         }
 
         this.dataGrid.showLoading('Consultando CDR...');
-        this.saleService.consultInvoice(selected['movimiento_id']).subscribe((data) => {
+        this.invoiceService.consultInvoice(selected['movimiento_id']).subscribe((data) => {
             this.dataGrid.hideLoading();
             messenger.show('Información', 'CDR actualizado');
             this.dataGrid.reload();

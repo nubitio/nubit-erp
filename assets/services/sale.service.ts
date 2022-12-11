@@ -14,8 +14,4 @@ export class SaleService {
     notifyInvoice(saleId: string): Observable<any> {
         return httpClient.post(`/sale/notify/${saleId}`);
     }
-
-    consultInvoice(saleId: string): Observable<any> {
-        return httpClient.post(`/sale/consult/${saleId}`);
-    }
 }

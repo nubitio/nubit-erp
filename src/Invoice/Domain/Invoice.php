@@ -52,9 +52,9 @@ class Invoice
         #[SerializedName('mensaje_sunat')]
         public ?string $mensaje_sunat,
         #[SerializedName('created_at')]
-        public ?\DateTime $created_at,
+        public ?\DateTimeInterface $created_at,
         #[SerializedName('updated_at')]
-        public ?\DateTime $updated_at,
+        public ?\DateTimeInterface $updated_at,
 
     )
     {

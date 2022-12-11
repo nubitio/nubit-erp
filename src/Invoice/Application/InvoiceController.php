@@ -5,6 +5,7 @@ namespace App\Invoice\Application;
 use App\Base\BaseController;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Invoice\Domain\Invoice;
+use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceCreateUseCase;
 use App\Invoice\Domain\InvoiceDeleteUseCase;
 use App\Invoice\Domain\InvoiceGetAllUseCase;
@@ -57,6 +58,13 @@ class InvoiceController extends BaseController
     {
         $deleteUseCase($id);
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/invoice/consult/{id}', name: 'invoice_pdf', methods: ['GET'])]
+    public function consult(InvoiceConsultUseCase $consultUseCase, $id): Response
+    {
+        $consultUseCase($id);
+        return $this->json(['success' => true, 'msg' => 'CRD actualizado']);
     }
 
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
