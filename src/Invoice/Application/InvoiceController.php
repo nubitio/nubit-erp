@@ -11,7 +11,9 @@ use App\Invoice\Domain\InvoiceDeleteUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
 use App\Invoice\Domain\InvoiceGetAllUseCase;
 use App\Invoice\Domain\InvoiceUpdateUseCase;
+use App\Sale\Domain\SaleGetOneById;
 use App\Util\Constants;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -62,10 +64,26 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}', name: 'invoice_show', methods: ['GET'])]
-    public function show($id): Response
+    public function show($id, SaleGetOneById $getOneById): Response
     {
+        $invoice = $getOneById($id);
+
+        $type = match ($invoice['header']['doc_type']) {
+            '01' => 'FACTURA',
+            '03' => 'BOLETA',
+            default => '',
+        };
+
         return $this->render('invoice/show.html.twig', [
-            'id' => $id
+            'company_name' => $invoice['header']['company_name'],
+            'type'         => $type,
+            'series'       => $invoice['header']['doc_series'],
+            'number'       => $invoice['header']['doc_number'],
+            'date'         => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
+            'total'        => $invoice['header']['doc_sale_amount'],
+            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
@@ -76,10 +94,36 @@ class InvoiceController extends BaseController
         return $this->json(['success' => true, 'msg' => 'CRD actualizado']);
     }
 
+    #[Route('/invoice/{id}/xml', name: 'invoice_xml', methods: ['GET'])]
+    public function xml($id, SaleGetOneById $getOneById): BinaryFileResponse
+    {
+        $invoice = $getOneById($id);
+
+        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
+        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+
+        $xmlPath = $_ENV['EFACT_DIR'] . $docFullName . '.xml';
+
+        return $this->file($xmlPath, $docFullName . '.xml');
+    }
+
+    #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
+    public function cdr($id, SaleGetOneById $getOneById): BinaryFileResponse
+    {
+        $invoice = $getOneById($id);
+
+        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
+        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+
+        $cdrPath = $_ENV['EFACT_DIR'] . 'R-' . $docFullName . '.zip';
+
+        return $this->file($cdrPath, $docFullName . '.zip');
+    }
+
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
     public function pdf(Request $request, BillPdfUseCase $billPdfUseCase, $id): StreamedResponse
     {
-        $preview = $request->query->get('preview', false);
+        $preview = (bool)$request->query->get('preview', false);
 
         $fileResponse = $billPdfUseCase($id);
 
@@ -89,9 +133,10 @@ class InvoiceController extends BaseController
         });
 
         $response->headers->set('Content-Type', 'application/pdf');
-        $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
 
-        if (!$preview) {
+        if ($preview) {
+            $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
+        } else {
             $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
         }
 
