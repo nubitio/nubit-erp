@@ -61,6 +61,14 @@ class InvoiceController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
+    #[Route('/invoice/{id}', name: 'invoice_show', methods: ['GET'])]
+    public function show($id): Response
+    {
+        return $this->render('invoice/show.html.twig', [
+            'id' => $id
+        ]);
+    }
+
     #[Route('/invoice/{id}/consult', name: 'invoice_pdf', methods: ['GET'])]
     public function consult(InvoiceConsultUseCase $consultUseCase, $id): Response
     {
