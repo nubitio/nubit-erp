@@ -61,6 +61,8 @@ class InvoiceEmailUseCase
         $email = (new Email())
             ->from('noreply@efact.app')
             ->to($invoice['header']['client_email'] ?: 'johangm90@gmail.com')
+            ->cc($this->settingsService->get('email_accounting'))
+            ->bcc($this->settingsService->get('app_alert_recipients'))
             ->subject($subject)
             ->html($content)
             ->attachFromPath($xmlPath)
