@@ -8,6 +8,7 @@ use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceCreateUseCase;
 use App\Invoice\Domain\InvoiceDeleteUseCase;
+use App\Invoice\Domain\InvoiceEmailUseCase;
 use App\Invoice\Domain\InvoiceGetAllUseCase;
 use App\Invoice\Domain\InvoiceUpdateUseCase;
 use App\Util\Constants;
@@ -60,7 +61,7 @@ class InvoiceController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
-    #[Route('/invoice/consult/{id}', name: 'invoice_pdf', methods: ['GET'])]
+    #[Route('/invoice/{id}/consult', name: 'invoice_pdf', methods: ['GET'])]
     public function consult(InvoiceConsultUseCase $consultUseCase, $id): Response
     {
         $consultUseCase($id);
@@ -87,5 +88,12 @@ class InvoiceController extends BaseController
         }
 
         return $response;
+    }
+
+    #[Route('/invoice/{id}/email', name: 'invoice_email', methods: ['POST'])]
+    public function sendEmail(InvoiceEmailUseCase $emailUseCase, $id): Response
+    {
+        $emailUseCase($id);
+        return $this->json(['success' => true, 'msg' => 'Email enviado']);
     }
 }
