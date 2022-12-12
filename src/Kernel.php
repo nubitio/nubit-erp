@@ -60,6 +60,9 @@ class Kernel extends BaseKernel
             'profiler'             => [
                 'only_exceptions' => false,
             ],
+            'mailer'               => [
+                'dsn' => '%env(MAILER_DSN)%',
+            ],
         ]);
 
         $container->extension('security', [
