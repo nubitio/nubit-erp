@@ -23,8 +23,11 @@ RUN add-apt-repository ppa:ondrej/php -y
 RUN apt update
 
 # install php
-RUN apt -y install php8.1 mcrypt php8.1-mcrypt php8.1-mbstring php8.1-xml php8.1-mysql php8.1-curl php8.1-zip php8.1-soap php8.1-gd php8.1-intl
+RUN apt -y install php8.1 mcrypt php8.1-xdebug php8.1-mcrypt php8.1-mbstring php8.1-xml php8.1-mysql php8.1-curl php8.1-zip php8.1-soap php8.1-gd php8.1-intl
 RUN apt install -y libapache2-mod-php8.1
+
+# configure php
+RUN sed -i -e '$a xdebug.mode=develop,debug,coverage' /etc/php/8.1/mods-available/xdebug.ini
 
 # install wkhtmltopdf
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -38,7 +41,7 @@ RUN a2enmod rewrite
 # to see live logs we do : docker logs -f [CONTAINER ID]
 # without the following line we get "AH00558: apache2: Could not reliably determine the server's fully qualified domain name"
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-# autorise .htaccess files
+# allow .htaccess files
 RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 # set document root
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public

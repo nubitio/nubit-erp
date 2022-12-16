@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle;
 use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
+use Symfony\Bundle\MakerBundle\MakerBundle;
 use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -37,6 +38,7 @@ class Kernel extends BaseKernel
             new SecurityBundle(),
             new MonologBundle(),
             new EasyAdminBundle(),
+            new MakerBundle()
         ];
 
         if ('dev' === $this->getEnvironment()) {
