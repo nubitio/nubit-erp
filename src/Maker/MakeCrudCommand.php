@@ -11,8 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'make:crud',
-    description: 'Create CRUD',
+    name: 'make:app:crud',
+    description: 'Creates a new App CRUD',
 )]
 class MakeCrudCommand extends Command
 {

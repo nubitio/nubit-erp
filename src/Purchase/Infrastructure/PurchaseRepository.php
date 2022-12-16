@@ -5,6 +5,7 @@ namespace App\Purchase\Infrastructure;
 use App\Infrastructure\Common\DataGridLoader;
 use App\Purchase\Domain\Purchase;
 use App\Purchase\Domain\PurchaseRepositoryInterface;
+use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -34,10 +35,28 @@ class PurchaseRepository implements PurchaseRepositoryInterface
      */
     public function insert(Purchase $purchase): void
     {
-        $entity = new PurchaseEntity();
-        $entity->mapFromDomainModel($purchase);
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+        try {
+            $this->connection->beginTransaction();
+            $entity = new PurchaseEntity();
+            $entity->mapFromDomainModel($purchase);
+            $entity->tipo_id = 1;
+            $entity->estado = 1;
+            $entity->date_created = new \DateTime();
+            $this->entityManager->persist($entity);
+            $this->entityManager->flush();
+            foreach ($purchase->items as $item) {
+                $detailEntity = new SaleDetailEntity();
+                $detailEntity->mapFromDomainModel($item);
+                $detailEntity->movimiento_id = $entity->movimiento_id;
+                $this->entityManager->persist($detailEntity);
+            }
+            $this->entityManager->flush();
+            $this->entityManager->clear();
+            $this->connection->commit();
+        } catch (\Exception $e) {
+            $this->connection->rollBack();
+            throw $e;
+        }
     }
 
     /**
