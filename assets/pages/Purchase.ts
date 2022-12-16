@@ -7,6 +7,8 @@ import {FieldBuilder} from "../FieldBuilder";
 import {StorageUtils} from "../utils/StorageUtils";
 import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
+import {bus} from "../EventBus";
+import {Event} from "../Event";
 
 export default class Purchase {
     private readonly container: string;
@@ -99,6 +101,13 @@ export default class Purchase {
             .label('Glosa')
             .visible(false)
             .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.CURRENCY)
+            .name('total')
+            .label('Total')
+            .visible(false)
+            .disabled(true)
+            .build());
 
         this.detailFields.push(new FieldBuilder()
             .type(FormType.SELECT)
@@ -112,16 +121,19 @@ export default class Purchase {
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .onChange((newValue, oldValue, field) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_unitario')
-            .label('Precio')
+            .label('P. compra')
+            .onChange((newValue, oldValue, field) => this.onPriceChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
+            .onChange(this.calculateGrandTotal.bind(this))
             .build());
     };
 
@@ -180,6 +192,13 @@ export default class Purchase {
             events: Purchase.EVENTS,
             detailFields: this.detailFields,
         });
+
+        bus.on(
+            action => action.name == Form.EVENTS.ROW_REMOVED,
+            (action: Event) => {
+                this.calculateGrandTotal();
+            }
+        );
     }
 
     private onSelectProduct(record, field) {
@@ -188,5 +207,30 @@ export default class Purchase {
         row['cantidad-' + index].numberbox('setValue', 1);
         row['precio_unitario-' + index].numberbox('setValue', '0.00');
         row['precio_total-' + index].numberbox('setValue', '0.00');
+    }
+
+    private onQuantityChange(newValue, oldValue, field) {
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(index);
+        let price = row['precio_unitario-' + index].numberbox('getValue');
+        row['precio_total-' + index].numberbox('setValue', Number(newValue * price).toFixed(2));
+    }
+
+    private onPriceChange(newValue, oldValue, field) {
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(index);
+        let quantity = row['cantidad-' + index].numberbox('getValue');
+        row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
+    }
+
+    private calculateGrandTotal() {
+        let total = 0;
+        let formFields = this.form.getDetailFormFields();
+        for (let key in formFields) {
+            if (key.startsWith('precio_total-')) {
+                total += Number(formFields[key].numberbox('getValue'));
+            }
+        }
+        this.form.getField('total').numberbox('setValue', total);
     }
 }
