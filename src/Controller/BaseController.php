@@ -192,7 +192,7 @@ abstract class BaseController
             $writer->setPreCalculateFormulas(true);
             $writer->save('php://output');
             exit;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage();
         }
     }

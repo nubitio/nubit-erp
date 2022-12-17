@@ -4,8 +4,8 @@ namespace App\Controller;
 
 use App\Billing\Consult;
 use App\Model\BotModel;
-use App\Model\OptionsModel;
 use App\Model\ComprobanteModel;
+use App\Model\OptionsModel;
 use App\Model\SummaryModel;
 use DateTime;
 use Greenter\Model\Client\Client;
@@ -19,10 +19,10 @@ use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
-use Greenter\Model\Voided\Voided;
-use Greenter\Model\Voided\VoidedDetail;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
+use Greenter\Model\Voided\Voided;
+use Greenter\Model\Voided\VoidedDetail;
 use Greenter\Report\HtmlReport;
 use Greenter\Report\PdfReport;
 use Greenter\Report\XmlUtils;
@@ -63,7 +63,7 @@ class EFactController extends BaseController
     {
         try {
             return $this->optionsDao->getByName($name);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $this->app->error(500, "No se pudo obtener la opcion {$name}");
         }
     }
@@ -206,7 +206,7 @@ class EFactController extends BaseController
         $app_option_igv_get = (int)$this->getOption('app_option_igv');
         $app_option_rc_get = (int)$this->getOption('app_option_rc');
         if ($app_option_rc_get >= 1) {
-            $igv = $app_option_igv_get /100;
+            $igv = $app_option_igv_get / 100;
             $rc = $app_option_rc_get / 100;
             $divisor = 1 + $igv + $rc;//1.23
             $venta_total = $sale['header']['doc_sale_amount'];//123
@@ -269,7 +269,7 @@ class EFactController extends BaseController
             }
         } else //not rc charge
         {
-            $igv = $app_option_igv_get/100;
+            $igv = $app_option_igv_get / 100;
             $divisor = 1 + $igv;
             $valor_venta = $sale['header']['doc_sale_amount'] / $divisor;
             $valor_igv = $valor_venta * $igv;
@@ -294,7 +294,7 @@ class EFactController extends BaseController
                 ->setCompany($this->getCompany());
 
             for ($i = 0; $i < count($sale['detail']); $i++) {
-                $igv = $app_option_igv_get/100;
+                $igv = $app_option_igv_get / 100;
                 //$rc = 0.05;
                 $divisor = 1 + $igv;
                 //$divisor = 1 + $igv + $rc;
@@ -461,7 +461,7 @@ class EFactController extends BaseController
             ->setCorrelativo($sale['data']['header']['doc_number'])
             ->setDesMotivoBaja($sale['data']['header']['doc_notes']);
 
-        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'],1), 3, '0', STR_PAD_LEFT);
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'], 1), 3, '0', STR_PAD_LEFT);
 
         $cDeBaja = new Voided();
         $cDeBaja
@@ -473,15 +473,15 @@ class EFactController extends BaseController
 
         $result = $this->see->send($cDeBaja);
         // Guardar XML
-        file_put_contents( $this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
+        file_put_contents($this->app->get('EFACT_DIR') . $cDeBaja->getName() . '.xml', $this->see->getFactory()->getLastXml());
         if (!$result->isSuccess()) {
             return [
-                    "success" => false,
-                    "ticket" => null,
-                    "id" => null,
-                    "hash" => $this->getHash($cDeBaja),
-                    "code" => $result->getError()->getCode(),
-                    "msg" => $result->getError()->getMessage()];
+                "success" => false,
+                "ticket"  => null,
+                "id"      => null,
+                "hash"    => $this->getHash($cDeBaja),
+                "code"    => $result->getError()->getCode(),
+                "msg"     => $result->getError()->getMessage()];
         }
 
         $ticket = $result->getTicket();
@@ -492,12 +492,12 @@ class EFactController extends BaseController
         $statusResult = $this->see->getStatus($ticket);
         if (!$statusResult->isSuccess()) {
             return [
-                    "success" => false,
-                    "ticket" => $ticket,
-                    "id" => $statusResult->getCdrResponse()->getId(),
-                    "hash" => $this->getHash($cDeBaja),
-                    "code" => $statusResult->getError()->getCode(),
-                    "msg" => $statusResult->getError()->getMessage()];
+                "success" => false,
+                "ticket"  => $ticket,
+                "id"      => $statusResult->getCdrResponse()->getId(),
+                "hash"    => $this->getHash($cDeBaja),
+                "code"    => $statusResult->getError()->getCode(),
+                "msg"     => $statusResult->getError()->getMessage()];
         }
         // Guardar CDR
         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $cDeBaja->getName() . '.zip', $statusResult->getCdrZip());
@@ -510,7 +510,7 @@ class EFactController extends BaseController
         $data = $this->summaryModel->getComprobanteVoided($id);
 
         $detailVoided = [];
-        foreach ($data['data'] as $item){
+        foreach ($data['data'] as $item) {
             $detail = new SummaryDetail();
             $detail
                 ->setTipoDoc('03') // Boleta
@@ -527,7 +527,7 @@ class EFactController extends BaseController
             $detailVoided[] = $detail;
         }
 
-        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'],0), 3, '0', STR_PAD_LEFT);
+        $sequenceVoidedCorrelative = str_pad($this->summaryModel->getNextNumberVoided($sale['data']['header']['doc_date'], 0), 3, '0', STR_PAD_LEFT);
 
         $resumen = new Summary();
         $resumen
@@ -539,15 +539,15 @@ class EFactController extends BaseController
 
         $result = $this->see->send($resumen);
         // Guardar XML
-        file_put_contents($this->app->get('EFACT_DIR') . $resumen->getName().'.xml', $this->see->getFactory()->getLastXml());
+        file_put_contents($this->app->get('EFACT_DIR') . $resumen->getName() . '.xml', $this->see->getFactory()->getLastXml());
         if (!$result->isSuccess()) {
             return [
                 "success" => false,
-                "ticket" => null,
-                "id" => null,
-                "hash" => $this->getHash($resumen),
-                "code" => $result->getError()->getCode(),
-                "msg" => $result->getError()->getMessage()];
+                "ticket"  => null,
+                "id"      => null,
+                "hash"    => $this->getHash($resumen),
+                "code"    => $result->getError()->getCode(),
+                "msg"     => $result->getError()->getMessage()];
         }
 
         $ticket = $result->getTicket();
@@ -560,14 +560,14 @@ class EFactController extends BaseController
         if (!$statusResult->isSuccess()) {
             return [
                 "success" => false,
-                "ticket" => $ticket,
-                "id" => $statusResult->getCdrResponse()->getId(),
-                "hash" => $this->getHash($resumen),
-                "code" => $statusResult->getError()->getCode(),
-                "msg" => $statusResult->getError()->getMessage()];
+                "ticket"  => $ticket,
+                "id"      => $statusResult->getCdrResponse()->getId(),
+                "hash"    => $this->getHash($resumen),
+                "code"    => $statusResult->getError()->getCode(),
+                "msg"     => $statusResult->getError()->getMessage()];
         }
         // Guardar CDR
-         file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
+        file_put_contents($this->app->get('EFACT_DIR') . 'R-' . $resumen->getName() . '.zip', $statusResult->getCdrZip());
     }
 
     public function makeSummary($data, $correlative, $type = '03')
@@ -605,14 +605,7 @@ class EFactController extends BaseController
 
         $summary = new Summary();
 
-        function warningValidator()
-        {
-            if (isset($data[0]['fecha'])) {
-                return $data[0]['fecha'] ?? null;
-            }
-        }
-
-        $summary->setFecGeneracion(new \DateTime(warningValidator()))
+        $summary->setFecGeneracion(new \DateTime($data['data'][0]['fecha'] ?? null))
             ->setFecResumen(new \DateTime(date('Y-m-d')))
             ->setCorrelativo($correlative)
             ->setCompany($this->getCompany())
@@ -662,7 +655,7 @@ class EFactController extends BaseController
         if ($saleInfo["success"]) {
             $sale = $saleInfo['data'];
             try {
-                $consult = new Consult($this->app);
+                $consult = new Consult();
                 $ruc = $this->getOption('invoice_ruc');
                 $user = $this->getOption('invoice_user');
                 $pass = $this->getOption('invoice_password');

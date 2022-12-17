@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Category\Domain\Category;
+use App\Category\Domain\CategoryUpdateUseCase;
+use App\Customer\Domain\Customer;
+use App\Customer\Domain\CustomerUpdateUseCase;
 use App\Domain\Product\Product;
 use App\Domain\Product\UpdateProduct;
 use App\Model\ApiModel;
@@ -18,6 +22,8 @@ class ApiController extends BaseController
     private BotModel $botModel;
     private EFactController $efact;
     private UpdateProduct $updateProduct;
+    private CustomerUpdateUseCase $customerUpdateUseCase;
+    private CategoryUpdateUseCase $categoryUpdateUseCase;
 
     public function __construct()
     {
@@ -28,6 +34,8 @@ class ApiController extends BaseController
         $this->botModel = new BotModel();
         $this->efact = new EFactController();
         $this->updateProduct = $this->container->get(UpdateProduct::class);
+        $this->customerUpdateUseCase = $this->container->get(CustomerUpdateUseCase::class);
+        $this->categoryUpdateUseCase = $this->container->get(CategoryUpdateUseCase::class);
     }
 
     public function beforeroute()
@@ -136,7 +144,7 @@ class ApiController extends BaseController
          * @var Category $category
          */
         $category = $this->serializer->deserialize(json_encode($_POST), Category::class, 'json');
-        $this->updateCategory->execute($category);
+        $this->categoryUpdateUseCase->execute($category);
         $this->app->status(200);
         $this->json(['success' => true, 'message' => 'Image uploaded']);
     }
@@ -195,6 +203,7 @@ class ApiController extends BaseController
             $this->json(['error' => $result['msg']]);
         }
     }
+
     public function uploadImageCustomer()
     {
         $_POST['customer_id'] = $this->app->get('PARAMS.id');
@@ -205,7 +214,7 @@ class ApiController extends BaseController
          * @var Customer $customer
          */
         $customer = $this->serializer->deserialize(json_encode($_POST), Customer::class, 'json');
-        $this->updateCustomer->execute($customer);
+        $this->customerUpdateUseCase->execute($customer);
         $this->app->status(200);
         $this->json(['success' => true, 'message' => 'Image uploaded']);
     }
@@ -231,7 +240,7 @@ class ApiController extends BaseController
     public function createProduct()
     {
         $local_id = $this->app->get('PARAMS.local_id');
-        $result = $this->apiDao->createProduct($local_id,$this->body);
+        $result = $this->apiDao->createProduct($local_id, $this->body);
 
         if ($result['success']) {
             $this->app->status(201);
@@ -246,7 +255,7 @@ class ApiController extends BaseController
     {
         $local_id = $this->app->get('PARAMS.local_id');
         $id = $this->app->get('PARAMS.id');
-        $result = $this->apiDao->updateProduct($local_id,$id, $this->body);
+        $result = $this->apiDao->updateProduct($local_id, $id, $this->body);
 
         if ($result['success']) {
             $this->app->status(200);
@@ -434,15 +443,14 @@ class ApiController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->apiDao->getImageCustomer($id);
         if (!file_exists("uploads/images/" . $data[0]["imagen"])) {
-            header("Location: https://ui-avatars.com/api/?name=".$data[0]["nombre"]);
+            header("Location: https://ui-avatars.com/api/?name=" . $data[0]["nombre"]);
             exit ();
-        }
-        else {
+        } else {
             $extension = pathinfo($data[0]["imagen"], PATHINFO_EXTENSION);
             $mime = match ($extension) {
                 "jpg" => "image/jpeg",
                 "png" => "image/png",
-                default => throw new Exception('Upload failed')
+                default => throw new \Exception('Upload failed')
             };
             $image = file_get_contents("uploads/images/" . $data[0]["imagen"]);
             header("Content-type: " . $mime);
@@ -455,15 +463,14 @@ class ApiController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->apiDao->getImageProduct($id);
         if (!file_exists("uploads/images/" . $data[0]["imagen"])) {
-            header("Location: https://ui-avatars.com/api/?name=".$data[0]["nombre"]);
+            header("Location: https://ui-avatars.com/api/?name=" . $data[0]["nombre"]);
             exit ();
-        }
-        else {
+        } else {
             $extension = pathinfo($data[0]["imagen"], PATHINFO_EXTENSION);
             $mime = match ($extension) {
                 "jpg" => "image/jpeg",
                 "png" => "image/png",
-                default => throw new Exception('Upload failed')
+                default => throw new \Exception('Upload failed')
             };
             $image = file_get_contents("uploads/images/" . $data[0]["imagen"]);
             header("Content-type: " . $mime);
@@ -476,15 +483,14 @@ class ApiController extends BaseController
         $id = $this->app->get('PARAMS.id');
         $data = $this->apiDao->getImageCategory($id);
         if (!file_exists("uploads/images/" . $data[0]["imagen"])) {
-            header("Location: https://ui-avatars.com/api/?name=".$data[0]["nombre"]);
+            header("Location: https://ui-avatars.com/api/?name=" . $data[0]["nombre"]);
             exit ();
-        }
-        else {
+        } else {
             $extension = pathinfo($data[0]["imagen"], PATHINFO_EXTENSION);
             $mime = match ($extension) {
                 "jpg" => "image/jpeg",
                 "png" => "image/png",
-                default => throw new Exception('Upload failed')
+                default => throw new \Exception('Upload failed')
             };
             $image = file_get_contents("uploads/images/" . $data[0]["imagen"]);
             header("Content-type: " . $mime);

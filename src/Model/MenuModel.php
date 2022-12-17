@@ -48,7 +48,7 @@ class MenuModel extends BaseModel
                 ");
             }
             return ["success" => true, "data" => $result];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => [], "msg" => $e->getMessage()];
         }
     }

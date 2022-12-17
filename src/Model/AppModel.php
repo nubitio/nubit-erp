@@ -15,7 +15,7 @@ class AppModel extends BaseModel
         try {
             $data = $this->db->exec("call sp_app_select_ambient");
             return ["success" => true, "data" => $data, "msg" => ""];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -25,7 +25,7 @@ class AppModel extends BaseModel
         try {
             $data = $this->db->exec("call sp_app_select_tables_by_ambient(?)", [$ambient_id]);
             return ["success" => true, "data" => $data, "msg" => ""];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -35,7 +35,7 @@ class AppModel extends BaseModel
         try {
             $data = $this->db->exec("call sp_app_select_category");
             return ["success" => true, "data" => $data, "msg" => ""];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -45,7 +45,7 @@ class AppModel extends BaseModel
         try {
             $data = $this->db->exec("call sp_app_select_products_by_category(?)", [$category_id]);
             return ["success" => true, "data" => $data, "msg" => ""];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -55,7 +55,7 @@ class AppModel extends BaseModel
         try {
             $data = $this->db->exec("call sp_app_change_order_table(?, ?)", [$order, $table]);
             return ["success" => true, "data" => $data, "msg" => ""];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }

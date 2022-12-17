@@ -66,7 +66,7 @@ class TransferModel extends BaseModel
             }
             $this->dao->save();
             return array('success' => true, 'msg' => 'Registro guardado.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return array('msg' => $e->getMessage());
         }
     }
@@ -80,7 +80,7 @@ class TransferModel extends BaseModel
         try {
             $this->dao->update();
             return array('success' => true, 'msg' => 'Registro actualizado.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return array('msg' => $e->getMessage());
         }
     }
@@ -91,7 +91,7 @@ class TransferModel extends BaseModel
         try {
             $this->dao->erase();
             return array('success' => true, 'msg' => 'Registro eliminado.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return array('msg' => $e->getMessage());
         }
     }

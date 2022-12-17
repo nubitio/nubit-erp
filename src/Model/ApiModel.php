@@ -50,7 +50,7 @@ class ApiModel extends BaseModel
             $repository->save();
             $category['categoria_id'] = $repository->categoria_id;
             return ['success' => true, 'data' => $category, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -63,7 +63,7 @@ class ApiModel extends BaseModel
         try {
             $repository->update();
             return ['success' => true, 'data' => $category, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -75,7 +75,7 @@ class ApiModel extends BaseModel
         try {
             $repository->erase();
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -103,7 +103,7 @@ class ApiModel extends BaseModel
         try {
             $repository->save();
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -116,7 +116,7 @@ class ApiModel extends BaseModel
         try {
             $repository->update();
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -128,7 +128,7 @@ class ApiModel extends BaseModel
         try {
             $repository->erase();
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -174,7 +174,7 @@ class ApiModel extends BaseModel
             $ext->activo = 1;
             $ext->save();
             return ['success' => true, 'data' => $product, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -203,7 +203,7 @@ class ApiModel extends BaseModel
                 $ext->save();
             }
             return ['success' => true, 'data' => $product, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -216,7 +216,7 @@ class ApiModel extends BaseModel
         try {
             $repository->erase();
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -286,7 +286,7 @@ class ApiModel extends BaseModel
             }
             $sale['movimiento_id'] = $repository->movimiento_id;
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -302,7 +302,7 @@ class ApiModel extends BaseModel
         try {
             $repository->update();
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }
@@ -314,7 +314,7 @@ class ApiModel extends BaseModel
         try {
             $repository->erase();
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
         }
     }

@@ -84,16 +84,6 @@ class ProductRepository implements IProductRepository
         return $entity->toDomain();
     }
 
-    public function getByName(string $name): array
-    {
-        // TODO: Implement getByName() method.
-    }
-
-    public function getByCategory(string $category): array
-    {
-        // TODO: Implement getByCategory() method.
-    }
-
     /**
      * @throws \Doctrine\DBAL\Exception
      */
