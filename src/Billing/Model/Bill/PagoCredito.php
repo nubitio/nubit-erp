@@ -2,7 +2,7 @@
 
 namespace App\Billing\Model\Bill;
 
-class PagoCredito
+class PagoCredito extends PaymentTerms
 {
     public function __construct(?float $monto = null, ?string $moneda = null)
     {

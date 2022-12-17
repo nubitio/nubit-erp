@@ -7,7 +7,7 @@ class SummaryModel extends BaseModel
     /**
      * @param string $date
      * @return int
-     * @throws Exception
+     * @throws \Exception
      */
     public function getNextNumber($date)
     {
@@ -15,7 +15,7 @@ class SummaryModel extends BaseModel
         if ($result) {
             return $result[0]['correlative'];
         } else {
-            throw new Exception("Unable to get the next number");
+            throw new \Exception("Unable to get the next number");
         }
     }
 
@@ -39,7 +39,7 @@ class SummaryModel extends BaseModel
         if ($result) {
             return $result[0]['NP'];
         } else {
-            throw new Exception("Unable to get the next number");
+            throw new \Exception("Unable to get the next number");
         }
     }
 
@@ -51,7 +51,7 @@ class SummaryModel extends BaseModel
         if ($result) {
             return $result[0]['correlative'];
         } else {
-            throw new Exception("Unable to get the next number");
+            throw new \Exception("Unable to get the next number");
         }
     }
 
@@ -74,7 +74,7 @@ class SummaryModel extends BaseModel
                     fecha
             ", [$this->current_local_id]);
             return ["success" => true, "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -97,7 +97,7 @@ class SummaryModel extends BaseModel
                     fecha
             ", [$this->current_local_id]);
             return ["success" => true, "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -119,7 +119,7 @@ class SummaryModel extends BaseModel
                     fecha
             ", [$this->current_local_id, $date]);
             return ["success" => true, "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -138,7 +138,7 @@ class SummaryModel extends BaseModel
                     movimiento_id = ?
             ", $id);
             return ["success" => true, "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -159,7 +159,7 @@ class SummaryModel extends BaseModel
                     fecha
             ", [$this->current_local_id, $date]);
             return ["success" => true, "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -177,7 +177,7 @@ class SummaryModel extends BaseModel
         try {
             $summary->save();
             return ["success" => true, "msg" => 'Registro insertado.', "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => null];
         }
     }
@@ -197,7 +197,7 @@ class SummaryModel extends BaseModel
             }
             $this->db->commit();
             return ["success" => true, "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }
@@ -217,7 +217,7 @@ class SummaryModel extends BaseModel
             }
             $this->db->commit();
             return ["success" => true, "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "data" => null, "msg" => $e->getMessage()];
         }
     }

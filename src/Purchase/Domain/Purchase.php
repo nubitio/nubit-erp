@@ -59,7 +59,7 @@ class Purchase
         #[SerializedName('recargo_consumo')]
         public ?int       $recargo_consumo,
         /** @var SaleDetail[] $items */
-        public ?array     $items,
+        public ?array     $items = [],
     )
     {
     }

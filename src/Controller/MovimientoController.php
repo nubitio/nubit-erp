@@ -21,6 +21,7 @@ class MovimientoController extends BaseController
     private NotaModel $noteModel;
     private BotModel $botModel;
     private EFactController $efact;
+    private OptionsModel $optionsDao;
 
     function __construct()
     {

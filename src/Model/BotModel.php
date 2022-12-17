@@ -24,7 +24,7 @@ class BotModel extends BaseModel
         try {
             $data = $this->db->exec("CALL sp_fill_comprobantes");
             return ["success" => true, "msg" => "{$data[0]['counter']} Registros insertados", "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => null];
         }
     }
@@ -34,7 +34,7 @@ class BotModel extends BaseModel
         try {
             $data = $this->db->exec("select * from comprobante where envio_sunat is null");
             return ["success" => true, "msg" => count($data) . " Registros encontrados", "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => []];
         }
     }
@@ -44,7 +44,7 @@ class BotModel extends BaseModel
         try {
             $data = $this->db->exec("select * from comprobante where envio_sunat > 0 and envio_sunat < 2000");
             return ["success" => true, "msg" => count($data) . " Registros encontrados", "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => []];
         }
     }
@@ -90,7 +90,7 @@ class BotModel extends BaseModel
         try {
             $comprobante->update();
             return ["success" => true, "msg" => 'Registro actualizado.', "data" => null];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => null];
         }
     }
@@ -125,7 +125,7 @@ class BotModel extends BaseModel
         try {
             $data = $this->db->exec("select * from nota where envio_sunat is null");
             return ["success" => true, "msg" => count($data) . " Registros encontrados", "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => []];
         }
     }
@@ -135,7 +135,7 @@ class BotModel extends BaseModel
         try {
             $data = $this->db->exec("select * from nota where envio_sunat > 0 and envio_sunat < 2000");
             return ["success" => true, "msg" => count($data) . " Registros encontrados", "data" => $data];
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return ["success" => false, "msg" => $e->getMessage(), "data" => []];
         }
     }

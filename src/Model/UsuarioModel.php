@@ -55,7 +55,7 @@ class UsuarioModel extends BaseModel
                 usuario
             WHERE username='$name'
         ");
-        $result->setFetchMode(PDO::FETCH_ASSOC);
+        $result->setFetchMode(\PDO::FETCH_ASSOC);
         return $result->fetch();
     }
 

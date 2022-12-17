@@ -1123,7 +1123,7 @@ class Utils
                                 continue;
 
                             } catch (Exception $ex) {
-                                throw new ArgumentException("Invalid hex notation in the specified printer commands at index: " . $i);
+                                throw new Exception("Invalid hex notation in the specified printer commands at index: " . $i);
                             }
                         }
                     }
