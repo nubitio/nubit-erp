@@ -62,4 +62,10 @@ class UserRepository implements UserRepositoryInterface
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    public function getOneByUsername(string $username): ?User
+    {
+        $entity = $this->entityManager->getRepository(UserEntity::class)->findOneBy(['username' => $username]);
+        return $entity->mapToDomainModel() ?? null;
+    }
 }

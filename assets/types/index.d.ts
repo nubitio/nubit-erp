@@ -19,6 +19,7 @@ declare global {
 
     interface JQuery {
         datagrid: any;
+        datalist: any;
         dialog: any;
         drawer: any;
         form: any;

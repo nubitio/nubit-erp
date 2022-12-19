@@ -11,4 +11,6 @@ interface UserRepositoryInterface
     public function update(User $user): void;
 
     public function delete(string $id): void;
+
+    public function getOneByUsername(string $username): ?User;
 }

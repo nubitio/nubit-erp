@@ -2,8 +2,10 @@
 
 namespace App;
 
+use App\Auth\Domain\AppAuthenticator;
 use App\Domain\Annotation\IgnoreAutowire;
 use App\Domain\Compiler\RemoveUnwantedServices;
+use App\User\Domain\UserProvider;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle;
 use Symfony\Bundle\DebugBundle\DebugBundle;
@@ -18,6 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\WebpackEncoreBundle\WebpackEncoreBundle;
 use Twig\Extra\TwigExtraBundle\TwigExtraBundle;
 
@@ -68,25 +71,36 @@ class Kernel extends BaseKernel
         ]);
 
         $container->extension('security', [
-            'providers' => [
-                'in_memory' => [
-                    'memory' => null,
-                ],
+            'providers'        => [
+                'user_provider' => [
+                    'id' => UserProvider::class,
+                ]
             ],
-            'firewalls' => [
+            'firewalls'        => [
                 'dev'  => [
                     'pattern'  => '^/(_(profiler|wdt)|css|images|js)/',
                     'security' => false,
                 ],
                 'main' => [
-                    'lazy'     => true,
-                    'provider' => 'in_memory',
+                    'lazy'                 => true,
+                    'provider'             => 'user_provider',
+                    'custom_authenticator' => AppAuthenticator::class,
+                    'logout'               => [
+                        'path'   => 'logout',
+                        'target' => 'login_index',
+                    ],
                 ],
             ],
-            /*'access_control' => [
-                ['path' => '^/admin', 'roles' => 'ROLE_ADMIN'],
-                ['path' => '^/login', 'roles' => 'IS_AUTHENTICATED_ANONYMOUSLY'],
-            ],*/
+            'password_hashers' => [
+                PasswordAuthenticatedUserInterface::class => [
+                    'algorithm' => 'auto',
+                ],
+            ],
+            'access_control'   => [
+                ['path' => '^/login', 'roles' => 'PUBLIC_ACCESS'],
+                ['path' => '^/api', 'roles' => 'PUBLIC_ACCESS'],
+                ['path' => '^/', 'roles' => 'ROLE_USER'],
+            ],
         ]);
 
         $container->extension('doctrine', [
@@ -132,14 +146,14 @@ class Kernel extends BaseKernel
             'output_path' => '%kernel.project_dir%/public/build'
         ]);
 
-        $container->import(dirname(__DIR__) . '/config/di.php');
-
         if (isset($this->bundles['WebProfilerBundle'])) {
             $container->extension('web_profiler', [
                 'toolbar'             => true,
                 'intercept_redirects' => false,
             ]);
         }
+
+        $container->import(dirname(__DIR__) . '/config/di.php');
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void

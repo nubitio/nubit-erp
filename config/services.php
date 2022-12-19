@@ -33,7 +33,7 @@ return function (ContainerConfigurator $configurator) {
         ->public();
 
     $services->load('App\\', '../src/')
-        ->exclude('../src/{Entity,Util,Extension,Sale,Invoice,Billing,Kernel.php,WebClientPrint.php}');
+        ->exclude('../src/{Entity,Util,Extension,Sale,Invoice,Billing,Auth,Kernel.php,WebClientPrint.php}');
 
     $services->set(CacheInterface::class)
         ->factory([CacheFactory::class, 'create']);

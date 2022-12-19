@@ -24,6 +24,7 @@ export class FieldBuilder {
             defaultValue: null,
             onChange: null,
             onSelect: null,
+            onClick: null,
             readonly: false,
             disabled: false,
             hidden: false,
@@ -118,6 +119,11 @@ export class FieldBuilder {
 
     onSelect(onSelect: any): FieldBuilder {
         this._field.onSelect = onSelect;
+        return this;
+    }
+
+    onClick(onClick: any): FieldBuilder {
+        this._field.onClick = onClick;
         return this;
     }
 

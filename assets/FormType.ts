@@ -13,4 +13,5 @@ export enum FormType {
     RADIO = 'radio',
     SWITCH = 'switch',
     FILE = 'file',
+    SUBMIT = 'submit',
 }

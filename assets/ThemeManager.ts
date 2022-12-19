@@ -56,18 +56,23 @@ export default class ThemeManager {
         let accentColor = localStorage.getItem('accentColor');
         if (accentColor !== null) {
             this.accentColor = accentColor;
+            this.setupAppColors();
         }
 
-        fetch('home/theme')
+        fetch('api/setting/app_theme_accent_color')
             .then(response => response.json())
             .then(result => {
-                this.accentColor = result.accentColor;
+                this.accentColor = result.value;
                 localStorage.setItem('accentColor', this.accentColor);
-                document.body.style.setProperty('--accent-color', this.accentColor);
-                let contrastColor = this.getContrastColor(this.accentColor);
-                document.body.style.setProperty('--accent-color-contrast', contrastColor);
+                this.setupAppColors();
             })
             .catch(error => SharedUtils.showMessage('Error', error))
+    }
+
+    setupAppColors() {
+        document.body.style.setProperty('--accent-color', this.accentColor);
+        let contrastColor = this.getContrastColor(this.accentColor);
+        document.body.style.setProperty('--accent-color-contrast', contrastColor);
     }
 
     getContrastColor(color: string) {

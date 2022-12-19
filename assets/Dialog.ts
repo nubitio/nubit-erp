@@ -60,8 +60,6 @@ export default class Dialog {
             onOpen: function () {
                 ref.dialog.dialog('center');
                 ref.dialog.parent().animateCss(Animation.DIALOG_OPEN_ANIMATION);
-                ref.positiveButton = $('#positive-button' + ref.randomId);
-                ref.negativeButton = $('#negative-button' + ref.randomId);
                 ref.positiveButton.addClass('md-btn');
                 ref.negativeButton.addClass('md-btn-plain');
                 ref.isShowing = true;
@@ -73,6 +71,9 @@ export default class Dialog {
                 }
             }
         });
+
+        ref.positiveButton = $('#positive-button' + ref.randomId);
+        ref.negativeButton = $('#negative-button' + ref.randomId);
 
         this.setupObservers();
     }

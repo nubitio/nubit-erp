@@ -11,4 +11,6 @@ interface LocalRepositoryInterface
     public function update(Local $local): void;
 
     public function delete(string $id): void;
+
+    public function getOneById(string $id): Local;
 }
