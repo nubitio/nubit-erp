@@ -56,4 +56,10 @@ class LocalRepository implements LocalRepositoryInterface
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    public function getOneById(string $id): Local
+    {
+        $entity = $this->entityManager->find(LocalEntity::class, $id);
+        return $entity->mapToDomainModel();
+    }
 }

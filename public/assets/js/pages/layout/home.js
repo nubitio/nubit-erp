@@ -6,15 +6,6 @@ app.home = (function () {
     let btn_guardar;
     let btn_cancelar;
 
-    let loadOptions = function () {
-        fetch('options')
-            .then(response => response.json())
-            .then(result => {
-                localStorage.setItem('options', JSON.stringify(result));
-            })
-            .catch(error => show_error(error));
-    }
-
     let init = function () {
         dlg.dialog({
             title: 'Seleccione un local',
@@ -57,7 +48,7 @@ app.home = (function () {
 
         lista_local.datalist({
             method: 'get',
-            url: 'local/lista/1/0',
+            url: 'api/local',
             fit: true,
             valueField: 'local_id',
             textField: 'descripcion',
@@ -111,8 +102,6 @@ app.home = (function () {
     return {
         init: init,
         change_local: change_local,
-        loadOptions: loadOptions
     };
 })();
 app.home.init();
-app.home.loadOptions();

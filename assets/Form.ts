@@ -200,14 +200,20 @@ export default class Form {
                 fieldContainer.setAttribute('class', 'mb-2 col-md-' + field.col);
             }
 
-            let input = document.createElement('input');
-            input.setAttribute('id', field.name + (rowIndex ? '-' + rowIndex : ''));
-            if (containerType === 'td') {
-                let index = rowIndex - 1;
-                input.setAttribute('name', `detail[${index}][${field.name}]`);
+            let input: HTMLElement;
+            if (field.type !== FormType.SUBMIT) {
+                input = document.createElement('input');
+                if (containerType === 'td') {
+                    let index = rowIndex - 1;
+                    input.setAttribute('name', `detail[${index}][${field.name}]`);
+                } else {
+                    input.setAttribute('name', field.name);
+                }
             } else {
-                input.setAttribute('name', field.name);
+                input = document.createElement('a');
+                input.setAttribute('class', 'md-btn accent mt-4');
             }
+            input.setAttribute('id', field.name + (rowIndex ? '-' + rowIndex : ''));
             fieldContainer.appendChild(input);
             container.appendChild(fieldContainer);
         });
@@ -287,7 +293,8 @@ export default class Form {
                 case FormType.SWITCH:
                     this.buildSwitchInput(field);
                     break;
-                case FormType.CHECK:
+                case FormType.SUBMIT:
+                    this.buildSubmitButton(field);
                     break;
                 default:
                     break;
@@ -468,6 +475,24 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
+    buildSubmitButton(field) {
+        let button = $('#' + field.name);
+        button.linkbutton({
+            width: '100%',
+            height: 40,
+            text: field.label,
+            onClick: () => {
+                if (this.validate()) {
+                    if (field.onClick) {
+                        field.onClick();
+                    } else {
+                        this.submit();
+                    }
+                }
+            }
+        });
+    }
+
     getDetailFormFields(): any {
         let formFields = {};
         for (let key in this.formFields) {
@@ -544,6 +569,10 @@ export default class Form {
         });
         this.form.form('load', row);
         this.route = (this.options.routes?.EDIT || route) + row[this.getIdField()];
+    }
+
+    validate() {
+        return this.form.form('validate');
     }
 
     submit() {

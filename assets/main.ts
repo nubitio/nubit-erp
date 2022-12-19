@@ -28,6 +28,7 @@ import Cashbox from "./pages/Cashbox";
 import CashboxConsult from "./pages/CashboxConsult";
 import SaleConsult from "./pages/SaleConsult";
 import Invoice from "./pages/Invoice";
+import Auth from "./pages/Auth";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -40,6 +41,7 @@ window.Constants = Constants;
 window.ThemeManager = new ThemeManager();
 window.app = window.app || {};
 
+window.app.auth = Auth;
 window.app.customer = Customer;
 window.app.user = User;
 window.app.warehouse = Warehouse;

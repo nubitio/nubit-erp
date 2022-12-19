@@ -3,6 +3,7 @@
 namespace App\Api;
 
 use App\Base\BaseController;
+use App\Service\SettingsService;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,6 +16,16 @@ class ApiController extends BaseController
     {
         parent::__construct();
         $this->connection = $connection;
+    }
+
+    #[Route('/api/setting/{key}', name: 'api_setting_get', methods: ['GET'])]
+    public function getSetting($key, SettingsService $settingsService): JsonResponse
+    {
+        $value = $settingsService->get($key);
+        return $this->json([
+            'key'   => $key,
+            'value' => $value,
+        ]);
     }
 
     #[Route('/api/company', name: 'api_company_get', methods: ['GET'])]
