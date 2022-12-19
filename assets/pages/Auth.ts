@@ -73,6 +73,11 @@ export default class Auth {
             }
         });
 
+        this.dialog.onNegativeClick(() => {
+            this.dialog.hide();
+            window.location.href = '/logout';
+        });
+
         let container = document.getElementById(this.dialog.id);
         let dataList = document.createElement('div');
         dataList.setAttribute('id', 'local-list');

@@ -11,8 +11,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends BaseController
 {
     #[Route('/login', name: 'login_index', methods: ['GET'])]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        if ($request->getSession()->get('localId')) {
+            return $this->redirectToRoute('dashboard_index');
+        }
+
         return $this->render('auth/index.html.twig', [
             'title' => 'Login',
         ]);

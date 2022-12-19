@@ -150,4 +150,8 @@ export default class Dialog {
     onPositiveClick(callback: () => void) {
         this.positiveButton.on('click', callback);
     }
+
+    onNegativeClick(callback: () => void) {
+        this.negativeButton.on('click', callback);
+    }
 }

@@ -66,6 +66,6 @@ class UserRepository implements UserRepositoryInterface
     public function getOneByUsername(string $username): ?User
     {
         $entity = $this->entityManager->getRepository(UserEntity::class)->findOneBy(['username' => $username]);
-        return $entity->mapToDomainModel() ?? null;
+        return $entity?->mapToDomainModel() ?? null;
     }
 }
