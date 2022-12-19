@@ -1,6 +1,7 @@
 import axios, {Axios, AxiosRequestConfig} from "axios";
 import {map, Observable} from "rxjs";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import {messenger} from "./Messenger";
 
 class HttpClient {
     private api: Axios;
@@ -20,12 +21,16 @@ class HttpClient {
             return config;
         });
 
-        this.api.interceptors.response.use((response) => response, (error) => {
-            if (error.response.status === 401) {
-                //window.location.href = '/login';
-            }
-            return Promise.reject(error);
-        });
+        this.api.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response.status !== 500) {
+                    messenger.show('Error', error.response.data.message ?? 'Something went wrong');
+                } else {
+                    messenger.show('Error', 'Something went wrong');
+                }
+                return Promise.reject(error);
+            });
     }
 
     get<T>(url: string, config?: AxiosRequestConfig): Observable<T> {
