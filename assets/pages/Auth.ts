@@ -3,15 +3,15 @@ import Form from "../Form";
 import {FieldBuilder} from "../FieldBuilder";
 import {FormType} from "../FormType";
 import {authService} from "../services/auth.service";
-import Dialog from "../Dialog";
 import {messenger} from "../utils/Messenger";
+import LocalPicker from "../modules/LocalPicker";
+import {bus} from "../EventBus";
 
 export default class Auth {
     private readonly container: string;
     private fields: Field[] = [];
-    private dialog: Dialog;
     private form: Form;
-    private localList: JQuery;
+    private localPicker: LocalPicker;
 
     static readonly ROUTES = {
         LOGIN: 'auth/login',
@@ -27,6 +27,7 @@ export default class Auth {
 
     constructor(container) {
         this.container = container;
+        this.localPicker = new LocalPicker(this.container);
         this.init();
     }
 
@@ -49,49 +50,28 @@ export default class Auth {
             .label('Ingresar')
             .onClick(() => this.login())
             .build());
+
+        this.setupObservers();
+    }
+
+    setupObservers() {
+        bus.on(
+            event => event.name === LocalPicker.EVENTS.PICKED,
+            () => {
+                messenger.show('Información', 'Bienvenido');
+                window.location.href = '/';
+            }
+        )
+
+        bus.on(
+            event => event.name === LocalPicker.EVENTS.CANCELED,
+            () => {
+                window.location.href = '/logout';
+            }
+        )
     }
 
     render() {
-        this.dialog = new Dialog(this.container, {
-            title: 'Seleccione un local',
-            height: 250,
-            events: Auth.EVENTS,
-            positiveText: 'Continuar',
-            negativeText: 'Cancelar',
-        });
-
-        this.dialog.onPositiveClick(() => {
-            let row = this.localList.datalist('getSelected');
-            if (row) {
-                authService.setLocal(row['local_id']).subscribe((response) => {
-                    if (response.success) {
-                        this.dialog.hide();
-                        messenger.show('Información', 'Bienvenido');
-                        window.location.href = '/';
-                    }
-                });
-            }
-        });
-
-        this.dialog.onNegativeClick(() => {
-            this.dialog.hide();
-            window.location.href = '/logout';
-        });
-
-        let container = document.getElementById(this.dialog.id);
-        let dataList = document.createElement('div');
-        dataList.setAttribute('id', 'local-list');
-        container.append(dataList);
-
-        this.localList = $('#local-list');
-        this.localList.datalist({
-            method: 'get',
-            fit: true,
-            valueField: 'local_id',
-            textField: 'descripcion',
-            lines: true
-        });
-
         this.form = new Form('fm', this.fields, {
             events: Auth.EVENTS,
         });
@@ -103,16 +83,7 @@ export default class Auth {
 
         authService.login(username, password).subscribe((response) => {
             if (response.success) {
-                this.dialog.show();
-                this.localList.datalist('load', 'api/local');
-            }
-        });
-    }
-
-    static logout() {
-        authService.logout().subscribe((response) => {
-            if (response.success) {
-                window.location.href = '/login';
+                this.localPicker.show();
             }
         });
     }

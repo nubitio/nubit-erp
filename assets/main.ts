@@ -29,6 +29,8 @@ import CashboxConsult from "./pages/CashboxConsult";
 import SaleConsult from "./pages/SaleConsult";
 import Invoice from "./pages/Invoice";
 import Auth from "./pages/Auth";
+import Dashboard from "./pages/Dashboard";
+import LocalPicker from "./modules/LocalPicker";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -39,9 +41,11 @@ window.EventType = EventType;
 window.FormType = FormType;
 window.Constants = Constants;
 window.ThemeManager = new ThemeManager();
+window.LocalPicker = new LocalPicker('main-content');
 window.app = window.app || {};
 
 window.app.auth = Auth;
+window.app.dashboard = Dashboard;
 window.app.customer = Customer;
 window.app.user = User;
 window.app.warehouse = Warehouse;

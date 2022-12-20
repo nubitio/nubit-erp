@@ -49,5 +49,13 @@
             </div>
         </div>
     </div>
-    <script src="{{ asset('assets/js/pages/dashboard/index.js') }}" defer></script>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const dashboard = new window.app.dashboard('wrapper');
+            dashboard.render();
+        });
+    </script>
 {% endblock %}

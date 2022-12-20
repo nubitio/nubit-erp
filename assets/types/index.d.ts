@@ -1,4 +1,5 @@
 import ThemeManager from "../ThemeManager";
+import LocalPicker from "../modules/LocalPicker";
 
 export {};
 
@@ -13,6 +14,7 @@ declare global {
         FormType: any;
         Constants: any;
         ThemeManager: ThemeManager;
+        LocalPicker: LocalPicker;
         detailview: any;
         app: any;
     }
