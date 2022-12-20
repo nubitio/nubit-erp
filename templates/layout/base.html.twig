@@ -18,12 +18,6 @@
         <script src="{{ asset('assets/js/easyui-lang-es.js') }}"></script>
         <script src="{{ asset('assets/js/datagrid-detailview.js') }}"></script>
         <script src="{{ asset('assets/js/datagrid-filter.js') }}"></script>
-        <script src="{{ asset('assets/js/highcharts.js') }}"></script>
-        <script src="{{ asset('assets/js/highcharts-more.js') }}"></script>
-        <script src="{{ asset('assets/js/dumbbell.js') }}"></script>
-        <script src="{{ asset('assets/js/lollipop.js') }}"></script>
-        <script src="{{ asset('assets/js/solid-gauge.js') }}"></script>
-        <script src="{{ asset('assets/js/exporting.js') }}"></script>
         <script src="{{ asset('assets/js/lightbox.min.js') }}"></script>
         <script src="{{ asset('assets/js/config.js') }}"></script>
         <script src="{{ asset('assets/js/main.js') }}"></script>
@@ -48,7 +42,7 @@
         <a href="#" class="easyui-menubutton menu-user"
            data-options="menu:'#user_menu',iconCls:'fas fa-user fa-1x', showEvent:'click'">{{ app.user.userIdentifier|default('') }}</a>
         <div id="user_menu" style="width:165px;">
-            <div data-options="iconCls:'fa fa-home fa-fw'" onclick="app.home.change_local()">Cambiar Local</div>
+            <div data-options="iconCls:'fa fa-home fa-fw'" onclick="window.LocalPicker.show()">Cambiar Local</div>
             <div class="menu-sep"></div>
             <div data-options="iconCls:'fa fa-lock fa-fw'" onclick="loadPage('password', 'Cambiar contraseña')">Cambiar
                 Contraseña
@@ -61,12 +55,9 @@
 <div data-options="region:'west', border: true" style="width: 252px;">
     <div id="sidebar" style="min-height: 100vh;"></div>
 </div>
-<div data-options="region:'center', border: true">
+<div data-options="region:'center', border: true" id="main-content">
     {% block body %}
     {% endblock %}
-    <div id="home_local">
-        <div id="home_lista_local"></div>
-    </div>
 </div>
 <script>
     let layout = $('#layout-container');
@@ -130,6 +121,13 @@
                 }
             }
         );
+
+        window.observer.on(
+            action => action.name === 'local-picker:picked',
+            (local) => {
+                window.location.href = '/';
+            }
+        );
     };
 
     window.onresize = function () {
@@ -162,6 +160,5 @@
         localStorage.setItem('sidebarCollapsed', opts.collapsed);
     }
 </script>
-<script src="{{ asset('assets/js/pages/layout/home.js') }}"></script>
 </body>
 </html>

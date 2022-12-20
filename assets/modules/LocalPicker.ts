@@ -1,0 +1,65 @@
+import Dialog from "../Dialog";
+import {Event} from "../Event";
+import {authService} from "../services/auth.service";
+import {bus} from "../EventBus";
+
+export default class LocalPicker {
+    private readonly container: string;
+    private dialog: Dialog;
+    private localList: JQuery;
+
+    static readonly EVENTS = {
+        PICKED: 'local-picker:picked',
+        CANCELED: 'local-picker:canceled',
+    }
+
+    constructor(container) {
+        this.container = container;
+        this.init();
+    }
+
+    init() {
+        this.dialog = new Dialog(this.container, {
+            title: 'Seleccione un local',
+            height: 250,
+            positiveText: 'Continuar',
+            negativeText: 'Cancelar',
+        });
+
+        this.dialog.onPositiveClick(() => {
+            let row = this.localList.datalist('getSelected');
+            if (row) {
+                authService.setLocal(row['local_id']).subscribe((response) => {
+                    if (response.success) {
+                        this.dialog.hide();
+                        bus.emit(new Event(LocalPicker.EVENTS.PICKED, row));
+                    }
+                });
+            }
+        });
+
+        this.dialog.onNegativeClick(() => {
+            this.dialog.hide();
+            bus.emit(new Event(LocalPicker.EVENTS.CANCELED));
+        });
+
+        let container = document.getElementById(this.dialog.id);
+        let dataList = document.createElement('div');
+        dataList.setAttribute('id', 'local-list');
+        container.append(dataList);
+
+        this.localList = $('#local-list');
+        this.localList.datalist({
+            method: 'get',
+            url: 'api/local',
+            fit: true,
+            valueField: 'local_id',
+            textField: 'descripcion',
+            lines: true
+        });
+    }
+
+    show() {
+        this.dialog.show();
+    }
+}
