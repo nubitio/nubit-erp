@@ -2,6 +2,7 @@
 
 namespace App\Auth\Domain;
 
+use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,6 +50,13 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
+        $session = $request->getSession();
+        /** @var User $user */
+        $user = $token->getUser();
+        $session->set('usuario_id', $user->usuario_id);
+        $session->set('usuario', $user->username);
+        $session->set('rol_id', $user->rol_id);
+
         return new JsonResponse([
             'success' => true,
             'message' => 'Login successful',

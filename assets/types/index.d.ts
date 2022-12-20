@@ -17,9 +17,13 @@ declare global {
         LocalPicker: LocalPicker;
         detailview: any;
         app: any;
+        userRoleId: any;
     }
 
     interface JQuery {
+        panel: any;
+        layout: any;
+        sidemenu: any;
         datagrid: any;
         datalist: any;
         dialog: any;

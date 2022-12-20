@@ -3,6 +3,7 @@
 namespace App\Api;
 
 use App\Base\BaseController;
+use App\Service\MenuBuilder;
 use App\Service\SettingsService;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,13 @@ class ApiController extends BaseController
     {
         parent::__construct();
         $this->connection = $connection;
+    }
+
+    #[Route('/api/menu/{roleId}', name: 'api_menu')]
+    public function getMenuForRole($roleId, MenuBuilder $menuBuilder): JsonResponse
+    {
+        $menu = $menuBuilder->buildMenuForRole($roleId);
+        return $this->json($menu);
     }
 
     #[Route('/api/setting/{key}', name: 'api_setting_get', methods: ['GET'])]
