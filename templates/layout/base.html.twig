@@ -27,9 +27,9 @@
 <body class="easyui-layout" id="layout-container">
 <div data-options="region: 'north', border: false" class="primary-dark" style="height: 56px;">
     <div class="float-start">
-        <div class="easyui-linkbutton menu-bars" data-options="plain: true" onclick="toggle()">
+        <a id="menu-toggle" class="menu-bars">
             <i class="fa fa-bars fa-lg"></i>
-        </div>
+        </a>
         <a href="/"><img style="height:56px;" src="{{ asset('assets/images/logo.png') }}" alt="logo"></a>
         <span id="home_local_title" style="margin-left: 20px;"><i
                     class="fa fa-home"></i> {{ app.session.get('localName')|default('') }}</span>
@@ -60,105 +60,12 @@
     {% endblock %}
 </div>
 <script>
-    let layout = $('#layout-container');
-    let sidebar = $('#sidebar');
-    let themeIcon = $('#theme-icon');
-    let current;
-
-    window.onload = function () {
-        $('.wrapper').animate({"opacity": 1});
+    window.userRoleId = {{ app.user.rol_id|default(0) }};
+    window.addEventListener('load', function () {
+        new window.app.home();
         $('#wrapper').animate({"opacity": 1});
-
-        let selectedMenu = location.pathname.split('/')[1];
-
-        $.get('getmenu')
-            .done(function (response) {
-                let menu = []
-                response.forEach(item => {
-                    if (item.children) {
-                        item.children.forEach(child => {
-                            child.parent = item.text;
-                            child.iconCls = '';
-                        })
-                    }
-                    menu.push(item);
-                });
-                localStorage.setItem('menu', JSON.stringify(menu));
-
-                sidebar.sidemenu({
-                    data: menu,
-                    fit: true,
-                    border: false,
-                    multiple: false,
-                    onSelect: function (item) {
-                        if (selectedMenu !== null && selectedMenu === item.url) {
-                            return;
-                        }
-                        window.location.href = item.url;
-                    }
-                });
-
-                let sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
-                setSidebarCollapsed(sidebarCollapsed === 'true');
-
-                if (selectedMenu !== '') {
-                    let menu = JSON.parse(localStorage.getItem('menu'));
-                    let item = menu.flatMap(item => item.children ?? []).find(item => item.url === selectedMenu);
-                    sidebar.sidemenu('setSelected', item ?? menu[0]);
-                }
-            })
-            .fail(function (xhr, status, error) {
-                console.log(error);
-            });
-
-        window.observer.on(
-            action => action.name === window.EventType.THEME_CHANGE,
-            (theme) => {
-                if (theme === 'dark') {
-                    themeIcon.removeClass('fa-moon').addClass('fa-sun');
-                } else {
-                    themeIcon.removeClass('fa-sun').addClass('fa-moon');
-                }
-            }
-        );
-
-        window.observer.on(
-            action => action.name === 'local-picker:picked',
-            (local) => {
-                window.location.href = '/';
-            }
-        );
-    };
-
-    window.onresize = function () {
-        layout.layout('resize');
-        sidebar.sidemenu('resize');
-    };
-
-    function toggle() {
-        let opts = sidebar.sidemenu('options');
-        setSidebarCollapsed(!opts.collapsed);
-        let selectedMenu = location.pathname.split('/')[1];
-        if (selectedMenu !== '') {
-            let menu = JSON.parse(localStorage.getItem('menu'));
-            let item = menu.flatMap(item => item.children ?? []).find(item => item.url === selectedMenu);
-            sidebar.sidemenu('setSelected', item ?? menu[0]);
-        }
-    }
-
-    function setSidebarCollapsed(collapse) {
-        sidebar.sidemenu(collapse ? 'collapse' : 'expand');
-        let opts = sidebar.sidemenu('options');
-        let west = layout.layout('panel', 'west');
-        west.panel('resize', {
-            width: opts.collapsed ? 50 : 250
-        });
-        layout.layout('resize');
-        sidebar.sidemenu('resize', {
-            width: opts.collapsed ? 50 : 250
-        });
-        localStorage.setItem('sidebarCollapsed', opts.collapsed);
-    }
+        $('.wrapper').animate({"opacity": 1});
+    });
 </script>
 </body>
 </html>

@@ -491,6 +491,7 @@ export default class Form {
                 }
             }
         });
+        this.formFields[field.name] = button;
     }
 
     getDetailFormFields(): any {

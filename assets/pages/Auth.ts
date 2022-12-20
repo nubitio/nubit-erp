@@ -81,9 +81,17 @@ export default class Auth {
         let username = this.form.getField('username').textbox('getValue');
         let password = this.form.getField('password').textbox('getValue');
 
-        authService.login(username, password).subscribe((response) => {
-            if (response.success) {
-                this.localPicker.show();
+        let loginButton = this.form.getField('submit');
+        loginButton.linkbutton('disable');
+
+        authService.login(username, password).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.localPicker.show();
+                }
+            },
+            error: (error) => {
+                loginButton.linkbutton('enable');
             }
         });
     }
