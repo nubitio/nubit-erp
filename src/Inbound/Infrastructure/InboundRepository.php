@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Purchase\Infrastructure;
+namespace App\Inbound\Infrastructure;
 
+use App\Inbound\Domain\Inbound;
+use App\Inbound\Domain\InboundRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
-use App\Purchase\Domain\Purchase;
-use App\Purchase\Domain\PurchaseRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class PurchaseRepository implements PurchaseRepositoryInterface
+class InboundRepository implements InboundRepositoryInterface
 {
     private Connection $connection;
     private EntityManagerInterface $entityManager;
@@ -33,18 +33,18 @@ class PurchaseRepository implements PurchaseRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function insert(Purchase $purchase): void
+    public function insert(Inbound $inbound): void
     {
         try {
             $this->connection->beginTransaction();
-            $entity = new PurchaseEntity();
-            $entity->mapFromDomainModel($purchase);
+            $entity = new InboundEntity();
+            $entity->mapFromDomainModel($inbound);
             $entity->tipo_id = 1;
             $entity->estado = 1;
             $entity->date_created = new \DateTime();
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
-            foreach ($purchase->items as $item) {
+            foreach ($inbound->items as $item) {
                 $detailEntity = new SaleDetailEntity();
                 $detailEntity->mapFromDomainModel($item);
                 $detailEntity->movimiento_id = $entity->movimiento_id;
@@ -62,16 +62,16 @@ class PurchaseRepository implements PurchaseRepositoryInterface
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    public function update(Purchase $purchase): void
+    public function update(Inbound $inbound): void
     {
-        $entity = $this->entityManager->find(PurchaseEntity::class, $purchase->movimiento_id);
-        $entity->mapFromDomainModel($purchase);
+        $entity = $this->entityManager->find(InboundEntity::class, $inbound->movimiento_id);
+        $entity->mapFromDomainModel($inbound);
         $this->entityManager->flush();
     }
 
     public function delete(string $id): void
     {
-        $entity = $this->entityManager->find(PurchaseEntity::class, $id);
+        $entity = $this->entityManager->find(InboundEntity::class, $id);
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

@@ -1,19 +1,18 @@
 <?php
 
-namespace App\Purchase\Infrastructure;
+namespace App\Inbound\Infrastructure;
 
 use App\Domain\Annotation\IgnoreAutowire;
-use App\Purchase\Domain\Purchase;
+use App\Inbound\Domain\Inbound;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
 #[Table(name: "movimiento")]
-class PurchaseEntity
+class InboundEntity
 {
     #[Id]
     #[Column(name: "movimiento_id", type: "string")]
@@ -65,9 +64,9 @@ class PurchaseEntity
     #[Column(name: "recargo_consumo", type: "integer")]
     public ?int $recargo_consumo;
 
-    public function mapToDomainModel(): Purchase
+    public function mapToDomainModel(): Inbound
     {
-        return new Purchase(
+        return new Inbound(
             $this->movimiento_id,
             $this->operacion_id,
             $this->almacen_id,
@@ -96,32 +95,32 @@ class PurchaseEntity
         );
     }
 
-    public function mapFromDomainModel(Purchase $purchase): PurchaseEntity
+    public function mapFromDomainModel(Inbound $inbound): InboundEntity
     {
-        $this->movimiento_id = $purchase->movimiento_id;
-        $this->operacion_id = $purchase->operacion_id;
-        $this->almacen_id = $purchase->almacen_id;
-        $this->cliente_id = $purchase->cliente_id;
-        $this->tipo_id = $purchase->tipo_id;
-        $this->fecha = $purchase->fecha;
-        $this->proveedor_id = $purchase->proveedor_id;
-        $this->tipo_pago = $purchase->tipo_pago;
-        $this->tipo_tarjeta = $purchase->tipo_tarjeta;
-        $this->serie = $purchase->serie;
-        $this->numero = $purchase->numero;
-        $this->descuento = $purchase->descuento;
-        $this->glosa = $purchase->glosa;
-        $this->orden_id = $purchase->orden_id;
-        $this->has_invoice = $purchase->has_invoice;
-        $this->is_consume = $purchase->is_consume;
-        $this->caja_id = $purchase->caja_id;
-        $this->estado = $purchase->estado;
-        $this->date_created = $purchase->date_created;
-        $this->date_updated = $purchase->date_updated;
-        $this->created_by = $purchase->created_by;
-        $this->updated_by = $purchase->updated_by;
-        $this->igv = $purchase->igv;
-        $this->recargo_consumo = $purchase->recargo_consumo;
+        $this->movimiento_id = $inbound->movimiento_id;
+        $this->operacion_id = $inbound->operacion_id;
+        $this->almacen_id = $inbound->almacen_id;
+        $this->cliente_id = $inbound->cliente_id;
+        $this->tipo_id = $inbound->tipo_id;
+        $this->fecha = $inbound->fecha;
+        $this->proveedor_id = $inbound->proveedor_id;
+        $this->tipo_pago = $inbound->tipo_pago;
+        $this->tipo_tarjeta = $inbound->tipo_tarjeta;
+        $this->serie = $inbound->serie;
+        $this->numero = $inbound->numero;
+        $this->descuento = $inbound->descuento;
+        $this->glosa = $inbound->glosa;
+        $this->orden_id = $inbound->orden_id;
+        $this->has_invoice = $inbound->has_invoice;
+        $this->is_consume = $inbound->is_consume;
+        $this->caja_id = $inbound->caja_id;
+        $this->estado = $inbound->estado;
+        $this->date_created = $inbound->date_created;
+        $this->date_updated = $inbound->date_updated;
+        $this->created_by = $inbound->created_by;
+        $this->updated_by = $inbound->updated_by;
+        $this->igv = $inbound->igv;
+        $this->recargo_consumo = $inbound->recargo_consumo;
 
         return $this;
     }

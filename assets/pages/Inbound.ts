@@ -10,7 +10,7 @@ import {ProductService} from "../services/product.service";
 import {bus} from "../EventBus";
 import {Event} from "../Event";
 
-export default class Purchase {
+export default class Inbound {
     private readonly container: string;
     private fields: Field[] = [];
     private detailFields: Field[] = [];
@@ -20,17 +20,17 @@ export default class Purchase {
     private productService = new ProductService();
 
     static readonly ROUTES = {
-        ADD: 'purchase/add',
+        ADD: 'inbound/add',
     }
 
     static readonly EVENTS = {
-        ADD: 'purchase:add',
-        EDIT: 'purchase:edit',
-        DELETE: 'purchase:delete',
-        SAVE: 'purchase:save',
-        CANCEL: 'purchase:cancel',
-        SUCCESS: 'purchase:success',
-        LOADING: 'purchase:loading',
+        ADD: 'inbound:add',
+        EDIT: 'inbound:edit',
+        DELETE: 'inbound:delete',
+        SAVE: 'inbound:save',
+        CANCEL: 'inbound:cancel',
+        SUCCESS: 'inbound:success',
+        LOADING: 'inbound:loading',
     }
 
     constructor(container) {
@@ -151,10 +151,10 @@ export default class Purchase {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Purchase',
-            url: 'purchase/get',
-            routes: Purchase.ROUTES,
-            events: Purchase.EVENTS,
+            title: 'Inbound',
+            url: 'inbound/get',
+            routes: Inbound.ROUTES,
+            events: Inbound.EVENTS,
             subGrid: {
                 url: 'api/sale/detail/',
                 columns: [
@@ -184,12 +184,12 @@ export default class Purchase {
         this.dialog = new Dialog(this.container, {
             width: 900,
             height: 600,
-            events: Purchase.EVENTS,
+            events: Inbound.EVENTS,
         });
 
         this.form = new Form(this.dialog.id, this.fields, {
-            routes: Purchase.ROUTES,
-            events: Purchase.EVENTS,
+            routes: Inbound.ROUTES,
+            events: Inbound.EVENTS,
             detailFields: this.detailFields,
         });
 

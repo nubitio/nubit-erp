@@ -1,5 +1,5 @@
 {% extends 'layout/base.html.twig' %}
-{% block title %}Purchase{% endblock %}
+{% block title %}Outbound{% endblock %}
 {% block body %}
     <div id="wrapper" class="wrapper"></div>
 {% endblock %}
@@ -7,8 +7,8 @@
     {{ parent() }}
     <script>
         window.addEventListener('load', function () {
-            const purchase = new window.app.purchase('wrapper');
-            purchase.render();
+            const outbound = new window.app.outbound('wrapper');
+            outbound.render();
         });
     </script>
 {% endblock %}

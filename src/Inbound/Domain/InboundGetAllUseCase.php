@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Purchase\Domain;
+namespace App\Inbound\Domain;
 
-class PurchaseGetAllUseCase
+class InboundGetAllUseCase
 {
-    private PurchaseRepositoryInterface $repository;
+    private InboundRepositoryInterface $repository;
 
-    public function __construct(PurchaseRepositoryInterface $repository)
+    public function __construct(InboundRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
