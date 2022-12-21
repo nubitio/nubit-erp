@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Purchase\Domain;
+namespace App\Inbound\Domain;
 
 use App\Domain\Annotation\IgnoreAutowire;
 use App\Domain\Sale\SaleDetail;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
-class Purchase
+class Inbound
 {
     public function __construct(
         #[SerializedName('movimiento_id')]

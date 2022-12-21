@@ -62,7 +62,7 @@ class DataGridLoader
             $tmpDataField = "";
             for ($i = 0; $i < $numFilter; $i++) {
                 $filterDataField = $filterArray[$i]['field'];
-                $filterValue = $filterArray[$i]['value'];
+                $filterValue = $filterArray[$i]['value'] ?? '';
                 if ($tmpDataField == "") {
                     $tmpDataField = $filterDataField;
                 } else if ($tmpDataField <> $filterDataField) {
@@ -95,6 +95,18 @@ class DataGridLoader
                         break;
                     case 'greaterorequal':
                         $where .= $filterDataField . " >= '" . $filterValue . "'";
+                        break;
+                    case 'in':
+                        $where .= $filterDataField . " IN (" . $filterValue . ")";
+                        break;
+                    case 'notin':
+                        $where .= $filterDataField . " NOT IN (" . $filterValue . ")";
+                        break;
+                    case 'isnull':
+                        $where .= $filterDataField . " IS NULL";
+                        break;
+                    case 'isnotnull':
+                        $where .= $filterDataField . " IS NOT NULL";
                         break;
                 }
                 $tmpDataField = $filterDataField;
