@@ -6,6 +6,7 @@ import {authService} from "../services/auth.service";
 import {messenger} from "../utils/Messenger";
 import LocalPicker from "../modules/LocalPicker";
 import {bus} from "../EventBus";
+import {StorageUtils} from "../utils/StorageUtils";
 
 export default class Auth {
     private readonly container: string;
@@ -57,7 +58,8 @@ export default class Auth {
     setupObservers() {
         bus.on(
             event => event.name === LocalPicker.EVENTS.PICKED,
-            () => {
+            (event) => {
+                StorageUtils.setItem('session', event.data);
                 messenger.show('Información', 'Bienvenido');
                 window.location.href = '/';
             }

@@ -1,16 +1,19 @@
 import {bus} from "../EventBus";
 import LocalPicker from "../modules/LocalPicker";
 import {EventType} from "../EventType";
+import {StorageUtils} from "../utils/StorageUtils";
 
 export default class Home {
-    layout = $('#layout-container');
-    sidebar = $('#sidebar');
-    menuToggle = $('#menu-toggle');
-    themeIcon = $('#theme-icon');
-    selectedMenu = null;
+    private layout = $('#layout-container');
+    private sidebar = $('#sidebar');
+    private menuToggle = $('#menu-toggle');
+    private themeIcon = $('#theme-icon');
+    private selectedMenu = null;
+    private localPicker: LocalPicker;
 
     constructor() {
         this.selectedMenu = location.pathname.split('/')[1];
+        this.localPicker = new LocalPicker('main-content');
         this.init();
     }
 
@@ -35,9 +38,12 @@ export default class Home {
                     }
                     menu.push(item);
                 });
-                localStorage.setItem('menu', JSON.stringify(menu));
 
-                this.setupMenu();
+                let actualMenu = StorageUtils.getItem('menu');
+                if (menu.length !== actualMenu.length) {
+                    StorageUtils.setItem('menu', menu);
+                    this.setupMenu();
+                }
 
                 let sidebarCollapsed = localStorage.getItem('sidebarCollapsed');
                 this.setSidebarCollapsed(sidebarCollapsed === 'true');
@@ -124,5 +130,9 @@ export default class Home {
             this.layout.layout('resize');
             this.sidebar.sidemenu('resize');
         }
+    }
+
+    changeLocal() {
+        this.localPicker.show();
     }
 }

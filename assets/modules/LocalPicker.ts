@@ -32,7 +32,7 @@ export default class LocalPicker {
                 authService.setLocal(row['local_id']).subscribe((response) => {
                     if (response.success) {
                         this.dialog.hide();
-                        bus.emit(new Event(LocalPicker.EVENTS.PICKED, row));
+                        bus.emit(new Event(LocalPicker.EVENTS.PICKED, response.data));
                     }
                 });
             }
