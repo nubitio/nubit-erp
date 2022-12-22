@@ -53,6 +53,7 @@ export default class Inbound {
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -62,6 +63,7 @@ export default class Inbound {
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -80,6 +82,7 @@ export default class Inbound {
             .valueField('almacen_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -116,12 +119,14 @@ export default class Inbound {
             .name('producto_id')
             .label('Producto')
             .onSelect((record, field) => this.onSelectProduct(record, field))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .onChange((newValue, oldValue, field) => this.onQuantityChange(newValue, oldValue, field))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
