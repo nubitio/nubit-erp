@@ -32,6 +32,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Outbound from "./pages/Outbound";
+import Transfer from "./pages/Transfer";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -68,3 +69,4 @@ window.app.role = Role;
 window.app.cashbox = Cashbox;
 window.app.cashBoxConsult = CashboxConsult;
 window.app.invoice = Invoice;
+window.app.transfer = Transfer;

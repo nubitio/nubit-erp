@@ -51,6 +51,7 @@ export default class Outbound {
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -60,6 +61,7 @@ export default class Outbound {
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -78,6 +80,7 @@ export default class Outbound {
             .valueField('almacen_id')
             .textField('descripcion')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -97,11 +100,13 @@ export default class Outbound {
             .textField('descripcion')
             .name('producto_id')
             .label('Producto')
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .required(true)
             .build());
     };
 
