@@ -3,6 +3,7 @@
 namespace App\Transfer\Domain;
 
 use App\Domain\Annotation\IgnoreAutowire;
+use App\SaleDetail\Domain\SaleDetail;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -31,7 +32,9 @@ class Transfer
         public ?\DateTime $created_at,
         #[SerializedName('updated_at')]
         public ?\DateTime $updated_at,
-
+        #[SerializedName('detail')]
+        /** @var SaleDetail[] */
+        public ?array $items,
     )
     {
     }
