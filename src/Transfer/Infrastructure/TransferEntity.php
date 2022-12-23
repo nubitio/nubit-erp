@@ -52,7 +52,6 @@ class TransferEntity
             $this->updated_by,
             $this->created_at,
             $this->updated_at,
-
         );
     }
 
