@@ -34,7 +34,7 @@ class Transfer
         public ?\DateTime $updated_at,
         #[SerializedName('detail')]
         /** @var SaleDetail[] */
-        public ?array $items,
+        public ?array $items = [],
     )
     {
     }

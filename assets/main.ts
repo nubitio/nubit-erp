@@ -33,6 +33,7 @@ import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Outbound from "./pages/Outbound";
 import Transfer from "./pages/Transfer";
+import Kardex from "./pages/Kardex";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -70,3 +71,4 @@ window.app.cashbox = Cashbox;
 window.app.cashBoxConsult = CashboxConsult;
 window.app.invoice = Invoice;
 window.app.transfer = Transfer;
+window.app.kardex = Kardex;
