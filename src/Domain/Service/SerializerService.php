@@ -3,7 +3,7 @@
 namespace App\Domain\Service;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
@@ -23,7 +23,7 @@ class SerializerService
     {
         $classMetadataFactory = new ClassMetadataFactory(new AnnotationLoader(new AnnotationReader()));
         $metadataAwareNameConverter = new MetadataAwareNameConverter($classMetadataFactory);
-        $normalizers = [new DateTimeNormalizer(), new ArrayDenormalizer(), new ObjectNormalizer($classMetadataFactory, $metadataAwareNameConverter, null, new ReflectionExtractor())];
+        $normalizers = [new DateTimeNormalizer(), new ArrayDenormalizer(), new ObjectNormalizer($classMetadataFactory, $metadataAwareNameConverter, null, new PhpDocExtractor())];
         $encoders = [new XmlEncoder(), new JsonEncoder()];
         $this->serializer = new Serializer($normalizers, $encoders);
     }

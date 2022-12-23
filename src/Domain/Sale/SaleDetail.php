@@ -10,7 +10,7 @@ class SaleDetail
 {
     #[SerializedName('movimiento_id')]
     private string $saleId;
-    #[SerializedName('product_id')]
+    #[SerializedName('producto_id')]
     private string $productId;
     #[SerializedName('cantidad')]
     private float $quantity;

@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping\Table;
 class TransferEntity
 {
     #[Id]
-    #[Column(name: "transfer_id", type: "binary")]
+    #[Column(name: "transfer_id", type: "string")]
     public ?string $transfer_id;
     #[Column(name: "fecha", type: "date")]
     public ?\DateTime $fecha;
