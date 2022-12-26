@@ -4,6 +4,7 @@ namespace App\Kardex\Application;
 
 use App\Base\BaseController;
 use App\Kardex\Domain\KardexGetAllUseCase;
+use App\Kardex\Domain\KardexGetOneUseCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -26,6 +27,18 @@ class KardexController extends BaseController
         $dateTo = $request->request->get('date_to');
 
         $kardex = $kardexGetAllUseCase->__invoke($localId, $warehouseId, $categoryId, $dateFrom, $dateTo);
+
+        return $this->json($kardex);
+    }
+
+    #[Route('/kardex/detail/{productId}', name: 'kardex_detail', methods: ['GET'])]
+    public function getWarehouse(Request $request, KardexGetOneUseCase $kardexGetOneUseCase, string $productId): Response
+    {
+        $warehouseId = $request->request->get('warehouse_id');
+        $dateFrom = $request->request->get('date_from');
+        $dateTo = $request->request->get('date_to');
+
+        $kardex = $kardexGetOneUseCase->__invoke($warehouseId, $productId, $dateFrom, $dateTo);
 
         return $this->json($kardex);
     }

@@ -23,4 +23,14 @@ class KardexRepository implements KardexRepositoryInterface
             $dateTo ?? date('Y-m-t')
         ]);
     }
+
+    public function getOne(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array
+    {
+        return $this->connection->fetchAllAssociative('call sp_kardex (?,?,?,?)', [
+            $warehouseId,
+            $productId,
+            $dateFrom ?? date('Y-m-01'),
+            $dateTo ?? date('Y-m-t')
+        ]);
+    }
 }
