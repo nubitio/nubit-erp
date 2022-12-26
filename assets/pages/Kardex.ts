@@ -8,12 +8,6 @@ export default class Kardex {
     private fields: Field[] = [];
     private dataGrid: DataGrid;
 
-    static readonly ROUTES = {
-        ADD: 'local/add',
-        EDIT: 'local/edit/',
-        DELETE: 'local/delete/',
-    }
-
     static readonly EVENTS = {
         ADD: 'local:add',
         EDIT: 'local:edit',
@@ -30,6 +24,12 @@ export default class Kardex {
     }
 
     init() {
+        this.fields.push(new FieldBuilder()
+            .isIdentity(true)
+            .type(FormType.NONE)
+            .name('producto_id')
+            .visible(false)
+            .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
             .name('producto')
@@ -70,8 +70,50 @@ export default class Kardex {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Kardex',
             url: 'kardex/get',
-            routes: Kardex.ROUTES,
             events: Kardex.EVENTS,
+            subGrid: {
+                url: 'kardex/detail/',
+                columns: [
+                    {
+                        field: 'fecha',
+                        title: 'Fecha',
+                        align: 'center',
+                        width: 50
+                    }, {
+                        field: 'tipo_id',
+                        title: 'Tipo',
+                        formatter: this.kindFormatter,
+                        align: 'center',
+                        width: 50
+                    }, {
+                        field: 'almacen',
+                        title: 'Almacen',
+                        width: 100
+                    }, {
+                        field: 'operacion',
+                        title: 'Operacion',
+                        width: 100
+                    }, {
+                        field: 'cantidad',
+                        title: 'Cantidad',
+                        align: 'center',
+                        width: 50
+                    }
+                ]
+            }
         });
+    }
+
+    kindFormatter(value, row) {
+        if (value === null) {
+            value = -1
+        }
+        if (value === 'INGRESO') {
+            return '<span class="badge badge-pill badge-success">INGRESO</span>';
+        } else if (value === 'SALIDA') {
+            return '<span class="badge badge-pill badge-danger">SALIDA</span>';
+        } else {
+            return '';
+        }
     }
 }
