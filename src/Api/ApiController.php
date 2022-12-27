@@ -7,6 +7,7 @@ use App\Service\MenuBuilder;
 use App\Service\SettingsService;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends BaseController
@@ -104,6 +105,32 @@ class ApiController extends BaseController
     public function getCashBoxDetail($id): JsonResponse
     {
         $data = $this->connection->fetchAllAssociative('SELECT * FROM caja_detalle where caja_id = ?', [$id]);
+        return $this->json($data);
+    }
+
+    #[Route('/api/invoice', name: 'api_invoice_get', methods: ['GET'])]
+    public function getInvoice(Request $request): JsonResponse
+    {
+        $filter = $request->query->get('q');
+
+        if (!$filter) {
+            return $this->json([]);
+        }
+
+        $data = $this->connection->fetchAllAssociative("
+            SELECT
+                vm.movimiento_id,
+                concat( vm.iserie, '-', vm.inumero ) AS comprobante 
+            FROM
+                vw_movimiento vm
+                LEFT JOIN nota nt ON ( nt.movimiento_id = vm.movimiento_id ) 
+            WHERE
+                vm.inumero > 0 
+                AND (nt.envio_sunat IS NULL OR nt.envio_sunat > 0)
+                AND concat( vm.iserie, '-', vm.inumero ) like ?
+            ORDER BY
+                vm.date_created DESC
+        ", ["%$filter%"]);
         return $this->json($data);
     }
 }

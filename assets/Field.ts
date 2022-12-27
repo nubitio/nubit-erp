@@ -10,6 +10,7 @@ export interface Field {
     align: string;
     sortable: boolean;
     validators: string[];
+    mode: string;
     url: string;
     textField: string;
     valueField: string;

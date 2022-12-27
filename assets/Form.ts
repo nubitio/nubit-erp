@@ -453,6 +453,7 @@ export default class Form {
             labelPosition: 'top',
             url: field.url,
             method: 'get',
+            mode: field.mode ?? 'local',
             valueField: field.valueField,
             textField: field.textField,
             panelHeight: 200,
