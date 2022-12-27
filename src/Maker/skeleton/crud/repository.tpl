@@ -21,28 +21,18 @@ class {{module}}Repository implements {{module}}RepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('{{table}}', '{{sortColumn}}', filter: $filter);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert({{module}} ${{camelModule}}): void
     {
-        $entity = new {{module}}Entity();
-        $entity->mapFromDomainModel(${{camelModule}});
+        $entity = {{module}}Entity::mapFromDomainModel(${{camelModule}});
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update({{module}} ${{camelModule}}): void
     {
         $entity = $this->entityManager->find({{module}}Entity::class, ${{camelModule}}->{{table_id}});

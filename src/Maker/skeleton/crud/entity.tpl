@@ -15,7 +15,13 @@ use Doctrine\ORM\Mapping\Table;
 #[Table(name: "{{table}}")]
 class {{module}}Entity
 {
+
+    public function __construct(
 {{fields}}
+    )
+    {
+    }
+
     public function mapToDomainModel(): {{module}}
     {
         return new {{module}}(
@@ -23,9 +29,10 @@ class {{module}}Entity
         );
     }
 
-    public function mapFromDomainModel({{module}} ${{camelModule}}): {{module}}Entity
+    public static function mapFromDomainModel({{module}} ${{camelModule}}): {{module}}Entity
     {
+        return self(
 {{mapFromDomainModelFields}}
-        return $this;
+        );
     }
 }

@@ -34,6 +34,7 @@ import Home from "./pages/Home";
 import Outbound from "./pages/Outbound";
 import Transfer from "./pages/Transfer";
 import Kardex from "./pages/Kardex";
+import CreditNote from "./pages/CreditNote";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -72,3 +73,4 @@ window.app.cashBoxConsult = CashboxConsult;
 window.app.invoice = Invoice;
 window.app.transfer = Transfer;
 window.app.kardex = Kardex;
+window.app.creditNote = CreditNote;

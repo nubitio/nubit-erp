@@ -15,6 +15,7 @@ export class FieldBuilder {
             align: 'left',
             sortable: false,
             validators: [],
+            mode: 'local',
             url: '',
             textField: '',
             valueField: '',
@@ -74,6 +75,11 @@ export class FieldBuilder {
 
     validators(validators: string[]): FieldBuilder {
         this._field.validators = validators;
+        return this;
+    }
+
+    mode(mode: string): FieldBuilder {
+        this._field.mode = mode;
         return this;
     }
 

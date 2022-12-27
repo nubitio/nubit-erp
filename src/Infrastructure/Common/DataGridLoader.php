@@ -13,9 +13,6 @@ class DataGridLoader
         $this->connection = $connection;
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
