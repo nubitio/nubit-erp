@@ -3,7 +3,6 @@
 namespace App\{{module}}\Infrastructure;
 
 use App\Domain\Annotation\IgnoreAutowire;
-use App\{{module}}\Domain\{{module}};
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -20,19 +19,5 @@ class {{module}}Entity
 {{fields}}
     )
     {
-    }
-
-    public function mapToDomainModel(): {{module}}
-    {
-        return new {{module}}(
-{{mapToDomainModelFields}}
-        );
-    }
-
-    public static function mapFromDomainModel({{module}} ${{camelModule}}): {{module}}Entity
-    {
-        return self(
-{{mapFromDomainModelFields}}
-        );
     }
 }

@@ -160,7 +160,7 @@ class MakeCrudCommand extends Command
         $modelFields = "";
         foreach ($columns as $column) {
             $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
-            $modelFields .= "        public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ",\n";
+            $modelFields .= "        public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . " = null,\n";
         }
         $modelContent = str_replace('{{fields}}', $modelFields, $modelContent);
         file_put_contents($modelPath, $modelContent);
@@ -177,21 +177,15 @@ class MakeCrudCommand extends Command
         $entityContent = str_replace('{{camelModule}}', $this->toCamelCase($module), $entityContent);
         $entityContent = str_replace('{{table}}', $table->getName(), $entityContent);
         $entityFields = "";
-        $mapToDomainModelFields = "";
-        $mapFromDomainModelFields = "";
         foreach ($columns as $column) {
             if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $entityFields .= "    #[Id]\n";
-                $entityFields .= "    #[GeneratedValue]\n";
+                $entityFields .= "        #[Id]\n";
+                $entityFields .= "        #[GeneratedValue]\n";
             }
-            $entityFields .= "    #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
-            $entityFields .= "    public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
-            $mapToDomainModelFields .= "            \$this->" . $column->getName() . ",\n";
-            $mapFromDomainModelFields .= "        \$this->" . $column->getName() . " = $" . $this->toCamelCase($module) . "->" . $column->getName() . " ?? \$this->" . $column->getName() . ";\n";
+            $entityFields .= "        #[Column(name: \"" . $column->getName() . "\", type: \"" . $column->getType()->getName() . "\")]\n";
+            $entityFields .= "        public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . " = null,\n";
         }
         $entityContent = str_replace('{{fields}}', $entityFields, $entityContent);
-        $entityContent = str_replace('{{mapToDomainModelFields}}', $mapToDomainModelFields, $entityContent);
-        $entityContent = str_replace('{{mapFromDomainModelFields}}', $mapFromDomainModelFields, $entityContent);
         file_put_contents($entityPath, $entityContent);
     }
 

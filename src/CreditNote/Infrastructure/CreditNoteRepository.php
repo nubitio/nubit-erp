@@ -5,6 +5,7 @@ namespace App\CreditNote\Infrastructure;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\CreditNoteRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Util\DataMapper;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -28,7 +29,7 @@ class CreditNoteRepository implements CreditNoteRepositoryInterface
 
     public function insert(CreditNote $creditNote): void
     {
-        $entity = CreditNoteEntity::mapFromDomainModel($creditNote);
+        $entity = DataMapper::mapTo($creditNote, CreditNoteEntity::class);
         $entity->created_at = new \DateTime();
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -37,8 +38,7 @@ class CreditNoteRepository implements CreditNoteRepositoryInterface
     public function update(CreditNote $creditNote): void
     {
         $entity = $this->entityManager->find(CreditNoteEntity::class, $creditNote->nota_id);
-
-        $entity->mapFromDomainModel($creditNote, $entity);
+        $entity = DataMapper::map($creditNote, $entity);
         $entity->updated_at = new \DateTime();
         $this->entityManager->flush();
     }
