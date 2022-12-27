@@ -17,35 +17,35 @@ class CreditNoteEntity
     public function __construct(
         #[Id]
         #[Column(name: "nota_id", type: "string")]
-        public ?string    $nota_id,
+        public ?string    $nota_id = null,
         #[Column(name: "movimiento_id", type: "string")]
-        public ?string    $movimiento_id,
+        public ?string    $movimiento_id = null,
         #[Column(name: "fecha", type: "date")]
-        public ?\DateTime $fecha,
+        public ?\DateTime $fecha = null,
         #[Column(name: "tipo_id", type: "string")]
-        public ?string    $tipo_id,
+        public ?string    $tipo_id = null,
         #[Column(name: "codigo_motivo", type: "string")]
-        public ?string    $codigo_motivo,
+        public ?string    $codigo_motivo = null,
         #[Column(name: "descripcion_motivo", type: "string")]
-        public ?string    $descripcion_motivo,
+        public ?string    $descripcion_motivo = null,
         #[Column(name: "serie", type: "string")]
-        public ?string    $serie,
+        public ?string    $serie = null,
         #[Column(name: "correlativo", type: "integer")]
-        public ?int       $correlativo,
+        public ?int       $correlativo = null,
         #[Column(name: "digest", type: "string")]
-        public ?string    $digest,
+        public ?string    $digest = null,
         #[Column(name: "envio_sunat", type: "string")]
-        public ?string    $envio_sunat,
+        public ?string    $envio_sunat = null,
         #[Column(name: "mensaje_sunat", type: "string")]
-        public ?string    $mensaje_sunat,
+        public ?string    $mensaje_sunat = null,
         #[Column(name: "created_by", type: "integer")]
-        public ?int       $created_by,
+        public ?int       $created_by = null,
         #[Column(name: "updated_by", type: "integer")]
-        public ?int       $updated_by,
+        public ?int       $updated_by = null,
         #[Column(name: "created_at", type: "datetime")]
-        public ?\DateTime $created_at,
+        public ?\DateTime $created_at = null,
         #[Column(name: "updated_at", type: "datetime")]
-        public ?\DateTime $updated_at,
+        public ?\DateTime $updated_at = null,
     )
     {
     }
@@ -68,32 +68,11 @@ class CreditNoteEntity
             $this->updated_by,
             $this->created_at,
             $this->updated_at,
-
         );
     }
 
-    public static function mapFromDomainModel(CreditNote $creditNote, CreditNoteEntity $entity = null): CreditNoteEntity
+    public static function mapFromDomainModel(CreditNote $creditNote): CreditNoteEntity
     {
-        if ($entity) {
-            $entity->nota_id = $creditNote->nota_id ?? $entity->nota_id;
-            $entity->movimiento_id = $creditNote->movimiento_id ?? $entity->movimiento_id;
-            $entity->fecha = $creditNote->fecha ?? $entity->fecha;
-            $entity->tipo_id = $creditNote->tipo_id ?? $entity->tipo_id;
-            $entity->codigo_motivo = $creditNote->codigo_motivo ?? $entity->codigo_motivo;
-            $entity->descripcion_motivo = $creditNote->descripcion_motivo ?? $entity->descripcion_motivo;
-            $entity->serie = $creditNote->serie ?? $entity->serie;
-            $entity->correlativo = $creditNote->correlativo ?? $entity->correlativo;
-            $entity->digest = $creditNote->digest ?? $entity->digest;
-            $entity->envio_sunat = $creditNote->envio_sunat ?? $entity->envio_sunat;
-            $entity->mensaje_sunat = $creditNote->mensaje_sunat ?? $entity->mensaje_sunat;
-            $entity->created_by = $creditNote->created_by ?? $entity->created_by;
-            $entity->updated_by = $creditNote->updated_by ?? $entity->updated_by;
-            $entity->created_at = $creditNote->created_at ?? $entity->created_at;
-            $entity->updated_at = $creditNote->updated_at ?? $entity->updated_at;
-
-            return $entity;
-        }
-
         return new self(
             $creditNote->nota_id,
             $creditNote->movimiento_id,

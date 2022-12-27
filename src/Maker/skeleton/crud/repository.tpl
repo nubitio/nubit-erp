@@ -5,6 +5,7 @@ namespace App\{{module}}\Infrastructure;
 use App\{{module}}\Domain\{{module}}RepositoryInterface;
 use App\{{module}}\Domain\{{module}};
 use App\Infrastructure\Common\DataGridLoader;
+use App\Util\DataMapper;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -28,7 +29,7 @@ class {{module}}Repository implements {{module}}RepositoryInterface
 
     public function insert({{module}} ${{camelModule}}): void
     {
-        $entity = {{module}}Entity::mapFromDomainModel(${{camelModule}});
+        $entity = DataMapper::mapTo(${{camelModule}}, {{module}}Entity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -36,7 +37,7 @@ class {{module}}Repository implements {{module}}RepositoryInterface
     public function update({{module}} ${{camelModule}}): void
     {
         $entity = $this->entityManager->find({{module}}Entity::class, ${{camelModule}}->{{table_id}});
-        $entity->mapFromDomainModel(${{camelModule}});
+        $entity = DataMapper::map(${{camelModule}}, $entity);
         $this->entityManager->flush();
     }
 
