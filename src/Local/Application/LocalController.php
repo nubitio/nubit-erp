@@ -12,6 +12,7 @@ use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Uid\Uuid;
 
 class LocalController extends BaseController
 {
@@ -35,6 +36,8 @@ class LocalController extends BaseController
     #[Route('/local/add', name: 'local_create', methods: ['POST'])]
     public function add(Request $request, LocalCreateUseCase $createUseCase): Response
     {
+        $localId = Uuid::v4();
+        $request->request->set('local_id', $localId);
         /**
          * @var Local $local
          */

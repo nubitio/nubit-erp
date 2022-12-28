@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class VoucherTypeEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: "codigo", type: "string")]
     public ?string $codigo;
     #[Column(name: "descripcion", type: "string")]

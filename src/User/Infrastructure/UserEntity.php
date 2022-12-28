@@ -57,7 +57,7 @@ class UserEntity
         $this->estado = $user->estado;
         $this->date_created = $user->date_created;
         $this->date_updated = $user->date_updated;
-        $this->pin = $user->pin;
+        $this->pin = $user->pin != '' ? $user->pin : null;
         $this->rol_id = $user->rol_id;
 
         return $this;
