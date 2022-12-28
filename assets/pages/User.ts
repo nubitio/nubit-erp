@@ -53,6 +53,7 @@ export default class User {
             .name('username')
             .label('Username')
             .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.PASSWORD)
@@ -73,6 +74,7 @@ export default class User {
             .textField('descripcion')
             .valueField('rol_id')
             .visible(false)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
