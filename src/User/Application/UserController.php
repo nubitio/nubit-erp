@@ -40,6 +40,7 @@ class UserController extends BaseController
          */
         $user = $this->serializer->deserialize(json_encode($request->request->all()), User::class, 'json');
         $createUseCase($user);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -52,6 +53,7 @@ class UserController extends BaseController
          */
         $user = $this->serializer->deserialize(json_encode($request->request->all()), User::class, 'json');
         $updateUseCase($user);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -59,6 +61,7 @@ class UserController extends BaseController
     public function delete(UserDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

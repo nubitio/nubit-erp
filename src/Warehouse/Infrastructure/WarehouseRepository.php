@@ -2,9 +2,9 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Warehouse\Domain\WarehouseRepositoryInterface;
-use App\Warehouse\Domain\Warehouse;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Warehouse\Domain\Warehouse;
+use App\Warehouse\Domain\WarehouseRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

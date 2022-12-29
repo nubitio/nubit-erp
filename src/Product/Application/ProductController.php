@@ -45,6 +45,7 @@ class ProductController extends BaseController
          */
         $product = $this->serializer->deserialize(json_encode($request->request->all()), Product::class, 'json');
         $createUseCase($product);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -58,6 +59,7 @@ class ProductController extends BaseController
          */
         $product = $this->serializer->deserialize(json_encode($request->request->all()), Product::class, 'json');
         $updateUseCase($product);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -65,6 +67,7 @@ class ProductController extends BaseController
     public function delete(ProductDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 

@@ -2,9 +2,9 @@
 
 namespace App\Role\Infrastructure;
 
-use App\Role\Domain\RoleRepositoryInterface;
-use App\Role\Domain\Role;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Role\Domain\Role;
+use App\Role\Domain\RoleRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

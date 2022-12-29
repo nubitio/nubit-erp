@@ -11,7 +11,7 @@ class CreateSale
         $this->saleRepository = $saleRepository;
     }
 
-    public function execute(Sale $sale):void
+    public function execute(Sale $sale): void
     {
         $this->saleRepository->insert($sale);
     }

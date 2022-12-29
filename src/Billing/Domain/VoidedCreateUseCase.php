@@ -15,10 +15,9 @@ class VoidedCreateUseCase
 
     public function __construct(
         VoidedRepositoryInterface $voidedRepository,
-        SaleRepositoryInterface   $saleRepository,
+        SaleRepositoryInterface $saleRepository,
         BillUtilsInterface $invoiceUtils
-    )
-    {
+    ) {
         $this->voidedRepository = $voidedRepository;
         $this->saleRepository = $saleRepository;
         $this->invoiceUtils = $invoiceUtils;

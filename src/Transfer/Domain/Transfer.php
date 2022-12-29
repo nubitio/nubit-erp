@@ -35,7 +35,6 @@ class Transfer
         #[SerializedName('detail')]
         /** @var SaleDetail[] */
         public ?array $items = [],
-    )
-    {
+    ) {
     }
 }

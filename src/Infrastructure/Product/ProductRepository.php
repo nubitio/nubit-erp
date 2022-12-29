@@ -42,6 +42,7 @@ class ProductRepository implements IProductRepository
             INNER JOIN producto_local pl ON p.producto_id = pl.producto_id
             INNER JOIN categoria c ON p.categoria_id = c.categoria_id
         ";
+
         return $this->dataGridLoader->load("($table) t", 'producto_id', filter: $filter);
     }
 
@@ -75,12 +76,14 @@ class ProductRepository implements IProductRepository
             and pl.local_id = ?
           order by
            p.descripcion";
+
         return $this->connection->fetchAllAssociative($query, [$localId]);
     }
 
     public function getById(string $id): Product
     {
         $entity = $this->entityManager->find(ProductEntity::class, $id);
+
         return $entity->toDomain();
     }
 

@@ -41,6 +41,7 @@ class InvoiceController extends BaseController
          */
         $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
         $createUseCase($invoice);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -53,6 +54,7 @@ class InvoiceController extends BaseController
          */
         $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
         $updateUseCase($invoice);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -60,6 +62,7 @@ class InvoiceController extends BaseController
     public function delete(InvoiceDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
@@ -76,14 +79,14 @@ class InvoiceController extends BaseController
 
         return $this->render('invoice/show.html.twig', [
             'company_name' => $invoice['header']['company_name'],
-            'type'         => $type,
-            'series'       => $invoice['header']['doc_series'],
-            'number'       => $invoice['header']['doc_number'],
-            'date'         => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
-            'total'        => $invoice['header']['doc_sale_amount'],
-            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
-            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
-            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
+            'type' => $type,
+            'series' => $invoice['header']['doc_series'],
+            'number' => $invoice['header']['doc_number'],
+            'date' => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
+            'total' => $invoice['header']['doc_sale_amount'],
+            'pdf' => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
@@ -91,6 +94,7 @@ class InvoiceController extends BaseController
     public function consult(InvoiceConsultUseCase $consultUseCase, $id): Response
     {
         $consultUseCase($id);
+
         return $this->json(['success' => true, 'msg' => 'CRD actualizado']);
     }
 
@@ -99,12 +103,12 @@ class InvoiceController extends BaseController
     {
         $invoice = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $invoice['header']['doc_series'].'-'.$invoice['header']['doc_number'];
+        $docFullName = $invoice['header']['company_id'].'-'.$invoice['header']['doc_type'].'-'.$docName;
 
-        $xmlPath = $_ENV['EFACT_DIR'] . $docFullName . '.xml';
+        $xmlPath = $_ENV['EFACT_DIR'].$docFullName.'.xml';
 
-        return $this->file($xmlPath, $docFullName . '.xml');
+        return $this->file($xmlPath, $docFullName.'.xml');
     }
 
     #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
@@ -112,18 +116,18 @@ class InvoiceController extends BaseController
     {
         $invoice = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $invoice['header']['doc_series'].'-'.$invoice['header']['doc_number'];
+        $docFullName = $invoice['header']['company_id'].'-'.$invoice['header']['doc_type'].'-'.$docName;
 
-        $cdrPath = $_ENV['EFACT_DIR'] . 'R-' . $docFullName . '.zip';
+        $cdrPath = $_ENV['EFACT_DIR'].'R-'.$docFullName.'.zip';
 
-        return $this->file($cdrPath, $docFullName . '.zip');
+        return $this->file($cdrPath, $docFullName.'.zip');
     }
 
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
     public function pdf(Request $request, BillPdfUseCase $billPdfUseCase, $id): StreamedResponse
     {
-        $preview = (bool)$request->query->get('preview', false);
+        $preview = (bool) $request->query->get('preview', false);
 
         $fileResponse = $billPdfUseCase($id);
 
@@ -135,9 +139,9 @@ class InvoiceController extends BaseController
         $response->headers->set('Content-Type', 'application/pdf');
 
         if ($preview) {
-            $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
+            $response->headers->set('Content-Disposition', 'inline; filename="'.$fileResponse->name.'"');
         } else {
-            $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
+            $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileResponse->name.'"');
         }
 
         return $response;
@@ -147,6 +151,7 @@ class InvoiceController extends BaseController
     public function sendEmail(InvoiceEmailUseCase $emailUseCase, $id): Response
     {
         $emailUseCase($id);
+
         return $this->json(['success' => true, 'msg' => 'Email enviado']);
     }
 }

@@ -21,8 +21,6 @@ class VoucherSeries
         public ?string $serie_asociada,
         #[SerializedName('active')]
         public ?bool $active,
-
-    )
-    {
+    ) {
     }
 }

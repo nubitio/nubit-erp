@@ -3,11 +3,11 @@
 namespace App\Operation\Application;
 
 use App\Base\BaseController;
-use App\Operation\Domain\OperationGetAllUseCase;
-use App\Operation\Domain\OperationCreateUseCase;
-use App\Operation\Domain\OperationUpdateUseCase;
-use App\Operation\Domain\OperationDeleteUseCase;
 use App\Operation\Domain\Operation;
+use App\Operation\Domain\OperationCreateUseCase;
+use App\Operation\Domain\OperationDeleteUseCase;
+use App\Operation\Domain\OperationGetAllUseCase;
+use App\Operation\Domain\OperationUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +35,7 @@ class OperationController extends BaseController
          */
         $operation = $this->serializer->deserialize(json_encode($request->request->all()), Operation::class, 'json');
         $createUseCase($operation);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class OperationController extends BaseController
          */
         $operation = $this->serializer->deserialize(json_encode($request->request->all()), Operation::class, 'json');
         $updateUseCase($operation);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class OperationController extends BaseController
     public function delete(OperationDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

@@ -12,10 +12,9 @@ class TransferCreateUseCase
 {
     public function __construct(
         private readonly TransferRepositoryInterface $repository,
-        private readonly OutboundCreateUseCase       $outboundCreateUseCase,
-        private readonly InboundCreateUseCase        $inboundCreateUseCase,
-    )
-    {
+        private readonly OutboundCreateUseCase $outboundCreateUseCase,
+        private readonly InboundCreateUseCase $inboundCreateUseCase,
+    ) {
     }
 
     public function __invoke(Transfer $transfer): void

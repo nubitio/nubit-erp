@@ -48,9 +48,11 @@ class InvoiceCalculatorCommand extends Command
                 )
             );
             $io->success('Success');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $io->error('Error');
+
             return Command::FAILURE;
         }
     }

@@ -21,10 +21,10 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
-            'app'     => [
-                'user'    => [],
+            'app' => [
+                'user' => [],
                 'session' => $this->session,
-                'env'     => $_ENV,
+                'env' => $_ENV,
             ],
             'settings' => $this->settings,
         ];

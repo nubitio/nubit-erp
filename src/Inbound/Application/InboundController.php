@@ -29,14 +29,14 @@ class InboundController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'tipo_id',
-                'op'    => 'equal',
-                'value' => 1
+                'op' => 'equal',
+                'value' => 1,
             ],
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
-                'value' => $request->getSession()->get('local_id')
-            ]
+                'op' => 'equal',
+                'value' => $request->getSession()->get('local_id'),
+            ],
         ]));
     }
 
@@ -60,6 +60,7 @@ class InboundController extends BaseController
         }
         $inbound->items = $detailItems;
         $createUseCase($inbound);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -72,6 +73,7 @@ class InboundController extends BaseController
          */
         $inbound = $this->serializer->deserialize(json_encode($request->request->all()), Inbound::class, 'json');
         $updateUseCase($inbound);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -79,6 +81,7 @@ class InboundController extends BaseController
     public function delete(InboundDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

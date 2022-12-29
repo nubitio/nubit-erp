@@ -10,9 +10,8 @@ use App\Domain\Annotation\IgnoreAutowire;
 class FileRequest
 {
     public function __construct(
-        public readonly Bill       $document,
+        public readonly Bill $document,
         public readonly Parameters $parameters,
-    )
-    {
+    ) {
     }
 }

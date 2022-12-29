@@ -49,9 +49,10 @@ class EmailService
             $this->mailer->AltBody = $email->getBody();
 
             $this->mailer->send();
-            return ["success" => true, "msg" => "Mensaje enviado", "data" => null];
+
+            return ['success' => true, 'msg' => 'Mensaje enviado', 'data' => null];
         } catch (Exception $e) {
-            return ["success" => false, "msg" => $this->mailer->ErrorInfo, "data" => null];
+            return ['success' => false, 'msg' => $this->mailer->ErrorInfo, 'data' => null];
         }
     }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Company\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
 use App\Company\Domain\Company;
+use App\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -12,34 +12,34 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "empresa")]
+#[Table(name: 'empresa')]
 class CompanyEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "empresa_id", type: "string")]
+    #[Column(name: 'empresa_id', type: 'string')]
     public ?string $empresa_id;
-    #[Column(name: "ruc", type: "string")]
+    #[Column(name: 'ruc', type: 'string')]
     public ?string $ruc;
-    #[Column(name: "razon_social", type: "string")]
+    #[Column(name: 'razon_social', type: 'string')]
     public ?string $razon_social;
-    #[Column(name: "nombre_comercial", type: "string")]
+    #[Column(name: 'nombre_comercial', type: 'string')]
     public ?string $nombre_comercial;
-    #[Column(name: "ubigeo", type: "string")]
+    #[Column(name: 'ubigeo', type: 'string')]
     public ?string $ubigeo;
-    #[Column(name: "domicilio_fiscal", type: "string")]
+    #[Column(name: 'domicilio_fiscal', type: 'string')]
     public ?string $domicilio_fiscal;
-    #[Column(name: "telefono", type: "string")]
+    #[Column(name: 'telefono', type: 'string')]
     public ?string $telefono;
-    #[Column(name: "logo", type: "string")]
+    #[Column(name: 'logo', type: 'string')]
     public ?string $logo;
-    #[Column(name: "certificado", type: "string")]
+    #[Column(name: 'certificado', type: 'string')]
     public ?string $certificado;
-    #[Column(name: "sunat_user", type: "string")]
+    #[Column(name: 'sunat_user', type: 'string')]
     public ?string $sunat_user;
-    #[Column(name: "sunat_password", type: "string")]
+    #[Column(name: 'sunat_password', type: 'string')]
     public ?string $sunat_password;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): Company
@@ -57,7 +57,6 @@ class CompanyEntity
             $this->sunat_user,
             $this->sunat_password,
             $this->estado,
-
         );
     }
 

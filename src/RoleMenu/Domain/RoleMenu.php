@@ -17,7 +17,6 @@ class RoleMenu
         public ?int $rol_id = null,
         #[SerializedName('estado')]
         public ?bool $estado = null,
-    )
-    {
+    ) {
     }
 }

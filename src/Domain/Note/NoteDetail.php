@@ -3,7 +3,7 @@
 namespace App\Domain\Note;
 
 /**
- * Class NoteDetail
+ * Class NoteDetail.
  */
 class NoteDetail implements \JsonSerializable
 {
@@ -18,31 +18,30 @@ class NoteDetail implements \JsonSerializable
     private $productoId;
 
     /**
-     * @var double
+     * @var float
      */
     private $cantidad;
 
     /**
-     * @var double
+     * @var float
      */
     private $precioUnitario;
 
     /**
-     * @var double
+     * @var float
      */
     private $precioTotal;
 
     public function jsonSerialize(): mixed
     {
         return [
-            'nota_id'         => $this->getNotaId(),
-            'producto_id'     => $this->getProductoId(),
-            'cantidad'        => $this->getCantidad(),
+            'nota_id' => $this->getNotaId(),
+            'producto_id' => $this->getProductoId(),
+            'cantidad' => $this->getCantidad(),
             'precio_unitario' => $this->getPrecioUnitario(),
-            'precio_total'    => $this->getPrecioTotal()
+            'precio_total' => $this->getPrecioTotal(),
         ];
     }
-
 
     /**
      * @return string
@@ -54,11 +53,13 @@ class NoteDetail implements \JsonSerializable
 
     /**
      * @param string $notaId
+     *
      * @return NoteDetail
      */
     public function setNotaId($notaId)
     {
         $this->notaId = $notaId;
+
         return $this;
     }
 
@@ -72,11 +73,13 @@ class NoteDetail implements \JsonSerializable
 
     /**
      * @param string $productoId
+     *
      * @return NoteDetail
      */
     public function setProductoId($productoId)
     {
         $this->productoId = $productoId;
+
         return $this;
     }
 
@@ -90,11 +93,13 @@ class NoteDetail implements \JsonSerializable
 
     /**
      * @param float $cantidad
+     *
      * @return NoteDetail
      */
     public function setCantidad($cantidad)
     {
         $this->cantidad = $cantidad;
+
         return $this;
     }
 
@@ -108,11 +113,13 @@ class NoteDetail implements \JsonSerializable
 
     /**
      * @param float $precioUnitario
+     *
      * @return NoteDetail
      */
     public function setPrecioUnitario($precioUnitario)
     {
         $this->precioUnitario = $precioUnitario;
+
         return $this;
     }
 
@@ -126,11 +133,13 @@ class NoteDetail implements \JsonSerializable
 
     /**
      * @param float $precioTotal
+     *
      * @return NoteDetail
      */
     public function setPrecioTotal($precioTotal)
     {
         $this->precioTotal = $precioTotal;
+
         return $this;
     }
 }

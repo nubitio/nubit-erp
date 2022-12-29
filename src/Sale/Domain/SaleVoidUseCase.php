@@ -14,12 +14,11 @@ class SaleVoidUseCase
     private SummaryCreateUseCase $summaryCreateUseCase;
 
     public function __construct(
-        SaleRepositoryInterface    $saleRepository,
+        SaleRepositoryInterface $saleRepository,
         InvoiceRepositoryInterface $invoiceRepository,
-        VoidedCreateUseCase        $voidedCreateUseCase,
-        SummaryCreateUseCase       $summaryCreateUseCase
-    )
-    {
+        VoidedCreateUseCase $voidedCreateUseCase,
+        SummaryCreateUseCase $summaryCreateUseCase
+    ) {
         $this->saleRepository = $saleRepository;
         $this->invoiceRepository = $invoiceRepository;
         $this->voidedCreateUseCase = $voidedCreateUseCase;
@@ -36,7 +35,7 @@ class SaleVoidUseCase
 
         if ($receipt['header']['doc_type'] === DocType::FACTURA->value) {
             $this->voidInvoice($saleId, $reason);
-        } else if ($receipt['header']['doc_type'] === DocType::BOLETA->value) {
+        } elseif ($receipt['header']['doc_type'] === DocType::BOLETA->value) {
             $this->voidReceipt($saleId);
         }
 
@@ -57,7 +56,7 @@ class SaleVoidUseCase
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         if ($response->sunatResponse->success) {
-            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            file_put_contents($_ENV['EFACT_DIR'].$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();
@@ -76,7 +75,7 @@ class SaleVoidUseCase
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         if ($response->sunatResponse->success) {
-            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            file_put_contents($_ENV['EFACT_DIR'].$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();

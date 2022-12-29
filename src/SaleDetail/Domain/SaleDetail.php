@@ -21,8 +21,6 @@ class SaleDetail
         public ?string $descuento,
         #[SerializedName('precio_total')]
         public ?string $precio_total,
-
-    )
-    {
+    ) {
     }
 }

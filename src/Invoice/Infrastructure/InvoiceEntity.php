@@ -12,56 +12,56 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "comprobante")]
+#[Table(name: 'comprobante')]
 class InvoiceEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "comprobante_id", type: "string")]
+    #[Column(name: 'comprobante_id', type: 'string')]
     public ?string $comprobante_id;
-    #[Column(name: "movimiento_id", type: "string")]
+    #[Column(name: 'movimiento_id', type: 'string')]
     public ?string $movimiento_id;
-    #[Column(name: "cliente_id", type: "string")]
+    #[Column(name: 'cliente_id', type: 'string')]
     public ?string $cliente_id;
-    #[Column(name: "tipo_comprobante_id", type: "string")]
+    #[Column(name: 'tipo_comprobante_id', type: 'string')]
     public ?string $tipo_comprobante_id;
-    #[Column(name: "fecha", type: "date")]
+    #[Column(name: 'fecha', type: 'date')]
     public ?\DateTime $fecha;
-    #[Column(name: "serie", type: "string")]
+    #[Column(name: 'serie', type: 'string')]
     public ?string $serie;
-    #[Column(name: "numero", type: "string")]
+    #[Column(name: 'numero', type: 'string')]
     public ?string $numero;
-    #[Column(name: "inafecto", type: "boolean")]
+    #[Column(name: 'inafecto', type: 'boolean')]
     public ?bool $inafecto;
-    #[Column(name: "subtotal", type: "decimal")]
+    #[Column(name: 'subtotal', type: 'decimal')]
     public ?string $subtotal;
-    #[Column(name: "gravada", type: "decimal")]
+    #[Column(name: 'gravada', type: 'decimal')]
     public ?string $gravada;
-    #[Column(name: "igv", type: "decimal")]
+    #[Column(name: 'igv', type: 'decimal')]
     public ?string $igv;
-    #[Column(name: "rc", type: "decimal")]
+    #[Column(name: 'rc', type: 'decimal')]
     public ?string $rc;
-    #[Column(name: "total", type: "decimal")]
+    #[Column(name: 'total', type: 'decimal')]
     public ?string $total;
-    #[Column(name: "discount_percent", type: "integer")]
+    #[Column(name: 'discount_percent', type: 'integer')]
     public ?int $discount_percent;
-    #[Column(name: "discount_amount", type: "decimal")]
+    #[Column(name: 'discount_amount', type: 'decimal')]
     public ?string $discount_amount;
-    #[Column(name: "voided", type: "boolean")]
+    #[Column(name: 'voided', type: 'boolean')]
     public ?bool $voided;
-    #[Column(name: "digest", type: "string")]
+    #[Column(name: 'digest', type: 'string')]
     public ?string $digest;
-    #[Column(name: "ticket_baja", type: "string")]
+    #[Column(name: 'ticket_baja', type: 'string')]
     public ?string $ticket_baja;
-    #[Column(name: "correlativo_baja", type: "string")]
+    #[Column(name: 'correlativo_baja', type: 'string')]
     public ?string $correlativo_baja;
-    #[Column(name: "envio_sunat", type: "string")]
+    #[Column(name: 'envio_sunat', type: 'string')]
     public ?string $envio_sunat;
-    #[Column(name: "mensaje_sunat", type: "text")]
+    #[Column(name: 'mensaje_sunat', type: 'text')]
     public ?string $mensaje_sunat;
-    #[Column(name: "created_at", type: "datetime")]
+    #[Column(name: 'created_at', type: 'datetime')]
     public ?\DateTime $created_at;
-    #[Column(name: "updated_at", type: "datetime")]
+    #[Column(name: 'updated_at', type: 'datetime')]
     public ?\DateTime $updated_at;
 
     public function mapToDomainModel(): Invoice

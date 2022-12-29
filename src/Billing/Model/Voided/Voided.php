@@ -28,6 +28,6 @@ class Voided
 
     public function getName(): string
     {
-        return $this->company->ruc . '-' . $this->getXmlId();
+        return $this->company->ruc.'-'.$this->getXmlId();
     }
 }

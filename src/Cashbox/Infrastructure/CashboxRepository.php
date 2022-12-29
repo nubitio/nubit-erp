@@ -35,16 +35,18 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function getOne(string $id): Cashbox
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
+
         return $entity->mapToDomainModel();
     }
 
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id'   => $localId,
+            'local_id' => $localId,
             'usuario_id' => $userId,
-            'estado'     => 1
+            'estado' => 1,
         ]);
+
         return $entity ? $entity->mapToDomainModel() : null;
     }
 
@@ -53,7 +55,7 @@ class CashboxRepository implements CashboxRepositoryInterface
      */
     public function getInfoByReceiptType(string $id): array
     {
-        $sql = "
+        $sql = '
             SELECT
                 tc.descripcion AS tipo,
                 c.serie,
@@ -68,7 +70,7 @@ class CashboxRepository implements CashboxRepositoryInterface
                 m.caja_id = ? 
             GROUP BY
                 tc.codigo
-        ";
+        ';
 
         return $this->connection->fetchAllAssociative($sql, [$id]);
     }

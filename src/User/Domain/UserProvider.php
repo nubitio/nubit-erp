@@ -13,8 +13,7 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
     public function __construct(
         private readonly UserGetOneByUsernameUseCase $userGetOneByUsernameUseCase,
-    )
-    {
+    ) {
     }
 
     public function loadUserByIdentifier(string $identifier): UserInterface

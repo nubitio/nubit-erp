@@ -6,27 +6,26 @@ use App\Domain\Annotation\IgnoreAutowire;
 use App\Local\Domain\Local;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "local")]
+#[Table(name: 'local')]
 class LocalEntity
 {
     #[Id]
-    #[Column(name: "local_id", type: "string")]
+    #[Column(name: 'local_id', type: 'string')]
     public ?string $local_id;
-    #[Column(name: "empresa_id", type: "string")]
+    #[Column(name: 'empresa_id', type: 'string')]
     public ?string $empresa_id;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
-    #[Column(name: "direccion", type: "string")]
+    #[Column(name: 'direccion', type: 'string')]
     public ?string $direccion;
-    #[Column(name: "telefono", type: "string")]
+    #[Column(name: 'telefono', type: 'string')]
     public ?string $telefono;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): Local
@@ -38,7 +37,6 @@ class LocalEntity
             $this->direccion,
             $this->telefono,
             $this->estado,
-
         );
     }
 

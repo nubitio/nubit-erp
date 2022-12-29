@@ -37,6 +37,7 @@ class CustomerController extends BaseController
          */
         $customer = $this->serializer->deserialize(json_encode($request->request->all()), Customer::class, 'json');
         $createUseCase($customer);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -49,6 +50,7 @@ class CustomerController extends BaseController
          */
         $customer = $this->serializer->deserialize(json_encode($request->request->all()), Customer::class, 'json');
         $updateUseCase($customer);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -56,6 +58,7 @@ class CustomerController extends BaseController
     public function delete(CustomerDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
@@ -64,6 +67,7 @@ class CustomerController extends BaseController
     {
         $filterRules = json_decode($request->query->get('filterRules'), true);
         $customers = $getAllUseCase($filterRules);
+
         return $exporter->export($customers['rows'], 'customers');
     }
 }

@@ -6,8 +6,7 @@ class UserGetOneByUsernameUseCase
 {
     public function __construct(
         private readonly UserRepositoryInterface $userRepository,
-    )
-    {
+    ) {
     }
 
     public function __invoke(string $username): ?User

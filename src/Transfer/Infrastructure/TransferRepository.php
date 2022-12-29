@@ -2,9 +2,9 @@
 
 namespace App\Transfer\Infrastructure;
 
-use App\Transfer\Domain\TransferRepositoryInterface;
-use App\Transfer\Domain\Transfer;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Transfer\Domain\Transfer;
+use App\Transfer\Domain\TransferRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

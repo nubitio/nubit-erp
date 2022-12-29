@@ -55,8 +55,6 @@ class Invoice
         public ?\DateTimeInterface $created_at,
         #[SerializedName('updated_at')]
         public ?\DateTimeInterface $updated_at,
-
-    )
-    {
+    ) {
     }
 }

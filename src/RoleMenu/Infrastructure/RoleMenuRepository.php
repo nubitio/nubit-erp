@@ -2,7 +2,6 @@
 
 namespace App\RoleMenu\Infrastructure;
 
-use App\Infrastructure\Common\DataGridLoader;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -29,9 +28,8 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
     }
 
     /**
-     * @param int $roleId
      * @param RoleMenu[] $roleMenuList
-     * @return void
+     *
      * @throws Exception
      */
     public function insertMultiple(int $roleId, array $roleMenuList): void

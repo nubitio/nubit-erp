@@ -27,6 +27,7 @@ class DashboardController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $data = $salesDaily($localId);
+
         return $this->json($data);
     }
 
@@ -35,6 +36,7 @@ class DashboardController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $data = $salesWeekly($localId);
+
         return $this->json($data);
     }
 
@@ -43,6 +45,7 @@ class DashboardController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $data = $salesMonthly($localId);
+
         return $this->json($data);
     }
 
@@ -51,6 +54,7 @@ class DashboardController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $data = $monthlyInvoicing($localId);
+
         return $this->json($data);
     }
 
@@ -59,6 +63,7 @@ class DashboardController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $data = $productRotation($localId, $lapse);
+
         return $this->json($data);
     }
 }

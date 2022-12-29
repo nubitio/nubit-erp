@@ -11,31 +11,31 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "transfer")]
+#[Table(name: 'transfer')]
 class TransferEntity
 {
     #[Id]
-    #[Column(name: "transfer_id", type: "string")]
+    #[Column(name: 'transfer_id', type: 'string')]
     public ?string $transfer_id;
-    #[Column(name: "fecha", type: "date")]
+    #[Column(name: 'fecha', type: 'date')]
     public ?\DateTime $fecha;
-    #[Column(name: "almacen_origen", type: "string")]
+    #[Column(name: 'almacen_origen', type: 'string')]
     public ?string $almacen_origen;
-    #[Column(name: "almacen_destino", type: "string")]
+    #[Column(name: 'almacen_destino', type: 'string')]
     public ?string $almacen_destino;
-    #[Column(name: "nota", type: "string")]
+    #[Column(name: 'nota', type: 'string')]
     public ?string $nota;
-    #[Column(name: "salida_id", type: "string")]
+    #[Column(name: 'salida_id', type: 'string')]
     public ?string $salida_id;
-    #[Column(name: "ingreso_id", type: "string")]
+    #[Column(name: 'ingreso_id', type: 'string')]
     public ?string $ingreso_id;
-    #[Column(name: "created_by", type: "integer")]
+    #[Column(name: 'created_by', type: 'integer')]
     public ?int $created_by;
-    #[Column(name: "updated_by", type: "integer")]
+    #[Column(name: 'updated_by', type: 'integer')]
     public ?int $updated_by;
-    #[Column(name: "created_at", type: "datetime")]
+    #[Column(name: 'created_at', type: 'datetime')]
     public ?\DateTime $created_at;
-    #[Column(name: "updated_at", type: "datetime")]
+    #[Column(name: 'updated_at', type: 'datetime')]
     public ?\DateTime $updated_at;
 
     public function mapToDomainModel(): Transfer

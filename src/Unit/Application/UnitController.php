@@ -3,11 +3,11 @@
 namespace App\Unit\Application;
 
 use App\Base\BaseController;
-use App\Unit\Domain\UnitGetAllUseCase;
-use App\Unit\Domain\UnitCreateUseCase;
-use App\Unit\Domain\UnitUpdateUseCase;
-use App\Unit\Domain\UnitDeleteUseCase;
 use App\Unit\Domain\Unit;
+use App\Unit\Domain\UnitCreateUseCase;
+use App\Unit\Domain\UnitDeleteUseCase;
+use App\Unit\Domain\UnitGetAllUseCase;
+use App\Unit\Domain\UnitUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +30,7 @@ class UnitController extends BaseController
     public function getAll(): Response
     {
         $getAllUseCase = $this->container->get(UnitGetAllUseCase::class);
+
         return $this->json($getAllUseCase());
     }
 
@@ -42,6 +43,7 @@ class UnitController extends BaseController
         $unit = $this->serializer->deserialize(json_encode($request->request->all()), Unit::class, 'json');
         $createUseCase = $this->container->get(UnitCreateUseCase::class);
         $createUseCase($unit);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -55,6 +57,7 @@ class UnitController extends BaseController
         $unit = $this->serializer->deserialize(json_encode($request->request->all()), Unit::class, 'json');
         $updateUseCase = $this->container->get(UnitUpdateUseCase::class);
         $updateUseCase($unit);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -63,6 +66,7 @@ class UnitController extends BaseController
     {
         $deleteUseCase = $this->container->get(UnitDeleteUseCase::class);
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

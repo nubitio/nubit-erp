@@ -22,22 +22,22 @@ class SaleUtils
 
     public function getSaleSeries(string $docType, string $localId): string
     {
-        return $this->connection->fetchOne("
+        return $this->connection->fetchOne('
           select
             serie
           from local_comprobante
           where tipo_comprobante_id = ?
-          and local_id = ?", [$docType, $localId]
+          and local_id = ?', [$docType, $localId]
         );
     }
 
     public function getSaleNumber(string $series): string
     {
-        return $this->connection->fetchOne("
+        return $this->connection->fetchOne('
           select
             ifnull(max(cast(numero as int)), 0) + 1 as numero
           from movimiento
-          where serie = ?", [$series]
+          where serie = ?', [$series]
         );
     }
 
@@ -51,6 +51,7 @@ class SaleUtils
         $sale->recargo_consumo = $this->settings->get(Constants::CONSUMPTION_TAX);
         $sale->date_created = new \DateTime();
         $sale->created_by = $session->get('usuario_id');
+
         return $sale;
     }
 }

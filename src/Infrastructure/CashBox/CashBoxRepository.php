@@ -9,9 +9,6 @@ class CashBoxRepository implements ICashBoxRepository
 {
     private Connection $connection;
 
-    /**
-     * @param Connection $connection
-     */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
@@ -22,7 +19,7 @@ class CashBoxRepository implements ICashBoxRepository
      */
     public function getInfoReceiptType(string $cashBoxId): array
     {
-        $sql = "
+        $sql = '
             SELECT
                 tc.descripcion AS tipo,
                 c.serie,
@@ -37,7 +34,7 @@ class CashBoxRepository implements ICashBoxRepository
                 m.caja_id = ? 
             GROUP BY
                 tc.codigo
-        ";
+        ';
 
         return $this->connection->fetchAllAssociative($sql, [$cashBoxId]);
     }

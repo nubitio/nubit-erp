@@ -3,11 +3,11 @@
 namespace App\CashboxDetail\Application;
 
 use App\Base\BaseController;
-use App\CashboxDetail\Domain\CashboxDetailGetAllUseCase;
-use App\CashboxDetail\Domain\CashboxDetailCreateUseCase;
-use App\CashboxDetail\Domain\CashboxDetailUpdateUseCase;
-use App\CashboxDetail\Domain\CashboxDetailDeleteUseCase;
 use App\CashboxDetail\Domain\CashboxDetail;
+use App\CashboxDetail\Domain\CashboxDetailCreateUseCase;
+use App\CashboxDetail\Domain\CashboxDetailDeleteUseCase;
+use App\CashboxDetail\Domain\CashboxDetailGetAllUseCase;
+use App\CashboxDetail\Domain\CashboxDetailUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +29,7 @@ class CashboxDetailController extends BaseController
          */
         $cashboxDetail = $this->serializer->deserialize(json_encode($request->request->all()), CashboxDetail::class, 'json');
         $createUseCase($cashboxDetail);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -41,6 +42,7 @@ class CashboxDetailController extends BaseController
          */
         $cashboxDetail = $this->serializer->deserialize(json_encode($request->request->all()), CashboxDetail::class, 'json');
         $updateUseCase($cashboxDetail);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -48,6 +50,7 @@ class CashboxDetailController extends BaseController
     public function delete(CashboxDetailDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

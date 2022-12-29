@@ -6,7 +6,7 @@ class SessionService
 {
     public function __construct()
     {
-        if (session_status() == PHP_SESSION_NONE) {
+        if (PHP_SESSION_NONE == session_status()) {
             session_start();
         }
     }

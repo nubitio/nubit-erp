@@ -26,7 +26,8 @@ class SaleItem
         $this->name = strlen($this->name) > $leftCols ? substr($this->name, 0, $leftCols) : $this->name;
         $left = str_pad($this->name, $leftCols);
         $sign = ($this->dollarSign ? 'S/ ' : '');
-        $right = str_pad($sign . $this->price, $rightCols, ' ', STR_PAD_LEFT);
+        $right = str_pad($sign.$this->price, $rightCols, ' ', STR_PAD_LEFT);
+
         return "$left$right\n";
     }
 }

@@ -28,13 +28,14 @@ class CategoryRepository implements ICategoryRepository
      */
     public function getAll(?array $filter = null): array
     {
-        $table = "
+        $table = '
             SELECT
                 c.*,
                 p.descripcion AS padre
             FROM categoria c
             LEFT JOIN categoria p ON c.parent_id = p.categoria_id
-        ";
+        ';
+
         return $this->dataGridLoader->load("($table) t", 'categoria_id', filter: $filter);
     }
 }

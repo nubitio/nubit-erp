@@ -39,8 +39,6 @@ class CreditNote
         public ?\DateTime $created_at,
         #[SerializedName('updated_at')]
         public ?\DateTime $updated_at,
-
-    )
-    {
+    ) {
     }
 }

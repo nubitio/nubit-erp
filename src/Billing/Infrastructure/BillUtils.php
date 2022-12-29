@@ -29,6 +29,7 @@ class BillUtils implements BillUtilsInterface
         $company->address->provincia = $this->settingsService->get('invoice_provincia');
         $company->address->distrito = $this->settingsService->get('invoice_distrito');
         $company->address->direccion = $this->settingsService->get('invoice_direccion');
+
         return $company;
     }
 }

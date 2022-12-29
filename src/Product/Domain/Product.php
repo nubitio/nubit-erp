@@ -33,8 +33,6 @@ class Product
         public ?string $imagen,
         #[SerializedName('estado')]
         public ?int $estado,
-
-    )
-    {
+    ) {
     }
 }

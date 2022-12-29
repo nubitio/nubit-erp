@@ -6,8 +6,7 @@ class LocalGetOneByIdUseCase
 {
     public function __construct(
         private readonly LocalRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     public function __invoke(string $localId): Local

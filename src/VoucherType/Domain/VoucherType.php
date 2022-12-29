@@ -15,8 +15,6 @@ class VoucherType
         public ?string $descripcion,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

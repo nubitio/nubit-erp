@@ -12,22 +12,22 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "local_comprobante")]
+#[Table(name: 'local_comprobante')]
 class VoucherSeriesEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "id", type: "integer")]
+    #[Column(name: 'id', type: 'integer')]
     public ?int $id;
-    #[Column(name: "local_id", type: "string")]
+    #[Column(name: 'local_id', type: 'string')]
     public ?string $local_id;
-    #[Column(name: "tipo_comprobante_id", type: "string")]
+    #[Column(name: 'tipo_comprobante_id', type: 'string')]
     public ?string $tipo_comprobante_id;
-    #[Column(name: "serie", type: "string")]
+    #[Column(name: 'serie', type: 'string')]
     public ?string $serie;
-    #[Column(name: "serie_asociada", type: "string")]
+    #[Column(name: 'serie_asociada', type: 'string')]
     public ?string $serie_asociada;
-    #[Column(name: "active", type: "boolean")]
+    #[Column(name: 'active', type: 'boolean')]
     public ?bool $active;
 
     public function mapToDomainModel(): VoucherSeries
@@ -39,7 +39,6 @@ class VoucherSeriesEntity
             $this->serie,
             $this->serie_asociada,
             $this->active,
-
         );
     }
 

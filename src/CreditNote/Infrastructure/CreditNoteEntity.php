@@ -11,43 +11,42 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "nota")]
+#[Table(name: 'nota')]
 class CreditNoteEntity
 {
     public function __construct(
         #[Id]
-        #[Column(name: "nota_id", type: "string")]
-        public ?string    $nota_id = null,
-        #[Column(name: "movimiento_id", type: "string")]
-        public ?string    $movimiento_id = null,
-        #[Column(name: "fecha", type: "date")]
+        #[Column(name: 'nota_id', type: 'string')]
+        public ?string $nota_id = null,
+        #[Column(name: 'movimiento_id', type: 'string')]
+        public ?string $movimiento_id = null,
+        #[Column(name: 'fecha', type: 'date')]
         public ?\DateTime $fecha = null,
-        #[Column(name: "tipo_id", type: "string")]
-        public ?string    $tipo_id = null,
-        #[Column(name: "codigo_motivo", type: "string")]
-        public ?string    $codigo_motivo = null,
-        #[Column(name: "descripcion_motivo", type: "string")]
-        public ?string    $descripcion_motivo = null,
-        #[Column(name: "serie", type: "string")]
-        public ?string    $serie = null,
-        #[Column(name: "correlativo", type: "integer")]
-        public ?int       $correlativo = null,
-        #[Column(name: "digest", type: "string")]
-        public ?string    $digest = null,
-        #[Column(name: "envio_sunat", type: "string")]
-        public ?string    $envio_sunat = null,
-        #[Column(name: "mensaje_sunat", type: "string")]
-        public ?string    $mensaje_sunat = null,
-        #[Column(name: "created_by", type: "integer")]
-        public ?int       $created_by = null,
-        #[Column(name: "updated_by", type: "integer")]
-        public ?int       $updated_by = null,
-        #[Column(name: "created_at", type: "datetime")]
+        #[Column(name: 'tipo_id', type: 'string')]
+        public ?string $tipo_id = null,
+        #[Column(name: 'codigo_motivo', type: 'string')]
+        public ?string $codigo_motivo = null,
+        #[Column(name: 'descripcion_motivo', type: 'string')]
+        public ?string $descripcion_motivo = null,
+        #[Column(name: 'serie', type: 'string')]
+        public ?string $serie = null,
+        #[Column(name: 'correlativo', type: 'integer')]
+        public ?int $correlativo = null,
+        #[Column(name: 'digest', type: 'string')]
+        public ?string $digest = null,
+        #[Column(name: 'envio_sunat', type: 'string')]
+        public ?string $envio_sunat = null,
+        #[Column(name: 'mensaje_sunat', type: 'string')]
+        public ?string $mensaje_sunat = null,
+        #[Column(name: 'created_by', type: 'integer')]
+        public ?int $created_by = null,
+        #[Column(name: 'updated_by', type: 'integer')]
+        public ?int $updated_by = null,
+        #[Column(name: 'created_at', type: 'datetime')]
         public ?\DateTime $created_at = null,
-        #[Column(name: "updated_at", type: "datetime")]
+        #[Column(name: 'updated_at', type: 'datetime')]
         public ?\DateTime $updated_at = null,
-    )
-    {
+    ) {
     }
 
     public function mapToDomainModel(): CreditNote

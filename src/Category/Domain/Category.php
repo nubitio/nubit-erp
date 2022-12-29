@@ -19,8 +19,6 @@ class Category
         public ?string $imagen,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

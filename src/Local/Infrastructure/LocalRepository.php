@@ -2,9 +2,9 @@
 
 namespace App\Local\Infrastructure;
 
-use App\Local\Domain\LocalRepositoryInterface;
-use App\Local\Domain\Local;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Local\Domain\Local;
+use App\Local\Domain\LocalRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -60,6 +60,7 @@ class LocalRepository implements LocalRepositoryInterface
     public function getOneById(string $id): Local
     {
         $entity = $this->entityManager->find(LocalEntity::class, $id);
+
         return $entity->mapToDomainModel();
     }
 }

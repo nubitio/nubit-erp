@@ -21,6 +21,7 @@ class SaleController extends BaseController
     public function index($id): JsonResponse
     {
         $data = $this->connection->fetchAllAssociative('SELECT * FROM vw_movimiento_detalle where movimiento_id = ?', [$id]);
+
         return $this->json($data);
     }
 }

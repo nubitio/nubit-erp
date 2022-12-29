@@ -15,27 +15,27 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "caja_detalle")]
+#[Table(name: 'caja_detalle')]
 class CashboxDetailEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "id", type: "integer")]
+    #[Column(name: 'id', type: 'integer')]
     public ?int $id;
-    #[Column(name: "uid", type: "integer")]
+    #[Column(name: 'uid', type: 'integer')]
     public ?int $uid;
-    #[Column(name: "caja_id", type: "string")]
+    #[Column(name: 'caja_id', type: 'string')]
     public ?string $caja_id;
-    #[Column(name: "tipo_id", type: "integer")]
+    #[Column(name: 'tipo_id', type: 'integer')]
     public ?int $tipo_id;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
-    #[Column(name: "referencia", type: "string")]
+    #[Column(name: 'referencia', type: 'string')]
     public ?string $referencia;
-    #[Column(name: "monto", type: "decimal")]
+    #[Column(name: 'monto', type: 'decimal')]
     public ?string $monto;
-    #[ManyToOne(targetEntity: CashboxEntity::class, inversedBy: "items")]
-    #[JoinColumn(name: "caja_id", referencedColumnName: "caja_id")]
+    #[ManyToOne(targetEntity: CashboxEntity::class, inversedBy: 'items')]
+    #[JoinColumn(name: 'caja_id', referencedColumnName: 'caja_id')]
     public CashboxEntity $cashbox;
 
     public function mapToDomainModel(): CashboxDetail

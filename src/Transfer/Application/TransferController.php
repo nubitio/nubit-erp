@@ -3,11 +3,11 @@
 namespace App\Transfer\Application;
 
 use App\Base\BaseController;
-use App\Transfer\Domain\TransferGetAllUseCase;
-use App\Transfer\Domain\TransferCreateUseCase;
-use App\Transfer\Domain\TransferUpdateUseCase;
-use App\Transfer\Domain\TransferDeleteUseCase;
 use App\Transfer\Domain\Transfer;
+use App\Transfer\Domain\TransferCreateUseCase;
+use App\Transfer\Domain\TransferDeleteUseCase;
+use App\Transfer\Domain\TransferGetAllUseCase;
+use App\Transfer\Domain\TransferUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +38,7 @@ class TransferController extends BaseController
          */
         $transfer = $this->serializer->deserialize(json_encode($request->request->all()), Transfer::class, 'json');
         $createUseCase($transfer);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -50,6 +51,7 @@ class TransferController extends BaseController
          */
         $transfer = $this->serializer->deserialize(json_encode($request->request->all()), Transfer::class, 'json');
         $updateUseCase($transfer);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -57,6 +59,7 @@ class TransferController extends BaseController
     public function delete(TransferDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

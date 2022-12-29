@@ -26,9 +26,11 @@ class SendWhatsAppCommand extends Command
             $io->title('Demo Title');
             $io->text('Demo text');
             $io->success('Success');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+            $io->error('Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

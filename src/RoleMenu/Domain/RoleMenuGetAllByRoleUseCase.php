@@ -17,19 +17,20 @@ class RoleMenuGetAllByRoleUseCase
         $data = [];
         $i = 0;
         foreach ($result as $menu) {
-            if ($menu['parent_id'] == 0) {
+            if (0 == $menu['parent_id']) {
                 $submenu = [];
                 $j = 0;
                 foreach ($result as $option) {
                     if ($menu['menu_id'] == $option['parent_id']) {
-                        $submenu[$j] = ["id" => $option['menu_id'], "text" => $option['descripcion'], "checked" => (bool)$option['checked']];
-                        $j++;
+                        $submenu[$j] = ['id' => $option['menu_id'], 'text' => $option['descripcion'], 'checked' => (bool) $option['checked']];
+                        ++$j;
                     }
                 }
-                $data[$i] = ["id" => $menu['menu_id'], "text" => $menu['descripcion'], "children" => $submenu];
-                $i++;
+                $data[$i] = ['id' => $menu['menu_id'], 'text' => $menu['descripcion'], 'children' => $submenu];
+                ++$i;
             }
         }
+
         return $data;
     }
 }

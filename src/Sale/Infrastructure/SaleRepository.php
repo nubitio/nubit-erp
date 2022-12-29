@@ -40,8 +40,8 @@ class SaleRepository implements SaleRepositoryInterface
         $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
 
         return [
-            'header'  => $header,
-            'details' => $details
+            'header' => $header,
+            'details' => $details,
         ];
     }
 
@@ -49,6 +49,7 @@ class SaleRepository implements SaleRepositoryInterface
     {
         /** @var SaleEntity $saleEntity */
         $saleEntity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
+
         return $saleEntity->mapToDomainModel();
     }
 

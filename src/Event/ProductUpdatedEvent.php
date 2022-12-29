@@ -9,7 +9,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 #[IgnoreAutowire]
 class ProductUpdatedEvent extends Event
 {
-    const NAME = 'product.updated';
+    public const NAME = 'product.updated';
 
     private Product $product;
 

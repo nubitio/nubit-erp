@@ -15,8 +15,6 @@ class Unit
         public ?string $descripcion,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

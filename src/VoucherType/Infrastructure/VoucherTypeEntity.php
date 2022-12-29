@@ -6,21 +6,20 @@ use App\Domain\Annotation\IgnoreAutowire;
 use App\VoucherType\Domain\VoucherType;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "tipo_comprobante")]
+#[Table(name: 'tipo_comprobante')]
 class VoucherTypeEntity
 {
     #[Id]
-    #[Column(name: "codigo", type: "string")]
+    #[Column(name: 'codigo', type: 'string')]
     public ?string $codigo;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): VoucherType
@@ -29,7 +28,6 @@ class VoucherTypeEntity
             $this->codigo,
             $this->descripcion,
             $this->estado,
-
         );
     }
 

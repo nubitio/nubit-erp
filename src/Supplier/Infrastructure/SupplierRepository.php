@@ -2,9 +2,9 @@
 
 namespace App\Supplier\Infrastructure;
 
-use App\Supplier\Domain\SupplierRepositoryInterface;
-use App\Supplier\Domain\Supplier;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Supplier\Domain\Supplier;
+use App\Supplier\Domain\SupplierRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

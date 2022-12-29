@@ -15,10 +15,9 @@ class SummaryCreateUseCase
 
     public function __construct(
         SummaryRepositoryInterface $summaryRepository,
-        SaleRepositoryInterface    $saleRepository,
+        SaleRepositoryInterface $saleRepository,
         BillUtilsInterface $invoiceUtils
-    )
-    {
+    ) {
         $this->summaryRepository = $summaryRepository;
         $this->saleRepository = $saleRepository;
         $this->invoiceUtils = $invoiceUtils;
@@ -32,7 +31,7 @@ class SummaryCreateUseCase
         $sale = $this->saleRepository->getOneById($saleId);
         $summaryDetail = new SummaryDetail();
         $summaryDetail->tipoDoc = $sale['header']['doc_type'];
-        $summaryDetail->serieNro = $sale['header']['doc_series'] . '-' . $sale['header']['doc_number'];
+        $summaryDetail->serieNro = $sale['header']['doc_series'].'-'.$sale['header']['doc_number'];
         $summaryDetail->estado = '3';
         $summaryDetail->clienteTipo = $sale['header']['client_doc_type'];
         $summaryDetail->clienteNro = $sale['header']['client_doc_number'];
