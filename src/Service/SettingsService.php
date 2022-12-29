@@ -23,7 +23,7 @@ class SettingsService
         return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(3600);
             $value = $this->db->fetchOne('SELECT value FROM options WHERE name = ?', [$key]);
-            if ($value === false) {
+            if (false === $value) {
                 return $default;
             }
 

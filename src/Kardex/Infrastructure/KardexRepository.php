@@ -9,8 +9,7 @@ class KardexRepository implements KardexRepositoryInterface
 {
     public function __construct(
         private readonly Connection $connection
-    )
-    {
+    ) {
     }
 
     public function getAll(string $localId, ?string $warehouseId, ?string $categoryId, ?string $dateFrom, ?string $dateTo): array
@@ -20,7 +19,7 @@ class KardexRepository implements KardexRepositoryInterface
             $warehouseId,
             $categoryId,
             $dateFrom ?? date('Y-m-01'),
-            $dateTo ?? date('Y-m-t')
+            $dateTo ?? date('Y-m-t'),
         ]);
     }
 
@@ -30,7 +29,7 @@ class KardexRepository implements KardexRepositoryInterface
             $warehouseId,
             $productId,
             $dateFrom ?? date('Y-m-01'),
-            $dateTo ?? date('Y-m-t')
+            $dateTo ?? date('Y-m-t'),
         ]);
     }
 }

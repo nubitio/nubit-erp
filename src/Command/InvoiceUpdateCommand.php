@@ -37,9 +37,11 @@ class InvoiceUpdateCommand extends Command
             $result = $this->invoiceUpdater->update();
             $io->text($result);
             $io->success('Success');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+            $io->error('Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

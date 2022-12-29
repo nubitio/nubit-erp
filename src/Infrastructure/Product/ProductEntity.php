@@ -12,151 +12,103 @@ use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "producto")]
+#[Table(name: 'producto')]
 class ProductEntity
 {
     #[Id]
-    #[Column(name: "producto_id", type: "string")]
+    #[Column(name: 'producto_id', type: 'string')]
     private string $id;
-    #[Column(name: "tipo_id", type: "integer")]
+    #[Column(name: 'tipo_id', type: 'integer')]
     private int $typeId;
     #[NotBlank]
-    #[Column(name: "codigo", type: "string")]
+    #[Column(name: 'codigo', type: 'string')]
     private ?string $code = null;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     private string $name;
-    #[Column(name: "categoria_id", type: "string")]
+    #[Column(name: 'categoria_id', type: 'string')]
     private string $categoryId;
-    #[Column(name: "precio", type: "decimal")]
+    #[Column(name: 'precio', type: 'decimal')]
     private float $price;
-    #[Column(name: "imagen", type: "string")]
+    #[Column(name: 'imagen', type: 'string')]
     private ?string $image = null;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     private bool $active;
 
-    /**
-     * @return string
-     */
     public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * @param string $id
-     */
     public function setId(string $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return int
-     */
     public function getTypeId(): int
     {
         return $this->typeId;
     }
 
-    /**
-     * @param int $typeId
-     */
     public function setTypeId(int $typeId): void
     {
         $this->typeId = $typeId;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @param string|null $code
-     */
     public function setCode(?string $code): void
     {
         $this->code = $code;
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     */
     public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return string
-     */
     public function getCategoryId(): string
     {
         return $this->categoryId;
     }
 
-    /**
-     * @param string $categoryId
-     */
     public function setCategoryId(string $categoryId): void
     {
         $this->categoryId = $categoryId;
     }
 
-    /**
-     * @return float
-     */
     public function getPrice(): float
     {
         return $this->price;
     }
 
-    /**
-     * @param float $price
-     */
     public function setPrice(float $price): void
     {
         $this->price = $price;
     }
 
-    /**
-     * @return string|null
-     */
     public function getImage(): ?string
     {
         return $this->image;
     }
 
-    /**
-     * @param string|null $image
-     */
     public function setImage(?string $image): void
     {
         $this->image = $image;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    /**
-     * @param bool $active
-     */
     public function setActive(bool $active): void
     {
         $this->active = $active;
@@ -170,25 +122,25 @@ class ProductEntity
     public function fromDomain(Product $product): self
     {
         $this->setId($product->getId());
-        if ($product->getCode() !== null) {
+        if (null !== $product->getCode()) {
             $this->setCode($product->getCode());
         }
-        if ($product->getTypeId() !== null) {
+        if (null !== $product->getTypeId()) {
             $this->setTypeId($product->getTypeId());
         }
-        if ($product->getName() !== null) {
+        if (null !== $product->getName()) {
             $this->setName($product->getName());
         }
-        if ($product->getCategoryId() !== null) {
+        if (null !== $product->getCategoryId()) {
             $this->setCategoryId($product->getCategoryId());
         }
-        if ($product->getPrice() !== null && $product->getPrice() !== 0.0) {
+        if (null !== $product->getPrice() && 0.0 !== $product->getPrice()) {
             $this->setPrice($product->getPrice());
         }
-        if ($product->getImage() !== null) {
+        if (null !== $product->getImage()) {
             $this->setImage($product->getImage());
         }
-        if ($product->isActive() !== null) {
+        if (null !== $product->isActive()) {
             $this->setActive($product->isActive());
         }
 

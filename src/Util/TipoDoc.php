@@ -4,7 +4,7 @@ namespace App\Util;
 
 abstract class TipoDoc
 {
-    const BOLETA = '03';
-    const FACTURA = '01';
-    const NOTA_PEDIDO = '00';
+    public const BOLETA = '03';
+    public const FACTURA = '01';
+    public const NOTA_PEDIDO = '00';
 }

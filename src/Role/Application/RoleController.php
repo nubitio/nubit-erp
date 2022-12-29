@@ -3,11 +3,11 @@
 namespace App\Role\Application;
 
 use App\Base\BaseController;
-use App\Role\Domain\RoleGetAllUseCase;
-use App\Role\Domain\RoleCreateUseCase;
-use App\Role\Domain\RoleUpdateUseCase;
-use App\Role\Domain\RoleDeleteUseCase;
 use App\Role\Domain\Role;
+use App\Role\Domain\RoleCreateUseCase;
+use App\Role\Domain\RoleDeleteUseCase;
+use App\Role\Domain\RoleGetAllUseCase;
+use App\Role\Domain\RoleUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +35,7 @@ class RoleController extends BaseController
          */
         $role = $this->serializer->deserialize(json_encode($request->request->all()), Role::class, 'json');
         $createUseCase($role);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class RoleController extends BaseController
          */
         $role = $this->serializer->deserialize(json_encode($request->request->all()), Role::class, 'json');
         $updateUseCase($role);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class RoleController extends BaseController
     public function delete(RoleDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

@@ -90,22 +90,22 @@ class Note implements \JsonSerializable
     public function jsonSerialize(): mixed
     {
         return [
-            'nota_id'            => $this->getNotaId(),
-            'movimiento_id'      => $this->getMovimientoId(),
-            'fecha'              => $this->getFecha(),
-            'tipo_id'            => $this->getTipoId(),
-            'codigo_motivo'      => $this->getCodigoMotivo(),
+            'nota_id' => $this->getNotaId(),
+            'movimiento_id' => $this->getMovimientoId(),
+            'fecha' => $this->getFecha(),
+            'tipo_id' => $this->getTipoId(),
+            'codigo_motivo' => $this->getCodigoMotivo(),
             'descripcion_motivo' => $this->getDescripcionMotivo(),
-            'serie'              => $this->getSerie(),
-            'correlativo'        => $this->getCorrelativo(),
-            'digest'             => $this->getDigest(),
-            'envio_sunat'        => $this->getEnvioSunat(),
-            'mensaje_sunat'      => $this->getMensajeSunat(),
-            'created_by'         => $this->getCreatedBy(),
-            'updated_by'         => $this->getUpdatedBy(),
-            'created_at'         => $this->getCreatedAt(),
-            'updated_at'         => $this->getUpdatedAt(),
-            'details'            => $this->getDetails()
+            'serie' => $this->getSerie(),
+            'correlativo' => $this->getCorrelativo(),
+            'digest' => $this->getDigest(),
+            'envio_sunat' => $this->getEnvioSunat(),
+            'mensaje_sunat' => $this->getMensajeSunat(),
+            'created_by' => $this->getCreatedBy(),
+            'updated_by' => $this->getUpdatedBy(),
+            'created_at' => $this->getCreatedAt(),
+            'updated_at' => $this->getUpdatedAt(),
+            'details' => $this->getDetails(),
         ];
     }
 
@@ -119,11 +119,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $notaId
+     *
      * @return Note
      */
     public function setNotaId($notaId)
     {
         $this->notaId = $notaId;
+
         return $this;
     }
 
@@ -137,11 +139,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $movimientoId
+     *
      * @return Note
      */
     public function setMovimientoId($movimientoId)
     {
         $this->movimientoId = $movimientoId;
+
         return $this;
     }
 
@@ -155,11 +159,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $fecha
+     *
      * @return Note
      */
     public function setFecha($fecha)
     {
         $this->fecha = $fecha;
+
         return $this;
     }
 
@@ -173,11 +179,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $tipoId
+     *
      * @return Note
      */
     public function setTipoId($tipoId)
     {
         $this->tipoId = $tipoId;
+
         return $this;
     }
 
@@ -191,11 +199,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $codigoMotivo
+     *
      * @return Note
      */
     public function setCodigoMotivo($codigoMotivo)
     {
         $this->codigoMotivo = $codigoMotivo;
+
         return $this;
     }
 
@@ -209,11 +219,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $descripcionMotivo
+     *
      * @return Note
      */
     public function setDescripcionMotivo($descripcionMotivo)
     {
         $this->descripcionMotivo = $descripcionMotivo;
+
         return $this;
     }
 
@@ -227,11 +239,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $serie
+     *
      * @return Note
      */
     public function setSerie($serie)
     {
         $this->serie = $serie;
+
         return $this;
     }
 
@@ -245,11 +259,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param int $correlativo
+     *
      * @return Note
      */
     public function setCorrelativo($correlativo)
     {
         $this->correlativo = $correlativo;
+
         return $this;
     }
 
@@ -263,11 +279,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $digest
+     *
      * @return Note
      */
     public function setDigest($digest)
     {
         $this->digest = $digest;
+
         return $this;
     }
 
@@ -281,11 +299,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param int $envioSunat
+     *
      * @return Note
      */
     public function setEnvioSunat($envioSunat)
     {
         $this->envioSunat = $envioSunat;
+
         return $this;
     }
 
@@ -299,11 +319,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $mensajeSunat
+     *
      * @return Note
      */
     public function setMensajeSunat($mensajeSunat)
     {
         $this->mensajeSunat = $mensajeSunat;
+
         return $this;
     }
 
@@ -317,11 +339,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param int $createdBy
+     *
      * @return Note
      */
     public function setCreatedBy($createdBy)
     {
         $this->createdBy = $createdBy;
+
         return $this;
     }
 
@@ -335,11 +359,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param int $updatedBy
+     *
      * @return Note
      */
     public function setUpdatedBy($updatedBy)
     {
         $this->updatedBy = $updatedBy;
+
         return $this;
     }
 
@@ -353,11 +379,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $createdAt
+     *
      * @return Note
      */
     public function setCreatedAt($createdAt)
     {
         $this->createdAt = $createdAt;
+
         return $this;
     }
 
@@ -371,11 +399,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param string $updatedAt
+     *
      * @return Note
      */
     public function setUpdatedAt($updatedAt)
     {
         $this->updatedAt = $updatedAt;
+
         return $this;
     }
 
@@ -389,11 +419,13 @@ class Note implements \JsonSerializable
 
     /**
      * @param NoteDetail[] $details
+     *
      * @return Note
      */
     public function setDetails($details)
     {
         $this->details = $details;
+
         return $this;
     }
 }

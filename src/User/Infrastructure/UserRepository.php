@@ -47,7 +47,7 @@ class UserRepository implements UserRepositoryInterface
     public function update(User $user): void
     {
         $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
-        if ($user->password !== null && $user->password !== '') {
+        if (null !== $user->password && '' !== $user->password) {
             $user->password = password_hash($user->password, PASSWORD_DEFAULT);
         } else {
             $user->password = $entity->password;
@@ -66,6 +66,7 @@ class UserRepository implements UserRepositoryInterface
     public function getOneByUsername(string $username): ?User
     {
         $entity = $this->entityManager->getRepository(UserEntity::class)->findOneBy(['username' => $username]);
+
         return $entity?->mapToDomainModel() ?? null;
     }
 }

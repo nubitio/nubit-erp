@@ -6,8 +6,7 @@ class KardexGetOneUseCase
 {
     public function __construct(
         private readonly KardexRepositoryInterface $kardexRepository
-    )
-    {
+    ) {
     }
 
     public function __invoke(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array

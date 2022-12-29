@@ -3,11 +3,11 @@
 namespace App\SaleDetail\Application;
 
 use App\Base\BaseController;
-use App\SaleDetail\Domain\SaleDetailGetAllUseCase;
-use App\SaleDetail\Domain\SaleDetailCreateUseCase;
-use App\SaleDetail\Domain\SaleDetailUpdateUseCase;
-use App\SaleDetail\Domain\SaleDetailDeleteUseCase;
 use App\SaleDetail\Domain\SaleDetail;
+use App\SaleDetail\Domain\SaleDetailCreateUseCase;
+use App\SaleDetail\Domain\SaleDetailDeleteUseCase;
+use App\SaleDetail\Domain\SaleDetailGetAllUseCase;
+use App\SaleDetail\Domain\SaleDetailUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +30,7 @@ class SaleDetailController extends BaseController
     public function getAll(): Response
     {
         $getAllUseCase = $this->container->get(SaleDetailGetAllUseCase::class);
+
         return $this->json($getAllUseCase());
     }
 
@@ -42,6 +43,7 @@ class SaleDetailController extends BaseController
         $saledetail = $this->serializer->deserialize(json_encode($request->request->all()), SaleDetail::class, 'json');
         $createUseCase = $this->container->get(SaleDetailCreateUseCase::class);
         $createUseCase($saledetail);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -55,6 +57,7 @@ class SaleDetailController extends BaseController
         $saledetail = $this->serializer->deserialize(json_encode($request->request->all()), SaleDetail::class, 'json');
         $updateUseCase = $this->container->get(SaleDetailUpdateUseCase::class);
         $updateUseCase($saledetail);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -63,6 +66,7 @@ class SaleDetailController extends BaseController
     {
         $deleteUseCase = $this->container->get(SaleDetailDeleteUseCase::class);
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

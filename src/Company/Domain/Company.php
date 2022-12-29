@@ -33,8 +33,6 @@ class Company
         public ?string $sunat_password,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

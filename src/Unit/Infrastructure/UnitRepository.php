@@ -2,9 +2,9 @@
 
 namespace App\Unit\Infrastructure;
 
-use App\Unit\Domain\UnitRepositoryInterface;
-use App\Unit\Domain\Unit;
 use App\Infrastructure\Common\DataGridLoader;
+use App\Unit\Domain\Unit;
+use App\Unit\Domain\UnitRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

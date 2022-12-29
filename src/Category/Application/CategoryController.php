@@ -45,6 +45,7 @@ class CategoryController extends BaseController
          */
         $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
         $createUseCase($category);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -58,6 +59,7 @@ class CategoryController extends BaseController
          */
         $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
         $updateUseCase($category);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -65,6 +67,7 @@ class CategoryController extends BaseController
     public function delete(CategoryDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 

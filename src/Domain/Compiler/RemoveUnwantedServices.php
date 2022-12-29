@@ -2,7 +2,6 @@
 
 namespace App\Domain\Compiler;
 
-
 use App\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -20,7 +19,7 @@ final class RemoveUnwantedServices implements CompilerPassInterface
                 try {
                     $reflection = new \ReflectionClass($fqcn);
                     $attribute = $reflection->getAttributes(IgnoreAutowire::class)[0] ?? null;
-                    if ($attribute !== null) {
+                    if (null !== $attribute) {
                         $container->removeDefinition($fqcn);
                     }
                 } catch (\Exception $e) {

@@ -17,8 +17,6 @@ class Operation
         public ?int $tipo_id,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

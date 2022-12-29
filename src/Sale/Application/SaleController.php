@@ -20,7 +20,6 @@ use App\Util\Constants;
 use App\WebClientPrint\WebClientPrint;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -55,13 +54,13 @@ class SaleController extends BaseController
             [
                 'field' => 'tipo_id',
                 'op' => 'equal',
-                'value' => 2
+                'value' => 2,
             ],
             [
                 'field' => 'local_id',
                 'op' => 'equal',
-                'value' => $request->getSession()->get('local_id')
-            ]
+                'value' => $request->getSession()->get('local_id'),
+            ],
         ]));
     }
 
@@ -86,6 +85,7 @@ class SaleController extends BaseController
         }
         $sale->items = $detailItems;
         $createUseCase($sale);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -98,6 +98,7 @@ class SaleController extends BaseController
          */
         $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
         $updateUseCase($sale);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -105,6 +106,7 @@ class SaleController extends BaseController
     public function delete(SaleDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
@@ -118,7 +120,7 @@ class SaleController extends BaseController
         $params = [
             'local_id' => $localId,
             'date_from' => $dateFrom,
-            'date_to' => $dateTo
+            'date_to' => $dateTo,
         ];
         switch ($report) {
             case 'sale-by-product':
@@ -146,6 +148,7 @@ class SaleController extends BaseController
                 $reportFile = $xlsExporter->export($data, 'reporte_notas_de_credito');
                 break;
         }
+
         return $reportFile;
     }
 
@@ -155,13 +158,13 @@ class SaleController extends BaseController
         $sale = $getOneById($id);
         $qr = '';
         if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode)->render($sale['header']['doc_qr_data']);
+            $qr = (new QRCode())->render($sale['header']['doc_qr_data']);
         }
         $logo = base64_encode(file_get_contents('assets/images/logo.png'));
         $content = $this->render('sale/report/invoice.html.twig', [
             'logo' => "data:image/png;base64,{$logo}",
             'qr' => $qr,
-            'sale' => $sale
+            'sale' => $sale,
         ]);
 
         $preview = $request->get('preview');
@@ -180,10 +183,11 @@ class SaleController extends BaseController
         $pageHeight += $items * 5;
 
         $pdfExporter = new PdfExporter();
+
         return $pdfExporter->export($content->getContent(), 'invoice', [
             'no-outline',
             'page-width' => '80mm',
-            'page-height' => $pageHeight . 'mm',
+            'page-height' => $pageHeight.'mm',
             'margin-left' => 0,
             'margin-right' => 0,
         ]);
@@ -194,6 +198,7 @@ class SaleController extends BaseController
     {
         $userId = $request->getSession()->get('usuario_id');
         $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
+
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }
 
@@ -202,6 +207,7 @@ class SaleController extends BaseController
     {
         $localId = $request->getSession()->get('local_id');
         $saleInvoiceUseCase($id, $localId);
+
         return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
     }
 }

@@ -3,12 +3,12 @@
 namespace App\VoucherType\Application;
 
 use App\Base\BaseController;
-use App\VoucherType\Domain\VoucherTypeGetAllUseCase;
-use App\VoucherType\Domain\VoucherTypeCreateUseCase;
-use App\VoucherType\Domain\VoucherTypeUpdateUseCase;
-use App\VoucherType\Domain\VoucherTypeDeleteUseCase;
-use App\VoucherType\Domain\VoucherType;
 use App\Util\Constants;
+use App\VoucherType\Domain\VoucherType;
+use App\VoucherType\Domain\VoucherTypeCreateUseCase;
+use App\VoucherType\Domain\VoucherTypeDeleteUseCase;
+use App\VoucherType\Domain\VoucherTypeGetAllUseCase;
+use App\VoucherType\Domain\VoucherTypeUpdateUseCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -35,6 +35,7 @@ class VoucherTypeController extends BaseController
          */
         $voucherType = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
         $createUseCase($voucherType);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class VoucherTypeController extends BaseController
          */
         $voucherType = $this->serializer->deserialize(json_encode($request->request->all()), VoucherType::class, 'json');
         $updateUseCase($voucherType);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class VoucherTypeController extends BaseController
     public function delete(VoucherTypeDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

@@ -3,11 +3,11 @@
 namespace App\Supplier\Application;
 
 use App\Base\BaseController;
-use App\Supplier\Domain\SupplierGetAllUseCase;
-use App\Supplier\Domain\SupplierCreateUseCase;
-use App\Supplier\Domain\SupplierUpdateUseCase;
-use App\Supplier\Domain\SupplierDeleteUseCase;
 use App\Supplier\Domain\Supplier;
+use App\Supplier\Domain\SupplierCreateUseCase;
+use App\Supplier\Domain\SupplierDeleteUseCase;
+use App\Supplier\Domain\SupplierGetAllUseCase;
+use App\Supplier\Domain\SupplierUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +35,7 @@ class SupplierController extends BaseController
          */
         $supplier = $this->serializer->deserialize(json_encode($request->request->all()), Supplier::class, 'json');
         $createUseCase($supplier);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class SupplierController extends BaseController
          */
         $supplier = $this->serializer->deserialize(json_encode($request->request->all()), Supplier::class, 'json');
         $updateUseCase($supplier);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class SupplierController extends BaseController
     public function delete(SupplierDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

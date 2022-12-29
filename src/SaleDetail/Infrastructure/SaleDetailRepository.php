@@ -2,9 +2,9 @@
 
 namespace App\SaleDetail\Infrastructure;
 
-use App\SaleDetail\Domain\SaleDetailRepositoryInterface;
-use App\SaleDetail\Domain\SaleDetail;
 use App\Infrastructure\Common\DataGridLoader;
+use App\SaleDetail\Domain\SaleDetail;
+use App\SaleDetail\Domain\SaleDetailRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

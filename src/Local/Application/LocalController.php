@@ -43,6 +43,7 @@ class LocalController extends BaseController
          */
         $local = $this->serializer->deserialize(json_encode($request->request->all()), Local::class, 'json');
         $createUseCase($local);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -55,6 +56,7 @@ class LocalController extends BaseController
          */
         $local = $this->serializer->deserialize(json_encode($request->request->all()), Local::class, 'json');
         $updateUseCase($local);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -62,6 +64,7 @@ class LocalController extends BaseController
     public function delete(LocalDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

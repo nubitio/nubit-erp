@@ -40,9 +40,9 @@ class CashboxController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
-                'value' => $request->getSession()->get('local_id')
-            ]
+                'op' => 'equal',
+                'value' => $request->getSession()->get('local_id'),
+            ],
         ]));
     }
 
@@ -55,32 +55,33 @@ class CashboxController extends BaseController
 
         if (!$cashBox) {
             return $this->json([
-                'header' => [], 'rows' => [], 'footer' => []
+                'header' => [], 'rows' => [], 'footer' => [],
             ]);
         }
 
         $data = [];
 
         $data['header'] = [
-            'caja_id'  => $cashBox->caja_id,
-            'fecha'    => $cashBox->apertura->format('Y-m-d'),
+            'caja_id' => $cashBox->caja_id,
+            'fecha' => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
         ];
         $data['rows'] = $cashBox->items;
         $data['footer'] = [
             [
                 'descripcion' => 'Ingresos',
-                'monto'       => $cashBox->getIncome(),
+                'monto' => $cashBox->getIncome(),
             ],
             [
                 'descripcion' => 'Egresos',
-                'monto'       => $cashBox->getOutcome(),
+                'monto' => $cashBox->getOutcome(),
             ],
             [
                 'descripcion' => 'Total',
-                'monto'       => $cashBox->getBalance(),
+                'monto' => $cashBox->getBalance(),
             ],
         ];
+
         return $this->json($data);
     }
 
@@ -106,6 +107,7 @@ class CashboxController extends BaseController
         );
 
         $createUseCase($cashBox);
+
         return $this->json(['success' => true, 'caja_id' => $cashBoxId]);
     }
 
@@ -117,6 +119,7 @@ class CashboxController extends BaseController
          */
         $cashbox = $this->serializer->deserialize(json_encode($request->request->all()), Cashbox::class, 'json');
         $createUseCase($cashbox);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -129,6 +132,7 @@ class CashboxController extends BaseController
          */
         $cashbox = $this->serializer->deserialize(json_encode($request->request->all()), Cashbox::class, 'json');
         $updateUseCase($cashbox);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -136,6 +140,7 @@ class CashboxController extends BaseController
     public function delete(CashboxDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
@@ -145,11 +150,12 @@ class CashboxController extends BaseController
         $cashBox = $getOneUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
-            'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title' => 'Reporte de caja',
+            'logo' => $request->getSchemeAndHttpHost().'/assets/images/logo.png',
             'cashbox' => $cashBox,
         ]);
-        return $exporter->export($content, 'caja_' . $id);
+
+        return $exporter->export($content, 'caja_'.$id);
     }
 
     #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
@@ -159,11 +165,12 @@ class CashboxController extends BaseController
         $infoReceipt = $getInfoReceiptUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
-            'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title' => 'Reporte de caja',
+            'logo' => $request->getSchemeAndHttpHost().'/assets/images/logo.png',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);
-        return $exporter->export($content, 'caja_' . $id);
+
+        return $exporter->export($content, 'caja_'.$id);
     }
 }

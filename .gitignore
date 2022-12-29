@@ -1,17 +1,3 @@
-# Core
-/.env.local
-/.env.local.php
-/.env.*.local
-/public/tmp/
-/node_modules/
-/public/build/
-/dist/
-/config/config.ini
-/config/certificate_prod.pem
-/public/bundles/
-/var/
-/vendor/
-
 ### JetBrains template
 # User-specific stuff
 .idea/**/workspace.xml
@@ -48,11 +34,6 @@ desktop.ini
 /vendor/
 ###< symfony/framework-bundle ###
 
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
-
 ###> phpunit/phpunit ###
 /phpunit.xml
 .phpunit.result.cache
@@ -64,3 +45,8 @@ desktop.ini
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###

@@ -18,11 +18,11 @@ class DataBaseFactory
         $proxyDir = null;
         $cache = DoctrineProvider::wrap(new ArrayAdapter());
 
-        $config = Setup::createAttributeMetadataConfiguration(array(__DIR__), $isDevMode, $proxyDir, $cache);
+        $config = Setup::createAttributeMetadataConfiguration([__DIR__], $isDevMode, $proxyDir, $cache);
 
-        $conn = array(
-            'url' => $_ENV['DATABASE_URL']
-        );
+        $conn = [
+            'url' => $_ENV['DATABASE_URL'],
+        ];
 
         return EntityManager::create($conn, $config);
     }

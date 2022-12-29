@@ -23,11 +23,10 @@ class SummaryRepository implements SummaryRepositoryInterface
     private SerializerService $serializer;
 
     public function __construct(
-        Connection             $connection,
+        Connection $connection,
         EntityManagerInterface $entityManager,
-        SerializerService      $serializer
-    )
-    {
+        SerializerService $serializer
+    ) {
         $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->serializer = $serializer;
@@ -40,6 +39,7 @@ class SummaryRepository implements SummaryRepositoryInterface
     {
         $sql = 'select ifnull(max(right(correlative, 1)), 0) as correlative from summary where date = ?';
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
+
         return $result['correlative'] ?? 0;
     }
 
@@ -55,13 +55,14 @@ class SummaryRepository implements SummaryRepositoryInterface
         $requestBody = $this->serializer->serialize($summary, 'json');
         $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/summary/send?token=123456', [
             'headers' => [
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
-            'body'    => $requestBody,
+            'body' => $requestBody,
         ]);
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+
         return $documentResponse;
     }
 
@@ -74,10 +75,11 @@ class SummaryRepository implements SummaryRepositoryInterface
     public function getStatus(string $ticket, string $ruc): StatusResponse
     {
         $httpClient = HttpClient::create();
-        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
+        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket='.$ticket.'&ruc='.$ruc);
         $responseBody = $response->getContent();
         /** @var StatusResponse $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusResponse::class, 'json');
+
         return $statusResponse;
     }
 }

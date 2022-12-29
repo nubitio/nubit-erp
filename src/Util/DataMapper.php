@@ -6,8 +6,10 @@ class DataMapper
 {
     /**
      * @template T
+     *
      * @param T $input
      * @param T $output
+     *
      * @return T
      */
     public static function map($input, $output)
@@ -27,13 +29,15 @@ class DataMapper
 
     /**
      * @template T
+     *
      * @param T $input
-     * @param string $class
+     *
      * @return T
      */
     public static function mapTo($input, string $class)
     {
         $output = new $class();
+
         return self::map($input, $output);
     }
 }

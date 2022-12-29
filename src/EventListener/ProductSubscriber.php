@@ -20,12 +20,11 @@ class ProductSubscriber implements EventSubscriberInterface
     private DeleteProductLocal $deleteProductLocal;
 
     public function __construct(
-        SessionService     $sessionService,
+        SessionService $sessionService,
         CreateProductLocal $createProductLocal,
         UpdateProductLocal $updateProductLocal,
         DeleteProductLocal $deleteProductLocal
-    )
-    {
+    ) {
         $this->sessionService = $sessionService;
         $this->createProductLocal = $createProductLocal;
         $this->updateProductLocal = $updateProductLocal;
@@ -53,7 +52,7 @@ class ProductSubscriber implements EventSubscriberInterface
 
     public function onProductUpdated(ProductUpdatedEvent $event)
     {
-        if ($this->sessionService->get('local_id') === null) {
+        if (null === $this->sessionService->get('local_id')) {
             return;
         }
         $productLocal = new ProductLocal();
@@ -66,8 +65,8 @@ class ProductSubscriber implements EventSubscriberInterface
 
     public function onProductDeleted(ProductDeletedEvent $event)
     {
-        if ($event->getProduct()->getImage() != null) {
-            $imagePath = 'uploads/images/' . $event->getProduct()->getImage();
+        if (null != $event->getProduct()->getImage()) {
+            $imagePath = 'uploads/images/'.$event->getProduct()->getImage();
 
             if (file_exists($imagePath)) {
                 unlink($imagePath);

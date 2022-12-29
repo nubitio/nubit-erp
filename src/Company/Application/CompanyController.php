@@ -45,6 +45,7 @@ class CompanyController extends BaseController
          */
         $company = $this->serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
         $createUseCase($company);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -58,6 +59,7 @@ class CompanyController extends BaseController
          */
         $company = $this->serializer->deserialize(json_encode($request->request->all()), Company::class, 'json');
         $updateUseCase($company);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -65,6 +67,7 @@ class CompanyController extends BaseController
     public function delete(CompanyDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 

@@ -21,6 +21,7 @@ class RolController extends BaseController
     public function index(): JsonResponse
     {
         $data = $this->connection->fetchAllAssociative('SELECT * FROM rol');
+
         return $this->json($data);
     }
 }

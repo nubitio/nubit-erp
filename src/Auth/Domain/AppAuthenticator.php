@@ -23,13 +23,12 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
-    )
-    {
+    ) {
     }
 
     public function supports(Request $request): ?bool
     {
-        return $request->attributes->get('_route') === 'login'
+        return 'login' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
 
@@ -43,7 +42,7 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             new UserBadge($username),
             new PasswordCredentials($password),
             [
-                new RememberMeBadge()
+                new RememberMeBadge(),
             ]
         );
     }
@@ -66,7 +65,7 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         return new JsonResponse([
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
+            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
         ], Response::HTTP_UNAUTHORIZED);
     }
 

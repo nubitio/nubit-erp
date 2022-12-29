@@ -3,12 +3,12 @@
 namespace App\Warehouse\Application;
 
 use App\Base\BaseController;
-use App\Warehouse\Domain\WarehouseGetAllUseCase;
-use App\Warehouse\Domain\WarehouseCreateUseCase;
-use App\Warehouse\Domain\WarehouseUpdateUseCase;
-use App\Warehouse\Domain\WarehouseDeleteUseCase;
-use App\Warehouse\Domain\Warehouse;
 use App\Util\Constants;
+use App\Warehouse\Domain\Warehouse;
+use App\Warehouse\Domain\WarehouseCreateUseCase;
+use App\Warehouse\Domain\WarehouseDeleteUseCase;
+use App\Warehouse\Domain\WarehouseGetAllUseCase;
+use App\Warehouse\Domain\WarehouseUpdateUseCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -35,6 +35,7 @@ class WarehouseController extends BaseController
          */
         $warehouse = $this->serializer->deserialize(json_encode($request->request->all()), Warehouse::class, 'json');
         $createUseCase($warehouse);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class WarehouseController extends BaseController
          */
         $warehouse = $this->serializer->deserialize(json_encode($request->request->all()), Warehouse::class, 'json');
         $updateUseCase($warehouse);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class WarehouseController extends BaseController
     public function delete(WarehouseDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

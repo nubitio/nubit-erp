@@ -2,33 +2,32 @@
 
 namespace App\Customer\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
+use App\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "cliente")]
+#[Table(name: 'cliente')]
 class CustomerEntity
 {
     #[Id]
-    #[Column(name: "ruc", type: "string")]
+    #[Column(name: 'ruc', type: 'string')]
     public ?string $ruc;
-    #[Column(name: "razon_social", type: "string")]
+    #[Column(name: 'razon_social', type: 'string')]
     public ?string $razon_social;
-    #[Column(name: "domicilio_fiscal", type: "string")]
+    #[Column(name: 'domicilio_fiscal', type: 'string')]
     public ?string $domicilio_fiscal;
-    #[Column(name: "telefono", type: "string")]
+    #[Column(name: 'telefono', type: 'string')]
     public ?string $telefono;
-    #[Column(name: "email", type: "string")]
+    #[Column(name: 'email', type: 'string')]
     public ?string $email;
-    #[Column(name: "imagen", type: "string")]
+    #[Column(name: 'imagen', type: 'string')]
     public ?string $imagen;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): Customer
@@ -41,7 +40,6 @@ class CustomerEntity
             $this->email,
             $this->imagen,
             $this->estado,
-
         );
     }
 

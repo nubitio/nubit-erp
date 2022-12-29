@@ -17,6 +17,7 @@ class RoleMenuController extends BaseController
     public function getAllByRole(Request $request, RoleMenuGetAllByRoleUseCase $getAllUseCase): Response
     {
         $roleId = $request->query->getInt('roleId');
+
         return $this->json($getAllUseCase($roleId));
     }
 
@@ -34,6 +35,7 @@ class RoleMenuController extends BaseController
             $roleMenuList[] = $roleMenu;
         }
         $createUseCase($data['roleId'], $roleMenuList);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 }

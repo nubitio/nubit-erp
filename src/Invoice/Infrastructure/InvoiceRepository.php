@@ -40,6 +40,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         if (!$invoiceEntity) {
             throw new \Exception('Invoice not found');
         }
+
         return $invoiceEntity->mapToDomainModel();
     }
 
@@ -48,8 +49,8 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      */
     public function create(string $saleId, string $localId): void
     {
-        $sale = $this->connection->executeQuery("SELECT * FROM vw_movimiento WHERE movimiento_id = ?", array($saleId))->fetchAssociative();
-        if ($sale['has_invoice'] === '1') {
+        $sale = $this->connection->executeQuery('SELECT * FROM vw_movimiento WHERE movimiento_id = ?', [$saleId])->fetchAssociative();
+        if ('1' === $sale['has_invoice']) {
             return;
         }
         $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'] ?? 0.0, $sale['igv'], $sale['recargo_consumo'] ?? 0.0);

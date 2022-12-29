@@ -2,9 +2,9 @@
 
 namespace App\VoucherType\Infrastructure;
 
-use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
-use App\VoucherType\Domain\VoucherType;
 use App\Infrastructure\Common\DataGridLoader;
+use App\VoucherType\Domain\VoucherType;
+use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 

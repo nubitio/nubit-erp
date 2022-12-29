@@ -2,9 +2,6 @@
 
 namespace App\Domain\Product;
 
-use App\Domain\Service\SerializerService;
-use Symfony\Component\Uid\Uuid;
-
 class CreateProduct
 {
     private IProductRepository $productRepository;

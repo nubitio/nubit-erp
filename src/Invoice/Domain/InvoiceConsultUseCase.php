@@ -9,11 +9,10 @@ use App\Service\SettingsService;
 class InvoiceConsultUseCase
 {
     public function __construct(
-        private readonly SaleRepositoryInterface    $saleRepository,
+        private readonly SaleRepositoryInterface $saleRepository,
         private readonly InvoiceRepositoryInterface $invoiceRepository,
-        private readonly SettingsService            $settingsService,
-    )
-    {
+        private readonly SettingsService $settingsService,
+    ) {
     }
 
     public function __invoke(string $saleId): array

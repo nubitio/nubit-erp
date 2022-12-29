@@ -25,133 +25,85 @@ class Product
     #[SerializedName('estado')]
     private bool $active = false;
 
-    /**
-     * @return string|null
-     */
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    /**
-     * @param string|null $id
-     */
     public function setId(?string $id): void
     {
         $this->id = $id;
     }
 
-    /**
-     * @return string|null
-     */
     public function getTypeId(): ?string
     {
         return $this->typeId;
     }
 
-    /**
-     * @param string|null $typeId
-     */
     public function setTypeId(?string $typeId): void
     {
         $this->typeId = $typeId;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCode(): ?string
     {
         return $this->code;
     }
 
-    /**
-     * @param string|null $code
-     */
     public function setCode(?string $code): void
     {
-        if ($code === '') {
+        if ('' === $code) {
             $this->code = null;
         } else {
             $this->code = $code;
         }
     }
 
-    /**
-     * @return string|null
-     */
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    /**
-     * @param string|null $name
-     */
     public function setName(?string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return string|null
-     */
     public function getCategoryId(): ?string
     {
         return $this->categoryId;
     }
 
-    /**
-     * @param string|null $categoryId
-     */
     public function setCategoryId(?string $categoryId): void
     {
         $this->categoryId = $categoryId;
     }
 
-    /**
-     * @return float
-     */
     public function getPrice(): float
     {
         return $this->price;
     }
 
-    /**
-     * @param float $price
-     */
     public function setPrice(float $price): void
     {
         $this->price = $price;
     }
 
-    /**
-     * @return string|null
-     */
     public function getImage(): ?string
     {
         return $this->image;
     }
 
-    /**
-     * @param string|null $image
-     */
     public function setImage(?string $image): void
     {
         $this->image = $image;
     }
 
-    /**
-     * @return bool
-     */
     public function isActive(): bool
     {
         return $this->active;
     }
 
-    /**
-     * @param bool $active
-     */
     public function setActive(bool $active): void
     {
         $this->active = $active;

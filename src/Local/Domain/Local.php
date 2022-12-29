@@ -21,8 +21,6 @@ class Local
         public ?string $telefono,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

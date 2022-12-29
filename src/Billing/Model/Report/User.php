@@ -10,8 +10,7 @@ class User
     public function __construct(
         public readonly ?string $header = null,
         /** @var Extra[] */
-        public readonly ?array  $extras = null,
-    )
-    {
+        public readonly ?array $extras = null,
+    ) {
     }
 }

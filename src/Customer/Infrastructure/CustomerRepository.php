@@ -2,8 +2,8 @@
 
 namespace App\Customer\Infrastructure;
 
-use App\Customer\Domain\CustomerRepositoryInterface;
 use App\Customer\Domain\Customer;
+use App\Customer\Domain\CustomerRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;

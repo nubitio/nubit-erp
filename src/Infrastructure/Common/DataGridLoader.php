@@ -21,22 +21,22 @@ class DataGridLoader
         $order = isset($_POST['order']) ? strval($_POST['order']) : $order;
         $filterRules = isset($_POST['filterRules']) ? ($_POST['filterRules']) : '';
         $offset = ($page - 1) * $rows;
-        $result = array();
-        $where = "1=1";
+        $result = [];
+        $where = '1=1';
         $sorts = explode(',', $sort);
         $orders = explode(',', $order);
-        $sort_items = array();
+        $sort_items = [];
         foreach ($sorts as $index => $column) {
             $type = $orders[$index];
             $sort_items[] = "$column $type";
         }
         $order_str = join(',', $sort_items);
-        if (!empty($filterRules) || $filter != null) {
+        if (!empty($filterRules) || null != $filter) {
             $filterRules = json_decode($filterRules, true) ?? [];
             $where = $this->buildFilterQuery([...$filterRules, ...$filter ?? []]);
         }
         $row = $this->connection->fetchNumeric("SELECT count(*) FROM $table WHERE $where");
-        $result["total"] = $row[0];
+        $result['total'] = $row[0];
         $items = $this->connection->fetchAllAssociative("
           SELECT
             *
@@ -46,69 +46,71 @@ class DataGridLoader
           ORDER BY $order_str
           LIMIT $offset,$rows
         ");
-        $result["rows"] = $items;
+        $result['rows'] = $items;
+
         return $result;
     }
 
     public function buildFilterQuery($filterArray): string
     {
         $numFilter = count($filterArray);
-        $where = "1=1";
+        $where = '1=1';
         if ($numFilter > 0) {
-            $where .= " AND ";
-            $tmpDataField = "";
-            for ($i = 0; $i < $numFilter; $i++) {
+            $where .= ' AND ';
+            $tmpDataField = '';
+            for ($i = 0; $i < $numFilter; ++$i) {
                 $filterDataField = $filterArray[$i]['field'];
                 $filterValue = $filterArray[$i]['value'] ?? '';
-                if ($tmpDataField == "") {
+                if ('' == $tmpDataField) {
                     $tmpDataField = $filterDataField;
-                } else if ($tmpDataField <> $filterDataField) {
-                    $where .= " AND ";
+                } elseif ($tmpDataField != $filterDataField) {
+                    $where .= ' AND ';
                 }
                 switch ($filterArray[$i]['op']) {
                     case 'contains':
-                        $where .= $filterDataField . " LIKE '%" . $filterValue . "%'";
+                        $where .= $filterDataField." LIKE '%".$filterValue."%'";
                         break;
                     case 'equal':
-                        $where .= $filterDataField . " = '" . $filterValue . "'";
+                        $where .= $filterDataField." = '".$filterValue."'";
                         break;
                     case 'notequal':
-                        $where .= $filterDataField . " <> '" . $filterValue . "'";
+                        $where .= $filterDataField." <> '".$filterValue."'";
                         break;
                     case 'beginwith':
-                        $where .= $filterDataField . " LIKE '" . $filterValue . "%'";
+                        $where .= $filterDataField." LIKE '".$filterValue."%'";
                         break;
                     case 'endwith':
-                        $where .= $filterDataField . " LIKE '%" . $filterValue . "'";
+                        $where .= $filterDataField." LIKE '%".$filterValue."'";
                         break;
                     case 'less':
-                        $where .= $filterDataField . " < '" . $filterValue . "'";
+                        $where .= $filterDataField." < '".$filterValue."'";
                         break;
                     case 'lessorequal':
-                        $where .= $filterDataField . " <= '" . $filterValue . "'";
+                        $where .= $filterDataField." <= '".$filterValue."'";
                         break;
                     case 'greater':
-                        $where .= $filterDataField . " > '" . $filterValue . "'";
+                        $where .= $filterDataField." > '".$filterValue."'";
                         break;
                     case 'greaterorequal':
-                        $where .= $filterDataField . " >= '" . $filterValue . "'";
+                        $where .= $filterDataField." >= '".$filterValue."'";
                         break;
                     case 'in':
-                        $where .= $filterDataField . " IN (" . $filterValue . ")";
+                        $where .= $filterDataField.' IN ('.$filterValue.')';
                         break;
                     case 'notin':
-                        $where .= $filterDataField . " NOT IN (" . $filterValue . ")";
+                        $where .= $filterDataField.' NOT IN ('.$filterValue.')';
                         break;
                     case 'isnull':
-                        $where .= $filterDataField . " IS NULL";
+                        $where .= $filterDataField.' IS NULL';
                         break;
                     case 'isnotnull':
-                        $where .= $filterDataField . " IS NOT NULL";
+                        $where .= $filterDataField.' IS NOT NULL';
                         break;
                 }
                 $tmpDataField = $filterDataField;
             }
         }
+
         return $where;
     }
 }

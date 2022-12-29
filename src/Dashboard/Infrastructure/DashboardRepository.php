@@ -9,8 +9,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 {
     public function __construct(
         private readonly Connection $connection,
-    )
-    {
+    ) {
     }
 
     public function getDailySales($localId): array

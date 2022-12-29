@@ -25,11 +25,10 @@ class BillRepository implements BillRepositoryInterface
     private SerializerService $serializer;
 
     public function __construct(
-        Connection             $connection,
+        Connection $connection,
         EntityManagerInterface $entityManager,
-        SerializerService      $serializer
-    )
-    {
+        SerializerService $serializer
+    ) {
         $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->serializer = $serializer;
@@ -47,13 +46,14 @@ class BillRepository implements BillRepositoryInterface
         $requestBody = $this->serializer->serialize($invoice, 'json');
         $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/send?token=123456', [
             'headers' => [
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
-            'body'    => $requestBody,
+            'body' => $requestBody,
         ]);
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+
         return $documentResponse;
     }
 
@@ -78,9 +78,9 @@ class BillRepository implements BillRepositoryInterface
 
         $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/pdf?token=123456', [
             'headers' => [
-                'Content-Type' => 'application/json'
+                'Content-Type' => 'application/json',
             ],
-            'body'    => $requestBody,
+            'body' => $requestBody,
         ]);
 
         return $response->getContent();

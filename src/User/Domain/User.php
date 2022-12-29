@@ -12,24 +12,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
         #[SerializedName('usuario_id')]
-        public ?int       $usuario_id,
+        public ?int $usuario_id,
         #[SerializedName('username')]
-        public ?string    $username,
+        public ?string $username,
         #[SerializedName('password')]
-        public ?string    $password,
+        public ?string $password,
         #[SerializedName('estado')]
-        public ?bool      $estado,
+        public ?bool $estado,
         #[SerializedName('date_created')]
         public ?\DateTime $date_created,
         #[SerializedName('date_updated')]
         public ?\DateTime $date_updated,
         #[SerializedName('pin')]
-        public ?string    $pin,
+        public ?string $pin,
         #[SerializedName('rol_id')]
-        public ?int       $rol_id,
-
-    )
-    {
+        public ?int $rol_id,
+    ) {
     }
 
     public function getRoles(): array

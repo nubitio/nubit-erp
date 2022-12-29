@@ -48,7 +48,7 @@ class AuthController extends BaseController
 
         return $this->json([
             'success' => true,
-            'data'    => $session->all(),
+            'data' => $session->all(),
         ]);
     }
 }

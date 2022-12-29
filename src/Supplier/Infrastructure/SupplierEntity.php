@@ -12,22 +12,22 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "proveedor")]
+#[Table(name: 'proveedor')]
 class SupplierEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "proveedor_id", type: "string")]
+    #[Column(name: 'proveedor_id', type: 'string')]
     public ?string $proveedor_id;
-    #[Column(name: "ruc", type: "string")]
+    #[Column(name: 'ruc', type: 'string')]
     public ?string $ruc;
-    #[Column(name: "razon_social", type: "string")]
+    #[Column(name: 'razon_social', type: 'string')]
     public ?string $razon_social;
-    #[Column(name: "domicilio_fiscal", type: "string")]
+    #[Column(name: 'domicilio_fiscal', type: 'string')]
     public ?string $domicilio_fiscal;
-    #[Column(name: "telefono", type: "string")]
+    #[Column(name: 'telefono', type: 'string')]
     public ?string $telefono;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): Supplier
@@ -39,7 +39,6 @@ class SupplierEntity
             $this->domicilio_fiscal,
             $this->telefono,
             $this->estado,
-
         );
     }
 

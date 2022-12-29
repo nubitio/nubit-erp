@@ -9,8 +9,7 @@ class Parameters
 {
     public function __construct(
         public readonly ?System $system = null,
-        public readonly ?User   $user = null,
-    )
-    {
+        public readonly ?User $user = null,
+    ) {
     }
 }

@@ -9,7 +9,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 #[IgnoreAutowire]
 class ProductDeletedEvent extends Event
 {
-    const NAME = 'product.deleted';
+    public const NAME = 'product.deleted';
 
     private Product $product;
 

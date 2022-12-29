@@ -3,11 +3,11 @@
 namespace App\Config\Application;
 
 use App\Base\BaseController;
-use App\Config\Domain\ConfigGetAllUseCase;
-use App\Config\Domain\ConfigCreateUseCase;
-use App\Config\Domain\ConfigUpdateUseCase;
-use App\Config\Domain\ConfigDeleteUseCase;
 use App\Config\Domain\Config;
+use App\Config\Domain\ConfigCreateUseCase;
+use App\Config\Domain\ConfigDeleteUseCase;
+use App\Config\Domain\ConfigGetAllUseCase;
+use App\Config\Domain\ConfigUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,6 +35,7 @@ class ConfigController extends BaseController
          */
         $config = $this->serializer->deserialize(json_encode($request->request->all()), Config::class, 'json');
         $createUseCase($config);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -47,6 +48,7 @@ class ConfigController extends BaseController
          */
         $config = $this->serializer->deserialize(json_encode($request->request->all()), Config::class, 'json');
         $updateUseCase($config);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -54,6 +56,7 @@ class ConfigController extends BaseController
     public function delete(ConfigDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }

@@ -23,8 +23,6 @@ class Customer
         public ?string $imagen,
         #[SerializedName('estado')]
         public ?bool $estado,
-
-    )
-    {
+    ) {
     }
 }

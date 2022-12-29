@@ -12,18 +12,18 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "menu_rol")]
+#[Table(name: 'menu_rol')]
 class RoleMenuEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "id", type: "integer")]
+    #[Column(name: 'id', type: 'integer')]
     public ?int $id;
-    #[Column(name: "menu_id", type: "integer")]
+    #[Column(name: 'menu_id', type: 'integer')]
     public ?int $menu_id;
-    #[Column(name: "rol_id", type: "integer")]
+    #[Column(name: 'rol_id', type: 'integer')]
     public ?int $rol_id;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): RoleMenu

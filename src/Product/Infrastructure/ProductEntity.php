@@ -12,34 +12,34 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "producto")]
+#[Table(name: 'producto')]
 class ProductEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "producto_id", type: "string")]
+    #[Column(name: 'producto_id', type: 'string')]
     public ?string $producto_id;
-    #[Column(name: "codigo", type: "string")]
+    #[Column(name: 'codigo', type: 'string')]
     public ?string $codigo;
-    #[Column(name: "tipo_id", type: "integer")]
+    #[Column(name: 'tipo_id', type: 'integer')]
     public ?int $tipo_id;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
-    #[Column(name: "categoria_id", type: "string")]
+    #[Column(name: 'categoria_id', type: 'string')]
     public ?string $categoria_id;
-    #[Column(name: "unidad_id", type: "string")]
+    #[Column(name: 'unidad_id', type: 'string')]
     public ?string $unidad_id;
-    #[Column(name: "destino_id", type: "integer")]
+    #[Column(name: 'destino_id', type: 'integer')]
     public ?int $destino_id;
-    #[Column(name: "stock_minimo", type: "integer")]
+    #[Column(name: 'stock_minimo', type: 'integer')]
     public ?int $stock_minimo;
-    #[Column(name: "precio", type: "decimal")]
+    #[Column(name: 'precio', type: 'decimal')]
     public ?string $precio;
-    #[Column(name: "precio_compra", type: "decimal")]
+    #[Column(name: 'precio_compra', type: 'decimal')]
     public ?string $precio_compra;
-    #[Column(name: "imagen", type: "string")]
+    #[Column(name: 'imagen', type: 'string')]
     public ?string $imagen;
-    #[Column(name: "estado", type: "integer")]
+    #[Column(name: 'estado', type: 'integer')]
     public ?int $estado;
 
     public function mapToDomainModel(): Product
@@ -57,7 +57,6 @@ class ProductEntity
             $this->precio_compra,
             $this->imagen,
             $this->estado,
-
         );
     }
 

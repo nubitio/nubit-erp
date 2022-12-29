@@ -18,31 +18,31 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "caja")]
+#[Table(name: 'caja')]
 class CashboxEntity
 {
     #[Id]
-    #[Column(name: "caja_id", type: "string")]
+    #[Column(name: 'caja_id', type: 'string')]
     public ?string $caja_id;
-    #[Column(name: "local_id", type: "string")]
+    #[Column(name: 'local_id', type: 'string')]
     public ?string $local_id;
-    #[Column(name: "apertura", type: "datetime")]
+    #[Column(name: 'apertura', type: 'datetime')]
     public ?\DateTime $apertura;
-    #[Column(name: "cierre", type: "datetime")]
+    #[Column(name: 'cierre', type: 'datetime')]
     public ?\DateTime $cierre;
-    #[Column(name: "usuario_id", type: "integer")]
+    #[Column(name: 'usuario_id', type: 'integer')]
     public ?int $usuario_id;
-    #[Column(name: "estado", type: "integer")]
+    #[Column(name: 'estado', type: 'integer')]
     public ?int $estado;
     #[ManyToOne(targetEntity: LocalEntity::class)]
-    #[JoinColumn(name: "local_id", referencedColumnName: "local_id")]
+    #[JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
     public LocalEntity $local;
     #[ManyToOne(targetEntity: UserEntity::class)]
-    #[JoinColumn(name: "usuario_id", referencedColumnName: "usuario_id")]
+    #[JoinColumn(name: 'usuario_id', referencedColumnName: 'usuario_id')]
     public UserEntity $user;
-    #[OneToMany(mappedBy: "cashbox", targetEntity: CashboxDetailEntity::class)]
+    #[OneToMany(mappedBy: 'cashbox', targetEntity: CashboxDetailEntity::class)]
     /**
-     * @var CashboxDetailEntity[] $items
+     * @var CashboxDetailEntity[]
      */
     public $items;
 
@@ -62,7 +62,7 @@ class CashboxEntity
             $this->estado,
             $this->local->mapToDomainModel(),
             $this->user->mapToDomainModel(),
-            $this->items->map(fn(CashboxDetailEntity $item) => $item->mapToDomainModel())->toArray(),
+            $this->items->map(fn (CashboxDetailEntity $item) => $item->mapToDomainModel())->toArray(),
         );
     }
 

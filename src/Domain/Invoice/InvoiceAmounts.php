@@ -14,16 +14,12 @@ class InvoiceAmounts
     private float $tax;
     private float $total;
 
-    /**
-     * @return float
-     */
     public function getSubtotal(): float
     {
         return $this->subtotal;
     }
 
     /**
-     * @param float $subtotal
      * @return $this
      */
     public function setSubtotal(float $subtotal): InvoiceAmounts
@@ -33,16 +29,12 @@ class InvoiceAmounts
         return $this;
     }
 
-    /**
-     * @return float
-     */
     public function getTaxedAmount(): float
     {
         return $this->taxedAmount;
     }
 
     /**
-     * @param float $taxedAmount
      * @return $this
      */
     public function setTaxedAmount(float $taxedAmount): InvoiceAmounts
@@ -52,16 +44,12 @@ class InvoiceAmounts
         return $this;
     }
 
-    /**
-     * @return float
-     */
     public function getDiscountAmount(): float
     {
         return $this->discountAmount;
     }
 
     /**
-     * @param float $discountAmount
      * @return $this
      */
     public function setDiscountAmount(float $discountAmount): InvoiceAmounts
@@ -71,16 +59,12 @@ class InvoiceAmounts
         return $this;
     }
 
-    /**
-     * @return float
-     */
     public function getChargesAmount(): float
     {
         return $this->chargesAmount;
     }
 
     /**
-     * @param float $chargesAmount
      * @return $this
      */
     public function setChargesAmount(float $chargesAmount): InvoiceAmounts
@@ -90,16 +74,12 @@ class InvoiceAmounts
         return $this;
     }
 
-    /**
-     * @return float
-     */
     public function getTax(): float
     {
         return $this->tax;
     }
 
     /**
-     * @param float $tax
      * @return $this
      */
     public function setTax(float $tax): InvoiceAmounts
@@ -109,16 +89,12 @@ class InvoiceAmounts
         return $this;
     }
 
-    /**
-     * @return float
-     */
     public function getTotal(): float
     {
         return $this->total;
     }
 
     /**
-     * @param float $total
      * @return $this
      */
     public function setTotal(float $total): InvoiceAmounts

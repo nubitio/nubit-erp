@@ -2,8 +2,8 @@
 
 namespace App\Config\Infrastructure;
 
-use App\Config\Domain\ConfigRepositoryInterface;
 use App\Config\Domain\Config;
+use App\Config\Domain\ConfigRepositoryInterface;
 use App\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;

@@ -12,14 +12,14 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "rol")]
+#[Table(name: 'rol')]
 class RoleEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "rol_id", type: "integer")]
+    #[Column(name: 'rol_id', type: 'integer')]
     public ?int $rol_id;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
 
     public function mapToDomainModel(): Role
@@ -27,7 +27,6 @@ class RoleEntity
         return new Role(
             $this->rol_id,
             $this->descripcion,
-
         );
     }
 

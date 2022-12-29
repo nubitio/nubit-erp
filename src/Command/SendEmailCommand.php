@@ -47,9 +47,11 @@ class SendEmailCommand extends Command
             } else {
                 $io->error($result['msg']);
             }
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+            $io->error('Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

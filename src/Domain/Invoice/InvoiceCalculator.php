@@ -12,26 +12,19 @@ class InvoiceCalculator
     private float $taxPercentage;
     private float $chargesPercentage;
 
-    /**
-     * @param float $total
-     * @param float $discountPercentage
-     * @param float $taxPercentage
-     * @param float $chargesPercentage
-     */
     public function __construct(
         float $total,
         float $discountPercentage,
         float $taxPercentage,
         float $chargesPercentage
-    )
-    {
+    ) {
         $this->total = $total;
         $this->discountPercentage = $discountPercentage;
         $this->taxPercentage = $taxPercentage;
         $this->chargesPercentage = $chargesPercentage;
     }
 
-    function calculate(): InvoiceAmounts
+    public function calculate(): InvoiceAmounts
     {
         $subtotal = $this->total / (1 + $this->taxPercentage / 100 + $this->chargesPercentage / 100);
         $taxedAmount = $subtotal - $subtotal * $this->discountPercentage / 100;

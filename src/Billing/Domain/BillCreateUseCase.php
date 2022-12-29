@@ -10,15 +10,13 @@ use App\Billing\Model\Bill\Legend;
 use App\Billing\Model\Bill\PagoContado;
 use App\Billing\Model\Client\Client;
 use App\Sale\Domain\SaleRepositoryInterface;
-use NumberFormatter;
 
 class BillCreateUseCase
 {
     public function __construct(
         private readonly SaleRepositoryInterface $saleRepository,
-        private readonly BillUtilsInterface      $billUtils,
-    )
-    {
+        private readonly BillUtilsInterface $billUtils,
+    ) {
     }
 
     public function __invoke(string $saleId): Bill
@@ -73,7 +71,7 @@ class BillCreateUseCase
         $details = [];
         foreach ($sale['details'] as $value) {
             $item = new BillDetail();
-            $item->codProducto = $value['code'] ?? "";
+            $item->codProducto = $value['code'] ?? '';
             $item->unidad = 'NIU';
             $item->cantidad = $value['quantity'];
             $item->descripcion = $value['product'];
@@ -88,10 +86,10 @@ class BillCreateUseCase
             $details[] = $item;
         }
 
-        $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
+        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', $sale['header']['doc_sale_amount']);
         $amount = $formatter->format($parts[0]);
-        $strTotal = mb_strtoupper('SON ' . $amount . " CON " . $parts[1] . "/100 SOLES");
+        $strTotal = mb_strtoupper('SON '.$amount.' CON '.$parts[1].'/100 SOLES');
 
         $legend = new Legend();
         $legend->code = '1000';

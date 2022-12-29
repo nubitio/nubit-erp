@@ -12,16 +12,16 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "unidad")]
+#[Table(name: 'unidad')]
 class UnitEntity
 {
     #[Id]
     #[GeneratedValue]
-    #[Column(name: "unidad_id", type: "string")]
+    #[Column(name: 'unidad_id', type: 'string')]
     public ?string $unidad_id;
-    #[Column(name: "descripcion", type: "string")]
+    #[Column(name: 'descripcion', type: 'string')]
     public ?string $descripcion;
-    #[Column(name: "estado", type: "boolean")]
+    #[Column(name: 'estado', type: 'boolean')]
     public ?bool $estado;
 
     public function mapToDomainModel(): Unit
@@ -30,7 +30,6 @@ class UnitEntity
             $this->unidad_id,
             $this->descripcion,
             $this->estado,
-
         );
     }
 

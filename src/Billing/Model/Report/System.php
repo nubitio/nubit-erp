@@ -10,7 +10,6 @@ class System
     public function __construct(
         public readonly ?string $logo = null,
         public readonly ?string $hash = null,
-    )
-    {
+    ) {
     }
 }

@@ -3,11 +3,11 @@
 namespace App\CreditNote\Application;
 
 use App\Base\BaseController;
-use App\CreditNote\Domain\CreditNoteGetAllUseCase;
-use App\CreditNote\Domain\CreditNoteCreateUseCase;
-use App\CreditNote\Domain\CreditNoteUpdateUseCase;
-use App\CreditNote\Domain\CreditNoteDeleteUseCase;
 use App\CreditNote\Domain\CreditNote;
+use App\CreditNote\Domain\CreditNoteCreateUseCase;
+use App\CreditNote\Domain\CreditNoteDeleteUseCase;
+use App\CreditNote\Domain\CreditNoteGetAllUseCase;
+use App\CreditNote\Domain\CreditNoteUpdateUseCase;
 use App\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -38,6 +38,7 @@ class CreditNoteController extends BaseController
          */
         $creditNote = $this->serializer->deserialize(json_encode($request->request->all()), CreditNote::class, 'json');
         $createUseCase($creditNote);
+
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
@@ -50,6 +51,7 @@ class CreditNoteController extends BaseController
          */
         $creditNote = $this->serializer->deserialize(json_encode($request->request->all()), CreditNote::class, 'json');
         $updateUseCase($creditNote);
+
         return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
     }
 
@@ -57,6 +59,7 @@ class CreditNoteController extends BaseController
     public function delete(CreditNoteDeleteUseCase $deleteUseCase, $id): Response
     {
         $deleteUseCase($id);
+
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 }
