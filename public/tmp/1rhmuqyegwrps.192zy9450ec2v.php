@@ -1,0 +1,15 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Invoice{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    <?= (parent())."
+" ?>
+    <script>
+        window.addEventListener('load', function () {
+            const invoice = new window.app.invoice('wrapper');
+            invoice.render();
+        });
+    </script>
+{% endblock %}

@@ -31,8 +31,9 @@ class ProductCreateUseCaseTest extends TestCase
             '/path/to/image',
             1,
         );
-        $result = $productCreateUseCase($product);
 
-        $this->assertNull($result);
+        $productCreateUseCase($product);
+
+        $this->assertTrue(true);
     }
 }

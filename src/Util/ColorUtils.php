@@ -41,6 +41,8 @@ class ColorUtils
                 case $b:
                     $h = 60 * (($r - $g) / $d + 4);
                     break;
+                default:
+                    $h = 0;
             }
         }
 
@@ -98,6 +100,6 @@ class ColorUtils
         $g = dechex($rgb[1]);
         $b = dechex($rgb[2]);
 
-        return '#'.$r.$g.$b;
+        return '#' . $r . $g . $b;
     }
 }
