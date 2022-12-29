@@ -3,7 +3,6 @@
 namespace App\Tests\Product\Domain;
 
 use App\Product\Domain\Product;
-use App\Product\Domain\ProductCreateUseCase;
 use App\Product\Domain\ProductRepositoryInterface;
 use App\Product\Domain\ProductUpdateUseCase;
 use PHPUnit\Framework\TestCase;
@@ -32,8 +31,8 @@ class ProductUpdateUseCaseTest extends TestCase
             '/path/to/image',
             1,
         );
-        $result = $productUpdateUseCase($product);
+        $productUpdateUseCase($product);
 
-        $this->assertNull($result);
+        $this->assertTrue(true);
     }
 }

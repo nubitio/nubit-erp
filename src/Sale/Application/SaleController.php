@@ -37,7 +37,7 @@ class SaleController extends BaseController
 
         return $this->render('sale/index.html.twig', [
             'printDetectionScript' => $printDetectionScript,
-            'printScript' => $printScript,
+            'printScript'          => $printScript,
         ]);
     }
 
@@ -53,12 +53,12 @@ class SaleController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'tipo_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => 2,
             ],
             [
                 'field' => 'local_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => $request->getSession()->get('local_id'),
             ],
         ]));
@@ -118,9 +118,9 @@ class SaleController extends BaseController
         $dateTo = $request->get('date-to');
         $localId = $request->getSession()->get('local_id');
         $params = [
-            'local_id' => $localId,
+            'local_id'  => $localId,
             'date_from' => $dateFrom,
-            'date_to' => $dateTo,
+            'date_to'   => $dateTo,
         ];
         switch ($report) {
             case 'sale-by-product':
@@ -147,6 +147,9 @@ class SaleController extends BaseController
                 $data = $connection->executeQuery('CALL sp_reporte_notasCredito(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
                 $reportFile = $xlsExporter->export($data, 'reporte_notas_de_credito');
                 break;
+            default:
+                throw new \Exception('Reporte no encontrado');
+
         }
 
         return $reportFile;
@@ -163,7 +166,7 @@ class SaleController extends BaseController
         $logo = base64_encode(file_get_contents('assets/images/logo.png'));
         $content = $this->render('sale/report/invoice.html.twig', [
             'logo' => "data:image/png;base64,{$logo}",
-            'qr' => $qr,
+            'qr'   => $qr,
             'sale' => $sale,
         ]);
 
@@ -186,9 +189,9 @@ class SaleController extends BaseController
 
         return $pdfExporter->export($content->getContent(), 'invoice', [
             'no-outline',
-            'page-width' => '80mm',
-            'page-height' => $pageHeight.'mm',
-            'margin-left' => 0,
+            'page-width'   => '80mm',
+            'page-height'  => $pageHeight . 'mm',
+            'margin-left'  => 0,
             'margin-right' => 0,
         ]);
     }
