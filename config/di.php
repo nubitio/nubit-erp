@@ -1,5 +1,6 @@
 <?php
 
+use App\Core\EventListener\ExceptionListener;
 use App\Domain\EntryFactory;
 use App\Domain\EntryLookupFactory;
 use App\Domain\PackageFactory;
@@ -57,6 +58,10 @@ return function (ContainerConfigurator $configurator) {
         ->arg('$defaultScriptAttributes', ['defer' => true]);
 
     $services->set('security.logout_url_generator', LogoutUrlGenerator::class);
+
     $services->set(EnvExtension::class)
         ->tag('twig.extension');
+
+    $services->set(ExceptionListener::class)
+        ->tag('kernel.event_listener', ['event' => 'kernel.exception']);
 };
