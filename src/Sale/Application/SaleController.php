@@ -61,6 +61,11 @@ class SaleController extends BaseController
                 'op'    => 'equal',
                 'value' => $request->getSession()->get('local_id'),
             ],
+            [
+                'field' => 'numero',
+                'op'    => 'greater',
+                'value' => 0,
+            ]
         ]));
     }
 
@@ -74,16 +79,6 @@ class SaleController extends BaseController
          */
         $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
         $sale = $saleUtils->fillSaleValues($sale, DocType::NOTA_VENTA, $request->getSession());
-        $detail = $request->get('detail');
-        $detailItems = [];
-        foreach ($detail as $item) {
-            /**
-             * @var SaleDetail $saleDetail
-             */
-            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
-            $detailItems[] = $saleDetail;
-        }
-        $sale->items = $detailItems;
         $createUseCase($sale);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
