@@ -58,6 +58,7 @@ class Sale
         public ?int $igv,
         #[SerializedName('recargo_consumo')]
         public ?int $recargo_consumo,
+        #[SerializedName('detail')]
         /** @var SaleDetail[] $items */
         public ?array $items = [],
     ) {
