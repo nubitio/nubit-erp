@@ -8,7 +8,7 @@ use App\User\Domain\UserCreateUseCase;
 use App\User\Domain\UserDeleteUseCase;
 use App\User\Domain\UserGetAllUseCase;
 use App\User\Domain\UserUpdateUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

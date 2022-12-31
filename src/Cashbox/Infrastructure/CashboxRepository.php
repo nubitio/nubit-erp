@@ -5,7 +5,7 @@ namespace App\Cashbox\Infrastructure;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Local\Infrastructure\LocalEntity;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
@@ -151,7 +151,7 @@ class CashboxRepository implements CashboxRepositoryInterface
         }
     }
 
-    private function getTotalSales(string $userId, string $startDate, string $endDate): array
+    private function getTotalSales(int $userId, string $startDate, string $endDate): array
     {
         $sql = '
             SELECT

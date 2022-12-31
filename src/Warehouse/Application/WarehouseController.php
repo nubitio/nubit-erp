@@ -3,7 +3,7 @@
 namespace App\Warehouse\Application;
 
 use App\Base\BaseController;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseCreateUseCase;
 use App\Warehouse\Domain\WarehouseDeleteUseCase;

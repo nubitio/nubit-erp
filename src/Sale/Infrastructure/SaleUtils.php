@@ -2,10 +2,10 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
-use App\Service\SettingsService;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 

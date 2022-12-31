@@ -2,7 +2,7 @@
 
 namespace App\Product\Domain;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -26,9 +26,9 @@ class Product
         #[SerializedName('stock_minimo')]
         public ?int $stock_minimo,
         #[SerializedName('precio')]
-        public ?string $precio,
+        public ?float $precio,
         #[SerializedName('precio_compra')]
-        public ?string $precio_compra,
+        public ?float $precio_compra,
         #[SerializedName('imagen')]
         public ?string $imagen,
         #[SerializedName('estado')]

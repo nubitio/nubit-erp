@@ -4,19 +4,17 @@ namespace App\Category\Infrastructure;
 
 use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
     public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }

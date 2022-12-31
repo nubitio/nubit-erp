@@ -2,8 +2,8 @@
 
 namespace App\Customer\Infrastructure;
 
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
-use App\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;

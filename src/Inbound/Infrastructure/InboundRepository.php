@@ -2,9 +2,9 @@
 
 namespace App\Inbound\Infrastructure;
 
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Inbound\Domain\Inbound;
 use App\Inbound\Domain\InboundRepositoryInterface;
-use App\Infrastructure\Common\DataGridLoader;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,7 +40,7 @@ class InboundRepository implements InboundRepositoryInterface
             $entity = new InboundEntity();
             $entity->mapFromDomainModel($inbound);
             $entity->tipo_id = 1;
-            $entity->estado = 1;
+            $entity->estado = true;
             $entity->date_created = new \DateTime();
             $this->entityManager->persist($entity);
             $this->entityManager->flush();

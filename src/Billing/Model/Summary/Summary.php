@@ -3,7 +3,7 @@
 namespace App\Billing\Model\Summary;
 
 use App\Billing\Model\Company\Company;
-use App\Util\DateUtils;
+use App\Core\Domain\Util\DateUtils;
 
 class Summary
 {

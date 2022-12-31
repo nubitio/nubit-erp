@@ -2,7 +2,7 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Warehouse\Domain\Warehouse;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;

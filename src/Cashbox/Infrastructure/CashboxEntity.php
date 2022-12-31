@@ -4,7 +4,7 @@ namespace App\Cashbox\Infrastructure;
 
 use App\Cashbox\Domain\Cashbox;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Local\Infrastructure\LocalEntity;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\Common\Collections\ArrayCollection;

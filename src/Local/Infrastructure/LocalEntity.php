@@ -2,7 +2,7 @@
 
 namespace App\Local\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Local\Domain\Local;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;

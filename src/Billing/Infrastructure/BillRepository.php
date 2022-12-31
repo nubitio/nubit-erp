@@ -9,7 +9,7 @@ use App\Billing\Model\Report\Extra;
 use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
-use App\Domain\Service\SerializerService;
+use App\Core\Infrastructure\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -20,17 +20,11 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class BillRepository implements BillRepositoryInterface
 {
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
     private SerializerService $serializer;
 
     public function __construct(
-        Connection $connection,
-        EntityManagerInterface $entityManager,
         SerializerService $serializer
     ) {
-        $this->connection = $connection;
-        $this->entityManager = $entityManager;
         $this->serializer = $serializer;
     }
 
@@ -53,7 +47,6 @@ class BillRepository implements BillRepositoryInterface
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
-
         return $documentResponse;
     }
 

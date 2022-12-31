@@ -2,7 +2,7 @@
 
 namespace App\Operation\Domain;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]

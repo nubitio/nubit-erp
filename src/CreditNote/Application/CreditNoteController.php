@@ -8,7 +8,7 @@ use App\CreditNote\Domain\CreditNoteCreateUseCase;
 use App\CreditNote\Domain\CreditNoteDeleteUseCase;
 use App\CreditNote\Domain\CreditNoteGetAllUseCase;
 use App\CreditNote\Domain\CreditNoteUpdateUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

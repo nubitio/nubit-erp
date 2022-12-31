@@ -2,7 +2,7 @@
 
 namespace App\Outbound\Infrastructure;
 
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Outbound\Domain\Outbound;
 use App\Outbound\Domain\OutboundRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
@@ -40,7 +40,7 @@ class OutboundRepository implements OutboundRepositoryInterface
             $entity = new OutboundEntity();
             $entity->mapFromDomainModel($outbound);
             $entity->tipo_id = 2;
-            $entity->estado = 1;
+            $entity->estado = true;
             $entity->date_created = new \DateTime();
             $this->entityManager->persist($entity);
             $this->entityManager->flush();

@@ -1248,7 +1248,7 @@ class ClientPrintJob
      * - Use a SerialPortPrinter object for using a printer which is connected through a serial port in the client machine.
      * - Use a NetworkPrinter object for using a Network IP/Ethernet printer which can be reached from the client machine.
      *
-     * @var ClientPrinter
+     * @var ?ClientPrinter
      */
     public $clientPrinter = null;
     /**
@@ -1280,13 +1280,13 @@ class ClientPrintJob
     /**
      * Gets or sets the PrintFile object to be printed at the client side. Default is NULL.
      *
-     * @var PrintFile
+     * @var ?PrintFile
      */
     public $printFile = null;
     /**
      * Gets or sets an array of PrintFile objects to be printed at the client side. Default is NULL.
      *
-     * @var array
+     * @var ?array
      */
     public $printFileGroup = null;
 
@@ -1380,7 +1380,7 @@ class ClientPrintJobGroup
     /**
      * Gets or sets an array of ClientPrintJob objects to be processed at the client side. Default is NULL.
      *
-     * @var array
+     * @var ?array
      */
     public $clientPrintJobGroup = null;
 
@@ -1388,9 +1388,9 @@ class ClientPrintJobGroup
      * Sends this ClientPrintJobGroup object to the client for further processing.
      * The ClientPrintJobGroup object will be processed by the WCPP installed at the client machine.
      *
-     * @return string A string representing a ClientPrintJobGroup object.
+     * @return string|null A string representing a ClientPrintJobGroup object.
      */
-    public function sendToClient()
+    public function sendToClient(): ?string
     {
         if (isset($this->clientPrintJobGroup)) {
             $groups = count($this->clientPrintJobGroup);

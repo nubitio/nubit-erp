@@ -3,6 +3,8 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Core\Infrastructure\Service\PdfExporter;
+use App\Core\Infrastructure\Service\XlsExporter;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleCreateUseCase;
@@ -13,10 +15,7 @@ use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
 use App\Sale\Infrastructure\SaleUtils;
-use App\SaleDetail\Domain\SaleDetail;
-use App\Service\PdfExporter;
-use App\Service\XlsExporter;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use App\WebClientPrint\WebClientPrint;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;

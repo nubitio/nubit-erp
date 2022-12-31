@@ -2,7 +2,7 @@
 
 namespace App\Billing\Model\Report;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
 class User

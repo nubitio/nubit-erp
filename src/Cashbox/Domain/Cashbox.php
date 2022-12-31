@@ -3,7 +3,7 @@
 namespace App\Cashbox\Domain;
 
 use App\CashboxDetail\Domain\CashboxDetail;
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Local\Domain\Local;
 use App\User\Domain\User;
 use Symfony\Component\Serializer\Annotation\SerializedName;

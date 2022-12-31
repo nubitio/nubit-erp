@@ -2,7 +2,7 @@
 
 namespace App\VoucherType\Infrastructure;
 
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\VoucherType\Domain\VoucherType;
 use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -10,13 +10,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class VoucherTypeRepository implements VoucherTypeRepositoryInterface
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
     public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }

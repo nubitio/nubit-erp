@@ -2,7 +2,7 @@
 
 namespace App\Transfer\Domain;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\SaleDetail\Domain\SaleDetail;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 

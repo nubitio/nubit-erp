@@ -6,7 +6,7 @@ use App\Billing\Domain\VoidedRepositoryInterface;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Billing\Model\Response\StatusResponse;
 use App\Billing\Model\Voided\Voided;
-use App\Domain\Service\SerializerService;
+use App\Core\Infrastructure\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,16 +19,13 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 class VoidedRepository implements VoidedRepositoryInterface
 {
     private Connection $connection;
-    private EntityManagerInterface $entityManager;
     private SerializerService $serializer;
 
     public function __construct(
         Connection $connection,
-        EntityManagerInterface $entityManager,
         SerializerService $serializer
     ) {
         $this->connection = $connection;
-        $this->entityManager = $entityManager;
         $this->serializer = $serializer;
     }
 

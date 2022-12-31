@@ -8,7 +8,7 @@ use App\Operation\Domain\OperationCreateUseCase;
 use App\Operation\Domain\OperationDeleteUseCase;
 use App\Operation\Domain\OperationGetAllUseCase;
 use App\Operation\Domain\OperationUpdateUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

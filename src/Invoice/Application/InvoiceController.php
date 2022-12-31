@@ -12,7 +12,7 @@ use App\Invoice\Domain\InvoiceEmailUseCase;
 use App\Invoice\Domain\InvoiceGetAllUseCase;
 use App\Invoice\Domain\InvoiceUpdateUseCase;
 use App\Sale\Domain\SaleGetOneById;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

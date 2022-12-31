@@ -3,8 +3,8 @@
 namespace App\Api;
 
 use App\Base\BaseController;
-use App\Service\MenuBuilder;
-use App\Service\SettingsService;
+use App\Core\Infrastructure\Service\MenuBuilder;
+use App\Core\Infrastructure\Service\SettingsService;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

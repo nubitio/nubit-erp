@@ -4,7 +4,7 @@ namespace App\CashboxDetail\Infrastructure;
 
 use App\Cashbox\Infrastructure\CashboxEntity;
 use App\CashboxDetail\Domain\CashboxDetail;
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;

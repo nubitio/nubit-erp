@@ -44,9 +44,8 @@ window.Form = Form;
 window.EventType = EventType;
 window.FormType = FormType;
 window.Constants = Constants;
-window.ThemeManager = new ThemeManager();
-window.app = window.app || {};
 
+window.app = window.app || {};
 window.app.auth = Auth;
 window.app.home = Home;
 window.app.dashboard = Dashboard;
@@ -74,3 +73,7 @@ window.app.invoice = Invoice;
 window.app.transfer = Transfer;
 window.app.kardex = Kardex;
 window.app.creditNote = CreditNote;
+
+window.addEventListener('load', () => {
+    window.ThemeManager = new ThemeManager();
+});

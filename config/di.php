@@ -1,14 +1,13 @@
 <?php
 
-use App\Core\EventListener\ExceptionListener;
-use App\Core\EventListener\SaleCreatedListener;
-use App\Domain\EntryFactory;
-use App\Domain\EntryLookupFactory;
-use App\Domain\PackageFactory;
-use App\Event\EventDispatcherFactory;
-use App\Extension\EnvExtension;
+use App\Core\Infrastructure\EntryFactory;
+use App\Core\Infrastructure\EntryLookupFactory;
+use App\Core\Infrastructure\EventListener\ExceptionListener;
+use App\Core\Infrastructure\EventListener\SaleCreatedListener;
+use App\Core\Infrastructure\Extension\EnvExtension;
+use App\Core\Infrastructure\PackageFactory;
+use App\Core\Infrastructure\SluggerFactory;
 use App\Sale\Infrastructure\SaleEntity;
-use App\Util\SluggerFactory;
 use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -33,11 +32,7 @@ return function (ContainerConfigurator $configurator) {
     $services->load('App\\', '../src/')
         ->exclude('../src/{Entity,Util,Extension,Kernel,php,WebClientPrint.php}');
 
-    $services->set(EventDispatcherInterface::class)
-        ->factory([EventDispatcherFactory::class, 'create'])
-        ->arg('$container', service('service_container'));
-
-    $services->set(SluggerInterface::class)
+    /*$services->set(SluggerInterface::class)
         ->factory([SluggerFactory::class, 'createSlugger']);
 
     $services->set('_default', EntrypointLookupInterface::class)
@@ -59,13 +54,13 @@ return function (ContainerConfigurator $configurator) {
         ->arg('$defaultAttributes', [])
         ->arg('$defaultScriptAttributes', ['defer' => true]);
 
-    $services->set('security.logout_url_generator', LogoutUrlGenerator::class);
+    $services->set('security.logout_url_generator', LogoutUrlGenerator::class);*/
 
     $services->set(EnvExtension::class)
         ->tag('twig.extension');
 
-    //$services->set(ExceptionListener::class)
-      //  ->tag('kernel.event_listener', ['event' => 'kernel.exception']);
+    $services->set(ExceptionListener::class)
+        ->tag('kernel.event_listener', ['event' => 'kernel.exception']);
 
     $services->set(SaleCreatedListener::class)
         ->tag('doctrine.orm.entity_listener', ['event' => 'postPersist', 'entity' => SaleEntity::class, 'lazy' => true]);

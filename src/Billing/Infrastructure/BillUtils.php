@@ -5,7 +5,7 @@ namespace App\Billing\Infrastructure;
 use App\Billing\Domain\BillUtilsInterface;
 use App\Billing\Model\Address\Address;
 use App\Billing\Model\Company\Company;
-use App\Service\SettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 
 class BillUtils implements BillUtilsInterface
 {
