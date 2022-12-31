@@ -3,8 +3,8 @@
 namespace App\Invoice\Domain;
 
 use App\Billing\Domain\BillPdfUseCase;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\SaleRepositoryInterface;
-use App\Service\SettingsService;
 use Symfony\Component\Asset\Packages;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;

@@ -3,7 +3,7 @@
 namespace App\VoucherType\Application;
 
 use App\Base\BaseController;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use App\VoucherType\Domain\VoucherType;
 use App\VoucherType\Domain\VoucherTypeCreateUseCase;
 use App\VoucherType\Domain\VoucherTypeDeleteUseCase;

@@ -6,7 +6,7 @@ use App\Base\BaseController;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuCreateUseCase;
 use App\RoleMenu\Domain\RoleMenuGetAllByRoleUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

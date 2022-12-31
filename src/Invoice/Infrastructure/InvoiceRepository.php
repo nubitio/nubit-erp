@@ -2,8 +2,8 @@
 
 namespace App\Invoice\Infrastructure;
 
-use App\Domain\Invoice\InvoiceCalculator;
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Domain\Invoice\InvoiceCalculator;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -35,8 +35,9 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      */
     public function getOne(string $saleId): Invoice
     {
-        /** @var InvoiceEntity $invoiceEntity */
+        /** @var ?InvoiceEntity $invoiceEntity */
         $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $saleId]);
+
         if (!$invoiceEntity) {
             throw new \Exception('Invoice not found');
         }

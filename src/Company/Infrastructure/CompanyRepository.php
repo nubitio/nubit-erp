@@ -4,19 +4,17 @@ namespace App\Company\Infrastructure;
 
 use App\Company\Domain\Company;
 use App\Company\Domain\CompanyRepositoryInterface;
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CompanyRepository implements CompanyRepositoryInterface
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
     public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }

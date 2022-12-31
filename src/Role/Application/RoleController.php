@@ -8,7 +8,7 @@ use App\Role\Domain\RoleCreateUseCase;
 use App\Role\Domain\RoleDeleteUseCase;
 use App\Role\Domain\RoleGetAllUseCase;
 use App\Role\Domain\RoleUpdateUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

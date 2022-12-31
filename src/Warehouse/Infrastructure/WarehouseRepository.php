@@ -2,7 +2,7 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -10,13 +10,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class WarehouseRepository implements WarehouseRepositoryInterface
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
     public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }

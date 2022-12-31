@@ -9,7 +9,7 @@ use App\Outbound\Domain\OutboundDeleteUseCase;
 use App\Outbound\Domain\OutboundGetAllUseCase;
 use App\Outbound\Domain\OutboundUpdateUseCase;
 use App\SaleDetail\Domain\SaleDetail;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

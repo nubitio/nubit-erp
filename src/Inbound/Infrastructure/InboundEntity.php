@@ -2,7 +2,7 @@
 
 namespace App\Inbound\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Inbound\Domain\Inbound;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;

@@ -2,7 +2,7 @@
 
 namespace App\Product\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Product\Domain\Product;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -34,9 +34,9 @@ class ProductEntity
     #[Column(name: 'stock_minimo', type: 'integer')]
     public ?int $stock_minimo;
     #[Column(name: 'precio', type: 'decimal')]
-    public ?string $precio;
+    public ?float $precio;
     #[Column(name: 'precio_compra', type: 'decimal')]
-    public ?string $precio_compra;
+    public ?float $precio_compra;
     #[Column(name: 'imagen', type: 'string')]
     public ?string $imagen;
     #[Column(name: 'estado', type: 'integer')]

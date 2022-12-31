@@ -2,7 +2,7 @@
 
 namespace App\Invoice\Infrastructure;
 
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Invoice\Domain\Invoice;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -60,9 +60,9 @@ class InvoiceEntity
     #[Column(name: 'mensaje_sunat', type: 'text')]
     public ?string $mensaje_sunat;
     #[Column(name: 'created_at', type: 'datetime')]
-    public ?\DateTime $created_at;
+    public ?\DateTimeInterface $created_at;
     #[Column(name: 'updated_at', type: 'datetime')]
-    public ?\DateTime $updated_at;
+    public ?\DateTimeInterface $updated_at;
 
     public function mapToDomainModel(): Invoice
     {

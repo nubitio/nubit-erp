@@ -8,7 +8,7 @@ use App\CashboxDetail\Domain\CashboxDetailCreateUseCase;
 use App\CashboxDetail\Domain\CashboxDetailDeleteUseCase;
 use App\CashboxDetail\Domain\CashboxDetailGetAllUseCase;
 use App\CashboxDetail\Domain\CashboxDetailUpdateUseCase;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

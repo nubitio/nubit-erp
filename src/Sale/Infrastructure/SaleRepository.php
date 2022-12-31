@@ -2,7 +2,7 @@
 
 namespace App\Sale\Infrastructure;
 
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;

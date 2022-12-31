@@ -3,8 +3,8 @@
 namespace App;
 
 use App\Auth\Domain\AppAuthenticator;
-use App\Domain\Annotation\IgnoreAutowire;
-use App\Domain\Compiler\RemoveUnwantedServices;
+use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Core\Infrastructure\Compiler\RemoveUnwantedServices;
 use App\User\Domain\UserProvider;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use EasyCorp\Bundle\EasyAdminBundle\EasyAdminBundle;
@@ -60,33 +60,33 @@ class Kernel extends BaseKernel
     protected function configureContainer(ContainerConfigurator $container): void
     {
         $container->extension('framework', [
-            'secret' => '%env(APP_SECRET)%',
+            'secret'               => '%env(APP_SECRET)%',
             'http_method_override' => true,
-            'profiler' => [
+            'profiler'             => [
                 'only_exceptions' => false,
             ],
-            'mailer' => [
+            'mailer'               => [
                 'dsn' => '%env(MAILER_DSN)%',
             ],
         ]);
 
         $container->extension('security', [
-            'providers' => [
+            'providers'        => [
                 'user_provider' => [
                     'id' => UserProvider::class,
                 ],
             ],
-            'firewalls' => [
-                'dev' => [
-                    'pattern' => '^/(_(profiler|wdt)|css|images|js)/',
+            'firewalls'        => [
+                'dev'  => [
+                    'pattern'  => '^/(_(profiler|wdt)|css|images|js)/',
                     'security' => false,
                 ],
                 'main' => [
-                    'lazy' => true,
-                    'provider' => 'user_provider',
+                    'lazy'                 => true,
+                    'provider'             => 'user_provider',
                     'custom_authenticator' => AppAuthenticator::class,
-                    'logout' => [
-                        'path' => 'logout',
+                    'logout'               => [
+                        'path'   => 'logout',
                         'target' => 'login_index',
                     ],
                 ],
@@ -96,7 +96,7 @@ class Kernel extends BaseKernel
                     'algorithm' => 'auto',
                 ],
             ],
-            'access_control' => [
+            'access_control'   => [
                 ['path' => '^/login', 'roles' => 'PUBLIC_ACCESS'],
                 ['path' => '^/api', 'roles' => 'PUBLIC_ACCESS'],
                 ['path' => '^/', 'roles' => 'ROLE_USER'],
@@ -107,17 +107,17 @@ class Kernel extends BaseKernel
             'dbal' => [
                 'url' => '%env(resolve:DATABASE_URL)%',
             ],
-            'orm' => [
+            'orm'  => [
                 'auto_generate_proxy_classes' => true,
-                'naming_strategy' => 'doctrine.orm.naming_strategy.underscore_number_aware',
-                'auto_mapping' => true,
-                'mappings' => [
+                'naming_strategy'             => 'doctrine.orm.naming_strategy.underscore_number_aware',
+                'auto_mapping'                => true,
+                'mappings'                    => [
                     'App' => [
                         'is_bundle' => false,
-                        'type' => 'attribute',
-                        'dir' => '%kernel.project_dir%/src/',
-                        'prefix' => 'App',
-                        'alias' => 'App',
+                        'type'      => 'attribute',
+                        'dir'       => '%kernel.project_dir%/src/',
+                        'prefix'    => 'App',
+                        'alias'     => 'App',
                     ],
                 ],
             ],
@@ -126,19 +126,19 @@ class Kernel extends BaseKernel
         $container->extension('monolog', [
             'handlers' => [
                 'main' => [
-                    'type' => 'stream',
-                    'path' => '%kernel.logs_dir%/%kernel.environment%.log',
+                    'type'  => 'stream',
+                    'path'  => '%kernel.logs_dir%/%kernel.environment%.log',
                     'level' => 'debug',
                 ],
             ],
         ]);
 
         $container->extension('twig', [
-            'default_path' => '%kernel.project_dir%/templates',
-            'debug' => '%kernel.debug%',
+            'default_path'     => '%kernel.project_dir%/templates',
+            'debug'            => '%kernel.debug%',
             'strict_variables' => '%kernel.debug%',
-            'globals' => [
-                'settings' => '@App\Service\SettingsService',
+            'globals'          => [
+                'settings' => '@App\Core\Infrastructure\Service\SettingsService',
             ],
         ]);
 
@@ -148,12 +148,12 @@ class Kernel extends BaseKernel
 
         if (isset($this->bundles['WebProfilerBundle'])) {
             $container->extension('web_profiler', [
-                'toolbar' => true,
+                'toolbar'             => true,
                 'intercept_redirects' => false,
             ]);
         }
 
-        $container->import(dirname(__DIR__).'/config/di.php');
+        $container->import(dirname(__DIR__) . '/config/di.php');
     }
 
     protected function configureRoutes(RoutingConfigurator $routes): void
@@ -163,6 +163,6 @@ class Kernel extends BaseKernel
             $routes->import('@WebProfilerBundle/Resources/config/routing/profiler.xml')->prefix('/_profiler');
         }
 
-        $routes->import(dirname(__DIR__).'/src/', 'attribute');
+        $routes->import(dirname(__DIR__) . '/src/', 'attribute');
     }
 }

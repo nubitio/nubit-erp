@@ -2,7 +2,7 @@
 
 namespace App\Base;
 
-use App\Domain\Service\SerializerService;
+use App\Core\Infrastructure\Service\SerializerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 abstract class BaseController extends AbstractController

@@ -2,8 +2,8 @@
 
 namespace App\Outbound\Domain;
 
-use App\Domain\Annotation\IgnoreAutowire;
-use App\Domain\Sale\SaleDetail;
+use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\SaleDetail\Domain\SaleDetail;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]

@@ -5,7 +5,7 @@ namespace App\CashboxDetail\Infrastructure;
 use App\Cashbox\Infrastructure\CashboxEntity;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
-use App\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;

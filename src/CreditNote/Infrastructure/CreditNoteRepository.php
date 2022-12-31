@@ -2,22 +2,20 @@
 
 namespace App\CreditNote\Infrastructure;
 
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\CreditNoteRepositoryInterface;
-use App\Infrastructure\Common\DataGridLoader;
-use App\Util\DataMapper;
+use App\Core\Domain\Util\DataMapper;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CreditNoteRepository implements CreditNoteRepositoryInterface
 {
-    private Connection $connection;
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
     public function __construct(Connection $connection, EntityManagerInterface $entityManager)
     {
-        $this->connection = $connection;
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }

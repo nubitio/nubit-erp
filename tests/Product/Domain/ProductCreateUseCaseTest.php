@@ -18,16 +18,16 @@ class ProductCreateUseCaseTest extends TestCase
 
         $productCreateUseCase = new ProductCreateUseCase($productRepository);
         $product = new Product(
-            1,
+            '1',
             'Product code',
             2,
             'Product description',
+            '10',
+            '10',
             10,
             10,
-            10,
-            10,
-            10,
-            10,
+            10.0,
+            10.0,
             '/path/to/image',
             1,
         );

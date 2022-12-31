@@ -15,9 +15,10 @@ class VoidedCreateUseCase
 
     public function __construct(
         VoidedRepositoryInterface $voidedRepository,
-        SaleRepositoryInterface $saleRepository,
-        BillUtilsInterface $invoiceUtils
-    ) {
+        SaleRepositoryInterface   $saleRepository,
+        BillUtilsInterface        $invoiceUtils
+    )
+    {
         $this->voidedRepository = $voidedRepository;
         $this->saleRepository = $saleRepository;
         $this->invoiceUtils = $invoiceUtils;
@@ -34,7 +35,7 @@ class VoidedCreateUseCase
         $voidedDetail->desMotivoBaja = $sale['header']['doc_notes'];
         $voided = new Voided();
         $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate($sale['header']['doc_date']);
-        $voided->correlativo = $lastCorrelative + 1;
+        $voided->correlativo = (string)($lastCorrelative + 1);
         $voided->fecGeneracion = new \DateTime($sale['header']['doc_date']);
         $voided->fecComunicacion = new \DateTime($sale['header']['doc_date']);
         $voided->company = $this->invoiceUtils->getCompany();

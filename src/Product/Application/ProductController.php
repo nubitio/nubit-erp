@@ -3,13 +3,13 @@
 namespace App\Product\Application;
 
 use App\Base\BaseController;
+use App\Core\Infrastructure\Service\FileUploader;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductCreateUseCase;
 use App\Product\Domain\ProductDeleteUseCase;
 use App\Product\Domain\ProductGetAllUseCase;
 use App\Product\Domain\ProductUpdateUseCase;
-use App\Service\FileUploader;
-use App\Util\Constants;
+use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

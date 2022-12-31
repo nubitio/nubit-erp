@@ -2,8 +2,8 @@
 
 namespace App\CreditNote\Infrastructure;
 
+use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\CreditNote\Domain\CreditNote;
-use App\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;

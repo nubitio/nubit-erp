@@ -4,7 +4,7 @@ namespace App\Billing\Domain;
 
 use App\Billing\Model\Bill\Bill;
 use App\Billing\Model\Report\Parameters;
-use App\Domain\Annotation\IgnoreAutowire;
+use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
 class FileRequest
