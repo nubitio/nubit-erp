@@ -42,9 +42,9 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id' => $localId,
+            'local_id'   => $localId,
             'usuario_id' => $userId,
-            'estado' => 1,
+            'estado'     => 1,
         ]);
 
         return $entity ? $entity->mapToDomainModel() : null;
@@ -111,5 +111,66 @@ class CashboxRepository implements CashboxRepositoryInterface
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    public function updateValues(string $localId, int $userId): void
+    {
+        $cashBox = $this->getLast($localId, $userId);
+        if ($cashBox) {
+            $cashBoxId = $cashBox->caja_id;
+            $startDate = $cashBox->apertura->format('Y-m-d H:i:s');
+            $endDate = date('Y-m-d H:i:s');
+            $cashBoxEntity = $this->entityManager->getReference(CashboxEntity::class, $cashBoxId);
+
+            $totalSales = $this->getTotalSales($userId, $startDate, $endDate);
+
+            foreach ($totalSales as $totalSale) {
+                $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
+                    'caja_id'     => $cashBoxId,
+                    'descripcion' => $totalSale['name'],
+                ]);
+
+                if ($cashBoxDetail) {
+                    $cashBoxDetail->monto = $totalSale['total'];
+                    $this->entityManager->flush();
+                    continue;
+                }
+
+                $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashBoxId]);
+
+                $cashBoxDetail = new CashboxDetailEntity();
+                $cashBoxDetail->cashbox = $cashBoxEntity;
+                $cashBoxDetail->uid = $nextIndex;
+                $cashBoxDetail->tipo_id = 1;
+                $cashBoxDetail->descripcion = $totalSale['name'];
+                $cashBoxDetail->monto = $totalSale['total'];
+
+                $this->entityManager->persist($cashBoxDetail);
+                $this->entityManager->flush();
+            }
+        }
+    }
+
+    private function getTotalSales(string $userId, string $startDate, string $endDate): array
+    {
+        $sql = '
+            SELECT
+                pt.id,
+                pt.`name`,
+                SUM( ROUND( precio_total - ( precio_total * IFNULL( m.descuento, 0 ) / 100 ), 2 ) ) as total
+            FROM
+                movimiento_detalle md
+            INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id
+            INNER JOIN payment_type pt ON pt.id = m.tipo_pago 
+                AND m.estado = 1 
+                AND m.numero > 0 
+            WHERE
+                m.created_by = ?
+                AND (m.date_created BETWEEN ? AND ?) 
+            GROUP BY
+                pt.id
+        ';
+
+        return $this->connection->fetchAllAssociative($sql, [$userId, $startDate, $endDate]);
     }
 }

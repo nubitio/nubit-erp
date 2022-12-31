@@ -17,4 +17,6 @@ interface CashboxRepositoryInterface
     public function update(Cashbox $cashbox): void;
 
     public function delete(string $id): void;
+
+    public function updateValues(string $localId, int $userId): void;
 }
