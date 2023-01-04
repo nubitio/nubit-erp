@@ -1,7 +1,7 @@
-import Dialog from "../Dialog";
-import {Event} from "../Event";
+import Dialog from "../core/dialog/Dialog";
+import {Event} from "../core/event/Event";
 import {authService} from "../services/auth.service";
-import {bus} from "../EventBus";
+import {bus} from "../core/event/EventBus";
 
 export default class LocalPicker {
     private readonly container: string;
@@ -13,7 +13,7 @@ export default class LocalPicker {
         CANCELED: 'local-picker:canceled',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -43,7 +43,12 @@ export default class LocalPicker {
             bus.emit(new Event(LocalPicker.EVENTS.CANCELED));
         });
 
-        let container = document.getElementById(this.dialog.id);
+        let container = document.getElementById(this.dialog.id ?? '');
+
+        if (!container) {
+            return;
+        }
+
         let dataList = document.createElement('div');
         dataList.setAttribute('id', 'local-list');
         container.append(dataList);

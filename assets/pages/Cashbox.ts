@@ -1,13 +1,13 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {messenger} from "../utils/Messenger";
-import {httpClient} from "../utils/HttpClient";
-import {bus} from "../EventBus";
-import {Event} from "../Event";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {messenger} from "../core/utils/Messenger";
+import {httpClient} from "../core/utils/HttpClient";
+import {bus} from "../core/event/EventBus";
+import {Event} from "../core/event/Event";
 
 export default class Cashbox {
     private readonly container: string;
@@ -32,7 +32,7 @@ export default class Cashbox {
         LOADING: 'cashbox:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -111,7 +111,7 @@ export default class Cashbox {
             pagination: false,
             showFooter: true,
             filter: false,
-            onLoadSuccess: (data) => {
+            onLoadSuccess: (data: any) => {
                 this.fields.forEach(field => {
                     if (field.name === 'caja_id') {
                         field.defaultValue = data['header']['caja_id'];
@@ -127,22 +127,21 @@ export default class Cashbox {
             events: Cashbox.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Cashbox.ROUTES,
             events: Cashbox.EVENTS,
         });
     }
 
-    private typeFormatter(value, row, index) {
+    private typeFormatter(value: number) {
         value = Number(value);
+        let text = '';
         if (value === 1) {
-            value = '<span class="badge rounded-pill bg-success">INGRESO</span>';
+            text = '<span class="badge rounded-pill bg-success">INGRESO</span>';
         } else if (value === 2) {
-            value = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
-        } else {
-            value = '';
+            text = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
         }
-        return value;
+        return text;
     }
 
     private checkCashbox(): void {
@@ -166,7 +165,7 @@ export default class Cashbox {
         let dialog = new Dialog(this.container, {
             events: events,
         });
-        let form = new Form(dialog.id, [
+        let form = new Form(dialog.id ?? '', [
             new FieldBuilder()
                 .type(FormType.CURRENCY)
                 .name('monto_inicial')
@@ -201,7 +200,7 @@ export default class Cashbox {
         messenger.confirm(
             'Cerrar caja',
             '¿Está seguro de cerrar la caja?',
-            (r) => {
+            (r: boolean) => {
                 if (r) {
                     let cashboxId = this.dataGrid.data['header']['caja_id'];
                     const params = new URLSearchParams();

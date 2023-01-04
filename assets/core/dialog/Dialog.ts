@@ -1,8 +1,8 @@
-import {Constants} from "./Constants";
-import {Animation} from "./Animation";
-import {bus} from "./EventBus";
-import {Event} from "./Event";
-import {SharedUtils} from "./utils/SharedUtils";
+import {Constants} from "../common/Constants";
+import {Animation} from "../common/Animation";
+import {bus} from "../event/EventBus";
+import {Event} from "../event/Event";
+import {SharedUtils} from "../utils/SharedUtils";
 
 export default class Dialog {
     private container: HTMLElement;
@@ -14,12 +14,9 @@ export default class Dialog {
     private randomId: string = SharedUtils.randomId();
     private events: any = null;
 
-    constructor(container, options: any = {}) {
-        this.container = document.getElementById(container);
+    constructor(container: string, options: any = {}) {
+        this.container = document.getElementById(container) ?? document.body;
         this.options = options || {};
-        this.dialog = null;
-        this.positiveButton = null;
-        this.negativeButton = null;
         this.events = options.events ?? null;
         this.init();
     }
@@ -133,7 +130,7 @@ export default class Dialog {
         this.dialog.dialog('close');
     }
 
-    setLoading(isLoading, title = 'Procesando...') {
+    setLoading(isLoading: boolean, title = 'Procesando...') {
         if (isLoading) {
             this.positiveButton.linkbutton('disable');
             this.negativeButton.linkbutton('disable');

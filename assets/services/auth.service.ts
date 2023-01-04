@@ -1,4 +1,4 @@
-import {httpClient} from "../utils/HttpClient";
+import {httpClient} from "../core/utils/HttpClient";
 import {Observable} from "rxjs";
 
 class AuthService {

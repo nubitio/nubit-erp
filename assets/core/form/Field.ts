@@ -6,7 +6,8 @@ export interface Field {
     col: number;
     name: string;
     label: string;
-    width: number;
+    width: number | null;
+    height: number | null;
     align: string;
     sortable: boolean;
     validators: string[];
@@ -17,7 +18,7 @@ export interface Field {
     data: any[];
     formatter: any;
     visible: boolean;
-    defaultValue: string | number | boolean;
+    defaultValue: string | number | boolean | null;
     onChange: any;
     onSelect: any;
     onClick: any;

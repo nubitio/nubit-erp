@@ -1,10 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 
 export default class User {
     private container: string;
@@ -30,11 +30,8 @@ export default class User {
         LOADING: 'user:loading',
     }
 
-    constructor(container, options: any = {}) {
+    constructor(container: string, options: any = {}) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
         this.options = options;
         this.init();
     }
@@ -108,7 +105,7 @@ export default class User {
         this.options['events'] = User.EVENTS;
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: this.ROUTES,
             events: User.EVENTS
         });

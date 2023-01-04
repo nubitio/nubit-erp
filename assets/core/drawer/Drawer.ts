@@ -1,4 +1,4 @@
-import {bus} from "./EventBus";
+import {bus} from "../event/EventBus";
 
 export class Drawer {
     private options: any = {};
@@ -7,7 +7,6 @@ export class Drawer {
 
     constructor(options: any = {}) {
         this.options = options || {};
-        this.drawer = null;
         this.events = options.events ?? null;
         this.init();
     }
@@ -24,10 +23,10 @@ export class Drawer {
     }
 
     setupView() {
-        let drawer = document.createElement('div');
+        let drawerContainer = document.createElement('div');
         let randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-        drawer.setAttribute('id', randomId);
-        document.body.appendChild(drawer);
+        drawerContainer.setAttribute('id', randomId);
+        document.body.appendChild(drawerContainer);
         this.drawer = $('#' + randomId);
     }
 

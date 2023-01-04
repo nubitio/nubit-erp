@@ -3,21 +3,23 @@ import * as Exporting from 'highcharts/modules/exporting';
 import * as HighchartsMore from 'highcharts/highcharts-more';
 import * as Dumbbell from 'highcharts/modules/dumbbell';
 import * as Lollipop from 'highcharts/modules/lollipop';
-import {messenger} from "../utils/Messenger";
-import {bus} from "../EventBus";
+import {messenger} from "../core/utils/Messenger";
+import {bus} from "../core/event/EventBus";
+import {EventType} from "../core/event/EventType";
+import {Event} from "../core/event/Event";
 
 export default class Dashboard {
     lapseSelector = $('#lapse-selector');
     dgWithoutRotation = $('#without-rotation');
 
-    chartTheme = null;
+    chartTheme: any;
 
-    mostSoldProductsData = null;
-    lessSoldProductsData = null;
-    totalSalesPerDayOfCurrentWeekData = null;
-    totalSalesPerDayOfCurrentMonthData = null;
-    totalSalesPerMonthData = null;
-    invoiceCountPerMonthData = null;
+    mostSoldProductsData: any;
+    lessSoldProductsData: any;
+    totalSalesPerDayOfCurrentWeekData: any;
+    totalSalesPerDayOfCurrentMonthData: any;
+    totalSalesPerMonthData: any;
+    invoiceCountPerMonthData: any;
     dataLoaded = false;
     rotationDataLoaded = false;
 
@@ -42,7 +44,7 @@ export default class Dashboard {
                 value: 'year',
                 text: 'Año'
             }],
-            onSelect: function (record) {
+            onSelect: function (record: any) {
                 ref.getRotationInfo(record.value);
             },
             panelHeight: 'auto',
@@ -66,7 +68,7 @@ export default class Dashboard {
 
     setupObservers() {
         bus.on(
-            action => action.name === window.EventType.THEME_CHANGE,
+            action => action.name === EventType.THEME_CHANGE,
             () => {
                 this.setupTheme();
                 if (this.dataLoaded) {
@@ -255,22 +257,22 @@ export default class Dashboard {
             this.invoiceCountPerMonthData = result[3];
             this.dataLoaded = true;
 
-            window.observer.emit({name: 'on:bi-data:loaded'});
+            bus.emit(new Event('on:bi-data:loaded'));
         });
     }
 
-    getRotationInfo(lapse) {
+    getRotationInfo(lapse: string) {
         fetch('bi/product-rotation/' + lapse)
             .then(response => response.json())
             .then(result => {
                 let reversed = result.slice().reverse();
                 let mostSold = reversed.slice(0, 10);
-                let lessSold = result.filter(item => Number(item.cantidad) > 0).slice(0, 10);
-                let withoutRotation = result.filter(item => Number(item.cantidad) === 0);
-                let mostSoldData = [];
-                let lessSoldData = [];
+                let lessSold = result.filter((item: any) => Number(item.cantidad) > 0).slice(0, 10);
+                let withoutRotation = result.filter((item: any) => Number(item.cantidad) === 0);
+                let mostSoldData: any[] = [];
+                let lessSoldData: any[] = [];
 
-                mostSold.forEach((obj) => {
+                mostSold.forEach((obj: any) => {
                         let item = {
                             name: obj.producto,
                             low: Number(obj.cantidad)
@@ -279,7 +281,7 @@ export default class Dashboard {
                     }
                 );
 
-                lessSold.forEach((obj) => {
+                lessSold.forEach((obj: any) => {
                         let item = {
                             name: obj.producto,
                             low: Number(obj.cantidad)
@@ -292,7 +294,7 @@ export default class Dashboard {
                 this.lessSoldProductsData = lessSoldData;
                 this.rotationDataLoaded = true;
 
-                window.observer.emit({name: 'on:rotation-data:loaded'});
+                bus.emit(new Event('on:rotation-dta:loaded'));
                 this.dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => messenger.show('error', 'Error al obtener datos de rotación de productos'));
@@ -381,9 +383,9 @@ export default class Dashboard {
     }
 
     drawTotalSalesPerDayOfCurrentWeek() {
-        let days = [];
-        let totalSales = [];
-        this.totalSalesPerDayOfCurrentWeekData.forEach((item) => {
+        let days: any = [];
+        let totalSales: any = [];
+        this.totalSalesPerDayOfCurrentWeekData.forEach((item: any) => {
             days.push(item.dia);
             totalSales.push(parseFloat(item.venta));
         });
@@ -417,9 +419,9 @@ export default class Dashboard {
     }
 
     drawTotalSalesPerDayOfCurrentMonth() {
-        let days = [];
-        let totalSales = [];
-        this.totalSalesPerDayOfCurrentMonthData.forEach((item) => {
+        let days: any = [];
+        let totalSales: any = [];
+        this.totalSalesPerDayOfCurrentMonthData.forEach((item: any) => {
             days.push(item.dia);
             totalSales.push(parseFloat(item.venta));
         });
@@ -462,9 +464,9 @@ export default class Dashboard {
     }
 
     drawTotalSalesPerMonth() {
-        let months = [];
-        let totalSales = [];
-        this.totalSalesPerMonthData.forEach((item) => {
+        let months: any = [];
+        let totalSales: any = [];
+        this.totalSalesPerMonthData.forEach((item: any) => {
             months.push(item.mes);
             totalSales.push(parseFloat(item.venta));
         });
@@ -498,9 +500,9 @@ export default class Dashboard {
     }
 
     drawInvoiceCountPerMonth() {
-        let months = [];
-        let data = [];
-        this.invoiceCountPerMonthData.forEach((item) => {
+        let months: any = [];
+        let data: any = [];
+        this.invoiceCountPerMonthData.forEach((item: any) => {
             months.push(item.month);
             data.push(parseFloat(item.total));
         });

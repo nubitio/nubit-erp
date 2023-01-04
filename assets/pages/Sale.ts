@@ -1,19 +1,19 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
-import {StorageUtils} from "../utils/StorageUtils";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
+import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 import Customer from "./Customer";
-import {Drawer} from "../Drawer";
-import {Event} from "../Event";
-import {bus} from "../EventBus";
-import {messenger} from "../utils/Messenger";
+import {Drawer} from "../core/drawer/Drawer";
+import {Event} from "../core/event/Event";
+import {bus} from "../core/event/EventBus";
+import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
 
 export default class Sale {
@@ -42,7 +42,7 @@ export default class Sale {
         LOADING: 'sale:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -164,20 +164,20 @@ export default class Sale {
             .label('Producto')
             .valueField('producto_id')
             .textField('descripcion')
-            .onSelect((record, field) => this.onSelectProduct(record, field))
+            .onSelect((record: any, field: Field) => this.onSelectProduct(record, field))
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
-            .onChange((newValue, oldValue, field) => this.onQuantityChange(newValue, oldValue, field))
+            .onChange((newValue: number, oldValue: number, field: Field) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_unitario')
             .label('Precio')
-            .onChange((newValue, oldValue, field) => this.onPriceChange(newValue, oldValue, field))
+            .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
@@ -274,19 +274,19 @@ export default class Sale {
             events: Sale.EVENTS
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Sale.ROUTES,
             events: Sale.EVENTS,
             detailFields: this.detailFields,
         });
 
         let drawer = new Drawer({events: Customer.EVENTS});
-        let customer = new Customer(drawer.id);
+        let customer = new Customer(drawer.id ?? '');
         customer.renderDialog({width: '100%', height: window.innerHeight, modal: false});
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
-                handler: function (e) {
+                handler: () => {
                     bus.emit(new Event(Customer.EVENTS.ADD));
                     drawer.show();
                 }
@@ -308,24 +308,24 @@ export default class Sale {
         );
     }
 
-    private onSelectProduct(record, field) {
+    private onSelectProduct(record: any, field: Field) {
         let index = field.name.split('-')[1];
-        let row = this.form.getRowFormFieldsByIndex(index);
+        let row = this.form.getRowFormFieldsByIndex(Number(index));
         row['cantidad-' + index].numberbox('setValue', 1);
         row['precio_unitario-' + index].numberbox('setValue', record.precio);
         row['precio_total-' + index].numberbox('setValue', record.precio);
     }
 
-    private onQuantityChange(newValue, oldValue, field) {
+    private onQuantityChange(newValue: number, oldValue: number, field: Field) {
         let index = field.name.split('-')[1];
-        let row = this.form.getRowFormFieldsByIndex(index);
+        let row = this.form.getRowFormFieldsByIndex(Number(index));
         let price = row['precio_unitario-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(newValue * price).toFixed(2));
     }
 
-    private onPriceChange(newValue, oldValue, field) {
+    private onPriceChange(newValue: number, oldValue: number, field: Field) {
         let index = field.name.split('-')[1];
-        let row = this.form.getRowFormFieldsByIndex(index);
+        let row = this.form.getRowFormFieldsByIndex(Number(index));
         let quantity = row['cantidad-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
     }
@@ -385,7 +385,7 @@ export default class Sale {
             messenger.show('Información', 'La venta ya se encuentra anulada');
             return;
         }
-        messenger.prompt('Confirmar', 'Ingrese un motivo', (reason) => {
+        messenger.prompt('Confirmar', 'Ingrese un motivo', (reason: string) => {
             let id = selected['movimiento_id'];
             if (reason) {
                 this.saleService.voidSale(id, reason).subscribe((data) => {
@@ -417,7 +417,7 @@ export default class Sale {
         } else {
             confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
         }
-        messenger.confirm('Confirmar', confirmMessage, function (r) {
+        messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
             if (r) {
                 ref.saleService.makeInvoice(row['movimiento_id']).subscribe((data) => {
                     messenger.show('Información', 'Comprobante generado');

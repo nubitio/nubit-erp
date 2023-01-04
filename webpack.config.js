@@ -17,6 +17,7 @@ Encore
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
     .addEntry('main', './assets/main.ts')
+    .addEntry('product', './assets/product.ts')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()
@@ -56,7 +57,9 @@ Encore
     })
 
     // uncomment if you use TypeScript
-    .enableTypeScriptLoader()
+    .enableTypeScriptLoader((options) => {
+        options.appendTsSuffixTo = [/\.vue$/];
+    })
 
     .configureWatchOptions(watchOptions => {
         watchOptions.poll = 250;

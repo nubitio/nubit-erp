@@ -1,10 +1,11 @@
-import {Constants} from "./Constants";
-import {SharedUtils} from "./utils/SharedUtils";
-import {Field} from "./Field";
-import {bus} from "./EventBus";
-import {Event} from "./Event";
-import {messenger} from "./utils/Messenger";
-import {httpClient} from "./utils/HttpClient";
+import {Constants} from "../common/Constants";
+import {SharedUtils} from "../utils/SharedUtils";
+import {Field} from "../form/Field";
+import {bus} from "../event/EventBus";
+import {Event} from "../event/Event";
+import {messenger} from "../utils/Messenger";
+import {httpClient} from "../utils/HttpClient";
+import GridOptionsDto from "./grid.options.dto";
 
 export default class DataGrid {
     private container: HTMLElement;
@@ -17,11 +18,10 @@ export default class DataGrid {
     private routes: any = {};
     private events: any = {};
 
-    constructor(container, fields, options) {
-        this.container = document.getElementById(container);
+    constructor(container: string, fields: Field[], options: any) {
+        this.container = document.getElementById(container) || document.body;
         this.fields = fields;
         this.options = options;
-        this.dataGrid = null;
         this.defaultToolbar = [];
         this.toolbar = [];
         this.columns = [];
@@ -147,7 +147,7 @@ export default class DataGrid {
 
         this.defaultToolbar.pop();
 
-        this.options.toolbar?.forEach(item => {
+        this.options.toolbar?.forEach((item: any) => {
             if (this.defaultToolbar.length > 0) {
                 this.defaultToolbar.push('-');
             }
@@ -157,8 +157,8 @@ export default class DataGrid {
         this.toolbar = this.defaultToolbar;
     }
 
-    addToolbarButtons(buttons) {
-        buttons.forEach(button => {
+    addToolbarButtons(buttons: any[]) {
+        buttons.forEach((button: any) => {
             if (this.toolbar.length > 0) {
                 this.toolbar.push('-');
             }
@@ -169,13 +169,13 @@ export default class DataGrid {
     }
 
     getIdField() {
-        let idField = this.fields.find(field => field.isIdentity === true);
-        return idField.name;
+        let idField = this.fields.find(field => field.isIdentity);
+        return idField ? idField.name : null;
     }
 
     private setupDataGrid() {
         let ref = this;
-        let gridOptions = {
+        let gridOptions: GridOptionsDto = {
             title: this.options.title,
             url: this.options.url,
             remoteFilter: true,
@@ -183,21 +183,21 @@ export default class DataGrid {
             columns: [this.columns],
             pagination: this.options.pagination ?? true,
             showFooter: this.options.showFooter ?? false,
-            onLoadSuccess: function (data) {
+            onLoadSuccess: function (data: any) {
                 ref.options.onLoadSuccess?.(data);
             }
         }
         let subGrid = this.options.subGrid;
         if (subGrid) {
-            gridOptions['view'] = window.detailview
-            gridOptions['detailFormatter'] = function (index, row) {
+            gridOptions.view = window.detailview
+            gridOptions.detailFormatter = function (index: number, row: any) {
                 return '<div style="padding:2px"><table class="ddv"></table></div>';
             }
-            gridOptions['onExpandRow'] = function (index, row) {
+            gridOptions.onExpandRow = function (index: number, row: any) {
                 let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
                 ddv.datagrid({
                     method: 'get',
-                    url: subGrid.url + row[ref.getIdField()],
+                    url: subGrid.url + row[ref.getIdField() ?? ''],
                     loadMsg: 'Procesando, por favor espere ...',
                     height: 'auto',
                     fit: false,
@@ -228,14 +228,14 @@ export default class DataGrid {
         this.dataGrid.datagrid('reload');
     }
 
-    delete(route, row) {
+    delete(route: string, row: any) {
         let ref = this;
         messenger.confirm(
             'Confirmación',
             '¿Está seguro de eliminar el registro?',
-            function (r) {
+            function (r: boolean) {
                 if (r) {
-                    httpClient.delete<any>(route + row[ref.getIdField()]).subscribe(
+                    httpClient.delete<any>(route + row[ref.getIdField() ?? '']).subscribe(
                         (response) => {
                             ref.reload();
                             SharedUtils.showMessage('Info', response.msg);
@@ -244,7 +244,7 @@ export default class DataGrid {
             });
     }
 
-    showLoading(msg) {
+    showLoading(msg: string) {
         this.dataGrid.datagrid('options').loadMsg = msg;
         this.dataGrid.datagrid('loading');
     }

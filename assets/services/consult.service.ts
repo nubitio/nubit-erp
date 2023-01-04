@@ -1,7 +1,7 @@
 import {Observable} from "rxjs";
 import {RucInfoDto} from "../dto/ruc.info.dto";
 import {DniInfoDto} from "../dto/dni.info.dto";
-import {httpClient} from "../utils/HttpClient";
+import {httpClient} from "../core/utils/HttpClient";
 
 export class ConsultService {
 

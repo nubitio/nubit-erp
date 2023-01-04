@@ -1,10 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../utils/SharedUtils";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class Product {
     private readonly container: string;
@@ -29,7 +29,7 @@ export default class Product {
         LOADING: 'product:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -96,7 +96,7 @@ export default class Product {
             .type(FormType.FILE)
             .name('imagen')
             .label('Imagen')
-            .formatter((val, row) => SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/'))
+            .formatter((val: any, row: any) => SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/'))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
@@ -126,7 +126,7 @@ export default class Product {
             events: Product.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Product.ROUTES,
             events: Product.EVENTS,
         });

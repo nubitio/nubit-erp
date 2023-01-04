@@ -1,11 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 
 export default class Unit {
     private container: string;
@@ -21,11 +20,8 @@ export default class Unit {
         DELETE: 'unit/delete/',
     }
 
-    constructor(container, options) {
+    constructor(container: string, options: any) {
         this.container = container;
-        this.dataGrid = null;
-        this.dialog = null;
-        this.form = null;
         this.options = options;
         this.init();
     }
@@ -70,6 +66,6 @@ export default class Unit {
     renderDialog() {
         this.dialog = new Dialog(this.container, this.options);
 
-        this.form = new Form(this.dialog.id, this.fields);
+        this.form = new Form(this.dialog.id ?? '', this.fields);
     }
 }

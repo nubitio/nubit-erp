@@ -1,14 +1,14 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Drawer} from "../Drawer";
-import {bus} from "../EventBus";
-import {Event} from "../Event";
-import {httpClient} from "../utils/HttpClient";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Drawer} from "../core/drawer/Drawer";
+import {bus} from "../core/event/EventBus";
+import {Event} from "../core/event/Event";
+import {httpClient} from "../core/utils/HttpClient";
 
 export default class Role {
     private readonly container: string;
@@ -33,7 +33,7 @@ export default class Role {
         LOADING: 'role:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -92,7 +92,7 @@ export default class Role {
             events: Role.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Role.ROUTES,
             events: Role.EVENTS,
         });
@@ -113,7 +113,7 @@ export default class Role {
             events: EVENTS,
         });
 
-        let permissionsDialog = new Dialog(drawer.id, {
+        let permissionsDialog = new Dialog(drawer.id ?? '', {
             width: '100%',
             height: window.innerHeight,
             maxHeight: window.innerHeight,
@@ -121,7 +121,12 @@ export default class Role {
             events: EVENTS,
         });
 
-        let container = document.getElementById(permissionsDialog.id);
+        let container = document.getElementById(<string>permissionsDialog.id);
+
+        if (!container) {
+            return;
+        }
+
         let permissionsList = document.createElement('ul');
         permissionsList.setAttribute('id', 'permissions');
         container.appendChild(permissionsList);
@@ -155,7 +160,7 @@ export default class Role {
             (action) => {
                 let row = this.dataGrid.selectedRow;
                 let selected = permissionsTree.tree('getChecked', ['checked', 'indeterminate']);
-                let permissions = selected.map((obj) => obj.id);
+                let permissions = selected.map((obj: any) => obj.id);
                 httpClient.post<any>('role-menu/add', {roleId: row.rol_id, permissions: permissions}).subscribe(
                     response => {
                         SharedUtils.showMessage('Info', response.msg);
