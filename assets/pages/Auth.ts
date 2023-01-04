@@ -1,12 +1,12 @@
-import {Field} from "../Field";
-import Form from "../Form";
-import {FieldBuilder} from "../FieldBuilder";
-import {FormType} from "../FormType";
+import {Field} from "../core/form/Field";
+import Form from "../core/form/Form";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FormType} from "../core/form/FormType";
 import {authService} from "../services/auth.service";
-import {messenger} from "../utils/Messenger";
+import {messenger} from "../core/utils/Messenger";
 import LocalPicker from "../modules/LocalPicker";
-import {bus} from "../EventBus";
-import {StorageUtils} from "../utils/StorageUtils";
+import {bus} from "../core/event/EventBus";
+import {StorageUtils} from "../core/utils/StorageUtils";
 
 export default class Auth {
     private readonly container: string;
@@ -26,7 +26,7 @@ export default class Auth {
         LOADING: 'auth:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.localPicker = new LocalPicker(this.container);
         this.init();

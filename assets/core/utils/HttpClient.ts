@@ -17,7 +17,9 @@ class HttpClient {
 
     private setupInterceptors() {
         this.api.interceptors.request.use((config) => {
-            config.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+            if (config.headers) {
+                config.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+            }
             return config;
         });
 

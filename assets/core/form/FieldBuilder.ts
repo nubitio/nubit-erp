@@ -12,6 +12,7 @@ export class FieldBuilder {
             name: '',
             label: '',
             width: null,
+            height: null,
             align: 'left',
             sortable: false,
             validators: [],
@@ -60,6 +61,11 @@ export class FieldBuilder {
 
     width(width: number): FieldBuilder {
         this._field.width = width;
+        return this;
+    }
+
+    height(height: number): FieldBuilder {
+        this._field.height = height;
         return this;
     }
 

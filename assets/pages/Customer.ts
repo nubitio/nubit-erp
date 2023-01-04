@@ -1,11 +1,11 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 import {ConsultService} from "../services/consult.service";
 
 export default class Customer {
@@ -33,7 +33,7 @@ export default class Customer {
         LOADING: 'customer:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -99,7 +99,7 @@ export default class Customer {
             events: Customer.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: this.ROUTES,
             events: Customer.EVENTS
         });
@@ -107,13 +107,11 @@ export default class Customer {
         let rucField = this.form.getField('ruc').textbox({
             icons: [{
                 iconCls: Constants.ICON_SEARCH,
-                handler: function (e) {
-                    ref.consult()
-                }
+                handler: () => ref.consult()
             }]
         });
 
-        rucField.textbox('textbox').bind('keyup', function (e) {
+        rucField.textbox('textbox').bind('keyup', function (e: any) {
             if (e.keyCode === 13) {
                 ref.consult()
             }

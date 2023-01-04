@@ -1,7 +1,8 @@
-import {SharedUtils} from "./utils/SharedUtils";
-import {EventType} from "./EventType";
-import {bus} from "./EventBus";
-import {Event} from "./Event";
+import {SharedUtils} from "./SharedUtils";
+import {EventType} from "../event/EventType";
+import {bus} from "../event/EventBus";
+import {Event} from "../event/Event";
+import themes from "devextreme/ui/themes";
 
 export default class ThemeManager {
     private accentColor: string;
@@ -13,7 +14,9 @@ export default class ThemeManager {
 
     static readonly CLASS = {
         LIGHT: 'light-theme',
-        DARK: 'dark-theme'
+        DARK: 'dark-theme',
+        DX_LIGHT: 'dx.light',
+        DX_DARK: 'dx.dark'
     }
 
     constructor() {
@@ -43,10 +46,12 @@ export default class ThemeManager {
             localStorage.setItem('theme', newTheme);
             document.body.classList.remove(ThemeManager.CLASS.DARK);
             document.body.classList.add(ThemeManager.CLASS.LIGHT);
+            themes.current(ThemeManager.CLASS.DX_LIGHT);
         } else {
             localStorage.setItem('theme', newTheme);
             document.body.classList.remove(ThemeManager.CLASS.LIGHT);
             document.body.classList.add(ThemeManager.CLASS.DARK);
+            themes.current(ThemeManager.CLASS.DX_DARK);
         }
 
         bus.emit(new Event(EventType.THEME_CHANGE, newTheme));
@@ -70,9 +75,11 @@ export default class ThemeManager {
     }
 
     setupAppColors() {
-        document.body.style.setProperty('--accent-color', this.accentColor);
-        let contrastColor = this.getContrastColor(this.accentColor);
-        document.body.style.setProperty('--accent-color-contrast', contrastColor);
+        if (this.accentColor !== null) {
+            let contrastColor = this.getContrastColor(this.accentColor);
+            document.body.style.setProperty('--accent-color', this.accentColor);
+            document.body.style.setProperty('--accent-color-contrast', contrastColor);
+        }
     }
 
     getContrastColor(color: string) {

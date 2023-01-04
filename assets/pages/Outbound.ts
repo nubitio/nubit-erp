@@ -1,10 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {StorageUtils} from "../utils/StorageUtils";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductDto} from "../dto/product.dto";
 import {ProductService} from "../services/product.service";
 
@@ -31,7 +31,7 @@ export default class Outbound {
         LOADING: 'outbound:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -152,7 +152,7 @@ export default class Outbound {
             events: Outbound.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
             detailFields: this.detailFields,

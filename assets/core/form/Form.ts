@@ -1,9 +1,9 @@
 import {FormType} from "./FormType";
-import {SharedUtils} from "./utils/SharedUtils";
+import {SharedUtils} from "../utils/SharedUtils";
 import {Field} from "./Field";
-import {DateUtils} from "./utils/DateUtils";
-import {bus} from "./EventBus";
-import {Event} from "./Event";
+import {DateUtils} from "../utils/DateUtils";
+import {bus} from "../event/EventBus";
+import {Event} from "../event/Event";
 
 export default class Form {
     private container: HTMLElement;
@@ -22,12 +22,11 @@ export default class Form {
         ROW_REMOVED: 'on:row:removed',
     }
 
-    constructor(container, fields: Field[], options: any = {}) {
-        this.container = document.getElementById(container);
+    constructor(container: string, fields: Field[], options: any = {}) {
+        this.container = document.getElementById(container) || document.body;
         this.fields = fields;
         this.detailFields = options.detailFields || [];
         this.options = options || {};
-        this.form = null;
         this.formFields = {};
         this.route = null;
         this.events = options.events;
@@ -48,7 +47,7 @@ export default class Form {
                 }
                 return valid;
             },
-            success: function (result) {
+            success: function (result: any) {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
@@ -58,7 +57,7 @@ export default class Form {
                         SharedUtils.showMessage('Error', result.msg);
                     }
                 } catch (e) {
-                    SharedUtils.showMessage('Error', e);
+                    SharedUtils.showMessage('Error', 'Error al procesar la respuesta del servidor');
                 } finally {
                     bus.emit(new Event(ref.events.LOADING, false));
                 }
@@ -159,6 +158,11 @@ export default class Form {
     private addRow() {
         this.rowIndex++;
         let detailTableBody = document.getElementById('detailTableBody' + this.randomId);
+
+        if (!detailTableBody) {
+            return;
+        }
+
         let tableRow = document.createElement('tr');
         tableRow.setAttribute('id', 'detailRow' + this.rowIndex);
         detailTableBody.appendChild(tableRow);
@@ -178,9 +182,14 @@ export default class Form {
         bus.emit(new Event(Form.EVENTS.ROW_ADDED, this.rowIndex));
     }
 
-    private removeRow(rowIndex) {
+    private removeRow(rowIndex: string) {
         let row = document.getElementById('detailRow' + rowIndex);
-        row.parentNode.removeChild(row);
+
+        if (!row) {
+            return;
+        }
+
+        row.parentNode?.removeChild(row);
         for (let key in this.formFields) {
             let index = key.split('-')[1];
             if (index == rowIndex) {
@@ -190,11 +199,12 @@ export default class Form {
         bus.emit(new Event(Form.EVENTS.ROW_REMOVED, rowIndex));
     }
 
-    private buildFields(container, fields, containerType = 'div', rowIndex = null) {
+    private buildFields(container: HTMLElement, fields: Field[], containerType = 'div', rowIndex: number | null = null) {
         fields.forEach(field => {
             if (field.type === FormType.NONE) {
                 return;
             }
+
             let fieldContainer = document.createElement(containerType);
             if (containerType === 'div' && !field.hidden) {
                 fieldContainer.setAttribute('class', 'mb-2 col-md-' + field.col);
@@ -204,6 +214,9 @@ export default class Form {
             if (field.type !== FormType.SUBMIT) {
                 input = document.createElement('input');
                 if (containerType === 'td') {
+                    if (rowIndex == null) {
+                        return;
+                    }
                     let index = rowIndex - 1;
                     input.setAttribute('name', `detail[${index}][${field.name}]`);
                 } else {
@@ -225,7 +238,10 @@ export default class Form {
             removeBtn.setAttribute('class', 'btn btn-danger');
             removeBtn.innerHTML = '<i class="fa fa-trash"></i>';
             removeBtn.addEventListener('click', () => {
-                this.removeRow(rowIndex);
+                if (rowIndex == null) {
+                    return;
+                }
+                this.removeRow(rowIndex.toString());
             });
             fieldContainer.appendChild(removeBtn);
             container.appendChild(fieldContainer);
@@ -235,7 +251,7 @@ export default class Form {
     setupObservers() {
         bus.on(
             event => event.name === this.events?.ADD,
-            (event) => {
+            () => {
                 this.add();
             }
         )
@@ -249,7 +265,7 @@ export default class Form {
 
         bus.on(
             event => event.name === this.events?.SAVE,
-            (event) => {
+            () => {
                 if (!this.options.preventDefault) {
                     this.submit();
                 }
@@ -302,7 +318,7 @@ export default class Form {
         });
     }
 
-    buildFileInput(field) {
+    buildFileInput(field: Field) {
         let input = $('#' + field.name);
         input.filebox({
             width: '100%',
@@ -314,7 +330,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildTextInput(field) {
+    buildTextInput(field: Field) {
         let input = $('#' + field.name);
         input.textbox({
             width: '100%',
@@ -329,7 +345,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildPasswordInput(field) {
+    buildPasswordInput(field: Field) {
         let input = $('#' + field.name);
         input.passwordbox({
             width: '100%',
@@ -340,7 +356,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildTextAreaInput(field) {
+    buildTextAreaInput(field: Field) {
         let input = $('#' + field.name);
         input.textbox({
             width: '100%',
@@ -354,7 +370,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildDateInput(field) {
+    buildDateInput(field: Field) {
         let input = $('#' + field.name);
         input.datebox({
             width: '100%',
@@ -376,7 +392,7 @@ export default class Form {
             labelPosition: 'top',
             min: 0,
             validType: field.validators,
-            onChange: (newValue, oldValue) => {
+            onChange: (newValue: number, oldValue: number) => {
                 if (field.onChange) {
                     field.onChange(newValue, oldValue, field);
                 }
@@ -396,7 +412,7 @@ export default class Form {
             min: 0,
             precision: 2,
             validType: field.validators,
-            onChange: (newValue, oldValue) => {
+            onChange: (newValue: number, oldValue: number) => {
                 if (field.onChange) {
                     field.onChange(newValue, oldValue, field);
                 }
@@ -408,7 +424,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildSelectInput(field) {
+    buildSelectInput(field: Field) {
         let input = $('#' + field.name);
         input.combobox({
             width: '100%',
@@ -420,7 +436,7 @@ export default class Form {
             textField: field.textField || 'text',
             panelHeight: 200,
             limitToList: true,
-            onSelect: (record) => {
+            onSelect: (record: any) => {
                 if (field.onSelect) {
                     field.onSelect(record, field);
                 }
@@ -430,7 +446,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildEnumInput(field) {
+    buildEnumInput(field: Field) {
         let input = $('#' + field.name);
         input.combobox({
             width: '100%',
@@ -444,7 +460,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildEntityInput(field) {
+    buildEntityInput(field: Field) {
         let input = $('#' + field.name);
         input.combobox({
             width: '100%',
@@ -463,7 +479,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildSwitchInput(field) {
+    buildSwitchInput(field: Field) {
         let input = $('#' + field.name);
         input.switchbutton({
             label: field.label,
@@ -476,7 +492,7 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
-    buildSubmitButton(field) {
+    buildSubmitButton(field: Field) {
         let button = $('#' + field.name);
         button.linkbutton({
             width: '100%',
@@ -496,30 +512,30 @@ export default class Form {
     }
 
     getDetailFormFields(): any {
-        let formFields = {};
+        let formFields: Record<string, any> = {};
         for (let key in this.formFields) {
             let index = Number(key.split('-')[1]);
             if (index > 0) {
-                formFields[key] = this.formFields[key];
+                formFields.key = this.formFields[key];
             }
         }
         return formFields;
     }
 
     getRowFormFieldsByIndex(rowIndex: number): any {
-        let formFields = {};
+        let formFields: Record<string, any> = {};
         for (let key in this.formFields) {
             let index = Number(key.split('-')[1]);
             if (index == rowIndex) {
-                formFields[key] = this.formFields[key];
+                formFields.key = this.formFields[key];
             }
         }
         return formFields;
     }
 
     getIdField() {
-        let idField = this.fields.find(field => field.isIdentity === true);
-        return idField.name;
+        let idField = this.fields.find(field => field.isIdentity);
+        return idField?.name ?? '';
     }
 
     /**
@@ -529,7 +545,7 @@ export default class Form {
         return this.formFields || {};
     }
 
-    getField(name): JQuery {
+    getField(name: string): JQuery {
         return this.formFields[name] || {};
     }
 
@@ -563,7 +579,7 @@ export default class Form {
         });
     }
 
-    edit(route = null, row) {
+    edit(route = null, row: any) {
         this.fields.forEach(field => {
             if (field.type === FormType.PASSWORD) {
                 row[field.name] = '';

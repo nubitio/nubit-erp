@@ -1,10 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../utils/SharedUtils";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class VoucherType {
     private readonly container: string;
@@ -29,7 +29,7 @@ export default class VoucherType {
         LOADING: 'voucher-type:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -78,7 +78,7 @@ export default class VoucherType {
             events: VoucherType.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: VoucherType.ROUTES,
             events: VoucherType.EVENTS,
         });

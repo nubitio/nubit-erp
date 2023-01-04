@@ -1,10 +1,10 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 
 export default class Category {
     private readonly container: string;
@@ -29,7 +29,7 @@ export default class Category {
         LOADING: 'category:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -62,7 +62,7 @@ export default class Category {
             .type(FormType.FILE)
             .name('imagen')
             .label('Imagen')
-            .formatter((val, row) => {
+            .formatter((val: any, row: any) => {
                 return SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/')
             })
             .build());
@@ -95,7 +95,7 @@ export default class Category {
             events: Category.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Category.ROUTES,
             events: Category.EVENTS,
         });

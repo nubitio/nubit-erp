@@ -1,6 +1,6 @@
 import {Observable} from "rxjs";
 import {ProductDto} from "../dto/product.dto";
-import {httpClient} from "../utils/HttpClient";
+import {httpClient} from "../core/utils/HttpClient";
 
 export class ProductService {
 

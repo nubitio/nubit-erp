@@ -1,13 +1,13 @@
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {FormType} from "../FormType";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {bus} from "../EventBus";
-import {Event} from "../Event";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FormType} from "../core/form/FormType";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {bus} from "../core/event/EventBus";
+import {Event} from "../core/event/Event";
 
 export default class SaleConsult {
-    private readonly container: HTMLElement;
+    private readonly container: string;
     private fields: Field[]
 
     static readonly EVENTS = {
@@ -20,7 +20,7 @@ export default class SaleConsult {
         LOADING: 'sale-consult:loading',
     }
 
-    constructor(container: HTMLElement) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -64,7 +64,7 @@ export default class SaleConsult {
             positiveText: 'Generar',
         });
 
-        let form = new Form(dialog.id, this.fields, {
+        let form = new Form(dialog.id ?? '', this.fields, {
             events: SaleConsult.EVENTS,
             preventDefault: true,
         });

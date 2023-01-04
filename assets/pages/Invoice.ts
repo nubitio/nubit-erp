@@ -1,11 +1,11 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {SharedUtils} from "../utils/SharedUtils";
-import {messenger} from "../utils/Messenger";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
 import {InvoiceService} from "../services/invoice.service";
 
@@ -30,7 +30,7 @@ export default class Invoice {
         LOADING: 'invoice:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -160,7 +160,7 @@ export default class Invoice {
             events: Invoice.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Invoice.ROUTES,
             events: Invoice.EVENTS,
         });

@@ -3,14 +3,14 @@ export class SharedUtils {
         return Math.random().toString(36).substring(2, 15);
     }
 
-    static showMessage(title: String, message: string) {
+    static showMessage(title: string, message: string) {
         ($ as any).messager.show({
             title: title,
             msg: message
         });
     }
 
-    static activeFormatter(val) {
+    static activeFormatter(val: number) {
         if (Number(val) === 1) {
             return '<span class="badge rounded-pill bg-success">SI</span>';
         } else {
@@ -18,7 +18,7 @@ export class SharedUtils {
         }
     }
 
-    static imageFormatter(image, name, path = '') {
+    static imageFormatter(image: string, name: string, path = '') {
         if (image) {
             return `<a href="${path}${image}" data-lightbox="${name}">
                     <img src="${path}${image}" style="width: 30px; height: 30px;"  alt=""/>
@@ -30,15 +30,15 @@ export class SharedUtils {
         }
     }
 
-    static voucherFormatter(value, row) {
+    static voucherFormatter(value: string | null, row: any) {
         if (value !== null) {
-            return '<a href="/sale/order/' + row.movimiento_id + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row.serie + '-' + row.numero + '</a>';
+            return '<a href="/sale/order/' + row['movimiento_id'] + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row['serie'] + '-' + row['numero'] + '</a>';
         } else {
             return '';
         }
     }
 
-    static invoiceFormatter(value, row) {
+    static invoiceFormatter(value: string | null, row: any) {
         if (value !== null) {
             return '<a href="/invoice/' + row['movimiento_id'] + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + row['iserie'] + '-' + row['inumero'] + '</a>';
         } else {
@@ -46,7 +46,7 @@ export class SharedUtils {
         }
     }
 
-    static invoiceStatusFormatter(value, row) {
+    static invoiceStatusFormatter(value: number | null) {
         if (value === null) {
             value = -1
         } else {
@@ -61,7 +61,7 @@ export class SharedUtils {
         }
     }
 
-    static billStatusFormatter(value, row) {
+    static billStatusFormatter(value: number | null) {
         if (value === null) {
             value = -1
         } else {
@@ -80,8 +80,8 @@ export class SharedUtils {
         }
     }
 
-    static voidedFormatter(value){
-        if (value === 1){
+    static voidedFormatter(value: number) {
+        if (value === 1) {
             return '<span class="badge rounded-pill bg-success">NO</span>';
         } else {
             return '<span class="badge rounded-pill bg-danger">SI</span>';

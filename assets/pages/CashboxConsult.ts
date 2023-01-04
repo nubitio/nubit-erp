@@ -1,9 +1,9 @@
-import DataGrid from "../DataGrid";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
-import {Constants} from "../Constants";
-import {SharedUtils} from "../utils/SharedUtils";
+import DataGrid from "../core/datagrid/DataGrid";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {Constants} from "../core/common/Constants";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class CashboxConsult {
     private readonly container: string;
@@ -14,7 +14,7 @@ export default class CashboxConsult {
 
     static readonly EVENTS = {}
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -114,23 +114,25 @@ export default class CashboxConsult {
         });
     }
 
-    private statusFormatter(value, row, index) {
+    private statusFormatter(value: number) {
         value = Number(value);
+        let text = '';
         if (value === 1) {
-            value = '<span class="badge rounded-pill bg-success">ACTIVO</span>';
+            text = '<span class="badge rounded-pill bg-success">ACTIVO</span>';
         } else {
-            value = '<span class="badge rounded-pill bg-info">CERRADO</span>';
+            text = '<span class="badge rounded-pill bg-info">CERRADO</span>';
         }
-        return value;
+        return text;
     }
 
-    private typeFormatter(value, row, index) {
+    private typeFormatter(value: number) {
         value = Number(value);
+        let text = '';
         if (value === 1) {
-            value = '<span class="badge rounded-pill bg-success">INGRESO</span>';
+            text = '<span class="badge rounded-pill bg-success">INGRESO</span>';
         } else {
-            value = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
+            text = '<span class="badge rounded-pill bg-danger">EGRESO</span>';
         }
-        return value;
+        return text;
     }
 }

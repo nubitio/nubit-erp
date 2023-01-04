@@ -1,14 +1,14 @@
-import {bus} from "../EventBus";
+import {bus} from "../core/event/EventBus";
 import LocalPicker from "../modules/LocalPicker";
-import {EventType} from "../EventType";
-import {StorageUtils} from "../utils/StorageUtils";
+import {EventType} from "../core/event/EventType";
+import {StorageUtils} from "../core/utils/StorageUtils";
 
 export default class Home {
     private layout = $('#layout-container');
     private sidebar = $('#sidebar');
     private menuToggle = $('#menu-toggle');
     private themeIcon = $('#theme-icon');
-    private selectedMenu = null;
+    private selectedMenu;
     private localPicker: LocalPicker;
 
     constructor() {
@@ -28,10 +28,10 @@ export default class Home {
         fetch('/api/menu/' + window.userRoleId)
             .then(response => response.json())
             .then(data => {
-                let menu = []
-                data.forEach(item => {
+                let menu: any[] = []
+                data.forEach((item: any) => {
                     if (item.children) {
-                        item.children.forEach(child => {
+                        item.children.forEach((child: any) => {
                             child.parent = item.text;
                             child.iconCls = '';
                         })
@@ -55,7 +55,7 @@ export default class Home {
 
     setupMenu() {
         let ref = this;
-        let menu = JSON.parse(localStorage.getItem('menu'));
+        let menu = JSON.parse(localStorage.getItem('menu') ?? '[]');
 
         if (!menu) {
             return;
@@ -66,7 +66,7 @@ export default class Home {
             fit: true,
             border: false,
             multiple: false,
-            onSelect: function (item) {
+            onSelect: function (item: any) {
                 if (ref.selectedMenu !== null && ref.selectedMenu === item.url) {
                     return;
                 }
@@ -75,7 +75,7 @@ export default class Home {
         });
 
         if (this.selectedMenu !== '') {
-            let item = menu.flatMap(item => item.children ?? []).find(item => item.url === this.selectedMenu);
+            let item = menu.flatMap((item: any) => item.children ?? []).find((item: any) => item.url === this.selectedMenu);
             this.sidebar.sidemenu('setSelected', item ?? menu[0]);
         }
     }
@@ -85,8 +85,8 @@ export default class Home {
         this.setSidebarCollapsed(!opts.collapsed);
         let selectedMenu = location.pathname.split('/')[1];
         if (selectedMenu !== '') {
-            let menu = JSON.parse(localStorage.getItem('menu'));
-            let item = menu.flatMap(item => item.children ?? []).find(item => item.url === selectedMenu);
+            let menu = JSON.parse(localStorage.getItem('menu') ?? '[]');
+            let item = menu.flatMap((item: any) => item.children ?? []).find((item: any) => item.url === selectedMenu);
             this.sidebar.sidemenu('setSelected', item ?? menu[0]);
         }
     }
@@ -94,7 +94,7 @@ export default class Home {
     setSidebarCollapsed(isCollapsed: boolean) {
         this.sidebar.sidemenu(isCollapsed ? 'collapse' : 'expand');
         let opts = this.sidebar.sidemenu('options');
-        let west = this.layout.layout('panel', 'west');
+        let west: any = this.layout.layout('panel', 'west');
         west.panel('resize', {
             width: opts.collapsed ? 50 : 250
         });

@@ -1,4 +1,4 @@
-import ThemeManager from "../ThemeManager";
+import ThemeManager from "../core/utils/ThemeManager";
 import LocalPicker from "../modules/LocalPicker";
 
 export {};

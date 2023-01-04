@@ -1,11 +1,11 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {SharedUtils} from "../utils/SharedUtils";
-import {Constants} from "../Constants";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 import {ConsultService} from "../services/consult.service";
 
 export default class Company {
@@ -32,7 +32,7 @@ export default class Company {
         LOADING: 'company:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -78,7 +78,7 @@ export default class Company {
             .type(FormType.FILE)
             .name('logo')
             .label('Logo')
-            .formatter(function (val, row) {
+            .formatter(function (val: any, row: any) {
                 return SharedUtils.imageFormatter(val, row['razon_social'], 'uploads/images/');
             })
             .build());
@@ -111,7 +111,7 @@ export default class Company {
             events: Company.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id, this.fields, {
+        this.form = new Form(this.dialog.id ?? '', this.fields, {
             routes: Company.ROUTES,
             events: Company.EVENTS,
         });
@@ -119,13 +119,11 @@ export default class Company {
         let rucField = this.form.getField('ruc').textbox({
             icons: [{
                 iconCls: Constants.ICON_SEARCH,
-                handler: function (e) {
-                    ref.getRucInfo(rucField.textbox('getValue'));
-                }
+                handler: () => ref.getRucInfo(rucField.textbox('getValue'))
             }]
         });
 
-        rucField.textbox('textbox').bind('keyup', function (e) {
+        rucField.textbox('textbox').bind('keyup', function (e: any) {
             if (e.keyCode === 13) {
                 ref.getRucInfo(rucField.textbox('getValue'));
             }

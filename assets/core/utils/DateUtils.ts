@@ -1,12 +1,12 @@
 export class DateUtils {
-    static dateFormatter(date) {
+    static dateFormatter(date: Date) {
         const y = date.getFullYear();
         const m = date.getMonth() + 1;
         const d = date.getDate();
         return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
     }
 
-    static dateParser(dateString) {
+    static dateParser(dateString: string) {
         if (!dateString) return new Date();
         const dateParts = (dateString.split('-'));
         const y = parseInt(dateParts[0], 10);

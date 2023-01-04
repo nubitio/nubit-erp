@@ -1,7 +1,7 @@
-import {Field} from "../Field";
-import DataGrid from "../DataGrid";
-import {FieldBuilder} from "../FieldBuilder";
-import {FormType} from "../FormType";
+import {Field} from "../core/form/Field";
+import DataGrid from "../core/datagrid/DataGrid";
+import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FormType} from "../core/form/FormType";
 
 export default class Kardex {
     private readonly container: string;
@@ -18,7 +18,7 @@ export default class Kardex {
         LOADING: 'local:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -104,10 +104,7 @@ export default class Kardex {
         });
     }
 
-    kindFormatter(value, row) {
-        if (value === null) {
-            value = -1
-        }
+    kindFormatter(value: string | null) {
         if (value === 'INGRESO') {
             return '<span class="badge badge-pill badge-success">INGRESO</span>';
         } else if (value === 'SALIDA') {
