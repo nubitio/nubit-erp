@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
     "target": "esnext",
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable"
+    ],
     "module": "esnext",
     "strict": true,
+    "jsx": "react-jsx",
     "strictPropertyInitialization": false,
     "moduleResolution": "node",
     "skipLibCheck": true,
     "esModuleInterop": true,
-    "sourceMap": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ]
+    "sourceMap": true
   }
 }
