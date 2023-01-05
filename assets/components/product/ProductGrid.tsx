@@ -15,7 +15,7 @@ class ProductGrid extends React.Component<any, any> {
     }
 
     getProducts() {
-        fetch("http://localhost:3000/products")
+        fetch("http://localhost:8080/products")
             .then(response => response.json())
             .then(data => this.setState({products: data}));
     }
