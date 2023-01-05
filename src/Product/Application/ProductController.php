@@ -27,7 +27,7 @@ class ProductController extends BaseController
     #[Route('/product', name: 'product_index', methods: ['GET'])]
     public function index(): Response
     {
-        return $this->render('product/index.html.twig');
+        return $this->render('product/index.new.html.twig');
     }
 
     #[Route('/product/get', name: 'product_list', methods: ['POST'])]
