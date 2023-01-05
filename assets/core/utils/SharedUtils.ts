@@ -1,3 +1,5 @@
+import React from "react";
+
 export class SharedUtils {
     static randomId(): string {
         return Math.random().toString(36).substring(2, 15);
@@ -18,6 +20,14 @@ export class SharedUtils {
         }
     }
 
+    static dxActiveFormatter(data: any) {
+        if (Number(data.text) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
+        } else {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
+        }
+    }
+
     static imageFormatter(image: string, name: string, path = '') {
         if (image) {
             return `<a href="${path}${image}" data-lightbox="${name}">
@@ -27,6 +37,23 @@ export class SharedUtils {
             return `<a href="https://ui-avatars.com/api/?name=${name}" data-lightbox="${name}">
                     <img src="https://ui-avatars.com/api/?name=${name}" style="width: 30px; height: 30px;"  alt=""/>
                 </a>`;
+        }
+    }
+
+    static dxImageFormatter(data: any) {
+        if (data.value) {
+            return React.createElement('a', {
+                href: data.value,
+                'data-lightbox': data.row.data.descripcion
+            }, React.createElement('img', {src: data.value, style: {width: '30px', height: '30px'}}));
+        } else {
+            return React.createElement('a', {
+                href: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
+                'data-lightbox': data.row.data.descripcion
+            }, React.createElement('img', {
+                src: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
+                style: {width: '30px', height: '30px'}
+            }));
         }
     }
 
