@@ -1,11 +1,13 @@
 import React from "react";
-import ProductForm from "./ProductForm";
+import ProductGrid from "./ProductGrid";
+import {CrudHeader} from "../common/CrudHeader";
 
 class ProductPage extends React.Component<any, any> {
     render() {
         return (
-            <div>
-                <ProductForm/>
+            <div className="container-fluid">
+                <CrudHeader pageTitle="Products" showAddButton={false}/>
+                <ProductGrid/>
             </div>
         );
     }
