@@ -1,19 +1,13 @@
 import React from "react";
-import {Button} from "devextreme-react";
-import ProductGrid from "./ProductGrid";
+import ProductForm from "./ProductForm";
 
 class ProductPage extends React.Component<any, any> {
     render() {
         return (
             <div>
-                <Button text="Click me" onClick={this.sayHello}/>
-                <ProductGrid/>
+                <ProductForm/>
             </div>
         );
-    }
-
-    sayHello() {
-        alert("Hello World!");
     }
 }
 
