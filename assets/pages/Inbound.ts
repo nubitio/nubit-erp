@@ -5,8 +5,8 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductDto} from "../dto/product.dto";
-import {ProductService} from "../services/product.service";
+import {ProductDto} from "../components/product/product.dto";
+import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
 import {Event} from "../core/event/Event";
 
