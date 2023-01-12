@@ -33,7 +33,7 @@ class ProductController extends BaseController
     #[Route('/product/get', name: 'product_list', methods: ['GET', 'POST'])]
     public function getAll(ProductGetAllUseCase $getAllUseCase): Response
     {
-        return $this->json($getAllUseCase());
+        return $this->json($getAllUseCase()['rows']);
     }
 
     #[Route('/product/add', name: 'product_create', methods: ['POST'])]

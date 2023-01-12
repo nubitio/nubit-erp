@@ -1,6 +1,11 @@
-export default interface Product {
-    id?: number | null;
-    name?: string | null;
-    description?: string | null;
-    price?: number | null;
+export interface ProductDto {
+    producto_id: string;
+    imagen: string;
+    imagen_url: string;
+    codigo: string;
+    descripcion: string;
+    precio: number;
+    categoria_id: string;
+    categoria: string;
+    estado: string;
 }

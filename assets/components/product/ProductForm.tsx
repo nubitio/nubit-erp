@@ -1,6 +1,6 @@
 import {Component} from "react";
 import {Form} from "devextreme-react";
-import {ProductDto} from "../../dto/product.dto";
+import {ProductDto} from "./product.dto";
 import {ButtonItem, ButtonOptions, NumericRule, RequiredRule, SimpleItem} from "devextreme-react/form";
 
 export default class ProductForm extends Component<any, any> {
