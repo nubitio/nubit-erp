@@ -1,0 +1,7 @@
+api_platform:
+  title: 'Efact API'
+  mapping:
+    paths: [ '%kernel.project_dir%/src' ]
+  formats:
+    json: [ 'application/json' ]
+    html: [ 'text/html' ]
