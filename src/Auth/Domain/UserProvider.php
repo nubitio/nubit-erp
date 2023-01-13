@@ -1,7 +1,9 @@
 <?php
 
-namespace App\User\Domain;
+namespace App\Auth\Domain;
 
+use App\User\Domain\User;
+use App\User\Domain\UserGetOneByUsernameUseCase;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
