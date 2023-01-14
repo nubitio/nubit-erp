@@ -22,6 +22,7 @@ jobs:
       - run: npm run build
       - uses: actions/upload-artifact@v3
         with:
+          name: build
           path: public/build
 
   deploy:
@@ -40,12 +41,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
       - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: public/build
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
       - name: Adding known hosts
-        run: echo "$SSH_HOST_KEY" > ~/.ssh/known_hosts
+        run: echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
       - name: Deploy with rsync
-        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ ${{secrets.SSH_USER}}@${{secrets.SSH_HOST}}:/web/
+        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/web/
