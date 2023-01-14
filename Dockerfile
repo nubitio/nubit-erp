@@ -23,11 +23,11 @@ RUN add-apt-repository ppa:ondrej/php -y
 RUN apt update
 
 # install php
-RUN apt -y install php8.1 mcrypt php8.1-xdebug php8.1-mcrypt php8.1-mbstring php8.1-xml php8.1-mysql php8.1-curl php8.1-zip php8.1-soap php8.1-gd php8.1-intl
-RUN apt install -y libapache2-mod-php8.1
+RUN apt -y install php8.2 mcrypt php8.2-xdebug php8.2-mbstring php8.2-xml php8.2-mysql php8.2-curl php8.2-zip php8.2-soap php8.2-gd php8.2-intl
+RUN apt install -y libapache2-mod-php8.2
 
 # configure php
-RUN sed -i -e '$a xdebug.mode=develop,debug,coverage' /etc/php/8.1/mods-available/xdebug.ini
+RUN sed -i -e '$a xdebug.mode=develop,debug,coverage' /etc/php/8.2/mods-available/xdebug.ini
 
 # install wkhtmltopdf
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
