@@ -10,15 +10,16 @@ class Category
 {
     public function __construct(
         #[SerializedName('categoria_id')]
-        public ?string $categoria_id,
+        public ?string $categoria_id = null,
         #[SerializedName('descripcion')]
-        public ?string $descripcion,
+        public ?string $descripcion = null,
         #[SerializedName('parent_id')]
-        public ?string $parent_id,
+        public ?string $parent_id = null,
         #[SerializedName('imagen')]
-        public ?string $imagen,
+        public ?string $imagen = null,
         #[SerializedName('estado')]
-        public ?bool $estado,
-    ) {
+        public ?bool   $estado = null,
+    )
+    {
     }
 }

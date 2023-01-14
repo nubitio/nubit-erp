@@ -19,33 +19,35 @@ class CategoryRepository implements CategoryRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('categoria', 'descripcion', filter: $filter);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Category $category): void
+    public function findOneBy(array $filter): ?Category
+    {
+        /** @var ?CategoryEntity $categoryEntity */
+        $entity = $this->entityManager->getRepository(CategoryEntity::class)->findOneBy($filter);
+        return $entity?->mapToDomainModel();
+    }
+
+    public function insert(Category $category): Category
     {
         $entity = new CategoryEntity();
         $entity->mapFromDomainModel($category);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+        $this->entityManager->refresh($entity);
+        return $entity->mapToDomainModel();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Category $category): void
+    public function update(Category $category): Category
     {
         $entity = $this->entityManager->find(CategoryEntity::class, $category->categoria_id);
         $entity->mapFromDomainModel($category);
         $this->entityManager->flush();
+        $this->entityManager->refresh($entity);
+        return $entity->mapToDomainModel();
     }
 
     public function delete(string $id): void

@@ -11,8 +11,8 @@ class CategoryUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Category $category): void
+    public function __invoke(Category $category): Category
     {
-        $this->repository->update($category);
+        return $this->repository->update($category);
     }
 }

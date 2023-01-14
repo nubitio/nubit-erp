@@ -6,9 +6,11 @@ interface CategoryRepositoryInterface
 {
     public function getAll(?array $filter = null): array;
 
-    public function insert(Category $category): void;
+    public function findOneBy(array $filter): ?Category;
 
-    public function update(Category $category): void;
+    public function insert(Category $category): Category;
+
+    public function update(Category $category): Category;
 
     public function delete(string $id): void;
 }

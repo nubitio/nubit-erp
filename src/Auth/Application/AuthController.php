@@ -4,16 +4,18 @@ namespace App\Auth\Application;
 
 use App\Base\BaseController;
 use App\Local\Domain\LocalGetOneByIdUseCase;
+use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class AuthController extends BaseController
 {
     #[Route('/login', name: 'login_index', methods: ['GET'])]
-    public function index(Request $request): Response
+    public function index(Request $request, #[CurrentUser] ?User $user): Response
     {
-        if ($request->getSession()->get('local_id')) {
+        if ($request->getSession()->get('local_id') && $user) {
             return $this->redirectToRoute('dashboard_index');
         }
 
@@ -48,7 +50,7 @@ class AuthController extends BaseController
 
         return $this->json([
             'success' => true,
-            'data' => $session->all(),
+            'data'    => $session->all(),
         ]);
     }
 }
