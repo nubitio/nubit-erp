@@ -11,8 +11,8 @@ class CategoryCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Category $category): void
+    public function __invoke(Category $category): Category
     {
-        $this->repository->insert($category);
+        return $this->repository->insert($category);
     }
 }
