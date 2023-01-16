@@ -4,6 +4,7 @@ namespace App\Category\Infrastructure;
 
 use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,26 +29,30 @@ class CategoryRepository implements CategoryRepositoryInterface
     {
         /** @var ?CategoryEntity $categoryEntity */
         $entity = $this->entityManager->getRepository(CategoryEntity::class)->findOneBy($filter);
-        return $entity?->mapToDomainModel();
+
+        if ($entity === null) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Category::class);
     }
 
     public function insert(Category $category): Category
     {
-        $entity = new CategoryEntity();
-        $entity->mapFromDomainModel($category);
+        $entity = DataMapper::map($category, CategoryEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
-        $this->entityManager->refresh($entity);
-        return $entity->mapToDomainModel();
+
+        return DataMapper::map($entity, Category::class);
     }
 
     public function update(Category $category): Category
     {
         $entity = $this->entityManager->find(CategoryEntity::class, $category->categoria_id);
-        $entity->mapFromDomainModel($category);
+        $entity = DataMapper::map($category, $entity);
         $this->entityManager->flush();
-        $this->entityManager->refresh($entity);
-        return $entity->mapToDomainModel();
+
+        return DataMapper::map($entity, Category::class);
     }
 
     public function delete(string $id): void

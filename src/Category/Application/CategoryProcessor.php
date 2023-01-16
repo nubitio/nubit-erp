@@ -37,7 +37,6 @@ class CategoryProcessor implements ProcessorInterface
             $result = $this->categoryCreateUseCase->__invoke($data);
         }
 
-        $data->categoria_id = $result->categoria_id;
-        return $data;
+        return $result;
     }
 }

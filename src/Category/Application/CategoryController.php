@@ -36,41 +36,6 @@ class CategoryController extends BaseController
         return $this->json($getAllUseCase());
     }
 
-    #[Route('/category/add', name: 'category_create', methods: ['POST'])]
-    public function add(Request $request, CategoryCreateUseCase $createUseCase): Response
-    {
-        $this->uploadImage($request);
-        /**
-         * @var Category $category
-         */
-        $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
-        $createUseCase($category);
-
-        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
-    }
-
-    #[Route('/category/edit/{id}', name: 'category_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, CategoryUpdateUseCase $updateUseCase, $id): Response
-    {
-        $this->uploadImage($request);
-        $request->request->add(['categoria_id' => $id]);
-        /**
-         * @var Category $category
-         */
-        $category = $this->serializer->deserialize(json_encode($request->request->all()), Category::class, 'json');
-        $updateUseCase($category);
-
-        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
-    }
-
-    #[Route('/category/delete/{id}', name: 'category_delete', methods: ['DELETE', 'POST'])]
-    public function delete(CategoryDeleteUseCase $deleteUseCase, $id): Response
-    {
-        $deleteUseCase($id);
-
-        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
-    }
-
     private function uploadImage(Request $request): void
     {
         $imageFile = $request->files->get('imagen');

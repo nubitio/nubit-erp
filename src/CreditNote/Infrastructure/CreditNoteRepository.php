@@ -27,7 +27,7 @@ class CreditNoteRepository implements CreditNoteRepositoryInterface
 
     public function insert(CreditNote $creditNote): void
     {
-        $entity = DataMapper::mapTo($creditNote, CreditNoteEntity::class);
+        $entity = DataMapper::map($creditNote, CreditNoteEntity::class);
         $entity->created_at = new \DateTime();
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

@@ -40,6 +40,7 @@ declare global {
         switchbutton: any;
         animateCss: any;
         tree: any;
+        serializeJSON: any;
     }
 
     const jsWebClientPrint: any;

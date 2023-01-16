@@ -4,6 +4,7 @@ import {Field} from "./Field";
 import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
 import {Event} from "../event/Event";
+import {httpClient} from "../utils/HttpClient";
 
 export default class Form {
     private container: HTMLElement;
@@ -13,6 +14,7 @@ export default class Form {
     private form: JQuery;
     private readonly formFields: any = {};
     private route: null;
+    private operation: string;
     private rowIndex = 0;
     private randomId: string = SharedUtils.randomId();
     private events: any = {};
@@ -21,6 +23,10 @@ export default class Form {
         ROW_ADDED: 'on:row:added',
         ROW_REMOVED: 'on:row:removed',
     }
+    private static readonly OPERATIONS = {
+        ADD: 'add',
+        EDIT: 'edit',
+    };
 
     constructor(container: string, fields: Field[], options: any = {}) {
         this.container = document.getElementById(container) || document.body;
@@ -44,6 +50,15 @@ export default class Form {
                 let valid = ref.form.form('validate');
                 if (valid) {
                     bus.emit(new Event(ref.events.LOADING, true));
+                    if (ref.options.url) {
+                        if (ref.operation === Form.OPERATIONS.ADD) {
+                            ref.addRecord();
+                        }
+                        if (ref.operation === Form.OPERATIONS.EDIT) {
+                            ref.editRecord();
+                        }
+                        return false;
+                    }
                 }
                 return valid;
             },
@@ -222,6 +237,25 @@ export default class Form {
                 } else {
                     input.setAttribute('name', field.name);
                 }
+                switch (field.type) {
+                    case FormType.TEXT:
+                        input.setAttribute('type', 'text');
+                        break;
+                    case FormType.NUMBER:
+                        input.setAttribute('type', 'number');
+                        break;
+                    case FormType.PASSWORD:
+                        input.setAttribute('type', 'password');
+                        break;
+                    case FormType.DATE:
+                        input.setAttribute('type', 'date');
+                        break;
+                    case FormType.SWITCH:
+                        input.setAttribute('type', 'checkbox');
+                        break;
+                    default:
+                        input.setAttribute('type', 'text');
+                }
             } else {
                 input = document.createElement('a');
                 input.setAttribute('class', 'md-btn accent mt-4');
@@ -253,6 +287,7 @@ export default class Form {
             event => event.name === this.events?.ADD,
             () => {
                 this.add();
+                this.operation = Form.OPERATIONS.ADD;
             }
         )
 
@@ -260,6 +295,7 @@ export default class Form {
             event => event.name === this.events?.EDIT,
             (event) => {
                 this.edit(null, event.data.row);
+                this.operation = Form.OPERATIONS.EDIT;
             }
         )
 
@@ -603,11 +639,37 @@ export default class Form {
         return this.form.serialize();
     }
 
+    getDataArray() {
+        return this.form.serializeArray();
+    }
+
+    getDataObject() {
+        return this.form.serializeJSON();
+    }
+
     clear() {
         this.form.form('clear');
     }
 
     reset() {
         this.form.form('reset');
+    }
+
+    private addRecord() {
+        httpClient.post<any>(this.options.url, this.getDataObject()).subscribe(
+            (response: any) => {
+                bus.emit(new this.events.SUCCESS(response));
+            }
+        )
+    }
+
+    private editRecord() {
+        let row = this.getDataArray()
+        let id = row.find(field => field.name === this.getIdField());
+        httpClient.put<any>(this.options.url + '/' + id, JSON.stringify(row)).subscribe(
+            (response: any) => {
+                bus.emit(new this.events.SUCCESS(response));
+            }
+        )
     }
 }

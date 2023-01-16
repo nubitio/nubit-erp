@@ -27,18 +27,22 @@ class {{module}}Repository implements {{module}}RepositoryInterface
         return $this->dataGridLoader->load('{{table}}', '{{sortColumn}}', filter: $filter);
     }
 
-    public function insert({{module}} ${{camelModule}}): void
+    public function insert({{module}} ${{camelModule}}): {{module}}
     {
-        $entity = DataMapper::mapTo(${{camelModule}}, {{module}}Entity::class);
+        $entity = DataMapper::map(${{camelModule}}, {{module}}Entity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, {{module}}::class);
     }
 
-    public function update({{module}} ${{camelModule}}): void
+    public function update({{module}} ${{camelModule}}): {{module}}
     {
         $entity = $this->entityManager->find({{module}}Entity::class, ${{camelModule}}->{{table_id}});
         $entity = DataMapper::map(${{camelModule}}, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, {{module}}::class);
     }
 
     public function delete(string $id): void
