@@ -13,11 +13,7 @@ export default class Category {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'category/add',
-        EDIT: 'category/edit/',
-        DELETE: 'category/delete/',
-    }
+    static readonly API_URL = 'api/categories';
 
     static readonly EVENTS = {
         ADD: 'category:add',
@@ -85,7 +81,9 @@ export default class Category {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Categorias',
             url: 'category/get',
-            routes: Category.ROUTES,
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Category.EVENTS,
         });
     }
@@ -96,7 +94,7 @@ export default class Category {
         });
 
         this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Category.ROUTES,
+            url: Category.API_URL,
             events: Category.EVENTS,
         });
     }

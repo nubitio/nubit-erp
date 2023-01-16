@@ -8,14 +8,18 @@ class DataMapper
      * @template T
      *
      * @param T $input
-     * @param T $output
+     * @param T|string $output
      *
      * @return T
      */
-    public static function map($input, $output)
+    public static function map($input, mixed $output)
     {
+        if (is_string($output)) {
+            $output = new $output();
+        }
+
         foreach ($input as $key => $value) {
-            if (!$value) {
+            if ($value === null) {
                 continue;
             }
 
@@ -25,19 +29,5 @@ class DataMapper
         }
 
         return $output;
-    }
-
-    /**
-     * @template T
-     *
-     * @param T $input
-     *
-     * @return T
-     */
-    public static function mapTo($input, string $class)
-    {
-        $output = new $class();
-
-        return self::map($input, $output);
     }
 }

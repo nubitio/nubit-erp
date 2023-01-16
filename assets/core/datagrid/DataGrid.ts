@@ -90,7 +90,7 @@ export default class DataGrid {
     setupToolBar() {
         let ref = this;
 
-        if (this.routes.ADD) {
+        if (this.routes.ADD || this.options.allowAdd) {
             this.defaultToolbar.push({
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
@@ -101,7 +101,7 @@ export default class DataGrid {
             this.defaultToolbar.push('-');
         }
 
-        if (this.routes.EDIT) {
+        if (this.routes.EDIT || this.options.allowEdit) {
             this.defaultToolbar.push({
                 text: Constants.TEXT_EDIT,
                 iconCls: Constants.ICON_EDIT,
@@ -117,7 +117,7 @@ export default class DataGrid {
             this.defaultToolbar.push('-');
         }
 
-        if (this.routes.DELETE) {
+        if (this.routes.DELETE || this.options.allowDelete) {
             this.defaultToolbar.push({
                 text: Constants.TEXT_DELETE,
                 iconCls: Constants.ICON_DELETE,
