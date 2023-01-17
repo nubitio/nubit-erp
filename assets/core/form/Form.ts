@@ -217,6 +217,12 @@ export default class Form {
     private buildFields(container: HTMLElement, fields: Field[], containerType = 'div', rowIndex: number | null = null) {
         fields.forEach(field => {
             if (field.type === FormType.NONE) {
+                if (field.isIdentity) {
+                    let input: HTMLInputElement = document.createElement('input');
+                    input.setAttribute('type', 'hidden');
+                    input.setAttribute('name', field.name);
+                    container.appendChild(input);
+                }
                 return;
             }
 
@@ -522,7 +528,7 @@ export default class Form {
             labelPosition: 'top',
             onText: "SI",
             offText: "NO",
-            value: "1",
+            value: "true",
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -644,7 +650,16 @@ export default class Form {
     }
 
     getDataObject() {
-        return this.form.serializeJSON();
+        let data = this.form.serializeArray();
+        let object: Record<string, any> = {};
+        data.forEach(item => {
+            let value: any = item.value;
+            if (item.value === 'true') {
+                value = true;
+            }
+            object[item.name] = value;
+        });
+        return object;
     }
 
     clear() {
@@ -656,20 +671,28 @@ export default class Form {
     }
 
     private addRecord() {
-        httpClient.post<any>(this.options.url, this.getDataObject()).subscribe(
-            (response: any) => {
-                bus.emit(new this.events.SUCCESS(response));
-            }
-        )
+        httpClient.post<any>(this.options.url, this.getDataObject())
+            .subscribe(
+                (response: any) => {
+                    bus.emit(new Event(this.events.SUCCESS, response));
+                }
+            )
+            .add(() => {
+                bus.emit(new Event(this.events.LOADING, false));
+            })
     }
 
     private editRecord() {
-        let row = this.getDataArray()
-        let id = row.find(field => field.name === this.getIdField());
-        httpClient.put<any>(this.options.url + '/' + id, JSON.stringify(row)).subscribe(
-            (response: any) => {
-                bus.emit(new this.events.SUCCESS(response));
-            }
-        )
+        let row = this.getDataObject();
+        let id = row[this.getIdField()];
+        httpClient.put<any>(this.options.url + '/' + id, row)
+            .subscribe(
+                (response: any) => {
+                    bus.emit(new Event(this.events.SUCCESS, response));
+                }
+            )
+            .add(() => {
+                bus.emit(new Event(this.events.LOADING, false));
+            })
     }
 }
