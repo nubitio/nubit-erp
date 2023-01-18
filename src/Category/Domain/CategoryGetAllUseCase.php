@@ -2,6 +2,8 @@
 
 namespace App\Category\Domain;
 
+use App\Core\Infrastructure\Common\DataLoader\Options;
+
 class CategoryGetAllUseCase
 {
     private CategoryRepositoryInterface $repository;
@@ -11,8 +13,8 @@ class CategoryGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(Options $options): array
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getAll($options);
     }
 }

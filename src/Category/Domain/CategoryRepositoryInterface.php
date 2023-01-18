@@ -2,9 +2,14 @@
 
 namespace App\Category\Domain;
 
+use App\Core\Infrastructure\Common\DataLoader\Options;
+
 interface CategoryRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    /**
+     * @return Category[]
+     */
+    public function getAll(Options $options): array;
 
     public function findOneBy(array $filter): ?Category;
 
