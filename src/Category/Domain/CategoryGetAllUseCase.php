@@ -2,7 +2,8 @@
 
 namespace App\Category\Domain;
 
-use App\Core\Infrastructure\Common\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
 
 class CategoryGetAllUseCase
 {
@@ -13,7 +14,7 @@ class CategoryGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Options $options): array
+    public function __invoke(Options $options): DataStoreInterface
     {
         return $this->repository->getAll($options);
     }

@@ -81,6 +81,7 @@ export default class Category {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Categorias',
             url: 'category/get',
+            api: Category.API_URL,
             allowAdd: true,
             allowEdit: true,
             allowDelete: true,

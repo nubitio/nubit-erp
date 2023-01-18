@@ -1,6 +1,7 @@
 export default interface GridOptionsDto {
     title?: string;
     url?: string;
+    method?: string;
     remoteFilter?: boolean;
     toolbar?: any[];
     columns?: any[];

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Infrastructure\Common\DataLoader;
+namespace App\Core\Infrastructure\DataLoader;
 
 use Symfony\Component\HttpFoundation\Request;
 
@@ -14,33 +14,34 @@ readonly class OptionsBuilder
 
     public function build(string $entity): Options
     {
+        $sortRules = $this->request->get('sort', []);
+        $sortRules = is_array($sortRules) ? $sortRules : [$sortRules];
+
+        if (!$this->request->get('filterRules')) {
+            $filterRules = [];
+        } else {
+            $filterRules = json_decode($this->request->get('filterRules'), true);
+        }
+
         return new Options(
             entity: $entity,
             page: $this->request->get('page', 1),
             rows: $this->request->get('rows', 10),
-            sort: $this->buildSort(),
-            filters: $this->buildFilters(),
+            sort: $this->buildSort($sortRules),
+            filters: $this->buildFilters($filterRules),
         );
     }
 
-    private function buildSort(): array
+    public static function buildSort(array $sortRules): array
     {
-        $sort = $this->request->get('sort', []);
-        $sort = is_array($sort) ? $sort : [$sort];
-
         return array_map(fn($item) => new Sort(
             field: $item['field'],
             order: $item['order'],
-        ), $sort);
+        ), $sortRules);
     }
 
-    private function buildFilters(): array
+    public static function buildFilters(array $filterRules): array
     {
-        if (!$this->request->get('filterRules')) {
-            return [];
-        }
-
-        $filterRules = json_decode($this->request->get('filterRules'), true);
         $filters = [];
         foreach ($filterRules as $filter) {
             $op = FilterOperation::tryFrom($filter['op']);

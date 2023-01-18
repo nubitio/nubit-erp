@@ -6,8 +6,10 @@ use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
-use App\Core\Infrastructure\Common\DataLoader\DataLoader;
-use App\Core\Infrastructure\Common\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Options;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -26,10 +28,7 @@ class CategoryRepository implements CategoryRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @return Category[]
-     */
-    public function getAll(Options $options): array
+    public function getAll(Options $options): DataStoreInterface
     {
         $paginator = $this->dataLoader->load($options);
 
@@ -39,7 +38,7 @@ class CategoryRepository implements CategoryRepositoryInterface
             $categories[] = DataMapper::map($category, Category::class);
         }
 
-        return $categories;
+        return new EasyStore($paginator->getTotalItems(), $categories);
     }
 
     public function findOneBy(array $filter): ?Category
