@@ -177,7 +177,8 @@ export default class DataGrid {
         let ref = this;
         let gridOptions: GridOptionsDto = {
             title: this.options.title,
-            url: this.options.url,
+            url: this.options.api ?? this.options.url,
+            method: this.options.api ? 'get' : 'post',
             remoteFilter: true,
             toolbar: this.toolbar,
             columns: [this.columns],
@@ -235,10 +236,16 @@ export default class DataGrid {
             '¿Está seguro de eliminar el registro?',
             function (r: boolean) {
                 if (r) {
-                    httpClient.delete<any>(route + row[ref.getIdField() ?? '']).subscribe(
+                    let deleteUrl: string
+                    if (ref.options.api) {
+                        deleteUrl = ref.options.api + '/' + row[ref.getIdField() ?? ''];
+                    } else {
+                        deleteUrl = route + '/' + row[ref.getIdField() ?? ''];
+                    }
+                    httpClient.delete<any>(deleteUrl).subscribe(
                         (response) => {
                             ref.reload();
-                            SharedUtils.showMessage('Info', response.msg);
+                            SharedUtils.showMessage('Info', 'Registro eliminado correctamente');
                         });
                 }
             });

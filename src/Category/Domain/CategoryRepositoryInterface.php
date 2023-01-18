@@ -2,14 +2,12 @@
 
 namespace App\Category\Domain;
 
-use App\Core\Infrastructure\Common\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
 
 interface CategoryRepositoryInterface
 {
-    /**
-     * @return Category[]
-     */
-    public function getAll(Options $options): array;
+    public function getAll(Options $options): DataStoreInterface;
 
     public function findOneBy(array $filter): ?Category;
 

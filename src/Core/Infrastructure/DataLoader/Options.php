@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Infrastructure\Common\DataLoader;
+namespace App\Core\Infrastructure\DataLoader;
 
 readonly class Options
 {
