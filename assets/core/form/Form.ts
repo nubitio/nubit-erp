@@ -47,7 +47,7 @@ export default class Form {
         this.form.form({
             iframe: false,
             onSubmit: function () {
-                let valid = ref.form.form('validate');
+                let valid = ref.validate();
                 if (valid) {
                     bus.emit(new Event(ref.events.LOADING, true));
                     if (ref.options.url) {

@@ -3,13 +3,11 @@
 namespace App\Category\Application;
 
 use App\Base\BaseController;
-use App\Category\Domain\Category;
-use App\Category\Domain\CategoryCreateUseCase;
-use App\Category\Domain\CategoryDeleteUseCase;
 use App\Category\Domain\CategoryGetAllUseCase;
-use App\Category\Domain\CategoryUpdateUseCase;
-use App\Core\Infrastructure\Service\FileUploader;
+use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Common\DataLoader\OptionsBuilder;
+use App\Core\Infrastructure\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -31,9 +29,15 @@ class CategoryController extends BaseController
     }
 
     #[Route('/category/get', name: 'category_list', methods: ['POST'])]
-    public function getAll(CategoryGetAllUseCase $getAllUseCase): Response
+    public function getAll(Request $request, CategoryGetAllUseCase $getAllUseCase): Response
     {
-        return $this->json($getAllUseCase());
+        $options = (new OptionsBuilder($request))->build(CategoryEntity::class);
+
+        $categories = $getAllUseCase($options);
+
+        //dd($categories);
+
+        return $this->json($categories);
     }
 
     private function uploadImage(Request $request): void

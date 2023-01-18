@@ -6,6 +6,8 @@ use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\Common\DataLoader\DataLoader;
+use App\Core\Infrastructure\Common\DataLoader\Options;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -14,15 +16,30 @@ class CategoryRepository implements CategoryRepositoryInterface
     private EntityManagerInterface $entityManager;
     private DataGridLoader $dataGridLoader;
 
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        Connection             $connection,
+        EntityManagerInterface $entityManager,
+        private DataLoader     $dataLoader,
+    )
     {
         $this->entityManager = $entityManager;
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    public function getAll(?array $filter = null): array
+    /**
+     * @return Category[]
+     */
+    public function getAll(Options $options): array
     {
-        return $this->dataGridLoader->load('categoria', 'descripcion', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $categories = [];
+
+        foreach ($paginator->getIterator() as $category) {
+            $categories[] = DataMapper::map($category, Category::class);
+        }
+
+        return $categories;
     }
 
     public function findOneBy(array $filter): ?Category

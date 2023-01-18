@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Category\Domain\CategoryGetAllUseCase;
 use App\Category\Domain\CategoryGetOneUseCase;
+use App\Category\Infrastructure\CategoryEntity;
+use App\Core\Infrastructure\Common\DataLoader\Options;
 
 class CategoryProvider implements ProviderInterface
 {
@@ -20,7 +22,16 @@ class CategoryProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
-            return $this->getAllUseCase->__invoke($context['filters'] ?? null);
+            $options = new Options(
+                entity: CategoryEntity::class,
+                page: $context['filters']['page'] ?? 1,
+                rows: $context['filters']['rows'] ?? 10,
+                //sort: OptionsBuilder::buildSort($context['filters']['sort'] ?? []),
+                //filters: OptionsBuilder::buildFilters($context['filters']['filters'] ?? []),
+                sort: [],
+                filters: [],
+            );
+            return $this->getAllUseCase->__invoke($options);
         }
 
         return $this->getOneUseCase->__invoke(
