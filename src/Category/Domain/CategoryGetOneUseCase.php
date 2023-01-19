@@ -11,8 +11,8 @@ class CategoryGetOneUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(array $filter): ?Category
+    public function __invoke(string $id): ?Category
     {
-        return $this->repository->findOneBy($filter);
+        return $this->repository->getOne($id);
     }
 }

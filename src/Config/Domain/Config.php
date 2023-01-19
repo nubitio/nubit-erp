@@ -10,11 +10,12 @@ class Config
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int $id,
+        public ?int $id = null,
         #[SerializedName('name')]
-        public ?string $name,
+        public ?string $name = null,
         #[SerializedName('value')]
-        public ?string $value,
-    ) {
+        public ?string $value = null
+    )
+    {
     }
 }

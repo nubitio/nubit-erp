@@ -2,7 +2,6 @@
 
 namespace App\Config\Infrastructure;
 
-use App\Config\Domain\Config;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
@@ -12,33 +11,20 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: 'options')]
+#[Table(name: "options")]
 class ConfigEntity
 {
-    #[Id]
-    #[GeneratedValue]
-    #[Column(name: 'id', type: 'integer')]
-    public ?int $id;
-    #[Column(name: 'name', type: 'string')]
-    public ?string $name;
-    #[Column(name: 'value', type: 'string')]
-    public ?string $value;
 
-    public function mapToDomainModel(): Config
+    public function __construct(
+        #[Id]
+        #[GeneratedValue]
+        #[Column(name: "id", type: "integer")]
+        public ?int $id = null,
+        #[Column(name: "name", type: "string")]
+        public ?string $name = null,
+        #[Column(name: "value", type: "string")]
+        public ?string $value = null
+    )
     {
-        return new Config(
-            $this->id,
-            $this->name,
-            $this->value,
-        );
-    }
-
-    public function mapFromDomainModel(Config $config): ConfigEntity
-    {
-        $this->id = $config->id;
-        $this->name = $config->name;
-        $this->value = $config->value;
-
-        return $this;
     }
 }

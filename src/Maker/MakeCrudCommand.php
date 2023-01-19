@@ -181,7 +181,7 @@ class MakeCrudCommand extends Command
             $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
             $modelFields .= '        public ?' . $this->getType($column->getType()->getName()) . ' $' . $column->getName() . " = null,\n";
         }
-        $modelContent = str_replace('{{fields}}', $modelFields, $modelContent);
+        $modelContent = str_replace('{{fields}}', substr($modelFields, 0, -2), $modelContent);
         file_put_contents($modelPath, $modelContent);
     }
 
@@ -204,7 +204,7 @@ class MakeCrudCommand extends Command
             $entityFields .= '        #[Column(name: "' . $column->getName() . '", type: "' . $column->getType()->getName() . "\")]\n";
             $entityFields .= '        public ?' . $this->getType($column->getType()->getName()) . ' $' . $column->getName() . " = null,\n";
         }
-        $entityContent = str_replace('{{fields}}', $entityFields, $entityContent);
+        $entityContent = str_replace('{{fields}}', substr($entityFields, 0, -2), $entityContent);
         file_put_contents($entityPath, $entityContent);
     }
 
@@ -297,7 +297,7 @@ class MakeCrudCommand extends Command
             $field .= "            .build());\n";
             $viewFields .= $field;
         }
-        $viewContent = str_replace('{{fields}}', $viewFields, $viewContent);
+        $viewContent = str_replace('{{fields}}', substr($viewFields, 0, -2), $viewContent);
         file_put_contents($viewPath, $viewContent);
     }
 

@@ -2,13 +2,18 @@
 
 namespace App\Config\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface ConfigRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): DataStoreInterface;
 
-    public function insert(Config $config): void;
+    public function getOne(string $id): ?Config;
 
-    public function update(Config $config): void;
+    public function insert(Config $config): Config;
+
+    public function update(Config $config): Config;
 
     public function delete(string $id): void;
 }
