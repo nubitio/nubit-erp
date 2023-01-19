@@ -11,8 +11,8 @@ class {{module}}CreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke({{module}} ${{camelModule}}): void
+    public function __invoke({{module}} ${{camelModule}}): {{module}}
     {
-        $this->repository->insert(${{camelModule}});
+        return $this->repository->insert(${{camelModule}});
     }
 }

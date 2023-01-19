@@ -13,19 +13,13 @@ use App\Core\Infrastructure\DataLoader\Options;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class CategoryRepository implements CategoryRepositoryInterface
+readonly class CategoryRepository implements CategoryRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
     public function __construct(
-        Connection             $connection,
-        EntityManagerInterface $entityManager,
+        private EntityManagerInterface $entityManager,
         private DataLoader     $dataLoader,
     )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
     public function getAll(Options $options): DataStoreInterface

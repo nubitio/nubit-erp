@@ -11,8 +11,8 @@ class {{module}}UpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke({{module}} ${{camelModule}}): void
+    public function __invoke({{module}} ${{camelModule}}): {{module}}
     {
-        $this->repository->update(${{camelModule}});
+        return $this->repository->update(${{camelModule}});
     }
 }

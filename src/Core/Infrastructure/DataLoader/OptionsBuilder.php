@@ -2,37 +2,26 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
-use Symfony\Component\HttpFoundation\Request;
-
-readonly class OptionsBuilder
+class OptionsBuilder
 {
-    public function __construct(
-        private Request $request,
-    )
+    public static function build(array $context, string $entity): Options
     {
-    }
-
-    public function build(string $entity): Options
-    {
-        $sortRules = $this->request->get('sort', []);
+        $sortRules = $context['filters']['order'] ?? [];
         $sortRules = is_array($sortRules) ? $sortRules : [$sortRules];
 
-        if (!$this->request->get('filterRules')) {
-            $filterRules = [];
-        } else {
-            $filterRules = json_decode($this->request->get('filterRules'), true);
-        }
+        $filterRules = $context['filters']['filterRules'] ?? "[]";
+        $filterRules = json_decode($filterRules, true);
 
         return new Options(
             entity: $entity,
-            page: $this->request->get('page', 1),
-            rows: $this->request->get('rows', 10),
-            sort: $this->buildSort($sortRules),
-            filters: $this->buildFilters($filterRules),
+            page: $context['filters']['page'] ?? 1,
+            rows: $context['filters']['rows'] ?? 10,
+            sort: self::buildSort($sortRules),
+            filters: self::buildFilters($filterRules),
         );
     }
 
-    public static function buildSort(array $sortRules): array
+    private static function buildSort(array $sortRules): array
     {
         return array_map(fn($item) => new Sort(
             field: $item['field'],
@@ -40,7 +29,7 @@ readonly class OptionsBuilder
         ), $sortRules);
     }
 
-    public static function buildFilters(array $filterRules): array
+    private static function buildFilters(array $filterRules): array
     {
         $filters = [];
         foreach ($filterRules as $filter) {
