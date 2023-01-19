@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Category\Application;
+namespace App\Category\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
@@ -11,7 +11,7 @@ use App\Category\Domain\CategoryDeleteUseCase;
 use App\Category\Domain\CategoryGetOneUseCase;
 use App\Category\Domain\CategoryUpdateUseCase;
 
-class CategoryProcessor implements ProcessorInterface
+readonly class CategoryProcessor implements ProcessorInterface
 {
     public function __construct(
         public CategoryGetOneUseCase $getOneUseCase,
