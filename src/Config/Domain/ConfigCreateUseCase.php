@@ -11,8 +11,8 @@ class ConfigCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Config $config): void
+    public function __invoke(Config $config): Config
     {
-        $this->repository->insert($config);
+        return $this->repository->insert($config);
     }
 }

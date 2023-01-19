@@ -112,8 +112,8 @@ export default class Dialog {
         );
     }
 
-    get id() {
-        return this.dialog.attr('id');
+    get id(): string {
+        return this.dialog.attr('id') ?? '';
     }
 
     show(title = 'Nuevo') {

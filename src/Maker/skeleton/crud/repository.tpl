@@ -36,6 +36,7 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
 
     public function getOne(string $id): ?{{module}}
     {
+        /** @var ?{{module}}Entity $entity */
         $entity = $this->entityManager->find({{module}}Entity::class, $id);
 
         if (!$entity) {

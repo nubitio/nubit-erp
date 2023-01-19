@@ -5,19 +5,17 @@ namespace App\Category\Infrastructure;
 use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\EasyStore;
 use App\Core\Infrastructure\DataLoader\Options;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class CategoryRepository implements CategoryRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader     $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -35,10 +33,10 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
         return new EasyStore($paginator->getTotalItems(), $categories);
     }
 
-    public function findOneBy(array $filter): ?Category
+    public function getOne(string $id): ?Category
     {
-        /** @var ?CategoryEntity $categoryEntity */
-        $entity = $this->entityManager->getRepository(CategoryEntity::class)->findOneBy($filter);
+        /** @var ?CategoryEntity $entity */
+        $entity = $this->entityManager->getRepository(CategoryEntity::class)->find($id);
 
         if ($entity === null) {
             return null;

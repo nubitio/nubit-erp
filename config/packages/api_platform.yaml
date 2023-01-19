@@ -1,5 +1,6 @@
 api_platform:
   title: 'Efact API'
+  path_segment_name_generator: 'api_platform.routing.path_segment_name_generator.dash'
   mapping:
     paths: [ '%kernel.project_dir%/src' ]
   formats:

@@ -12,11 +12,7 @@ export default class Config {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'config/add',
-        EDIT: 'config/edit/',
-        DELETE: 'config/delete/',
-    }
+    static readonly API_URL = 'api/configs';
 
     static readonly EVENTS = {
         ADD: 'config:add',
@@ -28,7 +24,7 @@ export default class Config {
         LOADING: 'config:loading',
     }
 
-    constructor(container: string) {
+    constructor(container) {
         this.container = container;
         this.init();
     }
@@ -46,15 +42,12 @@ export default class Config {
             .type(FormType.TEXT)
             .name('name')
             .label('Name')
-            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('value')
             .label('Value')
-            .width(100)
-            .required(true)
-            .build());
+            .build())
     };
 
     render() {
@@ -65,8 +58,11 @@ export default class Config {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Config',
-            url: 'config/get',
-            routes: Config.ROUTES,
+            url: Config.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Config.EVENTS,
         });
     }
@@ -76,8 +72,8 @@ export default class Config {
             events: Config.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Config.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Config.API_URL,
             events: Config.EVENTS,
         });
     }

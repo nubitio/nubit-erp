@@ -11,8 +11,8 @@ class ConfigUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Config $config): void
+    public function __invoke(Config $config): Config
     {
-        $this->repository->update($config);
+        return $this->repository->update($config);
     }
 }

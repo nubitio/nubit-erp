@@ -9,7 +9,7 @@ interface CategoryRepositoryInterface
 {
     public function getAll(Options $options): DataStoreInterface;
 
-    public function findOneBy(array $filter): ?Category;
+    public function getOne(string $id): ?Category;
 
     public function insert(Category $category): Category;
 

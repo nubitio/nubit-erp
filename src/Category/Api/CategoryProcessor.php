@@ -29,7 +29,7 @@ readonly class CategoryProcessor implements ProcessorInterface
             return null;
         }
 
-        $exist = $this->getOneUseCase->__invoke(['categoria_id' => $data->categoria_id]);
+        $exist = $this->getOneUseCase->__invoke($data->categoria_id);
 
         if ($exist) {
             $result = $this->categoryUpdateUseCase->__invoke($data);

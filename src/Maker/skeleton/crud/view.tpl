@@ -1,9 +1,9 @@
-import DataGrid from "../DataGrid";
-import Dialog from "../Dialog";
-import Form from "../Form";
-import {FormType} from "../FormType";
-import {Field} from "../Field";
-import {FieldBuilder} from "../FieldBuilder";
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FormType} from "../core/form/FormType";
+import {Field} from "../core/form/Field";
+import {FieldBuilder} from "../core/form/FieldBuilder";
 
 export default class {{module}} {
     private readonly container: string;
@@ -12,11 +12,7 @@ export default class {{module}} {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: '{{kebabModule}}/add',
-        EDIT: '{{kebabModule}}/edit/',
-        DELETE: '{{kebabModule}}/delete/',
-    }
+    static readonly API_URL = 'api/{{kebabModule}}}}';
 
     static readonly EVENTS = {
         ADD: '{{kebabModule}}:add',
@@ -45,8 +41,11 @@ export default class {{module}} {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: '{{module}}',
-            url: '{{kebabModule}}/get',
-            routes: {{module}}.ROUTES,
+            url: {{module}}.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: {{module}}.EVENTS,
         });
     }
@@ -57,7 +56,7 @@ export default class {{module}} {
         });
 
         this.form = new Form(this.dialog.id, this.fields, {
-            routes: {{module}}.ROUTES,
+            url: {{module}}.API_URL,
             events: {{module}}.EVENTS,
         });
     }
