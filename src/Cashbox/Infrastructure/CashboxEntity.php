@@ -2,10 +2,12 @@
 
 namespace App\Cashbox\Infrastructure;
 
+use App\Branch\Domain\Branch;
+use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Local\Infrastructure\LocalEntity;
+use App\Core\Domain\Util\DataMapper;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping\Column;
@@ -34,17 +36,17 @@ class CashboxEntity
     public ?int $usuario_id;
     #[Column(name: 'estado', type: 'integer')]
     public ?int $estado;
-    #[ManyToOne(targetEntity: LocalEntity::class)]
+    #[ManyToOne(targetEntity: BranchEntity::class)]
     #[JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
-    public LocalEntity $local;
+    public BranchEntity $local;
     #[ManyToOne(targetEntity: UserEntity::class)]
     #[JoinColumn(name: 'usuario_id', referencedColumnName: 'usuario_id')]
     public UserEntity $user;
     #[OneToMany(mappedBy: 'cashbox', targetEntity: CashboxDetailEntity::class)]
     /**
-     * @var CashboxDetailEntity[]
+     * @var CashboxDetailEntity[] $items
      */
-    public $items;
+    public array|ArrayCollection $items;
 
     public function __construct()
     {
@@ -60,9 +62,9 @@ class CashboxEntity
             $this->cierre,
             $this->usuario_id,
             $this->estado,
-            $this->local->mapToDomainModel(),
+            DataMapper::map($this->local, Branch::class),
             $this->user->mapToDomainModel(),
-            $this->items->map(fn (CashboxDetailEntity $item) => $item->mapToDomainModel())->toArray(),
+            $this->items->map(fn(CashboxDetailEntity $item) => $item->mapToDomainModel())->toArray(),
         );
     }
 

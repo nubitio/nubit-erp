@@ -2,6 +2,9 @@
 
 namespace App\Warehouse\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 class WarehouseGetAllUseCase
 {
     private WarehouseRepositoryInterface $repository;
@@ -11,8 +14,8 @@ class WarehouseGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(Options $options): DataStoreInterface
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getAll($options);
     }
 }

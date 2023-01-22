@@ -1,5 +1,5 @@
 {% extends 'layout/base.html.twig' %}
-{% block title %}Local{% endblock %}
+{% block title %}Branch{% endblock %}
 {% block body %}
     <div id="wrapper" class="wrapper"></div>
 {% endblock %}
@@ -7,8 +7,8 @@
     {{ parent() }}
     <script>
         window.addEventListener('load', function () {
-            const local = new window.app.local('wrapper');
-            local.render();
+            const branch = new window.app.branch('wrapper');
+            branch.render();
         });
     </script>
 {% endblock %}

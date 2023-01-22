@@ -13,11 +13,7 @@ export default class Warehouse {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'warehouse/add',
-        EDIT: 'warehouse/edit/',
-        DELETE: 'warehouse/delete/',
-    }
+    static readonly API_URL = 'api/warehouses';
 
     static readonly EVENTS = {
         ADD: 'warehouse:add',
@@ -42,23 +38,16 @@ export default class Warehouse {
             .name('almacen_id')
             .label('Almacen id')
             .required(true)
-            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('local_id')
+            .name('local')
             .label('Local')
             .url('api/local')
             .valueField('local_id')
             .textField('descripcion')
             .required(true)
-            .visible(false)
-            .build());
-
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('local')
-            .label('Local')
+            .formatter((value: any, row: any) => value.descripcion)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -69,9 +58,17 @@ export default class Warehouse {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
+            .name('is_default')
+            .label('Default')
+            .formatter(SharedUtils.booleanFormatter)
+            .align('center')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.SWITCH)
             .name('estado')
             .label('Activo')
-            .formatter(SharedUtils.activeFormatter)
+            .formatter(SharedUtils.booleanFormatter)
+            .align('center')
             .defaultValue(true)
             .build());
     };
@@ -84,8 +81,11 @@ export default class Warehouse {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Warehouse',
-            url: 'warehouse/get',
-            routes: Warehouse.ROUTES,
+            url: Warehouse.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Warehouse.EVENTS,
         });
     }
@@ -95,8 +95,8 @@ export default class Warehouse {
             events: Warehouse.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Warehouse.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Warehouse.API_URL,
             events: Warehouse.EVENTS,
         });
     }

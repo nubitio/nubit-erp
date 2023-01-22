@@ -53,7 +53,7 @@ class ProductGrid extends React.Component<any, any> {
                 <Column dataField="categoria"/>
                 <Column dataField="precio" dataType="number" format="#.00"/>
                 <Column dataField="imagen" cellRender={SharedUtils.dxImageFormatter} alignment="center"/>
-                <Column dataField="estado" cellRender={SharedUtils.dxActiveFormatter} dataType="boolean"/>
+                <Column dataField="estado" cellRender={SharedUtils.dxBooleanFormatter} dataType="boolean"/>
                 <Paging defaultPageSize={10}/>
                 <Pager visible={true}/>
             </DataGrid>

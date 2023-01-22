@@ -11,8 +11,8 @@ class WarehouseUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Warehouse $warehouse): void
+    public function __invoke(Warehouse $warehouse): Warehouse
     {
-        $this->repository->update($warehouse);
+        return $this->repository->update($warehouse);
     }
 }

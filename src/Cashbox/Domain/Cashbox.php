@@ -2,9 +2,9 @@
 
 namespace App\Cashbox\Domain;
 
+use App\Branch\Domain\Branch;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Local\Domain\Local;
 use App\User\Domain\User;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -13,24 +13,25 @@ class Cashbox
 {
     public function __construct(
         #[SerializedName('caja_id')]
-        public ?string $caja_id = null,
+        public ?string    $caja_id = null,
         #[SerializedName('local_id')]
-        public ?string $local_id = null,
+        public ?string    $local_id = null,
         #[SerializedName('apertura')]
         public ?\DateTime $apertura = null,
         #[SerializedName('cierre')]
         public ?\DateTime $cierre = null,
         #[SerializedName('usuario_id')]
-        public ?int $usuario_id = null,
+        public ?int       $usuario_id = null,
         #[SerializedName('estado')]
-        public ?int $estado = null,
-        public ?Local $local = null,
-        public ?User $user = null,
+        public ?int       $estado = null,
+        public ?Branch    $local = null,
+        public ?User      $user = null,
         /**
          * @var CashboxDetail[] $items
          */
-        public $items = [],
-    ) {
+        public array      $items = [],
+    )
+    {
     }
 
     public function getIncome(): float

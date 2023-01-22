@@ -24,7 +24,12 @@ class DataMapper
             }
 
             if (property_exists($output, $key)) {
-                $output->$key = $value;
+                if (is_object($value)) {
+                    $type = ReflectionUtil::getPropertyType($output, $key);
+                    $output->$key = self::map($value, $type);
+                } else {
+                    $output->$key = $value;
+                }
             }
         }
 

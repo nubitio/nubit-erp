@@ -282,7 +282,7 @@ export default class Sale {
 
         let drawer = new Drawer({events: Customer.EVENTS});
         let customer = new Customer(drawer.id ?? '');
-        customer.renderDialog({width: '100%', height: window.innerHeight, modal: false});
+        customer.renderDialog();
         let customerField = this.form.getField('cliente_id').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',

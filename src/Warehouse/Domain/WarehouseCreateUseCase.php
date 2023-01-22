@@ -11,8 +11,8 @@ class WarehouseCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Warehouse $warehouse): void
+    public function __invoke(Warehouse $warehouse): Warehouse
     {
-        $this->repository->insert($warehouse);
+        return $this->repository->insert($warehouse);
     }
 }

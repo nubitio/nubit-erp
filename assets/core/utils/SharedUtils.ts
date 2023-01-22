@@ -12,19 +12,23 @@ export class SharedUtils {
         });
     }
 
-    static activeFormatter(val: number) {
+    static booleanFormatter(val: number) {
         if (Number(val) === 1) {
             return '<span class="badge rounded-pill bg-success">SI</span>';
-        } else {
+        } else if (Number(val) === 0) {
             return '<span class="badge rounded-pill bg-danger">NO</span>';
+        } else {
+            return '';
         }
     }
 
-    static dxActiveFormatter(data: any) {
+    static dxBooleanFormatter(data: any) {
         if (Number(data.text) === 1) {
             return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
-        } else {
+        } else if (Number(data.text) === 0) {
             return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
+        } else {
+            return '';
         }
     }
 

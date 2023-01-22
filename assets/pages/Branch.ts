@@ -2,34 +2,30 @@ import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {FormType} from "../core/form/FormType";
-import {SharedUtils} from "../core/utils/SharedUtils";
-import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import EasyComponent from "../core/common/EasyComponent";
 
-export default class Local {
+export default class Branch extends EasyComponent {
     private readonly container: string;
-    private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'local/add',
-        EDIT: 'local/edit/',
-        DELETE: 'local/delete/',
-    }
+    static readonly API_URL = 'api/branches';
 
     static readonly EVENTS = {
-        ADD: 'local:add',
-        EDIT: 'local:edit',
-        DELETE: 'local:delete',
-        SAVE: 'local:save',
-        CANCEL: 'local:cancel',
-        SUCCESS: 'local:success',
-        LOADING: 'local:loading',
+        ADD: 'branch:add',
+        EDIT: 'branch:edit',
+        DELETE: 'branch:delete',
+        SAVE: 'branch:save',
+        CANCEL: 'branch:cancel',
+        SUCCESS: 'branch:success',
+        LOADING: 'branch:loading',
     }
 
     constructor(container: string) {
+        super();
         this.container = container;
         this.init();
     }
@@ -45,18 +41,13 @@ export default class Local {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('empresa_id')
+            .name('empresa')
             .label('Empresa')
             .url('api/company')
             .valueField('empresa_id')
             .textField('razon_social')
-            .visible(false)
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('empresa')
-            .label('Empresa')
+            .formatter((value: any, row: any) => value.razon_social)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -79,7 +70,7 @@ export default class Local {
             .type(FormType.SWITCH)
             .name('estado')
             .label('Activo')
-            .formatter(SharedUtils.activeFormatter)
+            .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build());
     };
@@ -91,21 +82,24 @@ export default class Local {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Locales',
-            url: 'local/get',
-            routes: Local.ROUTES,
-            events: Local.EVENTS,
+            title: 'Branch',
+            url: Branch.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
+            events: Branch.EVENTS,
         });
     }
 
     renderDialog() {
         this.dialog = new Dialog(this.container, {
-            events: Local.EVENTS,
+            events: Branch.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Local.ROUTES,
-            events: Local.EVENTS,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Branch.API_URL,
+            events: Branch.EVENTS,
         });
     }
 }
