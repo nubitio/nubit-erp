@@ -2,55 +2,39 @@
 
 namespace App\Warehouse\Infrastructure;
 
+use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Warehouse\Domain\Warehouse;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: 'almacen')]
+#[Table(name: "almacen")]
 class WarehouseEntity
 {
-    #[Id]
-    #[GeneratedValue]
-    #[Column(name: 'almacen_id', type: 'string')]
-    public ?string $almacen_id;
-    #[Column(name: 'local_id', type: 'string')]
-    public ?string $local_id;
-    #[Column(name: 'descripcion', type: 'string')]
-    public ?string $descripcion;
-    #[Column(name: 'tipo_id', type: 'integer')]
-    public ?int $tipo_id;
-    #[Column(name: 'is_default', type: 'boolean')]
-    public ?bool $is_default;
-    #[Column(name: 'estado', type: 'boolean')]
-    public ?bool $estado;
 
-    public function mapToDomainModel(): Warehouse
+    public function __construct(
+        #[Id]
+        #[GeneratedValue]
+        #[Column(name: "almacen_id", type: "string")]
+        public ?string       $almacen_id = null,
+        #[ManyToOne(targetEntity: BranchEntity::class, fetch: "EAGER")]
+        #[JoinColumn(name: "local_id", referencedColumnName: "local_id")]
+        public ?BranchEntity $local = null,
+        #[Column(name: "descripcion", type: "string")]
+        public ?string       $descripcion = null,
+        #[Column(name: "tipo_id", type: "integer")]
+        public ?int          $tipo_id = null,
+        #[Column(name: "is_default", type: "boolean")]
+        public ?bool         $is_default = null,
+        #[Column(name: "estado", type: "boolean")]
+        public ?bool         $estado = null
+    )
     {
-        return new Warehouse(
-            $this->almacen_id,
-            $this->local_id,
-            $this->descripcion,
-            $this->tipo_id,
-            $this->is_default,
-            $this->estado,
-        );
-    }
-
-    public function mapFromDomainModel(Warehouse $warehouse): WarehouseEntity
-    {
-        $this->almacen_id = $warehouse->almacen_id;
-        $this->local_id = $warehouse->local_id;
-        $this->descripcion = $warehouse->descripcion;
-        $this->tipo_id = $warehouse->tipo_id;
-        $this->is_default = $warehouse->is_default;
-        $this->estado = $warehouse->estado;
-
-        return $this;
     }
 }

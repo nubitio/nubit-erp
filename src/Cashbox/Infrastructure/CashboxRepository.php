@@ -2,11 +2,11 @@
 
 namespace App\Cashbox\Infrastructure;
 
+use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
 use App\Core\Infrastructure\Common\DataGridLoader;
-use App\Local\Infrastructure\LocalEntity;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,9 +24,6 @@ class CashboxRepository implements CashboxRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
@@ -75,14 +72,11 @@ class CashboxRepository implements CashboxRepositoryInterface
         return $this->connection->fetchAllAssociative($sql, [$id]);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert(Cashbox $cashbox): void
     {
         $entity = new CashboxEntity();
         $entity->mapFromDomainModel($cashbox);
-        $entity->local = $this->entityManager->getReference(LocalEntity::class, $cashbox->local_id);
+        $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local_id);
         $entity->user = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario_id);
         $this->entityManager->persist($entity);
         if ($cashbox->items) {
@@ -96,9 +90,6 @@ class CashboxRepository implements CashboxRepositoryInterface
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(Cashbox $cashbox): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $cashbox->caja_id);

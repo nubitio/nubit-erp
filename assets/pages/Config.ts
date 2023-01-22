@@ -12,7 +12,7 @@ export default class Config {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/configs';
+    static readonly API_URL = 'api/settings';
 
     static readonly EVENTS = {
         ADD: 'config:add',
@@ -24,7 +24,7 @@ export default class Config {
         LOADING: 'config:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }
@@ -42,11 +42,14 @@ export default class Config {
             .type(FormType.TEXT)
             .name('name')
             .label('Name')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
+            .width(100)
             .name('value')
             .label('Value')
+            .required(true)
             .build())
     };
 

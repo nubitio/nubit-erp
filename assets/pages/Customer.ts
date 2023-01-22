@@ -2,11 +2,11 @@ import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {FormType} from "../core/form/FormType";
-import {SharedUtils} from "../core/utils/SharedUtils";
-import {Constants} from "../core/common/Constants";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 import {ConsultService} from "../services/consult.service";
+import {Constants} from "../core/common/Constants";
 
 export default class Customer {
     private readonly container: string;
@@ -16,12 +16,7 @@ export default class Customer {
     private form: Form;
     private consultService = new ConsultService();
 
-    public readonly ROUTES = {
-        ADD: 'customer/add',
-        EDIT: 'customer/edit/',
-        DELETE: 'customer/delete/',
-        EXPORT: 'customer/export',
-    }
+    static readonly API_URL = 'api/customers';
 
     static readonly EVENTS = {
         ADD: 'customer:add',
@@ -71,7 +66,7 @@ export default class Customer {
             .name('estado')
             .label('Activo')
             .align('center')
-            .formatter(SharedUtils.activeFormatter)
+            .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build());
     };
@@ -83,33 +78,33 @@ export default class Customer {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Clientes',
-            url: 'customer/get',
-            routes: this.ROUTES,
+            title: 'Customer',
+            url: Customer.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Customer.EVENTS,
         });
     }
 
-    renderDialog(options: any = {}) {
+    renderDialog() {
         let ref = this;
         this.dialog = new Dialog(this.container, {
-            width: options.width ?? 400,
-            height: options.height ?? 550,
-            modal: options.modal ?? true,
             events: Customer.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: this.ROUTES,
-            events: Customer.EVENTS
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Customer.API_URL,
+            events: Customer.EVENTS,
         });
 
         let rucField = this.form.getField('ruc').textbox({
             icons: [{
                 iconCls: Constants.ICON_SEARCH,
-                handler: () => ref.consult()
+                handler: () => this.consult()
             }]
-        });
+        })
 
         rucField.textbox('textbox').bind('keyup', function (e: any) {
             if (e.keyCode === 13) {

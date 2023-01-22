@@ -10,19 +10,20 @@ class Customer
 {
     public function __construct(
         #[SerializedName('ruc')]
-        public ?string $ruc,
+        public ?string $ruc = null,
         #[SerializedName('razon_social')]
-        public ?string $razon_social,
+        public ?string $razon_social = null,
         #[SerializedName('domicilio_fiscal')]
-        public ?string $domicilio_fiscal,
+        public ?string $domicilio_fiscal = null,
         #[SerializedName('telefono')]
-        public ?string $telefono,
+        public ?string $telefono = null,
         #[SerializedName('email')]
-        public ?string $email,
+        public ?string $email = null,
         #[SerializedName('imagen')]
-        public ?string $imagen,
+        public ?string $imagen = null,
         #[SerializedName('estado')]
-        public ?bool $estado,
-    ) {
+        public ?bool $estado = null
+    )
+    {
     }
 }

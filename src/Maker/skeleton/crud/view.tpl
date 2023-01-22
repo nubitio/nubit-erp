@@ -12,7 +12,7 @@ export default class {{module}} {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/{{kebabModule}}}}';
+    static readonly API_URL = 'api/{{kebabModule}}';
 
     static readonly EVENTS = {
         ADD: '{{kebabModule}}:add',
@@ -24,7 +24,7 @@ export default class {{module}} {
         LOADING: '{{kebabModule}}:loading',
     }
 
-    constructor(container) {
+    constructor(container: string) {
         this.container = container;
         this.init();
     }

@@ -6,6 +6,7 @@ import {Event} from "../event/Event";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../utils/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
+import DataGridUtils from "../utils/DataGridUtils";
 
 export default class DataGrid {
     private container: HTMLElement;
@@ -56,6 +57,10 @@ export default class DataGrid {
 
     get id() {
         return this.dataGrid.attr('id');
+    }
+
+    get grid() {
+        return this.dataGrid;
     }
 
     get selectedRow() {
@@ -170,7 +175,7 @@ export default class DataGrid {
 
     getIdField() {
         let idField = this.fields.find(field => field.isIdentity);
-        return idField ? idField.name : null;
+        return idField ? idField.name : 'id';
     }
 
     private setupDataGrid() {
@@ -221,7 +226,16 @@ export default class DataGrid {
         }
         this.dataGrid.datagrid(gridOptions);
         if (this.options.filter ?? true) {
-            this.dataGrid.datagrid('enableFilter', this.options.filter ?? []);
+            let filters: any = [];
+
+            this.fields.forEach(field => {
+                let filter = DataGridUtils.makeFilter(this.grid, field)
+                if (filter) {
+                    filters.push(filter);
+                }
+            });
+
+            this.dataGrid.datagrid('enableFilter', filters ?? []);
         }
     }
 

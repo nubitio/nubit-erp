@@ -2,50 +2,70 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Branch\Infrastructure\BranchEntity;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Options;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class WarehouseRepository implements WarehouseRepositoryInterface
+readonly class WarehouseRepository implements WarehouseRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader             $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): DataStoreInterface
     {
-        return $this->dataGridLoader->load('vw_almacen', 'descripcion', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $warehouse) {
+            $data[] = DataMapper::map($warehouse, Warehouse::class);
+        }
+
+        return new EasyStore($paginator->getTotalItems(), $data);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Warehouse $warehouse): void
+    public function getOne(string $id): ?Warehouse
     {
-        $entity = new WarehouseEntity();
-        $entity->mapFromDomainModel($warehouse);
+        /** @var ?WarehouseEntity $entity */
+        $entity = $this->entityManager->find(WarehouseEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Warehouse::class);
+    }
+
+    public function insert(Warehouse $warehouse): Warehouse
+    {
+        $entity = DataMapper::map($warehouse, WarehouseEntity::class);
+        $branch = $this->entityManager->getReference(BranchEntity::class, $warehouse->local->local_id);
+        $entity->local = $branch;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Warehouse::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Warehouse $warehouse): void
+    public function update(Warehouse $warehouse): Warehouse
     {
         $entity = $this->entityManager->find(WarehouseEntity::class, $warehouse->almacen_id);
-        $entity->mapFromDomainModel($warehouse);
+        $entity = DataMapper::map($warehouse, $entity);
+        $branch = $this->entityManager->getReference(BranchEntity::class, $warehouse->local->local_id);
+        $entity->local = $branch;
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Warehouse::class);
     }
 
     public function delete(string $id): void

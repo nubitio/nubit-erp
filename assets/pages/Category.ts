@@ -66,7 +66,7 @@ export default class Category {
             .type(FormType.SWITCH)
             .name('estado')
             .label('Activo')
-            .formatter(SharedUtils.activeFormatter)
+            .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build());
 

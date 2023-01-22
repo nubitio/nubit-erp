@@ -3,7 +3,7 @@
 namespace App\Auth\Application;
 
 use App\Base\BaseController;
-use App\Local\Domain\LocalGetOneByIdUseCase;
+use App\Branch\Domain\BranchGetOneUseCase;
 use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,12 +37,12 @@ class AuthController extends BaseController
     }
 
     #[Route('/auth/local', name: 'auth_local', methods: ['POST'])]
-    public function setLocal(Request $request, LocalGetOneByIdUseCase $localGetOneById): Response
+    public function setLocal(Request $request, BranchGetOneUseCase $branchGetOneUseCase): Response
     {
         $data = json_decode($request->getContent());
         $localId = $data->localId;
 
-        $local = $localGetOneById($localId);
+        $local = $branchGetOneUseCase($localId);
 
         $session = $request->getSession();
         $session->set('local_id', $localId);

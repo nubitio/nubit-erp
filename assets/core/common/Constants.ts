@@ -15,4 +15,6 @@ export const Constants = {
     ICON_PDF: 'fas fa-file-pdf fa-1x text-danger',
     ICON_SEARCH: 'fas fa-search fa-1x text-info',
     ICON_INVOICE: 'fas fa-file-invoice fa-1x text-info',
+    ICON_CLEAR: 'fas fa-times fa-1x text-danger',
+
 } as const;

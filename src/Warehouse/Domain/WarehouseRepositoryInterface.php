@@ -2,13 +2,18 @@
 
 namespace App\Warehouse\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface WarehouseRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): DataStoreInterface;
 
-    public function insert(Warehouse $warehouse): void;
+    public function getOne(string $id): ?Warehouse;
 
-    public function update(Warehouse $warehouse): void;
+    public function insert(Warehouse $warehouse): Warehouse;
+
+    public function update(Warehouse $warehouse): Warehouse;
 
     public function delete(string $id): void;
 }

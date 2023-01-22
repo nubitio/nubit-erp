@@ -2,50 +2,66 @@
 
 namespace App\Customer\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\Customer\Domain\Customer;
 use App\Customer\Domain\CustomerRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\Customer\Domain\Customer;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Options;
 use Doctrine\ORM\EntityManagerInterface;
 
-class CustomerRepository implements CustomerRepositoryInterface
+readonly class CustomerRepository implements CustomerRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): DataStoreInterface
     {
-        return $this->dataGridLoader->load('cliente', 'razon_social', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $customer) {
+            $data[] = DataMapper::map($customer, Customer::class);
+        }
+
+        return new EasyStore($paginator->getTotalItems(), $data);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Customer $customer): void
+    public function getOne(string $id): ?Customer
     {
-        $entity = new CustomerEntity();
-        $entity->mapFromDomainModel($customer);
+        /** @var ?CustomerEntity $entity */
+        $entity = $this->entityManager->find(CustomerEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Customer::class);
+    }
+
+    public function insert(Customer $customer): Customer
+    {
+        $entity = DataMapper::map($customer, CustomerEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Customer::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Customer $customer): void
+    public function update(Customer $customer): Customer
     {
         $entity = $this->entityManager->find(CustomerEntity::class, $customer->ruc);
-        $entity->mapFromDomainModel($customer);
+        $entity = DataMapper::map($customer, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Customer::class);
     }
 
     public function delete(string $id): void

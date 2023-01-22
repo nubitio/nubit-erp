@@ -2,6 +2,7 @@
 
 namespace App\Warehouse\Domain;
 
+use App\Branch\Domain\Branch;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -10,17 +11,18 @@ class Warehouse
 {
     public function __construct(
         #[SerializedName('almacen_id')]
-        public ?string $almacen_id,
-        #[SerializedName('local_id')]
-        public ?string $local_id,
+        public ?string $almacen_id = null,
+        #[SerializedName('local')]
+        public ?Branch $local = null,
         #[SerializedName('descripcion')]
-        public ?string $descripcion,
+        public ?string $descripcion = null,
         #[SerializedName('tipo_id')]
-        public ?int $tipo_id,
+        public ?int $tipo_id = null,
         #[SerializedName('is_default')]
-        public ?bool $is_default,
+        public ?bool $is_default = false,
         #[SerializedName('estado')]
-        public ?bool $estado,
-    ) {
+        public ?bool $estado = false
+    )
+    {
     }
 }

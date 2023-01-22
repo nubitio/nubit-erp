@@ -650,12 +650,20 @@ export default class Form {
     }
 
     getDataObject() {
-        let data = this.form.serializeArray();
+        let data = this.getDataArray();
         let object: Record<string, any> = {};
         data.forEach(item => {
             let value: any = item.value;
             if (item.value === 'true') {
                 value = true;
+            }
+            let field = this.fields.find(field => field.name === item.name);
+            if (field?.type === FormType.NUMBER) {
+                value = Number(value);
+            }
+            if (field?.type === FormType.ENTITY) {
+                let id = field.valueField || 'id';
+                value = { [id]: value };
             }
             object[item.name] = value;
         });

@@ -11,8 +11,8 @@ class CustomerCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Customer $customer): void
+    public function __invoke(Customer $customer): Customer
     {
-        $this->repository->insert($customer);
+        return $this->repository->insert($customer);
     }
 }

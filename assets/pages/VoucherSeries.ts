@@ -90,7 +90,7 @@ export default class VoucherSeries {
             .type(FormType.SWITCH)
             .name('active')
             .label('Activo')
-            .formatter(SharedUtils.activeFormatter)
+            .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build());
     };

@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Config\Domain\Config;
 
 #[ApiResource(
-    shortName: 'Config',
+    shortName: 'Setting',
     provider: ConfigProvider::class,
     processor: ConfigProcessor::class,
 )]
