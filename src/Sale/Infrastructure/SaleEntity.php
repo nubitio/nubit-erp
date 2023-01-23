@@ -20,65 +20,65 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "movimiento")]
+#[Table(name: 'movimiento')]
 class SaleEntity
 {
     public function __construct(
         #[Id]
-        #[GeneratedValue(strategy: "CUSTOM")]
+        #[GeneratedValue(strategy: 'CUSTOM')]
         #[CustomIdGenerator(class: UuidGenerator::class)]
-        #[Column(name: "movimiento_id", type: "string")]
+        #[Column(name: 'movimiento_id', type: 'string')]
         public ?string             $movimiento_id = null,
-        #[Column(name: "operacion_id", type: "string")]
+        #[Column(name: 'operacion_id', type: 'string')]
         public ?string             $operacion_id = null,
-        #[Column(name: "almacen_id", type: "string")]
+        #[Column(name: 'almacen_id', type: 'string')]
         public ?string             $almacen_id = null,
-        #[ManyToOne(targetEntity: CustomerEntity::class, fetch: "EAGER")]
-        #[JoinColumn(name: "cliente_id", referencedColumnName: "ruc")]
+        #[ManyToOne(targetEntity: CustomerEntity::class, fetch: 'EAGER')]
+        #[JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
         public ?CustomerEntity     $cliente = null,
-        #[Column(name: "tipo_id", type: "integer")]
+        #[Column(name: 'tipo_id', type: 'integer')]
         public ?int                $tipo_id = null,
-        #[Column(name: "fecha", type: "date")]
+        #[Column(name: 'fecha', type: 'date')]
         public ?\DateTimeInterface $fecha = null,
-        #[Column(name: "proveedor_id", type: "string")]
+        #[Column(name: 'proveedor_id', type: 'string')]
         public ?string             $proveedor_id = null,
-        #[Column(name: "tipo_pago", type: "integer")]
+        #[Column(name: 'tipo_pago', type: 'integer')]
         public ?int                $tipo_pago = null,
-        #[Column(name: "tipo_tarjeta", type: "integer")]
+        #[Column(name: 'tipo_tarjeta', type: 'integer')]
         public ?int                $tipo_tarjeta = null,
-        #[Column(name: "serie", type: "string")]
+        #[Column(name: 'serie', type: 'string')]
         public ?string             $serie = null,
-        #[Column(name: "numero", type: "string")]
+        #[Column(name: 'numero', type: 'string')]
         public ?string             $numero = null,
-        #[Column(name: "descuento", type: "decimal")]
+        #[Column(name: 'descuento', type: 'decimal')]
         public ?string             $descuento = null,
-        #[Column(name: "glosa", type: "string")]
+        #[Column(name: 'glosa', type: 'string')]
         public ?string             $glosa = null,
-        #[Column(name: "orden_id", type: "integer")]
+        #[Column(name: 'orden_id', type: 'integer')]
         public ?int                $orden_id = null,
-        #[Column(name: "has_invoice", type: "boolean")]
+        #[Column(name: 'has_invoice', type: 'boolean')]
         public ?bool               $has_invoice = null,
-        #[Column(name: "is_consume", type: "boolean")]
+        #[Column(name: 'is_consume', type: 'boolean')]
         public ?bool               $is_consume = null,
-        #[Column(name: "caja_id", type: "string")]
+        #[Column(name: 'caja_id', type: 'string')]
         public ?string             $caja_id = null,
-        #[Column(name: "estado", type: "boolean")]
+        #[Column(name: 'estado', type: 'boolean')]
         public ?bool               $estado = null,
-        #[Column(name: "date_created", type: "datetime")]
+        #[Column(name: 'date_created', type: 'datetime')]
         public ?\DateTimeInterface $date_created = null,
-        #[Column(name: "date_updated", type: "datetime")]
+        #[Column(name: 'date_updated', type: 'datetime')]
         public ?\DateTimeInterface $date_updated = null,
-        #[Column(name: "created_by", type: "integer")]
+        #[Column(name: 'created_by', type: 'integer')]
         public ?int                $created_by = null,
-        #[Column(name: "updated_by", type: "integer")]
+        #[Column(name: 'updated_by', type: 'integer')]
         public ?int                $updated_by = null,
-        #[Column(name: "igv", type: "integer")]
+        #[Column(name: 'igv', type: 'integer')]
         public ?int                $igv = null,
-        #[Column(name: "recargo_consumo", type: "integer")]
+        #[Column(name: 'recargo_consumo', type: 'integer')]
         public ?int                $recargo_consumo = null,
         /** @var SaleDetailEntity[] $details */
-        #[OneToMany(mappedBy: "movimiento", targetEntity: SaleDetailEntity::class, cascade: ["persist", "remove"], fetch: "EAGER", orphanRemoval: true)]
-        public Collection          $details = new ArrayCollection(),
+        #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], fetch: 'EAGER', orphanRemoval: true)]
+        public Collection          $details = new ArrayCollection()
     )
     {
     }
