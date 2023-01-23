@@ -2,13 +2,18 @@
 
 namespace App\Product\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface ProductRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): DataStoreInterface;
 
-    public function insert(Product $product): void;
+    public function getOne(string $id): ?Product;
 
-    public function update(Product $product): void;
+    public function insert(Product $product): Product;
+
+    public function update(Product $product): Product;
 
     public function delete(string $id): void;
 }

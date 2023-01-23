@@ -26,11 +26,7 @@ export default class Sale {
     private productService = new ProductService();
     private saleService = new SaleService();
 
-    static readonly ROUTES = {
-        ADD: 'sale/add',
-        EDIT: 'sale/edit/',
-        DELETE: 'sale/delete/',
-    }
+    static readonly API_URL = 'api/sales';
 
     static readonly EVENTS = {
         ADD: 'sale:add',
@@ -78,20 +74,15 @@ export default class Sale {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('cliente_id')
+            .name('cliente')
             .label('Cliente')
+            .width(100)
             .url('api/customer')
             .valueField('ruc')
             .textField('razon_social')
             .defaultValue('00000000')
-            .visible(false)
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('cliente')
-            .label('Cliente')
-            .width(100)
+            .formatter((value: any, row: any) => value.razon_social)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -164,14 +155,14 @@ export default class Sale {
             .label('Producto')
             .valueField('producto_id')
             .textField('descripcion')
-            .onSelect((record: any, field: Field) => this.onSelectProduct(record, field))
+            .onSelect((record: any, field: any) => this.onSelectProduct(record, field))
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
-            .onChange((newValue: number, oldValue: number, field: Field) => this.onQuantityChange(newValue, oldValue, field))
+            .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
@@ -207,7 +198,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.emit(new Event(Sale.EVENTS.ADD, {route: Sale.ROUTES.ADD}));
+                    bus.emit(new Event(Sale.EVENTS.ADD));
                 }
             }, {
                 text: 'Vista Previa',
@@ -238,8 +229,8 @@ export default class Sale {
 
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Ventas',
-            url: 'sale/get',
-            routes: {},
+            url: Sale.API_URL,
+            method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
             subGrid: {
@@ -275,7 +266,7 @@ export default class Sale {
         });
 
         this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Sale.ROUTES,
+            url: Sale.API_URL,
             events: Sale.EVENTS,
             detailFields: this.detailFields,
         });

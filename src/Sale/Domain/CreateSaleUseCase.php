@@ -2,7 +2,7 @@
 
 namespace App\Sale\Domain;
 
-class SaleGetAllUseCase
+class CreateSaleUseCase
 {
     private SaleRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class SaleGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(Sale $sale): Sale
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->insert($sale);
     }
 }

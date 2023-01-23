@@ -2,7 +2,7 @@
 
 namespace App\Product\Domain;
 
-class ProductDeleteUseCase
+class DeleteProductUseCase
 {
     private ProductRepositoryInterface $repository;
 

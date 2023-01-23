@@ -3,10 +3,13 @@
 namespace App\SaleDetail\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Sale\Infrastructure\SaleEntity;
 use App\SaleDetail\Domain\SaleDetail;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
+use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
@@ -27,6 +30,9 @@ class SaleDetailEntity
     public ?string $descuento;
     #[Column(name: 'precio_total', type: 'decimal')]
     public ?string $precio_total;
+    #[ManyToOne(targetEntity: SaleEntity::class, fetch: 'EAGER')]
+    #[JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
+    public SaleEntity $movimiento;
 
     public function mapToDomainModel(): SaleDetail
     {

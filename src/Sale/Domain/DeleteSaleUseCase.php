@@ -2,7 +2,7 @@
 
 namespace App\Sale\Domain;
 
-class SaleUpdateUseCase
+class DeleteSaleUseCase
 {
     private SaleRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class SaleUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Sale $sale): void
+    public function __invoke(string $id): void
     {
-        $this->repository->update($sale);
+        $this->repository->delete($id);
     }
 }

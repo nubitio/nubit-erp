@@ -14,7 +14,6 @@ use Doctrine\ORM\Mapping\Table;
 #[Table(name: "{{table}}")]
 class {{module}}Entity
 {
-
     public function __construct(
 {{fields}}
     )

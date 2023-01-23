@@ -2,7 +2,7 @@
 
 namespace App\{{module}}\Domain;
 
-class {{module}}GetOneUseCase
+class GetOne{{module}}UseCase
 {
     private {{module}}RepositoryInterface $repository;
 

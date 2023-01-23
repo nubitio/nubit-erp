@@ -5,7 +5,7 @@ namespace App\{{module}}\Domain;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\Options;
 
-class {{module}}GetAllUseCase
+class GetAll{{module}}UseCase
 {
     private {{module}}RepositoryInterface $repository;
 
