@@ -24,7 +24,10 @@ class DataMapper
             }
 
             if (property_exists($output, $key)) {
-                if (is_object($value)) {
+                if (is_iterable($value)) {
+                    $type = ReflectionUtil::getPropertyType($output, $key);
+                    $output->$key = array_map(fn($item) => self::map($item, $type), $value);
+                } else if (is_object($value) && !($value instanceof \DateTimeInterface)) {
                     $type = ReflectionUtil::getPropertyType($output, $key);
                     $output->$key = self::map($value, $type);
                 } else {

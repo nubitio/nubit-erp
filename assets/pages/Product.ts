@@ -13,11 +13,7 @@ export default class Product {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'product/add',
-        EDIT: 'product/edit/',
-        DELETE: 'product/delete/',
-    }
+    static readonly API_URL = 'api/products';
 
     static readonly EVENTS = {
         ADD: 'product:add',
@@ -56,13 +52,12 @@ export default class Product {
                 {value: 1, text: 'Fisico'},
                 {value: 2, text: 'Servicio'},
             ])
-            .visible(false)
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('tipo')
-            .label('Tipo')
+            .formatter((value: any, row: any) => {
+                if (value === 1) return 'Fisico';
+                if (value === 2) return 'Servicio';
+                return '';
+            })
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -73,18 +68,13 @@ export default class Product {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('categoria_id')
+            .name('categoria')
             .label('Categoria')
             .url('api/category')
             .valueField('categoria_id')
             .textField('descripcion')
-            .visible(false)
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('categoria')
-            .label('Categoria')
+            .formatter((value: any, row: any) => value.descripcion ?? '')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -102,6 +92,7 @@ export default class Product {
             .type(FormType.SWITCH)
             .name('estado')
             .label('Activo')
+            .align('center')
             .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build());
@@ -115,8 +106,11 @@ export default class Product {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Product',
-            url: 'product/get',
-            routes: Product.ROUTES,
+            url: Product.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Product.EVENTS,
         });
     }
@@ -126,8 +120,8 @@ export default class Product {
             events: Product.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Product.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Product.API_URL,
             events: Product.EVENTS,
         });
     }

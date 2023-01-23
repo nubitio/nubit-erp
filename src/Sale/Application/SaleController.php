@@ -6,16 +6,9 @@ use App\Base\BaseController;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Sale\Domain\DocType;
-use App\Sale\Domain\Sale;
-use App\Sale\Domain\SaleCreateUseCase;
-use App\Sale\Domain\SaleDeleteUseCase;
-use App\Sale\Domain\SaleGetAllUseCase;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
-use App\Sale\Domain\SaleUpdateUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
-use App\Sale\Infrastructure\SaleUtils;
-use App\Core\Domain\Util\Constants;
 use App\WebClientPrint\WebClientPrint;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;
@@ -24,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Uid\Uuid;
 
 class SaleController extends BaseController
 {
@@ -44,64 +36,6 @@ class SaleController extends BaseController
     public function consult(): Response
     {
         return $this->render('sale/consult.html.twig');
-    }
-
-    #[Route('/sale/get', name: 'sale_list', methods: ['POST'])]
-    public function getAll(Request $request, SaleGetAllUseCase $getAllUseCase): Response
-    {
-        return $this->json($getAllUseCase([
-            [
-                'field' => 'tipo_id',
-                'op'    => 'equal',
-                'value' => 2,
-            ],
-            [
-                'field' => 'local_id',
-                'op'    => 'equal',
-                'value' => $request->getSession()->get('local_id'),
-            ],
-            [
-                'field' => 'numero',
-                'op'    => 'greater',
-                'value' => 0,
-            ]
-        ]));
-    }
-
-    #[Route('/sale/add', name: 'sale_create', methods: ['POST'])]
-    public function add(Request $request, SaleCreateUseCase $createUseCase, SaleUtils $saleUtils): Response
-    {
-        $saleId = Uuid::v4();
-        $request->request->set('movimiento_id', $saleId);
-        /**
-         * @var Sale $sale
-         */
-        $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
-        $sale = $saleUtils->fillSaleValues($sale, DocType::NOTA_VENTA, $request->getSession());
-        $createUseCase($sale);
-
-        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
-    }
-
-    #[Route('/sale/edit/{id}', name: 'sale_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, SaleUpdateUseCase $updateUseCase, $id): Response
-    {
-        $request->request->add(['movimiento_id' => $id]);
-        /**
-         * @var Sale $sale
-         */
-        $sale = $this->serializer->deserialize(json_encode($request->request->all()), Sale::class, 'json');
-        $updateUseCase($sale);
-
-        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
-    }
-
-    #[Route('/sale/delete/{id}', name: 'sale_delete', methods: ['DELETE', 'POST'])]
-    public function delete(SaleDeleteUseCase $deleteUseCase, $id): Response
-    {
-        $deleteUseCase($id);
-
-        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
     #[Route('/sale/consult', name: 'sale_report', methods: ['GET'])]

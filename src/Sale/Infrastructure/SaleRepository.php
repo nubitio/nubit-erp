@@ -2,7 +2,11 @@
 
 namespace App\Sale\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Options;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
@@ -10,25 +14,27 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
-class SaleRepository implements SaleRepositoryInterface
+readonly class SaleRepository implements SaleRepositoryInterface
 {
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private Connection             $connection,
+        private EntityManagerInterface $entityManager,
+        private DataLoader             $dataLoader,
+    )
     {
-        $this->connection = $connection;
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): DataStoreInterface
     {
-        return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $sale) {
+            $data[] = DataMapper::map($sale, Sale::class);
+        }
+
+        return new EasyStore($paginator->getTotalItems(), $data);
     }
 
     /**
@@ -40,53 +46,48 @@ class SaleRepository implements SaleRepositoryInterface
         $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
 
         return [
-            'header' => $header,
+            'header'  => $header,
             'details' => $details,
         ];
     }
 
-    public function getOne(string $id): Sale
+    public function getOne(string $id): ?Sale
     {
-        /** @var SaleEntity $saleEntity */
-        $saleEntity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
+        /** @var SaleEntity $entity */
+        $entity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
 
-        return $saleEntity->mapToDomainModel();
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Sale $sale): void
-    {
-        try {
-            $this->connection->beginTransaction();
-            $entity = new SaleEntity();
-            $entity->mapFromDomainModel($sale);
-            $this->entityManager->persist($entity);
-            $this->entityManager->flush();
-            foreach ($sale->items as $item) {
-                $detailEntity = new SaleDetailEntity();
-                $detailEntity->mapFromDomainModel($item);
-                $detailEntity->movimiento_id = $entity->movimiento_id;
-                $this->entityManager->persist($detailEntity);
-            }
-            $this->entityManager->flush();
-            $this->entityManager->clear();
-            $this->connection->commit();
-        } catch (\Exception $e) {
-            $this->connection->rollBack();
-            throw $e;
+        if (!$entity) {
+            return null;
         }
+
+        return DataMapper::map($entity, Sale::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Sale $sale): void
+    public function insert(Sale $sale): Sale
     {
-        $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
-        $entity->mapFromDomainModel($sale);
+        $entity = DataMapper::map($sale, SaleEntity::class);
+        $this->entityManager->persist($entity);
         $this->entityManager->flush();
+        foreach ($sale->items as $item) {
+            $detailEntity = new SaleDetailEntity();
+            $detailEntity->mapFromDomainModel($item);
+            $detailEntity->movimiento_id = $entity->movimiento_id;
+            $this->entityManager->persist($detailEntity);
+        }
+        $this->entityManager->flush();
+        $this->entityManager->clear();
+
+        return DataMapper::map($entity, Sale::class);
+    }
+
+    public function update(Sale $sale): Sale
+    {
+        /** @var SaleEntity $entity */
+        $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
+        $entity = DataMapper::map($sale, $entity);
+        $this->entityManager->flush();
+
+        return DataMapper::map($entity, Sale::class);
     }
 
     public function delete(string $id): void

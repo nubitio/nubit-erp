@@ -2,7 +2,7 @@
 
 namespace App\Product\Domain;
 
-class ProductGetAllUseCase
+class GetOneProductUseCase
 {
     private ProductRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class ProductGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(string $id): ?Product
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getOne($id);
     }
 }

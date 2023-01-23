@@ -243,25 +243,6 @@ export default class Form {
                 } else {
                     input.setAttribute('name', field.name);
                 }
-                switch (field.type) {
-                    case FormType.TEXT:
-                        input.setAttribute('type', 'text');
-                        break;
-                    case FormType.NUMBER:
-                        input.setAttribute('type', 'number');
-                        break;
-                    case FormType.PASSWORD:
-                        input.setAttribute('type', 'password');
-                        break;
-                    case FormType.DATE:
-                        input.setAttribute('type', 'date');
-                        break;
-                    case FormType.SWITCH:
-                        input.setAttribute('type', 'checkbox');
-                        break;
-                    default:
-                        input.setAttribute('type', 'text');
-                }
             } else {
                 input = document.createElement('a');
                 input.setAttribute('class', 'md-btn accent mt-4');
@@ -569,7 +550,7 @@ export default class Form {
         for (let key in this.formFields) {
             let index = Number(key.split('-')[1]);
             if (index == rowIndex) {
-                formFields.key = this.formFields[key];
+                formFields[key] = this.formFields[key];
             }
         }
         return formFields;
@@ -663,7 +644,19 @@ export default class Form {
             }
             if (field?.type === FormType.ENTITY) {
                 let id = field.valueField || 'id';
-                value = { [id]: value };
+                value = {[id]: value};
+            }
+            if (field?.type === FormType.ENUM) {
+                let isNumber = (typeof (value) === 'number' || typeof (value) === "string" && value.trim() !== '') && !isNaN(value as number);
+                if (isNumber) {
+                    value = Number(value);
+                }
+            }
+            if (field?.type === FormType.TEXT) {
+                value = value.trim();
+                if (value === '') {
+                    value = null;
+                }
             }
             object[item.name] = value;
         });

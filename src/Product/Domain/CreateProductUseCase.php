@@ -2,7 +2,7 @@
 
 namespace App\Product\Domain;
 
-class ProductUpdateUseCase
+class CreateProductUseCase
 {
     private ProductRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class ProductUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Product $product): void
+    public function __invoke(Product $product): Product
     {
-        $this->repository->update($product);
+        return $this->repository->insert($product);
     }
 }

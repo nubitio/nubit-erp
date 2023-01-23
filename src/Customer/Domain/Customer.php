@@ -22,7 +22,7 @@ class Customer
         #[SerializedName('imagen')]
         public ?string $imagen = null,
         #[SerializedName('estado')]
-        public ?bool $estado = null
+        public ?bool $estado = false
     )
     {
     }

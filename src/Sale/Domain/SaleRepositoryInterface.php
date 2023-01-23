@@ -2,17 +2,20 @@
 
 namespace App\Sale\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface SaleRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): DataStoreInterface;
 
     public function getOneById(string $id): array;
 
-    public function getOne(string $id): Sale;
+    public function getOne(string $id): ?Sale;
 
-    public function insert(Sale $sale): void;
+    public function insert(Sale $sale): Sale;
 
-    public function update(Sale $sale): void;
+    public function update(Sale $sale): Sale;
 
     public function delete(string $id): void;
 

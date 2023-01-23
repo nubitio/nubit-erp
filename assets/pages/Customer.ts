@@ -40,12 +40,14 @@ export default class Customer {
             .label('RUC/DNI')
             .validators(['validCustomerId'])
             .required(true)
+            .sortable(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)
             .name('razon_social')
             .label('Cliente')
             .required(true)
+            .sortable(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)

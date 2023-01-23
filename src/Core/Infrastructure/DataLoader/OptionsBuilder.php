@@ -6,10 +6,14 @@ class OptionsBuilder
 {
     public static function build(array $context, string $entity): Options
     {
-        $sortRules = $context['filters']['order'] ?? [];
-        $sortRules = is_array($sortRules) ? $sortRules : [$sortRules];
+        $sortFields = $context['filters']['sort'] ?? null;
+        $orderFields = $context['filters']['order'] ?? null;
 
-        $filterRules = $context['filters']['filterRules'] ?? "[]";
+        $sortArray = $sortFields ? explode(',', $sortFields) : [];
+        $orderArray = $orderFields ? explode(',', $orderFields) : [];
+        $sortRules = array_map(null, $sortArray, $orderArray);
+
+        $filterRules = $context['filters']['filterRules'] ?? '[]';
         $filterRules = json_decode($filterRules, true);
 
         return new Options(
@@ -24,8 +28,8 @@ class OptionsBuilder
     private static function buildSort(array $sortRules): array
     {
         return array_map(fn($item) => new Sort(
-            field: $item['field'],
-            order: $item['order'],
+            field: $item[0],
+            order: $item[1] ?? 'ASC',
         ), $sortRules);
     }
 
