@@ -5,6 +5,7 @@ import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
 import {Event} from "../event/Event";
 import {httpClient} from "../utils/HttpClient";
+import NumberUtils from "../utils/NumberUtils";
 
 export default class Form {
     private container: HTMLElement;
@@ -647,7 +648,7 @@ export default class Form {
                 value = {[id]: value};
             }
             if (field?.type === FormType.ENUM) {
-                let isNumber = (typeof (value) === 'number' || typeof (value) === "string" && value.trim() !== '') && !isNaN(value as number);
+                let isNumber = NumberUtils.isNumber(value);
                 if (isNumber) {
                     value = Number(value);
                 }
@@ -656,6 +657,14 @@ export default class Form {
                 value = value.trim();
                 if (value === '') {
                     value = null;
+                }
+            }
+            if (field?.isIdentity) {
+                if (value === '') {
+                    value = null;
+                }
+                if (NumberUtils.isNumber(value)) {
+                    value = Number(value);
                 }
             }
             object[item.name] = value;

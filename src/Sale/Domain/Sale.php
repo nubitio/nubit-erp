@@ -4,6 +4,7 @@ namespace App\Sale\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
+use App\Invoice\Domain\Invoice;
 use App\SaleDetail\Domain\SaleDetail;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -63,6 +64,7 @@ class Sale
         /** @var SaleDetail[] $details */
         #[SerializedName('details')]
         public ArrayCollection     $details = new ArrayCollection(),
+        public ?Invoice            $invoice = null
     )
     {
     }

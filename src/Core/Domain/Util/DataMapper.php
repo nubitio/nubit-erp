@@ -2,6 +2,9 @@
 
 namespace App\Core\Domain\Util;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+
 class DataMapper
 {
     /**
@@ -24,12 +27,17 @@ class DataMapper
             }
 
             if (property_exists($output, $key)) {
-                if (is_iterable($value)) {
-                    $type = ReflectionUtil::getPropertyType($output, $key);
-                    $output->$key = array_map(fn($item) => self::map($item, $type), $value);
-                } else if (is_object($value) && !($value instanceof \DateTimeInterface)) {
-                    $type = ReflectionUtil::getPropertyType($output, $key);
-                    $output->$key = self::map($value, $type);
+                if (is_object($value) && !($value instanceof \DateTimeInterface)) {
+                    if ($value instanceof Collection) {
+                        $output->$key = new ArrayCollection();
+                        foreach ($value as $item) {
+                            $type = ReflectionUtil::getPropertyType($output, $key);
+                            $output->$key->add(self::map($item, $type));
+                        }
+                    } else {
+                        $type = ReflectionUtil::getPropertyType($output, $key);
+                        $output->$key = self::map($value, $type);
+                    }
                 } else {
                     $output->$key = $value;
                 }

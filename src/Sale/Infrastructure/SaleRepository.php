@@ -7,6 +7,8 @@ use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\EasyStore;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Invoice\Domain\Invoice;
+use App\Invoice\Infrastructure\InvoiceEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
@@ -31,7 +33,13 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $data = [];
 
         foreach ($paginator->getIterator() as $sale) {
-            $data[] = DataMapper::map($sale, Sale::class);
+            /** @var Sale $sale */
+            $sale = DataMapper::map($sale, Sale::class);
+            /** @var ?InvoiceEntity $invoice */
+            $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findBy(['movimiento_id' => $sale->movimiento_id]);
+            $sale->invoice = $invoice ? DataMapper::map($invoice, Invoice::class) : null;
+
+            $data[] = $sale;
         }
 
         return new EasyStore($paginator->getTotalItems(), $data);
