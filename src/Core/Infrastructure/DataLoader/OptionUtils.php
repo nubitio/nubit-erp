@@ -18,10 +18,25 @@ class OptionUtils
         $filterRules = json_decode($context['filters']['filterRules'], true);
         $filterRules[] = [
             'field' => $filter->field,
-            'op' => $filter->op->value,
+            'op'    => $filter->op->value,
             'value' => $filter->value,
         ];
         $context['filters']['filterRules'] = json_encode($filterRules);
+
+        return $context;
+    }
+
+    public static function addJoin(array $context, JoinRule $join): array
+    {
+        $context['filters']['joinRules'] = $context['filters']['joinRules'] ?? '[]';
+        $joinRules = json_decode($context['filters']['joinRules'], true);
+        $joinRules[] = [
+            'entity'    => $join->entity,
+            'alias'     => $join->alias,
+            'type'      => $join->type,
+            'condition' => $join->condition,
+        ];
+        $context['filters']['joinRules'] = json_encode($joinRules);
 
         return $context;
     }

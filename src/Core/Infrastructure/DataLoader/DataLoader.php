@@ -23,10 +23,14 @@ readonly class DataLoader
         $queryBuilder->select('e')
             ->from($options->entity, 'e');
 
+        $this->addJoins($queryBuilder, $options->joins);
         $this->addFilters($queryBuilder, $options->filters);
         $this->addSort($queryBuilder, $options->sort);
 
         $query = $queryBuilder->getQuery();
+
+        //header('application/json');
+        //echo $query->getSQL(); exit();
 
         $paginator = new DoctrinePaginator($query);
 
@@ -35,6 +39,20 @@ readonly class DataLoader
             ->setMaxResults($options->rows);
 
         return new Paginator($paginator);
+    }
+
+    /**
+     * @param JoinRule[] $joins
+     */
+    private function addJoins(QueryBuilder $queryBuilder, array $joins): void
+    {
+        $aliases = [];
+        foreach ($joins as $join) {
+            $queryBuilder->join($join->entity, $join->alias);
+            $aliases[] = $join->alias;
+        }
+
+        $queryBuilder->addSelect($aliases);
     }
 
     /**
