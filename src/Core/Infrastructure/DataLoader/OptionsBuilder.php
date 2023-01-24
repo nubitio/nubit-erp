@@ -16,12 +16,16 @@ class OptionsBuilder
         $filterRules = $context['filters']['filterRules'] ?? '[]';
         $filterRules = json_decode($filterRules, true);
 
+        $joinRules = $context['filters']['joinRules'] ?? '[]';
+        $joinRules = json_decode($joinRules, true);
+
         return new Options(
             entity: $entity,
             page: $context['filters']['page'] ?? 1,
             rows: $context['filters']['rows'] ?? 10,
             sort: self::buildSort($sortRules),
             filters: self::buildFilters($filterRules),
+            joins: self::buildJoins($joinRules)
         );
     }
 
@@ -46,5 +50,20 @@ class OptionsBuilder
         }
 
         return $filters;
+    }
+
+    private static function buildJoins(array $joinRules): array
+    {
+        $joins = [];
+        foreach ($joinRules as $join) {
+            $joins[] = new JoinRule(
+                entity: $join['entity'],
+                alias: $join['alias'],
+                type: $join['type'],
+                condition: $join['condition'],
+            );
+        }
+
+        return $joins;
     }
 }

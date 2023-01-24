@@ -34,7 +34,7 @@ class SaleEntity
         public ?string              $operacion_id = null,
         #[Column(name: 'almacen_id', type: 'string')]
         public ?string              $almacen_id = null,
-        #[ManyToOne(targetEntity: CustomerEntity::class, fetch: 'EAGER')]
+        #[ManyToOne(targetEntity: CustomerEntity::class)]
         #[JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
         public ?CustomerEntity      $cliente = null,
         #[Column(name: 'tipo_id', type: 'integer')]
@@ -43,7 +43,7 @@ class SaleEntity
         public ?\DateTimeInterface  $fecha = null,
         #[Column(name: 'proveedor_id', type: 'string')]
         public ?string              $proveedor_id = null,
-        #[ManyToOne(targetEntity: PaymentMethodEntity::class, fetch: 'EAGER')]
+        #[ManyToOne(targetEntity: PaymentMethodEntity::class)]
         #[JoinColumn(name: 'tipo_pago', referencedColumnName: 'id')]
         public ?PaymentMethodEntity $tipo_pago = null,
         #[Column(name: 'tipo_tarjeta', type: 'integer')]
@@ -79,7 +79,7 @@ class SaleEntity
         #[Column(name: 'recargo_consumo', type: 'integer')]
         public ?int                 $recargo_consumo = null,
         /** @var SaleDetailEntity[] $details */
-        #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], fetch: 'EAGER', orphanRemoval: true)]
+        #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
         public Collection           $details = new ArrayCollection()
     )
     {

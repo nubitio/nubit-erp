@@ -34,12 +34,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
         foreach ($paginator->getIterator() as $sale) {
             /** @var Sale $sale */
-            $sale = DataMapper::map($sale, Sale::class);
-            /** @var ?InvoiceEntity $invoice */
-            $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $sale->movimiento_id]);
-            $sale->invoice = $invoice ? DataMapper::map($invoice, Invoice::class) : null;
-
-            $data[] = $sale;
+            $data[] = DataMapper::map($sale, Sale::class);
         }
 
         return new EasyStore($paginator->getTotalItems(), $data);
@@ -68,7 +63,13 @@ readonly class SaleRepository implements SaleRepositoryInterface
             return null;
         }
 
-        return DataMapper::map($entity, Sale::class);
+        /** @var Sale $sale */
+        $sale = DataMapper::map($entity, Sale::class);
+        /** @var ?InvoiceEntity $invoice */
+        $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $sale->movimiento_id]);
+        $sale->invoice = $invoice ? DataMapper::map($invoice, Invoice::class) : null;
+
+        return $sale;
     }
 
     public function insert(Sale $sale): Sale
