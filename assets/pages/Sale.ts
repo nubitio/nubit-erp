@@ -58,6 +58,7 @@ export default class Sale {
             .label('Fecha')
             .defaultValue('Today')
             .required(true)
+            .formatter(SharedUtils.dateFormatter)
             .build());
         let session = StorageUtils.getItem('session');
         let localId = session['local_id'];
@@ -82,7 +83,7 @@ export default class Sale {
             .textField('razon_social')
             .defaultValue('00000000')
             .required(true)
-            .formatter((value: any, row: any) => value.razon_social)
+            .formatter((value: any, row: any) => value['razon_social'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -93,12 +94,7 @@ export default class Sale {
             .textField('name')
             .defaultValue('1')
             .required(true)
-            .visible(false)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('payment_type')
-            .label('Metodo de pago')
+            .formatter((value: any, row: any) => value.name)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -108,15 +104,28 @@ export default class Sale {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
-            .name('inumero')
+            .name('comprobante')
             .label('Comprobante')
             .formatter(SharedUtils.invoiceFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
-            .name('gravada')
+            .name('total')
             .label('Total')
             .align('right')
+            .formatter((value: any, row: any) => {
+                if (row['comprobante']) {
+                    return Intl.NumberFormat('es-PE', {
+                        style: 'currency',
+                        currency: 'PEN'
+                    }).format(row['comprobante']['total']);
+                } else {
+                    let total = row['details'].reduce((total: number, detail: any) => {
+                        return total + detail['precio_total'];
+                    }, 0);
+                    return Intl.NumberFormat('es-PE', {style: 'currency', currency: 'PEN'}).format(total);
+                }
+            })
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)
@@ -274,7 +283,7 @@ export default class Sale {
         let drawer = new Drawer({events: Customer.EVENTS});
         let customer = new Customer(drawer.id ?? '');
         customer.renderDialog();
-        let customerField = this.form.getField('cliente_id').combobox({
+        let customerField = this.form.getField('cliente').combobox({
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: () => {

@@ -1,10 +1,13 @@
 import {Field} from "../form/Field";
 import {FormType} from "../form/FormType";
 import {httpClient} from "./HttpClient";
+import {DateUtils} from "./DateUtils";
 
 export default class DataGridUtils {
     static makeFilter(grid: JQuery, field: Field): any {
         switch (field.type) {
+            case FormType.DATE:
+                return DataGridUtils.makeDateFilter(grid, field);
             case FormType.ENTITY:
                 return DataGridUtils.makeEntityFilter(grid, field);
             case FormType.ENUM:
@@ -13,6 +16,28 @@ export default class DataGridUtils {
                 return this.makeSwitchFilter(grid, field);
             default:
                 return null;
+        }
+    }
+
+    static makeDateFilter(grid: JQuery, field: Field): any {
+        return {
+            field: field.name,
+            type: 'datebox',
+            options: {
+                panelWidth: 200,
+                panelHeight: 200,
+                formatter: (date: any) => DateUtils.dateFormatter(date),
+                parser: (date: any) => DateUtils.dateParser(date),
+                onChange: (value: any) => {
+                    if (value == '') {
+                        grid.datagrid('removeFilterRule', field.name);
+                    } else {
+                        grid.datagrid('addFilterRule', {field: field.name, op: 'equal', value: value});
+                    }
+                    grid.datagrid('doFilter');
+                }
+            },
+            op: ['equal', 'contains', 'less', 'greater']
         }
     }
 
