@@ -36,7 +36,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
             /** @var Sale $sale */
             $sale = DataMapper::map($sale, Sale::class);
             /** @var ?InvoiceEntity $invoice */
-            $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findBy(['movimiento_id' => $sale->movimiento_id]);
+            $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $sale->movimiento_id]);
             $sale->invoice = $invoice ? DataMapper::map($invoice, Invoice::class) : null;
 
             $data[] = $sale;

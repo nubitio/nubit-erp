@@ -5,6 +5,7 @@ namespace App\Sale\Domain;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
 use App\Invoice\Domain\Invoice;
+use App\PaymentMethod\Domain\PaymentMethod;
 use App\SaleDetail\Domain\SaleDetail;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -28,7 +29,7 @@ class Sale
         #[SerializedName('proveedor_id')]
         public ?string             $proveedor_id = null,
         #[SerializedName('tipo_pago')]
-        public ?int                $tipo_pago = null,
+        public ?PaymentMethod      $tipo_pago = null,
         #[SerializedName('tipo_tarjeta')]
         public ?int                $tipo_tarjeta = null,
         #[SerializedName('serie')]
@@ -64,6 +65,7 @@ class Sale
         /** @var SaleDetail[] $details */
         #[SerializedName('details')]
         public ArrayCollection     $details = new ArrayCollection(),
+        #[SerializedName('comprobante')]
         public ?Invoice            $invoice = null
     )
     {

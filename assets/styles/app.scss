@@ -466,6 +466,20 @@ label {
   line-height: 28px !important;
 }
 
+.icon-filter {
+  background: none;
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.icon-filter:after {
+  font: var(--fa-font-solid);
+  content: "\f0b0";
+  position: relative;
+  top: 25%;
+  left: 10%;
+}
+
 .textbox .textbox-prompt {
   color: inherit !important;
 }
