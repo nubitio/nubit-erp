@@ -11,12 +11,9 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\Sort;
-use App\Customer\Infrastructure\CustomerEntity;
-use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Sale\Domain\GetAllSaleUseCase;
 use App\Sale\Domain\GetOneSaleUseCase;
 use App\Sale\Infrastructure\SaleEntity;
-use App\SaleDetail\Infrastructure\SaleDetailEntity;
 
 readonly class SaleProvider implements ProviderInterface
 {
@@ -33,10 +30,11 @@ readonly class SaleProvider implements ProviderInterface
             $context = OptionUtils::addSort($context, new Sort('date_created', 'desc'));
             $context = OptionUtils::addFilter($context, new Filter('numero', FilterOperation::GreaterThan, 0));
             $context = OptionUtils::addFilter($context, new Filter('tipo_id', FilterOperation::Equals, 2));
-            $context = OptionUtils::addJoin($context, new JoinRule(CustomerEntity::class, 'c', 'inner', 'e.cliente_id = c.id'));
-            $context = OptionUtils::addJoin($context, new JoinRule(PaymentMethodEntity::class, 'pm', 'inner', 'e.tipo_pago = pm.id'));
-            $context = OptionUtils::addJoin($context, new JoinRule(SaleDetailEntity::class, 'sd', 'inner', 'e.movimiento_id = sd.movimiento_id'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.cliente', 'c'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.tipo_pago', 'pm'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
             $options = OptionsBuilder::build($context, SaleEntity::class);
+
             return $this->getAllUseCase->__invoke($options);
         }
 

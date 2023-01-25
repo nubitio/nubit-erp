@@ -8,12 +8,12 @@ readonly class Options
         public string $entity,
         public string $page,
         public string $rows,
-        /** @var Sort[] $sort */
-        public array  $sort,
-        /** @var FilterInterface[] $filters */
-        public array  $filters = [],
         /** @var JoinRule[] $joins */
         public array  $joins = [],
+        /** @var Sort[] $sort */
+        public array  $sort = [],
+        /** @var FilterInterface[] $filters */
+        public array  $filters = []
     )
     {
     }
