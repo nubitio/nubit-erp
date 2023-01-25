@@ -46,12 +46,12 @@ export default class DataGridUtils {
             field: field.name,
             type: 'combobox',
             options: {
-                panelHeight: 'auto',
+                panelHeight: 200,
                 valueField: field.valueField,
                 textField: field.textField,
                 url: field.url,
                 method: 'get',
-                editable: false,
+                limitToList: true,
                 loader: (param: any, success: any, error: any) => {
                     httpClient.get<any>(field.url, {params: param})
                         .subscribe((response: any) => {

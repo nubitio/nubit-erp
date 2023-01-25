@@ -17,16 +17,17 @@ readonly class Filter implements FilterInterface
     public function apply(QueryBuilder $queryBuilder)
     {
         $op = FilterUtils::getOperation($this->op);
-        $queryBuilder->andWhere("e.{$this->field} {$op} :{$this->field}");
+        $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
+        $queryBuilder->andWhere("e.{$this->field} {$op} :{$uniqueParam}");
 
         if ($this->op === FilterOperation::Contains) {
-            $queryBuilder->setParameter($this->field, "%{$this->value}%");
+            $queryBuilder->setParameter($uniqueParam, "%{$this->value}%");
         } elseif ($this->op === FilterOperation::BeginsWith) {
-            $queryBuilder->setParameter($this->field, "{$this->value}%");
+            $queryBuilder->setParameter($uniqueParam, "{$this->value}%");
         } elseif ($this->op === FilterOperation::EndsWith) {
-            $queryBuilder->setParameter($this->field, "%{$this->value}");
+            $queryBuilder->setParameter($uniqueParam, "%{$this->value}");
         } else {
-            $queryBuilder->setParameter($this->field, $this->value);
+            $queryBuilder->setParameter($uniqueParam, $this->value);
         }
     }
 }

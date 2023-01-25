@@ -2,6 +2,8 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
+use Doctrine\ORM\QueryBuilder;
+
 class FilterUtils
 {
     public static function getOperation(FilterOperation $op): string
@@ -19,5 +21,17 @@ class FilterUtils
             FilterOperation::IsNull => 'IS NULL',
             FilterOperation::IsNotNull => 'IS NOT NULL',
         };
+    }
+
+    public static function getUniqueParam(QueryBuilder $queryBuilder, string $field): string
+    {
+        $param = $field;
+        $i = 1;
+        while ($queryBuilder->getParameter($param)) {
+            $param = "{$field}_{$i}";
+            $i++;
+        }
+
+        return $param;
     }
 }

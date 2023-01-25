@@ -29,9 +29,6 @@ readonly class DataLoader
 
         $query = $queryBuilder->getQuery();
 
-        //header('application/json');
-        //echo $query->getSQL(); exit();
-
         $paginator = new DoctrinePaginator($query);
 
         $paginator->getQuery()
@@ -48,7 +45,11 @@ readonly class DataLoader
     {
         $aliases = [];
         foreach ($joins as $join) {
-            $queryBuilder->join($join->entity, $join->alias);
+            if ($join->type === JoinType::INNER) {
+                $queryBuilder->innerJoin($join->entity, $join->alias);
+            } else {
+                $queryBuilder->leftJoin($join->entity, $join->alias);
+            }
             $aliases[] = $join->alias;
         }
 
