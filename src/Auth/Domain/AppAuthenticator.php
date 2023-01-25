@@ -23,7 +23,8 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
-    ) {
+    )
+    {
     }
 
     public function supports(Request $request): ?bool
@@ -52,9 +53,9 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $session = $request->getSession();
         /** @var User $user */
         $user = $token->getUser();
-        $session->set('usuario_id', $user->usuario_id);
-        $session->set('usuario', $user->username);
-        $session->set('rol_id', $user->rol_id);
+        $session->set('user_id', $user->usuario_id);
+        $session->set('username', $user->username);
+        $session->set('role_id', $user->rol_id);
 
         return new JsonResponse([
             'success' => true,

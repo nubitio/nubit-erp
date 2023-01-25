@@ -61,8 +61,7 @@ export default class Sale {
             .formatter(SharedUtils.dateFormatter)
             .build());
         let session = StorageUtils.getItem('session');
-        let localId = session['local_id'];
-        let warehouseUrl = `api/local/${localId}/warehouse`;
+        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen_id')
@@ -72,6 +71,7 @@ export default class Sale {
             .textField('descripcion')
             .visible(false)
             .required(true)
+            .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)

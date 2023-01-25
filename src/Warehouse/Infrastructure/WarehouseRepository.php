@@ -74,4 +74,20 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    public function getAllByBranch(string $branchId): array
+    {
+        $qb = $this->entityManager->createQueryBuilder();
+        $qb->select('w')
+            ->from(WarehouseEntity::class, 'w')
+            ->where('w.local = :branchId')
+            ->setParameter('branchId', $branchId);
+        $query = $qb->getQuery();
+        $result = $query->getResult();
+        $data = [];
+        foreach ($result as $warehouse) {
+            $data[] = DataMapper::map($warehouse, Warehouse::class);
+        }
+        return $data;
+    }
 }

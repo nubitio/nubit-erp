@@ -16,4 +16,6 @@ interface WarehouseRepositoryInterface
     public function update(Warehouse $warehouse): Warehouse;
 
     public function delete(string $id): void;
+
+    public function getAllByBranch(string $branchId): array;
 }
