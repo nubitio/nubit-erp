@@ -20,7 +20,7 @@ class KardexController extends BaseController
     #[Route('/kardex/get', name: 'kardex_get_all', methods: ['POST'])]
     public function getAll(Request $request, KardexGetAllUseCase $kardexGetAllUseCase): Response
     {
-        $localId = $request->getSession()->get('local_id');
+        $localId = $request->getSession()->get('branch_id');
         $warehouseId = $request->request->get('warehouse_id');
         $categoryId = $request->request->get('category_id');
         $dateFrom = $request->request->get('date_from');

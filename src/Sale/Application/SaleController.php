@@ -44,7 +44,7 @@ class SaleController extends BaseController
         $report = $request->get('report');
         $dateFrom = $request->get('date-from');
         $dateTo = $request->get('date-to');
-        $localId = $request->getSession()->get('local_id');
+        $localId = $request->getSession()->get('branch_id');
         $params = [
             'local_id'  => $localId,
             'date_from' => $dateFrom,
@@ -127,7 +127,7 @@ class SaleController extends BaseController
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
     public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
     {
-        $userId = $request->getSession()->get('usuario_id');
+        $userId = $request->getSession()->get('user_id');
         $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
 
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
@@ -136,7 +136,7 @@ class SaleController extends BaseController
     #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['POST'])]
     public function invoice(Request $request, SaleInvoiceUseCase $saleInvoiceUseCase, $id): Response
     {
-        $localId = $request->getSession()->get('local_id');
+        $localId = $request->getSession()->get('branch_id');
         $saleInvoiceUseCase($id, $localId);
 
         return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);

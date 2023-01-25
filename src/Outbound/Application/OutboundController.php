@@ -39,7 +39,7 @@ class OutboundController extends BaseController
             [
                 'field' => 'local_id',
                 'op' => 'equal',
-                'value' => $request->getSession()->get('local_id'),
+                'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
     }

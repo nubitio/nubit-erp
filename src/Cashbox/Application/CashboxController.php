@@ -12,8 +12,8 @@ use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Cashbox\Domain\CashboxGetOneUseCase;
 use App\Cashbox\Domain\CashboxUpdateUseCase;
 use App\CashboxDetail\Domain\CashboxDetail;
-use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\PdfExporter;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,8 +40,8 @@ class CashboxController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'local_id',
-                'op' => 'equal',
-                'value' => $request->getSession()->get('local_id'),
+                'op'    => 'equal',
+                'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
     }
@@ -49,8 +49,8 @@ class CashboxController extends BaseController
     #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET', 'POST'])]
     public function getLast(Request $request, CashboxGetLastUseCase $getLastUseCase): Response
     {
-        $localId = $request->getSession()->get('local_id');
-        $userId = $request->getSession()->get('usuario_id');
+        $localId = $request->getSession()->get('branch_id');
+        $userId = $request->getSession()->get('user_id');
         $cashBox = $getLastUseCase($localId, $userId);
 
         if (!$cashBox) {
@@ -62,23 +62,23 @@ class CashboxController extends BaseController
         $data = [];
 
         $data['header'] = [
-            'caja_id' => $cashBox->caja_id,
-            'fecha' => $cashBox->apertura->format('Y-m-d'),
+            'caja_id'  => $cashBox->caja_id,
+            'fecha'    => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
         ];
         $data['rows'] = $cashBox->items;
         $data['footer'] = [
             [
                 'descripcion' => 'Ingresos',
-                'monto' => $cashBox->getIncome(),
+                'monto'       => $cashBox->getIncome(),
             ],
             [
                 'descripcion' => 'Egresos',
-                'monto' => $cashBox->getOutcome(),
+                'monto'       => $cashBox->getOutcome(),
             ],
             [
                 'descripcion' => 'Total',
-                'monto' => $cashBox->getBalance(),
+                'monto'       => $cashBox->getBalance(),
             ],
         ];
 
@@ -99,9 +99,9 @@ class CashboxController extends BaseController
 
         $cashBox = new Cashbox(
             caja_id: $cashBoxId,
-            local_id: $request->getSession()->get('local_id'),
+            local_id: $request->getSession()->get('branch_id'),
             apertura: new \DateTime(),
-            usuario_id: $request->getSession()->get('usuario_id'),
+            usuario_id: $request->getSession()->get('user_id'),
             estado: 1,
             items: [$cashBoxDetail],
         );
@@ -150,12 +150,12 @@ class CashboxController extends BaseController
         $cashBox = $getOneUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
-            'title' => 'Reporte de caja',
-            'logo' => $request->getSchemeAndHttpHost().'/assets/images/logo.png',
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
         ]);
 
-        return $exporter->export($content, 'caja_'.$id);
+        return $exporter->export($content, 'caja_' . $id);
     }
 
     #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
@@ -165,12 +165,12 @@ class CashboxController extends BaseController
         $infoReceipt = $getInfoReceiptUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
-            'title' => 'Reporte de caja',
-            'logo' => $request->getSchemeAndHttpHost().'/assets/images/logo.png',
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);
 
-        return $exporter->export($content, 'caja_'.$id);
+        return $exporter->export($content, 'caja_' . $id);
     }
 }
