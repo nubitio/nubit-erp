@@ -697,7 +697,7 @@ export default class Form {
             if (value === '') {
                 value = null;
             }
-            if (NumberUtils.isNumber(value)) {
+            if (field.valueType === 'number') {
                 value = Number(value);
             }
         }

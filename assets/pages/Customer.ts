@@ -41,6 +41,7 @@ export default class Customer {
             .validators(['validCustomerId'])
             .required(true)
             .sortable(true)
+            .valueType('string')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)

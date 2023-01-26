@@ -8,13 +8,11 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseCreateUseCase;
 use App\Warehouse\Domain\WarehouseDeleteUseCase;
-use App\Warehouse\Domain\WarehouseGetOneUseCase;
 use App\Warehouse\Domain\WarehouseUpdateUseCase;
 
 readonly class WarehouseProcessor implements ProcessorInterface
 {
     public function __construct(
-        public WarehouseGetOneUseCase $getOneUseCase,
         public WarehouseCreateUseCase $WarehouseCreateUseCase,
         public WarehouseUpdateUseCase $WarehouseUpdateUseCase,
         public WarehouseDeleteUseCase $WarehouseDeleteUseCase,
@@ -29,14 +27,10 @@ readonly class WarehouseProcessor implements ProcessorInterface
             return null;
         }
 
-        $exist = $this->getOneUseCase->__invoke($data->almacen_id);
-
-        if ($exist) {
-            $result = $this->WarehouseUpdateUseCase->__invoke($data);
-        } else {
-            $result = $this->WarehouseCreateUseCase->__invoke($data);
+        if ($data->almacen_id) {
+            return $this->WarehouseUpdateUseCase->__invoke($data);
         }
 
-        return $result;
+        return $this->WarehouseCreateUseCase->__invoke($data);
     }
 }
