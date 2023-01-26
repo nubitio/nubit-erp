@@ -10,6 +10,7 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Core\Domain\Util\DataMapper;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
@@ -46,7 +47,7 @@ class CashboxEntity
     /**
      * @var CashboxDetailEntity[] $items
      */
-    public array|ArrayCollection $items;
+    public array|Collection $items;
 
     public function __construct()
     {

@@ -47,7 +47,7 @@ export default class Category {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('parent_id')
+            .name('parent')
             .label('Categoria superior')
             .url('api/category')
             .valueField('categoria_id')
