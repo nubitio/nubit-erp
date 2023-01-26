@@ -20,6 +20,7 @@ export class FieldBuilder {
             url: '',
             textField: '',
             valueField: '',
+            valueType: 'string',
             data: [],
             formatter: null,
             visible: true,
@@ -101,6 +102,11 @@ export class FieldBuilder {
 
     valueField(valueField: string): FieldBuilder {
         this._field.valueField = valueField;
+        return this;
+    }
+
+    valueType(valueType: string): FieldBuilder {
+        this._field.valueType = valueType;
         return this;
     }
 

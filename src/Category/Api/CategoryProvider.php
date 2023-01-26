@@ -5,11 +5,12 @@ namespace App\Category\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Category\Domain\Category;
 use App\Category\Domain\CategoryGetAllUseCase;
 use App\Category\Domain\CategoryGetOneUseCase;
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
+use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\SortRule;
 
 readonly class CategoryProvider implements ProviderInterface
 {
@@ -23,7 +24,9 @@ readonly class CategoryProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
             $options = OptionsBuilder::build($context, CategoryEntity::class);
+
             return $this->getAllUseCase->__invoke($options);
         }
 

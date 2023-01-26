@@ -2,22 +2,25 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
-use App\Core\Domain\Util\Constants;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-class SaleUtils
+readonly class SaleUtils
 {
-    private Connection $connection;
-    private SettingsService $settings;
+    private SessionInterface $session;
 
-    public function __construct(Connection $connection, SettingsService $settings)
+    public function __construct(
+        private Connection      $connection,
+        private SettingsService $settings,
+        private RequestStack    $requestStack,
+    )
     {
-        $this->connection = $connection;
-        $this->settings = $settings;
+        $this->session = $this->requestStack->getSession();
     }
 
     public function getSaleSeries(string $docType, string $localId): string
@@ -41,16 +44,16 @@ class SaleUtils
         );
     }
 
-    public function fillSaleValues(Sale $sale, DocType $docType, SessionInterface $session): Sale
+    public function fillSaleValues(Sale $sale, DocType $docType = DocType::NOTA_VENTA): Sale
     {
         $sale->tipo_id = 2;
         $sale->estado = 1;
-        $sale->serie = $this->getSaleSeries($docType->value, $session->get('local_id'));
+        $sale->serie = $this->getSaleSeries($docType->value, $this->session->get('branch_id'));
         $sale->numero = $this->getSaleNumber($sale->serie);
         $sale->igv = $this->settings->get(Constants::TAX);
         $sale->recargo_consumo = $this->settings->get(Constants::CONSUMPTION_TAX);
         $sale->date_created = new \DateTime();
-        $sale->created_by = $session->get('usuario_id');
+        $sale->created_by = $this->session->get('user_id');
 
         return $sale;
     }

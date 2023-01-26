@@ -7,7 +7,7 @@ use App\Customer\Domain\Customer;
 use App\Invoice\Domain\Invoice;
 use App\PaymentMethod\Domain\PaymentMethod;
 use App\SaleDetail\Domain\SaleDetail;
-use Doctrine\Common\Collections\ArrayCollection;
+use App\Warehouse\Domain\Warehouse;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -18,8 +18,8 @@ class Sale
         public ?string             $movimiento_id = null,
         #[SerializedName('operacion_id')]
         public ?string             $operacion_id = null,
-        #[SerializedName('almacen_id')]
-        public ?string             $almacen_id = null,
+        #[SerializedName('almacen')]
+        public ?Warehouse          $almacen = null,
         #[SerializedName('cliente')]
         public ?Customer           $cliente = null,
         #[SerializedName('tipo_id')]
@@ -37,7 +37,7 @@ class Sale
         #[SerializedName('numero')]
         public ?string             $numero = null,
         #[SerializedName('descuento')]
-        public ?string             $descuento = null,
+        public ?float              $descuento = null,
         #[SerializedName('glosa')]
         public ?string             $glosa = null,
         #[SerializedName('orden_id')]
@@ -64,7 +64,7 @@ class Sale
         public ?int                $recargo_consumo = null,
         /** @var SaleDetail[] $details */
         #[SerializedName('details')]
-        public ArrayCollection     $details = new ArrayCollection(),
+        public array               $details = [],
         #[SerializedName('comprobante')]
         public ?Invoice            $invoice = null
     )

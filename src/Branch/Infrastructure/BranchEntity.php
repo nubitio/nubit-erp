@@ -22,7 +22,7 @@ class BranchEntity
         #[GeneratedValue]
         #[Column(name: "local_id", type: "string")]
         public ?string        $local_id = null,
-        #[ManyToOne(targetEntity: CompanyEntity::class, fetch: "EAGER")]
+        #[ManyToOne(targetEntity: CompanyEntity::class)]
         #[JoinColumn(name: "empresa_id", referencedColumnName: "empresa_id")]
         public ?CompanyEntity $empresa = null,
         #[Column(name: "descripcion", type: "string")]

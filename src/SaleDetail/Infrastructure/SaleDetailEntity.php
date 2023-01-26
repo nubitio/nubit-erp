@@ -25,14 +25,14 @@ class SaleDetailEntity
         #[Column(name: "producto_id", type: "string")]
         public ?string     $producto_id = null,
         #[Column(name: "cantidad", type: "decimal")]
-        public ?string     $cantidad = null,
+        public ?float      $cantidad = null,
         #[Column(name: "precio_unitario", type: "decimal")]
-        public ?string     $precio_unitario = null,
+        public ?float      $precio_unitario = null,
         #[Column(name: "descuento", type: "decimal")]
-        public ?string     $descuento = null,
+        public ?float      $descuento = null,
         #[Column(name: "precio_total", type: "decimal")]
-        public ?string     $precio_total = null,
-        #[ManyToOne(targetEntity: SaleEntity::class, fetch: 'EAGER', inversedBy: 'details')]
+        public ?float      $precio_total = null,
+        #[ManyToOne(targetEntity: SaleEntity::class, inversedBy: 'details')]
         #[JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
         public ?SaleEntity $movimiento = null
     )

@@ -5,9 +5,10 @@ namespace App\Product\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Sort;
+use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Product\Domain\GetAllProductUseCase;
 use App\Product\Domain\GetOneProductUseCase;
 use App\Product\Infrastructure\ProductEntity;
@@ -24,8 +25,10 @@ readonly class ProductProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
-            $context = OptionUtils::addSort($context, new Sort('descripcion', 'asc'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.categoria', 'c'));
+            $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
             $options = OptionsBuilder::build($context, ProductEntity::class);
+
             return $this->getAllUseCase->__invoke($options);
         }
 

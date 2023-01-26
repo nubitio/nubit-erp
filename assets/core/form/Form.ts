@@ -218,7 +218,7 @@ export default class Form {
     private buildFields(container: HTMLElement, fields: Field[], containerType = 'div', rowIndex: number | null = null) {
         fields.forEach(field => {
             if (field.type === FormType.NONE) {
-                if (field.isIdentity) {
+                if (field.isIdentity && this.options.url) {
                     let input: HTMLInputElement = document.createElement('input');
                     input.setAttribute('type', 'hidden');
                     input.setAttribute('name', field.name);
@@ -240,7 +240,7 @@ export default class Form {
                         return;
                     }
                     let index = rowIndex - 1;
-                    input.setAttribute('name', `detail[${index}][${field.name}]`);
+                    input.setAttribute('name', `details[${index}][${field.name}]`);
                 } else {
                     input.setAttribute('name', field.name);
                 }
@@ -510,7 +510,7 @@ export default class Form {
             labelPosition: 'top',
             onText: "SI",
             offText: "NO",
-            value: "true",
+            value: this.options.url ? 'true' : '1',
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -635,41 +635,74 @@ export default class Form {
         let data = this.getDataArray();
         let object: Record<string, any> = {};
         data.forEach(item => {
-            let value: any = item.value;
-            if (item.value === 'true') {
-                value = true;
+            if (item.name.includes('[')) {
+                let name = item.name.split('[')[0];
+                let index = Number(item.name.split('[')[1].split(']')[0]);
+                let fieldName = item.name.split('[')[2].split(']')[0];
+                if (!object[name]) {
+                    object[name] = [];
+                }
+                if (!object[name][index]) {
+                    object[name][index] = {};
+                }
+                object[name][index][fieldName] = this.getTypedFormValue(item);
+            } else {
+                object[item.name] = this.getTypedFormValue(item);
             }
-            let field = this.fields.find(field => field.name === item.name);
-            if (field?.type === FormType.NUMBER) {
+        });
+        return object;
+    }
+
+    getTypedFormValue(item: JQuery.NameValuePair): any {
+        let field = this.fields.find(field => field.name === item.name);
+        if (!field) {
+            let fieldName = item.name.split('[')[2].split(']')[0];
+            field = this.detailFields.find(field => field.name === fieldName);
+        }
+        let value: any = item.value;
+        switch (field?.type) {
+            case FormType.NUMBER:
+            case FormType.CURRENCY:
                 value = Number(value);
-            }
-            if (field?.type === FormType.ENTITY) {
+                break;
+            case FormType.ENTITY:
                 let id = field.valueField || 'id';
-                value = {[id]: value};
-            }
-            if (field?.type === FormType.ENUM) {
-                let isNumber = NumberUtils.isNumber(value);
-                if (isNumber) {
+                if (value === '') {
+                    value = null;
+                }
+                if (field.valueType === 'number') {
                     value = Number(value);
                 }
-            }
-            if (field?.type === FormType.TEXT) {
+                value = {[id]: value};
+                break;
+            case FormType.ENUM:
+                if (NumberUtils.isNumber(value)) {
+                    value = Number(value);
+                }
+                break;
+            case FormType.TEXT:
                 value = value.trim();
                 if (value === '') {
                     value = null;
                 }
+                break;
+            case FormType.SWITCH:
+                value = value === 'true';
+                break;
+            default:
+                break;
+        }
+
+        if (field?.isIdentity) {
+            if (value === '') {
+                value = null;
             }
-            if (field?.isIdentity) {
-                if (value === '') {
-                    value = null;
-                }
-                if (NumberUtils.isNumber(value)) {
-                    value = Number(value);
-                }
+            if (NumberUtils.isNumber(value)) {
+                value = Number(value);
             }
-            object[item.name] = value;
-        });
-        return object;
+        }
+
+        return value;
     }
 
     clear() {

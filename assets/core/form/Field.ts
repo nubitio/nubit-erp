@@ -15,6 +15,7 @@ export interface Field {
     url: string;
     textField: string;
     valueField: string;
+    valueType: string;
     data: any[];
     formatter: any;
     visible: boolean;

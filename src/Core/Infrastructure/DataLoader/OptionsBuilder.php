@@ -45,7 +45,7 @@ class OptionsBuilder
 
     private static function buildSort(array $sortRules): array
     {
-        return array_map(fn($item) => new Sort(
+        return array_map(fn($item) => new SortRule(
             field: $item[0],
             order: $item[1] ?? 'ASC',
         ), $sortRules);
@@ -56,7 +56,7 @@ class OptionsBuilder
         $filters = [];
         foreach ($filterRules as $filter) {
             $op = FilterOperation::tryFrom($filter['op']);
-            $filters[] = new Filter(
+            $filters[] = new FilterRule(
                 field: $filter['field'],
                 op: $op,
                 value: $filter['value'],

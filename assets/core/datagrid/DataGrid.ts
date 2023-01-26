@@ -250,7 +250,8 @@ export default class DataGrid {
             '¿Está seguro de eliminar el registro?',
             function (r: boolean) {
                 if (r) {
-                    httpClient.delete<any>(ref.options.url + '/' + row[ref.getIdField()] ?? '').subscribe(
+                    let url = ref.options.method ? ref.options.url + '/' : route;
+                    httpClient.delete<any>(url + row[ref.getIdField()] ?? '').subscribe(
                         (response) => {
                             ref.reload();
                             SharedUtils.showMessage('Info', 'Registro eliminado correctamente');

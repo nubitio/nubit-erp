@@ -10,7 +10,7 @@ readonly class Options
         public string $rows,
         /** @var JoinRule[] $joins */
         public array  $joins = [],
-        /** @var Sort[] $sort */
+        /** @var SortRule[] $sort */
         public array  $sort = [],
         /** @var FilterInterface[] $filters */
         public array  $filters = []
