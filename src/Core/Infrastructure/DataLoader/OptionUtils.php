@@ -4,7 +4,7 @@ namespace App\Core\Infrastructure\DataLoader;
 
 class OptionUtils
 {
-    public static function addSort(array $context, Sort $sort): array
+    public static function addSort(array $context, SortRule $sort): array
     {
         $context['filters']['sort'] = $context['filters']['sort'] ?? $sort->field;
         $context['filters']['order'] = $context['filters']['order'] ?? $sort->order;
@@ -12,7 +12,7 @@ class OptionUtils
         return $context;
     }
 
-    public static function addFilter(array $context, Filter $filter): array
+    public static function addFilter(array $context, FilterRule $filter): array
     {
         $context['filters']['filterRules'] = $context['filters']['filterRules'] ?? '[]';
         $filterRules = json_decode($context['filters']['filterRules'], true);

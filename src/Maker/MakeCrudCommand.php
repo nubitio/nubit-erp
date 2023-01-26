@@ -600,6 +600,7 @@ class MakeCrudCommand extends Command
     {
         return match ($type) {
             'integer' => 'int',
+            'decimal' => 'float',
             'boolean' => 'bool',
             'date', 'datetime' => '\DateTimeInterface',
             default => 'string',

@@ -31,7 +31,7 @@ class ProductEntity
         public ?int    $tipo_id = null,
         #[Column(name: "descripcion", type: "string")]
         public ?string $descripcion = null,
-        #[ManyToOne(targetEntity: CategoryEntity::class, fetch: "EAGER")]
+        #[ManyToOne(targetEntity: CategoryEntity::class)]
         #[JoinColumn(name: "categoria_id", referencedColumnName: "categoria_id")]
         public ?CategoryEntity $categoria = null,
         #[Column(name: "unidad_id", type: "string")]

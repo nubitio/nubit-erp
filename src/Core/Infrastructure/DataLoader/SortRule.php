@@ -2,7 +2,7 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
-readonly class Sort
+readonly class SortRule
 {
     public function __construct(
         public string $field,

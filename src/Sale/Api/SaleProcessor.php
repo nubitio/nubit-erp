@@ -5,10 +5,10 @@ namespace App\Sale\Api;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Sale\Domain\Sale;
 use App\Sale\Domain\CreateSaleUseCase;
 use App\Sale\Domain\DeleteSaleUseCase;
 use App\Sale\Domain\GetOneSaleUseCase;
+use App\Sale\Domain\Sale;
 use App\Sale\Domain\UpdateSaleUseCase;
 
 readonly class SaleProcessor implements ProcessorInterface
@@ -29,14 +29,9 @@ readonly class SaleProcessor implements ProcessorInterface
             return null;
         }
 
-        $exist = $this->getOneUseCase->__invoke($data->movimiento_id);
-
-        if ($exist) {
-            $result = $this->updateUseCase->__invoke($data);
-        } else {
-            $result = $this->createUseCase->__invoke($data);
+        if ($data->movimiento_id) {
+            return $this->updateUseCase->__invoke($data);
         }
-
-        return $result;
+        return $this->createUseCase->__invoke($data);
     }
 }

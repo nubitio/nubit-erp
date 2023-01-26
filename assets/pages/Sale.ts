@@ -64,7 +64,7 @@ export default class Sale {
         let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('almacen_id')
+            .name('almacen')
             .label('Almacen')
             .url(warehouseUrl)
             .valueField('almacen_id')
@@ -92,6 +92,7 @@ export default class Sale {
             .url('api/payment-method')
             .valueField('id')
             .textField('name')
+            .valueType('number')
             .defaultValue('1')
             .required(true)
             .formatter((value: any, row: any) => value.name)

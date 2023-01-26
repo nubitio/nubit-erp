@@ -6,6 +6,7 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
+use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -32,8 +33,9 @@ class SaleEntity
         public ?string              $movimiento_id = null,
         #[Column(name: 'operacion_id', type: 'string')]
         public ?string              $operacion_id = null,
-        #[Column(name: 'almacen_id', type: 'string')]
-        public ?string              $almacen_id = null,
+        #[ManyToOne(targetEntity: WarehouseEntity::class)]
+        #[JoinColumn(name: 'almacen_id', referencedColumnName: 'almacen_id')]
+        public ?WarehouseEntity     $almacen = null,
         #[ManyToOne(targetEntity: CustomerEntity::class)]
         #[JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
         public ?CustomerEntity      $cliente = null,
@@ -53,7 +55,7 @@ class SaleEntity
         #[Column(name: 'numero', type: 'string')]
         public ?string              $numero = null,
         #[Column(name: 'descuento', type: 'decimal')]
-        public ?string              $descuento = null,
+        public ?float               $descuento = null,
         #[Column(name: 'glosa', type: 'string')]
         public ?string              $glosa = null,
         #[Column(name: 'orden_id', type: 'integer')]
@@ -80,7 +82,7 @@ class SaleEntity
         public ?int                 $recargo_consumo = null,
         /** @var SaleDetailEntity[] $details */
         #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-        public Collection           $details = new ArrayCollection()
+        public Collection|array     $details = new ArrayCollection()
     )
     {
     }

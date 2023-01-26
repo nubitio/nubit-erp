@@ -7,11 +7,13 @@ use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\EasyStore;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Customer\Infrastructure\CustomerEntity;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Infrastructure\InvoiceEntity;
+use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
-use App\SaleDetail\Infrastructure\SaleDetailEntity;
+use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -22,6 +24,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         private Connection             $connection,
         private EntityManagerInterface $entityManager,
         private DataLoader             $dataLoader,
+        private SaleUtils              $saleUtils,
     )
     {
     }
@@ -74,17 +77,20 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function insert(Sale $sale): Sale
     {
+        $sale = $this->saleUtils->fillSaleValues($sale);
+        /** @var SaleEntity $entity */
         $entity = DataMapper::map($sale, SaleEntity::class);
+        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen->almacen_id);
+        $entity->almacen = $warehouse;
+        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+        $entity->cliente = $customer;
+        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+        $entity->tipo_pago = $paymentMethod;
+        foreach ($entity->details as $detail) {
+            $detail->movimiento = $entity;
+        }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
-        foreach ($sale->items as $item) {
-            $detailEntity = new SaleDetailEntity();
-            $detailEntity->mapFromDomainModel($item);
-            $detailEntity->movimiento_id = $entity->movimiento_id;
-            $this->entityManager->persist($detailEntity);
-        }
-        $this->entityManager->flush();
-        $this->entityManager->clear();
 
         return DataMapper::map($entity, Sale::class);
     }

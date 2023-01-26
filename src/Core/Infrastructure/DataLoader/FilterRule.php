@@ -4,7 +4,7 @@ namespace App\Core\Infrastructure\DataLoader;
 
 use Doctrine\ORM\QueryBuilder;
 
-readonly class Filter implements FilterInterface
+readonly class FilterRule implements FilterInterface
 {
     public function __construct(
         public string          $field,

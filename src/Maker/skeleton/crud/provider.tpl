@@ -26,6 +26,7 @@ readonly class {{module}}Provider implements ProviderInterface
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addSort($context, new Sort('{{sortColumn}}', '{{sortOrder}}'));
             $options = OptionsBuilder::build($context, {{module}}Entity::class);
+
             return $this->getAllUseCase->__invoke($options);
         }
 

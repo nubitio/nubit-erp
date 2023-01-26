@@ -67,7 +67,7 @@ readonly class DataLoader
     }
 
     /**
-     * @param Sort[] $sort
+     * @param SortRule[] $sort
      */
     private function addSort(QueryBuilder $queryBuilder, array $sort): void
     {
