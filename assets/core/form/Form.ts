@@ -673,7 +673,9 @@ export default class Form {
                 if (field.valueType === 'number') {
                     value = Number(value);
                 }
-                value = {[id]: value};
+                if (value !== null) {
+                    value = {[id]: value};
+                }
                 break;
             case FormType.ENUM:
                 if (NumberUtils.isNumber(value)) {

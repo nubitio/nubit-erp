@@ -2,8 +2,8 @@
 
 namespace App\Category\Domain;
 
+use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -21,8 +21,9 @@ class Category
         #[SerializedName('estado')]
         public ?bool     $estado = false,
         /** @var ?Category[] $children */
+        #[Ignore]
         #[SerializedName('children')]
-        public array     $children = [],
+        public ?array    $children = null,
     )
     {
     }

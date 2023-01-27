@@ -48,11 +48,13 @@ export default class Category {
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('parent')
-            .label('Categoria superior')
+            .label('Categoria padre')
             .url('api/category')
             .valueField('categoria_id')
             .textField('descripcion')
-            .visible(false)
+            .formatter((value: any, row: any) => {
+                return row.parent?.descripcion;
+            })
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.FILE)
