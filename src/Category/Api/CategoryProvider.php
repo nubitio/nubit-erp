@@ -9,6 +9,7 @@ use App\Category\Domain\CategoryGetAllUseCase;
 use App\Category\Domain\CategoryGetOneUseCase;
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
@@ -25,7 +26,7 @@ readonly class CategoryProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
-            $context = OptionUtils::addJoin($context, new JoinRule('e.parent', 'p'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.parent', 'p', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
             $options = OptionsBuilder::build($context, CategoryEntity::class);
 

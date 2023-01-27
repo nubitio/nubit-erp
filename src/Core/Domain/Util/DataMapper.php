@@ -2,6 +2,7 @@
 
 namespace App\Core\Domain\Util;
 
+use App\Core\Domain\Annotation\Ignore;
 use Doctrine\Common\Collections\Collection;
 
 class DataMapper
@@ -14,7 +15,7 @@ class DataMapper
      *
      * @return T
      */
-    public static function map($input, mixed $output)
+    public static function map($input, mixed $output, int $recursionLimit = 10)
     {
         if (is_string($output)) {
             $output = new $output();
@@ -22,6 +23,16 @@ class DataMapper
 
         foreach ($input as $key => $value) {
             if ($value === null) {
+                continue;
+            }
+
+            try {
+                $reflectionProperty = new \ReflectionProperty(get_class($output), $key);
+                $ignore = $reflectionProperty->getAttributes(Ignore::class)[0] ?? null;
+                if (null !== $ignore) {
+                    continue;
+                }
+            } catch (\ReflectionException $e) {
                 continue;
             }
 

@@ -48,6 +48,10 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     public function insert(Category $category): Category
     {
         $entity = DataMapper::map($category, CategoryEntity::class);
+        if ($category->parent !== null) {
+            $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
+            $entity->parent = $parent;
+        }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -58,6 +62,12 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     {
         $entity = $this->entityManager->find(CategoryEntity::class, $category->categoria_id);
         $entity = DataMapper::map($category, $entity);
+        if ($category->parent !== null) {
+            $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
+            $entity->parent = $parent;
+        } else {
+            $entity->parent = null;
+        }
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Category::class);
