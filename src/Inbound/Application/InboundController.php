@@ -49,7 +49,7 @@ class InboundController extends BaseController
          * @var Inbound $inbound
          */
         $inbound = $this->serializer->deserialize(json_encode($request->request->all()), Inbound::class, 'json');
-        $detail = $request->get('detail');
+        $detail = $request->get('details');
         $detailItems = [];
         foreach ($detail as $item) {
             /**

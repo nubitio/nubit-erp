@@ -124,8 +124,8 @@ export default class Supplier {
         bus.emit(new Event(Supplier.EVENTS.LOADING, true));
         this.consultService.consultRuc(ruc)
             .subscribe((data) => {
-                this.form.getField('razon_social').textbox('setValue', data.razonSocial);
-                this.form.getField('domicilio_fiscal').textbox('setValue', data.direccion);
+                this.form.getField('razon_social').textbox('setValue', data.name);
+                this.form.getField('domicilio_fiscal').textbox('setValue', data.address);
                 bus.emit(new Event(Supplier.EVENTS.LOADING, false));
             });
     }

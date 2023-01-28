@@ -2,12 +2,16 @@
 
 namespace App\Outbound\Infrastructure;
 
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Outbound\Domain\Outbound;
 use App\Outbound\Domain\OutboundRepositoryInterface;
+use App\Sale\Infrastructure\SaleEntity;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 class OutboundRepository implements OutboundRepositoryInterface
 {
@@ -22,16 +26,14 @@ class OutboundRepository implements OutboundRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
     }
 
     /**
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
+     * @throws ORMException
      */
     public function insert(Outbound $outbound): void
     {
@@ -44,10 +46,10 @@ class OutboundRepository implements OutboundRepositoryInterface
             $entity->date_created = new \DateTime();
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
+            $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
             foreach ($outbound->items as $item) {
-                $detailEntity = new SaleDetailEntity();
-                $detailEntity->mapFromDomainModel($item);
-                $detailEntity->movimiento_id = $entity->movimiento_id;
+                $detailEntity = DataMapper::map($item, SaleDetailEntity::class);
+                $detailEntity->movimiento = $ref;
                 $this->entityManager->persist($detailEntity);
             }
             $this->entityManager->flush();
@@ -59,9 +61,6 @@ class OutboundRepository implements OutboundRepositoryInterface
         }
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(Outbound $outbound): void
     {
         $entity = $this->entityManager->find(OutboundEntity::class, $outbound->movimiento_id);
