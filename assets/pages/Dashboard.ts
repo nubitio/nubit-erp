@@ -294,7 +294,7 @@ export default class Dashboard {
                 this.lessSoldProductsData = lessSoldData;
                 this.rotationDataLoaded = true;
 
-                bus.emit(new Event('on:rotation-dta:loaded'));
+                bus.emit(new Event('on:rotation-data:loaded'));
                 this.dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => messenger.show('error', 'Error al obtener datos de rotación de productos'));
