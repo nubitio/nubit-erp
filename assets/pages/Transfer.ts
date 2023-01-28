@@ -55,8 +55,7 @@ export default class Transfer {
             .required(true)
             .build());
         let session = StorageUtils.getItem('session');
-        let localId = session['local_id'];
-        let warehouseUrl = `api/local/${localId}/warehouse`;
+        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen_origen')

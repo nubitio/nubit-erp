@@ -1,15 +1,14 @@
 import {Observable} from "rxjs";
-import {RucInfoDto} from "../dto/ruc.info.dto";
-import {DniInfoDto} from "../dto/dni.info.dto";
+import {ConsultInfoDto} from "../dto/consult.info.dto";
 import {httpClient} from "../core/utils/HttpClient";
 
 export class ConsultService {
 
-    consultRuc(ruc: string): Observable<RucInfoDto> {
-        return httpClient.get<RucInfoDto>(`/api/ruc/${ruc}`);
+    consultRuc(ruc: string): Observable<ConsultInfoDto> {
+        return httpClient.get<ConsultInfoDto>(`/api/consults/ruc/${ruc}`);
     }
 
-    consultDni(dni: string): Observable<DniInfoDto> {
-        return httpClient.get<DniInfoDto>(`/api/dni/${dni}`);
+    consultDni(dni: string): Observable<ConsultInfoDto> {
+        return httpClient.get<ConsultInfoDto>(`/api/consults/dni/${dni}`);
     }
 }

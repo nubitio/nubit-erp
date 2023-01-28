@@ -53,7 +53,7 @@ class OutboundController extends BaseController
          * @var Outbound $outbound
          */
         $outbound = $this->serializer->deserialize(json_encode($request->request->all()), Outbound::class, 'json');
-        $detail = $request->get('detail');
+        $detail = $request->get('details');
         $detailItems = [];
         foreach ($detail as $item) {
             /**

@@ -3,12 +3,13 @@
 namespace App\Supplier\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\XlsExporter;
 use App\Supplier\Domain\Supplier;
 use App\Supplier\Domain\SupplierCreateUseCase;
 use App\Supplier\Domain\SupplierDeleteUseCase;
 use App\Supplier\Domain\SupplierGetAllUseCase;
 use App\Supplier\Domain\SupplierUpdateUseCase;
-use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -58,5 +59,13 @@ class SupplierController extends BaseController
         $deleteUseCase($id);
 
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/supplier/export', name: 'supplier_export', methods: ['GET'])]
+    public function export(Request $request, SupplierGetAllUseCase $getAllUseCase, XlsExporter $exporter): Response
+    {
+        $data = $getAllUseCase();
+
+        return $exporter->export($data['rows'], 'Proveedores');
     }
 }
