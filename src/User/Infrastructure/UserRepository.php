@@ -2,56 +2,66 @@
 
 namespace App\User\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\User\Domain\User;
 use App\User\Domain\UserRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\User\Domain\User;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Options;
 use Doctrine\ORM\EntityManagerInterface;
 
-class UserRepository implements UserRepositoryInterface
+readonly class UserRepository implements UserRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): DataStoreInterface
     {
-        return $this->dataGridLoader->load('vw_usuario', 'username', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $user) {
+            $data[] = DataMapper::map($user, User::class);
+        }
+
+        return new EasyStore($paginator->getTotalItems(), $data);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(User $user): void
+    public function getOne(string $id): ?User
     {
-        $entity = new UserEntity();
-        $entity->mapFromDomainModel($user);
-        $entity->password = password_hash($user->password, PASSWORD_DEFAULT);
+        /** @var ?UserEntity $entity */
+        $entity = $this->entityManager->find(UserEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, User::class);
+    }
+
+    public function insert(User $user): User
+    {
+        $entity = DataMapper::map($user, UserEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, User::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(User $user): void
+    public function update(User $user): User
     {
         $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
-        if (null !== $user->password && '' !== $user->password) {
-            $user->password = password_hash($user->password, PASSWORD_DEFAULT);
-        } else {
-            $user->password = $entity->password;
-        }
-        $entity->mapFromDomainModel($user);
+        $entity = DataMapper::map($user, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, User::class);
     }
 
     public function delete(string $id): void
@@ -63,8 +73,13 @@ class UserRepository implements UserRepositoryInterface
 
     public function getOneByUsername(string $username): ?User
     {
+        /** @var ?UserEntity $entity */
         $entity = $this->entityManager->getRepository(UserEntity::class)->findOneBy(['username' => $username]);
 
-        return $entity?->mapToDomainModel() ?? null;
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, User::class);
     }
 }

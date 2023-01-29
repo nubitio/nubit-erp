@@ -1,7 +1,3 @@
-const date = new Date(), y = date.getFullYear(), m = date.getMonth();
-const firstDay = new Date(y, m, 1);
-const lastDay = new Date(y, m + 1, 0);
-
 $(window).on('load', function () {
     let container = $('#layout-container');
     if (container) {
@@ -118,36 +114,6 @@ $.extend($.fn.panel.methods, {
 });
 
 $.extend($.fn.validatebox.defaults.rules, {
-    validDate: {
-        validator: function (value) {
-            var date = dateparser(value);
-            var s = dateformatter(date);
-            return s == value;
-        },
-        message: 'Por favor ingrese una fecha valida'
-    }
-});
-
-$.extend($.fn.validatebox.defaults.rules, {
-    confirmPass: {
-        validator: function (value, param) {
-            var pass = $(param[0]).passwordbox('getValue');
-            return value == pass;
-        },
-        message: 'La confrmación no coincide con la contraseña.'
-    }
-});
-
-$.extend($.fn.validatebox.defaults.rules, {
-    checkProtected: {
-        validator: function (value, param) {
-            return !param[0].includes(value.toUpperCase());
-        },
-        message: 'El valor no esta permitido.'
-    }
-});
-
-$.extend($.fn.validatebox.defaults.rules, {
     validCustomerId: {
         validator: function (value, param) {
             return value.length === 8 || rucValidator(value);
@@ -207,104 +173,3 @@ function rucValidator(ruc) {
     let res = 11 - mod;
     return (rucCopy % 10 === res % 10);
 }
-
-function dateformatter(date) {
-    var y = date.getFullYear();
-    var m = date.getMonth() + 1;
-    var d = date.getDate();
-    return y + '-' + (m < 10 ? ('0' + m) : m) + '-' + (d < 10 ? ('0' + d) : d);
-}
-
-function dateparser(s) {
-    if (!s) return new Date();
-    var ss = (s.split('-'));
-    var y = parseInt(ss[0], 10);
-    var m = parseInt(ss[1], 10);
-    var d = parseInt(ss[2], 10);
-    if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
-        return new Date(y, m - 1, d);
-    } else {
-        return new Date();
-    }
-}
-
-function activeFormatter(val) {
-    if (Number(val) === 1) {
-        return '<span class="badge rounded-pill bg-success">SI</span>';
-    } else {
-        return '<span class="badge rounded-pill bg-danger">NO</span>';
-    }
-}
-
-function typeFormatter(tipo_id) {
-    if (Number(tipo_id) === 1) {
-        return '<span class="badge bg-primary">INGRESO</span>';
-    } else {
-        return '<span class="badge bg-secondary">SALIDA</span>';
-    }
-}
-
-function typeWarehouseFormatter(tipo_id) {
-    if (Number(tipo_id) === 2) {
-        return '<span class="badge bg-bg-secondary">INSUMOS</span>';
-    } else {
-        return '<span class="badge bg-primary">PRODUCTOS</span>';
-    }
-}
-
-function imageFormatter(val, row) {
-    if (val) {
-        return `<a href="${val}" data-lightbox="${row.descripcion}">
-                    <img src="${val}" style="width: 30px; height: 30px;"  alt=""/>
-                </a>`;
-    } else {
-        return `<a href="https://ui-avatars.com/api/?name=${row.descripcion}" data-lightbox="${row.descripcion}">
-                    <img src="https://ui-avatars.com/api/?name=${row.descripcion}" style="width: 30px; height: 30px;"  alt=""/>
-                </a>`;
-    }
-}
-
-function show_info(message) {
-    $.messager.show({
-        title: 'Info',
-        msg: message
-    });
-}
-
-function show_error(message) {
-    $.messager.show({
-        title: 'Error',
-        msg: message
-    });
-}
-
-function disableButtons(btnOk, btnCancel, dialog) {
-    btnCancel.linkbutton('disable');
-    btnOk.linkbutton('disable');
-    btnOk.linkbutton({text: 'Guardando...'});
-    dialog.dialog('showMask', 'Procesando...');
-}
-
-function enableButtons(btnOk, btnCancel, dialog) {
-    btnCancel.linkbutton('enable');
-    btnOk.linkbutton('enable');
-    btnOk.linkbutton({text: 'Guardar'});
-    dialog.dialog('hideMask');
-}
-
-const loadData = async (url, key, value) => {
-    try {
-        let result = [];
-        const response = await fetch(url);
-        const data = await response.json();
-        data.forEach(element => {
-            result.push({
-                value: element[key],
-                text: element[value]
-            });
-        });
-        return result;
-    } catch (error) {
-        console.log(error);
-    }
-};

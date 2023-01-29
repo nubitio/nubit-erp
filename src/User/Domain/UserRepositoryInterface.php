@@ -2,13 +2,18 @@
 
 namespace App\User\Domain;
 
+use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface UserRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): DataStoreInterface;
 
-    public function insert(User $user): void;
+    public function getOne(string $id): ?User;
 
-    public function update(User $user): void;
+    public function insert(User $user): User;
+
+    public function update(User $user): User;
 
     public function delete(string $id): void;
 

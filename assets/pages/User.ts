@@ -2,23 +2,18 @@ import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {FormType} from "../core/form/FormType";
-import {SharedUtils} from "../core/utils/SharedUtils";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class User {
-    private container: string;
+    private readonly container: string;
     private fields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private options: any = {};
 
-    public ROUTES = {
-        ADD: 'user/add',
-        EDIT: 'user/edit/',
-        DELETE: 'user/delete/',
-    }
+    static readonly API_URL = 'api/users';
 
     static readonly EVENTS = {
         ADD: 'user:add',
@@ -30,9 +25,8 @@ export default class User {
         LOADING: 'user:loading',
     }
 
-    constructor(container: string, options: any = {}) {
+    constructor(container: string) {
         this.container = container;
-        this.options = options;
         this.init();
     }
 
@@ -94,20 +88,24 @@ export default class User {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Usuarios',
-            url: 'user/get',
-            routes: this.ROUTES,
+            title: 'User',
+            url: User.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: User.EVENTS,
         });
     }
 
     renderDialog() {
-        this.options['events'] = User.EVENTS;
-        this.dialog = new Dialog(this.container, this.options);
+        this.dialog = new Dialog(this.container, {
+            events: User.EVENTS,
+        });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: this.ROUTES,
-            events: User.EVENTS
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: User.API_URL,
+            events: User.EVENTS,
         });
     }
 }

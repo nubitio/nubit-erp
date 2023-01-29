@@ -12,21 +12,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
         #[SerializedName('usuario_id')]
-        public ?int       $usuario_id = null,
-        #[SerializedName('username')]
-        public ?string    $username = null,
-        #[SerializedName('password')]
-        public ?string    $password = null,
-        #[SerializedName('estado')]
-        public ?bool      $estado = null,
-        #[SerializedName('date_created')]
-        public ?\DateTime $date_created = null,
-        #[SerializedName('date_updated')]
-        public ?\DateTime $date_updated = null,
-        #[SerializedName('pin')]
-        public ?string    $pin = null,
+        public ?int $usuario_id = null,
         #[SerializedName('rol_id')]
-        public ?int       $rol_id = null,
+        public ?int $rol_id = null,
+        #[SerializedName('username')]
+        public ?string $username = null,
+        #[SerializedName('password')]
+        public ?string $password = null,
+        #[SerializedName('date_created')]
+        public ?\DateTimeInterface $date_created = null,
+        #[SerializedName('date_updated')]
+        public ?\DateTimeInterface $date_updated = null,
+        #[SerializedName('pin')]
+        public ?string $pin = null,
+        #[SerializedName('estado')]
+        public ?bool $estado = false
     )
     {
     }
@@ -46,7 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->username;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }

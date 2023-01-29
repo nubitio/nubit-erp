@@ -3,15 +3,11 @@
 namespace App\{{module}}\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
-#[Entity]
-#[Table(name: "{{table}}")]
+#[ORM\Entity]
+#[ORM\Table(name: "{{table}}")]
 class {{module}}Entity
 {
     public function __construct(
