@@ -3,62 +3,33 @@
 namespace App\User\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\User\Domain\User;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
-#[Entity]
-#[Table(name: 'usuario')]
+#[ORM\Entity]
+#[ORM\Table(name: "usuario")]
 class UserEntity
 {
-    #[Id]
-    #[GeneratedValue]
-    #[Column(name: 'usuario_id', type: 'integer')]
-    public ?int $usuario_id;
-    #[Column(name: 'username', type: 'string')]
-    public ?string $username;
-    #[Column(name: 'password', type: 'string')]
-    public ?string $password;
-    #[Column(name: 'estado', type: 'boolean')]
-    public ?bool $estado;
-    #[Column(name: 'date_created', type: 'datetime')]
-    public ?\DateTime $date_created;
-    #[Column(name: 'date_updated', type: 'datetime')]
-    public ?\DateTime $date_updated;
-    #[Column(name: 'pin', type: 'string')]
-    public ?string $pin;
-    #[Column(name: 'rol_id', type: 'integer')]
-    public ?int $rol_id;
-
-    public function mapToDomainModel(): User
+    public function __construct(
+        #[ORM\Id]
+        #[ORM\GeneratedValue]
+        #[ORM\Column(name: 'usuario_id', type: 'integer')]
+        public ?int $usuario_id = null,
+        #[ORM\Column(name: 'rol_id', type: 'integer')]
+        public ?int $rol_id = null,
+        #[ORM\Column(name: 'username', type: 'string')]
+        public ?string $username = null,
+        #[ORM\Column(name: 'password', type: 'string')]
+        public ?string $password = null,
+        #[ORM\Column(name: 'date_created', type: 'datetime')]
+        public ?\DateTimeInterface $date_created = null,
+        #[ORM\Column(name: 'date_updated', type: 'datetime')]
+        public ?\DateTimeInterface $date_updated = null,
+        #[ORM\Column(name: 'pin', type: 'string')]
+        public ?string $pin = null,
+        #[ORM\Column(name: 'estado', type: 'boolean')]
+        public ?bool $estado = null
+    )
     {
-        return new User(
-            $this->usuario_id,
-            $this->username,
-            $this->password,
-            $this->estado,
-            $this->date_created,
-            $this->date_updated,
-            $this->pin,
-            $this->rol_id,
-        );
-    }
-
-    public function mapFromDomainModel(User $user): UserEntity
-    {
-        $this->usuario_id = $user->usuario_id;
-        $this->username = $user->username;
-        $this->password = $user->password;
-        $this->estado = $user->estado;
-        $this->date_created = $user->date_created;
-        $this->date_updated = $user->date_updated;
-        $this->pin = '' != $user->pin ? $user->pin : null;
-        $this->rol_id = $user->rol_id;
-
-        return $this;
     }
 }

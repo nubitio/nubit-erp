@@ -359,10 +359,10 @@ class MakeCrudCommand extends Command
         $entityFields = '';
         foreach ($columns as $column) {
             if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $entityFields .= "        #[Id]\n";
-                $entityFields .= "        #[GeneratedValue]\n";
+                $entityFields .= "        #[ORM\Id]\n";
+                $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
-            $entityFields .= "        #[Column(name: '" . $column->getName() . "', type: '" . $column->getType()->getName() . "')]\n";
+            $entityFields .= "        #[ORM\Column(name: '" . $column->getName() . "', type: '" . $column->getType()->getName() . "')]\n";
             $entityFields .= "        public ?" . $this->getType($column->getType()->getName()) . " $" . $column->getName() . " = null,\n";
         }
         $entityContent = str_replace('{{fields}}', substr($entityFields, 0, -2), $entityContent);
