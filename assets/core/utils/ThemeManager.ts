@@ -54,12 +54,12 @@ export default class ThemeManager {
 
     getAccentColor() {
         let accentColor = localStorage.getItem('accentColor');
-        if (accentColor !== null) {
+        if (accentColor) {
             this.accentColor = accentColor;
             this.setupAppColors();
         }
 
-        fetch('api/setting/app_theme_accent_color')
+        fetch('api/settings/find/app_theme_accent_color')
             .then(response => response.json())
             .then(result => {
                 this.accentColor = result.value;

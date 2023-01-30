@@ -5,9 +5,10 @@ namespace App\Config\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Config\Infrastructure\ConfigEntity;
 use App\Config\Domain\ConfigGetAllUseCase;
 use App\Config\Domain\ConfigGetOneUseCase;
+use App\Config\Domain\GetOneSettingByKeyUseCase;
+use App\Config\Infrastructure\ConfigEntity;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
@@ -15,8 +16,9 @@ use App\Core\Infrastructure\DataLoader\SortRule;
 readonly class ConfigProvider implements ProviderInterface
 {
     public function __construct(
-        private ConfigGetAllUseCase $getAllUseCase,
-        private ConfigGetOneUseCase $getOneUseCase,
+        private ConfigGetAllUseCase       $getAllUseCase,
+        private ConfigGetOneUseCase       $getOneUseCase,
+        private GetOneSettingByKeyUseCase $getOneByKeyUseCase
     )
     {
     }
@@ -28,6 +30,10 @@ readonly class ConfigProvider implements ProviderInterface
             $options = OptionsBuilder::build($context, ConfigEntity::class);
 
             return $this->getAllUseCase->__invoke($options);
+        }
+
+        if (isset($uriVariables['name'])) {
+            return $this->getOneByKeyUseCase->__invoke($uriVariables['name']);
         }
 
         return $this->getOneUseCase->__invoke($uriVariables['id']);

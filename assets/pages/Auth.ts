@@ -68,6 +68,7 @@ export default class Auth {
         bus.on(
             event => event.name === LocalPicker.EVENTS.CANCELED,
             () => {
+                StorageUtils.removeItem('token');
                 window.location.href = '/logout';
             }
         )

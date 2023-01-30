@@ -56,7 +56,7 @@ export default class LocalPicker {
         this.localList = $('#local-list');
         this.localList.datalist({
             method: 'get',
-            url: 'api/local',
+            url: 'api/branches',
             fit: true,
             valueField: 'local_id',
             textField: 'descripcion',

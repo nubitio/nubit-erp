@@ -16,4 +16,6 @@ interface ConfigRepositoryInterface
     public function update(Config $config): Config;
 
     public function delete(string $id): void;
+
+    public function getOneByKey(string $key): ?Config;
 }

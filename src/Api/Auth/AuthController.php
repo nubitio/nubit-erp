@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends BaseController
 {
 
-    #[Route('/api/auth/login', name: 'api_auth_login', methods: ['POST'])]
+    #[Route('/api/auth', name: 'api_auth_login', methods: ['POST'])]
     public function login(Request $request, GetOneUserByUsernameUseCase $userGetOneByUsername): JsonResponse
     {
         $key = $_ENV['APP_SECRET'];
@@ -43,7 +43,7 @@ class AuthController extends BaseController
             'exp'      => time() + 3600,
             'sub'      => $user->usuario_id,
             'name'     => $user->username,
-            'role'     => $user->rol_id,
+            'role'     => $user->rol->rol_id,
         ];
 
         $token = JWT::encode($tokenData, $key);

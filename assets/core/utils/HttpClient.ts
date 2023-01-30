@@ -2,6 +2,7 @@ import axios, {Axios, AxiosRequestConfig} from "axios";
 import {map, Observable} from "rxjs";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
 import {messenger} from "./Messenger";
+import {StorageUtils} from "./StorageUtils";
 
 class HttpClient {
     private api: Axios;
@@ -18,7 +19,10 @@ class HttpClient {
     private setupInterceptors() {
         this.api.interceptors.request.use((config) => {
             if (config.headers) {
-                config.headers['Authorization'] = 'Bearer ' + localStorage.getItem('token');
+                let token = StorageUtils.getItem('token');
+                if (token) {
+                    config.headers['Authorization'] = 'Bearer ' + token;
+                }
             }
             return config;
         });
