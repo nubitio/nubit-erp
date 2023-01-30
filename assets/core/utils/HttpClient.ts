@@ -30,6 +30,7 @@ class HttpClient {
         this.api.interceptors.response.use(
             (response) => response,
             (error) => {
+                console.log(error)
                 if (error.response.status !== 500) {
                     messenger.show('Error', error.response.data.message ?? 'Something went wrong');
                 } else {

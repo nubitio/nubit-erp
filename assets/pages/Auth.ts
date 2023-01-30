@@ -14,11 +14,6 @@ export default class Auth {
     private form: Form;
     private localPicker: LocalPicker;
 
-    static readonly ROUTES = {
-        LOGIN: 'api/auth',
-        LOGOUT: 'auth/logout',
-    }
-
     static readonly EVENTS = {
         LOGIN: 'auth:login',
         LOGOUT: 'auth:logout',
@@ -69,7 +64,7 @@ export default class Auth {
             event => event.name === LocalPicker.EVENTS.CANCELED,
             () => {
                 StorageUtils.removeItem('token');
-                window.location.href = '/logout';
+                window.location.href = '/auth/logout';
             }
         )
     }
