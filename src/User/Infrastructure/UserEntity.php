@@ -3,6 +3,7 @@
 namespace App\User\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Role\Infrastructure\RoleEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -15,8 +16,9 @@ class UserEntity
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'usuario_id', type: 'integer')]
         public ?int $usuario_id = null,
-        #[ORM\Column(name: 'rol_id', type: 'integer')]
-        public ?int $rol_id = null,
+        #[ORM\ManyToOne(targetEntity: RoleEntity::class)]
+        #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id')]
+        public ?RoleEntity $rol = null,
         #[ORM\Column(name: 'username', type: 'string')]
         public ?string $username = null,
         #[ORM\Column(name: 'password', type: 'string')]

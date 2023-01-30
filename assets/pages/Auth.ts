@@ -15,7 +15,7 @@ export default class Auth {
     private localPicker: LocalPicker;
 
     static readonly ROUTES = {
-        LOGIN: 'auth/login',
+        LOGIN: 'api/auth',
         LOGOUT: 'auth/logout',
     }
 
@@ -88,9 +88,8 @@ export default class Auth {
 
         authService.login(username, password).subscribe({
             next: (response) => {
-                if (response.success) {
-                    this.localPicker.show();
-                }
+                StorageUtils.setItem('token', response.token);
+                this.localPicker.show();
             },
             error: (error) => {
                 loginButton.linkbutton('enable');

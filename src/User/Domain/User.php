@@ -3,6 +3,7 @@
 namespace App\User\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Role\Domain\Role;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\SerializedName;
@@ -13,8 +14,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct(
         #[SerializedName('usuario_id')]
         public ?int $usuario_id = null,
-        #[SerializedName('rol_id')]
-        public ?int $rol_id = null,
+        #[SerializedName('rol')]
+        public ?Role $rol = null,
         #[SerializedName('username')]
         public ?string $username = null,
         #[SerializedName('password')]

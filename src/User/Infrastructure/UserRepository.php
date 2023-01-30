@@ -2,21 +2,21 @@
 
 namespace App\User\Infrastructure;
 
-use App\User\Domain\UserRepositoryInterface;
-use App\User\Domain\User;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\EasyStore;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Role\Infrastructure\RoleEntity;
+use App\User\Domain\User;
+use App\User\Domain\UserRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class UserRepository implements UserRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -48,7 +48,11 @@ readonly class UserRepository implements UserRepositoryInterface
 
     public function insert(User $user): User
     {
+        /** @var UserEntity $entity */
         $entity = DataMapper::map($user, UserEntity::class);
+        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol->rol_id);
+        $entity->rol = $role;
+        $entity->password = password_hash($user->password, PASSWORD_DEFAULT);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -58,7 +62,14 @@ readonly class UserRepository implements UserRepositoryInterface
     public function update(User $user): User
     {
         $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
+        if ($user->password) {
+            $user->password = password_hash($user->password, PASSWORD_DEFAULT);
+        } else {
+            $user->password = $entity->password;
+        }
         $entity = DataMapper::map($user, $entity);
+        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol->rol_id);
+        $entity->rol = $role;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, User::class);

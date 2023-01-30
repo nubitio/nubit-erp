@@ -10,9 +10,9 @@ class Role
 {
     public function __construct(
         #[SerializedName('rol_id')]
-        public ?int $rol_id,
+        public ?int $rol_id = null,
         #[SerializedName('descripcion')]
-        public ?string $descripcion,
+        public ?string $descripcion = null,
     ) {
     }
 }

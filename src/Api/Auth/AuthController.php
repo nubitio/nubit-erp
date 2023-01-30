@@ -3,7 +3,7 @@
 namespace App\Api\Auth;
 
 use App\Base\BaseController;
-use App\User\Domain\UserGetOneByUsernameUseCase;
+use App\User\Domain\GetOneUserByUsernameUseCase;
 use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +13,7 @@ class AuthController extends BaseController
 {
 
     #[Route('/api/auth/login', name: 'api_auth_login', methods: ['POST'])]
-    public function login(Request $request, UserGetOneByUsernameUseCase $userGetOneByUsername): JsonResponse
+    public function login(Request $request, GetOneUserByUsernameUseCase $userGetOneByUsername): JsonResponse
     {
         $key = $_ENV['APP_SECRET'];
 
