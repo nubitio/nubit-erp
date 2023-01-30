@@ -28,17 +28,6 @@ class ApiController extends BaseController
         return $this->json($menu);
     }
 
-    #[Route('/api/setting/{key}', name: 'api_setting_get', methods: ['GET'])]
-    public function getSetting($key, SettingsService $settingsService): JsonResponse
-    {
-        $value = $settingsService->get($key);
-
-        return $this->json([
-            'key' => $key,
-            'value' => $value,
-        ]);
-    }
-
     #[Route('/api/company', name: 'api_company_get', methods: ['GET'])]
     public function getCompany(): JsonResponse
     {

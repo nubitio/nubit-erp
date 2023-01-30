@@ -2,10 +2,9 @@
 
 namespace App\Config\Infrastructure;
 
-use App\Config\Domain\ConfigRepositoryInterface;
 use App\Config\Domain\Config;
+use App\Config\Domain\ConfigRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\EasyStore;
@@ -16,7 +15,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -69,5 +68,17 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         $entity = $this->entityManager->find(ConfigEntity::class, $id);
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    public function getOneByKey(string $key): ?Config
+    {
+        /** @var ?ConfigEntity $entity */
+        $entity = $this->entityManager->getRepository(ConfigEntity::class)->findOneBy(['name' => $key]);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Config::class);
     }
 }
