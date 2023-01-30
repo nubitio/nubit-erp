@@ -4,53 +4,33 @@ namespace App\Auth\Api;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Auth\Domain\GetTokenUseCase;
+use App\Auth\Domain\Token;
 use App\User\Domain\GetOneUserByUsernameUseCase;
-use Firebase\JWT\JWT;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 readonly class AuthProcessor implements ProcessorInterface
 {
     public function __construct(
-        public GetOneUserByUsernameUseCase $getOneUserByUsernameUseCase,
+        private GetOneUserByUsernameUseCase $getOneUserByUsernameUseCase,
+        private GetTokenUseCase             $getTokenUseCase
     )
     {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?TokenDto
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Token
     {
-        $key = $_ENV['APP_SECRET'];
+        $user = $this->getOneUserByUsernameUseCase->__invoke($data->username);
 
-        $username = $data->username;
-        $password = $data->password;
-
-        $user = $this->getOneUserByUsernameUseCase->__invoke($username);
-
-        if (!$user) {
-            throw new \Exception('User not found');
+        if (!$user && !$user?->estado) {
+            throw new UserNotFoundException('User not found');
         }
 
-        if ($user->estado != 1) {
-            throw new \Exception('User is inactive');
+        if (!password_verify($data->password, $user->getPassword())) {
+            throw new AuthenticationException('Invalid credentials');
         }
 
-        if (!password_verify($password, $user->getPassword())) {
-            throw new \Exception('Invalid password');
-        }
-
-        $tokenData = [
-            'id'       => $user->usuario_id,
-            'username' => $user->username,
-            'roles'    => $user->getRoles(),
-            'iat'      => time(),
-            'exp'      => time() + 3600,
-            'sub'      => $user->usuario_id,
-            'name'     => $user->username,
-        ];
-
-        $token = JWT::encode($tokenData, $key);
-
-        $dto = new TokenDto();
-        $dto->token = $token;
-
-        return $dto;
+        return $this->getTokenUseCase->__invoke($user);
     }
 }

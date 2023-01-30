@@ -2,7 +2,9 @@
 
 namespace App\Auth\Api;
 
-class TokenDto
+use App\Auth\Domain\Token;
+
+class TokenDto extends Token
 {
     public string $token;
 }
