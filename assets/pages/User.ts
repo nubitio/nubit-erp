@@ -38,6 +38,7 @@ export default class User {
             .name('usuario_id')
             .label('Usuario id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -59,18 +60,14 @@ export default class User {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('rol_id')
+            .name('rol')
             .label('Rol')
             .url('api/rol')
             .textField('descripcion')
             .valueField('rol_id')
-            .visible(false)
+            .valueType('number')
             .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
-            .name('rol')
-            .label('Rol')
+            .formatter((value: any) => value.descripcion)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)

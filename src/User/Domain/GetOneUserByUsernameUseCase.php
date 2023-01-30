@@ -2,7 +2,7 @@
 
 namespace App\User\Domain;
 
-readonly class UserGetOneByUsernameUseCase
+readonly class GetOneUserByUsernameUseCase
 {
     public function __construct(
         private UserRepositoryInterface $userRepository,

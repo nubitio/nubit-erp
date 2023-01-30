@@ -2,8 +2,8 @@
 
 namespace App\Auth\Domain;
 
+use App\User\Domain\GetOneUserByUsernameUseCase;
 use App\User\Domain\User;
-use App\User\Domain\UserGetOneByUsernameUseCase;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -11,11 +11,12 @@ use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
-class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
+readonly class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
     public function __construct(
-        private readonly UserGetOneByUsernameUseCase $userGetOneByUsernameUseCase,
-    ) {
+        private GetOneUserByUsernameUseCase $userGetOneByUsernameUseCase,
+    )
+    {
     }
 
     public function loadUserByIdentifier(string $identifier): UserInterface
@@ -24,6 +25,10 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 
         if (!$user) {
             throw new UserNotFoundException(sprintf('User "%s" does not exist.', $identifier));
+        }
+
+        if (!$user->estado) {
+            throw new UserNotFoundException(sprintf('User "%s" is inactive.', $identifier));
         }
 
         return $user;

@@ -4,7 +4,7 @@ import {Observable} from "rxjs";
 class AuthService {
 
     login(username: string, password: string): Observable<any> {
-        return httpClient.post(`/auth/login`, {username, password});
+        return httpClient.post(`/api/auth`, {username, password});
     }
 
     setLocal(localId: string): Observable<any> {
