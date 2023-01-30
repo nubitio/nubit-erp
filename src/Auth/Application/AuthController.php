@@ -27,6 +27,12 @@ class AuthController extends BaseController
         ]);
     }
 
+    #[Route('/auth/login', name: 'login', methods: ['POST'])]
+    public function login(): Response
+    {
+        throw new \Exception('This should never be reached');
+    }
+
     #[Route('/auth/logout', name: 'logout', methods: ['GET'])]
     public function logout(): Response
     {

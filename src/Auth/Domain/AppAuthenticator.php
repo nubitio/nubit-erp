@@ -2,44 +2,46 @@
 
 namespace App\Auth\Domain;
 
-use Firebase\JWT\JWT;
+use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
+use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
 class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
-    public const AUTH_HEADER = 'Authorization';
+    public const LOGIN_ROUTE = 'login_index';
+
+    public function __construct(
+        private readonly UrlGeneratorInterface $urlGenerator,
+    )
+    {
+    }
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has(self::AUTH_HEADER);
+        return 'login' === $request->attributes->get('_route')
+            && $request->isMethod('POST');
     }
 
     public function authenticate(Request $request): Passport
     {
-        $apiToken = $request->headers->get(self::AUTH_HEADER);
+        $data = json_decode($request->getContent());
+        $username = $data->username;
+        $password = $data->password;
 
-        if (null === $apiToken) {
-            throw new AuthenticationException('No API token provided', Response::HTTP_UNAUTHORIZED);
-        }
-
-        $apiToken = str_replace('Bearer ', '', $apiToken);
-
-        $tokenData = JWT::decode($apiToken, $_ENV['APP_SECRET'], ['HS256']);
-
-        $username = $tokenData->username;
-
-        return new SelfValidatingPassport(
+        return new Passport(
             new UserBadge($username),
+            new PasswordCredentials($password),
             [
                 new RememberMeBadge(),
             ]
@@ -48,7 +50,17 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        return null;
+        $session = $request->getSession();
+        /** @var User $user */
+        $user = $token->getUser();
+        $session->set('user_id', $user->usuario_id);
+        $session->set('username', $user->username);
+        $session->set('role_id', $user->rol->rol_id);
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Login successful',
+        ]);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
@@ -60,8 +72,6 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function start(Request $request, AuthenticationException $authException = null): Response
     {
-        return new JsonResponse([
-            'message' => 'Authentication Required',
-        ], Response::HTTP_UNAUTHORIZED);
+        return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
     }
 }

@@ -8,6 +8,9 @@ export class StorageUtils {
     }
 
     static setItem(key: string, value: any): void {
+        if (value === null || value === undefined) {
+            return;
+        }
         localStorage.setItem(key, JSON.stringify(value));
     }
 
