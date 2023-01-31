@@ -193,6 +193,20 @@ export default class DataGrid {
                 ref.options.onLoadSuccess?.(data);
             }
         }
+        if (this.options.method === 'get') {
+            gridOptions.loader = (param: any, success: any, error: any) => {
+                let options = this.dataGrid.datagrid('options');
+                if (!options.url) {
+                    return false;
+                }
+                let url = options.url + '?' + $.param(param);
+                httpClient.get(url).subscribe(
+                    (response: any) => {
+                        success(response);
+                    }
+                )
+            }
+        }
         let subGrid = this.options.subGrid;
         if (subGrid) {
             gridOptions.view = window.detailview
