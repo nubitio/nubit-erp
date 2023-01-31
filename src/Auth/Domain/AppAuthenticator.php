@@ -60,7 +60,7 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         $token = $this->getTokenUseCase->__invoke($user);
 
-        return new JsonResponse(['token' => $token]);
+        return new JsonResponse($token);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response

@@ -37,6 +37,7 @@ export default class Config {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
