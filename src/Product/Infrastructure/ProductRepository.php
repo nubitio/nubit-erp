@@ -3,21 +3,20 @@
 namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
-use App\Product\Domain\ProductRepositoryInterface;
-use App\Product\Domain\Product;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Product\Domain\Product;
+use App\Product\Domain\ProductRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }

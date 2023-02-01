@@ -493,6 +493,12 @@ export default class Form {
             labelPosition: 'top',
             url: field.url,
             method: 'get',
+            loader: (param: any, success: any, error: any) => {
+                let url = field.url;
+                httpClient.get(url).subscribe((response: any) => {
+                    success(response.data);
+                });
+            },
             mode: field.mode ?? 'local',
             valueField: field.valueField,
             textField: field.textField,

@@ -53,10 +53,10 @@ export default class DataGridUtils {
                 method: 'get',
                 limitToList: true,
                 loader: (param: any, success: any, error: any) => {
-                    httpClient.get<any>(field.url, {params: param})
-                        .subscribe((response: any) => {
-                            response.unshift({[field.valueField]: '', [field.textField]: 'Todos'});
-                            success(response);
+                    httpClient.get<any>(field.url)
+                        .subscribe((response) => {
+                            response.data.unshift({[field.valueField]: '', [field.textField]: 'Todos'});
+                            success(response.data);
                         });
                 },
                 onChange: (value: any) => {

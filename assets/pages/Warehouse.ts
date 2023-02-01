@@ -43,7 +43,7 @@ export default class Warehouse {
             .type(FormType.ENTITY)
             .name('local')
             .label('Local')
-            .url('api/local')
+            .url('api/branches')
             .valueField('local_id')
             .textField('descripcion')
             .required(true)

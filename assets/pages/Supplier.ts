@@ -6,9 +6,9 @@ import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
-import {ConsultService} from "../services/consult.service";
 import {bus} from "../core/event/EventBus";
 import {Event} from "../core/event/Event";
+import {ConsultService} from "../services/consult.service";
 
 export default class Supplier {
     private readonly container: string;
@@ -18,12 +18,7 @@ export default class Supplier {
     private form: Form;
     private consultService: ConsultService = new ConsultService();
 
-    static readonly ROUTES = {
-        ADD: 'supplier/add',
-        EDIT: 'supplier/edit/',
-        DELETE: 'supplier/delete/',
-        EXPORT: 'supplier/export',
-    }
+    static readonly API_URL = 'api/suppliers';
 
     static readonly EVENTS = {
         ADD: 'supplier:add',
@@ -89,8 +84,11 @@ export default class Supplier {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Supplier',
-            url: 'supplier/get',
-            routes: Supplier.ROUTES,
+            url: Supplier.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Supplier.EVENTS,
         });
     }
@@ -101,8 +99,8 @@ export default class Supplier {
             events: Supplier.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Supplier.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Supplier.API_URL,
             events: Supplier.EVENTS,
         });
 

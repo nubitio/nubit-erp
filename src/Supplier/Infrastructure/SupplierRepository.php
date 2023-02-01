@@ -2,50 +2,65 @@
 
 namespace App\Supplier\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Supplier\Domain\Supplier;
 use App\Supplier\Domain\SupplierRepositoryInterface;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class SupplierRepository implements SupplierRepositoryInterface
+readonly class SupplierRepository implements SupplierRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader             $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('proveedor', 'razon_social', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $supplier) {
+            $data[] = DataMapper::map($supplier, Supplier::class);
+        }
+
+        return new Paginator($data, $paginator);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Supplier $supplier): void
+    public function getOne(string $id): ?Supplier
     {
-        $entity = new SupplierEntity();
-        $entity->mapFromDomainModel($supplier);
+        /** @var ?SupplierEntity $entity */
+        $entity = $this->entityManager->find(SupplierEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Supplier::class);
+    }
+
+    public function insert(Supplier $supplier): Supplier
+    {
+        $entity = DataMapper::map($supplier, SupplierEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Supplier::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Supplier $supplier): void
+    public function update(Supplier $supplier): Supplier
     {
         $entity = $this->entityManager->find(SupplierEntity::class, $supplier->proveedor_id);
-        $entity->mapFromDomainModel($supplier);
+        $entity = DataMapper::map($supplier, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Supplier::class);
     }
 
     public function delete(string $id): void

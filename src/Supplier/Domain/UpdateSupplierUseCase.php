@@ -2,7 +2,7 @@
 
 namespace App\Supplier\Domain;
 
-class SupplierCreateUseCase
+class UpdateSupplierUseCase
 {
     private SupplierRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class SupplierCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Supplier $supplier): void
+    public function __invoke(Supplier $supplier): Supplier
     {
-        $this->repository->insert($supplier);
+        return $this->repository->update($supplier);
     }
 }

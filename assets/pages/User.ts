@@ -62,7 +62,7 @@ export default class User {
             .type(FormType.ENTITY)
             .name('rol')
             .label('Rol')
-            .url('api/rol')
+            .url('api/roles')
             .textField('descripcion')
             .valueField('rol_id')
             .valueType('number')

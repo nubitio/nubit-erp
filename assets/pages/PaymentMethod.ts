@@ -12,7 +12,7 @@ export default class PaymentMethod {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/paymentMethod';
+    static readonly API_URL = 'api/payment-methods';
 
     static readonly EVENTS = {
         ADD: 'paymentMethod:add',

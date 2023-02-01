@@ -5,7 +5,6 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {ProductService} from "../components/product/product.service";
-import {ProductDto} from "../components/product/product.dto";
 import {StorageUtils} from "../core/utils/StorageUtils";
 
 export default class Transfer {
@@ -55,7 +54,7 @@ export default class Transfer {
             .required(true)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
+        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen_origen')

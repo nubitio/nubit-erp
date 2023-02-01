@@ -43,7 +43,7 @@ export default class Branch extends EasyComponent {
             .type(FormType.ENTITY)
             .name('empresa')
             .label('Empresa')
-            .url('api/company')
+            .url('api/companies')
             .valueField('empresa_id')
             .textField('razon_social')
             .required(true)
