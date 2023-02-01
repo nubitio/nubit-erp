@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductDto} from "../components/product/product.dto";
 import {ProductService} from "../components/product/product.service";
 import Customer from "./Customer";
 import {Drawer} from "../core/drawer/Drawer";
@@ -61,7 +60,7 @@ export default class Sale {
             .formatter(SharedUtils.dateFormatter)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
+        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen')
@@ -78,7 +77,7 @@ export default class Sale {
             .name('cliente')
             .label('Cliente')
             .width(100)
-            .url('api/customer')
+            .url('api/customers')
             .valueField('ruc')
             .textField('razon_social')
             .defaultValue('00000000')
@@ -89,7 +88,7 @@ export default class Sale {
             .type(FormType.ENTITY)
             .name('tipo_pago')
             .label('Metodo de pago')
-            .url('api/payment-method')
+            .url('api/payment-methods')
             .valueField('id')
             .textField('name')
             .valueType('number')

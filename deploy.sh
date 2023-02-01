@@ -6,6 +6,7 @@ options=("Demo" "CompuExpress" "ArcaCevic" "ArcaServis" "SurtiHogar" "Sysdein" "
 
 function deploy() {
   echo "Running deploy"
+  ssh $USERNAME@$SERVER "rm -rf /web/vendor && rm -rf /web/public/build"
   rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ $USERNAME@$SERVER:/web/
 }
 

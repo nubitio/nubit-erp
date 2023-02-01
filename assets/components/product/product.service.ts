@@ -19,8 +19,9 @@ export class ProductService {
             });
     }
 
-    getProducts(warehouse: String): Observable<ApiResponse<ProductDto[]>> {
-        return httpClient.get<ProductDto[]>(`/api/warehouse/${warehouse}/product`);
+    getProducts(warehouseId: String): Observable<ApiResponse<ProductDto[]>> {
+        //return httpClient.get<ProductDto[]>(`/api/warehouses/${warehouseId}/product`);
+        return httpClient.get<ProductDto[]>(`/api/products`);
     }
 
     insert(values: any) {

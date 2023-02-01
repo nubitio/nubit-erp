@@ -70,7 +70,7 @@ export default class Outbound {
             .width(100)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
+        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen_id')

@@ -2,7 +2,7 @@
 
 namespace App\Supplier\Domain;
 
-class SupplierGetAllUseCase
+class GetOneSupplierUseCase
 {
     private SupplierRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class SupplierGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(string $id): ?Supplier
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getOne($id);
     }
 }

@@ -47,7 +47,7 @@ export default class VoucherSeries {
             .type(FormType.ENTITY)
             .name('local_id')
             .label('Local')
-            .url('api/local')
+            .url('api/branches')
             .valueField('local_id')
             .textField('descripcion')
             .visible(false)

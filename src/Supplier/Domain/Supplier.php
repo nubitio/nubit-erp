@@ -10,17 +10,18 @@ class Supplier
 {
     public function __construct(
         #[SerializedName('proveedor_id')]
-        public ?string $proveedor_id,
+        public ?string $proveedor_id = null,
         #[SerializedName('ruc')]
-        public ?string $ruc,
+        public ?string $ruc = null,
         #[SerializedName('razon_social')]
-        public ?string $razon_social,
+        public ?string $razon_social = null,
         #[SerializedName('domicilio_fiscal')]
-        public ?string $domicilio_fiscal,
+        public ?string $domicilio_fiscal = null,
         #[SerializedName('telefono')]
-        public ?string $telefono,
+        public ?string $telefono = null,
         #[SerializedName('estado')]
-        public ?bool $estado,
-    ) {
+        public ?bool $estado = false
+    )
+    {
     }
 }

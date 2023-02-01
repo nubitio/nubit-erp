@@ -49,7 +49,7 @@ export default class Category {
             .type(FormType.ENTITY)
             .name('parent')
             .label('Categoria padre')
-            .url('api/category')
+            .url('api/categories')
             .valueField('categoria_id')
             .textField('descripcion')
             .formatter((value: any, row: any) => {

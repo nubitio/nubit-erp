@@ -70,7 +70,7 @@ export default class Product {
             .type(FormType.ENTITY)
             .name('categoria')
             .label('Categoria')
-            .url('api/category')
+            .url('api/categories')
             .valueField('categoria_id')
             .textField('descripcion')
             .required(true)

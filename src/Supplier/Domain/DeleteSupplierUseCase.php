@@ -2,7 +2,7 @@
 
 namespace App\Supplier\Domain;
 
-class SupplierUpdateUseCase
+class DeleteSupplierUseCase
 {
     private SupplierRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class SupplierUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Supplier $supplier): void
+    public function __invoke(string $id): void
     {
-        $this->repository->update($supplier);
+        $this->repository->delete($id);
     }
 }

@@ -71,7 +71,7 @@ export default class Inbound {
             .width(100)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/local/${session['branch_id']}/warehouse`;
+        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
             .name('almacen_id')
@@ -91,7 +91,7 @@ export default class Inbound {
             .type(FormType.ENTITY)
             .name('proveedor_id')
             .label('Proveedor')
-            .url('api/supplier')
+            .url('api/suppliers')
             .valueField('proveedor_id')
             .textField('razon_social')
             .visible(false)
