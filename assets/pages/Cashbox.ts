@@ -5,7 +5,7 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {messenger} from "../core/utils/Messenger";
-import {httpClient} from "../core/utils/HttpClient";
+import {httpClient} from "../core/http/HttpClient";
 import {bus} from "../core/event/EventBus";
 import {Event} from "../core/event/Event";
 
@@ -208,7 +208,7 @@ export default class Cashbox {
                     params.append('cierre', new Date().toISOString());
                     httpClient.put<any>('cashbox/edit/' + cashboxId, params).subscribe(
                         (response) => {
-                            messenger.show('Cerrar caja', response.message);
+                            messenger.show('Cerrar caja', response.data.message);
                             this.dataGrid.reload();
                         }
                     )

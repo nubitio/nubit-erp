@@ -4,8 +4,8 @@ namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
-use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Invoice\Domain\Invoice;
@@ -29,7 +29,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     {
     }
 
-    public function getAll(Options $options): DataStoreInterface
+    public function getAll(Options $options): PaginatorInterface
     {
         $paginator = $this->dataLoader->load($options);
 
@@ -40,7 +40,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
             $data[] = DataMapper::map($sale, Sale::class);
         }
 
-        return new EasyStore($paginator->getTotalItems(), $data);
+        return new Paginator($data, $paginator);
     }
 
     /**

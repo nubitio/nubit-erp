@@ -132,9 +132,9 @@ export default class Company {
 
     getRucInfo(ruc: string) {
         this.consultService.consultRuc(ruc)
-            .subscribe((data) => {
-                this.form.getField('razon_social').textbox('setValue', data.name);
-                this.form.getField('domicilio_fiscal').textbox('setValue', data.address);
+            .subscribe((response) => {
+                this.form.getField('razon_social').textbox('setValue', response.data.name);
+                this.form.getField('domicilio_fiscal').textbox('setValue', response.data.address);
             });
     }
 }

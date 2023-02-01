@@ -8,7 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
 import {Event} from "../core/event/Event";
-import {httpClient} from "../core/utils/HttpClient";
+import {httpClient} from "../core/http/HttpClient";
 
 export default class Role {
     private readonly container: string;
@@ -163,7 +163,7 @@ export default class Role {
                 let permissions = selected.map((obj: any) => obj.id);
                 httpClient.post<any>('role-menu/add', {roleId: row.rol_id, permissions: permissions}).subscribe(
                     response => {
-                        SharedUtils.showMessage('Info', response.msg);
+                        SharedUtils.showMessage('Info', response.data.msg);
                         permissionsDialog.hide();
                         drawer.hide();
                         bus.emit(new Event(EVENTS.SUCCESS, true));

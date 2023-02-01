@@ -5,9 +5,9 @@ namespace App\Warehouse\Infrastructure;
 use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
-use App\Core\Infrastructure\DataLoader\EasyStore;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +21,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     {
     }
 
-    public function getAll(Options $options): DataStoreInterface
+    public function getAll(Options $options): PaginatorInterface
     {
         $paginator = $this->dataLoader->load($options);
 
@@ -31,7 +31,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
             $data[] = DataMapper::map($warehouse, Warehouse::class);
         }
 
-        return new EasyStore($paginator->getTotalItems(), $data);
+        return new Paginator($data, $paginator);
     }
 
     public function getOne(string $id): ?Warehouse

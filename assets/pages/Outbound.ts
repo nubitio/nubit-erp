@@ -110,10 +110,10 @@ export default class Outbound {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((data: ProductDto[]) => {
+        this.productService.getProducts('1').subscribe((response) => {
             this.detailFields.forEach((field) => {
                 if (field.name === 'producto_id') {
-                    field.data = data;
+                    field.data = response.data;
                 }
             });
             this.renderDataGrid();

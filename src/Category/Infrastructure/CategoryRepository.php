@@ -6,9 +6,9 @@ use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
-use App\Core\Infrastructure\DataLoader\EasyStore;
+use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class CategoryRepository implements CategoryRepositoryInterface
@@ -20,17 +20,17 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     {
     }
 
-    public function getAll(Options $options): DataStoreInterface
+    public function getAll(Options $options): PaginatorInterface
     {
         $paginator = $this->dataLoader->load($options);
 
-        $categories = [];
+        $data = [];
 
         foreach ($paginator->getIterator() as $category) {
-            $categories[] = DataMapper::map($category, Category::class);
+            $data[] = DataMapper::map($category, Category::class);
         }
 
-        return new EasyStore($paginator->getTotalItems(), $categories);
+        return new Paginator($data, $paginator);
     }
 
     public function getOne(string $id): ?Category

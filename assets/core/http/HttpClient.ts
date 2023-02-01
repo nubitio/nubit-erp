@@ -1,8 +1,9 @@
 import axios, {Axios, AxiosRequestConfig} from "axios";
 import {map, Observable} from "rxjs";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
-import {messenger} from "./Messenger";
-import {StorageUtils} from "./StorageUtils";
+import {messenger} from "../utils/Messenger";
+import {StorageUtils} from "../utils/StorageUtils";
+import ApiResponse from "./ApiResponse";
 
 class HttpClient {
     private api: Axios;
@@ -40,24 +41,24 @@ class HttpClient {
             });
     }
 
-    get<T>(url: string, config?: AxiosRequestConfig): Observable<T> {
+    get<T>(url: string, config?: AxiosRequestConfig): Observable<ApiResponse<T>> {
         return fromPromise(this.api.get<T>(url, config))
-            .pipe(map((response) => response.data));
+            .pipe(map((response) => new ApiResponse<T>(response)));
     }
 
-    post<T>(url: string, data?: any, config?: AxiosRequestConfig): Observable<T> {
+    post<T>(url: string, data?: any, config?: AxiosRequestConfig): Observable<ApiResponse<T>> {
         return fromPromise(this.api.post<T>(url, data, config))
-            .pipe(map((response) => response.data));
+            .pipe(map((response) => new ApiResponse<T>(response)));
     }
 
-    put<T>(url: string, data?: any, config?: AxiosRequestConfig): Observable<T> {
+    put<T>(url: string, data?: any, config?: AxiosRequestConfig): Observable<ApiResponse<T>> {
         return fromPromise(this.api.put<T>(url, data, config))
-            .pipe(map((response) => response.data));
+            .pipe(map((response) => new ApiResponse<T>(response)));
     }
 
-    delete<T>(url: string, config?: AxiosRequestConfig): Observable<T> {
+    delete<T>(url: string, config?: AxiosRequestConfig): Observable<ApiResponse<T>> {
         return fromPromise(this.api.delete<T>(url, config))
-            .pipe(map((response) => response.data));
+            .pipe(map((response) => new ApiResponse<T>(response)));
     }
 }
 

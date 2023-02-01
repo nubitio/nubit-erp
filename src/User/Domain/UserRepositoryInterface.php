@@ -2,12 +2,12 @@
 
 namespace App\User\Domain;
 
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
 
 interface UserRepositoryInterface
 {
-    public function getAll(Options $options): DataStoreInterface;
+    public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?User;
 

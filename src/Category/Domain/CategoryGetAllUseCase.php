@@ -2,7 +2,7 @@
 
 namespace App\Category\Domain;
 
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use ApiPlatform\State\Pagination\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
 
 class CategoryGetAllUseCase
@@ -14,7 +14,7 @@ class CategoryGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Options $options): DataStoreInterface
+    public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }

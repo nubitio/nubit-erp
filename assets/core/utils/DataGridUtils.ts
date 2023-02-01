@@ -1,6 +1,6 @@
 import {Field} from "../form/Field";
 import {FormType} from "../form/FormType";
-import {httpClient} from "./HttpClient";
+import {httpClient} from "../http/HttpClient";
 import {DateUtils} from "./DateUtils";
 
 export default class DataGridUtils {
