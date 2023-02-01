@@ -30,7 +30,7 @@ export default class LocalPicker {
             let row = this.localList.datalist('getSelected');
             if (row) {
                 authService.setLocal(row['local_id']).subscribe((response) => {
-                    if (response.success) {
+                    if (response.data.success) {
                         this.dialog.hide();
                         bus.emit(new Event(LocalPicker.EVENTS.PICKED, response.data));
                     }

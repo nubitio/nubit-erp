@@ -84,7 +84,7 @@ export default class Auth {
 
         authService.login(username, password).subscribe({
             next: (response) => {
-                StorageUtils.setItem('token', response.token);
+                StorageUtils.setItem('token', response.data.token);
                 this.localPicker.show();
             },
             error: (error) => {

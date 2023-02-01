@@ -4,10 +4,10 @@ namespace App\Core\Infrastructure\Service;
 
 use Doctrine\DBAL\Connection;
 
-class MenuBuilder
+readonly class MenuBuilder
 {
     public function __construct(
-        private readonly Connection $connection
+        private Connection $connection
     ) {
     }
 

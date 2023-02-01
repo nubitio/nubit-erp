@@ -25,7 +25,7 @@ export default class Home {
 
         this.setupMenu();
 
-        fetch('/api/menu/' + window.userRoleId)
+        fetch('/menu/' + window.userRoleId)
             .then(response => response.json())
             .then(data => {
                 let menu: any[] = []

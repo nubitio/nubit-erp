@@ -148,7 +148,7 @@ export default class Role {
                 bus.emit(new Event(EVENTS.LOADING, true));
                 httpClient.get<any>('role-menu/get', {params: {roleId: row['rol_id']}}).subscribe(
                     response => {
-                        permissionsTree.tree('loadData', response);
+                        permissionsTree.tree('loadData', response.data);
                         bus.emit(new Event(EVENTS.LOADING, false));
                     }
                 )
@@ -161,7 +161,7 @@ export default class Role {
                 let row = this.dataGrid.selectedRow;
                 let selected = permissionsTree.tree('getChecked', ['checked', 'indeterminate']);
                 let permissions = selected.map((obj: any) => obj.id);
-                httpClient.post<any>('role-menu/add', {roleId: row.rol_id, permissions: permissions}).subscribe(
+                httpClient.post<any>('role-menu/add', {roleId: row['rol_id'], permissions: permissions}).subscribe(
                     response => {
                         SharedUtils.showMessage('Info', response.data.msg);
                         permissionsDialog.hide();
