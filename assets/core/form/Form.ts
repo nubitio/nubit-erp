@@ -4,7 +4,7 @@ import {Field} from "./Field";
 import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
 import {Event} from "../event/Event";
-import {httpClient} from "../utils/HttpClient";
+import {httpClient} from "../http/HttpClient";
 import NumberUtils from "../utils/NumberUtils";
 
 export default class Form {

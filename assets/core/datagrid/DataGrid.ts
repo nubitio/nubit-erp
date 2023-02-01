@@ -4,7 +4,7 @@ import {Field} from "../form/Field";
 import {bus} from "../event/EventBus";
 import {Event} from "../event/Event";
 import {messenger} from "../utils/Messenger";
-import {httpClient} from "../utils/HttpClient";
+import {httpClient} from "../http/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
 import DataGridUtils from "../utils/DataGridUtils";
 
@@ -201,8 +201,11 @@ export default class DataGrid {
                 }
                 let url = options.url + '?' + $.param(param);
                 httpClient.get(url).subscribe(
-                    (response: any) => {
-                        success(response);
+                    (response) => {
+                        success({
+                            total: Number(response.headers['x-total-count']),
+                            rows: response.data
+                        });
                     }
                 )
             }

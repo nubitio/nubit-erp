@@ -2,7 +2,7 @@
 
 namespace App\User\Domain;
 
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
 
 class GetAllUserUseCase
@@ -14,7 +14,7 @@ class GetAllUserUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Options $options): DataStoreInterface
+    public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }

@@ -5,7 +5,6 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductDto} from "../components/product/product.dto";
 import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
 import {Event} from "../core/event/Event";
@@ -117,7 +116,7 @@ export default class Inbound {
             .textField('descripcion')
             .name('producto_id')
             .label('Producto')
-            .onSelect((record:any, field:Field) => this.onSelectProduct(record, field))
+            .onSelect((record: any, field: Field) => this.onSelectProduct(record, field))
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
@@ -142,10 +141,10 @@ export default class Inbound {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((data: ProductDto[]) => {
+        this.productService.getProducts('1').subscribe((response) => {
             this.detailFields.forEach((field) => {
                 if (field.name === 'producto_id') {
-                    field.data = data;
+                    field.data = response.data;
                 }
             });
             this.renderDataGrid();

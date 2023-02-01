@@ -2,12 +2,12 @@
 
 namespace App\Category\Domain;
 
-use App\Core\Infrastructure\DataLoader\DataStoreInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 
 interface CategoryRepositoryInterface
 {
-    public function getAll(Options $options): DataStoreInterface;
+    public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Category;
 

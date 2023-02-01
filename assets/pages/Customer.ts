@@ -123,9 +123,9 @@ export default class Customer {
             this.consultService.consultRuc(doc)
                 .subscribe((response) => {
                     this.dialog.setLoading(false);
-                    if (response.active) {
-                        this.form.getField('razon_social').textbox('setValue', response.name);
-                        this.form.getField('domicilio_fiscal').textbox('setValue', response.address);
+                    if (response.data.active) {
+                        this.form.getField('razon_social').textbox('setValue', response.data.name);
+                        this.form.getField('domicilio_fiscal').textbox('setValue', response.data.address);
                     } else {
                         SharedUtils.showMessage('Error', 'El RUC ingresado no se encuentra activo');
                     }
@@ -135,7 +135,7 @@ export default class Customer {
             this.consultService.consultDni(doc)
                 .subscribe((response) => {
                     this.dialog.setLoading(false);
-                    this.form.getField('razon_social').textbox('setValue', response.name);
+                    this.form.getField('razon_social').textbox('setValue', response.data.name);
                 })
         }
     }
