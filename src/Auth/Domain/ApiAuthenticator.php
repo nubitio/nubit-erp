@@ -18,10 +18,11 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public const AUTH_HEADER = 'Authorization';
+    public const LOGIN_ROUTE = '_api_/auth_post';
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has(self::AUTH_HEADER);
+        return $request->headers->has(self::AUTH_HEADER) && $request->attributes->get('_route') !== self::LOGIN_ROUTE;
     }
 
     public function authenticate(Request $request): Passport
