@@ -5,7 +5,6 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductDto} from "../components/product/product.dto";
 import {ProductService} from "../components/product/product.service";
 
 export default class Outbound {
@@ -57,7 +56,7 @@ export default class Outbound {
             .type(FormType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
-            .url('api/operation/2')
+            .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"2"}]')
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)

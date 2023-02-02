@@ -53,31 +53,4 @@ class CashboxEntity
     {
         $this->items = new ArrayCollection();
     }
-
-    public function mapToDomainModel(): Cashbox
-    {
-        return new Cashbox(
-            $this->caja_id,
-            $this->local_id,
-            $this->apertura,
-            $this->cierre,
-            $this->usuario_id,
-            $this->estado,
-            DataMapper::map($this->local, Branch::class),
-            $this->user->mapToDomainModel(),
-            $this->items->map(fn(CashboxDetailEntity $item) => $item->mapToDomainModel())->toArray(),
-        );
-    }
-
-    public function mapFromDomainModel(Cashbox $cashbox): CashboxEntity
-    {
-        $this->caja_id = $cashbox->caja_id ?? $this->caja_id;
-        $this->local_id = $cashbox->local_id ?? $this->local_id;
-        $this->apertura = $cashbox->apertura ?? $this->apertura;
-        $this->cierre = $cashbox->cierre ?? $this->cierre ?? null;
-        $this->usuario_id = $cashbox->usuario_id ?? $this->usuario_id;
-        $this->estado = $cashbox->estado ?? $this->estado;
-
-        return $this;
-    }
 }

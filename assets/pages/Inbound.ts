@@ -58,7 +58,7 @@ export default class Inbound {
             .type(FormType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
-            .url('api/operation/1')
+            .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"1"}]')
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)
