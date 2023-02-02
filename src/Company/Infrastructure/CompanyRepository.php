@@ -2,50 +2,66 @@
 
 namespace App\Company\Infrastructure;
 
-use App\Company\Domain\Company;
 use App\Company\Domain\CompanyRepositoryInterface;
+use App\Company\Domain\Company;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
-use Doctrine\DBAL\Connection;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-class CompanyRepository implements CompanyRepositoryInterface
+readonly class CompanyRepository implements CompanyRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('empresa', 'razon_social', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $company) {
+            $data[] = DataMapper::map($company, Company::class);
+        }
+
+        return new Paginator($data, $paginator);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Company $company): void
+    public function getOne(string $id): ?Company
     {
-        $entity = new CompanyEntity();
-        $entity->mapFromDomainModel($company);
+        /** @var ?CompanyEntity $entity */
+        $entity = $this->entityManager->find(CompanyEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Company::class);
+    }
+
+    public function insert(Company $company): Company
+    {
+        $entity = DataMapper::map($company, CompanyEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Company::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Company $company): void
+    public function update(Company $company): Company
     {
         $entity = $this->entityManager->find(CompanyEntity::class, $company->empresa_id);
-        $entity->mapFromDomainModel($company);
+        $entity = DataMapper::map($company, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Company::class);
     }
 
     public function delete(string $id): void

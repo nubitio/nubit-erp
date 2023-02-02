@@ -19,9 +19,6 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAllByRole(int $roleId): array
     {
         return $this->connection->fetchAllAssociative('CALL sp_menu_by_rol(:roleId)', ['roleId' => $roleId]);

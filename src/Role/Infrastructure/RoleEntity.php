@@ -3,38 +3,21 @@
 namespace App\Role\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Role\Domain\Role;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\GeneratedValue;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
-#[Entity]
-#[Table(name: 'rol')]
+#[ORM\Entity]
+#[ORM\Table(name: "rol")]
 class RoleEntity
 {
-    #[Id]
-    #[GeneratedValue]
-    #[Column(name: 'rol_id', type: 'integer')]
-    public ?int $rol_id;
-    #[Column(name: 'descripcion', type: 'string')]
-    public ?string $descripcion;
-
-    public function mapToDomainModel(): Role
+    public function __construct(
+        #[ORM\Id]
+        #[ORM\GeneratedValue]
+        #[ORM\Column(name: 'rol_id', type: 'integer')]
+        public ?int $rol_id = null,
+        #[ORM\Column(name: 'descripcion', type: 'string')]
+        public ?string $descripcion = null
+    )
     {
-        return new Role(
-            $this->rol_id,
-            $this->descripcion,
-        );
-    }
-
-    public function mapFromDomainModel(Role $role): RoleEntity
-    {
-        $this->rol_id = $role->rol_id;
-        $this->descripcion = $role->descripcion;
-
-        return $this;
     }
 }

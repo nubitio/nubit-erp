@@ -2,10 +2,10 @@ import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {FormType} from "../core/form/FormType";
-import {SharedUtils} from "../core/utils/SharedUtils";
-import {Constants} from "../core/common/Constants";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 import {ConsultService} from "../services/consult.service";
 
 export default class Company {
@@ -16,11 +16,7 @@ export default class Company {
     private form: Form;
     private consultService: ConsultService = new ConsultService();
 
-    static readonly ROUTES = {
-        ADD: 'company/add',
-        EDIT: 'company/edit/',
-        DELETE: 'company/delete/',
-    }
+    static readonly API_URL = 'api/companies';
 
     static readonly EVENTS = {
         ADD: 'company:add',
@@ -98,9 +94,12 @@ export default class Company {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Empresas',
-            url: 'company/get',
-            routes: Company.ROUTES,
+            title: 'Company',
+            url: Company.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Company.EVENTS,
         });
     }
@@ -111,8 +110,8 @@ export default class Company {
             events: Company.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Company.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Company.API_URL,
             events: Company.EVENTS,
         });
 

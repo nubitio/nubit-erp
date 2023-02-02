@@ -2,50 +2,66 @@
 
 namespace App\Role\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\Role\Domain\Role;
 use App\Role\Domain\RoleRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\Role\Domain\Role;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-class RoleRepository implements RoleRepositoryInterface
+readonly class RoleRepository implements RoleRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('rol', 'descripcion', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $role) {
+            $data[] = DataMapper::map($role, Role::class);
+        }
+
+        return new Paginator($data, $paginator);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Role $role): void
+    public function getOne(string $id): ?Role
     {
-        $entity = new RoleEntity();
-        $entity->mapFromDomainModel($role);
+        /** @var ?RoleEntity $entity */
+        $entity = $this->entityManager->find(RoleEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Role::class);
+    }
+
+    public function insert(Role $role): Role
+    {
+        $entity = DataMapper::map($role, RoleEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Role::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Role $role): void
+    public function update(Role $role): Role
     {
         $entity = $this->entityManager->find(RoleEntity::class, $role->rol_id);
-        $entity->mapFromDomainModel($role);
+        $entity = DataMapper::map($role, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Role::class);
     }
 
     public function delete(string $id): void

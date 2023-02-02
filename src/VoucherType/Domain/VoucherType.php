@@ -10,11 +10,12 @@ class VoucherType
 {
     public function __construct(
         #[SerializedName('codigo')]
-        public ?string $codigo,
+        public ?string $codigo = null,
         #[SerializedName('descripcion')]
-        public ?string $descripcion,
+        public ?string $descripcion = null,
         #[SerializedName('estado')]
-        public ?bool $estado,
-    ) {
+        public ?bool $estado = false
+    )
+    {
     }
 }

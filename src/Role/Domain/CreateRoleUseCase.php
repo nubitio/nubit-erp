@@ -2,7 +2,7 @@
 
 namespace App\Role\Domain;
 
-class RoleGetAllUseCase
+class CreateRoleUseCase
 {
     private RoleRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class RoleGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(Role $role): Role
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->insert($role);
     }
 }

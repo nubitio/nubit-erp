@@ -3,40 +3,23 @@
 namespace App\VoucherType\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\VoucherType\Domain\VoucherType;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
-#[Entity]
-#[Table(name: 'tipo_comprobante')]
+#[ORM\Entity]
+#[ORM\Table(name: "tipo_comprobante")]
 class VoucherTypeEntity
 {
-    #[Id]
-    #[Column(name: 'codigo', type: 'string')]
-    public ?string $codigo;
-    #[Column(name: 'descripcion', type: 'string')]
-    public ?string $descripcion;
-    #[Column(name: 'estado', type: 'boolean')]
-    public ?bool $estado;
-
-    public function mapToDomainModel(): VoucherType
+    public function __construct(
+        #[ORM\Id]
+        #[ORM\GeneratedValue]
+        #[ORM\Column(name: 'codigo', type: 'string')]
+        public ?string $codigo = null,
+        #[ORM\Column(name: 'descripcion', type: 'string')]
+        public ?string $descripcion = null,
+        #[ORM\Column(name: 'estado', type: 'boolean')]
+        public ?bool $estado = null
+    )
     {
-        return new VoucherType(
-            $this->codigo,
-            $this->descripcion,
-            $this->estado,
-        );
-    }
-
-    public function mapFromDomainModel(VoucherType $voucherType): VoucherTypeEntity
-    {
-        $this->codigo = $voucherType->codigo;
-        $this->descripcion = $voucherType->descripcion;
-        $this->estado = $voucherType->estado;
-
-        return $this;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Operation\Domain;
 
-class OperationGetAllUseCase
+class GetOneOperationUseCase
 {
     private OperationRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class OperationGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(string $id): ?Operation
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getOne($id);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\VoucherType\Domain;
 
-class VoucherTypeCreateUseCase
+class CreateVoucherTypeUseCase
 {
     private VoucherTypeRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class VoucherTypeCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherType $voucherType): void
+    public function __invoke(VoucherType $voucherType): VoucherType
     {
-        $this->repository->insert($voucherType);
+        return $this->repository->insert($voucherType);
     }
 }

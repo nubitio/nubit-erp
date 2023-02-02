@@ -2,50 +2,66 @@
 
 namespace App\Operation\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\Operation\Domain\Operation;
 use App\Operation\Domain\OperationRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\Operation\Domain\Operation;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-class OperationRepository implements OperationRepositoryInterface
+readonly class OperationRepository implements OperationRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('operacion', 'descripcion', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $operation) {
+            $data[] = DataMapper::map($operation, Operation::class);
+        }
+
+        return new Paginator($data, $paginator);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(Operation $operation): void
+    public function getOne(string $id): ?Operation
     {
-        $entity = new OperationEntity();
-        $entity->mapFromDomainModel($operation);
+        /** @var ?OperationEntity $entity */
+        $entity = $this->entityManager->find(OperationEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Operation::class);
+    }
+
+    public function insert(Operation $operation): Operation
+    {
+        $entity = DataMapper::map($operation, OperationEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Operation::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(Operation $operation): void
+    public function update(Operation $operation): Operation
     {
         $entity = $this->entityManager->find(OperationEntity::class, $operation->operacion_id);
-        $entity->mapFromDomainModel($operation);
+        $entity = DataMapper::map($operation, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Operation::class);
     }
 
     public function delete(string $id): void

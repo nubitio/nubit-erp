@@ -2,7 +2,7 @@
 
 namespace App\Role\Domain;
 
-class RoleCreateUseCase
+class GetOneRoleUseCase
 {
     private RoleRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class RoleCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Role $role): void
+    public function __invoke(string $id): ?Role
     {
-        $this->repository->insert($role);
+        return $this->repository->getOne($id);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Company\Domain;
 
-class CompanyCreateUseCase
+class CreateCompanyUseCase
 {
     private CompanyRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CompanyCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Company $company): void
+    public function __invoke(Company $company): Company
     {
-        $this->repository->insert($company);
+        return $this->repository->insert($company);
     }
 }
