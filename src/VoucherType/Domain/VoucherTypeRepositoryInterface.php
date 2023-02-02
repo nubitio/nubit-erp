@@ -2,13 +2,18 @@
 
 namespace App\VoucherType\Domain;
 
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface VoucherTypeRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): PaginatorInterface;
 
-    public function insert(VoucherType $voucherType): void;
+    public function getOne(string $id): ?VoucherType;
 
-    public function update(VoucherType $voucherType): void;
+    public function insert(VoucherType $voucherType): VoucherType;
+
+    public function update(VoucherType $voucherType): VoucherType;
 
     public function delete(string $id): void;
 }

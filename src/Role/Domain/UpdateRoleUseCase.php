@@ -2,7 +2,7 @@
 
 namespace App\Role\Domain;
 
-class RoleUpdateUseCase
+class UpdateRoleUseCase
 {
     private RoleRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class RoleUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Role $role): void
+    public function __invoke(Role $role): Role
     {
-        $this->repository->update($role);
+        return $this->repository->update($role);
     }
 }

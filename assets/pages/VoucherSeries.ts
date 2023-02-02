@@ -62,7 +62,7 @@ export default class VoucherSeries {
             .type(FormType.ENTITY)
             .name('tipo_comprobante_id')
             .label('Tipo comprobante')
-            .url('api/voucher-type')
+            .url('api/voucher-types')
             .valueField('codigo')
             .textField('descripcion')
             .visible(false)

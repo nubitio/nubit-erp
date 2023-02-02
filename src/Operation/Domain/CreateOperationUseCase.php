@@ -2,7 +2,7 @@
 
 namespace App\Operation\Domain;
 
-class OperationUpdateUseCase
+class CreateOperationUseCase
 {
     private OperationRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class OperationUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Operation $operation): void
+    public function __invoke(Operation $operation): Operation
     {
-        $this->repository->update($operation);
+        return $this->repository->insert($operation);
     }
 }

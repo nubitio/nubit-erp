@@ -2,7 +2,7 @@
 
 namespace App\VoucherType\Domain;
 
-class VoucherTypeGetAllUseCase
+class DeleteVoucherTypeUseCase
 {
     private VoucherTypeRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class VoucherTypeGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(string $id): void
     {
-        return $this->repository->getAll($filter);
+        $this->repository->delete($id);
     }
 }

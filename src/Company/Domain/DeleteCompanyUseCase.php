@@ -2,7 +2,7 @@
 
 namespace App\Company\Domain;
 
-class CompanyUpdateUseCase
+class DeleteCompanyUseCase
 {
     private CompanyRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CompanyUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Company $company): void
+    public function __invoke(string $id): void
     {
-        $this->repository->update($company);
+        $this->repository->delete($id);
     }
 }

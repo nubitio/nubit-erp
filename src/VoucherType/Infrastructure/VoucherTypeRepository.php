@@ -2,50 +2,66 @@
 
 namespace App\VoucherType\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\VoucherType\Domain\VoucherType;
 use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\VoucherType\Domain\VoucherType;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
-class VoucherTypeRepository implements VoucherTypeRepositoryInterface
+readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('tipo_comprobante', 'descripcion', filter: $filter);
+        $paginator = $this->dataLoader->load($options);
+
+        $data = [];
+
+        foreach ($paginator->getIterator() as $voucherType) {
+            $data[] = DataMapper::map($voucherType, VoucherType::class);
+        }
+
+        return new Paginator($data, $paginator);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(VoucherType $voucherType): void
+    public function getOne(string $id): ?VoucherType
     {
-        $entity = new VoucherTypeEntity();
-        $entity->mapFromDomainModel($voucherType);
+        /** @var ?VoucherTypeEntity $entity */
+        $entity = $this->entityManager->find(VoucherTypeEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, VoucherType::class);
+    }
+
+    public function insert(VoucherType $voucherType): VoucherType
+    {
+        $entity = DataMapper::map($voucherType, VoucherTypeEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, VoucherType::class);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(VoucherType $voucherType): void
+    public function update(VoucherType $voucherType): VoucherType
     {
         $entity = $this->entityManager->find(VoucherTypeEntity::class, $voucherType->codigo);
-        $entity->mapFromDomainModel($voucherType);
+        $entity = DataMapper::map($voucherType, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, VoucherType::class);
     }
 
     public function delete(string $id): void

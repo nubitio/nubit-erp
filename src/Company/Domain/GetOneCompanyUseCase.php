@@ -2,7 +2,7 @@
 
 namespace App\Company\Domain;
 
-class CompanyDeleteUseCase
+class GetOneCompanyUseCase
 {
     private CompanyRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CompanyDeleteUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): void
+    public function __invoke(string $id): ?Company
     {
-        $this->repository->delete($id);
+        return $this->repository->getOne($id);
     }
 }

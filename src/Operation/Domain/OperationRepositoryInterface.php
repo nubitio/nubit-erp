@@ -2,13 +2,18 @@
 
 namespace App\Operation\Domain;
 
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface OperationRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): PaginatorInterface;
 
-    public function insert(Operation $operation): void;
+    public function getOne(string $id): ?Operation;
 
-    public function update(Operation $operation): void;
+    public function insert(Operation $operation): Operation;
+
+    public function update(Operation $operation): Operation;
 
     public function delete(string $id): void;
 }

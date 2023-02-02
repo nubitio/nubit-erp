@@ -2,7 +2,7 @@
 
 namespace App\Operation\Domain;
 
-class OperationCreateUseCase
+class DeleteOperationUseCase
 {
     private OperationRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class OperationCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Operation $operation): void
+    public function __invoke(string $id): void
     {
-        $this->repository->insert($operation);
+        $this->repository->delete($id);
     }
 }

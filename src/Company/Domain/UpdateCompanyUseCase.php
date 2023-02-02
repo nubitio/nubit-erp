@@ -2,7 +2,7 @@
 
 namespace App\Company\Domain;
 
-class CompanyGetAllUseCase
+class UpdateCompanyUseCase
 {
     private CompanyRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CompanyGetAllUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(?array $filter = null): array
+    public function __invoke(Company $company): Company
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->update($company);
     }
 }

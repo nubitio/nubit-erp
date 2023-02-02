@@ -13,20 +13,16 @@ export default class VoucherType {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'voucher-type/add',
-        EDIT: 'voucher-type/edit/',
-        DELETE: 'voucher-type/delete/',
-    }
+    static readonly API_URL = 'api/voucher-types';
 
     static readonly EVENTS = {
-        ADD: 'voucher-type:add',
-        EDIT: 'voucher-type:edit',
-        DELETE: 'voucher-type:delete',
-        SAVE: 'voucher-type:save',
-        CANCEL: 'voucher-type:cancel',
-        SUCCESS: 'voucher-type:success',
-        LOADING: 'voucher-type:loading',
+        ADD: 'voucherType:add',
+        EDIT: 'voucherType:edit',
+        DELETE: 'voucherType:delete',
+        SAVE: 'voucherType:save',
+        CANCEL: 'voucherType:cancel',
+        SUCCESS: 'voucherType:success',
+        LOADING: 'voucherType:loading',
     }
 
     constructor(container: string) {
@@ -67,8 +63,11 @@ export default class VoucherType {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'VoucherType',
-            url: 'voucher-type/get',
-            routes: VoucherType.ROUTES,
+            url: VoucherType.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: VoucherType.EVENTS,
         });
     }
@@ -78,8 +77,8 @@ export default class VoucherType {
             events: VoucherType.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: VoucherType.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: VoucherType.API_URL,
             events: VoucherType.EVENTS,
         });
     }

@@ -17,11 +17,7 @@ export default class Role {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'role/add',
-        EDIT: 'role/edit/',
-        DELETE: 'role/delete/',
-    }
+    static readonly API_URL = 'api/roles';
 
     static readonly EVENTS = {
         ADD: 'role:add',
@@ -46,6 +42,7 @@ export default class Role {
             .name('rol_id')
             .label('Rol id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -80,10 +77,13 @@ export default class Role {
 
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Role',
-            url: 'role/get',
-            toolbar: toolbar,
-            routes: Role.ROUTES,
+            url: Role.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Role.EVENTS,
+            toolbar: toolbar
         });
     }
 
@@ -92,8 +92,8 @@ export default class Role {
             events: Role.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Role.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Role.API_URL,
             events: Role.EVENTS,
         });
     }

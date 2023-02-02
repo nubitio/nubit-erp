@@ -2,7 +2,7 @@
 
 namespace App\VoucherType\Domain;
 
-class VoucherTypeUpdateUseCase
+class GetOneVoucherTypeUseCase
 {
     private VoucherTypeRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class VoucherTypeUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherType $voucherType): void
+    public function __invoke(string $id): ?VoucherType
     {
-        $this->repository->update($voucherType);
+        return $this->repository->getOne($id);
     }
 }

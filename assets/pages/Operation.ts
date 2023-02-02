@@ -13,11 +13,7 @@ export default class Operation {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'operation/add',
-        EDIT: 'operation/edit/',
-        DELETE: 'operation/delete/',
-    }
+    static readonly API_URL = 'api/operations';
 
     static readonly EVENTS = {
         ADD: 'operation:add',
@@ -79,8 +75,11 @@ export default class Operation {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Operation',
-            url: 'operation/get',
-            routes: Operation.ROUTES,
+            url: Operation.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Operation.EVENTS,
         });
     }
@@ -90,8 +89,8 @@ export default class Operation {
             events: Operation.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Operation.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Operation.API_URL,
             events: Operation.EVENTS,
         });
     }

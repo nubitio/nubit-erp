@@ -2,7 +2,7 @@
 
 namespace App\Role\Domain;
 
-class RoleDeleteUseCase
+class DeleteRoleUseCase
 {
     private RoleRepositoryInterface $repository;
 
