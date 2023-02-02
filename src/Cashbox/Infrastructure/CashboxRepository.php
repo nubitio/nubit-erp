@@ -6,6 +6,7 @@ use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
@@ -33,7 +34,7 @@ class CashboxRepository implements CashboxRepositoryInterface
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
 
-        return $entity->mapToDomainModel();
+        return DataMapper::map($entity, Cashbox::class);
     }
 
     public function getLast(string $localId, int $userId): ?Cashbox
@@ -44,7 +45,11 @@ class CashboxRepository implements CashboxRepositoryInterface
             'estado'     => 1,
         ]);
 
-        return $entity ? $entity->mapToDomainModel() : null;
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Cashbox::class);
     }
 
     /**
@@ -74,8 +79,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
     public function insert(Cashbox $cashbox): void
     {
-        $entity = new CashboxEntity();
-        $entity->mapFromDomainModel($cashbox);
+        $entity = DataMapper::map($cashbox, CashboxEntity::class);
         $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local_id);
         $entity->user = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario_id);
         $this->entityManager->persist($entity);
@@ -93,7 +97,7 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function update(Cashbox $cashbox): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $cashbox->caja_id);
-        $entity->mapFromDomainModel($cashbox);
+        DataMapper::map($cashbox, $entity);
         $this->entityManager->flush();
     }
 
