@@ -27,7 +27,6 @@ class DataMapper
             }
 
             try {
-                dump($key, $value, $output);
                 $reflectionProperty = new \ReflectionProperty(get_class($output), $key);
                 $ignore = $reflectionProperty->getAttributes(Ignore::class)[0] ?? null;
                 if (null !== $ignore) {
