@@ -2,21 +2,20 @@
 
 namespace App\VoucherType\Infrastructure;
 
-use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
-use App\VoucherType\Domain\VoucherType;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\VoucherType\Domain\VoucherType;
+use App\VoucherType\Domain\VoucherTypeRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -48,11 +47,10 @@ readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
 
     public function insert(VoucherType $voucherType): VoucherType
     {
-        dump($voucherType);
         $entity = DataMapper::map($voucherType, VoucherTypeEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
-        dump($entity);
+
         return DataMapper::map($entity, VoucherType::class);
     }
 
