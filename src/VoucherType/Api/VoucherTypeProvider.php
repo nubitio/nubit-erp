@@ -30,6 +30,6 @@ readonly class VoucherTypeProvider implements ProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['codigo']);
+        return $this->getOneUseCase->__invoke($uriVariables['id']);
     }
 }

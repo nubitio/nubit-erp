@@ -14,5 +14,5 @@ use App\VoucherType\Domain\VoucherType;
 class VoucherTypeDto extends VoucherType
 {
     #[ApiProperty(identifier: true)]
-    public ?string $codigo;
+    public ?int $id;
 }

@@ -2,6 +2,7 @@
 
 namespace App\Sale\Domain;
 
+use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
 use App\Invoice\Domain\Invoice;
@@ -63,6 +64,7 @@ class Sale
         #[SerializedName('recargo_consumo')]
         public ?int                $recargo_consumo = null,
         /** @var SaleDetail[] $details */
+        #[Ignore]
         #[SerializedName('details')]
         public array               $details = [],
         #[SerializedName('comprobante')]

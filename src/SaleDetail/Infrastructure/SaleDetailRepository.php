@@ -2,56 +2,30 @@
 
 namespace App\SaleDetail\Infrastructure;
 
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\SaleDetail\Domain\SaleDetail;
 use App\SaleDetail\Domain\SaleDetailRepositoryInterface;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
 
-class SaleDetailRepository implements SaleDetailRepositoryInterface
+readonly class SaleDetailRepository implements SaleDetailRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private DataLoader $dataLoader
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('movimiento_detalle', 'producto_id', filter: $filter);
-    }
+        $paginator = $this->dataLoader->load($options);
+        $data = [];
+        foreach ($paginator->getIterator() as $saleDetail) {
+            $data[] = DataMapper::map($saleDetail, SaleDetail::class);
+        }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function insert(SaleDetail $saledetail): void
-    {
-        $entity = new SaleDetailEntity();
-        $entity->mapFromDomainModel($saledetail);
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
-    }
-
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
-    public function update(SaleDetail $saledetail): void
-    {
-        $entity = $this->entityManager->find(SaleDetailEntity::class, $saledetail->movimiento_id);
-        $entity->mapFromDomainModel($saledetail);
-        $this->entityManager->flush();
-    }
-
-    public function delete(string $id): void
-    {
-        $entity = $this->entityManager->find(SaleDetailEntity::class, $id);
-        $this->entityManager->remove($entity);
-        $this->entityManager->flush();
+        return new Paginator($data, $paginator);
     }
 }

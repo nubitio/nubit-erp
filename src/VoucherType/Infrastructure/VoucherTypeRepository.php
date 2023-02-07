@@ -48,23 +48,24 @@ readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
 
     public function insert(VoucherType $voucherType): VoucherType
     {
+        dump($voucherType);
         $entity = DataMapper::map($voucherType, VoucherTypeEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
-
+        dump($entity);
         return DataMapper::map($entity, VoucherType::class);
     }
 
     public function update(VoucherType $voucherType): VoucherType
     {
-        $entity = $this->entityManager->find(VoucherTypeEntity::class, $voucherType->codigo);
+        $entity = $this->entityManager->find(VoucherTypeEntity::class, $voucherType->id);
         $entity = DataMapper::map($voucherType, $entity);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, VoucherType::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(VoucherTypeEntity::class, $id);
         $this->entityManager->remove($entity);

@@ -532,7 +532,7 @@ class MakeCrudCommand extends Command
         $viewTemplate = dirname(__FILE__) . '/skeleton/crud/view.tpl';
         $viewContent = file_get_contents($viewTemplate);
         $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
-        $viewContent = str_replace('{{kebabModule}}', StringUtils::toCamelCase($this->moduleName), $viewContent);
+        $viewContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $viewContent);
         $viewFields = '';
         foreach ($columns as $column) {
             if (in_array($column->getName(), $this->ignoredColumns)) {

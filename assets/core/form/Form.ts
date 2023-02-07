@@ -705,7 +705,7 @@ export default class Form {
             if (value === '') {
                 value = null;
             }
-            if (field.valueType === 'number') {
+            if (field.valueType === 'number' && value !== null) {
                 value = Number(value);
             }
         }
