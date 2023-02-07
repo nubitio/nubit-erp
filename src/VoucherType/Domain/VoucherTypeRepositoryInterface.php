@@ -15,5 +15,5 @@ interface VoucherTypeRepositoryInterface
 
     public function update(VoucherType $voucherType): VoucherType;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 }

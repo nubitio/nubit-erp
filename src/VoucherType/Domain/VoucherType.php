@@ -9,6 +9,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class VoucherType
 {
     public function __construct(
+        #[SerializedName('id')]
+        public ?int $id = null,
         #[SerializedName('codigo')]
         public ?string $codigo = null,
         #[SerializedName('descripcion')]

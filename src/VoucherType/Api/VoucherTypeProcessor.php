@@ -15,7 +15,7 @@ readonly class VoucherTypeProcessor implements ProcessorInterface
     public function __construct(
         public CreateVoucherTypeUseCase $createUseCase,
         public UpdateVoucherTypeUseCase $updateUseCase,
-        public DeleteVoucherTypeUseCase $deleteUseCase,
+        public DeleteVoucherTypeUseCase $deleteUseCase
     )
     {
     }
@@ -23,11 +23,11 @@ readonly class VoucherTypeProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?VoucherType
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->codigo);
+            $this->deleteUseCase->__invoke($data->id);
             return null;
         }
 
-        if($data->codigo) {
+        if($data->id) {
             return $this->updateUseCase->__invoke($data);
         }
 

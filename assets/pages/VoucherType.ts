@@ -33,6 +33,13 @@ export default class VoucherType {
     init() {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
+            .type(FormType.NONE)
+            .name('id')
+            .label('Id')
+            .required(true)
+            .valueType('number')
+            .build());
+        this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('codigo')
             .label('Codigo')

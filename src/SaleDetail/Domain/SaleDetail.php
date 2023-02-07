@@ -2,17 +2,21 @@
 
 namespace App\SaleDetail\Domain;
 
+use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Product\Domain\Product;
+use App\Sale\Domain\Sale;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
 class SaleDetail
 {
     public function __construct(
-        #[SerializedName('movimiento_id')]
-        public ?string $movimiento_id = null,
-        #[SerializedName('producto_id')]
-        public ?string $producto_id = null,
+        #[Ignore]
+        #[SerializedName('movimiento')]
+        public ?Sale $movimiento = null,
+        #[SerializedName('producto')]
+        public ?Product $producto = null,
         #[SerializedName('cantidad')]
         public ?float  $cantidad = null,
         #[SerializedName('precio_unitario')]

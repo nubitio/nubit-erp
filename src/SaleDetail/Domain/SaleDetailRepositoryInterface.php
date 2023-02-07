@@ -2,13 +2,10 @@
 
 namespace App\SaleDetail\Domain;
 
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+
 interface SaleDetailRepositoryInterface
 {
-    public function getAll(?array $filter = null): array;
-
-    public function insert(SaleDetail $saledetail): void;
-
-    public function update(SaleDetail $saledetail): void;
-
-    public function delete(string $id): void;
+    public function getAll(Options $options): PaginatorInterface;
 }
