@@ -75,6 +75,10 @@ class SaleController extends BaseController
                 $data = $connection->executeQuery('CALL sp_reporte_notasCredito(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
                 $reportFile = $xlsExporter->export($data, 'reporte_notas_de_credito');
                 break;
+            case 'sale-notes':
+                $data = $connection->executeQuery('CALL sp_reporte_notaventa(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $reportFile = $xlsExporter->export($data, 'reporte_notas_de_pedido');
+                break;
             default:
                 throw new \Exception('Reporte no encontrado');
 

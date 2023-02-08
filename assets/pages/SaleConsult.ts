@@ -35,8 +35,9 @@ export default class SaleConsult {
                     {value: 'sale-by-product', text: 'Ventas por producto'},
                     {value: 'detailed-sales', text: 'Ventas detalladas'},
                     {value: 'accounting-report', text: 'Ventas contable'},
-                    {value: 'voided-sales', text: 'Ventas anuladas'},
-                    {value: 'credit-notes', text: 'Notas de credito'},
+                    {value: 'voided-sales', text: 'Comunicaciones de baja'},
+                    {value: 'credit-notes', text: 'Notas de credito valorizado'},
+                    {value: 'sale-notes', text: 'Reporte de notas de pedido'},
                 ])
                 .required(true)
                 .build(),
