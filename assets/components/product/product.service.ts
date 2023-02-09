@@ -21,7 +21,7 @@ export class ProductService {
 
     getProducts(warehouseId: String): Observable<ApiResponse<ProductDto[]>> {
         //return httpClient.get<ProductDto[]>(`/api/warehouses/${warehouseId}/product`);
-        return httpClient.get<ProductDto[]>(`/api/products`);
+        return httpClient.get<ProductDto[]>(`/api/products?rows=1000`);
     }
 
     insert(values: any) {

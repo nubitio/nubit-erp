@@ -159,9 +159,11 @@ export default class Sale {
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.SELECT)
+            .type(FormType.ENTITY)
             .name('producto_id')
             .label('Producto')
+            .url('api/products?rows=1000')
+            .mode('remote')
             .valueField('producto_id')
             .textField('descripcion')
             .onSelect((record: any, field: any) => this.onSelectProduct(record, field))
@@ -189,15 +191,8 @@ export default class Sale {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((response) => {
-            this.detailFields.forEach((field) => {
-                if (field.name === 'producto_id') {
-                    field.data = response.data;
-                }
-            });
-            this.renderDataGrid();
-            this.renderDialog();
-        });
+        this.renderDataGrid();
+        this.renderDialog();
     }
 
     private renderDataGrid() {
@@ -243,11 +238,12 @@ export default class Sale {
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
             subGrid: {
-                url: 'api/sale/detail/',
+                url: 'api/sale/{id}/details',
                 columns: [
                     {
                         field: 'producto',
                         title: 'Producto',
+                        formatter: (value: any, row: any) => value['descripcion'],
                         width: 100
                     }, {
                         field: 'cantidad',
