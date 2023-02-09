@@ -218,9 +218,25 @@ export default class DataGrid {
             }
             gridOptions.onExpandRow = function (index: number, row: any) {
                 let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
+                let detailsUrl = subGrid.url.replace('{id}', row[ref.getIdField()]);
                 ddv.datagrid({
                     method: 'get',
-                    url: subGrid.url + row[ref.getIdField() ?? ''],
+                    url: detailsUrl,
+                    loader: (param: any, success: any, error: any) => {
+                        let options = ddv.datagrid('options');
+                        if (!options.url) {
+                            return false;
+                        }
+                        let url = options.url + '?' + $.param(param);
+                        httpClient.get(url).subscribe(
+                            (response) => {
+                                success({
+                                    total: Number(response.headers['x-total-count']),
+                                    rows: response.data
+                                });
+                            }
+                        )
+                    },
                     loadMsg: 'Procesando, por favor espere ...',
                     height: 'auto',
                     fit: false,
