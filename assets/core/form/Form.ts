@@ -495,6 +495,13 @@ export default class Form {
             method: 'get',
             loader: (param: any, success: any, error: any) => {
                 let url = field.url;
+                if (param.q) {
+                    url += '?filterRules=' + encodeURIComponent(JSON.stringify([{
+                        field: field.textField,
+                        op: 'contains',
+                        value: param.q
+                    }]));
+                }
                 httpClient.get(url).subscribe((response: any) => {
                     success(response.data);
                 });
@@ -504,6 +511,11 @@ export default class Form {
             textField: field.textField,
             panelHeight: 200,
             limitToList: true,
+            onSelect: (record: any) => {
+                if (field.onSelect) {
+                    field.onSelect(record, field);
+                }
+            },
             required: field.required,
         });
         this.formFields[field.name] = input;
@@ -546,7 +558,7 @@ export default class Form {
         for (let key in this.formFields) {
             let index = Number(key.split('-')[1]);
             if (index > 0) {
-                formFields.key = this.formFields[key];
+                formFields[key] = this.formFields[key];
             }
         }
         return formFields;

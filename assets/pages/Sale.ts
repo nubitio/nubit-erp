@@ -160,9 +160,9 @@ export default class Sale {
 
         this.detailFields.push(new FieldBuilder()
             .type(FormType.ENTITY)
-            .name('producto_id')
+            .name('producto')
             .label('Producto')
-            .url('api/products?rows=1000')
+            .url('api/products')
             .mode('remote')
             .valueField('producto_id')
             .textField('descripcion')

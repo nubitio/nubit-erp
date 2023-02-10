@@ -4,13 +4,14 @@ namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Infrastructure\InvoiceEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
+use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\Warehouse\Infrastructure\WarehouseEntity;
@@ -88,6 +89,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity->tipo_pago = $paymentMethod;
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
+            $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto->producto_id);
         }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
