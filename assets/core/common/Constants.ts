@@ -1,4 +1,5 @@
 export const Constants = {
+    API_URL: 'http://localhost:8080',
     TEXT_ADD: 'Nuevo',
     TEXT_EDIT: 'Editar',
     TEXT_DELETE: 'Eliminar',
@@ -16,5 +17,4 @@ export const Constants = {
     ICON_SEARCH: 'fas fa-search fa-1x text-info',
     ICON_INVOICE: 'fas fa-file-invoice fa-1x text-info',
     ICON_CLEAR: 'fas fa-times fa-1x text-danger',
-
 } as const;
