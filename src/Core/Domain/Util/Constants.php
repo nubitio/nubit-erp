@@ -8,7 +8,7 @@ abstract class Constants
     public const UPDATED_TEXT = 'Registro actualizado';
     public const DELETED_TEXT = 'Registro eliminado';
 
-    public const IMAGE_UPLOAD_DIR = 'uploads/images';
+    public const IMAGE_UPLOAD_DIR = 'images/';
 
     // Settings
     public const TAX = 'app_option_igv';
