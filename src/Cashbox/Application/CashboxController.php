@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Uid\Uuid;
 
 class CashboxController extends BaseController
 {
@@ -40,7 +39,7 @@ class CashboxController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
@@ -62,23 +61,23 @@ class CashboxController extends BaseController
         $data = [];
 
         $data['header'] = [
-            'caja_id'  => $cashBox->caja_id,
-            'fecha'    => $cashBox->apertura->format('Y-m-d'),
+            'caja_id' => $cashBox->caja_id,
+            'fecha' => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
         ];
-        $data['rows'] = $cashBox->items;
+        $data['rows'] = $cashBox->details;
         $data['footer'] = [
             [
                 'descripcion' => 'Ingresos',
-                'monto'       => $cashBox->getIncome(),
+                'monto' => $cashBox->getIncome(),
             ],
             [
                 'descripcion' => 'Egresos',
-                'monto'       => $cashBox->getOutcome(),
+                'monto' => $cashBox->getOutcome(),
             ],
             [
-                'descripcion' => 'Total',
-                'monto'       => $cashBox->getBalance(),
+                'descripcion' => 'Saldo',
+                'monto' => $cashBox->getBalance(),
             ],
         ];
 
@@ -88,27 +87,24 @@ class CashboxController extends BaseController
     #[Route('/cashbox/open', name: 'cashbox_open', methods: ['POST'])]
     public function open(Request $request, CashboxCreateUseCase $createUseCase): Response
     {
-        $cashBoxId = Uuid::v4();
         $cashBoxDetail = new CashboxDetail(
             uid: 1,
-            caja_id: $cashBoxId,
             tipo_id: 1,
             descripcion: 'Fondo de caja',
             monto: $request->request->get('monto_inicial'),
         );
 
         $cashBox = new Cashbox(
-            caja_id: $cashBoxId,
             local_id: $request->getSession()->get('branch_id'),
             apertura: new \DateTime(),
             usuario_id: $request->getSession()->get('user_id'),
             estado: 1,
-            items: [$cashBoxDetail],
+            details: [$cashBoxDetail],
         );
 
         $createUseCase($cashBox);
 
-        return $this->json(['success' => true, 'caja_id' => $cashBoxId]);
+        return $this->json(['success' => true]);
     }
 
     #[Route('/cashbox/add', name: 'cashbox_create', methods: ['POST'])]
@@ -144,14 +140,22 @@ class CashboxController extends BaseController
         return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
+    #[Route('/cashbox/{id}/details', name: 'cashbox_get', methods: ['GET'])]
+    public function getOne(CashboxGetOneUseCase $getOneUseCase, $id): Response
+    {
+        $cashBox = $getOneUseCase($id);
+
+        return $this->json($cashBox->details);
+    }
+
     #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]
     public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
-            'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title' => 'Reporte de caja',
+            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
         ]);
 
@@ -165,8 +169,8 @@ class CashboxController extends BaseController
         $infoReceipt = $getInfoReceiptUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
-            'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title' => 'Reporte de caja',
+            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);
