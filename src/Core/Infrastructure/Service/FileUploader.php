@@ -2,32 +2,36 @@
 
 namespace App\Core\Infrastructure\Service;
 
+use League\Flysystem\FilesystemException;
+use League\Flysystem\FilesystemOperator;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
-class FileUploader
+final readonly class FileUploader
 {
-    private SluggerInterface $slugger;
-
-    public function __construct(SluggerInterface $slugger)
+    public function __construct(
+        private FilesystemOperator $uploadsFilesystem,
+        private SluggerInterface   $slugger
+    )
     {
-        $this->slugger = $slugger;
     }
 
     /**
-     * @throws \Exception
+     * @throws FilesystemException
      */
     public function upload(UploadedFile $file, string $targetDir): string
     {
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
         $safeName = $this->slugger->slug($originalName);
-        $fileName = $safeName.'-'.uniqid().'.'.$file->guessExtension();
+        $fileName = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
 
-        try {
-            $file->move($targetDir, $fileName);
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage());
+        $stream = fopen($file->getPathname(), 'r');
+
+        $this->uploadsFilesystem->writeStream($targetDir . '/' . $fileName, $stream);
+
+        if (is_resource($stream)) {
+            fclose($stream);
         }
 
         return $fileName;
