@@ -103,7 +103,7 @@ export default class CashboxConsult {
             events: CashboxConsult.EVENTS,
             toolbar: toolbar,
             subGrid: {
-                url: 'api/cashbox/detail/',
+                url: 'cashbox/{id}/details',
                 columns: [
                     {field: 'tipo_id', title: 'Tipo', formatter: this.typeFormatter},
                     {field: 'descripcion', title: 'Concepto'},

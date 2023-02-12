@@ -27,9 +27,9 @@ class Cashbox
         public ?Branch    $local = null,
         public ?User      $user = null,
         /**
-         * @var CashboxDetail[] $items
+         * @var CashboxDetail[] $details
          */
-        public array      $items = [],
+        public array      $details = [],
     )
     {
     }
@@ -37,9 +37,9 @@ class Cashbox
     public function getIncome(): float
     {
         $income = 0;
-        foreach ($this->items as $item) {
-            if (1 == $item->tipo_id) {
-                $income += $item->monto;
+        foreach ($this->details as $detail) {
+            if (1 == $detail->tipo_id) {
+                $income += $detail->monto;
             }
         }
 
@@ -49,9 +49,9 @@ class Cashbox
     public function getOutcome(): float
     {
         $outcome = 0;
-        foreach ($this->items as $item) {
-            if (2 == $item->tipo_id) {
-                $outcome += $item->monto;
+        foreach ($this->details as $detail) {
+            if (2 == $detail->tipo_id) {
+                $outcome += $detail->monto;
             }
         }
 

@@ -82,15 +82,10 @@ class CashboxRepository implements CashboxRepositoryInterface
         $entity = DataMapper::map($cashbox, CashboxEntity::class);
         $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local_id);
         $entity->user = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario_id);
-        $this->entityManager->persist($entity);
-        if ($cashbox->items) {
-            foreach ($cashbox->items as $item) {
-                $itemEntity = new CashboxDetailEntity();
-                $itemEntity->mapFromDomainModel($item);
-                $itemEntity->cashbox = $entity;
-                $this->entityManager->persist($itemEntity);
-            }
+        foreach ($entity->details as $detail) {
+            $detail->cashbox = $entity;
         }
+        $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
 
