@@ -8,6 +8,7 @@ use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Media\Infrastructure\MediaEntity;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,8 @@ readonly class ProductRepository implements ProductRepositoryInterface
         $entity = DataMapper::map($product, ProductEntity::class);
         $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria->categoria_id);
         $entity->categoria = $category;
+        $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
+        $entity->imagen = $image;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 

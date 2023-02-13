@@ -5,7 +5,6 @@ namespace App\Sale\Domain;
 use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
-use App\Invoice\Domain\Invoice;
 use App\PaymentMethod\Domain\PaymentMethod;
 use App\SaleDetail\Domain\SaleDetail;
 use App\Warehouse\Domain\Warehouse;
@@ -63,12 +62,14 @@ class Sale
         public ?int                $igv = null,
         #[SerializedName('recargo_consumo')]
         public ?int                $recargo_consumo = null,
+        #[SerializedName('invoice')]
+        public ?string             $invoice = null,
+        #[SerializedName('total')]
+        public ?float              $total = null,
         /** @var SaleDetail[] $details */
         #[Ignore]
         #[SerializedName('details')]
-        public array               $details = [],
-        #[SerializedName('comprobante')]
-        public ?Invoice            $invoice = null
+        public array               $details = []
     )
     {
     }

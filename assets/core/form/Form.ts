@@ -6,6 +6,7 @@ import {bus} from "../event/EventBus";
 import {Event} from "../event/Event";
 import {httpClient} from "../http/HttpClient";
 import NumberUtils from "../utils/NumberUtils";
+import {Constants} from "../common/Constants";
 
 export default class Form {
     private container: HTMLElement;
@@ -88,7 +89,6 @@ export default class Form {
         form.classList.add('fm');
         form.setAttribute('id', 'form' + this.randomId);
         form.setAttribute('method', 'post');
-        form.setAttribute('enctype', 'multipart/form-data');
         this.container.appendChild(form);
         this.form = $('#' + form.id);
 
@@ -344,12 +344,53 @@ export default class Form {
 
     buildFileInput(field: Field) {
         let input = $('#' + field.name);
+        let hiddenInput = document.createElement('input');
+        hiddenInput.setAttribute('type', 'hidden');
+        hiddenInput.setAttribute('name', field.name);
+        hiddenInput.setAttribute('id', field.name + '-hidden');
+        input[0].parentNode?.appendChild(hiddenInput);
+
         input.filebox({
             width: '100%',
             label: field.label,
             labelPosition: 'top',
             buttonText: 'Seleccionar',
             required: field.required,
+            icons: [{
+                iconCls: Constants.ICON_CLEAR,
+                handler: () => {
+                    if (!field.defaultValue) {
+                        return;
+                    }
+                    bus.emit(new Event(this.events.LOADING, true));
+                    httpClient.delete('api/media/' + field.defaultValue).subscribe(() => {
+                        field.defaultValue = null;
+                        input.filebox('clear');
+                        hiddenInput.setAttribute('value', '');
+                    }).add(() => {
+                        bus.emit(new Event(this.events.LOADING, false));
+                    });
+                }
+            }],
+            onChange: (newValue: string, oldValue: string) => {
+                let file = input.filebox('files')[0];
+                if (file) {
+                    let formData = new FormData();
+                    formData.append('file', file);
+                    bus.emit(new Event(this.events.LOADING, true));
+                    httpClient.post('api/media', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }).subscribe((response: any) => {
+                        field.defaultValue = response.data.id;
+                        input.filebox('setValue', response.data.id);
+                        hiddenInput.setAttribute('value', response.data.id);
+                    }).add(() => {
+                        bus.emit(new Event(this.events.LOADING, false));
+                    });
+                }
+            }
         });
         this.formFields[field.name] = input;
     }
@@ -683,6 +724,7 @@ export default class Form {
             case FormType.CURRENCY:
                 value = Number(value);
                 break;
+            case FormType.FILE:
             case FormType.ENTITY:
                 let id = field.valueField || 'id';
                 if (value === '') {

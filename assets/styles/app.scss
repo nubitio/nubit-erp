@@ -487,6 +487,8 @@ label {
 .textbox-addon {
   display: table;
   text-align: center;
+  background: var(--background-color);
+  border-left: 1px solid var(--border-color);
 }
 
 .textbox-icon {

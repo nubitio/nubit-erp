@@ -4,6 +4,7 @@ namespace App\Product\Domain;
 
 use App\Category\Domain\Category;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Media\Domain\Media;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -11,29 +12,29 @@ class Product
 {
     public function __construct(
         #[SerializedName('producto_id')]
-        public ?string $producto_id = null,
+        public ?string   $producto_id = null,
         #[SerializedName('codigo')]
-        public ?string $codigo = null,
+        public ?string   $codigo = null,
         #[SerializedName('tipo_id')]
-        public ?int $tipo_id = null,
+        public ?int      $tipo_id = null,
         #[SerializedName('descripcion')]
-        public ?string $descripcion = null,
+        public ?string   $descripcion = null,
         #[SerializedName('categoria')]
         public ?Category $categoria = null,
         #[SerializedName('unidad_id')]
-        public ?string $unidad_id = null,
+        public ?string   $unidad_id = null,
         #[SerializedName('destino_id')]
-        public ?int $destino_id = null,
+        public ?int      $destino_id = null,
         #[SerializedName('stock_minimo')]
-        public ?int $stock_minimo = null,
+        public ?int      $stock_minimo = null,
         #[SerializedName('precio')]
-        public ?string $precio = null,
+        public ?string   $precio = null,
         #[SerializedName('precio_compra')]
-        public ?string $precio_compra = null,
+        public ?string   $precio_compra = null,
         #[SerializedName('imagen')]
-        public ?string $imagen = null,
+        public ?Media    $imagen = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool     $estado = false
     )
     {
     }

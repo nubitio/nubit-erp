@@ -80,6 +80,10 @@ class SaleEntity
         public ?int                 $igv = null,
         #[Column(name: 'recargo_consumo', type: 'integer')]
         public ?int                 $recargo_consumo = null,
+        #[Column(name: 'invoice', type: 'string')]
+        public ?string              $invoice = null,
+        #[Column(name: 'total', type: 'decimal')]
+        public ?float               $total = null,
         /** @var SaleDetailEntity[] $details */
         #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
         public Collection|array     $details = new ArrayCollection()

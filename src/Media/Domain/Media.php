@@ -10,7 +10,7 @@ class Media
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int $id = null,
+        public ?string $id = null,
         #[SerializedName('path')]
         public ?string $path = null
     )

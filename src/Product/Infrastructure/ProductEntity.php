@@ -4,6 +4,7 @@ namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Media\Infrastructure\MediaEntity;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\Entity;
@@ -11,6 +12,7 @@ use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
+use Doctrine\ORM\Mapping\OneToOne;
 use Doctrine\ORM\Mapping\Table;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
@@ -44,8 +46,9 @@ class ProductEntity
         public ?string $precio = null,
         #[Column(name: "precio_compra", type: "decimal")]
         public ?string $precio_compra = null,
-        #[Column(name: "imagen", type: "string")]
-        public ?string $imagen = null,
+        #[ManyToOne(targetEntity: MediaEntity::class)]
+        #[JoinColumn(name: "imagen", referencedColumnName: "id")]
+        public ?MediaEntity $imagen = null,
         #[Column(name: "estado", type: "integer")]
         public ?bool   $estado = null
     )

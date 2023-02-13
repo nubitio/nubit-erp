@@ -104,9 +104,8 @@ export default class Sale {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
-            .name('comprobante')
+            .name('invoice')
             .label('Comprobante')
-            .formatter(SharedUtils.invoiceFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -114,17 +113,10 @@ export default class Sale {
             .label('Total')
             .align('right')
             .formatter((value: any, row: any) => {
-                if (row['comprobante']) {
-                    return Intl.NumberFormat('es-PE', {
-                        style: 'currency',
-                        currency: 'PEN'
-                    }).format(row['comprobante']['total']);
-                } else {
-                    let total = row['details'].reduce((total: number, detail: any) => {
-                        return total + detail['precio_total'];
-                    }, 0);
-                    return Intl.NumberFormat('es-PE', {style: 'currency', currency: 'PEN'}).format(total);
-                }
+                return Intl.NumberFormat('es-PE', {
+                    style: 'currency',
+                    currency: 'PEN'
+                }).format(value);
             })
             .build());
         this.fields.push(new FieldBuilder()
