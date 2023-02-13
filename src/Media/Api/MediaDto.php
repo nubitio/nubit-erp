@@ -44,5 +44,5 @@ use App\Media\Domain\Media;
 class MediaDto extends Media
 {
     #[ApiProperty(identifier: true)]
-    public ?int $id;
+    public ?string $id;
 }

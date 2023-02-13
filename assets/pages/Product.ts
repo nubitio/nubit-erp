@@ -86,7 +86,7 @@ export default class Product {
             .type(FormType.FILE)
             .name('imagen')
             .label('Imagen')
-            .formatter((val: any, row: any) => SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/'))
+            .formatter((val: any, row: any) => SharedUtils.imageFormatter(val?.path, row['descripcion']))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)

@@ -17,10 +17,10 @@ class InvoiceUpdateCommand extends Command
 {
     private InvoiceUpdater $invoiceUpdater;
 
-    public function __construct(InvoiceUpdater $invoiceUpdater)
+    public function __construct(InvoiceUpdater $salesUpdater)
     {
         parent::__construct();
-        $this->invoiceUpdater = $invoiceUpdater;
+        $this->invoiceUpdater = $salesUpdater;
     }
 
     protected function configure()
