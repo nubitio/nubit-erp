@@ -106,6 +106,7 @@ export default class Sale {
             .type(FormType.NONE)
             .name('invoice')
             .label('Comprobante')
+            .formatter(SharedUtils.invoiceFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
