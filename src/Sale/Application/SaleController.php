@@ -96,7 +96,7 @@ class SaleController extends BaseController
             $qr = (new QRCode())->render($sale['header']['doc_qr_data']);
         }
         $logo = base64_encode(file_get_contents('assets/images/logo.png'));
-        $content = $this->render('sale/report/invoice.html.twig', [
+        $content = $this->renderView('sale/report/invoice.html.twig', [
             'logo' => "data:image/png;base64,{$logo}",
             'qr'   => $qr,
             'sale' => $sale,
@@ -105,7 +105,7 @@ class SaleController extends BaseController
         $preview = $request->get('preview');
 
         if ($preview) {
-            return $content;
+            return new Response($content);
         }
 
         $pageHeight = 150;
@@ -119,7 +119,7 @@ class SaleController extends BaseController
 
         $pdfExporter = new PdfExporter();
 
-        return $pdfExporter->export($content->getContent(), 'invoice', [
+        return $pdfExporter->export($content, 'invoice', [
             'no-outline',
             'page-width'   => '80mm',
             'page-height'  => $pageHeight . 'mm',

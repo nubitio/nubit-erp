@@ -63,7 +63,7 @@ export class SharedUtils {
 
     static voucherFormatter(value: string | null, row: any) {
         if (value !== null) {
-            return '<a href="/sale/order/' + row['movimiento_id'] + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row['serie'] + '-' + row['numero'] + '</a>';
+            return '<a href="/sale/pdf/' + row['movimiento_id'] + '" class="text-reset" target="_blank"><i class="fas fa-receipt fa-lg"></i> ' + row['serie'] + '-' + row['numero'] + '</a>';
         } else {
             return '';
         }
@@ -71,7 +71,7 @@ export class SharedUtils {
 
     static invoiceFormatter(value: any | null | undefined, row: any) {
         if (value !== null && value !== undefined) {
-            return '<a href="/invoice/' + row['movimiento_id'] + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + value['serie'] + '-' + value['numero'] + '</a>';
+            return '<a href="/invoice/' + row['movimiento_id'] + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + value + '</a>';
         } else {
             return '';
         }
