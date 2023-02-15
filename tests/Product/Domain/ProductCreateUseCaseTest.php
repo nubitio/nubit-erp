@@ -2,8 +2,10 @@
 
 namespace App\Tests\Product\Domain;
 
+use App\Category\Domain\Category;
+use App\Media\Domain\Media;
+use App\Product\Domain\CreateProductUseCase;
 use App\Product\Domain\Product;
-use App\Product\Domain\ProductCreateUseCase;
 use App\Product\Domain\ProductRepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -16,19 +18,19 @@ class ProductCreateUseCaseTest extends TestCase
             ->method('insert')
             ->with($this->isInstanceOf(Product::class));
 
-        $productCreateUseCase = new ProductCreateUseCase($productRepository);
+        $productCreateUseCase = new CreateProductUseCase($productRepository);
         $product = new Product(
             '1',
             'Product code',
             2,
             'Product description',
-            '10',
+            new Category('1', 'Category name'),
             '10',
             10,
             10,
             10.0,
             10.0,
-            '/path/to/image',
+            new Media('1', 'Media name'),
             1,
         );
 

@@ -66,8 +66,8 @@ class SaleEntity
         public ?bool                $is_consume = null,
         #[Column(name: 'caja_id', type: 'string')]
         public ?string              $caja_id = null,
-        #[Column(name: 'estado', type: 'boolean')]
-        public ?bool                $estado = null,
+        #[Column(name: 'estado', type: 'integer')]
+        public ?int                 $estado = null,
         #[Column(name: 'date_created', type: 'datetime')]
         public ?\DateTimeInterface  $date_created = null,
         #[Column(name: 'date_updated', type: 'datetime')]

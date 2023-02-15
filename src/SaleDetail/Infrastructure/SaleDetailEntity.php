@@ -13,7 +13,11 @@ use Doctrine\ORM\Mapping as ORM;
 class SaleDetailEntity
 {
     public function __construct(
-        #[ORM\Id, ORM\ManyToOne(targetEntity: SaleEntity::class, inversedBy: 'details')]
+        #[ORM\Id]
+        #[ORM\GeneratedValue]
+        #[ORM\Column(name: 'id', type: 'integer')]
+        public ?int           $id = null,
+        #[ORM\ManyToOne(targetEntity: SaleEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
         public ?SaleEntity    $movimiento = null,
         #[ORM\ManyToOne(targetEntity: ProductEntity::class)]

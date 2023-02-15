@@ -2,13 +2,15 @@
 
 namespace App\Invoice\Domain;
 
+use App\Sale\Domain\Sale;
+
 interface InvoiceRepositoryInterface
 {
     public function getAll(?array $filter = null): array;
 
     public function getOne(string $saleId): Invoice;
 
-    public function create(string $saleId, string $localId): void;
+    public function create(Sale $sale, string $localId): void;
 
     public function insert(Invoice $invoice): void;
 
