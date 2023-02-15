@@ -49,7 +49,7 @@ class Sale
         #[SerializedName('caja_id')]
         public ?string             $caja_id = null,
         #[SerializedName('estado')]
-        public ?bool               $estado = false,
+        public ?int                $estado = null,
         #[SerializedName('date_created')]
         public ?\DateTimeInterface $date_created = null,
         #[SerializedName('date_updated')]

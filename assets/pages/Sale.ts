@@ -392,7 +392,7 @@ export default class Sale {
             messenger.show('Información', 'Seleccione una venta para generar el comprobante');
             return;
         }
-        if (row['comprobante_id']) {
+        if (row['invoice']) {
             messenger.show('Información', 'El comprobante ya fue generado');
             return;
         }
@@ -401,16 +401,19 @@ export default class Sale {
             return;
         }
         let confirmMessage = '';
-        if (row['cliente_id'].length === 11) {
+        if (row['cliente']['ruc'].length === 11) {
             confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
         } else {
             confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
         }
         messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
             if (r) {
+                ref.dataGrid.showLoading('Generando comprobante...')
                 ref.saleService.makeInvoice(row['movimiento_id']).subscribe((data) => {
                     messenger.show('Información', 'Comprobante generado');
                     ref.dataGrid.reload();
+                }).add(() => {
+                    ref.dataGrid.hideLoading();
                 });
             }
         })

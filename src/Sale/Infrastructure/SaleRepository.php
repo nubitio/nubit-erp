@@ -53,7 +53,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
 
         return [
-            'header'  => $header,
+            'header' => $header,
             'details' => $details,
         ];
     }
@@ -69,9 +69,6 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
         /** @var Sale $sale */
         $sale = DataMapper::map($entity, Sale::class);
-        /** @var ?InvoiceEntity $invoice */
-        $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $sale->movimiento_id]);
-        $sale->invoice = $invoice ? DataMapper::map($invoice, Invoice::class) : null;
 
         return $sale;
     }
@@ -87,10 +84,13 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity->cliente = $customer;
         $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
         $entity->tipo_pago = $paymentMethod;
+        $total = 0;
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
             $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto->producto_id);
+            $total += $detail->precio_total;
         }
+        $entity->total = $total;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -102,6 +102,12 @@ readonly class SaleRepository implements SaleRepositoryInterface
         /** @var SaleEntity $entity */
         $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
         $entity = DataMapper::map($sale, $entity);
+        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen->almacen_id);
+        $entity->almacen = $warehouse;
+        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+        $entity->cliente = $customer;
+        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+        $entity->tipo_pago = $paymentMethod;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Sale::class);

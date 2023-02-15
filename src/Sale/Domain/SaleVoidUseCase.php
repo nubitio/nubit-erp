@@ -44,6 +44,8 @@ class SaleVoidUseCase
         $sale->updated_by = $userId;
         $sale->date_updated = new \DateTime();
 
+        dump($sale);
+
         $this->saleRepository->update($sale);
     }
 
