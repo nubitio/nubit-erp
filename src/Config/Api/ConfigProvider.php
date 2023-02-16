@@ -12,8 +12,13 @@ use App\Config\Infrastructure\ConfigEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
+/**
+ * @implements ApiProviderInterface<Config>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class ConfigProvider implements ApiProviderInterface
 {
     public function __construct(

@@ -10,12 +10,17 @@ use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Sale\Domain\GetAllSaleUseCase;
 use App\Sale\Domain\GetOneSaleUseCase;
 use App\Sale\Domain\Sale;
 use App\Sale\Infrastructure\SaleEntity;
 
+/**
+ * @implements ApiProviderInterface<Sale>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class SaleProvider implements ApiProviderInterface
 {
     public function __construct(

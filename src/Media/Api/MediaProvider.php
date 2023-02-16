@@ -5,7 +5,11 @@ namespace App\Media\Api;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Media\Domain\GetOneMediaUseCase;
+use App\Media\Domain\Media;
 
+/**
+ * @implements ApiProviderInterface<Media>
+ */
 readonly class MediaProvider implements ApiProviderInterface
 {
     public function __construct(

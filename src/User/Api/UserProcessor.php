@@ -10,6 +10,9 @@ use App\User\Domain\DeleteUserUseCase;
 use App\User\Domain\UpdateUserUseCase;
 use App\User\Domain\User;
 
+/**
+ * @implements ApiProcessorInterface<User>
+ */
 readonly class UserProcessor implements ApiProcessorInterface
 {
     public function __construct(

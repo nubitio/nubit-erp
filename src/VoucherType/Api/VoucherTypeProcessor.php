@@ -10,6 +10,9 @@ use App\VoucherType\Domain\DeleteVoucherTypeUseCase;
 use App\VoucherType\Domain\UpdateVoucherTypeUseCase;
 use App\VoucherType\Domain\VoucherType;
 
+/**
+ * @implements ApiProcessorInterface<VoucherType>
+ */
 readonly class VoucherTypeProcessor implements ApiProcessorInterface
 {
     public function __construct(

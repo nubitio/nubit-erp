@@ -10,6 +10,9 @@ use App\Config\Domain\ConfigDeleteUseCase;
 use App\Config\Domain\ConfigUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
+/**
+ * @implements ApiProcessorInterface<Config>
+ */
 readonly class ConfigProcessor implements ApiProcessorInterface
 {
     public function __construct(

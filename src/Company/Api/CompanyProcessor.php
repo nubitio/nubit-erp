@@ -10,6 +10,9 @@ use App\Company\Domain\DeleteCompanyUseCase;
 use App\Company\Domain\UpdateCompanyUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
+/**
+ * @implements ApiProcessorInterface<Company>
+ */
 readonly class CompanyProcessor implements ApiProcessorInterface
 {
     public function __construct(

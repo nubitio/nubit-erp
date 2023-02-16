@@ -11,8 +11,13 @@ use App\Company\Infrastructure\CompanyEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
+/**
+ * @implements ApiProviderInterface<Company>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class CompanyProvider implements ApiProviderInterface
 {
     public function __construct(

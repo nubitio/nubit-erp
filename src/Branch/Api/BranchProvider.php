@@ -12,8 +12,13 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
+/**
+ * @implements ApiProviderInterface<Branch>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class BranchProvider implements ApiProviderInterface
 {
     public function __construct(

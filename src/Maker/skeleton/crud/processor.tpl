@@ -10,6 +10,9 @@ use App\{{module}}\Domain\Create{{module}}UseCase;
 use App\{{module}}\Domain\Delete{{module}}UseCase;
 use App\{{module}}\Domain\Update{{module}}UseCase;
 
+/**
+ * @implements ApiProcessorInterface<{{module}}>
+ */
 readonly class {{module}}Processor implements ApiProcessorInterface
 {
     public function __construct(

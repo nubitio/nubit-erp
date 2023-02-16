@@ -2,8 +2,8 @@
 
 namespace App\Category\Domain;
 
-use ApiPlatform\State\Pagination\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 
 class CategoryGetAllUseCase
 {

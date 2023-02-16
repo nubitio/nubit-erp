@@ -8,6 +8,7 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Warehouse\Domain\GetAllByBranchUseCase;
 use App\Warehouse\Domain\Warehouse;
@@ -15,6 +16,10 @@ use App\Warehouse\Domain\WarehouseGetAllUseCase;
 use App\Warehouse\Domain\WarehouseGetOneUseCase;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 
+/**
+ * @implements ApiProviderInterface<Warehouse>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class WarehouseProvider implements ApiProviderInterface
 {
     public function __construct(

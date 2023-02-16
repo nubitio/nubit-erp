@@ -11,6 +11,9 @@ use App\Customer\Domain\CustomerDeleteUseCase;
 use App\Customer\Domain\CustomerGetOneUseCase;
 use App\Customer\Domain\CustomerUpdateUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Customer>
+ */
 readonly class CustomerProcessor implements ApiProcessorInterface
 {
     public function __construct(

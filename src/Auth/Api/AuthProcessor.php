@@ -10,6 +10,9 @@ use App\User\Domain\GetOneUserByUsernameUseCase;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
+/**
+ * @implements ApiProcessorInterface<Token>
+ */
 readonly class AuthProcessor implements ApiProcessorInterface
 {
     public function __construct(

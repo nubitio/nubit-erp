@@ -10,6 +10,9 @@ use App\Media\Domain\DeleteMediaUseCase;
 use App\Media\Domain\Media;
 use App\Media\Domain\UpdateMediaUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Media>
+ */
 readonly class MediaProcessor implements ApiProcessorInterface
 {
     public function __construct(
