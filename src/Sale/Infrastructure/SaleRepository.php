@@ -5,11 +5,8 @@ namespace App\Sale\Infrastructure;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
-use App\Invoice\Domain\Invoice;
-use App\Invoice\Infrastructure\InvoiceEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
@@ -32,16 +29,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $sale) {
-            /** @var Sale $sale */
-            $data[] = DataMapper::map($sale, Sale::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     /**
@@ -60,7 +48,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function getOne(string $id): ?Sale
     {
-        /** @var SaleEntity $entity */
+        /** @var ?SaleEntity $entity */
         $entity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
 
         if (!$entity) {

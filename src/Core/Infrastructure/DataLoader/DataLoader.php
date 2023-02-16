@@ -2,8 +2,8 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
-use ApiPlatform\Doctrine\Orm\Paginator;
-use ApiPlatform\State\Pagination\PaginatorInterface;
+use ApiPlatform\Doctrine\Orm\Paginator as ApiPlatformPaginator;
+use App\Core\Domain\Util\DataMapper;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
@@ -16,6 +16,9 @@ readonly class DataLoader
     {
     }
 
+    /**
+     * @throws \Exception
+     */
     public function load(Options $options): PaginatorInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
@@ -35,7 +38,13 @@ readonly class DataLoader
             ->setFirstResult($options->rows * ($options->page - 1))
             ->setMaxResults($options->rows);
 
-        return new Paginator($paginator);
+        $data = [];
+
+        foreach ($paginator->getIterator() as $item) {
+            $data[] = DataMapper::map($item, $options->mapping);
+        }
+
+        return new Paginator($data, new ApiPlatformPaginator($paginator));
     }
 
     /**

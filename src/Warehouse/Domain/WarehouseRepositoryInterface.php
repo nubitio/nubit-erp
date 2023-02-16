@@ -17,5 +17,6 @@ interface WarehouseRepositoryInterface
 
     public function delete(string $id): void;
 
+    /** @return Warehouse[] */
     public function getAllByBranch(string $branchId): array;
 }

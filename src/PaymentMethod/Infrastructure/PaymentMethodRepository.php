@@ -2,36 +2,26 @@
 
 namespace App\PaymentMethod\Infrastructure;
 
-use App\PaymentMethod\Domain\PaymentMethodRepositoryInterface;
-use App\PaymentMethod\Domain\PaymentMethod;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\PaymentMethod\Domain\PaymentMethod;
+use App\PaymentMethod\Domain\PaymentMethodRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $paymentMethod) {
-            $data[] = DataMapper::map($paymentMethod, PaymentMethod::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?PaymentMethod

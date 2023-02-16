@@ -6,5 +6,5 @@ use Doctrine\ORM\QueryBuilder;
 
 interface FilterInterface
 {
-    public function apply(QueryBuilder $queryBuilder);
+    public function apply(QueryBuilder $queryBuilder): void;
 }

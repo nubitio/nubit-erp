@@ -3,7 +3,6 @@
 namespace App\WebClientPrint;
 
 use App\Base\BaseController;
-use App\Core\Domain\Util\SaleItem;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleGetOneById;

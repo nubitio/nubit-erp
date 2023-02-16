@@ -6,8 +6,9 @@ readonly class Options
 {
     public function __construct(
         public string $entity,
-        public string $page,
-        public string $rows,
+        public string $mapping,
+        public int $page,
+        public int $rows,
         /** @var JoinRule[] $joins */
         public array  $joins = [],
         /** @var SortRule[] $sort */

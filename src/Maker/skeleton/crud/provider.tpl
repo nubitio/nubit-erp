@@ -8,6 +8,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
+use App\{{module}}\Domain\{{module}};
 use App\{{module}}\Domain\GetAll{{module}}UseCase;
 use App\{{module}}\Domain\GetOne{{module}}UseCase;
 use App\{{module}}\Infrastructure\{{module}}Entity;
@@ -25,7 +26,7 @@ readonly class {{module}}Provider implements ProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addSort($context, new SortRule('{{sortColumn}}', '{{sortOrder}}'));
-            $options = OptionsBuilder::build($context, {{module}}Entity::class);
+            $options = OptionsBuilder::build($context, {{module}}Entity::class, {{module}}::class);
 
             return $this->getAllUseCase->__invoke($options);
         }

@@ -2,13 +2,11 @@
 
 namespace App\Company\Infrastructure;
 
-use App\Company\Domain\CompanyRepositoryInterface;
 use App\Company\Domain\Company;
+use App\Company\Domain\CompanyRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -16,22 +14,14 @@ readonly class CompanyRepository implements CompanyRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $company) {
-            $data[] = DataMapper::map($company, Company::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Company

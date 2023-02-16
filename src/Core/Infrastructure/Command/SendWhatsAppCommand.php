@@ -14,7 +14,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class SendWhatsAppCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Send a whatsapp to a user');
     }
@@ -29,7 +29,7 @@ class SendWhatsAppCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: '.$e->getMessage());
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }

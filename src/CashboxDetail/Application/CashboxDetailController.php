@@ -34,7 +34,7 @@ class CashboxDetailController extends BaseController
     }
 
     #[Route('/cashbox-detail/edit/{id}', name: 'cashbox-detail_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, CashboxDetailUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, CashboxDetailUpdateUseCase $updateUseCase, int $id): Response
     {
         $request->request->add(['id' => $id]);
         /**
@@ -47,7 +47,7 @@ class CashboxDetailController extends BaseController
     }
 
     #[Route('/cashbox-detail/delete/{id}', name: 'cashbox-detail_delete', methods: ['DELETE', 'POST'])]
-    public function delete(CashboxDetailDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(CashboxDetailDeleteUseCase $deleteUseCase, int $id): Response
     {
         $deleteUseCase($id);
 

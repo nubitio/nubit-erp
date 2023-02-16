@@ -4,6 +4,12 @@ namespace App\Core\Infrastructure\DataLoader;
 
 class OptionUtils
 {
+    /**
+     * @param array<string, string> $context
+     * @param SortRule $sort
+     *
+     * @return array<string, string>
+     */
     public static function addSort(array $context, SortRule $sort): array
     {
         $context['filters']['sort'] = $context['filters']['sort'] ?? $sort->field;
@@ -12,6 +18,12 @@ class OptionUtils
         return $context;
     }
 
+    /**
+     * @param array<string, string> $context
+     * @param FilterRule $filter
+     *
+     * @return array<string, string>
+     */
     public static function addFilter(array $context, FilterRule $filter): array
     {
         $context['filters']['filterRules'] = $context['filters']['filterRules'] ?? '[]';
@@ -26,6 +38,12 @@ class OptionUtils
         return $context;
     }
 
+    /**
+     * @param array<string, string> $context
+     * @param JoinRule $join
+     *
+     * @return array<string, string>
+     */
     public static function addJoin(array $context, JoinRule $join): array
     {
         $context['filters']['joinRules'] = $context['filters']['joinRules'] ?? '[]';

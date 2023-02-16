@@ -2,36 +2,26 @@
 
 namespace App\Role\Infrastructure;
 
-use App\Role\Domain\RoleRepositoryInterface;
-use App\Role\Domain\Role;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Role\Domain\Role;
+use App\Role\Domain\RoleRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class RoleRepository implements RoleRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $role) {
-            $data[] = DataMapper::map($role, Role::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Role

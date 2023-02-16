@@ -1,18 +1,15 @@
 <?php
 
-namespace App\Core\Domain\Util;
+namespace App\WebClientPrint;
 
 class SaleItem
 {
-    private $name;
-    private $price;
-    private $dollarSign;
-
-    public function __construct($name = '', $price = '', $dollarSign = false)
+    public function __construct(
+        private string          $name = '',
+        private readonly string $price = '',
+        private readonly bool   $dollarSign = false
+    )
     {
-        $this->name = $name;
-        $this->price = $price;
-        $this->dollarSign = $dollarSign;
     }
 
     public function __toString()

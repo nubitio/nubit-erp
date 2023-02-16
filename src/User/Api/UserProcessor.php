@@ -4,13 +4,13 @@ namespace App\User\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\User\Domain\User;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\User\Domain\CreateUserUseCase;
 use App\User\Domain\DeleteUserUseCase;
 use App\User\Domain\UpdateUserUseCase;
+use App\User\Domain\User;
 
-readonly class UserProcessor implements ProcessorInterface
+readonly class UserProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CreateUserUseCase $createUseCase,
@@ -20,6 +20,7 @@ readonly class UserProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?User
     {
         if ($operation instanceof DeleteOperationInterface) {
@@ -27,7 +28,7 @@ readonly class UserProcessor implements ProcessorInterface
             return null;
         }
 
-        if($data->usuario_id) {
+        if ($data->usuario_id) {
             return $this->updateUseCase->__invoke($data);
         }
 

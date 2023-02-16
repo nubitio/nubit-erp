@@ -14,7 +14,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class SendSmsCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Send a sms to a user');
     }

@@ -10,7 +10,7 @@ final class RemoveUnwantedControllers implements CompilerPassInterface
     /**
      * {@inheritdoc}
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         $definitions = $container->getDefinitions();
         foreach ($definitions as $fqcn => $definition) {

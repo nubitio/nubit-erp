@@ -10,6 +10,7 @@ readonly class GetAllByBranchUseCase
     {
     }
 
+    /** @return Warehouse[] */
     public function __invoke(string $branchId): array
     {
         return $this->warehouseRepository->getAllByBranch($branchId);

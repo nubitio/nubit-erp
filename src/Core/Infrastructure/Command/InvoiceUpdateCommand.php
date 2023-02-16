@@ -23,7 +23,7 @@ class InvoiceUpdateCommand extends Command
         $this->invoiceUpdater = $salesUpdater;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Actualiza valores de los comprobantes');
     }
@@ -40,7 +40,7 @@ class InvoiceUpdateCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: '.$e->getMessage());
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }

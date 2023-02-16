@@ -20,6 +20,8 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
     }
 
     /**
+     * @param array<string, mixed> $filter
+     * @return array<string, mixed>
      * @throws \Doctrine\DBAL\Exception
      */
     public function getAll(?array $filter = null): array

@@ -22,6 +22,7 @@ class XlsExporter
     }
 
     /**
+     * @param array<string, mixed> $data
      * @throws Exception
      */
     public function export(array $data, string $filename): StreamedResponse
@@ -45,8 +46,8 @@ class XlsExporter
 
         $columnLetters = range('A', 'Z');
         $headerStyle = [
-            'font'      => [
-                'bold'  => true,
+            'font' => [
+                'bold' => true,
                 'color' => [
                     'rgb' => $contrastColor,
                 ],
@@ -54,13 +55,13 @@ class XlsExporter
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
             ],
-            'fill'      => [
-                'fillType'   => Fill::FILL_SOLID,
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
                 'startColor' => [
                     'argb' => 'FF' . $accentColor,
                 ],
             ],
-            'borders'   => [
+            'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
                 ],
@@ -71,7 +72,7 @@ class XlsExporter
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color'       => [
+                    'color' => [
                         'argb' => 'FF' . $accentColor,
                     ],
                 ],

@@ -11,6 +11,9 @@ readonly class MenuBuilder
     ) {
     }
 
+    /**
+     * @return array<int, array<string, string|int>>
+     */
     public function buildMenuForRole(int $roleId): array
     {
         $data = $this->getMenuForRole($roleId);
@@ -39,6 +42,9 @@ readonly class MenuBuilder
         return $menu;
     }
 
+    /**
+     * @return array<int, array<string, string|int>>
+     */
     public function getMenuForRole(int $roleId): array
     {
         if (0 == $roleId) {

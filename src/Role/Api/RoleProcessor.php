@@ -4,13 +4,13 @@ namespace App\Role\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\Role\Domain\Role;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\Role\Domain\CreateRoleUseCase;
 use App\Role\Domain\DeleteRoleUseCase;
+use App\Role\Domain\Role;
 use App\Role\Domain\UpdateRoleUseCase;
 
-readonly class RoleProcessor implements ProcessorInterface
+readonly class RoleProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CreateRoleUseCase $createUseCase,
@@ -20,6 +20,7 @@ readonly class RoleProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Role
     {
         if ($operation instanceof DeleteOperationInterface) {
@@ -27,7 +28,7 @@ readonly class RoleProcessor implements ProcessorInterface
             return null;
         }
 
-        if($data->rol_id) {
+        if ($data->rol_id) {
             return $this->updateUseCase->__invoke($data);
         }
 
