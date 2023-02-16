@@ -5,7 +5,7 @@ namespace App\Core\Infrastructure\DataLoader;
 class OptionsBuilder
 {
     /**
-     * @param array<string, string> $context
+     * @param array<string, mixed> $context
      * @param string $entity
      * @param string $mapping
      *
@@ -36,6 +36,11 @@ class OptionsBuilder
         );
     }
 
+    /**
+     * @param array<int, mixed> $joinRules
+     *
+     * @return array<JoinRule>
+     */
     private static function buildJoins(array $joinRules): array
     {
         $joins = [];
@@ -52,7 +57,7 @@ class OptionsBuilder
     }
 
     /**
-     * @param array<string, string> $sortRules
+     * @param array<int, mixed> $sortRules
      *
      * @return array<SortRule>
      */
@@ -65,7 +70,7 @@ class OptionsBuilder
     }
 
     /**
-     * @param array<string, array<string, string>> $filterRules
+     * @param array<int, mixed> $filterRules
      *
      * @return array<FilterRule>
      */

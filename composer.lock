@@ -229,16 +229,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.258.8",
+            "version": "3.258.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3bb42aeb1e11f17b0ca7357385a427a438df35b1"
+                "reference": "5e339f47f86db7ed5f5afcda345d30ac1713aed3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3bb42aeb1e11f17b0ca7357385a427a438df35b1",
-                "reference": "3bb42aeb1e11f17b0ca7357385a427a438df35b1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5e339f47f86db7ed5f5afcda345d30ac1713aed3",
+                "reference": "5e339f47f86db7ed5f5afcda345d30ac1713aed3",
                 "shasum": ""
             },
             "require": {
@@ -317,9 +317,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.258.8"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.258.11"
             },
-            "time": "2023-02-10T19:22:52+00:00"
+            "time": "2023-02-15T20:08:42+00:00"
         },
         {
             "name": "chillerlan/php-qrcode",
@@ -3906,29 +3906,30 @@
         },
         {
             "name": "nelmio/cors-bundle",
-            "version": "2.2.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nelmio/NelmioCorsBundle.git",
-                "reference": "0ee5ee30b0ee08ea122d431ae6e0ddeb87f035c0"
+                "reference": "185d2c0ae50a3f0b628790170164d5f1c5b7c281"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nelmio/NelmioCorsBundle/zipball/0ee5ee30b0ee08ea122d431ae6e0ddeb87f035c0",
-                "reference": "0ee5ee30b0ee08ea122d431ae6e0ddeb87f035c0",
+                "url": "https://api.github.com/repos/nelmio/NelmioCorsBundle/zipball/185d2c0ae50a3f0b628790170164d5f1c5b7c281",
+                "reference": "185d2c0ae50a3f0b628790170164d5f1c5b7c281",
                 "shasum": ""
             },
             "require": {
-                "symfony/framework-bundle": "^4.3 || ^5.0 || ^6.0"
+                "psr/log": "^1.0 || ^2.0 || ^3.0",
+                "symfony/framework-bundle": "^4.4 || ^5.4 || ^6.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.2",
-                "symfony/phpunit-bridge": "^4.3 || ^5.0 || ^6.0"
+                "symfony/phpunit-bridge": "^4.4 || ^5.4 || ^6.0"
             },
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.0.x-dev"
+                    "dev-master": "2.x-dev"
                 }
             },
             "autoload": {
@@ -3961,9 +3962,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nelmio/NelmioCorsBundle/issues",
-                "source": "https://github.com/nelmio/NelmioCorsBundle/tree/2.2.0"
+                "source": "https://github.com/nelmio/NelmioCorsBundle/tree/2.3.1"
             },
-            "time": "2021-12-01T09:34:27+00:00"
+            "time": "2023-02-16T08:49:29+00:00"
         },
         {
             "name": "oneup/flysystem-bundle",
@@ -12042,16 +12043,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "0.15.13",
+            "version": "0.15.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "05df336f8e29873ed14c0790fbea68fa5de14f50"
+                "reference": "826539a991aa22590e91f8add06ca99f76e21ccd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/05df336f8e29873ed14c0790fbea68fa5de14f50",
-                "reference": "05df336f8e29873ed14c0790fbea68fa5de14f50",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/826539a991aa22590e91f8add06ca99f76e21ccd",
+                "reference": "826539a991aa22590e91f8add06ca99f76e21ccd",
                 "shasum": ""
             },
             "require": {
@@ -12061,7 +12062,6 @@
             "conflict": {
                 "rector/rector-doctrine": "*",
                 "rector/rector-downgrade-php": "*",
-                "rector/rector-php-parser": "*",
                 "rector/rector-phpunit": "*",
                 "rector/rector-symfony": "*"
             },
@@ -12086,7 +12086,7 @@
             "description": "Instant Upgrade and Automated Refactoring of any PHP code",
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/0.15.13"
+                "source": "https://github.com/rectorphp/rector/tree/0.15.16"
             },
             "funding": [
                 {
@@ -12094,7 +12094,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-02-07T01:46:29+00:00"
+            "time": "2023-02-14T22:22:09+00:00"
         },
         {
             "name": "sebastian/cli-parser",
