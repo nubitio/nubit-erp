@@ -9,12 +9,17 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Product\Domain\GetAllProductUseCase;
 use App\Product\Domain\GetOneProductUseCase;
 use App\Product\Domain\Product;
 use App\Product\Infrastructure\ProductEntity;
 
+/**
+ * @implements ApiProviderInterface<Product>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class ProductProvider implements ApiProviderInterface
 {
     public function __construct(

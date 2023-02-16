@@ -10,6 +10,9 @@ use App\Role\Domain\DeleteRoleUseCase;
 use App\Role\Domain\Role;
 use App\Role\Domain\UpdateRoleUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Role>
+ */
 readonly class RoleProcessor implements ApiProcessorInterface
 {
     public function __construct(

@@ -10,6 +10,9 @@ use App\Category\Domain\CategoryDeleteUseCase;
 use App\Category\Domain\CategoryUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
+/**
+ * @implements ApiProcessorInterface<Category>
+ */
 readonly class CategoryProcessor implements ApiProcessorInterface
 {
     public function __construct(

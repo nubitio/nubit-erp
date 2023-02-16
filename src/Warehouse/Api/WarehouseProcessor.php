@@ -10,6 +10,9 @@ use App\Warehouse\Domain\WarehouseCreateUseCase;
 use App\Warehouse\Domain\WarehouseDeleteUseCase;
 use App\Warehouse\Domain\WarehouseUpdateUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Warehouse>
+ */
 readonly class WarehouseProcessor implements ApiProcessorInterface
 {
     public function __construct(

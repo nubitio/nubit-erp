@@ -10,6 +10,9 @@ use App\Product\Domain\DeleteProductUseCase;
 use App\Product\Domain\Product;
 use App\Product\Domain\UpdateProductUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Product>
+ */
 readonly class ProductProcessor implements ApiProcessorInterface
 {
     public function __construct(

@@ -7,12 +7,17 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Customer\Domain\Customer;
 use App\Customer\Domain\CustomerGetAllUseCase;
 use App\Customer\Domain\CustomerGetOneUseCase;
 use App\Customer\Infrastructure\CustomerEntity;
 
+/**
+ * @implements ApiProviderInterface<Customer>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class CustomerProvider implements ApiProviderInterface
 {
     public function __construct(

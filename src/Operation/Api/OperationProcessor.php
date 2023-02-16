@@ -10,6 +10,9 @@ use App\Operation\Domain\DeleteOperationUseCase;
 use App\Operation\Domain\Operation;
 use App\Operation\Domain\UpdateOperationUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Operation>
+ */
 readonly class OperationProcessor implements ApiProcessorInterface
 {
     public function __construct(

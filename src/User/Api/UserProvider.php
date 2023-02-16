@@ -8,12 +8,17 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\User\Domain\GetAllUserUseCase;
 use App\User\Domain\GetOneUserUseCase;
 use App\User\Domain\User;
 use App\User\Infrastructure\UserEntity;
 
+/**
+ * @implements ApiProviderInterface<User>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class UserProvider implements ApiProviderInterface
 {
     public function __construct(

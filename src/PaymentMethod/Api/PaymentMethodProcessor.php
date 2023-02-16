@@ -11,6 +11,9 @@ use App\PaymentMethod\Domain\GetOnePaymentMethodUseCase;
 use App\PaymentMethod\Domain\PaymentMethod;
 use App\PaymentMethod\Domain\UpdatePaymentMethodUseCase;
 
+/**
+ * @implements ApiProcessorInterface<PaymentMethod>
+ */
 readonly class PaymentMethodProcessor implements ApiProcessorInterface
 {
     public function __construct(

@@ -11,6 +11,9 @@ use App\Sale\Domain\GetOneSaleUseCase;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\UpdateSaleUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Sale>
+ */
 readonly class SaleProcessor implements ApiProcessorInterface
 {
     public function __construct(

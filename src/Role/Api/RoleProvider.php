@@ -7,12 +7,17 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Role\Domain\GetAllRoleUseCase;
 use App\Role\Domain\GetOneRoleUseCase;
 use App\Role\Domain\Role;
 use App\Role\Infrastructure\RoleEntity;
 
+/**
+ * @implements ApiProviderInterface<Role>
+ * @implements ApiProviderInterface<PaginatorInterface>
+ */
 readonly class RoleProvider implements ApiProviderInterface
 {
     public function __construct(

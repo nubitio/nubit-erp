@@ -11,6 +11,9 @@ use App\Branch\Domain\BranchDeleteUseCase;
 use App\Branch\Domain\BranchUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
+/**
+ * @implements ApiProcessorInterface<Branch>
+ */
 readonly class BranchProcessor implements ApiProcessorInterface
 {
     public function __construct(

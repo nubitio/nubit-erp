@@ -10,6 +10,9 @@ use App\Supplier\Domain\DeleteSupplierUseCase;
 use App\Supplier\Domain\Supplier;
 use App\Supplier\Domain\UpdateSupplierUseCase;
 
+/**
+ * @implements ApiProcessorInterface<Supplier>
+ */
 readonly class SupplierProcessor implements ApiProcessorInterface
 {
     public function __construct(
