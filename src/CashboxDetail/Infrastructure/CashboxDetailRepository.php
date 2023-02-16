@@ -24,6 +24,8 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     }
 
     /**
+     * @param array<int , array<string, mixed>>|null $filter
+     * @return array<string, mixed>
      * @throws \Doctrine\DBAL\Exception
      */
     public function getAll(?array $filter = null): array

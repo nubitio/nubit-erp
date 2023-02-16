@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class InvoiceCalculatorCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Calcula valores de los comprobantes');
     }

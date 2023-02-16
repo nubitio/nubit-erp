@@ -3,14 +3,14 @@
 namespace App\Auth\Api;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Auth\Domain\GetTokenUseCase;
 use App\Auth\Domain\Token;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\User\Domain\GetOneUserByUsernameUseCase;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
-readonly class AuthProcessor implements ProcessorInterface
+readonly class AuthProcessor implements ApiProcessorInterface
 {
     public function __construct(
         private GetOneUserByUsernameUseCase $getOneUserByUsernameUseCase,
@@ -19,6 +19,7 @@ readonly class AuthProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Token
     {
         $user = $this->getOneUserByUsernameUseCase->__invoke($data->username);

@@ -3,12 +3,12 @@
 namespace App\CreditNote\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\CreditNoteCreateUseCase;
 use App\CreditNote\Domain\CreditNoteDeleteUseCase;
 use App\CreditNote\Domain\CreditNoteGetAllUseCase;
 use App\CreditNote\Domain\CreditNoteUpdateUseCase;
-use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -43,7 +43,7 @@ class CreditNoteController extends BaseController
     }
 
     #[Route('/credit-note/edit/{id}', name: 'credit-note_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, CreditNoteUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, CreditNoteUpdateUseCase $updateUseCase, string $id): Response
     {
         $request->request->add(['nota_id' => $id]);
         /**
@@ -56,7 +56,7 @@ class CreditNoteController extends BaseController
     }
 
     #[Route('/credit-note/delete/{id}', name: 'credit-note_delete', methods: ['DELETE', 'POST'])]
-    public function delete(CreditNoteDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(CreditNoteDeleteUseCase $deleteUseCase, string $id): Response
     {
         $deleteUseCase($id);
 

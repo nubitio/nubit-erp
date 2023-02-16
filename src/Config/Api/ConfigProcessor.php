@@ -4,13 +4,13 @@ namespace App\Config\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Config\Domain\Config;
 use App\Config\Domain\ConfigCreateUseCase;
 use App\Config\Domain\ConfigDeleteUseCase;
 use App\Config\Domain\ConfigUpdateUseCase;
+use App\Core\Domain\Api\ApiProcessorInterface;
 
-readonly class ConfigProcessor implements ProcessorInterface
+readonly class ConfigProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public ConfigCreateUseCase $ConfigCreateUseCase,
@@ -20,6 +20,7 @@ readonly class ConfigProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Config
     {
         if ($operation instanceof DeleteOperationInterface) {

@@ -23,7 +23,7 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
     {
         $user = $this->userGetOneByUsernameUseCase->__invoke($identifier);
 
-        if (!$user || !$user?->estado) {
+        if (!$user || !$user->estado) {
             throw new UserNotFoundException(sprintf('User "%s" does not exist.', $identifier));
         }
 

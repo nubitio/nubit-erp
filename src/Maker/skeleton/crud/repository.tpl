@@ -5,10 +5,8 @@ namespace App\{{module}}\Infrastructure;
 use App\{{module}}\Domain\{{module}}RepositoryInterface;
 use App\{{module}}\Domain\{{module}};
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -23,15 +21,7 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as ${{camelModule}}) {
-            $data[] = DataMapper::map(${{camelModule}}, {{module}}::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?{{module}}

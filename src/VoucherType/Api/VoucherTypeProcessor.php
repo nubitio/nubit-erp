@@ -4,13 +4,13 @@ namespace App\VoucherType\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\VoucherType\Domain\VoucherType;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\VoucherType\Domain\CreateVoucherTypeUseCase;
 use App\VoucherType\Domain\DeleteVoucherTypeUseCase;
 use App\VoucherType\Domain\UpdateVoucherTypeUseCase;
+use App\VoucherType\Domain\VoucherType;
 
-readonly class VoucherTypeProcessor implements ProcessorInterface
+readonly class VoucherTypeProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CreateVoucherTypeUseCase $createUseCase,
@@ -20,6 +20,7 @@ readonly class VoucherTypeProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?VoucherType
     {
         if ($operation instanceof DeleteOperationInterface) {
@@ -27,7 +28,7 @@ readonly class VoucherTypeProcessor implements ProcessorInterface
             return null;
         }
 
-        if($data->id) {
+        if ($data->id) {
             return $this->updateUseCase->__invoke($data);
         }
 

@@ -4,13 +4,13 @@ namespace App\Category\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Category\Domain\Category;
 use App\Category\Domain\CategoryCreateUseCase;
 use App\Category\Domain\CategoryDeleteUseCase;
 use App\Category\Domain\CategoryUpdateUseCase;
+use App\Core\Domain\Api\ApiProcessorInterface;
 
-readonly class CategoryProcessor implements ProcessorInterface
+readonly class CategoryProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CategoryCreateUseCase $categoryCreateUseCase,
@@ -20,6 +20,7 @@ readonly class CategoryProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Category
     {
         if ($operation instanceof DeleteOperationInterface) {

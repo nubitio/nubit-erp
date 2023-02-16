@@ -6,9 +6,8 @@ use App\Config\Domain\Config;
 use App\Config\Domain\ConfigRepositoryInterface;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class ConfigRepository implements ConfigRepositoryInterface
@@ -22,15 +21,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $config) {
-            $data[] = DataMapper::map($config, Config::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Config

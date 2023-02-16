@@ -29,6 +29,10 @@ class ConsultRepository implements ConsultRepositoryInterface
         throw new \Exception('Invalid DocType');
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return Consult
+     */
     private function mapDni(array $data): Consult
     {
         return new Consult(
@@ -39,6 +43,10 @@ class ConsultRepository implements ConsultRepositoryInterface
         );
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return Consult
+     */
     private function mapRuc(array $data): Consult
     {
         return new Consult(

@@ -11,6 +11,10 @@ class CashboxGetAllUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param array<int , array<string, mixed>>|null $filter
+     * @return Cashbox[]
+     */
     public function __invoke(?array $filter = null): array
     {
         return $this->repository->getAll($filter);

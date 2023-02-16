@@ -9,12 +9,12 @@ readonly class FilterRule implements FilterInterface
     public function __construct(
         public string          $field,
         public FilterOperation $op,
-        public string          $value,
+        public string|int|bool $value,
     )
     {
     }
 
-    public function apply(QueryBuilder $queryBuilder)
+    public function apply(QueryBuilder $queryBuilder): void
     {
         $op = FilterUtils::getOperation($this->op);
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);

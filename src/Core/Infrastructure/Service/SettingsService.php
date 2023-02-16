@@ -18,7 +18,7 @@ class SettingsService
         $this->cache = $cache;
     }
 
-    public function get(string $key, $default = null)
+    public function get(string $key, $default = null): string|int|bool|null
     {
         return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(3600);
@@ -34,7 +34,7 @@ class SettingsService
     /**
      * @throws Exception
      */
-    public function set(string $key, $value): void
+    public function set(string $key, string|int|bool $value): void
     {
         $this->db->executeStatement('INSERT INTO options (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', [$key, $value, $value]);
     }

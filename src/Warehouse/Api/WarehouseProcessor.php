@@ -4,13 +4,13 @@ namespace App\Warehouse\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseCreateUseCase;
 use App\Warehouse\Domain\WarehouseDeleteUseCase;
 use App\Warehouse\Domain\WarehouseUpdateUseCase;
 
-readonly class WarehouseProcessor implements ProcessorInterface
+readonly class WarehouseProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public WarehouseCreateUseCase $WarehouseCreateUseCase,
@@ -20,6 +20,7 @@ readonly class WarehouseProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Warehouse
     {
         if ($operation instanceof DeleteOperationInterface) {

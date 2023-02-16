@@ -4,14 +4,14 @@ namespace App\PaymentMethod\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\PaymentMethod\Domain\PaymentMethod;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\PaymentMethod\Domain\CreatePaymentMethodUseCase;
 use App\PaymentMethod\Domain\DeletePaymentMethodUseCase;
 use App\PaymentMethod\Domain\GetOnePaymentMethodUseCase;
+use App\PaymentMethod\Domain\PaymentMethod;
 use App\PaymentMethod\Domain\UpdatePaymentMethodUseCase;
 
-readonly class PaymentMethodProcessor implements ProcessorInterface
+readonly class PaymentMethodProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public GetOnePaymentMethodUseCase $getOneUseCase,
@@ -22,6 +22,7 @@ readonly class PaymentMethodProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?PaymentMethod
     {
         if ($operation instanceof DeleteOperationInterface) {

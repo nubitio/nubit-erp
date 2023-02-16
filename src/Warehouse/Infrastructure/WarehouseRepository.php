@@ -6,7 +6,6 @@ use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
@@ -23,15 +22,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $warehouse) {
-            $data[] = DataMapper::map($warehouse, Warehouse::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Warehouse
@@ -75,6 +66,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
         $this->entityManager->flush();
     }
 
+    /** @return Warehouse[] */
     public function getAllByBranch(string $branchId): array
     {
         $qb = $this->entityManager->createQueryBuilder();

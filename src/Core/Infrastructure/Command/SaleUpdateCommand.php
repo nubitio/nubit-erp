@@ -23,7 +23,7 @@ class SaleUpdateCommand extends Command
         $this->salesUpdater = $salesUpdater;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Actualiza valores de los comprobantes');
     }

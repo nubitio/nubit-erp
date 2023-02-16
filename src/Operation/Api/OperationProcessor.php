@@ -4,13 +4,13 @@ namespace App\Operation\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation as ApiPlatformOperation;
-use ApiPlatform\State\ProcessorInterface;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\Operation\Domain\CreateOperationUseCase;
 use App\Operation\Domain\DeleteOperationUseCase;
 use App\Operation\Domain\Operation;
 use App\Operation\Domain\UpdateOperationUseCase;
 
-readonly class OperationProcessor implements ProcessorInterface
+readonly class OperationProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CreateOperationUseCase $createUseCase,
@@ -20,6 +20,7 @@ readonly class OperationProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, ApiPlatformOperation $operation, array $uriVariables = [], array $context = []): ?Operation
     {
         if ($operation instanceof DeleteOperationInterface) {

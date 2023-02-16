@@ -120,7 +120,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/edit/{id}', name: 'cashbox_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, CashboxUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, CashboxUpdateUseCase $updateUseCase, string $id): Response
     {
         $request->request->add(['caja_id' => $id]);
         /**
@@ -133,7 +133,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/delete/{id}', name: 'cashbox_delete', methods: ['DELETE', 'POST'])]
-    public function delete(CashboxDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(CashboxDeleteUseCase $deleteUseCase, string $id): Response
     {
         $deleteUseCase($id);
 
@@ -141,7 +141,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/{id}/details', name: 'cashbox_get', methods: ['GET'])]
-    public function getOne(CashboxGetOneUseCase $getOneUseCase, $id): Response
+    public function getOne(CashboxGetOneUseCase $getOneUseCase, string $id): Response
     {
         $cashBox = $getOneUseCase($id);
 
@@ -149,7 +149,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]
-    public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, $id): StreamedResponse
+    public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
 
@@ -163,7 +163,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
-    public function report(Request $request, CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, $id): StreamedResponse
+    public function report(Request $request, CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
         $infoReceipt = $getInfoReceiptUseCase($id);

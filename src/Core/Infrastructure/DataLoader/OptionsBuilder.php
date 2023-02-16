@@ -4,7 +4,14 @@ namespace App\Core\Infrastructure\DataLoader;
 
 class OptionsBuilder
 {
-    public static function build(array $context, string $entity): Options
+    /**
+     * @param array<string, string> $context
+     * @param string $entity
+     * @param string $mapping
+     *
+     * @return Options
+     */
+    public static function build(array $context, string $entity, string $mapping): Options
     {
         $joinRules = $context['filters']['joinRules'] ?? '[]';
         $joinRules = json_decode($joinRules, true);
@@ -20,6 +27,7 @@ class OptionsBuilder
 
         return new Options(
             entity: $entity,
+            mapping: $mapping,
             page: $context['filters']['page'] ?? 1,
             rows: $context['filters']['rows'] ?? 10,
             joins: self::buildJoins($joinRules),
@@ -43,6 +51,11 @@ class OptionsBuilder
         return $joins;
     }
 
+    /**
+     * @param array<string, string> $sortRules
+     *
+     * @return array<SortRule>
+     */
     private static function buildSort(array $sortRules): array
     {
         return array_map(fn($item) => new SortRule(
@@ -51,6 +64,11 @@ class OptionsBuilder
         ), $sortRules);
     }
 
+    /**
+     * @param array<string, array<string, string>> $filterRules
+     *
+     * @return array<FilterRule>
+     */
     private static function buildFilters(array $filterRules): array
     {
         $filters = [];

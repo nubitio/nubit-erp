@@ -2,36 +2,26 @@
 
 namespace App\Operation\Infrastructure;
 
-use App\Operation\Domain\OperationRepositoryInterface;
-use App\Operation\Domain\Operation;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Operation\Domain\Operation;
+use App\Operation\Domain\OperationRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class OperationRepository implements OperationRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $operation) {
-            $data[] = DataMapper::map($operation, Operation::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Operation

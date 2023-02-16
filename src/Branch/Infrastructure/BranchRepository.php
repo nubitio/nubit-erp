@@ -7,9 +7,8 @@ use App\Branch\Domain\BranchRepositoryInterface;
 use App\Company\Infrastructure\CompanyEntity;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class BranchRepository implements BranchRepositoryInterface
@@ -23,15 +22,7 @@ readonly class BranchRepository implements BranchRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $branch) {
-            $data[] = DataMapper::map($branch, Branch::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Branch

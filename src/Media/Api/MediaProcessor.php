@@ -4,13 +4,13 @@ namespace App\Media\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
-use App\Media\Domain\Media;
+use App\Core\Domain\Api\ApiProcessorInterface;
 use App\Media\Domain\CreateMediaUseCase;
 use App\Media\Domain\DeleteMediaUseCase;
+use App\Media\Domain\Media;
 use App\Media\Domain\UpdateMediaUseCase;
 
-readonly class MediaProcessor implements ProcessorInterface
+readonly class MediaProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public CreateMediaUseCase $createUseCase,
@@ -20,6 +20,7 @@ readonly class MediaProcessor implements ProcessorInterface
     {
     }
 
+    /** @inheritDoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Media
     {
         if ($operation instanceof DeleteOperationInterface) {
@@ -27,7 +28,7 @@ readonly class MediaProcessor implements ProcessorInterface
             return null;
         }
 
-        if($data->id) {
+        if ($data->id) {
             return $this->updateUseCase->__invoke($data);
         }
 

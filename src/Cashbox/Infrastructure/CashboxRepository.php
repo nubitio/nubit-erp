@@ -25,6 +25,10 @@ class CashboxRepository implements CashboxRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
+    /**
+     * @param array<int , array<string, mixed>>|null $filter
+     * @return array<string, mixed>
+     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
@@ -40,9 +44,9 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id'   => $localId,
+            'local_id' => $localId,
             'usuario_id' => $userId,
-            'estado'     => 1,
+            'estado' => 1,
         ]);
 
         if (!$entity) {
@@ -53,6 +57,8 @@ class CashboxRepository implements CashboxRepositoryInterface
     }
 
     /**
+     * @param string $id
+     * @return array<int, array<string, mixed>>
      * @throws \Doctrine\DBAL\Exception
      */
     public function getInfoByReceiptType(string $id): array
@@ -79,6 +85,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
     public function insert(Cashbox $cashbox): void
     {
+        /** @var CashboxEntity $entity */
         $entity = DataMapper::map($cashbox, CashboxEntity::class);
         $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local_id);
         $entity->user = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario_id);
@@ -116,7 +123,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
             foreach ($totalSales as $totalSale) {
                 $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
-                    'caja_id'     => $cashBoxId,
+                    'caja_id' => $cashBoxId,
                     'descripcion' => $totalSale['name'],
                 ]);
 
@@ -141,6 +148,10 @@ class CashboxRepository implements CashboxRepositoryInterface
         }
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     * @throws \Doctrine\DBAL\Exception
+     */
     private function getTotalSales(int $userId, string $startDate, string $endDate): array
     {
         $sql = '

@@ -3,11 +3,11 @@
 namespace App\Consult\Api;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProviderInterface;
 use App\Consult\Domain\ConsultUseCase;
 use App\Consult\Domain\DocType;
+use App\Core\Domain\Api\ApiProviderInterface;
 
-readonly class ConsultProvider implements ProviderInterface
+readonly class ConsultProvider implements ApiProviderInterface
 {
     public function __construct(
         private ConsultUseCase $consultUseCase
@@ -15,6 +15,7 @@ readonly class ConsultProvider implements ProviderInterface
     {
     }
 
+    /** @inheritDoc */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (isset($uriVariables['dni'])) {

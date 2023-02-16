@@ -4,9 +4,8 @@ namespace App\User\Infrastructure;
 
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Role\Infrastructure\RoleEntity;
 use App\User\Domain\User;
 use App\User\Domain\UserRepositoryInterface;
@@ -23,15 +22,7 @@ readonly class UserRepository implements UserRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $user) {
-            $data[] = DataMapper::map($user, User::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?User

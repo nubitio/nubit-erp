@@ -5,7 +5,6 @@ namespace App\Supplier\Infrastructure;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Supplier\Domain\Supplier;
 use App\Supplier\Domain\SupplierRepositoryInterface;
@@ -22,15 +21,7 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        $paginator = $this->dataLoader->load($options);
-
-        $data = [];
-
-        foreach ($paginator->getIterator() as $supplier) {
-            $data[] = DataMapper::map($supplier, Supplier::class);
-        }
-
-        return new Paginator($data, $paginator);
+        return $this->dataLoader->load($options);
     }
 
     public function getOne(string $id): ?Supplier

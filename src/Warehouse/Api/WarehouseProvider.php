@@ -4,17 +4,18 @@ namespace App\Warehouse\Api;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProviderInterface;
+use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Warehouse\Domain\GetAllByBranchUseCase;
+use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseGetAllUseCase;
 use App\Warehouse\Domain\WarehouseGetOneUseCase;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 
-readonly class WarehouseProvider implements ProviderInterface
+readonly class WarehouseProvider implements ApiProviderInterface
 {
     public function __construct(
         private WarehouseGetAllUseCase $getAllUseCase,
@@ -32,7 +33,7 @@ readonly class WarehouseProvider implements ProviderInterface
             }
             $context = OptionUtils::addJoin($context, new JoinRule('e.local', 'l'));
             $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
-            $options = OptionsBuilder::build($context, WarehouseEntity::class);
+            $options = OptionsBuilder::build($context, WarehouseEntity::class, Warehouse::class);
 
             return $this->getAllUseCase->__invoke($options);
         }
