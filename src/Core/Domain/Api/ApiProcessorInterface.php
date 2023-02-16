@@ -5,11 +5,12 @@ namespace App\Core\Domain\Api;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 
+/**
+ * @template T of object
+ */
 interface ApiProcessorInterface extends ProcessorInterface
 {
     /**
-     * @template T of object
-     *
      * @param mixed $data
      * @param Operation $operation
      * @param array<string, mixed> $uriVariables

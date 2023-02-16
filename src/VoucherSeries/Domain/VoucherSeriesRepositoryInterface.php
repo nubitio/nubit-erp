@@ -14,5 +14,5 @@ interface VoucherSeriesRepositoryInterface
 
     public function update(VoucherSeries $voucherSeries): void;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 }

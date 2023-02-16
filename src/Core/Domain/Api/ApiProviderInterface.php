@@ -6,11 +6,12 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\PartialPaginatorInterface;
 use ApiPlatform\State\ProviderInterface;
 
+/**
+ * @template T of object
+ */
 interface ApiProviderInterface extends ProviderInterface
 {
     /**
-     * @template T of object
-     *
      * @param Operation $operation
      * @param array<string, mixed> $uriVariables
      * @param array<string, mixed> $context
