@@ -15,6 +15,7 @@ $.fn.extend({
 });
 
 $.extend($.fn.window.defaults, {
+    zIndex: 1000,
     onMove: function (left, top) {
         if (left < 0) {
             $(this).window('move', {
@@ -47,7 +48,7 @@ $.extend($.fn.dialog.defaults, {
     maxHeight: DIALOG_MAX_HEIGHT,
     modal: MODAL,
     closed: CLOSED,
-    inline: INLINE,
+    inline: false,
     shadow: SHADOW,
     closable: false,
     border: false,

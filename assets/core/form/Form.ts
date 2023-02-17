@@ -462,8 +462,15 @@ export default class Form {
                     field.onChange(newValue, oldValue, field);
                 }
             },
+            readonly: field.readonly,
+            disabled: field.disabled,
             required: field.required,
         });
+        if (field.onClick) {
+            input.numberbox('textbox').click(() => {
+                field.onClick(field);
+            });
+        }
         this.formFields[field.name] = input;
     }
 
@@ -482,10 +489,16 @@ export default class Form {
                     field.onChange(newValue, oldValue, field);
                 }
             },
+            editable: !field.readonly,
             readonly: field.readonly,
             disabled: field.disabled,
             required: field.required,
         });
+        if (field.onClick) {
+            input.numberbox('textbox').click(() => {
+                field.onClick(field);
+            });
+        }
         this.formFields[field.name] = input;
     }
 
