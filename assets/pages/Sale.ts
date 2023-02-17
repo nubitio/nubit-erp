@@ -14,6 +14,9 @@ import {Event} from "../core/event/Event";
 import {bus} from "../core/event/EventBus";
 import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
+import {DiscountDialog} from "../components/discount-dialog/DiscountDialog";
+import {createRoot} from "react-dom/client";
+import React from "react";
 
 export default class Sale {
     private readonly container: string;
@@ -130,8 +133,18 @@ export default class Sale {
             .type(FormType.NUMBER)
             .col(6)
             .name('descuento')
-            .label('Descuento %')
+            .label('Descuento')
             .defaultValue(0)
+            .readonly(true)
+            .onClick((e: any) => {
+                let total = this.form.getField('total').textbox('getValue');
+                let wrapper = document.getElementById('wrapper') as HTMLElement;
+                let root = wrapper.appendChild(document.createElement('div'));
+                root.id = 'root';
+                createRoot(document.getElementById('root') as HTMLElement).render(
+                    React.createElement(DiscountDialog, {total: total})
+                );
+            })
             .onChange(this.calculateGrandTotal.bind(this))
             .visible(false)
             .build());

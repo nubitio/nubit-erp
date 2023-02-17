@@ -753,6 +753,10 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   border-color: var(--border-color);
 }
 
+.window-proxy-mask, .window-mask {
+  background: rgba(0, 0, 0, .6);
+}
+
 .combo-arrow {
   opacity: 1;
   filter: alpha(opacity=100);
