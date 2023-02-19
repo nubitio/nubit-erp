@@ -28,7 +28,6 @@
     "dayjs": "^1.11.7",
     "devextreme": "22.2.3",
     "devextreme-react": "22.2.3",
-    "dropzone": "^6.0.0-beta.2",
     "highcharts": "^10.3.2",
     "jquery": "^3.6.0",
     "react": "^18.2.0",
