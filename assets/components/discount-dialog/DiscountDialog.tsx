@@ -22,6 +22,7 @@ export const DiscountDialog = ({total}: { total: number }) => {
     }, [total, discountAmount]);
 
     const onDiscountAmountChanged = useCallback((e: any) => {
+        if (total === 0) return;
         setDiscountAmount(e.value);
         let discountPercent = e.value / total;
         setDiscountPercent(discountPercent);
@@ -35,6 +36,9 @@ export const DiscountDialog = ({total}: { total: number }) => {
 
     useEffect(() => {
         if (total === 0) {
+            setNewTotal(0);
+            setDiscountAmount(0);
+            setDiscountPercent(0);
             return;
         }
         setNewTotal(total - discountAmount);

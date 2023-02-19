@@ -136,6 +136,7 @@ export default class Sale {
             .defaultValue(0)
             .readonly(true)
             .onClick((e: any) => {
+                console.log({total: this.getTotal()});
                 reactRoot.render(
                     React.createElement(DiscountDialog, {total: this.getTotal()})
                 );

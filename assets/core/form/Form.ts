@@ -3,7 +3,6 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Field} from "./Field";
 import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
-import {EventObject} from "../event/EventObject";
 import {httpClient} from "../http/HttpClient";
 import NumberUtils from "../utils/NumberUtils";
 import {Constants} from "../common/Constants";
@@ -275,23 +274,28 @@ export default class Form {
 
     setupObservers() {
         bus.on(this.events?.ADD, () => {
-                this.add();
-                this.operation = Form.OPERATIONS.ADD;
-            }
-        )
+            this.add();
+            this.operation = Form.OPERATIONS.ADD;
+        });
 
         bus.on<any>(this.events?.EDIT, (payload) => {
-                this.edit(null, payload.row);
-                this.operation = Form.OPERATIONS.EDIT;
-            }
-        )
+            this.edit(null, payload.row);
+            this.operation = Form.OPERATIONS.EDIT;
+        });
 
         bus.on(this.events?.SAVE, () => {
-                if (!this.options.preventDefault) {
-                    this.submit();
-                }
+            if (!this.options.preventDefault) {
+                this.submit();
             }
-        )
+        });
+
+        bus.on(this.events?.CANCEL, () => {
+            let detailTableBody = document.getElementById('detailTableBody' + this.randomId);
+            if (detailTableBody) {
+                detailTableBody.innerHTML = '';
+                this.removeDetailFormFields();
+            }
+        });
     }
 
     buildFormFields(fields: Field[]) {
@@ -613,6 +617,15 @@ export default class Form {
             }
         }
         return formFields;
+    }
+
+    removeDetailFormFields() {
+        for (let key in this.formFields) {
+            let index = Number(key.split('-')[1]);
+            if (index > 0) {
+                delete this.formFields[key];
+            }
+        }
     }
 
     getRowFormFieldsByIndex(rowIndex: number): any {
