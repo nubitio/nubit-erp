@@ -51,18 +51,14 @@ export default class Auth {
     }
 
     setupObservers() {
-        bus.on(
-            event => event.name === LocalPicker.EVENTS.PICKED,
-            (event) => {
-                StorageUtils.setItem('session', event.data);
+        bus.on<any>(LocalPicker.EVENTS.PICKED, (payload) => {
+                StorageUtils.setItem('session', payload.data);
                 messenger.show('Información', 'Bienvenido');
                 window.location.href = '/';
             }
         )
 
-        bus.on(
-            event => event.name === LocalPicker.EVENTS.CANCELED,
-            () => {
+        bus.on(LocalPicker.EVENTS.CANCELED, () => {
                 StorageUtils.removeItem('token');
                 window.location.href = '/auth/logout';
             }

@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
-import {Event} from "../core/event/Event";
 
 export default class Inbound {
     private readonly container: string;
@@ -196,12 +195,7 @@ export default class Inbound {
             detailFields: this.detailFields,
         });
 
-        bus.on(
-            action => action.name == Form.EVENTS.ROW_REMOVED,
-            (action: Event) => {
-                this.calculateGrandTotal();
-            }
-        );
+        bus.on(Form.EVENTS.ROW_REMOVED, () => this.calculateGrandTotal());
     }
 
     private onSelectProduct(record: any, field: Field) {

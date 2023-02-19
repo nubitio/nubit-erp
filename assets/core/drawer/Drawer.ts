@@ -31,26 +31,11 @@ export class Drawer {
     }
 
     setupObservers() {
-        bus.on(
-            action => action.name === this.events?.SUCCESS,
-            (action) => {
-                this.hide();
-            }
-        )
+        bus.on(this.events?.SUCCESS, () => this.hide());
 
-        bus.on(
-            action => action.name === this.events?.CANCEL,
-            (action) => {
-                this.hide();
-            }
-        )
+        bus.on(this.events?.CANCEL, () => this.hide());
 
-        bus.on(
-            action => action.name === this.events?.DESTROY,
-            (action) => {
-                this.drawer.drawer('destroy');
-            }
-        )
+        bus.on(this.events?.DESTROY, () => this.drawer.drawer('destroy'))
     }
 
     get id() {

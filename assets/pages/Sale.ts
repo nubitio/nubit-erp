@@ -10,13 +10,12 @@ import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductService} from "../components/product/product.service";
 import Customer from "./Customer";
 import {Drawer} from "../core/drawer/Drawer";
-import {Event} from "../core/event/Event";
 import {bus} from "../core/event/EventBus";
 import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
-import {DiscountDialog} from "../components/discount-dialog/DiscountDialog";
-import {createRoot} from "react-dom/client";
+import {DiscountDialog, DiscountDialogEvent} from "../components/discount-dialog/DiscountDialog";
 import React from "react";
+import {reactRoot} from "../core/common/ReactRoot";
 
 export default class Sale {
     private readonly container: string;
@@ -130,20 +129,17 @@ export default class Sale {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FormType.CURRENCY)
             .col(6)
             .name('descuento')
             .label('Descuento')
             .defaultValue(0)
             .readonly(true)
             .onClick((e: any) => {
-                let total = this.form.getField('total').textbox('getValue');
-                let wrapper = document.getElementById('wrapper') as HTMLElement;
-                let root = wrapper.appendChild(document.createElement('div'));
-                root.id = 'root';
-                createRoot(document.getElementById('root') as HTMLElement).render(
-                    React.createElement(DiscountDialog, {total: total})
+                reactRoot.render(
+                    React.createElement(DiscountDialog, {total: this.getTotal()})
                 );
+                bus.emit(DiscountDialogEvent.OPEN);
             })
             .onChange(this.calculateGrandTotal.bind(this))
             .visible(false)
@@ -208,7 +204,7 @@ export default class Sale {
                 text: Constants.TEXT_ADD,
                 iconCls: Constants.ICON_ADD,
                 handler: function () {
-                    bus.emit(new Event(Sale.EVENTS.ADD));
+                    bus.emit(Sale.EVENTS.ADD);
                 }
             }, {
                 text: 'Vista Previa',
@@ -289,25 +285,26 @@ export default class Sale {
             icons: [{
                 iconCls: 'fas fa-plus fa-1x',
                 handler: () => {
-                    bus.emit(new Event(Customer.EVENTS.ADD));
+                    bus.emit(Customer.EVENTS.ADD);
                     drawer.show();
                 }
             }]
         });
-        bus.on(
-            action => action.name == Customer.EVENTS.SUCCESS,
-            (action: Event) => {
+
+        bus.on<string>(Customer.EVENTS.SUCCESS, (customerId: string) => {
                 customerField.combobox('reload');
-                customerField.combobox('setValue', action.data || '');
+                customerField.combobox('setValue', customerId || '');
                 drawer.hide();
             }
         );
-        bus.on(
-            action => action.name == Form.EVENTS.ROW_REMOVED,
-            (action: Event) => {
-                this.calculateGrandTotal();
+
+        bus.on(Form.EVENTS.ROW_REMOVED, () => this.calculateGrandTotal());
+
+        bus.on<number>(DiscountDialogEvent.APPLY, (discountAmount: number) => {
+                let discountField = this.form.getField('descuento');
+                discountField.numberbox('setValue', discountAmount);
             }
-        );
+        )
     }
 
     private onSelectProduct(record: any, field: Field) {
@@ -332,7 +329,7 @@ export default class Sale {
         row['precio_total-' + index].numberbox('setValue', Number(newValue * quantity).toFixed(2));
     }
 
-    private calculateGrandTotal() {
+    private getTotal(): number {
         let total = 0;
         let formFields = this.form.getDetailFormFields();
         for (let key in formFields) {
@@ -340,6 +337,11 @@ export default class Sale {
                 total += Number(formFields[key].numberbox('getValue'));
             }
         }
+        return total;
+    }
+
+    private calculateGrandTotal() {
+        let total = this.getTotal();
         total -= Number(this.form.getField('descuento').numberbox('getValue'));
         this.form.getField('total').numberbox('setValue', total);
     }

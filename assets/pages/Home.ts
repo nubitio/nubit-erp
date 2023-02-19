@@ -106,10 +106,8 @@ export default class Home {
     }
 
     setupObservers() {
-        bus.on(
-            event => event.name === EventType.THEME_CHANGE,
-            (event) => {
-                if (event.data === 'dark') {
+        bus.on<string>(EventType.THEME_CHANGE, (payload: string) => {
+                if (payload === 'dark') {
                     this.themeIcon.removeClass('fa-moon');
                     this.themeIcon.addClass('fa-sun');
                 } else {
@@ -119,12 +117,7 @@ export default class Home {
             }
         )
 
-        bus.on(
-            event => event.name === LocalPicker.EVENTS.PICKED,
-            () => {
-                window.location.href = '/';
-            }
-        );
+        bus.on(LocalPicker.EVENTS.PICKED, () => window.location.href = '/');
 
         window.onresize = () => {
             this.layout.layout('resize');

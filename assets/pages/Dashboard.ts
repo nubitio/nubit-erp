@@ -6,7 +6,6 @@ import * as Lollipop from 'highcharts/modules/lollipop';
 import {messenger} from "../core/utils/Messenger";
 import {bus} from "../core/event/EventBus";
 import {EventType} from "../core/event/EventType";
-import {Event} from "../core/event/Event";
 
 export default class Dashboard {
     lapseSelector = $('#lapse-selector');
@@ -67,9 +66,7 @@ export default class Dashboard {
     }
 
     setupObservers() {
-        bus.on(
-            action => action.name === EventType.THEME_CHANGE,
-            () => {
+        bus.on(EventType.THEME_CHANGE, () => {
                 this.setupTheme();
                 if (this.dataLoaded) {
                     this.drawCharts();
@@ -85,19 +82,9 @@ export default class Dashboard {
             }
         );
 
-        bus.on(
-            action => action.name === 'on:rotation-data:loaded',
-            () => {
-                this.drawRotationCharts();
-            }
-        );
+        bus.on('on:rotation-data:loaded', () => this.drawRotationCharts());
 
-        bus.on(
-            action => action.name === 'on:bi-data:loaded',
-            () => {
-                this.drawCharts();
-            }
-        );
+        bus.on('on:bi-data:loaded', () => this.drawCharts());
 
         window.setInterval(() => {
             this.fetchData();
@@ -257,7 +244,7 @@ export default class Dashboard {
             this.invoiceCountPerMonthData = result[3];
             this.dataLoaded = true;
 
-            bus.emit(new Event('on:bi-data:loaded'));
+            bus.emit('on:bi-data:loaded');
         });
     }
 
@@ -294,7 +281,7 @@ export default class Dashboard {
                 this.lessSoldProductsData = lessSoldData;
                 this.rotationDataLoaded = true;
 
-                bus.emit(new Event('on:rotation-data:loaded'));
+                bus.emit('on:rotation-data:loaded');
                 this.dgWithoutRotation.datagrid('loadData', withoutRotation);
             })
             .catch(err => messenger.show('error', 'Error al obtener datos de rotación de productos'));

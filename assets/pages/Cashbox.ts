@@ -7,7 +7,7 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {messenger} from "../core/utils/Messenger";
 import {httpClient} from "../core/http/HttpClient";
 import {bus} from "../core/event/EventBus";
-import {Event} from "../core/event/Event";
+import {EventObject} from "../core/event/EventObject";
 
 export default class Cashbox {
     private readonly container: string;
@@ -147,7 +147,7 @@ export default class Cashbox {
     private checkCashbox(): void {
         let cashboxId = this.dataGrid.data['header']['caja_id'];
         if (cashboxId === undefined) {
-            bus.emit(new Event('cashbox-open:add'));
+            bus.emit('cashbox-open:add');
         }
     }
 
@@ -175,25 +175,18 @@ export default class Cashbox {
                 .build(),
         ]);
 
-        bus.on(
-            action => action.name === events.SAVE,
-            (action) => {
+        bus.on(events.SAVE, () => {
                 let params = new URLSearchParams();
                 params.append('monto_inicial', form.getField('monto_inicial').numberbox('getValue'));
                 httpClient.post('cashbox/open', params).subscribe(
                     (response) => {
-                        bus.emit(new Event(events.SUCCESS));
+                        bus.emit(events.SUCCESS);
                     }
                 );
             }
         );
 
-        bus.on(
-            action => action.name === events.CANCEL,
-            (action) => {
-                this.dataGrid.reload();
-            }
-        );
+        bus.on(events.CANCEL, () => this.dataGrid.reload());
     }
 
     private closeCashbox() {

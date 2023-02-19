@@ -57,6 +57,9 @@ $.extend($.fn.dialog.defaults, {
         $(this).dialog('center');
         $(this).parent().animateCss(DIALOG_OPEN_ANIMATION);
     },
+    onClose: function () {
+        $(this).parent().animateCss(DIALOG_CLOSE_ANIMATION);
+    },
     onMove: function (left, top) {
         if (left < 0) {
             $(this).dialog('move', {

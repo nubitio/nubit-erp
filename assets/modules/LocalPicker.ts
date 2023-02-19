@@ -1,5 +1,4 @@
 import Dialog from "../core/dialog/Dialog";
-import {Event} from "../core/event/Event";
 import {authService} from "../services/auth.service";
 import {bus} from "../core/event/EventBus";
 
@@ -32,7 +31,7 @@ export default class LocalPicker {
                 authService.setLocal(row['local_id']).subscribe((response) => {
                     if (response.data.success) {
                         this.dialog.hide();
-                        bus.emit(new Event(LocalPicker.EVENTS.PICKED, response.data.data));
+                        bus.emit(LocalPicker.EVENTS.PICKED, response.data.data);
                     }
                 });
             }
@@ -40,7 +39,7 @@ export default class LocalPicker {
 
         this.dialog.onNegativeClick(() => {
             this.dialog.hide();
-            bus.emit(new Event(LocalPicker.EVENTS.CANCELED));
+            bus.emit(LocalPicker.EVENTS.CANCELED);
         });
 
         let container = document.getElementById(this.dialog.id ?? '');

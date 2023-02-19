@@ -7,7 +7,7 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
-import {Event} from "../core/event/Event";
+import {EventObject} from "../core/event/EventObject";
 import {httpClient} from "../core/http/HttpClient";
 
 export default class Role {
@@ -67,7 +67,7 @@ export default class Role {
                 handler: () => {
                     let row = this.dataGrid.selectedRow;
                     if (row) {
-                        bus.emit(new Event('permission:load', row));
+                        bus.emit('permission:load', row);
                     } else {
                         SharedUtils.showMessage('Info', 'Seleccione un registro');
                     }
@@ -138,26 +138,22 @@ export default class Role {
             lines: true,
         });
 
-        bus.on(
-            action => action.name === 'permission:load',
-            (action: Event) => {
-                let row = action.data;
+        bus.on<any>('permission:load', (payload) => {
+                let row = payload;
                 permissionsDialog.show('Permisos del rol ' + row.descripcion);
                 drawer.show();
                 permissionsTree.tree('loadData', []);
-                bus.emit(new Event(EVENTS.LOADING, true));
+                bus.emit(EVENTS.LOADING, true);
                 httpClient.get<any>('role-menu/get', {params: {roleId: row['rol_id']}}).subscribe(
                     response => {
                         permissionsTree.tree('loadData', response.data);
-                        bus.emit(new Event(EVENTS.LOADING, false));
+                        bus.emit(EVENTS.LOADING, false);
                     }
                 )
             }
         )
 
-        bus.on(
-            action => action.name === EVENTS.SAVE,
-            (action) => {
+        bus.on(EVENTS.SAVE, () => {
                 let row = this.dataGrid.selectedRow;
                 let selected = permissionsTree.tree('getChecked', ['checked', 'indeterminate']);
                 let permissions = selected.map((obj: any) => obj.id);
@@ -166,7 +162,7 @@ export default class Role {
                         SharedUtils.showMessage('Info', response.data.msg);
                         permissionsDialog.hide();
                         drawer.hide();
-                        bus.emit(new Event(EVENTS.SUCCESS, true));
+                        bus.emit(EVENTS.SUCCESS, true);
                     }
                 )
             }
