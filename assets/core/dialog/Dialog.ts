@@ -1,7 +1,6 @@
 import {Constants} from "../common/Constants";
 import {Animation} from "../common/Animation";
 import {bus} from "../event/EventBus";
-import {Event} from "../event/Event";
 import {SharedUtils} from "../utils/SharedUtils";
 
 export default class Dialog {
@@ -40,7 +39,7 @@ export default class Dialog {
             text: this.options.positiveText ?? Constants.TEXT_SAVE,
             handler: () => {
                 if (this.events?.SAVE) {
-                    bus.emit(new Event(this.events?.SAVE));
+                    bus.emit(this.events?.SAVE);
                 }
             }
         });
@@ -64,7 +63,7 @@ export default class Dialog {
             onClose: function () {
                 ref.isShowing = false;
                 if (ref.events?.CANCEL) {
-                    bus.emit(new Event(ref.events?.CANCEL));
+                    bus.emit(ref.events?.CANCEL);
                 }
             }
         });
@@ -83,33 +82,13 @@ export default class Dialog {
     }
 
     setupObservers() {
-        bus.on(
-            event => event.name === this.events?.ADD,
-            (event) => {
-                this.show(event.data?.title ?? 'Nuevo');
-            }
-        );
+        bus.on<any>(this.events?.ADD, (payload) => this.show(payload?.title ?? 'Nuevo'));
 
-        bus.on(
-            event => event.name === this.events?.EDIT,
-            (event) => {
-                this.show('Editar');
-            }
-        );
+        bus.on(this.events?.EDIT, () => this.show('Editar'));
 
-        bus.on(
-            event => event.name === this.events?.LOADING,
-            (event) => {
-                this.setLoading(event.data);
-            }
-        );
+        bus.on<boolean>(this.events?.LOADING, (isLoading) => this.setLoading(isLoading));
 
-        bus.on(
-            event => event.name === this.events?.SUCCESS,
-            (event) => {
-                this.hide();
-            }
-        );
+        bus.on(this.events?.SUCCESS, () => this.hide());
     }
 
     get id(): string {

@@ -3,7 +3,7 @@ import {SharedUtils} from "../utils/SharedUtils";
 import {Field} from "./Field";
 import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
-import {Event} from "../event/Event";
+import {EventObject} from "../event/EventObject";
 import {httpClient} from "../http/HttpClient";
 import NumberUtils from "../utils/NumberUtils";
 import {Constants} from "../common/Constants";
@@ -51,7 +51,7 @@ export default class Form {
             onSubmit: function () {
                 let valid = ref.validate();
                 if (valid) {
-                    bus.emit(new Event(ref.events.LOADING, true));
+                    bus.emit(ref.events.LOADING, true);
                     if (ref.options.url) {
                         if (ref.operation === Form.OPERATIONS.ADD) {
                             ref.addRecord();
@@ -68,7 +68,7 @@ export default class Form {
                 try {
                     result = JSON.parse(result);
                     if (result.success) {
-                        bus.emit(new Event(ref.events.SUCCESS, result.data || {}));
+                        bus.emit(ref.events.SUCCESS, result.data || {});
                         SharedUtils.showMessage('Info', result.msg);
                     } else {
                         SharedUtils.showMessage('Error', result.msg);
@@ -76,7 +76,7 @@ export default class Form {
                 } catch (e) {
                     SharedUtils.showMessage('Error', 'Error al procesar la respuesta del servidor');
                 } finally {
-                    bus.emit(new Event(ref.events.LOADING, false));
+                    bus.emit(ref.events.LOADING, false);
                 }
             }
         });
@@ -126,13 +126,8 @@ export default class Form {
             let clearFix = document.createElement('div');
             clearFix.classList.add('clearfix');
 
-            let addRowBtn = document.createElement('button');
-            addRowBtn.setAttribute('type', 'button');
-            addRowBtn.setAttribute('class', 'btn btn-primary');
-            addRowBtn.innerHTML = 'Agregar';
-            addRowBtn.addEventListener('click', () => {
-                this.addRow();
-            });
+            let addRowBtn = document.createElement('a');
+            addRowBtn.setAttribute('id', 'addRowBtn' + this.randomId);
 
             leftItems.appendChild(headerTitle);
             rightItems.appendChild(addRowBtn);
@@ -141,6 +136,14 @@ export default class Form {
             headerContainer.appendChild(rightItems);
             headerContainer.appendChild(clearFix);
             rightCol.appendChild(headerContainer);
+
+            let easyuiBtn = $('#' + addRowBtn.id);
+            easyuiBtn.linkbutton({
+                iconCls: Constants.ICON_ADD,
+                onClick: () => {
+                    this.addRow();
+                }
+            });
 
             let detailTable = document.createElement('table');
             detailTable.setAttribute('id', 'detailTable' + this.randomId);
@@ -195,7 +198,7 @@ export default class Form {
         });
 
         this.buildFormFields(rowFields);
-        bus.emit(new Event(Form.EVENTS.ROW_ADDED, this.rowIndex));
+        bus.emit(Form.EVENTS.ROW_ADDED, this.rowIndex);
     }
 
     private removeRow(rowIndex: string) {
@@ -212,7 +215,7 @@ export default class Form {
                 delete this.formFields[key];
             }
         }
-        bus.emit(new Event(Form.EVENTS.ROW_REMOVED, rowIndex));
+        bus.emit(Form.EVENTS.ROW_REMOVED, rowIndex);
     }
 
     private buildFields(container: HTMLElement, fields: Field[], containerType = 'div', rowIndex: number | null = null) {
@@ -271,25 +274,19 @@ export default class Form {
     }
 
     setupObservers() {
-        bus.on(
-            event => event.name === this.events?.ADD,
-            () => {
+        bus.on(this.events?.ADD, () => {
                 this.add();
                 this.operation = Form.OPERATIONS.ADD;
             }
         )
 
-        bus.on(
-            event => event.name === this.events?.EDIT,
-            (event) => {
-                this.edit(null, event.data.row);
+        bus.on<any>(this.events?.EDIT, (payload) => {
+                this.edit(null, payload.row);
                 this.operation = Form.OPERATIONS.EDIT;
             }
         )
 
-        bus.on(
-            event => event.name === this.events?.SAVE,
-            () => {
+        bus.on(this.events?.SAVE, () => {
                 if (!this.options.preventDefault) {
                     this.submit();
                 }
@@ -362,13 +359,13 @@ export default class Form {
                     if (!field.defaultValue) {
                         return;
                     }
-                    bus.emit(new Event(this.events.LOADING, true));
+                    bus.emit(this.events.LOADING, true);
                     httpClient.delete('api/media/' + field.defaultValue).subscribe(() => {
                         field.defaultValue = null;
                         input.filebox('clear');
                         hiddenInput.setAttribute('value', '');
                     }).add(() => {
-                        bus.emit(new Event(this.events.LOADING, false));
+                        bus.emit(this.events.LOADING, false);
                     });
                 }
             }],
@@ -377,7 +374,7 @@ export default class Form {
                 if (file) {
                     let formData = new FormData();
                     formData.append('file', file);
-                    bus.emit(new Event(this.events.LOADING, true));
+                    bus.emit(this.events.LOADING, true);
                     httpClient.post('api/media', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
@@ -387,7 +384,7 @@ export default class Form {
                         input.filebox('setValue', response.data.id);
                         hiddenInput.setAttribute('value', response.data.id);
                     }).add(() => {
-                        bus.emit(new Event(this.events.LOADING, false));
+                        bus.emit(this.events.LOADING, false);
                     });
                 }
             }
@@ -792,11 +789,11 @@ export default class Form {
         httpClient.post<any>(this.options.url, this.getDataObject())
             .subscribe(
                 (response: any) => {
-                    bus.emit(new Event(this.events.SUCCESS, response));
+                    bus.emit(this.events.SUCCESS, response);
                 }
             )
             .add(() => {
-                bus.emit(new Event(this.events.LOADING, false));
+                bus.emit(this.events.LOADING, false);
             })
     }
 
@@ -806,11 +803,11 @@ export default class Form {
         httpClient.put<any>(this.options.url + '/' + id, row)
             .subscribe(
                 (response: any) => {
-                    bus.emit(new Event(this.events.SUCCESS, response));
+                    bus.emit(this.events.SUCCESS, response);
                 }
             )
             .add(() => {
-                bus.emit(new Event(this.events.LOADING, false));
+                bus.emit(this.events.LOADING, false);
             })
     }
 }

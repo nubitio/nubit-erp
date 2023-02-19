@@ -4,7 +4,7 @@ import {FormType} from "../core/form/FormType";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {bus} from "../core/event/EventBus";
-import {Event} from "../core/event/Event";
+import {EventObject} from "../core/event/EventObject";
 
 export default class SaleConsult {
     private readonly container: string;
@@ -70,9 +70,7 @@ export default class SaleConsult {
             preventDefault: true,
         });
 
-        bus.on(
-            action => action.name === SaleConsult.EVENTS.SAVE,
-            action => {
+        bus.on(SaleConsult.EVENTS.SAVE, () => {
                 let data: any = form.getData();
                 data = data.replace(/_/g, '-');
                 window.open(`/sale/consult?${data}`);
@@ -80,6 +78,6 @@ export default class SaleConsult {
             }
         );
 
-        bus.emit(new Event(SaleConsult.EVENTS.ADD, {title: 'Reporte de ventas'}));
+        bus.emit(SaleConsult.EVENTS.ADD, {title: 'Reporte de ventas'});
     }
 }
