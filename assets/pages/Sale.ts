@@ -136,11 +136,7 @@ export default class Sale {
             .defaultValue(0)
             .readonly(true)
             .onClick((e: any) => {
-                console.log({total: this.getTotal()});
-                reactRoot.render(
-                    React.createElement(DiscountDialog, {total: this.getTotal()})
-                );
-                bus.emit(DiscountDialogEvent.OPEN);
+                bus.emit(DiscountDialogEvent.OPEN, this.getTotal());
             })
             .onChange(this.calculateGrandTotal.bind(this))
             .visible(false)
@@ -196,6 +192,9 @@ export default class Sale {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        reactRoot.render(
+            React.createElement(DiscountDialog)
+        );
     }
 
     private renderDataGrid() {

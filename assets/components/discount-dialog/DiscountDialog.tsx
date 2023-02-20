@@ -9,8 +9,9 @@ export enum DiscountDialogEvent {
     APPLY = 'discount:apply'
 }
 
-export const DiscountDialog = ({total}: { total: number }) => {
+export const DiscountDialog = () => {
     const [visible, setVisible] = useState(false);
+    const [total, setTotal] = useState(0.00);
     const [discountPercent, setDiscountPercent] = useState(0.00);
     const [discountAmount, setDiscountAmount] = useState(0.00);
     const [newTotal, setNewTotal] = useState(total);
@@ -35,6 +36,7 @@ export const DiscountDialog = ({total}: { total: number }) => {
     }, []);
 
     useEffect(() => {
+        console.log('DiscountDialog: total changed');
         if (total === 0) {
             setNewTotal(0);
             setDiscountAmount(0);
@@ -44,11 +46,19 @@ export const DiscountDialog = ({total}: { total: number }) => {
         setNewTotal(total - discountAmount);
         let discountPercent = discountAmount / total;
         setDiscountPercent(discountPercent);
-    }, [total, discountAmount]);
+    }, [total]);
 
-    bus.on(DiscountDialogEvent.OPEN, () => {
-        setVisible(true);
-    });
+    useEffect(() => {
+        console.log('DiscountDialog: setupObservers');
+        setupObservers();
+    }, []);
+
+    const setupObservers = () => {
+        bus.on<number>(DiscountDialogEvent.OPEN, (total) => {
+            setVisible(true);
+            setTotal(total);
+        });
+    }
 
     return (
         <div>
