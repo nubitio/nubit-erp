@@ -28,9 +28,9 @@ class Product
         #[SerializedName('stock_minimo')]
         public ?int      $stock_minimo = null,
         #[SerializedName('precio')]
-        public ?string   $precio = null,
+        public ?float    $precio = null,
         #[SerializedName('precio_compra')]
-        public ?string   $precio_compra = null,
+        public ?float    $precio_compra = null,
         #[SerializedName('imagen')]
         public ?Media    $imagen = null,
         #[SerializedName('estado')]
