@@ -77,7 +77,7 @@ export default class Product {
             .formatter((value: any, row: any) => value.descripcion ?? '')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FormType.CURRENCY)
             .name('precio')
             .label('Precio')
             .required(true)

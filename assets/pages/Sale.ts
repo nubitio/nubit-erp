@@ -80,6 +80,7 @@ export default class Sale {
             .label('Cliente')
             .width(100)
             .url('api/customers')
+            .mode('remote')
             .valueField('ruc')
             .textField('razon_social')
             .defaultValue('00000000')
