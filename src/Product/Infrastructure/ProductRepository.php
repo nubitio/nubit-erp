@@ -43,8 +43,10 @@ readonly class ProductRepository implements ProductRepositoryInterface
         $entity = DataMapper::map($product, ProductEntity::class);
         $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria->categoria_id);
         $entity->categoria = $category;
-        $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
-        $entity->imagen = $image;
+        if ($product->imagen?->id) {
+            $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
+            $entity->imagen = $image;
+        }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -56,8 +58,10 @@ readonly class ProductRepository implements ProductRepositoryInterface
         $entity = $this->entityManager->find(ProductEntity::class, $product->producto_id);
         $entity = DataMapper::map($product, $entity);
         $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria->categoria_id);
-        $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
-        $entity->imagen = $image;
+        if ($product->imagen?->id) {
+            $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
+            $entity->imagen = $image;
+        }
         $entity->categoria = $category;
         $this->entityManager->flush();
 
