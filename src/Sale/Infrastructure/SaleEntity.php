@@ -82,6 +82,8 @@ class SaleEntity
         public ?int                 $recargo_consumo = null,
         #[Column(name: 'invoice', type: 'string')]
         public ?string              $invoice = null,
+        #[Column(name: 'subtotal', type: 'decimal')]
+        public ?float               $subtotal = null,
         #[Column(name: 'total', type: 'decimal')]
         public ?float               $total = null,
         /** @var SaleDetailEntity[] $details */

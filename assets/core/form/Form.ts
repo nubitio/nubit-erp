@@ -716,21 +716,26 @@ export default class Form {
     getDataObject() {
         let data = this.getDataArray();
         let object: Record<string, any> = {};
+        let array: Record<string, any>[] = [];
+        let arrayName = '';
         data.forEach(item => {
             if (item.name.includes('[')) {
-                let name = item.name.split('[')[0];
+                arrayName = item.name.split('[')[0];
+                if (!object[arrayName]) {
+                    object[arrayName] = [];
+                }
                 let index = Number(item.name.split('[')[1].split(']')[0]);
                 let fieldName = item.name.split('[')[2].split(']')[0];
-                if (!object[name]) {
-                    object[name] = [];
+                if (!array[index]) {
+                    array[index] = {};
                 }
-                if (!object[name][index]) {
-                    object[name][index] = {};
-                }
-                object[name][index][fieldName] = this.getTypedFormValue(item);
+                array[index][fieldName] = this.getTypedFormValue(item);
             } else {
                 object[item.name] = this.getTypedFormValue(item);
             }
+        });
+        array.forEach(item => {
+            object[arrayName].push(item);
         });
         return object;
     }

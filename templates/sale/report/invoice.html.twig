@@ -100,7 +100,7 @@
             {% if sale.header.doc_type != '00' %}
                 <tr>
                     <td class="left">OP. Gravada.</td>
-                    <td class="text-right text-end">{{ sale.header.doc_sale_value }}</td>
+                    <td class="text-right text-end">{{ sale.header.doc_taxed_amount }}</td>
                 </tr>
                 <tr>
                     <td class="left">OP. Inafecta.</td>
@@ -114,6 +114,12 @@
                     <td class="left">IGV.</td>
                     <td class="text-right text-end">{{ sale.header.doc_total_taxes }}</td>
                 </tr>
+                {% if sale.header.doc_other_charges_percent > 0 %}
+                    <tr>
+                        <td class="left">RC.</td>
+                        <td class="text-right text-end">{{ sale.header.doc_other_charges }}</td>
+                    </tr>
+                {% endif %}
             {% endif %}
             <tr>
                 <td class="left">

@@ -52,7 +52,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      */
     public function create(Sale $sale, string $localId): void
     {
-        $invoiceCalculator = new InvoiceCalculator($sale->total, $sale->descuento ?? 0.0, $sale->igv, $sale->recargo_consumo ?? 0.0);
+        $invoiceCalculator = new InvoiceCalculator($sale->subtotal, $sale->descuento ?? 0.0, $sale->igv, $sale->recargo_consumo ?? 0.0);
         $invoiceAmounts = $invoiceCalculator->calculate();
         $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?)', [
             $sale->movimiento_id,
