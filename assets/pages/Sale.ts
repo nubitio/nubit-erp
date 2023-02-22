@@ -133,11 +133,13 @@ export default class Sale {
             .type(FormType.CURRENCY)
             .col(6)
             .name('descuento')
-            .label('Descuento')
+            .label('Descuento %')
             .defaultValue(0)
             .readonly(true)
             .onClick((e: any) => {
-                bus.emit(DiscountDialogEvent.OPEN, this.getTotal());
+                let total = this.getTotal();
+                let discountPercent = this.form.getField('descuento').numberbox('getValue');
+                bus.emit(DiscountDialogEvent.OPEN, {total, discountPercent});
             })
             .onChange(this.calculateGrandTotal.bind(this))
             .visible(false)
@@ -301,9 +303,9 @@ export default class Sale {
 
         bus.on(Form.EVENTS.ROW_REMOVED, () => this.calculateGrandTotal());
 
-        bus.on<number>(DiscountDialogEvent.APPLY, (discountAmount: number) => {
+        bus.on<number>(DiscountDialogEvent.APPLY, (discountPercent: number) => {
                 let discountField = this.form.getField('descuento');
-                discountField.numberbox('setValue', discountAmount);
+                discountField.numberbox('setValue', Number(discountPercent * 100).toFixed(2));
             }
         )
     }
@@ -343,7 +345,9 @@ export default class Sale {
 
     private calculateGrandTotal() {
         let total = this.getTotal();
-        total -= Number(this.form.getField('descuento').numberbox('getValue'));
+        let discountPercent = Number(this.form.getField('descuento').numberbox('getValue'));
+        let discount = total * (discountPercent / 100);
+        total -= discount;
         this.form.getField('total').numberbox('setValue', total);
     }
 

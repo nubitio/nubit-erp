@@ -64,6 +64,8 @@ class Sale
         public ?int                $recargo_consumo = null,
         #[SerializedName('invoice')]
         public ?string             $invoice = null,
+        #[SerializedName('subtotal')]
+        public ?float              $subtotal = null,
         #[SerializedName('total')]
         public ?float              $total = null,
         /** @var SaleDetail[] $details */

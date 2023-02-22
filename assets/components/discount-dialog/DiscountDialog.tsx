@@ -30,34 +30,32 @@ export const DiscountDialog = () => {
         setNewTotal(total - e.value)
     }, [total, discountPercent]);
 
-    const onApply = useCallback((discountAmount: number) => {
+    const onApply = useCallback((discountPercent: number) => {
         setVisible(false);
-        bus.emit<number>(DiscountDialogEvent.APPLY, discountAmount);
+        bus.emit<number>(DiscountDialogEvent.APPLY, discountPercent);
     }, []);
 
     useEffect(() => {
-        console.log('DiscountDialog: total changed');
-        if (total === 0) {
-            setNewTotal(0);
-            setDiscountAmount(0);
-            setDiscountPercent(0);
-            return;
-        }
-        setNewTotal(total - discountAmount);
-        let discountPercent = discountAmount / total;
-        setDiscountPercent(discountPercent);
-    }, [total]);
-
-    useEffect(() => {
-        console.log('DiscountDialog: setupObservers');
-        setupObservers();
-    }, []);
-
-    const setupObservers = () => {
-        bus.on<number>(DiscountDialogEvent.OPEN, (total) => {
+        bus.on<{ total: number, discountPercent: number }>(DiscountDialogEvent.OPEN, (data) => {
             setVisible(true);
-            setTotal(total);
+            resetState();
+            setTotal(data.total);
+            setNewTotal(data.total);
+            if (data.discountPercent) {
+                let discountPercent = data.discountPercent / 100;
+                setDiscountPercent(discountPercent);
+                let discountAmount = data.total * discountPercent;
+                setDiscountAmount(discountAmount);
+                setNewTotal(data.total - discountAmount)
+            }
         });
+    }, []);
+
+    const resetState = () => {
+        setTotal(0.00);
+        setDiscountPercent(0.00);
+        setDiscountAmount(0.00);
+        setNewTotal(0.00);
     }
 
     return (
@@ -78,7 +76,7 @@ export const DiscountDialog = () => {
                     toolbar="bottom"
                     options={{
                         text: "Apply",
-                        onClick: () => onApply(discountAmount)
+                        onClick: () => onApply(discountPercent)
                     }}
                 />
                 <h3 className="text-center">

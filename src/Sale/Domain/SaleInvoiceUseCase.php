@@ -38,6 +38,7 @@ readonly class SaleInvoiceUseCase
             $this->invoiceRepository->update($invoice);
             $sale->has_invoice = true;
             $sale->invoice = $invoice->serie . '-' . $invoice->numero;
+            $sale->total = $invoice->total;
             $this->updateSaleUseCase->__invoke($sale);
         } else {
             $invoice->envio_sunat = $response->sunatResponse->error->code;
