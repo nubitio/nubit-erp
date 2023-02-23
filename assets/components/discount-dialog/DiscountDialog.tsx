@@ -14,21 +14,6 @@ export const DiscountDialog = () => {
     const [total, setTotal] = useState(0.00);
     const [discountPercent, setDiscountPercent] = useState(0.00);
     const [discountAmount, setDiscountAmount] = useState(0.00);
-    const [newTotal, setNewTotal] = useState(total);
-
-    const onDiscountPercentChanged = useCallback((e: any) => {
-        setDiscountPercent(e.value);
-        let discountAmount = e.value * total;
-        setDiscountAmount(discountAmount);
-    }, [total, discountAmount]);
-
-    const onDiscountAmountChanged = useCallback((e: any) => {
-        if (total === 0) return;
-        setDiscountAmount(e.value);
-        let discountPercent = e.value / total;
-        setDiscountPercent(discountPercent);
-        setNewTotal(total - e.value)
-    }, [total, discountPercent]);
 
     const onApply = useCallback((discountPercent: number) => {
         setVisible(false);
@@ -36,27 +21,23 @@ export const DiscountDialog = () => {
     }, []);
 
     useEffect(() => {
-        bus.on<{ total: number, discountPercent: number }>(DiscountDialogEvent.OPEN, (data) => {
-            setVisible(true);
-            resetState();
+        setDiscountAmount(discountPercent * total);
+    }, [discountPercent, total]);
+
+    useEffect(() => {
+        if (total > 0) {
+            setDiscountPercent(discountAmount / total);
+        }
+    }, [discountAmount, total]);
+
+    useEffect(() => {
+        bus.on<{ discountPercent: number, total: number }>(DiscountDialogEvent.OPEN, (data) => {
             setTotal(data.total);
-            setNewTotal(data.total);
-            if (data.discountPercent) {
-                let discountPercent = data.discountPercent / 100;
-                setDiscountPercent(discountPercent);
-                let discountAmount = data.total * discountPercent;
-                setDiscountAmount(discountAmount);
-                setNewTotal(data.total - discountAmount)
-            }
+            setDiscountPercent(data.discountPercent);
+            setDiscountAmount(data.discountPercent * data.total);
+            setVisible(true);
         });
     }, []);
-
-    const resetState = () => {
-        setTotal(0.00);
-        setDiscountPercent(0.00);
-        setDiscountAmount(0.00);
-        setNewTotal(0.00);
-    }
 
     return (
         <div>
@@ -71,6 +52,7 @@ export const DiscountDialog = () => {
                 height={360}
             >
                 <ToolbarItem
+                    key="apply-button"
                     location="after"
                     widget="dxButton"
                     toolbar="bottom"
@@ -80,7 +62,7 @@ export const DiscountDialog = () => {
                     }}
                 />
                 <h3 className="text-center">
-                    {NumberUtils.formatCurrency(newTotal)}
+                    {NumberUtils.formatCurrency(total - discountAmount)}
                 </h3>
                 {discountAmount > 0 &&
                     <h6 className="text-center text-decoration-line-through">
@@ -98,7 +80,7 @@ export const DiscountDialog = () => {
                             max={1}
                             showClearButton={true}
                             stylingMode={'outlined'}
-                            onValueChanged={onDiscountPercentChanged}
+                            onValueChanged={(event) => setDiscountPercent(event.value)}
                         />
                     </div>
                     <div className="mb-4">
@@ -110,7 +92,7 @@ export const DiscountDialog = () => {
                             max={total}
                             showClearButton={true}
                             stylingMode={'outlined'}
-                            onValueChanged={onDiscountAmountChanged}
+                            onValueChanged={(event) => setDiscountAmount(event.value)}
                         />
                     </div>
                 </div>
