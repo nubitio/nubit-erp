@@ -34,11 +34,11 @@ export class SharedUtils {
 
     static imageFormatter(image: string, name: string, path = '') {
         if (image) {
-            return `<a href="${path}${image}" data-lightbox="${name}">
+            return `<a href="${path}${image}" target="_blank">
                     <img src="${path}${image}" style="width: 30px; height: 30px;"  alt=""/>
                 </a>`;
         } else {
-            return `<a href="https://ui-avatars.com/api/?name=${name}" data-lightbox="${name}">
+            return `<a href="https://ui-avatars.com/api/?name=${name}" target="_blank" ">
                     <img src="https://ui-avatars.com/api/?name=${name}" style="width: 30px; height: 30px;"  alt=""/>
                 </a>`;
         }
@@ -48,12 +48,12 @@ export class SharedUtils {
         if (data.value) {
             return React.createElement('a', {
                 href: data.value,
-                'data-lightbox': data.row.data.descripcion
+                target: '_blank',
             }, React.createElement('img', {src: data.value, style: {width: '30px', height: '30px'}}));
         } else {
             return React.createElement('a', {
                 href: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
-                'data-lightbox': data.row.data.descripcion
+                target: '_blank',
             }, React.createElement('img', {
                 src: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
                 style: {width: '30px', height: '30px'}
