@@ -91,10 +91,12 @@ export default class Customer {
         });
     }
 
-    renderDialog() {
+    renderDialog(options?: any) {
         let ref = this;
         this.dialog = new Dialog(this.container, {
             events: Customer.EVENTS,
+            width: options?.width || 400,
+            inline: options?.inline || false,
         });
 
         this.form = new Form(this.dialog.id, this.fields, {
