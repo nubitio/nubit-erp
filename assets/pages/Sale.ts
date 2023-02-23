@@ -139,6 +139,7 @@ export default class Sale {
             .onClick((e: any) => {
                 let total = this.getTotal();
                 let discountPercent = this.form.getField('descuento').numberbox('getValue');
+                discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
                 bus.emit(DiscountDialogEvent.OPEN, {total, discountPercent});
             })
             .onChange(this.calculateGrandTotal.bind(this))

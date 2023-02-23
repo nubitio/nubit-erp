@@ -1,5 +1,3 @@
-import 'devextreme/dist/css/dx.material.blue.light.css';
-import 'devextreme/dist/css/dx.material.blue.dark.css';
 import './styles/app.scss';
 import {bus} from "./core/event/EventBus";
 import DataGrid from "./core/datagrid/DataGrid";
