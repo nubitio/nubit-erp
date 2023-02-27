@@ -1,13 +1,12 @@
 import {httpClient} from "../core/http/HttpClient";
-import {Observable} from "rxjs";
 
 export class SaleService {
 
-    voidSale(saleId: string, reason: string): Observable<any> {
-        return httpClient.post(`/sale/void/${saleId}`, {reason});
+    voidSale(saleId: string, reason: string) {
+        return httpClient.post<any>(`/sale/void/${saleId}`, {reason});
     }
 
-    makeInvoice(saleId: string): Observable<any> {
-        return httpClient.post(`/sale/invoice/${saleId}`);
+    makeInvoice(saleId: string) {
+        return httpClient.post<any>(`/sale/invoice/${saleId}`);
     }
 }

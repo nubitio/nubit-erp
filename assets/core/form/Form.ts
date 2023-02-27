@@ -541,6 +541,7 @@ export default class Form {
 
     buildEntityInput(field: Field) {
         let input = $('#' + field.name);
+        let timer: any;
         input.combobox({
             width: '100%',
             minWidth: 200,
@@ -556,10 +557,19 @@ export default class Form {
                         op: 'contains',
                         value: param.q
                     }]));
+                } else {
+                    if (url.indexOf("rows") > -1) {
+                        url = url.replace(/row=\d+/, "rows=100");
+                    } else {
+                        url += "?rows=100";
+                    }
                 }
-                httpClient.get(url).subscribe((response: any) => {
-                    success(response.data);
-                });
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    httpClient.get(url).subscribe((response: any) => {
+                        success(response.data);
+                    });
+                }, 400);
             },
             mode: field.mode ?? 'local',
             valueField: field.valueField,
