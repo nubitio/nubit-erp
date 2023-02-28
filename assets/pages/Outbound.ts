@@ -127,11 +127,12 @@ export default class Outbound {
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
             subGrid: {
-                url: 'api/sale/detail/',
+                url: 'api/sale/{id}/details',
                 columns: [
                     {
                         field: 'producto',
                         title: 'Producto',
+                        formatter: (value: any, row: any) => value['descripcion'],
                         width: 100
                     }, {
                         field: 'cantidad',

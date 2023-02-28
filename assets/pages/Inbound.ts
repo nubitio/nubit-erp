@@ -158,11 +158,12 @@ export default class Inbound {
             routes: Inbound.ROUTES,
             events: Inbound.EVENTS,
             subGrid: {
-                url: 'api/sale/detail/',
+                url: 'api/sale/{id}/details',
                 columns: [
                     {
                         field: 'producto',
                         title: 'Producto',
+                        formatter: (value: any, row: any) => value['descripcion'],
                         width: 100
                     }, {
                         field: 'cantidad',

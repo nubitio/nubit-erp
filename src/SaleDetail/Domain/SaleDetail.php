@@ -17,6 +17,7 @@ class SaleDetail
         public ?Sale $movimiento = null,
         #[SerializedName('producto')]
         public ?Product $producto = null,
+        public ?string $producto_id = null,
         #[SerializedName('cantidad')]
         public ?float  $cantidad = null,
         #[SerializedName('precio_unitario')]

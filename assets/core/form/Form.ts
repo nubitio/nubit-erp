@@ -561,7 +561,11 @@ export default class Form {
                     if (url.indexOf("rows") > -1) {
                         url = url.replace(/row=\d+/, "rows=100");
                     } else {
-                        url += "?rows=100";
+                        if (url.indexOf("?") > -1) {
+                            url += "&rows=100";
+                        } else {
+                            url += "?rows=100";
+                        }
                     }
                 }
                 clearTimeout(timer);
