@@ -6,6 +6,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Outbound\Domain\Outbound;
 use App\Outbound\Domain\OutboundRepositoryInterface;
+use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Infrastructure\SaleEntity;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use Doctrine\DBAL\Connection;
@@ -39,8 +40,7 @@ class OutboundRepository implements OutboundRepositoryInterface
     {
         try {
             $this->connection->beginTransaction();
-            $entity = new OutboundEntity();
-            $entity->mapFromDomainModel($outbound);
+            $entity = DataMapper::map($outbound, OutboundEntity::class);
             $entity->tipo_id = 2;
             $entity->estado = true;
             $entity->date_created = new \DateTime();
@@ -50,6 +50,7 @@ class OutboundRepository implements OutboundRepositoryInterface
             foreach ($outbound->items as $item) {
                 $detailEntity = DataMapper::map($item, SaleDetailEntity::class);
                 $detailEntity->movimiento = $ref;
+                $detailEntity->producto = $this->entityManager->getReference(ProductEntity::class, $item->producto_id);
                 $this->entityManager->persist($detailEntity);
             }
             $this->entityManager->flush();

@@ -4,7 +4,6 @@ import {FormType} from "../core/form/FormType";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {bus} from "../core/event/EventBus";
-import {EventObject} from "../core/event/EventObject";
 
 export default class SaleConsult {
     private readonly container: string;
@@ -61,7 +60,6 @@ export default class SaleConsult {
     render() {
         let dialog = new Dialog(this.container, {
             events: SaleConsult.EVENTS,
-            closable: false,
             positiveText: 'Generar',
         });
 
@@ -77,6 +75,10 @@ export default class SaleConsult {
                 form.reset();
             }
         );
+
+        bus.on(SaleConsult.EVENTS.CANCEL, () => {
+            location.href = '/';
+        });
 
         bus.emit(SaleConsult.EVENTS.ADD, {title: 'Reporte de ventas'});
     }
