@@ -52,7 +52,7 @@ export default class Auth {
 
     setupObservers() {
         bus.on<any>(LocalPicker.EVENTS.PICKED, (payload) => {
-                StorageUtils.setItem('session', payload.data);
+                StorageUtils.setItem('session', payload);
                 messenger.show('Información', 'Bienvenido');
                 window.location.href = '/';
             }

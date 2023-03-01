@@ -41,7 +41,7 @@ export default class Home {
 
                 let actualMenu = StorageUtils.getItem('menu');
                 StorageUtils.setItem('menu', menu);
-                if (menu.length !== actualMenu.length) {
+                if (menu.length !== actualMenu?.length) {
                     this.setupMenu();
                 }
 
