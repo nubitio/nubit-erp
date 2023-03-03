@@ -23,6 +23,7 @@
 
 #external files
 desktop.ini
+.DS_Store
 
 ###> symfony/framework-bundle ###
 /.env.local
