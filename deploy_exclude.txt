@@ -4,6 +4,7 @@
 .gitignore
 .env.local
 .env.test
+.DS_Store
 deploy.sh
 deploy_exclude.txt
 Dockerfile
