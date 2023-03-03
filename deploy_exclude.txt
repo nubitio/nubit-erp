@@ -4,7 +4,6 @@
 .gitignore
 .env.local
 .env.test
-public/wcpcache/
 tests/
 deploy.sh
 deploy_exclude.txt
@@ -12,6 +11,6 @@ Dockerfile
 docker-compose.yml
 node_modules/
 var/
-assets/
-
+public/wcpcache/*
 public/efact/*
+public/uploads/*
