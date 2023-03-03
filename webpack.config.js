@@ -54,9 +54,7 @@ Encore
     .enableReactPreset()
 
     // uncomment if you use TypeScript
-    .enableTypeScriptLoader((options) => {
-        options.appendTsSuffixTo = [/\.vue$/];
-    })
+    .enableTypeScriptLoader()
 
     .configureWatchOptions(watchOptions => {
         watchOptions.poll = 250;

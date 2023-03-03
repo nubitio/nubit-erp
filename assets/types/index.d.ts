@@ -26,11 +26,14 @@ declare global {
         sidemenu: any;
         datagrid: any;
         datalist: any;
+        window: any;
         dialog: any;
         drawer: any;
+        accordion: any;
         form: any;
         messager: any;
         linkbutton: any;
+        validatebox: any;
         filebox: any;
         textbox: any;
         passwordbox: any;
