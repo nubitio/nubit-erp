@@ -31,34 +31,34 @@ $.extend($.fn.window.defaults, {
 });
 
 $.extend($.fn.datagrid.defaults, {
-    pagination: PAGINATION,
-    pageSize: PAGE_SIZE,
-    rownumbers: ROW_NUMBERS,
+    pagination: true,
+    pageSize: 20,
+    rownumbers: true,
     fitColumns: true,
     fit: true,
-    border: BORDER,
-    singleSelect: SINGLE_SELECT,
+    border: false,
+    singleSelect: true,
     multiSort: true,
     remoteFilter: true
 });
 
 $.extend($.fn.dialog.defaults, {
-    width: DIALOG_WIDTH,
-    height: DIALOG_HEIGHT,
-    maxHeight: DIALOG_MAX_HEIGHT,
-    modal: MODAL,
-    closed: CLOSED,
+    width: 400,
+    height: 'auto',
+    maxHeight: 550,
+    modal: true,
+    closed: true,
     inline: false,
-    shadow: SHADOW,
+    shadow: false,
     closable: false,
     border: false,
     cls: 'card-dialog',
     onOpen: function () {
         $(this).dialog('center');
-        $(this).parent().animateCss(DIALOG_OPEN_ANIMATION);
+        $(this).parent().animateCss('animated zoomIn');
     },
     onClose: function () {
-        $(this).parent().animateCss(DIALOG_CLOSE_ANIMATION);
+        $(this).parent().animateCss('animated zoomOut');
     },
     onMove: function (left, top) {
         if (left < 0) {
@@ -84,7 +84,7 @@ $.extend($.fn.panel.methods, {
     showMask: function (jq, msg) {
         return jq.each(function () {
             var pal = $(this).panel('panel');
-            if (pal.css('position').toLowerCase() != 'absolute') {
+            if (pal.css('position').toLowerCase() !== 'absolute') {
                 pal.css('position', 'relative');
             }
             var m = pal.children('div.panel-mask');
