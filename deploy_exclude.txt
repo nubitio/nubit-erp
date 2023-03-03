@@ -9,8 +9,8 @@ deploy.sh
 deploy_exclude.txt
 Dockerfile
 docker-compose.yml
-/assets/
-/node_modules/
+/assets/*
+/node_modules/*
 /public/wcpcache/*
 /public/efact/*
 /public/uploads/*
