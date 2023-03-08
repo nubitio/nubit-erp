@@ -90,7 +90,9 @@ readonly class SaleRepository implements SaleRepositoryInterface
     {
         /** @var SaleEntity $entity */
         $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
+        $details = $entity->details;
         $entity = DataMapper::map($sale, $entity);
+        $entity->details = $details;
         $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen->almacen_id);
         $entity->almacen = $warehouse;
         $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
