@@ -8,6 +8,8 @@ use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Customer\Domain\Customer;
 use App\Customer\Domain\CustomerRepositoryInterface;
+use App\CustomerType\Infrastructure\CustomerTypeEntity;
+use App\PriceList\Infrastructure\PriceListEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class CustomerRepository implements CustomerRepositoryInterface
@@ -39,6 +41,8 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
     public function insert(Customer $customer): Customer
     {
         $entity = DataMapper::map($customer, CustomerEntity::class);
+        $type = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
+        $entity->type = $type;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -49,6 +53,8 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
     {
         $entity = $this->entityManager->find(CustomerEntity::class, $customer->ruc);
         $entity = DataMapper::map($customer, $entity);
+        $type = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
+        $entity->type = $type;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Customer::class);

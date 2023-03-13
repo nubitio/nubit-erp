@@ -65,6 +65,16 @@ export default class Customer {
             .label('Email')
             .build());
         this.fields.push(new FieldBuilder()
+            .type(FormType.ENTITY)
+            .name('price_list')
+            .label('Tarifa')
+            .url('api/price-lists')
+            .valueField('id')
+            .textField('name')
+            .formatter((value: any) => value?.name)
+            .valueType('number')
+            .build());
+        this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
             .name('estado')
             .label('Activo')

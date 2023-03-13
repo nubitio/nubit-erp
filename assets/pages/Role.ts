@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
-import {EventObject} from "../core/event/EventObject";
 import {httpClient} from "../core/http/HttpClient";
 
 export default class Role {
@@ -118,6 +117,7 @@ export default class Role {
             height: window.innerHeight,
             maxHeight: window.innerHeight,
             modal: false,
+            inline: true,
             events: EVENTS,
         });
 
