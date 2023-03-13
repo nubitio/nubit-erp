@@ -5,6 +5,7 @@ import {FormType} from "../core/form/FormType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import NumberUtils from "../core/utils/NumberUtils";
 
 export default class Product {
     private readonly container: string;
@@ -80,6 +81,8 @@ export default class Product {
             .type(FormType.CURRENCY)
             .name('precio')
             .label('Precio')
+            .align('right')
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()

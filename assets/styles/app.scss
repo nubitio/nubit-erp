@@ -716,10 +716,6 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
   border-style: solid;
 }
 
-.card-dialog .window-header .panel-tool {
-  top: 3.2%;
-}
-
 .panel-body {
   background-color: var(--background-color);
   color: var(--text-color);

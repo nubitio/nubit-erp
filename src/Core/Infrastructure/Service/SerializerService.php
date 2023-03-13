@@ -51,7 +51,7 @@ class SerializerService
         return $this->serializer->serialize($data, $format, $context);
     }
 
-    public function deserialize(mixed $data, string $type, string $format): object
+    public function deserialize(mixed $data, string $type, string $format): mixed
     {
         return $this->serializer->deserialize($data, $type, $format, [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true]);
     }

@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}CustomerType{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const customerType = new window.app.customerType('wrapper');
+            customerType.render();
+        });
+    </script>
+{% endblock %}

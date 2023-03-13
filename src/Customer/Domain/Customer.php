@@ -3,6 +3,8 @@
 namespace App\Customer\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\CustomerType\Domain\CustomerType;
+use App\PriceList\Domain\PriceList;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -10,19 +12,21 @@ class Customer
 {
     public function __construct(
         #[SerializedName('ruc')]
-        public ?string $ruc = null,
+        public ?string    $ruc = null,
         #[SerializedName('razon_social')]
-        public ?string $razon_social = null,
+        public ?string    $razon_social = null,
         #[SerializedName('domicilio_fiscal')]
-        public ?string $domicilio_fiscal = null,
+        public ?string    $domicilio_fiscal = null,
         #[SerializedName('telefono')]
-        public ?string $telefono = null,
+        public ?string    $telefono = null,
         #[SerializedName('email')]
-        public ?string $email = null,
+        public ?string    $email = null,
         #[SerializedName('imagen')]
-        public ?string $imagen = null,
+        public ?string    $imagen = null,
+        #[SerializedName('price_list')]
+        public ?PriceList $price_list = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool      $estado = false
     )
     {
     }

@@ -86,6 +86,21 @@ export default class Sale {
             .defaultValue('00000000')
             .required(true)
             .formatter((value: any, row: any) => value['razon_social'])
+            .onSelect((record: any, field: any) => {
+                console.log(record);
+                if (record['price_list']) {
+                    this.form.getField('tarifa').combobox('setValue', record['price_list']['id']);
+                }
+            })
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FormType.ENTITY)
+            .name('tarifa')
+            .label('Tarifa')
+            .url('api/price-lists')
+            .valueField('id')
+            .textField('name')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
