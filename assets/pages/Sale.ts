@@ -16,6 +16,9 @@ import {SaleService} from "../services/sale.service";
 import {DiscountDialog, DiscountDialogEvent} from "../components/discount-dialog/DiscountDialog";
 import React from "react";
 import {reactRoot} from "../core/common/ReactRoot";
+import NumberUtils from "../core/utils/NumberUtils";
+import {httpClient} from "../core/http/HttpClient";
+import {PriceListItemDto} from "../dto/PriceListItemDto";
 
 export default class Sale {
     private readonly container: string;
@@ -26,6 +29,7 @@ export default class Sale {
     private form: Form;
     private productService = new ProductService();
     private saleService = new SaleService();
+    private priceList: Array<PriceListItemDto> = [];
 
     static readonly API_URL = 'api/sales';
 
@@ -85,9 +89,8 @@ export default class Sale {
             .textField('razon_social')
             .defaultValue('00000000')
             .required(true)
-            .formatter((value: any, row: any) => value['razon_social'])
-            .onSelect((record: any, field: any) => {
-                console.log(record);
+            .formatter((value: any) => value['razon_social'])
+            .onSelect((record: any) => {
                 if (record['price_list']) {
                     this.form.getField('tarifa').combobox('setValue', record['price_list']['id']);
                 }
@@ -101,6 +104,15 @@ export default class Sale {
             .valueField('id')
             .textField('name')
             .visible(false)
+            .onSelect((record: any) => {
+                bus.emit(Sale.EVENTS.LOADING, true);
+                httpClient.get<PriceListItemDto[]>(`price-list/${record.id}/get`)
+                    .subscribe((response) => {
+                        this.priceList = response.data;
+                        this.updatePricesByPriceList();
+                    })
+                    .add(() => bus.emit(Sale.EVENTS.LOADING, false));
+            })
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.ENTITY)
@@ -131,12 +143,7 @@ export default class Sale {
             .name('total')
             .label('Total')
             .align('right')
-            .formatter((value: any, row: any) => {
-                return Intl.NumberFormat('es-PE', {
-                    style: 'currency',
-                    currency: 'PEN'
-                }).format(value);
-            })
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXTAREA)
@@ -287,7 +294,7 @@ export default class Sale {
     private renderDialog() {
         this.dialog = new Dialog(this.container, {
             width: 900,
-            maxHeight: 600,
+            maxHeight: 700,
             events: Sale.EVENTS
         });
 
@@ -324,14 +331,23 @@ export default class Sale {
                 discountField.numberbox('setValue', Number(discountPercent * 100).toFixed(2));
             }
         )
+
+        bus.on(Sale.EVENTS.ADD, () => this.priceList = []);
     }
 
     private onSelectProduct(record: any, field: Field) {
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(Number(index));
+        let price = record.precio;
+        if (this.priceList) {
+            let priceItem = this.priceList.find((item) => item.id === record.producto_id);
+            if (priceItem) {
+                price = priceItem.price;
+            }
+        }
         row['cantidad-' + index].numberbox('setValue', 1);
-        row['precio_unitario-' + index].numberbox('setValue', record.precio);
-        row['precio_total-' + index].numberbox('setValue', record.precio);
+        row['precio_unitario-' + index].numberbox('setValue', price);
+        row['precio_total-' + index].numberbox('setValue', price);
     }
 
     private onQuantityChange(newValue: number, oldValue: number, field: Field) {
@@ -453,5 +469,22 @@ export default class Sale {
                 });
             }
         })
+    }
+
+    private updatePricesByPriceList() {
+        let formFields = this.form.getDetailFormFields();
+        for (let key in formFields) {
+            if (key.startsWith('producto-')) {
+                let index = key.split('-')[1];
+                let row = this.form.getRowFormFieldsByIndex(Number(index));
+                let actualPrice = row['precio_unitario-' + index].numberbox('getValue');
+                if (this.priceList) {
+                    let priceItem = this.priceList.find((item) => item.id === formFields[key].combobox('getValue'));
+                    if (priceItem && priceItem.price != actualPrice) {
+                        row['precio_unitario-' + index].numberbox('setValue', priceItem.price);
+                    }
+                }
+            }
+        }
     }
 }
