@@ -11,7 +11,6 @@ use App\PriceList\Domain\PriceListRepositoryInterface;
 use App\PriceListDetail\Domain\PriceListDetail;
 use App\PriceListDetail\Infrastructure\PriceListDetailEntity;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PriceListRepository implements PriceListRepositoryInterface
@@ -69,13 +68,14 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     public function getPricesByList(int $id): array
     {
         $sql = "
-            SELECT
+            select
                 p.producto_id as id,
                 p.descripcion as name,
                 ifnull(pld.price, p.precio) as price
-            FROM producto p 
+            from producto p 
             left join price_list_detail pld on p.producto_id = pld.product_id
             and pld.price_list_id = :id
+            where p.estado = 1
             order by p.descripcion";
 
         return $this->connection->fetchAllAssociative($sql, ['id' => $id]);
@@ -83,25 +83,23 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
 
     /**
      * @param PriceListDetail[] $prices
-     * @throws Exception
      */
     public function savePrices(array $prices): void
     {
-        $this->connection->beginTransaction();
+        foreach ($prices as $priceItem) {
+            /** @var ?PriceListDetailEntity $entity */
+            $entity = $this->entityManager->getRepository(PriceListDetailEntity::class)
+                ->findOneBy(['price_lis_id' => $priceItem->price_list_id, 'product_id' => $priceItem->product_id]);
 
-        try {
-            $this->connection->delete('price_list_detail', ['price_list_id' => $prices[0]->price_list_id]);
-
-            foreach ($prices as $price) {
-                $entity = DataMapper::map($price, PriceListDetailEntity::class);
-                $this->entityManager->persist($entity);
+            if ($entity) {
+                $entity->price = $priceItem->price;
+            } else {
+                $entity = DataMapper::map($priceItem, PriceListDetailEntity::class);
             }
 
-            $this->entityManager->flush();
-            $this->connection->commit();
-        } catch (Exception $e) {
-            $this->connection->rollBack();
-            throw $e;
+            $this->entityManager->persist($entity);
         }
+
+        $this->entityManager->flush();
     }
 }
