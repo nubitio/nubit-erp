@@ -40,9 +40,10 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
 
     public function insert(Customer $customer): Customer
     {
+        /** @var CustomerEntity $entity */
         $entity = DataMapper::map($customer, CustomerEntity::class);
-        $type = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
-        $entity->type = $type;
+        $priceList = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
+        $entity->price_list = $priceList;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -52,9 +53,10 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
     public function update(Customer $customer): Customer
     {
         $entity = $this->entityManager->find(CustomerEntity::class, $customer->ruc);
+        /** @var CustomerEntity $entity */
         $entity = DataMapper::map($customer, $entity);
-        $type = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
-        $entity->type = $type;
+        $priceList = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
+        $entity->price_list = $priceList;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Customer::class);
