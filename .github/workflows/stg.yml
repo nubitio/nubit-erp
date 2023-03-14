@@ -2,9 +2,9 @@ name: Build Test Deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
@@ -48,11 +48,11 @@ jobs:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ vars.STG_SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
       - name: Adding known hosts
-        run: echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+        run: echo "${{ vars.STG_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
       - name: Delete old files
-        run: ssh -p22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -rf /web/vendor && rm -rf /web/public/build && rm -rf /web/public/assets"
+        run: ssh -p22 ${{ vars.STG_SSH_USER }}@${{ vars.STG_SSH_HOST }} "rm -rf /web/vendor && rm -rf /web/public/build && rm -rf /web/public/assets"
       - name: Deploy with rsync
-        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/web/
+        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ ${{ vars.STG_SSH_USER }}@${{ vars.STG_SSH_HOST }}:/web/
