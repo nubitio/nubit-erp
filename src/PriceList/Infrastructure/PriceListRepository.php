@@ -89,7 +89,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
         foreach ($prices as $priceItem) {
             /** @var ?PriceListDetailEntity $entity */
             $entity = $this->entityManager->getRepository(PriceListDetailEntity::class)
-                ->findOneBy(['price_lis_id' => $priceItem->price_list_id, 'product_id' => $priceItem->product_id]);
+                ->findOneBy(['price_list_id' => $priceItem->price_list_id, 'product_id' => $priceItem->product_id]);
 
             if ($entity) {
                 $entity->price = $priceItem->price;
