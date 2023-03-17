@@ -10,17 +10,20 @@ import DataGridUtils from "../utils/DataGridUtils";
 export default class DataGrid {
     private container: HTMLElement;
     private fields: Field[];
+    private detailFields: Field[];
     private options: any;
     private dataGrid: JQuery;
     private readonly defaultToolbar: any[];
     private toolbar: any[];
     private columns: any[];
+    private detailColumns: any[];
     private routes: any = {};
     private events: any = {};
 
     constructor(container: string, fields: Field[], options: any) {
         this.container = document.getElementById(container) || document.body;
         this.fields = fields;
+        this.detailFields = options.detailFields ?? [];
         this.options = options;
         this.defaultToolbar = [];
         this.toolbar = [];
@@ -33,6 +36,7 @@ export default class DataGrid {
     init() {
         this.setupView();
         this.setupColumns();
+        this.setupDetailColumns();
         this.setupToolBar();
         this.setupDataGrid();
         this.setupObservers();
@@ -82,6 +86,23 @@ export default class DataGrid {
                     formatter: field.formatter,
                 };
                 this.columns.push(column);
+            }
+        });
+    }
+
+    setupDetailColumns() {
+        this.detailColumns = [];
+        this.detailFields.forEach(field => {
+            if (field.visible) {
+                let column = {
+                    field: field.name,
+                    title: field.label,
+                    width: field.width,
+                    align: field.align,
+                    sortable: field.sortable,
+                    formatter: field.formatter,
+                };
+                this.detailColumns.push(column);
             }
         });
     }
@@ -204,15 +225,14 @@ export default class DataGrid {
                 )
             }
         }
-        let subGrid = this.options.subGrid;
-        if (subGrid) {
+        if (this.options.detailUrl) {
             gridOptions.view = window.detailview
             gridOptions.detailFormatter = function (index: number, row: any) {
                 return '<div style="padding:2px"><table class="ddv"></table></div>';
             }
             gridOptions.onExpandRow = function (index: number, row: any) {
                 let ddv = $(this).datagrid('getRowDetail', index).find('table.ddv');
-                let detailsUrl = subGrid.url.replace('{id}', row[ref.getIdField()]);
+                let detailsUrl = ref.options.detailUrl.replace('{id}', row[ref.getIdField()]);
                 ddv.datagrid({
                     method: 'get',
                     url: detailsUrl,
@@ -238,7 +258,7 @@ export default class DataGrid {
                     pagination: false,
                     multiSort: false,
                     remoteFilter: false,
-                    columns: [subGrid.columns],
+                    columns: [ref.detailColumns],
                     onResize: function () {
                         ref.dataGrid.datagrid('fixDetailRowHeight', index);
                     },

@@ -7,6 +7,7 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
+import NumberUtils from "../core/utils/NumberUtils";
 
 export default class Inbound {
     private readonly container: string;
@@ -115,13 +116,24 @@ export default class Inbound {
             .textField('descripcion')
             .name('producto_id')
             .label('Producto')
+            .width(100)
             .onSelect((record: any, field: Field) => this.onSelectProduct(record, field))
+            .formatter((value: any) => value?.descripcion)
             .required(true)
+            .visible(false)
+            .build());
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('producto')
+            .label('Producto')
+            .width(100)
+            .formatter((value: any) => value?.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .align('center')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onQuantityChange(newValue, oldValue, field))
             .required(true)
             .build());
@@ -129,13 +141,17 @@ export default class Inbound {
             .type(FormType.CURRENCY)
             .name('precio_unitario')
             .label('P. compra')
+            .align('right')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
+            .align('right')
             .onChange(this.calculateGrandTotal.bind(this))
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
     };
 
@@ -157,29 +173,8 @@ export default class Inbound {
             url: 'inbound/get',
             routes: Inbound.ROUTES,
             events: Inbound.EVENTS,
-            subGrid: {
-                url: 'api/sale/{id}/details',
-                columns: [
-                    {
-                        field: 'producto',
-                        title: 'Producto',
-                        formatter: (value: any, row: any) => value['descripcion'],
-                        width: 100
-                    }, {
-                        field: 'cantidad',
-                        title: 'Cantidad',
-                        align: 'center'
-                    }, {
-                        field: 'precio_unitario',
-                        title: 'Unitario',
-                        align: 'right'
-                    }, {
-                        field: 'precio_total',
-                        title: 'Total',
-                        align: 'right'
-                    }
-                ],
-            }
+            detailUrl: 'api/sale/{id}/details',
+            detailFields: this.detailFields
         });
     }
 
