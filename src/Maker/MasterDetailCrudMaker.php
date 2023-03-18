@@ -441,6 +441,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
         $dtoContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->masterModuleName), $dtoContent);
         $dtoContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $dtoContent);
+        $dtoContent = str_replace('{{entityIdField}}', Util::getEntityIdField($this->masterEntity), $dtoContent);
 
         file_put_contents($dtoPath, $dtoContent);
     }

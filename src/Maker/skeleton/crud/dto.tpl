@@ -14,5 +14,5 @@ use App\{{module}}\Domain\{{module}};
 class {{module}}Dto extends {{module}}
 {
     #[ApiProperty(identifier: true)]
-    public ?string ${{entityId}};
+{{entityIdField}}
 }
