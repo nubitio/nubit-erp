@@ -22,6 +22,20 @@ class Util
         };
     }
 
+    public static function getEntityIdField(Table $entity): string
+    {
+        $columns = $entity->getColumns();
+        $primaryKey = $entity->getPrimaryKey();
+        $field = '';
+        foreach ($columns as $column) {
+            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                $field = "    public ?" . self::getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
+                break;
+            }
+        }
+        return $field;
+    }
+
     public static function getViewFields(Table $entity, string $varName = 'fields'): string
     {
         $columns = $entity->getColumns();

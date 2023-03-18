@@ -396,11 +396,10 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $primaryKey = $this->entity->getPrimaryKey();
         $dtoTemplate = dirname(__FILE__) . '/skeleton/crud/dto.tpl';
         $dtoContent = file_get_contents($dtoTemplate);
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
-        $dtoContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $dtoContent);
+        $dtoContent = str_replace('{{entityIdField}}', Util::getEntityIdField($this->entity), $dtoContent);
 
         file_put_contents($dtoPath, $dtoContent);
     }

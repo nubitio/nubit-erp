@@ -222,7 +222,9 @@ export default class DataGrid {
                             rows: response.data
                         });
                     }
-                )
+                ).add(() => {
+                    error();
+                });
             }
         }
         if (this.options.detailUrl) {
