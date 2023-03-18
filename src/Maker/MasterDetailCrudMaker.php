@@ -10,6 +10,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class MasterDetailCrudMaker implements CrudMakerInterface
 {
+    private Table $entity;
     private Table $masterEntity;
     private Table $detailEntity;
     private string $masterModuleName;
@@ -49,6 +50,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
 
         $this->io->newLine();
         $this->io->text('Generating master');
+        $this->moduleName = $this->masterModuleName;
+        $this->modulePath = $this->masterModulePath;
+        $this->entity = $this->masterEntity;
 
         $this->makeController();
         $this->makeRepositoryInterface();
@@ -70,6 +74,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->io->text('Generating detail');
         $this->moduleName = $this->detailModuleName;
         $this->modulePath = $this->detailModulePath;
+        $this->entity = $this->detailEntity;
         $this->handlingDetail = true;
 
         $this->makeRepositoryInterface();
@@ -314,7 +319,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $columns = $this->masterEntity->getColumns();
+        $columns = $this->entity->getColumns();
         $modelTemplate = dirname(__FILE__) . '/skeleton/crud/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
         $modelContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $modelContent);
@@ -352,13 +357,13 @@ class MasterDetailCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $columns = $this->masterEntity->getColumns();
-        $primaryKey = $this->masterEntity->getPrimaryKey();
+        $columns = $this->entity->getColumns();
+        $primaryKey = $this->entity->getPrimaryKey();
         $entityTemplate = dirname(__FILE__) . '/skeleton/crud/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
         $entityContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $entityContent);
-        $entityContent = str_replace('{{table}}', $this->masterEntity->getName(), $entityContent);
+        $entityContent = str_replace('{{table}}', $this->entity->getName(), $entityContent);
         $entityFields = '';
         foreach ($columns as $column) {
             if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
@@ -395,7 +400,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $primaryKey = $this->masterEntity->getPrimaryKey();
+        $primaryKey = $this->entity->getPrimaryKey();
         $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/repository.tpl';
         if ($this->handlingDetail) {
             $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/detail/repository.tpl';
@@ -403,7 +408,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $repositoryContent = file_get_contents($repositoryTemplate);
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
-        $repositoryContent = str_replace('{{table}}', $this->masterEntity->getName(), $repositoryContent);
+        $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
         $repositoryContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
@@ -468,7 +473,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $primaryKey = $this->masterEntity->getPrimaryKey();
+        $primaryKey = $this->entity->getPrimaryKey();
         $processorTemplate = dirname(__FILE__) . '/skeleton/crud/processor.tpl';
         $processorContent = file_get_contents($processorTemplate);
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
@@ -500,12 +505,12 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             }
         }
         $columns = [];
-        foreach ($this->masterEntity->getColumns() as $column) {
+        foreach ($this->entity->getColumns() as $column) {
             $columns[] = $column->getName();
         }
         $sortColumn = $this->io->choice('Which column do you want to use for sorting?', $columns);
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
-        $primaryKey = $this->masterEntity->getPrimaryKey();
+        $primaryKey = $this->entity->getPrimaryKey();
         $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
         if ($this->handlingDetail) {
             $providerTemplate = dirname(__FILE__) . '/skeleton/crud/detail/provider.tpl';
