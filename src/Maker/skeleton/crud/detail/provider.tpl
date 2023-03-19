@@ -5,6 +5,8 @@ namespace App\{{module}}\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
@@ -23,6 +25,7 @@ readonly class {{module}}Provider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addFilter($context, new FilterRule('{{joinColumn}}', FilterOperation::Equals, $uriVariables['id']));
             $context = OptionUtils::addSort($context, new SortRule('{{sortColumn}}', '{{sortOrder}}'));
             $options = OptionsBuilder::build($context, {{module}}Entity::class, {{module}}::class);
 

@@ -2,8 +2,7 @@
 
 namespace App\{{module}}\Infrastructure;
 
-use App\Core\Domain\Annotation\IgnoreAutowire;
-use Doctrine\ORM\Mapping as ORM;
+{{imports}}
 
 #[IgnoreAutowire]
 #[ORM\Entity]
