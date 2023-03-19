@@ -17,6 +17,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
     private string $masterModulePath;
     private string $detailModuleName;
     private string $detailModulePath;
+    private string $joinColumn;
     private bool $handlingDetail = false;
 
     public function __construct(
@@ -47,6 +48,11 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->io->text('Please select the detail entity');
         $detailEntityName = $this->io->choice('Detail entity', $this->schemaManager->listTableNames());
         $this->detailEntity = $this->schemaManager->introspectTable($detailEntityName);
+        $detailColumns = [];
+        foreach ($this->detailEntity->getColumns() as $column) {
+            $detailColumns[] = $column->getName();
+        }
+        $this->joinColumn = $this->io->choice('Join column', $detailColumns);
 
         $this->io->newLine();
         $this->io->text('Generating master');
@@ -320,7 +326,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             }
         }
         $columns = $this->entity->getColumns();
-        $modelTemplate = dirname(__FILE__) . '/skeleton/crud/model.tpl';
+        $modelTemplate = dirname(__FILE__) . '/skeleton/crud/detail/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
         $modelContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $modelContent);
         $modelFields = '';
@@ -330,6 +336,17 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
             $modelFields .= '        public ?' . Util::getType($columnType) . ' $' . $column->getName() . " = $default,\n";
         }
+        if (!$this->handlingDetail) {
+            $modelFields .= '        /** @var ' . StringUtils::toPascalCase($this->moduleName) . 'Detail[] $details */' . "\n";
+            $modelFields .= "        #[SerializedName('details')]\n";
+            $modelFields .= '        public array $details = [],' . "\n";
+        }
+        $imports = "use App\Core\Domain\Annotation\IgnoreAutowire;\n";
+        if (!$this->handlingDetail) {
+            $imports .= "use App\\" . StringUtils::toPascalCase($this->moduleName) . "Detail\Domain\\" . StringUtils::toPascalCase($this->moduleName) . "Detail;\n";
+        }
+        $imports .= "use Symfony\Component\Serializer\Annotation\SerializedName;\n";
+        $modelContent = str_replace('{{imports}}', substr($imports, 0, -1), $modelContent);
         $modelContent = str_replace('{{fields}}', substr($modelFields, 0, -2), $modelContent);
 
         file_put_contents($modelPath, $modelContent);
@@ -359,7 +376,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $columns = $this->entity->getColumns();
         $primaryKey = $this->entity->getPrimaryKey();
-        $entityTemplate = dirname(__FILE__) . '/skeleton/crud/entity.tpl';
+        $entityTemplate = dirname(__FILE__) . '/skeleton/crud/detail/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
         $entityContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $entityContent);
@@ -373,6 +390,23 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $entityFields .= "        #[ORM\Column(name: '" . $column->getName() . "', type: '" . $column->getType()->getName() . "')]\n";
             $entityFields .= "        public ?" . Util::getType($column->getType()->getName()) . " $" . $column->getName() . " = null,\n";
         }
+        $imports = "use App\Core\Domain\Annotation\IgnoreAutowire;\n";
+        if (!$this->handlingDetail) {
+            $entityFields .= '        /** @var ' . StringUtils::toPascalCase($this->moduleName) . 'DetailEntity[] $details */' . "\n";
+            $entityFields .= "        #[ORM\OneToMany(mappedBy: '" . StringUtils::toCamelCase($this->masterModuleName) . "', targetEntity: " . StringUtils::toPascalCase($this->moduleName) . "DetailEntity::class, cascade: ['persist', 'remove'])]\n";
+            $entityFields .= '        public Collection|array $details = new ArrayCollection(),\n';
+            $imports .= "use App\\" . StringUtils::toPascalCase($this->moduleName) . "Detail\Infrastructure\\" . StringUtils::toPascalCase($this->moduleName) . "DetailEntity;\n";
+            $imports .= "use Doctrine\Common\Collections\ArrayCollection;\n";
+            $imports .= "use Doctrine\Common\Collections\Collection;\n";
+        }
+        if ($this->handlingDetail) {
+            $entityFields .= "        #[ORM\ManyToOne(targetEntity: " . StringUtils::toPascalCase($this->masterModuleName) . "Entity::class, inversedBy: 'details')]\n";
+            $entityFields .= "        #[ORM\JoinColumn(name: '" . $this->joinColumn . "', referencedColumnName: 'id')]\n";
+            $entityFields .= "        public ?" . StringUtils::toPascalCase($this->masterModuleName) . "Entity $" . StringUtils::toCamelCase($this->masterModuleName) . " = null,\n";
+            $imports .= "use App\\" . StringUtils::toPascalCase($this->masterModuleName) . "\Infrastructure\\" . StringUtils::toPascalCase($this->masterModuleName) . "Entity;\n";
+        }
+        $imports .= "use Doctrine\ORM\Mapping as ORM;\n";
+        $entityContent = str_replace('{{imports}}', substr($imports, 0, -1), $entityContent);
         $entityContent = str_replace('{{fields}}', substr($entityFields, 0, -2), $entityContent);
 
         file_put_contents($entityPath, $entityContent);
@@ -508,16 +542,15 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         foreach ($this->entity->getColumns() as $column) {
             $columns[] = $column->getName();
         }
+        $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
         $sortColumn = $this->io->choice('Which column do you want to use for sorting?', $columns);
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
-        $primaryKey = $this->entity->getPrimaryKey();
-        $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
         if ($this->handlingDetail) {
             $providerTemplate = dirname(__FILE__) . '/skeleton/crud/detail/provider.tpl';
         }
         $providerContent = file_get_contents($providerTemplate);
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
-        $providerContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $providerContent);
+        $providerContent = str_replace('{{joinColumn}}', $this->joinColumn, $providerContent);
         $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
         $providerContent = str_replace('{{sortOrder}}', $sortOrder, $providerContent);
 

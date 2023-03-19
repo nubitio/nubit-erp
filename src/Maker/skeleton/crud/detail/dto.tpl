@@ -9,7 +9,7 @@ use App\{{masterModule}}\Api\{{masterModule}}Dto;
 use App\{{module}}\Domain\{{module}};
 
 #[ApiResource(
-    uriTemplate: '/{{kebabModule}}/{{{entityId}}}/details',
+    uriTemplate: '/{{kebabModule}}s/{{{entityId}}}/details',
     shortName: '{{module}}',
     operations: [new GetCollection()],
     uriVariables: [
