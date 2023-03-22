@@ -98,12 +98,23 @@ export default class Outbound {
             .textField('descripcion')
             .name('producto_id')
             .label('Producto')
+            .width(100)
+            .formatter((value: any) => value?.descripcion)
             .required(true)
+            .visible(false)
+            .build());
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('producto')
+            .label('Producto')
+            .width(100)
+            .formatter((value: any) => value?.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .align('center')
             .required(true)
             .build());
     };
@@ -126,21 +137,8 @@ export default class Outbound {
             url: 'outbound/get',
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
-            subGrid: {
-                url: 'api/sale/{id}/details',
-                columns: [
-                    {
-                        field: 'producto',
-                        title: 'Producto',
-                        formatter: (value: any, row: any) => value['descripcion'],
-                        width: 100
-                    }, {
-                        field: 'cantidad',
-                        title: 'Cantidad',
-                        align: 'center'
-                    }
-                ],
-            }
+            detailUrl: 'api/sale/{id}/details',
+            detailFields: this.detailFields
         });
     }
 

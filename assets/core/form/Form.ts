@@ -154,6 +154,9 @@ export default class Form {
             let tableRow = document.createElement('tr');
 
             this.detailFields.forEach(field => {
+                if (field.type === FormType.NONE) {
+                    return;
+                }
                 let tableHeader = document.createElement('th');
                 tableHeader.innerHTML = field.label;
                 tableRow.appendChild(tableHeader);

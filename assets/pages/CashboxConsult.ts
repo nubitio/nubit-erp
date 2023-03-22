@@ -8,6 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 export default class CashboxConsult {
     private readonly container: string;
     private fields: Field[] = [];
+    private detailFields: Field[] = [];
     private dataGrid: DataGrid;
 
     static readonly ROUTES = {}
@@ -63,6 +64,30 @@ export default class CashboxConsult {
             .align('center')
             .formatter(this.statusFormatter)
             .build());
+
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('tipo_id')
+            .label('Tipo')
+            .formatter(this.typeFormatter)
+            .build());
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('descripcion')
+            .label('Descripcion')
+            .build());
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('referencia')
+            .label('Observacion')
+            .width(100)
+            .build());
+        this.detailFields.push(new FieldBuilder()
+            .type(FormType.NONE)
+            .name('monto')
+            .label('Monto')
+            .align('right')
+            .build());
     };
 
     render() {
@@ -102,15 +127,8 @@ export default class CashboxConsult {
             routes: CashboxConsult.ROUTES,
             events: CashboxConsult.EVENTS,
             toolbar: toolbar,
-            subGrid: {
-                url: 'cashbox/{id}/details',
-                columns: [
-                    {field: 'tipo_id', title: 'Tipo', formatter: this.typeFormatter},
-                    {field: 'descripcion', title: 'Concepto'},
-                    {field: 'referencia', title: 'Observaciones', width: 100},
-                    {field: 'monto', title: 'Monto', align: 'right'},
-                ]
-            }
+            detailUrl: 'cashbox/{id}/details',
+            detailFields: this.detailFields
         });
     }
 
