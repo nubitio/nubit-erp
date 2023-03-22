@@ -7,20 +7,14 @@ use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 readonly class SaleUtils
 {
-    private SessionInterface $session;
-
     public function __construct(
         private Connection      $connection,
         private SettingsService $settings,
-        private RequestStack    $requestStack,
     )
     {
-        $this->session = $this->requestStack->getSession();
     }
 
     public function getSaleSeries(string $docType, string $localId): string
@@ -48,12 +42,11 @@ readonly class SaleUtils
     {
         $sale->tipo_id = 2;
         $sale->estado = 1;
-        $sale->serie = $this->getSaleSeries($docType->value, $this->session->get('branch_id'));
+        $sale->serie = $this->getSaleSeries($docType->value, $sale->almacen->local->local_id);
         $sale->numero = $this->getSaleNumber($sale->serie);
         $sale->igv = $this->settings->get(Constants::TAX);
         $sale->recargo_consumo = $this->settings->get(Constants::CONSUMPTION_TAX);
         $sale->date_created = new \DateTime();
-        $sale->created_by = $this->session->get('user_id');
 
         return $sale;
     }
