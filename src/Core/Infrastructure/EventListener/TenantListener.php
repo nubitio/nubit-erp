@@ -3,7 +3,6 @@
 namespace App\Core\Infrastructure\EventListener;
 
 use App\Core\Infrastructure\Doctrine\DBAL\TenantConnection;
-use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -17,23 +16,16 @@ readonly class TenantListener
     {
     }
 
-    /**
-     * @throws Exception
-     * @throws \Doctrine\DBAL\Driver\Exception
-     */
     public function __invoke(RequestEvent $event): void
     {
         $host = $event->getRequest()->getHost();
         $subdomain = explode('.', $host)[0];
-        if ($subdomain !== 'localhost' && $subdomain !== 'www') {
+        $excludedSubdomains = ['localhost', 'www', 'demo', 'api', 'admin'];
+        if ($subdomain && !in_array($subdomain, $excludedSubdomains)) {
             $this->switchConnection($subdomain);
         }
     }
 
-    /**
-     * @throws Exception
-     * @throws \Doctrine\DBAL\Driver\Exception
-     */
     private function switchConnection(string $tenant): void
     {
         /** @var TenantConnection $connection */
