@@ -7,7 +7,7 @@ use Doctrine\Persistence\ConnectionRegistry;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
-#[AsEventListener]
+#[AsEventListener(priority: 1024)]
 readonly class TenantListener
 {
     public function __construct(

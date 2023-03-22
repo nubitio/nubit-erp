@@ -23,7 +23,7 @@ readonly class GetTokenUseCase
             'branch' => $branchId,
         ];
 
-        $token = JWT::encode($tokenData, $key);
+        $token = JWT::encode($tokenData, $key, 'HS256');
 
         return new Token($token);
     }
