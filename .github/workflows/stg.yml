@@ -48,7 +48,7 @@ jobs:
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ vars.STG_SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: unnecessary
       - name: Adding known hosts
         run: echo "${{ vars.STG_SSH_HOST_KEY }}" > ~/.ssh/known_hosts
