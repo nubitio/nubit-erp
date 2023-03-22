@@ -12,7 +12,7 @@ export default class {{module}} {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/{{kebabModule}}';
+    static readonly API_URL = 'api/{{kebabModule}}s';
 
     static readonly EVENTS = {
         ADD: '{{kebabModule}}:add',

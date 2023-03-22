@@ -187,31 +187,38 @@ export default class Sale {
             .type(FormType.ENTITY)
             .name('producto')
             .label('Producto')
+            .width(100)
             .url('api/products')
             .mode('remote')
             .valueField('producto_id')
             .textField('descripcion')
             .onSelect((record: any, field: any) => this.onSelectProduct(record, field))
+            .formatter((value: any) => value?.descripcion)
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
+            .align('center')
             .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_unitario')
             .label('Precio')
+            .align('right')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FormType.CURRENCY)
             .name('precio_total')
             .label('Total')
+            .align('right')
             .readonly(true)
             .onChange(this.calculateGrandTotal.bind(this))
+            .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
     };
 
@@ -265,29 +272,8 @@ export default class Sale {
             method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
-            subGrid: {
-                url: 'api/sale/{id}/details',
-                columns: [
-                    {
-                        field: 'producto',
-                        title: 'Producto',
-                        formatter: (value: any, row: any) => value['descripcion'],
-                        width: 100
-                    }, {
-                        field: 'cantidad',
-                        title: 'Cantidad',
-                        align: 'center'
-                    }, {
-                        field: 'precio_unitario',
-                        title: 'Unitario',
-                        align: 'right'
-                    }, {
-                        field: 'precio_total',
-                        title: 'Total',
-                        align: 'right'
-                    }
-                ],
-            }
+            detailUrl: 'api/sale/{id}/details',
+            detailFields: this.detailFields
         });
     }
 
