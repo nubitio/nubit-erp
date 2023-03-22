@@ -21,13 +21,17 @@ class TenantConnection extends Connection
 
     public function switchTenant(string $tenantName): void
     {
-        $tenants = json_decode(file_get_contents(dirname(__DIR__, 5) . '/config/tenants.json'), true);
+        $tenants = [];
+        $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
+        if (file_exists($tenantsConfigFilePath)) {
+            $tenants = json_decode(file_get_contents($tenantsConfigFilePath), true);
+        }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {
             throw new \Exception('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn ($item) => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn($item) => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
