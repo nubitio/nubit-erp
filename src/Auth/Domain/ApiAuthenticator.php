@@ -3,6 +3,7 @@
 namespace App\Auth\Domain;
 
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +36,7 @@ class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         $apiToken = str_replace('Bearer ', '', $apiToken);
 
-        $tokenData = JWT::decode($apiToken, $_ENV['APP_SECRET'], ['HS256']);
+        $tokenData = JWT::decode($apiToken, new Key($_ENV['APP_SECRET'], 'HS256'));
 
         $username = $tokenData->username;
 
