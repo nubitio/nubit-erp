@@ -6,6 +6,7 @@ use App\Consult\Domain\Consult;
 use App\Consult\Domain\ConsultRepositoryInterface;
 use App\Consult\Domain\DocType;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class ConsultRepository implements ConsultRepositoryInterface
 {
@@ -16,6 +17,9 @@ class ConsultRepository implements ConsultRepositoryInterface
         $url = self::API_URL . $docType->value . '/' . $id . '?token=abcxyz';
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', $url);
+        if ($response->getStatusCode() !== 200) {
+            throw new BadRequestException('No se pudo consultar el documento, intente nuevamente');
+        }
         $data = $response->toArray();
 
         if ($docType === DocType::DNI) {
