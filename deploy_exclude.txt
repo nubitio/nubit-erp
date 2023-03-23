@@ -16,3 +16,5 @@ docker-compose.yml
 /public/uploads/*
 /tests/
 /var/
+/stats/
+/config/tenants.json
