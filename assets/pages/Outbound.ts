@@ -79,6 +79,7 @@ export default class Outbound {
             .textField('descripcion')
             .visible(false)
             .required(true)
+            .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)

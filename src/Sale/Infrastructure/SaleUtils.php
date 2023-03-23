@@ -17,24 +17,25 @@ readonly class SaleUtils
     {
     }
 
-    public function getSaleSeries(string $docType, string $localId): string
+    public function getSaleSeries(string $docType, string $wareHouseId): string
     {
         return $this->connection->fetchOne('
-          select
-            serie
-          from local_comprobante
-          where tipo_comprobante_id = ?
-          and local_id = ?', [$docType, $localId]
+            select
+                serie
+            from local_comprobante lc
+            inner join almacen a on a.local_id = lc.local_id
+            where tipo_comprobante_id = ?
+            and a.almacen_id = ?', [$docType, $wareHouseId]
         );
     }
 
     public function getSaleNumber(string $series): string
     {
         return $this->connection->fetchOne('
-          select
-            ifnull(max(cast(numero as int)), 0) + 1 as numero
-          from movimiento
-          where serie = ?', [$series]
+            select
+                ifnull(max(cast(numero as int)), 0) + 1 as numero
+            from movimiento
+            where serie = ?', [$series]
         );
     }
 
@@ -42,7 +43,7 @@ readonly class SaleUtils
     {
         $sale->tipo_id = 2;
         $sale->estado = 1;
-        $sale->serie = $this->getSaleSeries($docType->value, $sale->almacen->local->local_id);
+        $sale->serie = $this->getSaleSeries($docType->value, $sale->almacen->almacen_id);
         $sale->numero = $this->getSaleNumber($sale->serie);
         $sale->igv = $this->settings->get(Constants::TAX);
         $sale->recargo_consumo = $this->settings->get(Constants::CONSUMPTION_TAX);
