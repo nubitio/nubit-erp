@@ -3,6 +3,7 @@
 namespace App\Company\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Media\Domain\Media;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -24,7 +25,7 @@ class Company
         #[SerializedName('telefono')]
         public ?string $telefono = null,
         #[SerializedName('logo')]
-        public ?string $logo = null,
+        public ?Media  $logo = null,
         #[SerializedName('certificado')]
         public ?string $certificado = null,
         #[SerializedName('sunat_user')]
@@ -32,7 +33,7 @@ class Company
         #[SerializedName('sunat_password')]
         public ?string $sunat_password = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool   $estado = false
     )
     {
     }

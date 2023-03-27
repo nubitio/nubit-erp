@@ -6,6 +6,7 @@ use App\Base\BaseController;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Sale\Domain\DocType;
+use App\Sale\Domain\SaleException;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
@@ -28,7 +29,7 @@ class SaleController extends BaseController
 
         return $this->render('sale/index.html.twig', [
             'printDetectionScript' => $printDetectionScript,
-            'printScript'          => $printScript,
+            'printScript' => $printScript,
         ]);
     }
 
@@ -46,9 +47,9 @@ class SaleController extends BaseController
         $dateTo = $request->get('date-to');
         $localId = $request->getSession()->get('branch_id');
         $params = [
-            'local_id'  => $localId,
+            'local_id' => $localId,
             'date_from' => $dateFrom,
-            'date_to'   => $dateTo,
+            'date_to' => $dateTo,
         ];
         switch ($report) {
             case 'sale-by-product':
@@ -98,7 +99,7 @@ class SaleController extends BaseController
         $logo = base64_encode(file_get_contents('assets/images/logo.png'));
         $content = $this->renderView('sale/report/invoice.html.twig', [
             'logo' => "data:image/png;base64,{$logo}",
-            'qr'   => $qr,
+            'qr' => $qr,
             'sale' => $sale,
         ]);
 
@@ -121,9 +122,9 @@ class SaleController extends BaseController
 
         return $pdfExporter->export($content, 'invoice', [
             'no-outline',
-            'page-width'   => '80mm',
-            'page-height'  => $pageHeight . 'mm',
-            'margin-left'  => 0,
+            'page-width' => '80mm',
+            'page-height' => $pageHeight . 'mm',
+            'margin-left' => 0,
             'margin-right' => 0,
         ]);
     }
@@ -138,10 +139,9 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['POST'])]
-    public function invoice(Request $request, SaleInvoiceUseCase $saleInvoiceUseCase, $id): Response
+    public function invoice(string $id, SaleInvoiceUseCase $saleInvoiceUseCase): Response
     {
-        $localId = $request->getSession()->get('branch_id');
-        $saleInvoiceUseCase($id, $localId);
+        $saleInvoiceUseCase($id);
 
         return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
     }

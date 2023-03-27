@@ -24,9 +24,6 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_comprobante', 'created_at', 'desc', filter: $filter);
@@ -50,8 +47,9 @@ class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * @throws \Exception
      */
-    public function create(Sale $sale, string $localId): void
+    public function create(Sale $sale): void
     {
+        $localId = $this->connection->fetchOne('select local_id from almacen where almacen_id = ?', [$sale->almacen->almacen_id]);
         $invoiceCalculator = new InvoiceCalculator($sale->subtotal, $sale->descuento ?? 0.0, $sale->igv, $sale->recargo_consumo ?? 0.0);
         $invoiceAmounts = $invoiceCalculator->calculate();
         $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?)', [
@@ -65,9 +63,6 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         ]);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert(Invoice $invoice): void
     {
         $entity = DataMapper::map($invoice, InvoiceEntity::class);
@@ -75,9 +70,6 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(Invoice $invoice): void
     {
         $entity = $this->entityManager->find(InvoiceEntity::class, $invoice->comprobante_id);

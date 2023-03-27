@@ -2,23 +2,27 @@
 
 namespace App\Core\Infrastructure\EventListener;
 
+use App\Core\Domain\Exception\ServiceException;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
+#[AsEventListener]
 class ExceptionListener
 {
-    public function onKernelException(ExceptionEvent $event): void
+    public function __invoke(ExceptionEvent $event): void
     {
-        if ($_ENV['APP_ENV'] === 'dev') {
+        $exception = $event->getThrowable();
+
+        if (!$exception instanceof ServiceException) {
             return;
         }
 
-        $exception = $event->getThrowable();
         $response = new JsonResponse([
             'message' => $exception->getMessage(),
-            'code'    => $exception->getCode(),
-        ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            'code' => $exception->getCode(),
+        ], Response::HTTP_BAD_REQUEST);
         $event->setResponse($response);
     }
 }

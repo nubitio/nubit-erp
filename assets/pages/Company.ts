@@ -74,9 +74,7 @@ export default class Company {
             .type(FormType.FILE)
             .name('logo')
             .label('Logo')
-            .formatter(function (val: any, row: any) {
-                return SharedUtils.imageFormatter(val, row['razon_social'], 'uploads/images/');
-            })
+            .formatter((val: any, row: any) => SharedUtils.imageFormatter(val?.path, row['razon_social']))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.SWITCH)
