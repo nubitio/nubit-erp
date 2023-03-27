@@ -9,6 +9,8 @@ use App\Company\Domain\GetAllCompanyUseCase;
 use App\Company\Domain\GetOneCompanyUseCase;
 use App\Company\Infrastructure\CompanyEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
+use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
@@ -31,6 +33,7 @@ readonly class CompanyProvider implements ApiProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addJoin($context, new JoinRule('e.logo', 'm', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('razon_social', 'asc'));
             $options = OptionsBuilder::build($context, CompanyEntity::class, Company::class);
 

@@ -8,6 +8,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Media\Infrastructure\MediaEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class CompanyRepository implements CompanyRepositoryInterface
@@ -39,6 +40,10 @@ readonly class CompanyRepository implements CompanyRepositoryInterface
     public function insert(Company $company): Company
     {
         $entity = DataMapper::map($company, CompanyEntity::class);
+        if ($company->logo?->id) {
+            $logo = $this->entityManager->getReference(MediaEntity::class, $company->logo->id);
+            $entity->logo = $logo;
+        }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -49,6 +54,10 @@ readonly class CompanyRepository implements CompanyRepositoryInterface
     {
         $entity = $this->entityManager->find(CompanyEntity::class, $company->empresa_id);
         $entity = DataMapper::map($company, $entity);
+        if ($company->logo?->id) {
+            $logo = $this->entityManager->getReference(MediaEntity::class, $company->logo->id);
+            $entity->logo = $logo;
+        }
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Company::class);
