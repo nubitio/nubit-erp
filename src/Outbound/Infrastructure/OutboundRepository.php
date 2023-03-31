@@ -64,8 +64,9 @@ class OutboundRepository implements OutboundRepositoryInterface
 
     public function update(Outbound $outbound): void
     {
+        /** @var OutboundEntity $entity */
         $entity = $this->entityManager->find(OutboundEntity::class, $outbound->movimiento_id);
-        $entity->mapFromDomainModel($outbound);
+        DataMapper::map($outbound, $entity);
         $this->entityManager->flush();
     }
 

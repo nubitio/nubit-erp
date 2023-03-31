@@ -174,7 +174,7 @@ export default class Inbound {
             url: 'inbound/get',
             routes: Inbound.ROUTES,
             events: Inbound.EVENTS,
-            detailUrl: 'api/sale/{id}/details',
+            detailUrl: 'api/sales/{id}/details',
             detailFields: this.detailFields
         });
     }

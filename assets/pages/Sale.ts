@@ -272,7 +272,7 @@ export default class Sale {
             method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
-            detailUrl: 'api/sale/{id}/details',
+            detailUrl: 'api/sales/{id}/details',
             detailFields: this.detailFields
         });
     }
