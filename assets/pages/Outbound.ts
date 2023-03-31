@@ -138,7 +138,7 @@ export default class Outbound {
             url: 'outbound/get',
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
-            detailUrl: 'api/sale/{id}/details',
+            detailUrl: 'api/sales/{id}/details',
             detailFields: this.detailFields
         });
     }

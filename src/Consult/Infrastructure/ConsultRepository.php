@@ -22,15 +22,10 @@ class ConsultRepository implements ConsultRepositoryInterface
         }
         $data = $response->toArray();
 
-        if ($docType === DocType::DNI) {
-            return $this->mapDni($data);
-        }
-
-        if ($docType === DocType::RUC) {
-            return $this->mapRuc($data);
-        }
-
-        throw new \Exception('Invalid DocType');
+        return match ($docType) {
+            DocType::DNI => $this->mapDni($data),
+            DocType::RUC => $this->mapRuc($data)
+        };
     }
 
     /**

@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-readonly class SimpleCrudMaker implements CrudMakerInterface
+class SimpleCrudMaker implements CrudMakerInterface
 {
     private Table $entity;
 

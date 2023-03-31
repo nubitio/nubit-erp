@@ -64,8 +64,9 @@ class InboundRepository implements InboundRepositoryInterface
 
     public function update(Inbound $inbound): void
     {
+        /** @var InboundEntity $entity */
         $entity = $this->entityManager->find(InboundEntity::class, $inbound->movimiento_id);
-        $entity->mapFromDomainModel($inbound);
+        DataMapper::map($inbound, $entity);
         $this->entityManager->flush();
     }
 
