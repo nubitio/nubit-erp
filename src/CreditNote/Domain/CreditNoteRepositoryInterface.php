@@ -4,6 +4,10 @@ namespace App\CreditNote\Domain;
 
 interface CreditNoteRepositoryInterface
 {
+    /**
+     * @param array<int, mixed>|null $filter
+     * @return array<string, mixed>
+     */
     public function getAll(?array $filter = null): array;
 
     public function insert(CreditNote $creditNote): void;

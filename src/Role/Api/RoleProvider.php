@@ -15,8 +15,7 @@ use App\Role\Domain\Role;
 use App\Role\Infrastructure\RoleEntity;
 
 /**
- * @implements ApiProviderInterface<Role>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<Role|PaginatorInterface>
  */
 readonly class RoleProvider implements ApiProviderInterface
 {

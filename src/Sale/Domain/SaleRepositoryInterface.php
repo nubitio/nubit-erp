@@ -9,6 +9,9 @@ interface SaleRepositoryInterface
 {
     public function getAll(Options $options): PaginatorInterface;
 
+    /**
+     * @return array<string, array<string, mixed>>
+     */
     public function getOneById(string $id): array;
 
     public function getOne(string $id): ?Sale;

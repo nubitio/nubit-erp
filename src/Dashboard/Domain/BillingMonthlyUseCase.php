@@ -9,6 +9,9 @@ class BillingMonthlyUseCase
     ) {
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function __invoke(string $localId): array
     {
         return $this->repository->getMonthlyInvoicing($localId);

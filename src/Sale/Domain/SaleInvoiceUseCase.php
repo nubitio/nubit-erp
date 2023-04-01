@@ -3,6 +3,9 @@
 namespace App\Sale\Domain;
 
 use App\Billing\Domain\BillSendUseCase;
+use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\FileManager;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 
 readonly class SaleInvoiceUseCase
@@ -12,6 +15,8 @@ readonly class SaleInvoiceUseCase
         private UpdateSaleUseCase          $updateSaleUseCase,
         private BillSendUseCase            $billSendUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
+        private FileManager                $fileManager,
+        private SettingsService            $settings
     )
     {
     }
@@ -33,12 +38,12 @@ readonly class SaleInvoiceUseCase
         $this->updateSaleUseCase->__invoke($sale);
         $response = $this->billSendUseCase->__invoke($saleId);
         $invoice->digest = $response->hash;
-        file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+        $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
         if ($response->sunatResponse->success) {
             $invoice->envio_sunat = $response->sunatResponse->cdrResponse->code;
             $invoice->mensaje_sunat = $response->sunatResponse->cdrResponse->description;
             $cdr = base64_decode($response->sunatResponse->cdrZip);
-            file_put_contents($_ENV['EFACT_DIR'] . 'R-' . $response->name . '.zip', $cdr);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . 'R-' . $response->name . '.zip', $cdr);
             $this->invoiceRepository->update($invoice);
         } else {
             $invoice->envio_sunat = $response->sunatResponse->error->code;

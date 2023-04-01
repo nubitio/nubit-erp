@@ -59,7 +59,7 @@ class DashboardController extends BaseController
     }
 
     #[Route('/bi/product-rotation/{lapse}', name: 'bi_product_rotation', methods: ['GET'])]
-    public function getProductRotation(Request $request, ProductRotationUseCase $productRotation, $lapse): Response
+    public function getProductRotation(Request $request, ProductRotationUseCase $productRotation, string $lapse): Response
     {
         $localId = $request->getSession()->get('branch_id');
         $data = $productRotation($localId, $lapse);

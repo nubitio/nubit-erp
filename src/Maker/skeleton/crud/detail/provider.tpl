@@ -4,17 +4,21 @@ namespace App\{{module}}\Api;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProviderInterface;
+use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\FilterOperation;
 use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\{{module}}\Domain\{{module}};
 use App\{{module}}\Domain\GetAll{{module}}UseCase;
 use App\{{module}}\Infrastructure\{{module}}Entity;
 
-readonly class {{module}}Provider implements ProviderInterface
+/**
+ * @implements ApiProviderInterface<{{module}}|PaginatorInterface>
+ */
+readonly class {{module}}Provider implements ApiProviderInterface
 {
     public function __construct(
         private GetAll{{module}}UseCase $getAllUseCase,
@@ -22,6 +26,7 @@ readonly class {{module}}Provider implements ProviderInterface
     {
     }
 
+    /** inheritdoc */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

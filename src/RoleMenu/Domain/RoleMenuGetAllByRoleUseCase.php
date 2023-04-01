@@ -11,6 +11,9 @@ class RoleMenuGetAllByRoleUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function __invoke(int $roleId): array
     {
         $result = $this->repository->getAllByRole($roleId);

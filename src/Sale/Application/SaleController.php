@@ -89,7 +89,7 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, $id, SaleGetOneById $getOneById): Response
+    public function print(Request $request, string $id, SaleGetOneById $getOneById): Response
     {
         $sale = $getOneById($id);
         $qr = '';
@@ -130,7 +130,7 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
-    public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
+    public function void(Request $request, SaleVoidUseCase $voidUseCase, string $id): Response
     {
         $userId = $request->getSession()->get('user_id');
         $voidUseCase($id, json_decode($request->getContent())->reason, $userId);

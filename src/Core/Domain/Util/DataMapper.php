@@ -8,13 +8,14 @@ use Doctrine\Common\Collections\Collection;
 class DataMapper
 {
     /**
-     * @template I
-     * @template O
+     * @template I of object
+     * @template O of object
      *
      * @param I $input
      * @param O|class-string<O> $output
      *
      * @return O
+     * @phpstan-return O
      */
     public static function map($input, mixed $output)
     {

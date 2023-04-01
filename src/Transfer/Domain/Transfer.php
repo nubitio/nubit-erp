@@ -9,6 +9,9 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 #[IgnoreAutowire]
 class Transfer
 {
+    /**
+     * @param SaleDetail[] $items
+     */
     public function __construct(
         #[SerializedName('transfer_id')]
         public ?string $transfer_id,

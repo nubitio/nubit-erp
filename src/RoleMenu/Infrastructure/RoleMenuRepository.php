@@ -19,14 +19,17 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
     public function getAllByRole(int $roleId): array
     {
         return $this->connection->fetchAllAssociative('CALL sp_menu_by_rol(:roleId)', ['roleId' => $roleId]);
     }
 
     /**
-     * @param RoleMenu[] $roleMenuList
-     *
+     * @inheritdoc
      * @throws Exception
      */
     public function insertMultiple(int $roleId, array $roleMenuList): void

@@ -65,7 +65,7 @@ class InboundController extends BaseController
     }
 
     #[Route('/inbound/edit/{id}', name: 'inbound_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, InboundUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, InboundUpdateUseCase $updateUseCase, string $id): Response
     {
         $request->request->add(['movimiento_id' => $id]);
         /**
@@ -78,7 +78,7 @@ class InboundController extends BaseController
     }
 
     #[Route('/inbound/delete/{id}', name: 'inbound_delete', methods: ['DELETE', 'POST'])]
-    public function delete(InboundDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(InboundDeleteUseCase $deleteUseCase, string $id): Response
     {
         $deleteUseCase($id);
 

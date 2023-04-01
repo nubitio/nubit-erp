@@ -33,6 +33,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     }
 
     /**
+     * @inheritdoc
      * @throws Exception
      */
     public function getOneById(string $id): array

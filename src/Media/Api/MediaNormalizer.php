@@ -4,6 +4,7 @@ namespace App\Media\Api;
 
 use App\Core\Domain\Util\Constants;
 use App\Media\Domain\Media;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -14,6 +15,12 @@ final class MediaNormalizer implements NormalizerInterface, NormalizerAwareInter
 
     private const ALREADY_CALLED = 'MEDIA_NORMALIZER_ALREADY_CALLED';
 
+    /**
+     * @param Media $object
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     * @throws ExceptionInterface
+     */
     public function normalize($object, string $format = null, array $context = []): array
     {
         $context[self::ALREADY_CALLED] = true;
@@ -27,6 +34,9 @@ final class MediaNormalizer implements NormalizerInterface, NormalizerAwareInter
         return $this->normalizer->normalize($object, $format, $context);
     }
 
+    /**
+     * @param array<string, mixed> $context
+     */
     public function supportsNormalization($data, string $format = null, array $context = []): bool
     {
         if (isset($context[self::ALREADY_CALLED])) {

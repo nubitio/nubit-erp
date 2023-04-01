@@ -18,7 +18,7 @@ class SettingsService
         $this->cache = $cache;
     }
 
-    public function get(string $key, $default = null): string|int|bool|null
+    public function get(string $key, ?string $default = null): string|int|bool|null
     {
         return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(3600);

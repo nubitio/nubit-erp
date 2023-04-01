@@ -25,7 +25,7 @@ class MakeCrudCommand extends Command
         $this->connection = $connection;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Crud generator for a given entity');
         $this->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive mode');

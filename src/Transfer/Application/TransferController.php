@@ -43,7 +43,7 @@ class TransferController extends BaseController
     }
 
     #[Route('/transfer/edit/{id}', name: 'transfer_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, TransferUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, TransferUpdateUseCase $updateUseCase, string $id): Response
     {
         $request->request->add(['transfer_id' => $id]);
         /**
@@ -56,7 +56,7 @@ class TransferController extends BaseController
     }
 
     #[Route('/transfer/delete/{id}', name: 'transfer_delete', methods: ['DELETE', 'POST'])]
-    public function delete(TransferDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(TransferDeleteUseCase $deleteUseCase, string $id): Response
     {
         $deleteUseCase($id);
 
