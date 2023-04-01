@@ -11,11 +11,11 @@ use App\Billing\Model\Bill\PagoContado;
 use App\Billing\Model\Client\Client;
 use App\Sale\Domain\SaleRepositoryInterface;
 
-class BillCreateUseCase
+readonly class BillCreateUseCase
 {
     public function __construct(
-        private readonly SaleRepositoryInterface $saleRepository,
-        private readonly BillUtilsInterface      $billUtils,
+        private SaleRepositoryInterface $saleRepository,
+        private BillUtilsInterface      $billUtils,
     )
     {
     }

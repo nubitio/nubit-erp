@@ -17,8 +17,7 @@ use App\Warehouse\Domain\WarehouseGetOneUseCase;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 
 /**
- * @implements ApiProviderInterface<Warehouse>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<Warehouse|PaginatorInterface>
  */
 readonly class WarehouseProvider implements ApiProviderInterface
 {
@@ -30,6 +29,7 @@ readonly class WarehouseProvider implements ApiProviderInterface
     {
     }
 
+    /** inheritdoc */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

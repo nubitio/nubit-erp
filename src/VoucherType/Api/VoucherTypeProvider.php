@@ -15,8 +15,7 @@ use App\VoucherType\Domain\VoucherType;
 use App\VoucherType\Infrastructure\VoucherTypeEntity;
 
 /**
- * @implements ApiProviderInterface<VoucherType>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<VoucherType|PaginatorInterface>
  */
 readonly class VoucherTypeProvider implements ApiProviderInterface
 {

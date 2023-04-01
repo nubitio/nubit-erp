@@ -11,6 +11,7 @@ use App\PriceList\Domain\PriceListRepositoryInterface;
 use App\PriceListDetail\Domain\PriceListDetail;
 use App\PriceListDetail\Infrastructure\PriceListDetailEntity;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PriceListRepository implements PriceListRepositoryInterface
@@ -65,6 +66,10 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
         $this->entityManager->flush();
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
     public function getPricesByList(int $id): array
     {
         $sql = "

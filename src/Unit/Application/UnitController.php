@@ -48,7 +48,7 @@ class UnitController extends BaseController
     }
 
     #[Route('/unit/edit/{id}', name: 'unit_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, $id): Response
+    public function edit(Request $request, string $id): Response
     {
         $request->request->add(['unidad_id' => $id]);
         /**
@@ -62,7 +62,7 @@ class UnitController extends BaseController
     }
 
     #[Route('/unit/delete/{id}', name: 'unit_delete', methods: ['DELETE', 'POST'])]
-    public function delete($id): Response
+    public function delete(string $id): Response
     {
         $deleteUseCase = $this->container->get(UnitDeleteUseCase::class);
         $deleteUseCase($id);

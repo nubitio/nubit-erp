@@ -2,6 +2,7 @@
 
 namespace App\VoucherType\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -45,9 +46,17 @@ readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
         return DataMapper::map($entity, VoucherType::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(VoucherType $voucherType): VoucherType
     {
         $entity = $this->entityManager->find(VoucherTypeEntity::class, $voucherType->id);
+
+        if (!$entity) {
+            throw new ServiceException('No se encontró el tipo de comprobante');
+        }
+
         $entity = DataMapper::map($voucherType, $entity);
         $this->entityManager->flush();
 

@@ -4,26 +4,22 @@ namespace App\Sale\Domain;
 
 use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
+use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\FileManager;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 
-class SaleVoidUseCase
+readonly class SaleVoidUseCase
 {
-    private SaleRepositoryInterface $saleRepository;
-    private InvoiceRepositoryInterface $invoiceRepository;
-    private VoidedCreateUseCase $voidedCreateUseCase;
-    private SummaryCreateUseCase $summaryCreateUseCase;
-
     public function __construct(
-        SaleRepositoryInterface    $saleRepository,
-        InvoiceRepositoryInterface $invoiceRepository,
-        VoidedCreateUseCase        $voidedCreateUseCase,
-        SummaryCreateUseCase       $summaryCreateUseCase
+        private SaleRepositoryInterface    $saleRepository,
+        private InvoiceRepositoryInterface $invoiceRepository,
+        private VoidedCreateUseCase        $voidedCreateUseCase,
+        private SummaryCreateUseCase       $summaryCreateUseCase,
+        private FileManager                $fileManager,
+        private SettingsService            $settings
     )
     {
-        $this->saleRepository = $saleRepository;
-        $this->invoiceRepository = $invoiceRepository;
-        $this->voidedCreateUseCase = $voidedCreateUseCase;
-        $this->summaryCreateUseCase = $summaryCreateUseCase;
     }
 
     /**
@@ -65,7 +61,7 @@ class SaleVoidUseCase
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         if ($response->sunatResponse->success) {
-            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();
@@ -84,7 +80,7 @@ class SaleVoidUseCase
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         if ($response->sunatResponse->success) {
-            file_put_contents($_ENV['EFACT_DIR'] . $response->name . '.xml', $response->xml);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();

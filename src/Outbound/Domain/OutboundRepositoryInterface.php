@@ -4,6 +4,10 @@ namespace App\Outbound\Domain;
 
 interface OutboundRepositoryInterface
 {
+    /**
+     * @param array<int, mixed>|null $filter
+     * @return array<string, mixed>
+     */
     public function getAll(?array $filter = null): array;
 
     public function insert(Outbound $outbound): void;

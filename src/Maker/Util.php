@@ -6,6 +6,9 @@ use Doctrine\DBAL\Schema\Table;
 
 class Util
 {
+    /**
+     * @return array<int, string>
+     */
     public static function getIgnoredColumns(): array
     {
         return ['created_at', 'updated_at', 'created_by', 'updated_by', 'date_created', 'date_updated'];

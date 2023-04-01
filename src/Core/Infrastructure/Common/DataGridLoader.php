@@ -3,6 +3,7 @@
 namespace App\Core\Infrastructure\Common;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 class DataGridLoader
 {
@@ -13,6 +14,11 @@ class DataGridLoader
         $this->connection = $connection;
     }
 
+    /**
+     * @param array<int, mixed> $filter
+     * @return array<string, mixed>
+     * @throws Exception
+     */
     public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
@@ -51,7 +57,10 @@ class DataGridLoader
         return $result;
     }
 
-    public function buildFilterQuery($filterArray): string
+    /**
+     * @param array<int, mixed> $filterArray
+     */
+    public function buildFilterQuery(array $filterArray): string
     {
         $numFilter = count($filterArray);
         $where = '1=1';

@@ -18,6 +18,9 @@ interface PriceListRepositoryInterface
 
     public function delete(string $id): void;
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getPricesByList(int $id): array;
 
     /**

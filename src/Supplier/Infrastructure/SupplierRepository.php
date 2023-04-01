@@ -2,6 +2,7 @@
 
 namespace App\Supplier\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -45,9 +46,17 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
         return DataMapper::map($entity, Supplier::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Supplier $supplier): Supplier
     {
         $entity = $this->entityManager->find(SupplierEntity::class, $supplier->proveedor_id);
+
+        if (!$entity) {
+            throw new ServiceException('No se encontró el proveedor');
+        }
+
         $entity = DataMapper::map($supplier, $entity);
         $this->entityManager->flush();
 

@@ -15,6 +15,9 @@ class ColorUtils
         return ($yiq >= 128) ? '#000000' : '#FFFFFF';
     }
 
+    /**
+     * @return array<int, int>
+     */
     public static function rgbToHsl(int $r, int $g, int $b): array
     {
         $r /= 255;
@@ -49,6 +52,9 @@ class ColorUtils
         return [$h, $s, $l];
     }
 
+    /**
+     * @return array<int, float>
+     */
     public static function hslToRgb(float $h, float $s, float $l): array
     {
         $c = (1 - abs(2 * $l - 1)) * $s;
@@ -96,9 +102,9 @@ class ColorUtils
         $hsl[2] += $percent / 100;
         $hsl[2] = min($hsl[2], 1);
         $rgb = self::hslToRgb($hsl[0], $hsl[1], $hsl[2]);
-        $r = dechex($rgb[0]);
-        $g = dechex($rgb[1]);
-        $b = dechex($rgb[2]);
+        $r = dechex((int)$rgb[0]);
+        $g = dechex((int)$rgb[1]);
+        $b = dechex((int)$rgb[2]);
 
         return '#' . $r . $g . $b;
     }

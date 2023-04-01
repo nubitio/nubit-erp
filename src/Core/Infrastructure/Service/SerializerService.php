@@ -46,6 +46,9 @@ class SerializerService
         $this->serializer = new Serializer($normalizers, $encoders);
     }
 
+    /**
+     * @param array<string, mixed> $context
+     */
     public function serialize(mixed $data, string $format, array $context = []): string
     {
         return $this->serializer->serialize($data, $format, $context);

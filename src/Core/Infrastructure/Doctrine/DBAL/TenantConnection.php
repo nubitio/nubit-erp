@@ -9,6 +9,7 @@ use Doctrine\DBAL\Driver;
 
 class TenantConnection extends Connection
 {
+    /** @var array<string, mixed> */
     protected array $tenantParams;
     protected bool $isConnected = false;
     protected bool $autoCommit = true;

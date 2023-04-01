@@ -20,16 +20,13 @@ class TransferRepository implements TransferRepositoryInterface
     }
 
     /**
-     * @throws \Doctrine\DBAL\Exception
+     * @inheritdoc
      */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_transfer', 'created_at', 'DESC', filter: $filter);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert(Transfer $transfer): void
     {
         $entity = new TransferEntity();
@@ -38,9 +35,6 @@ class TransferRepository implements TransferRepositoryInterface
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(Transfer $transfer): void
     {
         $entity = $this->entityManager->find(TransferEntity::class, $transfer->transfer_id);

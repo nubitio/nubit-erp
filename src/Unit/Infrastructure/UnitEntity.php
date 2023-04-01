@@ -16,7 +16,6 @@ use Doctrine\ORM\Mapping\Table;
 class UnitEntity
 {
     #[Id]
-    #[GeneratedValue]
     #[Column(name: 'unidad_id', type: 'string')]
     public ?string $unidad_id;
     #[Column(name: 'descripcion', type: 'string')]

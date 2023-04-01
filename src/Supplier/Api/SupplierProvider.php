@@ -15,8 +15,7 @@ use App\Supplier\Domain\Supplier;
 use App\Supplier\Infrastructure\SupplierEntity;
 
 /**
- * @implements ApiProviderInterface<Supplier>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<Supplier|PaginatorInterface>
  */
 readonly class SupplierProvider implements ApiProviderInterface
 {

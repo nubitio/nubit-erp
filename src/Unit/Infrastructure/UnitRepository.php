@@ -20,16 +20,13 @@ class UnitRepository implements UnitRepositoryInterface
     }
 
     /**
-     * @throws \Doctrine\DBAL\Exception
+     * @inheritdoc
      */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('unidad', 'descripcion', filter: $filter);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert(Unit $unit): void
     {
         $entity = new UnitEntity();
@@ -38,9 +35,6 @@ class UnitRepository implements UnitRepositoryInterface
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(Unit $unit): void
     {
         $entity = $this->entityManager->find(UnitEntity::class, $unit->unidad_id);

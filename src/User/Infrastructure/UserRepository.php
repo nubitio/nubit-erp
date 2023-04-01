@@ -2,6 +2,7 @@
 
 namespace App\User\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -10,6 +11,7 @@ use App\Role\Infrastructure\RoleEntity;
 use App\User\Domain\User;
 use App\User\Domain\UserRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 readonly class UserRepository implements UserRepositoryInterface
 {
@@ -50,16 +52,26 @@ readonly class UserRepository implements UserRepositoryInterface
         return DataMapper::map($entity, User::class);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws ORMException
+     */
     public function update(User $user): User
     {
         $entity = $this->entityManager->find(UserEntity::class, $user->usuario_id);
+
+        if (!$entity) {
+            throw new ServiceException('El usuario no existe');
+        }
+
         if ($user->password) {
             $user->password = password_hash($user->password, PASSWORD_DEFAULT);
         } else {
             $user->password = $entity->password;
         }
+
         $entity = DataMapper::map($user, $entity);
-        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol->rol_id);
+        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol?->rol_id);
         $entity->rol = $role;
         $this->entityManager->flush();
 

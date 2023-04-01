@@ -17,8 +17,7 @@ use App\Product\Domain\Product;
 use App\Product\Infrastructure\ProductEntity;
 
 /**
- * @implements ApiProviderInterface<Product>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<Product|PaginatorInterface>
  */
 readonly class ProductProvider implements ApiProviderInterface
 {

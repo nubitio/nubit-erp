@@ -17,8 +17,7 @@ use App\Customer\Domain\CustomerGetOneUseCase;
 use App\Customer\Infrastructure\CustomerEntity;
 
 /**
- * @implements ApiProviderInterface<Customer>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<Customer|PaginatorInterface>
  */
 readonly class CustomerProvider implements ApiProviderInterface
 {

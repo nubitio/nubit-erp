@@ -16,8 +16,7 @@ use App\User\Domain\User;
 use App\User\Infrastructure\UserEntity;
 
 /**
- * @implements ApiProviderInterface<User>
- * @implements ApiProviderInterface<PaginatorInterface>
+ * @implements ApiProviderInterface<User|PaginatorInterface>
  */
 readonly class UserProvider implements ApiProviderInterface
 {
