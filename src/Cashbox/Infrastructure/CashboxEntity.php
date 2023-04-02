@@ -45,7 +45,7 @@ class CashboxEntity
     #[ManyToOne(targetEntity: UserEntity::class)]
     #[JoinColumn(name: 'usuario_id', referencedColumnName: 'usuario_id')]
     public UserEntity $user;
-    /** @var CashboxDetailEntity[] $details */
+    /** @var ArrayCollection<int , CashboxDetailEntity>|array<int, CashboxDetailEntity> */
     #[OneToMany(mappedBy: 'cashbox', targetEntity: CashboxDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     public array|Collection $details;
 

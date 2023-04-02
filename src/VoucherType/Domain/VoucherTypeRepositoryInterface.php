@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\Options;
 
 interface VoucherTypeRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<VoucherType>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?VoucherType;

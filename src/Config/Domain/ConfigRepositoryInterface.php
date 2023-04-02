@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\Options;
 
 interface ConfigRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Config>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Config;

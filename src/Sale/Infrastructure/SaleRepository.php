@@ -2,6 +2,7 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -27,6 +28,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -35,14 +37,19 @@ readonly class SaleRepository implements SaleRepositoryInterface
     /**
      * @inheritdoc
      * @throws Exception
+     * @throws ServiceException
      */
     public function getOneById(string $id): array
     {
         $header = $this->connection->executeQuery('CALL sp_sale_header(?)', [$id])->fetchAssociative();
         $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
 
+        if (!$header || !$details) {
+            throw new ServiceException('No se encontró el movimiento de venta');
+        }
+
         return [
-            'header' => $header,
+            'header'  => $header,
             'details' => $details,
         ];
     }

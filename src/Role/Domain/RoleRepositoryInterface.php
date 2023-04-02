@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\Options;
 
 interface RoleRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Role>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Role;

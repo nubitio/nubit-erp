@@ -15,7 +15,7 @@ use App\{{module}}\Domain\GetOne{{module}}UseCase;
 use App\{{module}}\Infrastructure\{{module}}Entity;
 
 /**
- * @implements ApiProviderInterface<{{module}}|PaginatorInterface>
+ * @implements ApiProviderInterface<{{module}}>
  */
 readonly class {{module}}Provider implements ApiProviderInterface
 {

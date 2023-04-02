@@ -2,6 +2,7 @@
 
 namespace App\PriceList\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -24,6 +25,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -50,9 +52,17 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
         return DataMapper::map($entity, PriceList::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(PriceList $priceList): PriceList
     {
         $entity = $this->entityManager->find(PriceListEntity::class, $priceList->id);
+
+        if (!$entity) {
+            throw new ServiceException('La lista de precios no existe.');
+        }
+
         $entity = DataMapper::map($priceList, $entity);
         $this->entityManager->flush();
 

@@ -95,9 +95,9 @@ class ColorUtils
     public static function lightenColor(string $hexColor, int $percent): string
     {
         $hexColor = str_replace('#', '', $hexColor);
-        $r = hexdec(substr($hexColor, 0, 2));
-        $g = hexdec(substr($hexColor, 2, 2));
-        $b = hexdec(substr($hexColor, 4, 2));
+        $r = (int)hexdec(substr($hexColor, 0, 2));
+        $g = (int)hexdec(substr($hexColor, 2, 2));
+        $b = (int)hexdec(substr($hexColor, 4, 2));
         $hsl = self::rgbToHsl($r, $g, $b);
         $hsl[2] += $percent / 100;
         $hsl[2] = min($hsl[2], 1);

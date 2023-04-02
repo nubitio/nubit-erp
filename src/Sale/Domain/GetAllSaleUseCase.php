@@ -14,6 +14,10 @@ class GetAllSaleUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Sale>
+     */
     public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);

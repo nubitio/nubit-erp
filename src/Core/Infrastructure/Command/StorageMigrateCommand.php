@@ -39,6 +39,11 @@ class StorageMigrateCommand extends Command
             $newPath = $this->settingsService->get(Constants::COMPANY_ID);
             $files = scandir($currentPath);
 
+            if (!$files) {
+                $io->info('No hay archivos para migrar');
+                return Command::SUCCESS;
+            }
+
             $ignore = ['.', '..', 'README.md', '.gitignore'];
 
             foreach ($files as $file) {

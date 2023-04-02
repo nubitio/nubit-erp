@@ -52,22 +52,22 @@ readonly class InvoiceEmailUseCase
         $pdfContent = $pdfResponse->file;
 
         $content = $this->twig->render('invoice/tpl/email.html.twig', [
-            'logo' => $logoUrl,
-            'type' => $type,
-            'date' => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
-            'invoice_url' => $invoiceUrl,
-            'series' => $invoice['header']['doc_series'],
-            'number' => $invoice['header']['doc_number'],
-            'total' => $invoice['header']['doc_sale_amount'],
-            'company' => $companyName,
+            'logo'            => $logoUrl,
+            'type'            => $type,
+            'date'            => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
+            'invoice_url'     => $invoiceUrl,
+            'series'          => $invoice['header']['doc_series'],
+            'number'          => $invoice['header']['doc_number'],
+            'total'           => $invoice['header']['doc_sale_amount'],
+            'company'         => $companyName,
             'company_address' => $invoice['header']['company_address'],
         ]);
 
         $email = (new Email())
             ->from('noreply@efact.app')
             ->to($invoice['header']['client_email'] ?: 'johangm90@gmail.com')
-            ->cc($this->settings->get('email_accounting') ?: 'johangm90@gmail.com')
-            ->bcc($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com')
+            ->cc((string)$this->settings->get('email_accounting') ?: 'johangm90@gmail.com')
+            ->bcc((string)$this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com')
             ->subject($subject)
             ->html($content)
             ->attach($xmlContent, $docFullName . '.xml')

@@ -18,7 +18,7 @@ use App\Sale\Domain\Sale;
 use App\Sale\Infrastructure\SaleEntity;
 
 /**
- * @implements ApiProviderInterface<Sale|PaginatorInterface>
+ * @implements ApiProviderInterface<Sale>
  */
 readonly class SaleProvider implements ApiProviderInterface
 {

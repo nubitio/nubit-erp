@@ -2,6 +2,7 @@
 
 namespace App\Invoice\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
@@ -24,7 +25,7 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /** @inheritdoc  */
+    /** @inheritdoc */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_comprobante', 'created_at', 'desc', filter: $filter);
@@ -71,9 +72,17 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         $this->entityManager->flush();
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Invoice $invoice): void
     {
         $entity = $this->entityManager->find(InvoiceEntity::class, $invoice->comprobante_id);
+
+        if (!$entity) {
+            throw new ServiceException('La factura no existe');
+        }
+
         DataMapper::map($invoice, $entity);
         $this->entityManager->flush();
     }

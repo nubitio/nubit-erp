@@ -15,7 +15,7 @@ use App\PriceList\Domain\PriceList;
 use App\PriceList\Infrastructure\PriceListEntity;
 
 /**
- * @implements ApiProviderInterface<PriceList|PaginatorInterface>
+ * @implements ApiProviderInterface<PriceList>
  */
 readonly class PriceListProvider implements ApiProviderInterface
 {

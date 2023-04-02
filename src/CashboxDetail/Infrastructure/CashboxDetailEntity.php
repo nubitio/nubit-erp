@@ -33,7 +33,7 @@ class CashboxDetailEntity
     #[Column(name: 'referencia', type: 'string')]
     public ?string $referencia;
     #[Column(name: 'monto', type: 'decimal')]
-    public ?string $monto;
+    public ?float $monto;
     #[ManyToOne(targetEntity: CashboxEntity::class, inversedBy: 'items')]
     #[JoinColumn(name: 'caja_id', referencedColumnName: 'caja_id')]
     public CashboxEntity $cashbox;

@@ -8,9 +8,10 @@ use Traversable;
 readonly class Paginator implements PaginatorInterface
 {
     /**
-     * @template T
+     * @template T of object
      *
      * @param array<T> $items
+     * @param ApiPlatformPaginatorInterface<T> $paginator
      */
     public function __construct(
         public array                         $items,

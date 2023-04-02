@@ -20,6 +20,7 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -39,7 +39,7 @@ class CashboxController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'local_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
@@ -61,23 +61,23 @@ class CashboxController extends BaseController
         $data = [];
 
         $data['header'] = [
-            'caja_id' => $cashBox->caja_id,
-            'fecha' => $cashBox->apertura->format('Y-m-d'),
+            'caja_id'  => $cashBox->caja_id,
+            'fecha'    => $cashBox->apertura->format('Y-m-d'),
             'apertura' => $cashBox->apertura->format('H:i:s'),
         ];
         $data['rows'] = $cashBox->details;
         $data['footer'] = [
             [
                 'descripcion' => 'Ingresos',
-                'monto' => $cashBox->getIncome(),
+                'monto'       => $cashBox->getIncome(),
             ],
             [
                 'descripcion' => 'Egresos',
-                'monto' => $cashBox->getOutcome(),
+                'monto'       => $cashBox->getOutcome(),
             ],
             [
                 'descripcion' => 'Saldo',
-                'monto' => $cashBox->getBalance(),
+                'monto'       => $cashBox->getBalance(),
             ],
         ];
 
@@ -91,7 +91,7 @@ class CashboxController extends BaseController
             uid: 1,
             tipo_id: 1,
             descripcion: 'Fondo de caja',
-            monto: $request->request->get('monto_inicial'),
+            monto: (float)$request->request->get('monto_inicial'),
         );
 
         $cashBox = new Cashbox(
@@ -154,8 +154,8 @@ class CashboxController extends BaseController
         $cashBox = $getOneUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
-            'title' => 'Reporte de caja',
-            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
         ]);
 
@@ -169,8 +169,8 @@ class CashboxController extends BaseController
         $infoReceipt = $getInfoReceiptUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
-            'title' => 'Reporte de caja',
-            'logo' => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
+            'title'   => 'Reporte de caja',
+            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);

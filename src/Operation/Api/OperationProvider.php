@@ -15,7 +15,7 @@ use App\Operation\Domain\Operation;
 use App\Operation\Infrastructure\OperationEntity;
 
 /**
- * @implements ApiProviderInterface<Operation|PaginatorInterface>
+ * @implements ApiProviderInterface<Operation>
  */
 readonly class OperationProvider implements ApiProviderInterface
 {

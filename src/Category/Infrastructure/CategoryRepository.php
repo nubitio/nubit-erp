@@ -4,11 +4,13 @@ namespace App\Category\Infrastructure;
 
 use App\Category\Domain\Category;
 use App\Category\Domain\CategoryRepositoryInterface;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 readonly class CategoryRepository implements CategoryRepositoryInterface
 {
@@ -19,6 +21,7 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -49,9 +52,18 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
         return DataMapper::map($entity, Category::class);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws ORMException
+     */
     public function update(Category $category): Category
     {
         $entity = $this->entityManager->find(CategoryEntity::class, $category->categoria_id);
+
+        if ($entity === null) {
+            throw new ServiceException('La categoría no existe.');
+        }
+
         $entity = DataMapper::map($category, $entity);
         if ($category->parent !== null) {
             $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);

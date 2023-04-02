@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 
 interface CategoryRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Category>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Category;

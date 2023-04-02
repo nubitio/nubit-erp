@@ -2,6 +2,7 @@
 
 namespace App\PaymentMethod\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -19,6 +20,7 @@ readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterfa
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -45,9 +47,17 @@ readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterfa
         return DataMapper::map($entity, PaymentMethod::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(PaymentMethod $paymentMethod): PaymentMethod
     {
         $entity = $this->entityManager->find(PaymentMethodEntity::class, $paymentMethod->id);
+
+        if (!$entity) {
+            throw new ServiceException('El método de pago no existe.');
+        }
+
         $entity = DataMapper::map($paymentMethod, $entity);
         $this->entityManager->flush();
 

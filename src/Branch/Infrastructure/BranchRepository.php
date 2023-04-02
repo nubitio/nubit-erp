@@ -5,11 +5,13 @@ namespace App\Branch\Infrastructure;
 use App\Branch\Domain\Branch;
 use App\Branch\Domain\BranchRepositoryInterface;
 use App\Company\Infrastructure\CompanyEntity;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 readonly class BranchRepository implements BranchRepositoryInterface
 {
@@ -20,6 +22,7 @@ readonly class BranchRepository implements BranchRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -48,9 +51,18 @@ readonly class BranchRepository implements BranchRepositoryInterface
         return DataMapper::map($entity, Branch::class);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws ORMException
+     */
     public function update(Branch $branch): Branch
     {
         $entity = $this->entityManager->find(BranchEntity::class, $branch->local_id);
+
+        if (!$entity) {
+            throw new ServiceException('El local no existe');
+        }
+
         $entity = DataMapper::map($branch, $entity);
         $company = $this->entityManager->getReference(CompanyEntity::class, $branch->empresa->empresa_id);
         $entity->empresa = $company;

@@ -4,6 +4,7 @@ namespace App\Config\Infrastructure;
 
 use App\Config\Domain\Config;
 use App\Config\Domain\ConfigRepositoryInterface;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -19,6 +20,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -45,9 +47,17 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         return DataMapper::map($entity, Config::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Config $config): Config
     {
         $entity = $this->entityManager->find(ConfigEntity::class, $config->id);
+
+        if (!$entity) {
+            throw new ServiceException('La configuración no existe.');
+        }
+
         $entity = DataMapper::map($config, $entity);
         $this->entityManager->flush();
 

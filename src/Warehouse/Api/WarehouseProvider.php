@@ -17,7 +17,7 @@ use App\Warehouse\Domain\WarehouseGetOneUseCase;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 
 /**
- * @implements ApiProviderInterface<Warehouse|PaginatorInterface>
+ * @implements ApiProviderInterface<Warehouse>
  */
 readonly class WarehouseProvider implements ApiProviderInterface
 {

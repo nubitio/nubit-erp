@@ -14,6 +14,10 @@ class GetAllRoleUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Role>
+     */
     public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
