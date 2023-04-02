@@ -67,6 +67,11 @@ readonly class OperationRepository implements OperationRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(OperationEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

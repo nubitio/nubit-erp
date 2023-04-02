@@ -13,7 +13,6 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
 /**
@@ -39,6 +38,6 @@ readonly class CompanyProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['empresa_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['empresa_id']));
     }
 }

@@ -67,6 +67,11 @@ readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterfa
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(PaymentMethodEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

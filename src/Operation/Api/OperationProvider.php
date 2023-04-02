@@ -36,6 +36,6 @@ readonly class OperationProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['operacion_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['operacion_id']));
     }
 }

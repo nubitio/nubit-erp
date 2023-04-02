@@ -67,6 +67,11 @@ readonly class RoleRepository implements RoleRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(RoleEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

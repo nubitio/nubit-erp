@@ -45,6 +45,11 @@ class TransferRepository implements TransferRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(TransferEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

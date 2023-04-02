@@ -63,11 +63,17 @@ readonly class MediaRepository implements MediaRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(MediaEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         try {
             $this->uploadsFilesystem->delete(Constants::IMAGE_UPLOAD_DIR . $entity->path);
         } catch (FilesystemException $e) {
             $this->logger->alert($e->getMessage());
         }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

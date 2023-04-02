@@ -28,7 +28,9 @@ readonly class BranchProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Branch
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->BranchDeleteUseCase->__invoke($data->local_id);
+            if ($data->local_id) {
+                $this->BranchDeleteUseCase->__invoke($data->local_id);
+            }
             return null;
         }
 

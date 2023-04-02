@@ -115,6 +115,11 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

@@ -43,6 +43,11 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
     public function delete(int $id): void
     {
         $entity = $this->entityManager->find(VoucherSeriesEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

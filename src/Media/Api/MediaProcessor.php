@@ -27,7 +27,9 @@ readonly class MediaProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Media
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->id);
+            if ($data->id) {
+                $this->deleteUseCase->__invoke($data->id);
+            }
             return null;
         }
 

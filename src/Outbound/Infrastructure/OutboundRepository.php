@@ -76,6 +76,11 @@ class OutboundRepository implements OutboundRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(OutboundEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
