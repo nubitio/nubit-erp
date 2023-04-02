@@ -69,7 +69,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
         return DataMapper::map($entity, PriceList::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(PriceListEntity::class, $id);
 

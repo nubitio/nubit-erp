@@ -52,6 +52,12 @@ class StorageMigrateCommand extends Command
                 }
                 $io->writeln('Migrando archivo: ' . $file);
                 $data = file_get_contents($currentPath . '/' . $file);
+
+                if (!$data) {
+                    $io->error('Error al leer el archivo: ' . $file);
+                    continue;
+                }
+
                 $this->fileManager->write($newPath . '/' . $file, $data);
                 if ($this->fileManager->exists($newPath . '/' . $file)) {
                     $io->success('Archivo migrado: ' . $file);

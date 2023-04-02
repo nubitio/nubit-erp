@@ -36,7 +36,7 @@ class CashboxDetailEntity
     public ?float $monto;
     #[ManyToOne(targetEntity: CashboxEntity::class, inversedBy: 'items')]
     #[JoinColumn(name: 'caja_id', referencedColumnName: 'caja_id')]
-    public CashboxEntity $cashbox;
+    public ?CashboxEntity $cashbox;
 
     public function mapToDomainModel(): CashboxDetail
     {

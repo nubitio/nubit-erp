@@ -20,7 +20,7 @@ interface PriceListRepositoryInterface
 
     public function update(PriceList $priceList): PriceList;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 
     /**
      * @return array<int, mixed>

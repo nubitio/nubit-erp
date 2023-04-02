@@ -50,6 +50,11 @@ class OutboundRepository implements OutboundRepositoryInterface
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
             $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
+
+            if ($outbound->items === null) {
+                throw new \Exception('No se encontraron productos');
+            }
+
             foreach ($outbound->items as $item) {
                 $detailEntity = DataMapper::map($item, SaleDetailEntity::class);
                 $detailEntity->movimiento = $ref;

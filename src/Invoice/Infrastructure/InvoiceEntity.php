@@ -34,19 +34,19 @@ class InvoiceEntity
         #[Column(name: 'inafecto', type: 'boolean')]
         public ?bool               $inafecto = null,
         #[Column(name: 'subtotal', type: 'decimal')]
-        public ?string             $subtotal = null,
+        public ?float              $subtotal = null,
         #[Column(name: 'gravada', type: 'decimal')]
-        public ?string             $gravada = null,
+        public ?float              $gravada = null,
         #[Column(name: 'igv', type: 'decimal')]
-        public ?string             $igv = null,
+        public ?float              $igv = null,
         #[Column(name: 'rc', type: 'decimal')]
-        public ?string             $rc = null,
+        public ?float              $rc = null,
         #[Column(name: 'total', type: 'decimal')]
-        public ?string             $total = null,
+        public ?float              $total = null,
         #[Column(name: 'discount_percent', type: 'integer')]
         public ?int                $discount_percent = null,
         #[Column(name: 'discount_amount', type: 'decimal')]
-        public ?string             $discount_amount = null,
+        public ?float              $discount_amount = null,
         #[Column(name: 'voided', type: 'boolean')]
         public ?bool               $voided = null,
         #[Column(name: 'digest', type: 'string')]

@@ -45,7 +45,7 @@ class SimpleCrudMaker implements CrudMakerInterface
         $this->io->text('Please select the entity');
         $tables = $this->schemaManager->listTableNames();
         $entityName = $this->io->choice('Entity', $tables);
-        $this->entity = $this->schemaManager->introspectTable($entityName);
+        $this->entity = $this->schemaManager->introspectTable(strval($entityName));
         $this->makeController();
         $this->makeRepositoryInterface();
         $this->makeCreateUseCase();
@@ -367,7 +367,7 @@ class SimpleCrudMaker implements CrudMakerInterface
         $entityContent = str_replace('{{table}}', $this->entity->getName(), $entityContent);
         $entityFields = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $entityFields .= "        #[ORM\Id]\n";
                 $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
@@ -410,7 +410,7 @@ class SimpleCrudMaker implements CrudMakerInterface
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
-        $repositoryContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $repositoryContent);
+        $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -477,7 +477,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read processor template');
         }
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
-        $processorContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $processorContent);
+        $processorContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $processorContent);
 
         file_put_contents($processorPath, $processorContent);
     }
@@ -517,9 +517,9 @@ class SimpleCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read provider template');
         }
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
-        $providerContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $providerContent);
-        $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
-        $providerContent = str_replace('{{sortOrder}}', $sortOrder, $providerContent);
+        $providerContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $providerContent);
+        $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
+        $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
 
         file_put_contents($providerPath, $providerContent);
     }

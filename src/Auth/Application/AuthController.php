@@ -42,19 +42,19 @@ class AuthController extends BaseController
     #[Route('/auth/local', name: 'auth_local', methods: ['POST'])]
     public function setLocal(Request $request, BranchGetOneUseCase $branchGetOneUseCase, GetAllByBranchUseCase $getAllByBranchUseCase): Response
     {
-        $data = json_decode($request->getContent());
-        $localId = $data->localId;
+        /** @var array<string, string> $data */
+        $data = json_decode($request->getContent(), true);
+        $localId = $data['local_id'];
 
         $local = $branchGetOneUseCase($localId);
 
-        /** @var Warehouse[] $warehouses */
         $warehouses = $getAllByBranchUseCase($localId);
         /** @var ?Warehouse $defaultWarehouse */
         $defaultWarehouse = ArrayUtils::find($warehouses, fn($warehouse) => $warehouse->is_default);
 
         $session = $request->getSession();
         $session->set('branch_id', $localId);
-        $session->set('branch_name', $local->descripcion);
+        $session->set('branch_name', $local?->descripcion ?? null);
         $session->set('warehouse_id', $defaultWarehouse?->almacen_id ?? null);
 
         return $this->json([

@@ -18,7 +18,7 @@ interface SaleRepositoryInterface
      */
     public function getOneById(string $id): array;
 
-    public function getOne(string $id): ?Sale;
+    public function getOne(string $id): Sale;
 
     public function insert(Sale $sale): Sale;
 

@@ -87,14 +87,14 @@ class InvoiceController extends BaseController
 
         return $this->render('invoice/show.html.twig', [
             'company_name' => $invoice['header']['company_name'],
-            'type' => $type,
-            'series' => $invoice['header']['doc_series'],
-            'number' => $invoice['header']['doc_number'],
-            'date' => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
-            'total' => $invoice['header']['doc_sale_amount'],
-            'pdf' => $this->generateUrl('invoice_pdf', ['id' => $id]),
-            'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
-            'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
+            'type'         => $type,
+            'series'       => $invoice['header']['doc_series'],
+            'number'       => $invoice['header']['doc_number'],
+            'date'         => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
+            'total'        => $invoice['header']['doc_sale_amount'],
+            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 

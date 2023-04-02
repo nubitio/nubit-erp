@@ -25,7 +25,7 @@ readonly class CustomerProcessor implements ApiProcessorInterface
     {
     }
 
-    /** @inheritDoc */
+    /** @inheritdoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Customer
     {
         if ($operation instanceof DeleteOperationInterface) {
@@ -35,7 +35,7 @@ readonly class CustomerProcessor implements ApiProcessorInterface
             return null;
         }
 
-        $exist = $this->getOneUseCase->__invoke($data->ruc);
+        $exist = $this->getOneUseCase->__invoke(strval($data->ruc));
 
         if ($exist) {
             $result = $this->CustomerUpdateUseCase->__invoke($data);

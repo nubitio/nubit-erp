@@ -27,7 +27,13 @@ class InvoiceUpdater
                 continue;
             }
 
-            $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'] ?? 0.0, $sale['igv'], $sale['recargo_consumo'] ?? 0.0);
+            $invoiceCalculator = new InvoiceCalculator(
+                floatval($sale['total']),
+                floatval($sale['descuento'] ?? 0.0),
+                floatval($sale['igv']),
+                floatval($sale['recargo_consumo'] ?? 0.0)
+            );
+
             $invoiceAmounts = $invoiceCalculator->calculate();
             $this->connection->executeStatement('
                 update 

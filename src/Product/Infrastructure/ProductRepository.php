@@ -44,7 +44,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
     public function insert(Product $product): Product
     {
         $entity = DataMapper::map($product, ProductEntity::class);
-        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria->categoria_id);
+        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
         $entity->categoria = $category;
         if ($product->imagen?->id) {
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);

@@ -9,7 +9,6 @@ use App\Billing\Model\Summary\Summary;
 use App\Core\Infrastructure\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -22,9 +21,10 @@ class SummaryRepository implements SummaryRepositoryInterface
     private SerializerService $serializer;
 
     public function __construct(
-        Connection $connection,
+        Connection        $connection,
         SerializerService $serializer
-    ) {
+    )
+    {
         $this->connection = $connection;
         $this->serializer = $serializer;
     }
@@ -37,7 +37,11 @@ class SummaryRepository implements SummaryRepositoryInterface
         $sql = 'select ifnull(max(right(correlative, 1)), 0) as correlative from summary where date = ?';
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
 
-        return $result['correlative'] ?? 0;
+        if (!$result) {
+            return 0;
+        }
+
+        return intval($result['correlative']);
     }
 
     /**
@@ -54,7 +58,7 @@ class SummaryRepository implements SummaryRepositoryInterface
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
-            'body' => $requestBody,
+            'body'    => $requestBody,
         ]);
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
@@ -72,7 +76,7 @@ class SummaryRepository implements SummaryRepositoryInterface
     public function getStatus(string $ticket, string $ruc): StatusResponse
     {
         $httpClient = HttpClient::create();
-        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket='.$ticket.'&ruc='.$ruc);
+        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
         $responseBody = $response->getContent();
         /** @var StatusResponse $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusResponse::class, 'json');

@@ -43,7 +43,7 @@ readonly class BranchRepository implements BranchRepositoryInterface
     public function insert(Branch $branch): Branch
     {
         $entity = DataMapper::map($branch, BranchEntity::class);
-        $company = $this->entityManager->getReference(CompanyEntity::class, $branch->empresa->empresa_id);
+        $company = $this->entityManager->getReference(CompanyEntity::class, $branch->empresa?->empresa_id);
         $entity->empresa = $company;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -64,7 +64,7 @@ readonly class BranchRepository implements BranchRepositoryInterface
         }
 
         $entity = DataMapper::map($branch, $entity);
-        $company = $this->entityManager->getReference(CompanyEntity::class, $branch->empresa->empresa_id);
+        $company = $this->entityManager->getReference(CompanyEntity::class, $branch->empresa?->empresa_id);
         $entity->empresa = $company;
         $this->entityManager->flush();
 

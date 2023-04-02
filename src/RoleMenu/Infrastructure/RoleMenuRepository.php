@@ -2,6 +2,7 @@
 
 namespace App\RoleMenu\Infrastructure;
 
+use App\Core\Domain\Util\DataMapper;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -38,8 +39,7 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
         try {
             $this->connection->executeStatement('delete from menu_rol where rol_id = :roleId', ['roleId' => $roleId]);
             foreach ($roleMenuList as $roleMenu) {
-                $entity = new RoleMenuEntity();
-                $entity->mapFromDomainModel($roleMenu);
+                $entity = DataMapper::map($roleMenu, RoleMenu::class);
                 $this->entityManager->persist($entity);
             }
             $this->entityManager->flush();

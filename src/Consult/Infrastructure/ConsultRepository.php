@@ -35,7 +35,7 @@ class ConsultRepository implements ConsultRepositoryInterface
     private function mapDni(array $data): Consult
     {
         return new Consult(
-            $data['dni'],
+            strval($data['dni']),
             $data['nombres'] . ' ' . $data['apellidoPaterno'] . ' ' . $data['apellidoMaterno'],
             '',
             true
@@ -49,10 +49,10 @@ class ConsultRepository implements ConsultRepositoryInterface
     private function mapRuc(array $data): Consult
     {
         return new Consult(
-            $data['ruc'],
-            $data['razonSocial'],
-            $data['direccion'],
-            $data['estado'] === 'ACTIVO'
+            strval($data['ruc']),
+            strval($data['razonSocial']),
+            strval($data['direccion']),
+            strval($data['estado']) === 'ACTIVO'
         );
     }
 }

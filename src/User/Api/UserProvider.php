@@ -38,6 +38,6 @@ readonly class UserProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke(strval($uriVariables['usuario_id']));
+        return $this->getOneUseCase->__invoke(intval($uriVariables['usuario_id']));
     }
 }

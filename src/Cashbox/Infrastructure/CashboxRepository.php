@@ -39,6 +39,10 @@ class CashboxRepository implements CashboxRepositoryInterface
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
 
+        if (!$entity) {
+            throw new ServiceException('Caja no encontrada');
+        }
+
         return DataMapper::map($entity, Cashbox::class);
     }
 
@@ -129,20 +133,21 @@ class CashboxRepository implements CashboxRepositoryInterface
         $cashBox = $this->getLast($localId, $userId);
         if ($cashBox) {
             $cashBoxId = $cashBox->caja_id;
-            $startDate = $cashBox->apertura->format('Y-m-d H:i:s');
+            $startDate = strval($cashBox->apertura?->format('Y-m-d H:i:s'));
             $endDate = date('Y-m-d H:i:s');
             $cashBoxEntity = $this->entityManager->getReference(CashboxEntity::class, $cashBoxId);
 
             $totalSales = $this->getTotalSales($userId, $startDate, $endDate);
 
             foreach ($totalSales as $totalSale) {
+                /** @var ?CashboxDetailEntity $cashBoxDetail */
                 $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
                     'caja_id'     => $cashBoxId,
                     'descripcion' => $totalSale['name'],
                 ]);
 
-                if ($cashBoxDetail) {
-                    $cashBoxDetail->monto = $totalSale['total'];
+                if ($cashBoxDetail != null) {
+                    $cashBoxDetail->monto = floatval($totalSale['total']);
                     $this->entityManager->flush();
                     continue;
                 }
@@ -151,10 +156,10 @@ class CashboxRepository implements CashboxRepositoryInterface
 
                 $cashBoxDetail = new CashboxDetailEntity();
                 $cashBoxDetail->cashbox = $cashBoxEntity;
-                $cashBoxDetail->uid = $nextIndex;
+                $cashBoxDetail->uid = intval($nextIndex);
                 $cashBoxDetail->tipo_id = 1;
-                $cashBoxDetail->descripcion = $totalSale['name'];
-                $cashBoxDetail->monto = $totalSale['total'];
+                $cashBoxDetail->descripcion = strval($totalSale['name']);
+                $cashBoxDetail->monto = floatval($totalSale['total']);
 
                 $this->entityManager->persist($cashBoxDetail);
                 $this->entityManager->flush();

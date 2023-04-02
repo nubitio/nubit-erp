@@ -44,6 +44,7 @@ class TenantManager extends AbstractController
     #[Route('/admin/tenants/create', name: 'admin_tenant_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
+        /** @var array<int, array<string, mixed>> $data */
         $data = json_decode($this->configContent, true);
 
         $data[] = [
@@ -60,6 +61,7 @@ class TenantManager extends AbstractController
     #[Route('/admin/tenants/delete/{id}', name: 'admin_tenant_delete')]
     public function delete(int $id): Response
     {
+        /** @var array<int, array<string, mixed>> $data */
         $data = json_decode($this->configContent, true);
 
         foreach ($data as $key => $tenant) {
