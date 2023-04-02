@@ -31,7 +31,7 @@ class Util
         $primaryKey = $entity->getPrimaryKey();
         $field = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $field = "    public ?" . self::getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
                 break;
             }
@@ -59,7 +59,7 @@ class Util
             if (in_array($column, $foreignKeys)) {
                 $formType = 'FormType.SELECT';
             }
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $formType = 'FormType.NONE';
                 $field .= "            .isIdentity(true)\n";
                 $field .= "            .visible(false)\n";

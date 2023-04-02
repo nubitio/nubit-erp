@@ -54,16 +54,16 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->io->title('Master detail crud generator');
         $this->io->text('Please select the master entity');
         $masterEntityName = $this->io->choice('Master entity', $this->schemaManager->listTableNames());
-        $this->masterEntity = $this->schemaManager->introspectTable($masterEntityName);
+        $this->masterEntity = $this->schemaManager->introspectTable(strval($masterEntityName));
         $this->io->newLine();
         $this->io->text('Please select the detail entity');
         $detailEntityName = $this->io->choice('Detail entity', $this->schemaManager->listTableNames());
-        $this->detailEntity = $this->schemaManager->introspectTable($detailEntityName);
+        $this->detailEntity = $this->schemaManager->introspectTable(strval($detailEntityName));
         $detailColumns = [];
         foreach ($this->detailEntity->getColumns() as $column) {
             $detailColumns[] = $column->getName();
         }
-        $this->joinColumn = $this->io->choice('Join column', $detailColumns);
+        $this->joinColumn = strval($this->io->choice('Join column', $detailColumns));
 
         $this->io->newLine();
         $this->io->text('Generating master');
@@ -421,7 +421,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $entityContent = str_replace('{{table}}', $this->entity->getName(), $entityContent);
         $entityFields = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $entityFields .= "        #[ORM\Id]\n";
                 $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
@@ -484,7 +484,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
-        $repositoryContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $repositoryContent);
+        $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -523,7 +523,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $dtoContent = str_replace('{{masterModule}}', StringUtils::toPascalCase($this->masterModuleName), $dtoContent);
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
         $dtoContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->masterModuleName), $dtoContent);
-        $dtoContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $dtoContent);
+        $dtoContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $dtoContent);
         $dtoContent = str_replace('{{entityIdField}}', Util::getEntityIdField($this->masterEntity), $dtoContent);
 
         file_put_contents($dtoPath, $dtoContent);
@@ -558,7 +558,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read processor template');
         }
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
-        $processorContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $processorContent);
+        $processorContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $processorContent);
 
         file_put_contents($processorPath, $processorContent);
     }
@@ -601,8 +601,8 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
         $providerContent = str_replace('{{joinColumn}}', $this->joinColumn, $providerContent);
-        $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
-        $providerContent = str_replace('{{sortOrder}}', $sortOrder, $providerContent);
+        $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
+        $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
 
         file_put_contents($providerPath, $providerContent);
     }

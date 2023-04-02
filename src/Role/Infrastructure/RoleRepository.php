@@ -64,7 +64,7 @@ readonly class RoleRepository implements RoleRepositoryInterface
         return DataMapper::map($entity, Role::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(RoleEntity::class, $id);
 

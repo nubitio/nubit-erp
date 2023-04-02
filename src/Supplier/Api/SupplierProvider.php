@@ -36,6 +36,6 @@ readonly class SupplierProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['proveedor_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['proveedor_id']));
     }
 }

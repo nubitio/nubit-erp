@@ -2,6 +2,8 @@
 
 namespace App\Transfer\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Transfer\Domain\Transfer;
 use App\Transfer\Domain\TransferRepositoryInterface;
@@ -29,8 +31,7 @@ class TransferRepository implements TransferRepositoryInterface
 
     public function insert(Transfer $transfer): void
     {
-        $entity = new TransferEntity();
-        $entity->mapFromDomainModel($transfer);
+        $entity = DataMapper::map($transfer, TransferEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -38,7 +39,12 @@ class TransferRepository implements TransferRepositoryInterface
     public function update(Transfer $transfer): void
     {
         $entity = $this->entityManager->find(TransferEntity::class, $transfer->transfer_id);
-        $entity->mapFromDomainModel($transfer);
+
+        if (!$entity) {
+            throw new ServiceException('La transferencia no existe');
+        }
+
+        DataMapper::map($transfer, $entity);
         $this->entityManager->flush();
     }
 

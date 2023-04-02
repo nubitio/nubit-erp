@@ -19,5 +19,5 @@ interface RoleRepositoryInterface
 
     public function update(Role $role): Role;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 }

@@ -14,7 +14,7 @@ interface ApiProviderInterface extends ProviderInterface
     /**
      * @param Operation $operation
      * @param array<string, mixed> $uriVariables
-     * @param array<string, mixed> $context
+     * @param array<string, array<string, mixed>> $context
      *
      * @return T|iterable<T>|null
      */

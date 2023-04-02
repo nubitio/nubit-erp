@@ -10,7 +10,7 @@ interface RoleMenuRepositoryInterface
     public function getAllByRole(int $roleId): array;
 
     /**
-     * @param array<int, mixed> $roleMenuList
+     * @param RoleMenu[] $roleMenuList
      */
     public function insertMultiple(int $roleId, array $roleMenuList): void;
 }

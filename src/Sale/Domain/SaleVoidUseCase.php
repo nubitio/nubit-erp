@@ -34,7 +34,7 @@ readonly class SaleVoidUseCase
             throw SaleException::alreadyVoided();
         }
 
-        if ($sale->fecha->format('Y-m-d') < date('Y-m-d', strtotime('-7 days'))) {
+        if ($sale->fecha?->format('Y-m-d') < date('Y-m-d', strtotime('-7 days'))) {
             throw SaleException::tooOld();
         }
 

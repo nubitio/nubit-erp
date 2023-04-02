@@ -19,16 +19,16 @@ class BillUtils implements BillUtilsInterface
     public function getCompany(): Company
     {
         $company = new Company();
-        $company->ruc = (string)$this->settingsService->get('invoice_ruc');
-        $company->razonSocial = (string)$this->settingsService->get('invoice_razon_social');
-        $company->nombreComercial = (string)$this->settingsService->get('invoice_nombre_comercial');
+        $company->ruc = strval($this->settingsService->get('invoice_ruc'));
+        $company->razonSocial = strval($this->settingsService->get('invoice_razon_social'));
+        $company->nombreComercial = strval($this->settingsService->get('invoice_nombre_comercial'));
         $company->address = new Address();
-        $company->address->ubigueo = (string)$this->settingsService->get('invoice_ubigeo');
+        $company->address->ubigueo = strval($this->settingsService->get('invoice_ubigeo'));
         $company->address->codigoPais = 'PE';
-        $company->address->departamento = (string)$this->settingsService->get('invoice_departamento');
-        $company->address->provincia = (string)$this->settingsService->get('invoice_provincia');
-        $company->address->distrito = (string)$this->settingsService->get('invoice_distrito');
-        $company->address->direccion = (string)$this->settingsService->get('invoice_direccion');
+        $company->address->departamento = strval($this->settingsService->get('invoice_departamento'));
+        $company->address->provincia = strval($this->settingsService->get('invoice_provincia'));
+        $company->address->distrito = strval($this->settingsService->get('invoice_distrito'));
+        $company->address->direccion = strval($this->settingsService->get('invoice_direccion'));
 
         return $company;
     }

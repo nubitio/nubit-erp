@@ -36,6 +36,6 @@ readonly class RoleProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['rol_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['rol_id']));
     }
 }

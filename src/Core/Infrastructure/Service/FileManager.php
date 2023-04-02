@@ -16,9 +16,9 @@ final readonly class FileManager
     /**
      * @throws FilesystemException
      */
-    public function write(string $fileName, mixed $data): void
+    public function write(string $location, string $content): void
     {
-        $this->uploadsFilesystem->write($fileName, $data);
+        $this->uploadsFilesystem->write($location, $content);
     }
 
     /**

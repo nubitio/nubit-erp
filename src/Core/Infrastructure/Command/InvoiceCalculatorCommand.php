@@ -30,10 +30,10 @@ class InvoiceCalculatorCommand extends Command
             $taxPercentage = $io->ask('Tax percentage', "0");
             $chargesPercentage = $io->ask('Charges percentage', "0");
             $invoiceCalculator = new InvoiceCalculator(
-                $total,
-                $discountPercentage,
-                $taxPercentage,
-                $chargesPercentage
+                floatval($total),
+                floatval($discountPercentage),
+                floatval($taxPercentage),
+                floatval($chargesPercentage)
             );
             $invoiceAmounts = $invoiceCalculator->calculate();
             $io->text(

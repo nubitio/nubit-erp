@@ -7,11 +7,12 @@ use App\Auth\Domain\GetTokenUseCase;
 use App\Auth\Domain\Token;
 use App\Core\Domain\Api\ApiProcessorInterface;
 use App\User\Domain\GetOneUserByUsernameUseCase;
+use App\User\Domain\User;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
- * @implements ApiProcessorInterface<Token>
+ * @implements ApiProcessorInterface<User>
  */
 readonly class AuthProcessor implements ApiProcessorInterface
 {
@@ -22,16 +23,16 @@ readonly class AuthProcessor implements ApiProcessorInterface
     {
     }
 
-    /** @inheritDoc */
+    /** @inheritdoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Token
     {
-        $user = $this->getOneUserByUsernameUseCase->__invoke($data->username);
+        $user = $this->getOneUserByUsernameUseCase->__invoke(strval($data->username));
 
         if (!$user && !$user?->estado) {
             throw new UserNotFoundException('User not found');
         }
 
-        if (!password_verify($data->password, $user->getPassword())) {
+        if (!password_verify(strval($data->password), strval($user->getPassword()))) {
             throw new AuthenticationException('Invalid credentials');
         }
 

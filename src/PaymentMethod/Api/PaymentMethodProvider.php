@@ -35,6 +35,6 @@ readonly class PaymentMethodProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke(strval($uriVariables['id']));
+        return $this->getOneUseCase->__invoke(intval($uriVariables['id']));
     }
 }

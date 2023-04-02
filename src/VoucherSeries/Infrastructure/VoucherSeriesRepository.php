@@ -2,6 +2,8 @@
 
 namespace App\VoucherSeries\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\VoucherSeries\Domain\VoucherSeries;
 use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
@@ -27,8 +29,7 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
 
     public function insert(VoucherSeries $voucherSeries): void
     {
-        $entity = new VoucherSeriesEntity();
-        $entity->mapFromDomainModel($voucherSeries);
+        $entity = DataMapper::map($voucherSeries, VoucherSeriesEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
@@ -36,7 +37,12 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
     public function update(VoucherSeries $voucherSeries): void
     {
         $entity = $this->entityManager->find(VoucherSeriesEntity::class, $voucherSeries->id);
-        $entity->mapFromDomainModel($voucherSeries);
+
+        if (!$entity) {
+            throw new ServiceException('La serie de comprobante no existe');
+        }
+
+        DataMapper::map($voucherSeries, $entity);
         $this->entityManager->flush();
     }
 

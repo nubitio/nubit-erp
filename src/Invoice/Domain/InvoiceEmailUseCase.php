@@ -54,7 +54,7 @@ readonly class InvoiceEmailUseCase
         $content = $this->twig->render('invoice/tpl/email.html.twig', [
             'logo'            => $logoUrl,
             'type'            => $type,
-            'date'            => date('d/m/Y', strtotime($invoice['header']['doc_date'])),
+            'date'            => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
             'invoice_url'     => $invoiceUrl,
             'series'          => $invoice['header']['doc_series'],
             'number'          => $invoice['header']['doc_number'],
@@ -65,9 +65,9 @@ readonly class InvoiceEmailUseCase
 
         $email = (new Email())
             ->from('noreply@efact.app')
-            ->to($invoice['header']['client_email'] ?: 'johangm90@gmail.com')
-            ->cc((string)$this->settings->get('email_accounting') ?: 'johangm90@gmail.com')
-            ->bcc((string)$this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com')
+            ->to(strval($invoice['header']['client_email'] ?: 'johangm90@gmail.com'))
+            ->cc(strval($this->settings->get('email_accounting') ?: 'johangm90@gmail.com'))
+            ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
             ->subject($subject)
             ->html($content)
             ->attach($xmlContent, $docFullName . '.xml')

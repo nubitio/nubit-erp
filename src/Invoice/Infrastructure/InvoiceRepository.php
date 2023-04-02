@@ -51,8 +51,13 @@ class InvoiceRepository implements InvoiceRepositoryInterface
      */
     public function create(Sale $sale): void
     {
-        $localId = $this->connection->fetchOne('select local_id from almacen where almacen_id = ?', [$sale->almacen->almacen_id]);
-        $invoiceCalculator = new InvoiceCalculator($sale->subtotal, $sale->descuento ?? 0.0, $sale->igv, $sale->recargo_consumo ?? 0.0);
+        $localId = $this->connection->fetchOne('select local_id from almacen where almacen_id = ?', [$sale->almacen?->almacen_id]);
+        $invoiceCalculator = new InvoiceCalculator(
+            floatval($sale->subtotal),
+            $sale->descuento ?? 0.0,
+            floatval($sale->igv),
+            $sale->recargo_consumo ?? 0.0
+        );
         $invoiceAmounts = $invoiceCalculator->calculate();
         $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?)', [
             $sale->movimiento_id,

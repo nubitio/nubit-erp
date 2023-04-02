@@ -53,16 +53,6 @@ class OutboundController extends BaseController
          * @var Outbound $outbound
          */
         $outbound = $this->serializer->deserialize(json_encode($request->request->all()), Outbound::class, 'json');
-        $detail = $request->get('details');
-        $detailItems = [];
-        foreach ($detail as $item) {
-            /**
-             * @var SaleDetail $saleDetail
-             */
-            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
-            $detailItems[] = $saleDetail;
-        }
-        $outbound->items = $detailItems;
         $createUseCase($outbound);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);

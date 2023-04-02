@@ -26,7 +26,7 @@ readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterfa
         return $this->dataLoader->load($options);
     }
 
-    public function getOne(string $id): ?PaymentMethod
+    public function getOne(int $id): ?PaymentMethod
     {
         /** @var ?PaymentMethodEntity $entity */
         $entity = $this->entityManager->find(PaymentMethodEntity::class, $id);
@@ -64,7 +64,7 @@ readonly class PaymentMethodRepository implements PaymentMethodRepositoryInterfa
         return DataMapper::map($entity, PaymentMethod::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(PaymentMethodEntity::class, $id);
 

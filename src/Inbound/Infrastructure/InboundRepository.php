@@ -27,7 +27,7 @@ class InboundRepository implements InboundRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /** @inheritdoc  */
+    /** @inheritdoc */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
@@ -48,6 +48,11 @@ class InboundRepository implements InboundRepositoryInterface
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
             $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
+
+            if ($inbound->items === null) {
+                throw new \Exception('No se encontraron productos');
+            }
+
             foreach ($inbound->items as $item) {
                 $detailEntity = DataMapper::map($item, SaleDetailEntity::class);
                 $detailEntity->movimiento = $ref;

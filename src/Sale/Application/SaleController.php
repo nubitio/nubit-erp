@@ -3,10 +3,10 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Sale\Domain\DocType;
-use App\Sale\Domain\SaleException;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
@@ -24,12 +24,12 @@ class SaleController extends BaseController
     #[Route('/sale', name: 'sale_index', methods: ['GET'])]
     public function index(): Response
     {
-        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
+        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), strval(session_id()));
         $printScript = WebClientPrint::createScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), $this->generateUrl('wcp_print', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
 
         return $this->render('sale/index.html.twig', [
             'printDetectionScript' => $printDetectionScript,
-            'printScript' => $printScript,
+            'printScript'          => $printScript,
         ]);
     }
 
@@ -47,9 +47,9 @@ class SaleController extends BaseController
         $dateTo = $request->get('date-to');
         $localId = $request->getSession()->get('branch_id');
         $params = [
-            'local_id' => $localId,
+            'local_id'  => $localId,
             'date_from' => $dateFrom,
-            'date_to' => $dateTo,
+            'date_to'   => $dateTo,
         ];
         switch ($report) {
             case 'sale-by-product':
@@ -94,12 +94,18 @@ class SaleController extends BaseController
         $sale = $getOneById($id);
         $qr = '';
         if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode())->render($sale['header']['doc_qr_data']);
+            $qr = (new QRCode())->render(strval($sale['header']['doc_qr_data']));
         }
-        $logo = base64_encode(file_get_contents('assets/images/logo.png'));
+        $logoContent = file_get_contents('assets/images/logo.png');
+
+        if (!$logoContent) {
+            throw new ServiceException('No se pudo leer el logo');
+        }
+
+        $logo = base64_encode($logoContent);
         $content = $this->renderView('sale/report/invoice.html.twig', [
             'logo' => "data:image/png;base64,{$logo}",
-            'qr' => $qr,
+            'qr'   => $qr,
             'sale' => $sale,
         ]);
 
@@ -122,9 +128,9 @@ class SaleController extends BaseController
 
         return $pdfExporter->export($content, 'invoice', [
             'no-outline',
-            'page-width' => '80mm',
-            'page-height' => $pageHeight . 'mm',
-            'margin-left' => 0,
+            'page-width'   => '80mm',
+            'page-height'  => $pageHeight . 'mm',
+            'margin-left'  => 0,
             'margin-right' => 0,
         ]);
     }
@@ -133,7 +139,9 @@ class SaleController extends BaseController
     public function void(Request $request, SaleVoidUseCase $voidUseCase, string $id): Response
     {
         $userId = $request->getSession()->get('user_id');
-        $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
+        /** @var array<string, string> $requestBody */
+        $requestBody = json_decode($request->getContent(), true);
+        $voidUseCase($id, $requestBody['reason'], intval($userId));
 
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }

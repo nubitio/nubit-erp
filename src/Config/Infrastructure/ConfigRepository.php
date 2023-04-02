@@ -64,7 +64,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         return DataMapper::map($entity, Config::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(ConfigEntity::class, $id);
 

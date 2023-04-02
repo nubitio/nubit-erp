@@ -49,16 +49,6 @@ class InboundController extends BaseController
          * @var Inbound $inbound
          */
         $inbound = $this->serializer->deserialize(json_encode($request->request->all()), Inbound::class, 'json');
-        $detail = $request->get('details');
-        $detailItems = [];
-        foreach ($detail as $item) {
-            /**
-             * @var SaleDetail $saleDetail
-             */
-            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
-            $detailItems[] = $saleDetail;
-        }
-        $inbound->items = $detailItems;
         $createUseCase($inbound);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
