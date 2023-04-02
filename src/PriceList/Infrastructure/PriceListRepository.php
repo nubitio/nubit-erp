@@ -72,6 +72,11 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(PriceListEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

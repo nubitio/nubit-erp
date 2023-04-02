@@ -13,13 +13,13 @@ interface UserRepositoryInterface
      */
     public function getAll(Options $options): PaginatorInterface;
 
-    public function getOne(string $id): ?User;
+    public function getOne(int $id): ?User;
 
     public function insert(User $user): User;
 
     public function update(User $user): User;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 
     public function getOneByUsername(string $username): ?User;
 }

@@ -74,6 +74,11 @@ class InboundRepository implements InboundRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(InboundEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

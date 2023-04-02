@@ -12,7 +12,6 @@ use App\Config\Infrastructure\ConfigEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
 /**
@@ -39,9 +38,9 @@ readonly class ConfigProvider implements ApiProviderInterface
         }
 
         if (isset($uriVariables['name'])) {
-            return $this->getOneByKeyUseCase->__invoke($uriVariables['name']);
+            return $this->getOneByKeyUseCase->__invoke(strval($uriVariables['name']));
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['id']));
     }
 }

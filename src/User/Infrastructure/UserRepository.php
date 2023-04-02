@@ -28,7 +28,7 @@ readonly class UserRepository implements UserRepositoryInterface
         return $this->dataLoader->load($options);
     }
 
-    public function getOne(string $id): ?User
+    public function getOne(int $id): ?User
     {
         /** @var ?UserEntity $entity */
         $entity = $this->entityManager->find(UserEntity::class, $id);
@@ -44,9 +44,9 @@ readonly class UserRepository implements UserRepositoryInterface
     {
         /** @var UserEntity $entity */
         $entity = DataMapper::map($user, UserEntity::class);
-        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol->rol_id);
+        $role = $this->entityManager->getReference(RoleEntity::class, $user->rol?->rol_id);
         $entity->rol = $role;
-        $entity->password = password_hash($user->password, PASSWORD_DEFAULT);
+        $entity->password = password_hash((string)$user->password, PASSWORD_DEFAULT);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -79,9 +79,14 @@ readonly class UserRepository implements UserRepositoryInterface
         return DataMapper::map($entity, User::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(UserEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

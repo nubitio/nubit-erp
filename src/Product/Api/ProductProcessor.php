@@ -27,7 +27,9 @@ readonly class ProductProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Product
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->producto_id);
+            if ($data->producto_id) {
+                $this->deleteUseCase->__invoke($data->producto_id);
+            }
             return null;
         }
 

@@ -67,6 +67,11 @@ readonly class VoucherTypeRepository implements VoucherTypeRepositoryInterface
     public function delete(int $id): void
     {
         $entity = $this->entityManager->find(VoucherTypeEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

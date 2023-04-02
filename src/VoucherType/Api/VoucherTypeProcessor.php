@@ -27,7 +27,9 @@ readonly class VoucherTypeProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?VoucherType
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->id);
+            if ($data->id) {
+                $this->deleteUseCase->__invoke($data->id);
+            }
             return null;
         }
 

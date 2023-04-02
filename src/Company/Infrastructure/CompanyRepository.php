@@ -78,6 +78,11 @@ readonly class CompanyRepository implements CompanyRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(CompanyEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

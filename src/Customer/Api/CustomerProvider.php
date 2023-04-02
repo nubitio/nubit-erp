@@ -39,6 +39,6 @@ readonly class CustomerProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['ruc']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['ruc']));
     }
 }

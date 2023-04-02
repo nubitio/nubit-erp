@@ -115,6 +115,11 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(SaleEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

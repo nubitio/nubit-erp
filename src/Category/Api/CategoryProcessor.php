@@ -27,7 +27,9 @@ readonly class CategoryProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Category
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->categoryDeleteUseCase->__invoke($data->categoria_id);
+            if ($data->categoria_id) {
+                $this->categoryDeleteUseCase->__invoke($data->categoria_id);
+            }
             return null;
         }
 

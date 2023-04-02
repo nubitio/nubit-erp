@@ -27,7 +27,9 @@ readonly class RoleProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Role
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->rol_id);
+            if ($data->rol_id) {
+                $this->deleteUseCase->__invoke($data->rol_id);
+            }
             return null;
         }
 
