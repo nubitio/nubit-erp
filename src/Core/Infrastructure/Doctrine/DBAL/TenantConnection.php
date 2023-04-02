@@ -6,6 +6,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
+use Symfony\Component\Security\Core\Exception\RuntimeException;
 
 class TenantConnection extends Connection
 {
@@ -25,7 +26,13 @@ class TenantConnection extends Connection
         $tenants = [];
         $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
         if (file_exists($tenantsConfigFilePath)) {
-            $tenants = json_decode(file_get_contents($tenantsConfigFilePath), true);
+            $configContent = file_get_contents($tenantsConfigFilePath);
+
+            if ($configContent === false) {
+                throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
+            }
+
+            $tenants = json_decode($configContent, true);
         }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {

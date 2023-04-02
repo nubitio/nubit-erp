@@ -9,6 +9,11 @@ use Symfony\Component\PropertyInfo\Type;
 
 class ReflectionUtil
 {
+    /**
+     * @param object $object
+     * @param string $property
+     * @return class-string|null
+     */
     public static function getPropertyType(object $object, string $property): ?string
     {
         $reflectionExtractor = new ReflectionExtractor();

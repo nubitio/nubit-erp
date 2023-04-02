@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\Options;
 
 interface PaymentMethodRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<PaymentMethod>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?PaymentMethod;

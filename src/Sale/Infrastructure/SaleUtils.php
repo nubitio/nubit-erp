@@ -45,8 +45,8 @@ readonly class SaleUtils
         $sale->estado = 1;
         $sale->serie = $this->getSaleSeries($docType->value, $sale->almacen->almacen_id);
         $sale->numero = $this->getSaleNumber($sale->serie);
-        $sale->igv = $this->settings->get(Constants::TAX);
-        $sale->recargo_consumo = $this->settings->get(Constants::CONSUMPTION_TAX);
+        $sale->igv = (int)$this->settings->get(Constants::TAX);
+        $sale->recargo_consumo = (int)$this->settings->get(Constants::CONSUMPTION_TAX);
         $sale->date_created = new \DateTime();
 
         return $sale;

@@ -7,6 +7,10 @@ use App\Core\Infrastructure\DataLoader\Options;
 
 interface SupplierRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Supplier>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Supplier;

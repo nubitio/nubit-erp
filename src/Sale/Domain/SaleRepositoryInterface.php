@@ -2,15 +2,19 @@
 
 namespace App\Sale\Domain;
 
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 
 interface SaleRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Sale>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<int|string, mixed>>
      */
     public function getOneById(string $id): array;
 

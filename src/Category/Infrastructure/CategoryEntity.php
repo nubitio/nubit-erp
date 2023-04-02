@@ -36,7 +36,7 @@ class CategoryEntity
         public ?string          $imagen = null,
         #[Column(name: 'estado', type: 'boolean')]
         public ?bool            $estado = false,
-        /** @var CategoryEntity[] $children */
+        /** @var ArrayCollection<int, CategoryEntity>|array<int, CategoryEntity> */
         #[OneToMany(mappedBy: 'parent', targetEntity: CategoryEntity::class)]
         public Collection|array $children = new ArrayCollection(),
     )

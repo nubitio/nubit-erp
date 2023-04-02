@@ -8,6 +8,10 @@ use App\PriceListDetail\Domain\PriceListDetail;
 
 interface PriceListRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<PriceList>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?PriceList;

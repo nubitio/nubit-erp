@@ -2,8 +2,8 @@
 
 namespace App\Branch\Domain;
 
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 
 class BranchGetAllUseCase
 {
@@ -14,6 +14,10 @@ class BranchGetAllUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Branch>
+     */
     public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);

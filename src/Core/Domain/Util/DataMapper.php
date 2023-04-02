@@ -44,15 +44,24 @@ class DataMapper
                         $output->$key = [];
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType($output, $key);
+                            if ($type === null) {
+                                throw new \RuntimeException('Type not found');
+                            }
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
                         $type = ReflectionUtil::getPropertyType($output, $key);
+                        if ($type === null) {
+                            throw new \RuntimeException('Type not found');
+                        }
                         $output->$key = self::map($value, $type);
                     }
                 } else {
                     if (is_array($value)) {
                         $type = ReflectionUtil::getPropertyType($output, $key);
+                        if ($type === null) {
+                            throw new \RuntimeException('Type not found');
+                        }
                         $output->$key = [];
                         foreach ($value as $item) {
                             $output->$key[] = self::map($item, $type);

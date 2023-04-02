@@ -5,9 +5,12 @@ namespace App\Core\Infrastructure\DataLoader;
 class OptionsBuilder
 {
     /**
+     * @template E of object
+     * @template M of object
+     *
      * @param array<string, mixed> $context
-     * @param string $entity
-     * @param string $mapping
+     * @param class-string<E> $entity
+     * @param class-string<M> $mapping
      *
      * @return Options
      */

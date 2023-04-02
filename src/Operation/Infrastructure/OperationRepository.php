@@ -2,6 +2,7 @@
 
 namespace App\Operation\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -19,6 +20,7 @@ readonly class OperationRepository implements OperationRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -45,9 +47,17 @@ readonly class OperationRepository implements OperationRepositoryInterface
         return DataMapper::map($entity, Operation::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Operation $operation): Operation
     {
         $entity = $this->entityManager->find(OperationEntity::class, $operation->operacion_id);
+
+        if (!$entity) {
+            throw new ServiceException('La operación no existe.');
+        }
+
         $entity = DataMapper::map($operation, $entity);
         $this->entityManager->flush();
 

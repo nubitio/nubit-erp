@@ -86,7 +86,7 @@ class SaleEntity
         public ?float               $subtotal = null,
         #[Column(name: 'total', type: 'decimal')]
         public ?float               $total = null,
-        /** @var SaleDetailEntity[] $details */
+        /** @var ArrayCollection<int , SaleDetailEntity>|array<int , SaleDetailEntity> */
         #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
         public Collection|array     $details = new ArrayCollection()
     )

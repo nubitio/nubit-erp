@@ -16,7 +16,7 @@ use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
 /**
- * @implements ApiProviderInterface<Config|PaginatorInterface>
+ * @implements ApiProviderInterface<Config>
  */
 readonly class ConfigProvider implements ApiProviderInterface
 {

@@ -15,7 +15,7 @@ use App\PaymentMethod\Domain\PaymentMethod;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 
 /**
- * @implements ApiProviderInterface<PaymentMethod|PaginatorInterface>
+ * @implements ApiProviderInterface<PaymentMethod>
  */
 readonly class PaymentMethodProvider implements ApiProviderInterface
 {

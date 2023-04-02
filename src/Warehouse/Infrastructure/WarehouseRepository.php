@@ -22,6 +22,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -72,6 +73,11 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(WarehouseEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

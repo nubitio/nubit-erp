@@ -3,6 +3,7 @@
 namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -11,6 +12,7 @@ use App\Media\Infrastructure\MediaEntity;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
@@ -21,6 +23,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -53,15 +56,26 @@ readonly class ProductRepository implements ProductRepositoryInterface
         return DataMapper::map($entity, Product::class);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws ORMException
+     */
     public function update(Product $product): Product
     {
         $entity = $this->entityManager->find(ProductEntity::class, $product->producto_id);
+
+        if (!$entity) {
+            throw new ServiceException('El producto no existe');
+        }
+
         $entity = DataMapper::map($product, $entity);
-        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria->categoria_id);
+        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+
         if ($product->imagen?->id) {
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
             $entity->imagen = $image;
         }
+
         $entity->categoria = $category;
         $this->entityManager->flush();
 

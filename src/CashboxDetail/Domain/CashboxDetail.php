@@ -22,7 +22,7 @@ class CashboxDetail
         #[SerializedName('referencia')]
         public ?string $referencia = null,
         #[SerializedName('monto')]
-        public ?string $monto = null,
+        public ?float $monto = null,
     ) {
     }
 }

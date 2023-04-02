@@ -12,7 +12,7 @@ class SaleGetOneById
     }
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<int|string, mixed>>
      */
     public function __invoke(string $id): array
     {

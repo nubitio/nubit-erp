@@ -6,6 +6,7 @@ use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\User\Infrastructure\UserEntity;
@@ -44,9 +45,9 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id' => $localId,
+            'local_id'   => $localId,
             'usuario_id' => $userId,
-            'estado' => 1,
+            'estado'     => 1,
         ]);
 
         if (!$entity) {
@@ -96,9 +97,17 @@ class CashboxRepository implements CashboxRepositoryInterface
         $this->entityManager->flush();
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Cashbox $cashbox): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $cashbox->caja_id);
+
+        if (!$entity) {
+            throw new ServiceException('La caja no existe');
+        }
+
         DataMapper::map($cashbox, $entity);
         $this->entityManager->flush();
     }
@@ -123,7 +132,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
             foreach ($totalSales as $totalSale) {
                 $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
-                    'caja_id' => $cashBoxId,
+                    'caja_id'     => $cashBoxId,
                     'descripcion' => $totalSale['name'],
                 ]);
 
