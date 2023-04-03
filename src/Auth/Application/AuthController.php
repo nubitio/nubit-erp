@@ -44,7 +44,7 @@ class AuthController extends BaseController
     {
         /** @var array<string, string> $data */
         $data = json_decode($request->getContent(), true);
-        $localId = $data['local_id'];
+        $localId = $data['localId'];
 
         $local = $branchGetOneUseCase($localId);
 
