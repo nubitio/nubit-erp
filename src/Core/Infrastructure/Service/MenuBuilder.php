@@ -3,6 +3,7 @@
 namespace App\Core\Infrastructure\Service;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 readonly class MenuBuilder
 {
@@ -12,7 +13,8 @@ readonly class MenuBuilder
     }
 
     /**
-     * @return array<int, array<string, string|int>>
+     * @return array<int, array<string, mixed>>
+     * @throws Exception
      */
     public function buildMenuForRole(int $roleId): array
     {
@@ -43,7 +45,8 @@ readonly class MenuBuilder
     }
 
     /**
-     * @return array<int, array<string, string|int>>
+     * @return array<int, array<string, mixed>>
+     * @throws Exception
      */
     public function getMenuForRole(int $roleId): array
     {

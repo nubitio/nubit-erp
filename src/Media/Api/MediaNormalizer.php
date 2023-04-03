@@ -18,10 +18,10 @@ final class MediaNormalizer implements NormalizerInterface, NormalizerAwareInter
     /**
      * @param Media $object
      * @param array<string, mixed> $context
-     * @return array<string, mixed>
+     * @return array<string, mixed>|\ArrayObject<int, Media>|bool|float|int|string|null
      * @throws ExceptionInterface
      */
-    public function normalize($object, string $format = null, array $context = []): array
+    public function normalize($object, string $format = null, array $context = []): array|float|\ArrayObject|bool|int|string|null
     {
         $context[self::ALREADY_CALLED] = true;
 

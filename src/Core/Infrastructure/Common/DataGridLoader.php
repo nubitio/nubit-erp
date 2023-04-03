@@ -58,7 +58,7 @@ class DataGridLoader
     }
 
     /**
-     * @param array<int, mixed> $filterArray
+     * @param array<int, array<string, mixed>> $filterArray
      */
     public function buildFilterQuery(array $filterArray): string
     {

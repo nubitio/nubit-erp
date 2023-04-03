@@ -12,6 +12,7 @@ use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
+use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -71,7 +72,6 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function insert(Sale $sale): Sale
     {
         $sale = $this->saleUtils->fillSaleValues($sale);
-        /** @var SaleEntity $entity */
         $entity = DataMapper::map($sale, SaleEntity::class);
         $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
@@ -80,6 +80,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
         $entity->tipo_pago = $paymentMethod;
         $subtotal = 0;
+        /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
             $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
