@@ -1,14 +1,9 @@
 <?php
 
-namespace App\Core\Infrastructure\DataLoader;
+namespace App\Core\Infrastructure\DataLoader\Paginator;
 
 use ApiPlatform\State\Pagination\PaginatorInterface as ApiPlatformPaginatorInterface;
 
-/**
- * @template T of object
- *
- * @extends ApiPlatformPaginatorInterface<T>
- */
 interface PaginatorInterface extends \IteratorAggregate, ApiPlatformPaginatorInterface
 {
 }

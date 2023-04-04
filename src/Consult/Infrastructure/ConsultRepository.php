@@ -5,6 +5,7 @@ namespace App\Consult\Infrastructure;
 use App\Consult\Domain\Consult;
 use App\Consult\Domain\ConsultRepositoryInterface;
 use App\Consult\Domain\DocType;
+use App\Core\Domain\Exception\ServiceException;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
@@ -18,7 +19,7 @@ class ConsultRepository implements ConsultRepositoryInterface
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', $url);
         if ($response->getStatusCode() !== 200) {
-            throw new BadRequestException('No se pudo consultar el documento, intente nuevamente');
+            throw new ServiceException('No se pudo consultar el documento, intente nuevamente');
         }
         $data = $response->toArray();
 
