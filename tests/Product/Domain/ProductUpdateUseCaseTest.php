@@ -31,7 +31,7 @@ class ProductUpdateUseCaseTest extends TestCase
             10.0,
             10.0,
             new Media('1', 'Media name'),
-            1,
+            true,
         );
         $productUpdateUseCase($product);
 
