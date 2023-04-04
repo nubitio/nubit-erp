@@ -107,6 +107,15 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity->cliente = $customer;
         $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
         $entity->tipo_pago = $paymentMethod;
+        $subtotal = 0;
+        /** @var SaleDetailEntity $detail */
+        foreach ($entity->details as $detail) {
+            $detail->movimiento = $entity;
+            $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
+            $subtotal += $detail->precio_total;
+        }
+        $entity->subtotal = $subtotal;
+        $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Sale::class);
