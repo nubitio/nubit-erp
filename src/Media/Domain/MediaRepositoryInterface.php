@@ -2,9 +2,6 @@
 
 namespace App\Media\Domain;
 
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\Options;
-
 interface MediaRepositoryInterface
 {
     public function getOne(string $id): ?Media;

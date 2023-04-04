@@ -1,3 +1,5 @@
 parameters:
     excludePaths:
       - src/WebClientPrint
+      - src/Core/Infrastructure/Doctrine
+      - src/Core/Infrastructure/DataLoader/Paginator

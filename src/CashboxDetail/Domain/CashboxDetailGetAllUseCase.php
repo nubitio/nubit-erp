@@ -12,7 +12,7 @@ class CashboxDetailGetAllUseCase
     }
 
     /**
-     * @param array<int , mixed>|null $filter
+     * @param array<int , array<string, mixed>>|null $filter
      * @return array<string, mixed>
      */
     public function __invoke(?array $filter = null): array

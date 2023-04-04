@@ -6,7 +6,7 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\PriceList\Domain\PriceList;
 use App\PriceList\Domain\PriceListRepositoryInterface;
 use App\PriceListDetail\Domain\PriceListDetail;

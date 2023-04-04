@@ -3,7 +3,7 @@
 namespace App\Role\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 class GetAllRoleUseCase
 {

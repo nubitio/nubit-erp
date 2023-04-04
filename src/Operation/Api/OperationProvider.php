@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation as ApiOperation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Operation\Domain\GetAllOperationUseCase;
 use App\Operation\Domain\GetOneOperationUseCase;

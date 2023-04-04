@@ -23,7 +23,7 @@ class DataMapper
             $output = new $output();
         }
 
-        foreach ($input as $key => $value) {
+        foreach (get_object_vars($input) as $key => $value) {
             if ($value === null) {
                 continue;
             }
@@ -42,6 +42,7 @@ class DataMapper
                 if (is_object($value) && !($value instanceof \DateTimeInterface)) {
                     if ($value instanceof Collection) {
                         $output->$key = [];
+                        /** @var object $item */
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType($output, $key);
                             if ($type === null) {

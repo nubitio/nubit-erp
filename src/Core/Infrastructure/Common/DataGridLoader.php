@@ -15,7 +15,7 @@ class DataGridLoader
     }
 
     /**
-     * @param array<int, mixed> $filter
+     * @param array<int, array<string, mixed>> $filter
      * @return array<string, mixed>
      * @throws Exception
      */
@@ -38,10 +38,16 @@ class DataGridLoader
         }
         $order_str = join(',', $sort_items);
         if (!empty($filterRules) || null != $filter) {
-            $filterRules = json_decode($filterRules, true) ?? [];
+            /** @var array<int, array<string, mixed>> $filterRules */
+            $filterRules = json_decode(strval($filterRules), true) ?? [];
             $where = $this->buildFilterQuery([...$filterRules, ...$filter ?? []]);
         }
         $row = $this->connection->fetchNumeric("SELECT count(*) FROM $table WHERE $where");
+
+        if (!$row) {
+            throw new Exception('Error while fetching data');
+        }
+
         $result['total'] = $row[0];
         $items = $this->connection->fetchAllAssociative("
           SELECT
