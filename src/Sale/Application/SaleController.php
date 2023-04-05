@@ -96,15 +96,8 @@ class SaleController extends BaseController
         if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
             $qr = (new QRCode())->render(strval($sale['header']['doc_qr_data']));
         }
-        $logoContent = file_get_contents('assets/images/logo.png');
 
-        if (!$logoContent) {
-            throw new ServiceException('No se pudo leer el logo');
-        }
-
-        $logo = base64_encode($logoContent);
         $content = $this->renderView('sale/report/invoice.html.twig', [
-            'logo' => "data:image/png;base64,{$logo}",
             'qr'   => $qr,
             'sale' => $sale,
         ]);
