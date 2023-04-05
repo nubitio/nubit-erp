@@ -12,7 +12,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'storage:migrate',
+    name: 'app:storage:migrate',
     description: 'Mueve los archivos de los comprobantes a la nueva ubicación',
 )]
 class StorageMigrateCommand extends Command
@@ -46,26 +46,29 @@ class StorageMigrateCommand extends Command
 
             $ignore = ['.', '..', 'README.md', '.gitignore'];
 
+            $progressBar = $io->createProgressBar(count($files));
             foreach ($files as $file) {
                 if (in_array($file, $ignore)) {
                     continue;
                 }
-                $io->writeln('Migrando archivo: ' . $file);
+                $progressBar->setMessage('Migrando archivo: ' . $file);
                 $data = file_get_contents($currentPath . '/' . $file);
 
                 if (!$data) {
-                    $io->error('Error al leer el archivo: ' . $file);
+                    throw new \Exception('Error al leer el archivo: ' . $file);
                     continue;
                 }
 
                 $this->fileManager->write($newPath . '/' . $file, $data);
                 if ($this->fileManager->exists($newPath . '/' . $file)) {
-                    $io->success('Archivo migrado: ' . $file);
+                    $progressBar->setMessage('Archivo migrado: ' . $file);
                     unlink($currentPath . '/' . $file);
                 } else {
-                    $io->error('Error al migrar el archivo: ' . $file);
+                    throw new \Exception('Error al migrar el archivo: ' . $file);
                 }
+                $progressBar->advance();
             }
+            $progressBar->finish();
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
