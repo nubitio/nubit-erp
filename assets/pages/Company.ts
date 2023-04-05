@@ -7,6 +7,7 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {ConsultService} from "../services/consult.service";
+import {bus} from "../core/event/EventBus";
 
 export default class Company {
     private readonly container: string;
@@ -88,6 +89,11 @@ export default class Company {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        this.setupObservers();
+    }
+
+    setupObservers() {
+        bus.on(Company.EVENTS.SUCCESS, () => bus.emit('app:reload'));
     }
 
     renderDataGrid() {

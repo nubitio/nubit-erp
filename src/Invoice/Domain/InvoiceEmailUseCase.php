@@ -7,11 +7,15 @@ use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\SaleRepositoryInterface;
-use Symfony\Component\Asset\Packages;
+use League\Flysystem\FilesystemException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 readonly class InvoiceEmailUseCase
 {
@@ -19,7 +23,6 @@ readonly class InvoiceEmailUseCase
         private SaleRepositoryInterface $saleRepository,
         private MailerInterface         $mailer,
         private Environment             $twig,
-        private Packages                $packages,
         private UrlGeneratorInterface   $urlGenerator,
         private BillPdfUseCase          $billPdfUseCase,
         private FileManager             $fileManager,
@@ -28,6 +31,13 @@ readonly class InvoiceEmailUseCase
     {
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws TransportExceptionInterface
+     * @throws RuntimeError
+     * @throws FilesystemException
+     * @throws LoaderError
+     */
     public function __invoke(string $saleId): void
     {
         $invoice = $this->saleRepository->getOneById($saleId);
@@ -38,7 +48,6 @@ readonly class InvoiceEmailUseCase
             default => '',
         };
 
-        $logoUrl = $this->packages->getUrl('assets/images/logo.png');
         $invoiceUrl = $this->urlGenerator->generate('invoice_show', ['id' => $saleId], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
@@ -52,7 +61,6 @@ readonly class InvoiceEmailUseCase
         $pdfContent = $pdfResponse->file;
 
         $content = $this->twig->render('invoice/tpl/email.html.twig', [
-            'logo'            => $logoUrl,
             'type'            => $type,
             'date'            => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
             'invoice_url'     => $invoiceUrl,

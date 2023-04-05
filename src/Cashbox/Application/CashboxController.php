@@ -155,7 +155,6 @@ class CashboxController extends BaseController
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
             'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
         ]);
 
@@ -170,7 +169,6 @@ class CashboxController extends BaseController
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
             'title'   => 'Reporte de caja',
-            'logo'    => $request->getSchemeAndHttpHost() . '/assets/images/logo.png',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);
