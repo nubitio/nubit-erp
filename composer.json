@@ -125,7 +125,7 @@
     "post-update-cmd": [
       "@auto-scripts"
     ],
-    "stan": [
+    "inspect": [
       "vendor/bin/phpstan analyse --memory-limit=2G --no-progress"
     ]
   },
