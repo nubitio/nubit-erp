@@ -3,13 +3,15 @@
 
 use App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Dotenv\Dotenv;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
+    throw new LogicException('Symfony Runtime is missing. Try running "composer require symfony/runtime".');
+}
 
-$dotenv = new Dotenv();
-$dotenv->loadEnv(__DIR__ . '/../.env');
+require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
-$kernel = new Kernel('dev', true);
-$app = new Application($kernel);
-$app->run();
+return function (array $context) {
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG']);
+
+    return new Application($kernel);
+};
