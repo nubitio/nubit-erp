@@ -3,10 +3,10 @@
 namespace App\RoleMenu\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuCreateUseCase;
 use App\RoleMenu\Domain\RoleMenuGetAllByRoleUseCase;
-use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -24,17 +24,18 @@ class RoleMenuController extends BaseController
     #[Route('/role-menu/add', name: 'role-menu_create', methods: ['POST'])]
     public function add(Request $request, RoleMenuCreateUseCase $createUseCase): Response
     {
+        /** @var array<string, array<int, mixed>> $data */
         $data = json_decode($request->getContent(), true);
         $roleMenuList = [];
         foreach ($data['permissions'] as $menu) {
             $roleMenu = new RoleMenu(
-                menu_id: $menu,
-                rol_id: $data['roleId'],
+                menu_id: intval($menu),
+                rol_id: intval($data['roleId']),
                 estado: true
             );
             $roleMenuList[] = $roleMenu;
         }
-        $createUseCase($data['roleId'], $roleMenuList);
+        $createUseCase(intval($data['roleId']), $roleMenuList);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }

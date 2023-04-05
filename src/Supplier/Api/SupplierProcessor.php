@@ -27,7 +27,9 @@ readonly class SupplierProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Supplier
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->proveedor_id);
+            if ($data->proveedor_id) {
+                $this->deleteUseCase->__invoke($data->proveedor_id);
+            }
             return null;
         }
 

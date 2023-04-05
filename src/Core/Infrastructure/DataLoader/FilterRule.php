@@ -9,7 +9,7 @@ readonly class FilterRule implements FilterInterface
     public function __construct(
         public string          $field,
         public FilterOperation $op,
-        public string|int|bool $value,
+        public mixed           $value,
     )
     {
     }
@@ -20,12 +20,13 @@ readonly class FilterRule implements FilterInterface
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
         $queryBuilder->andWhere("e.{$this->field} {$op} :{$uniqueParam}");
 
+        $value = strval($this->value);
         if ($this->op === FilterOperation::Contains) {
-            $queryBuilder->setParameter($uniqueParam, "%{$this->value}%");
+            $queryBuilder->setParameter($uniqueParam, "%{$value}%");
         } elseif ($this->op === FilterOperation::BeginsWith) {
-            $queryBuilder->setParameter($uniqueParam, "{$this->value}%");
+            $queryBuilder->setParameter($uniqueParam, "{$value}%");
         } elseif ($this->op === FilterOperation::EndsWith) {
-            $queryBuilder->setParameter($uniqueParam, "%{$this->value}");
+            $queryBuilder->setParameter($uniqueParam, "%{$value}");
         } else {
             $queryBuilder->setParameter($uniqueParam, $this->value);
         }

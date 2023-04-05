@@ -31,7 +31,7 @@ class ProductCreateUseCaseTest extends TestCase
             10.0,
             10.0,
             new Media('1', 'Media name'),
-            1,
+            true,
         );
 
         $productCreateUseCase($product);

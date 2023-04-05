@@ -11,7 +11,7 @@ class GetOneUserUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): ?User
+    public function __invoke(int $id): ?User
     {
         return $this->repository->getOne($id);
     }

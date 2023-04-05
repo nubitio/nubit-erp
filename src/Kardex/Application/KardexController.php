@@ -20,11 +20,11 @@ class KardexController extends BaseController
     #[Route('/kardex/get', name: 'kardex_get_all', methods: ['POST'])]
     public function getAll(Request $request, KardexGetAllUseCase $kardexGetAllUseCase): Response
     {
-        $localId = $request->getSession()->get('branch_id');
-        $warehouseId = $request->request->get('warehouse_id');
-        $categoryId = $request->request->get('category_id');
-        $dateFrom = $request->request->get('date_from');
-        $dateTo = $request->request->get('date_to');
+        $localId = strval($request->getSession()->get('branch_id'));
+        $warehouseId = (string)$request->request->get('warehouse_id');
+        $categoryId = (string)$request->request->get('category_id');
+        $dateFrom = (string)$request->request->get('date_from');
+        $dateTo = (string)$request->request->get('date_to');
 
         $kardex = $kardexGetAllUseCase->__invoke($localId, $warehouseId, $categoryId, $dateFrom, $dateTo);
 
@@ -34,9 +34,9 @@ class KardexController extends BaseController
     #[Route('/kardex/detail/{productId}', name: 'kardex_detail', methods: ['GET'])]
     public function getWarehouse(Request $request, KardexGetOneUseCase $kardexGetOneUseCase, string $productId): Response
     {
-        $warehouseId = $request->request->get('warehouse_id');
-        $dateFrom = $request->request->get('date_from');
-        $dateTo = $request->request->get('date_to');
+        $warehouseId = strval($request->request->get('warehouse_id'));
+        $dateFrom = strval($request->request->get('date_from'));
+        $dateTo = strval($request->request->get('date_to'));
 
         $kardex = $kardexGetOneUseCase->__invoke($warehouseId, $productId, $dateFrom, $dateTo);
 

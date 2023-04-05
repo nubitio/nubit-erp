@@ -81,6 +81,7 @@ export default class Inbound {
             .textField('descripcion')
             .visible(false)
             .required(true)
+            .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -173,7 +174,7 @@ export default class Inbound {
             url: 'inbound/get',
             routes: Inbound.ROUTES,
             events: Inbound.EVENTS,
-            detailUrl: 'api/sale/{id}/details',
+            detailUrl: 'api/sales/{id}/details',
             detailFields: this.detailFields
         });
     }

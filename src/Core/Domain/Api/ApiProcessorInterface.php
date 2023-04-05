@@ -11,7 +11,7 @@ use ApiPlatform\State\ProcessorInterface;
 interface ApiProcessorInterface extends ProcessorInterface
 {
     /**
-     * @param mixed $data
+     * @param T $data
      * @param Operation $operation
      * @param array<string, mixed> $uriVariables
      * @param array<string, mixed> $context

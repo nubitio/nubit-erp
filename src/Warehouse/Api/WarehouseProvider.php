@@ -8,7 +8,6 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Warehouse\Domain\GetAllByBranchUseCase;
 use App\Warehouse\Domain\Warehouse;
@@ -18,7 +17,6 @@ use App\Warehouse\Infrastructure\WarehouseEntity;
 
 /**
  * @implements ApiProviderInterface<Warehouse>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class WarehouseProvider implements ApiProviderInterface
 {
@@ -30,11 +28,12 @@ readonly class WarehouseProvider implements ApiProviderInterface
     {
     }
 
+    /** inheritdoc */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
             if (isset($uriVariables['local_id'])) {
-                return $this->getAllByBranchUseCase->__invoke($uriVariables['local_id']);
+                return $this->getAllByBranchUseCase->__invoke(strval($uriVariables['local_id']));
             }
             $context = OptionUtils::addJoin($context, new JoinRule('e.local', 'l'));
             $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
@@ -43,6 +42,6 @@ readonly class WarehouseProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['almacen_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['almacen_id']));
     }
 }

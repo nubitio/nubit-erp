@@ -4,11 +4,11 @@ namespace App\Billing\Domain;
 
 use App\Billing\Model\Response\DocumentResponse;
 
-class BillSendUseCase
+readonly class BillSendUseCase
 {
     public function __construct(
-        private readonly BillCreateUseCase $billCreateUseCase,
-        private readonly BillRepositoryInterface $billRepository,
+        private BillCreateUseCase       $billCreateUseCase,
+        private BillRepositoryInterface $billRepository,
     ) {
     }
 

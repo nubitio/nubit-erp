@@ -1,0 +1,9 @@
+parameters:
+    level: 9
+    paths:
+      - src
+      - tests
+    excludePaths:
+      - src/WebClientPrint
+      - src/Core/Infrastructure/Doctrine
+      - src/Core/Infrastructure/DataLoader/Paginator

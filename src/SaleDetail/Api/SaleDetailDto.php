@@ -9,7 +9,7 @@ use App\Sale\Api\SaleDto;
 use App\SaleDetail\Domain\SaleDetail;
 
 #[ApiResource(
-    uriTemplate: '/sale/{movimiento_id}/details',
+    uriTemplate: '/sales/{movimiento_id}/details',
     shortName: 'SaleDetail',
     operations: [new GetCollection()],
     uriVariables: [

@@ -19,8 +19,8 @@ class SaleCreatedListener
     public function postPersist(SaleEntity $entity, LifecycleEventArgs $event): void
     {
         $session = $this->requestStack->getSession();
-        $localId = $session->get('local_id');
-        $userId = $session->get('usuario_id');
+        $localId = strval($session->get('local_id'));
+        $userId = intval($session->get('usuario_id'));
 
         $this->cashboxUpdateValues->__invoke($localId, $userId);
     }

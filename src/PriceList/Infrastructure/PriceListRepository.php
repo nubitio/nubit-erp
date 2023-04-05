@@ -2,15 +2,17 @@
 
 namespace App\PriceList\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\PriceList\Domain\PriceList;
 use App\PriceList\Domain\PriceListRepositoryInterface;
 use App\PriceListDetail\Domain\PriceListDetail;
 use App\PriceListDetail\Infrastructure\PriceListDetailEntity;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PriceListRepository implements PriceListRepositoryInterface
@@ -23,6 +25,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -49,22 +52,39 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
         return DataMapper::map($entity, PriceList::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(PriceList $priceList): PriceList
     {
         $entity = $this->entityManager->find(PriceListEntity::class, $priceList->id);
+
+        if (!$entity) {
+            throw new ServiceException('La lista de precios no existe.');
+        }
+
         $entity = DataMapper::map($priceList, $entity);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, PriceList::class);
     }
 
-    public function delete(string $id): void
+    public function delete(int $id): void
     {
         $entity = $this->entityManager->find(PriceListEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
     public function getPricesByList(int $id): array
     {
         $sql = "

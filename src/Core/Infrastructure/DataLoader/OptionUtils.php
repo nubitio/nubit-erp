@@ -5,10 +5,10 @@ namespace App\Core\Infrastructure\DataLoader;
 class OptionUtils
 {
     /**
-     * @param array<string, mixed> $context
+     * @param array<string, array<string, mixed>> $context
      * @param SortRule $sort
      *
-     * @return array<string, mixed>
+     * @return array<string, array<string, mixed>>
      */
     public static function addSort(array $context, SortRule $sort): array
     {
@@ -19,15 +19,16 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param array<string, array<string, mixed>> $context
      * @param FilterRule $filter
      *
-     * @return array<string, mixed>
+     * @return array<string, array<string, mixed>>
      */
     public static function addFilter(array $context, FilterRule $filter): array
     {
         $context['filters']['filterRules'] = $context['filters']['filterRules'] ?? '[]';
-        $filterRules = json_decode($context['filters']['filterRules'], true);
+        /** @var array<int, array<string, mixed>> $filterRules */
+        $filterRules = json_decode(strval($context['filters']['filterRules']), true);
         $filterRules[] = [
             'field' => $filter->field,
             'op'    => $filter->op->value,
@@ -39,15 +40,16 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param array<string, array<string, mixed>> $context
      * @param JoinRule $join
      *
-     * @return array<string, mixed>
+     * @return array<string, array<string, mixed>>
      */
     public static function addJoin(array $context, JoinRule $join): array
     {
         $context['filters']['joinRules'] = $context['filters']['joinRules'] ?? '[]';
-        $joinRules = json_decode($context['filters']['joinRules'], true);
+        /** @var array<int, array<string, mixed>> $joinRules */
+        $joinRules = json_decode(strval($context['filters']['joinRules']), true);
         $joinRules[] = [
             'entity'    => $join->entity,
             'alias'     => $join->alias,

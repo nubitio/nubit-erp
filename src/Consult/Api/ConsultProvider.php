@@ -23,9 +23,9 @@ readonly class ConsultProvider implements ApiProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (isset($uriVariables['dni'])) {
-            return $this->consultUseCase->consult($uriVariables['dni'], DocType::DNI);
+            return $this->consultUseCase->consult(strval($uriVariables['dni']), DocType::DNI);
         }
 
-        return $this->consultUseCase->consult($uriVariables['ruc'], DocType::RUC);
+        return $this->consultUseCase->consult(strval($uriVariables['ruc']), DocType::RUC);
     }
 }

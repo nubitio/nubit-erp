@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/form/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {bus} from "../core/event/EventBus";
-import {EventObject} from "../core/event/EventObject";
 import {ConsultService} from "../services/consult.service";
 
 export default class Supplier {
@@ -48,6 +47,7 @@ export default class Supplier {
             .type(FormType.TEXT)
             .name('ruc')
             .label('Ruc')
+            .validators(['length[11, 11]'])
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -124,7 +124,6 @@ export default class Supplier {
             .subscribe((response) => {
                 this.form.getField('razon_social').textbox('setValue', response.data.name);
                 this.form.getField('domicilio_fiscal').textbox('setValue', response.data.address);
-                bus.emit(Supplier.EVENTS.LOADING, false);
-            });
+            }).add(() => bus.emit(Supplier.EVENTS.LOADING, false));
     }
 }

@@ -27,6 +27,7 @@ class PriceListController extends BaseController
     #[Route('/price-list/update', name: 'price-list_update', methods: ['POST'])]
     public function updatePrices(Request $request, SavePriceList $savePriceList): Response
     {
+        /** @var PriceListDetail[] $prices */
         $prices = $this->serializer->deserialize($request->getContent(), PriceListDetail::class . '[]', 'json');
         $savePriceList($prices);
         return $this->json(['success' => true, 'msg' => 'Precios actualizados']);

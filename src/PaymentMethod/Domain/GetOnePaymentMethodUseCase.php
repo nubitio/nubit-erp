@@ -11,7 +11,7 @@ class GetOnePaymentMethodUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): ?PaymentMethod
+    public function __invoke(int $id): ?PaymentMethod
     {
         return $this->repository->getOne($id);
     }

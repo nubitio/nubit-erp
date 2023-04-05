@@ -27,6 +27,9 @@ class OutboundRepository implements OutboundRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
@@ -47,6 +50,11 @@ class OutboundRepository implements OutboundRepositoryInterface
             $this->entityManager->persist($entity);
             $this->entityManager->flush();
             $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
+
+            if ($outbound->items === null) {
+                throw new \Exception('No se encontraron productos');
+            }
+
             foreach ($outbound->items as $item) {
                 $detailEntity = DataMapper::map($item, SaleDetailEntity::class);
                 $detailEntity->movimiento = $ref;
@@ -64,14 +72,20 @@ class OutboundRepository implements OutboundRepositoryInterface
 
     public function update(Outbound $outbound): void
     {
+        /** @var OutboundEntity $entity */
         $entity = $this->entityManager->find(OutboundEntity::class, $outbound->movimiento_id);
-        $entity->mapFromDomainModel($outbound);
+        DataMapper::map($outbound, $entity);
         $this->entityManager->flush();
     }
 
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(OutboundEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

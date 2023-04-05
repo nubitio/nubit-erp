@@ -63,7 +63,7 @@ class BillRepository implements BillRepositoryInterface
             user: new User(
                 extras: [
                     new Extra('FORMA DE PAGO', 'CONTADO'),
-                    new Extra('OBS', $invoice->obs),
+                    new Extra('OBS', strval($invoice->obs)),
                 ],
             )
         ));

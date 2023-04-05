@@ -2,6 +2,8 @@
 
 namespace App\VoucherSeries\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\VoucherSeries\Domain\VoucherSeries;
 use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
@@ -19,40 +21,39 @@ class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * @param array<string, mixed> $filter
-     * @return array<string, mixed>
-     * @throws \Doctrine\DBAL\Exception
-     */
+    /** @inheritdoc */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_local_comprobante', 'local', filter: $filter);
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function insert(VoucherSeries $voucherSeries): void
     {
-        $entity = new VoucherSeriesEntity();
-        $entity->mapFromDomainModel($voucherSeries);
+        $entity = DataMapper::map($voucherSeries, VoucherSeriesEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
 
-    /**
-     * @throws \Doctrine\DBAL\Exception
-     */
     public function update(VoucherSeries $voucherSeries): void
     {
         $entity = $this->entityManager->find(VoucherSeriesEntity::class, $voucherSeries->id);
-        $entity->mapFromDomainModel($voucherSeries);
+
+        if (!$entity) {
+            throw new ServiceException('La serie de comprobante no existe');
+        }
+
+        DataMapper::map($voucherSeries, $entity);
         $this->entityManager->flush();
     }
 
     public function delete(int $id): void
     {
         $entity = $this->entityManager->find(VoucherSeriesEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

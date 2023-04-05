@@ -6,6 +6,7 @@ use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxRepositoryInterface;
 use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\User\Infrastructure\UserEntity;
@@ -38,15 +39,19 @@ class CashboxRepository implements CashboxRepositoryInterface
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
 
+        if (!$entity) {
+            throw new ServiceException('Caja no encontrada');
+        }
+
         return DataMapper::map($entity, Cashbox::class);
     }
 
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id' => $localId,
+            'local_id'   => $localId,
             'usuario_id' => $userId,
-            'estado' => 1,
+            'estado'     => 1,
         ]);
 
         if (!$entity) {
@@ -96,9 +101,17 @@ class CashboxRepository implements CashboxRepositoryInterface
         $this->entityManager->flush();
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Cashbox $cashbox): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $cashbox->caja_id);
+
+        if (!$entity) {
+            throw new ServiceException('La caja no existe');
+        }
+
         DataMapper::map($cashbox, $entity);
         $this->entityManager->flush();
     }
@@ -106,6 +119,11 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
@@ -115,20 +133,21 @@ class CashboxRepository implements CashboxRepositoryInterface
         $cashBox = $this->getLast($localId, $userId);
         if ($cashBox) {
             $cashBoxId = $cashBox->caja_id;
-            $startDate = $cashBox->apertura->format('Y-m-d H:i:s');
+            $startDate = strval($cashBox->apertura?->format('Y-m-d H:i:s'));
             $endDate = date('Y-m-d H:i:s');
             $cashBoxEntity = $this->entityManager->getReference(CashboxEntity::class, $cashBoxId);
 
             $totalSales = $this->getTotalSales($userId, $startDate, $endDate);
 
             foreach ($totalSales as $totalSale) {
+                /** @var ?CashboxDetailEntity $cashBoxDetail */
                 $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
-                    'caja_id' => $cashBoxId,
+                    'caja_id'     => $cashBoxId,
                     'descripcion' => $totalSale['name'],
                 ]);
 
-                if ($cashBoxDetail) {
-                    $cashBoxDetail->monto = $totalSale['total'];
+                if ($cashBoxDetail != null) {
+                    $cashBoxDetail->monto = floatval($totalSale['total']);
                     $this->entityManager->flush();
                     continue;
                 }
@@ -137,10 +156,10 @@ class CashboxRepository implements CashboxRepositoryInterface
 
                 $cashBoxDetail = new CashboxDetailEntity();
                 $cashBoxDetail->cashbox = $cashBoxEntity;
-                $cashBoxDetail->uid = $nextIndex;
+                $cashBoxDetail->uid = intval($nextIndex);
                 $cashBoxDetail->tipo_id = 1;
-                $cashBoxDetail->descripcion = $totalSale['name'];
-                $cashBoxDetail->monto = $totalSale['total'];
+                $cashBoxDetail->descripcion = strval($totalSale['name']);
+                $cashBoxDetail->monto = floatval($totalSale['total']);
 
                 $this->entityManager->persist($cashBoxDetail);
                 $this->entityManager->flush();

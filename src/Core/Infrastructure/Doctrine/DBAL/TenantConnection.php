@@ -6,6 +6,8 @@ use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
+use Doctrine\DBAL\Driver\Exception;
+use Symfony\Component\Security\Core\Exception\RuntimeException;
 
 class TenantConnection extends Connection
 {
@@ -21,10 +23,18 @@ class TenantConnection extends Connection
 
     public function switchTenant(string $tenantName): void
     {
+        /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
         $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
         if (file_exists($tenantsConfigFilePath)) {
-            $tenants = json_decode(file_get_contents($tenantsConfigFilePath), true);
+            $configContent = file_get_contents($tenantsConfigFilePath);
+
+            if ($configContent === false) {
+                throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
+            }
+
+            /** @var array<string, array<string, mixed>> $tenants */
+            $tenants = json_decode($configContent, true);
         }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {
@@ -42,6 +52,10 @@ class TenantConnection extends Connection
         $this->connect();
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function connect(): bool
     {
         if ($this->isConnected) {
@@ -58,6 +72,7 @@ class TenantConnection extends Connection
         return true;
     }
 
+    /** @inheritdoc */
     public function getParams(): array
     {
         return $this->tenantParams;

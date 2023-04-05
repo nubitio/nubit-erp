@@ -9,6 +9,11 @@ use Symfony\Component\PropertyInfo\Type;
 
 class ReflectionUtil
 {
+    /**
+     * @param object $object
+     * @param string $property
+     * @return class-string|null
+     */
     public static function getPropertyType(object $object, string $property): ?string
     {
         $reflectionExtractor = new ReflectionExtractor();
@@ -21,9 +26,19 @@ class ReflectionUtil
 
         if (count($types) > 0) {
             if ($types[0]->isCollection()) {
-                return $types[0]->getCollectionValueTypes()[0]->getClassName();
+                $className = $types[0]->getCollectionValueTypes()[0]->getClassName();
+                if ($className !== null && class_exists($className)) {
+                    return $className;
+                } else {
+                    return null;
+                }
             } else {
-                return $types[0]->getClassName();
+                $className = $types[0]->getClassName();
+                if ($className !== null && class_exists($className)) {
+                    return $className;
+                } else {
+                    return null;
+                }
             }
         }
 

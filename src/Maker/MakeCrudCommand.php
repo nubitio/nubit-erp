@@ -25,7 +25,7 @@ class MakeCrudCommand extends Command
         $this->connection = $connection;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         $this->setHelp('Crud generator for a given entity');
         $this->addOption('interactive', 'i', InputOption::VALUE_NONE, 'Interactive mode');
@@ -34,15 +34,15 @@ class MakeCrudCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $isInteractive = $input->getOption('interactive') ?? false;
-        $overwrite = $input->getOption('overwrite') ?? false;
+        $isInteractive = boolval($input->getOption('interactive') ?? false);
+        $overwrite = boolval($input->getOption('overwrite') ?? false);
         $io = new SymfonyStyle($input, $output);
         try {
             $io->text('Please select the crud type');
             $crudType = $io->choice('Crud type', ['Simple', 'Master detail']);
             $io->newLine();
 
-            $moduleName = $io->ask('Module name');
+            $moduleName = strval($io->ask('Module name'));
             $modulePath = dirname(__DIR__, 2) . '/src/' . StringUtils::toPascalCase($moduleName);
 
             $schemaManager = $this->connection->createSchemaManager();

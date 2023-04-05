@@ -49,23 +49,13 @@ class InboundController extends BaseController
          * @var Inbound $inbound
          */
         $inbound = $this->serializer->deserialize(json_encode($request->request->all()), Inbound::class, 'json');
-        $detail = $request->get('details');
-        $detailItems = [];
-        foreach ($detail as $item) {
-            /**
-             * @var SaleDetail $saleDetail
-             */
-            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
-            $detailItems[] = $saleDetail;
-        }
-        $inbound->items = $detailItems;
         $createUseCase($inbound);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
     }
 
     #[Route('/inbound/edit/{id}', name: 'inbound_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, InboundUpdateUseCase $updateUseCase, $id): Response
+    public function edit(Request $request, InboundUpdateUseCase $updateUseCase, string $id): Response
     {
         $request->request->add(['movimiento_id' => $id]);
         /**
@@ -78,7 +68,7 @@ class InboundController extends BaseController
     }
 
     #[Route('/inbound/delete/{id}', name: 'inbound_delete', methods: ['DELETE', 'POST'])]
-    public function delete(InboundDeleteUseCase $deleteUseCase, $id): Response
+    public function delete(InboundDeleteUseCase $deleteUseCase, string $id): Response
     {
         $deleteUseCase($id);
 

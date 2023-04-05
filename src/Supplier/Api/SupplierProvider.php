@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Supplier\Domain\GetAllSupplierUseCase;
 use App\Supplier\Domain\GetOneSupplierUseCase;
@@ -16,7 +15,6 @@ use App\Supplier\Infrastructure\SupplierEntity;
 
 /**
  * @implements ApiProviderInterface<Supplier>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class SupplierProvider implements ApiProviderInterface
 {
@@ -37,6 +35,6 @@ readonly class SupplierProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['proveedor_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['proveedor_id']));
     }
 }

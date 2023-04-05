@@ -3,11 +3,15 @@
 namespace App\PriceList\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\PriceListDetail\Domain\PriceListDetail;
 
 interface PriceListRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<PriceList>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?PriceList;
@@ -16,8 +20,11 @@ interface PriceListRepositoryInterface
 
     public function update(PriceList $priceList): PriceList;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getPricesByList(int $id): array;
 
     /**

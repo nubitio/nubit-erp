@@ -9,7 +9,6 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Product\Domain\GetAllProductUseCase;
 use App\Product\Domain\GetOneProductUseCase;
@@ -18,7 +17,6 @@ use App\Product\Infrastructure\ProductEntity;
 
 /**
  * @implements ApiProviderInterface<Product>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class ProductProvider implements ApiProviderInterface
 {
@@ -41,6 +39,6 @@ readonly class ProductProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['producto_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['producto_id']));
     }
 }

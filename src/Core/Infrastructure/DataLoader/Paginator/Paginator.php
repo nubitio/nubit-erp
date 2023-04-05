@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Core\Infrastructure\DataLoader;
+namespace App\Core\Infrastructure\DataLoader\Paginator;
 
 use ApiPlatform\State\Pagination\PaginatorInterface as ApiPlatformPaginatorInterface;
 use Traversable;
 
+/**
+ * @template T of object
+ */
 readonly class Paginator implements PaginatorInterface
 {
     /**
-     * @template T
-     *
      * @param array<T> $items
+     * @param ApiPlatformPaginatorInterface<T> $paginator
      */
     public function __construct(
         public array                         $items,

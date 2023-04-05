@@ -2,13 +2,16 @@
 
 namespace App\Dashboard\Domain;
 
-class SalesDailyUseCase
+readonly class SalesDailyUseCase
 {
     public function __construct(
-        private readonly DashboardRepositoryInterface $repository
+        private DashboardRepositoryInterface $repository
     ) {
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function __invoke(string $saleId): array
     {
         return $this->repository->getDailySales($saleId);

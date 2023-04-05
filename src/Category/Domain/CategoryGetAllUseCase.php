@@ -3,7 +3,7 @@
 namespace App\Category\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 class CategoryGetAllUseCase
 {
@@ -16,7 +16,7 @@ class CategoryGetAllUseCase
 
     /**
      * @param Options $options
-     * @return PaginatorInterface
+     * @return PaginatorInterface<Category>
      */
     public function __invoke(Options $options): PaginatorInterface
     {

@@ -2,11 +2,15 @@
 
 namespace App\VoucherType\Domain;
 
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface VoucherTypeRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<VoucherType>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?VoucherType;

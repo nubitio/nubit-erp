@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\PaymentMethod\Domain\GetAllPaymentMethodUseCase;
 use App\PaymentMethod\Domain\GetOnePaymentMethodUseCase;
@@ -16,7 +15,6 @@ use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 
 /**
  * @implements ApiProviderInterface<PaymentMethod>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class PaymentMethodProvider implements ApiProviderInterface
 {
@@ -37,6 +35,6 @@ readonly class PaymentMethodProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['id']);
+        return $this->getOneUseCase->__invoke(intval($uriVariables['id']));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Core\Infrastructure\Common;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 class DataGridLoader
 {
@@ -13,6 +14,11 @@ class DataGridLoader
         $this->connection = $connection;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $filter
+     * @return array<string, mixed>
+     * @throws Exception
+     */
     public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
@@ -32,10 +38,16 @@ class DataGridLoader
         }
         $order_str = join(',', $sort_items);
         if (!empty($filterRules) || null != $filter) {
-            $filterRules = json_decode($filterRules, true) ?? [];
+            /** @var array<int, array<string, mixed>> $filterRules */
+            $filterRules = json_decode(strval($filterRules), true) ?? [];
             $where = $this->buildFilterQuery([...$filterRules, ...$filter ?? []]);
         }
         $row = $this->connection->fetchNumeric("SELECT count(*) FROM $table WHERE $where");
+
+        if (!$row) {
+            throw new Exception('Error while fetching data');
+        }
+
         $result['total'] = $row[0];
         $items = $this->connection->fetchAllAssociative("
           SELECT
@@ -51,7 +63,10 @@ class DataGridLoader
         return $result;
     }
 
-    public function buildFilterQuery($filterArray): string
+    /**
+     * @param array<int, array<string, mixed>> $filterArray
+     */
+    public function buildFilterQuery(array $filterArray): string
     {
         $numFilter = count($filterArray);
         $where = '1=1';

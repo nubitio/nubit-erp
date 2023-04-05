@@ -2,10 +2,11 @@
 
 namespace App\Supplier\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Supplier\Domain\Supplier;
 use App\Supplier\Domain\SupplierRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +20,7 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -45,9 +47,17 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
         return DataMapper::map($entity, Supplier::class);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function update(Supplier $supplier): Supplier
     {
         $entity = $this->entityManager->find(SupplierEntity::class, $supplier->proveedor_id);
+
+        if (!$entity) {
+            throw new ServiceException('No se encontró el proveedor');
+        }
+
         $entity = DataMapper::map($supplier, $entity);
         $this->entityManager->flush();
 
@@ -57,6 +67,11 @@ readonly class SupplierRepository implements SupplierRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(SupplierEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
