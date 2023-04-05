@@ -2,15 +2,17 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
+use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -27,32 +29,38 @@ readonly class SaleRepository implements SaleRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
     }
 
     /**
+     * @inheritdoc
      * @throws Exception
+     * @throws ServiceException
      */
     public function getOneById(string $id): array
     {
         $header = $this->connection->executeQuery('CALL sp_sale_header(?)', [$id])->fetchAssociative();
         $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
 
+        if (!$header || !$details) {
+            throw new ServiceException('No se encontró el movimiento de venta');
+        }
+
         return [
-            'header' => $header,
+            'header'  => $header,
             'details' => $details,
         ];
     }
 
-    public function getOne(string $id): ?Sale
+    public function getOne(string $id): Sale
     {
-        /** @var ?SaleEntity $entity */
         $entity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
 
         if (!$entity) {
-            return null;
+            throw new ServiceException('No se encontro el movimiento de venta');
         }
 
         /** @var Sale $sale */
@@ -64,18 +72,18 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function insert(Sale $sale): Sale
     {
         $sale = $this->saleUtils->fillSaleValues($sale);
-        /** @var SaleEntity $entity */
         $entity = DataMapper::map($sale, SaleEntity::class);
-        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen->almacen_id);
+        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
-        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente?->ruc);
         $entity->cliente = $customer;
-        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
         $entity->tipo_pago = $paymentMethod;
         $subtotal = 0;
+        /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
-            $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto->producto_id);
+            $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
             $subtotal += $detail->precio_total;
         }
         $entity->subtotal = $subtotal;
@@ -93,12 +101,21 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $details = $entity->details;
         $entity = DataMapper::map($sale, $entity);
         $entity->details = $details;
-        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen->almacen_id);
+        $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
-        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente?->ruc);
         $entity->cliente = $customer;
-        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
         $entity->tipo_pago = $paymentMethod;
+        $subtotal = 0;
+        /** @var SaleDetailEntity $detail */
+        foreach ($entity->details as $detail) {
+            $detail->movimiento = $entity;
+            $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
+            $subtotal += $detail->precio_total;
+        }
+        $entity->subtotal = $subtotal;
+        $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Sale::class);
@@ -107,6 +124,11 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(SaleEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
@@ -114,6 +136,11 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function void(Sale $sale): void
     {
         $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
+
+        if (!$entity) {
+            throw new ServiceException('No se encontró el movimiento de venta');
+        }
+
         $entity->estado = 2;
         $entity->glosa = $sale->glosa;
         $entity->updated_by = $sale->updated_by;

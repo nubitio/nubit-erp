@@ -5,7 +5,7 @@ namespace App\VoucherSeries\Domain;
 interface VoucherSeriesRepositoryInterface
 {
     /**
-     * @param array<string, mixed> $filter
+     * @param array<int, array<string, mixed>> $filter
      * @return array<string, mixed>
      */
     public function getAll(?array $filter = null): array;

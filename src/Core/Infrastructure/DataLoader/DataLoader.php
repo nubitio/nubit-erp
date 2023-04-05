@@ -4,6 +4,8 @@ namespace App\Core\Infrastructure\DataLoader;
 
 use ApiPlatform\Doctrine\Orm\Paginator as ApiPlatformPaginator;
 use App\Core\Domain\Util\DataMapper;
+use App\Core\Infrastructure\DataLoader\Paginator\Paginator;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;

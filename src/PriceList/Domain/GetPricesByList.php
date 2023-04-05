@@ -10,6 +10,9 @@ readonly class GetPricesByList
     {
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function __invoke(int $id): array
     {
         return $this->repository->getPricesByList($id);

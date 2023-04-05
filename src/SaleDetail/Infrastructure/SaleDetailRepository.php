@@ -4,7 +4,7 @@ namespace App\SaleDetail\Infrastructure;
 
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\SaleDetail\Domain\SaleDetailRepositoryInterface;
 
 readonly class SaleDetailRepository implements SaleDetailRepositoryInterface
@@ -15,6 +15,7 @@ readonly class SaleDetailRepository implements SaleDetailRepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

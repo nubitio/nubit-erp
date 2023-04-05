@@ -26,19 +26,19 @@ class Invoice
         #[SerializedName('inafecto')]
         public ?bool $inafecto = false,
         #[SerializedName('subtotal')]
-        public ?string $subtotal = null,
+        public ?float $subtotal = null,
         #[SerializedName('gravada')]
-        public ?string $gravada = null,
+        public ?float $gravada = null,
         #[SerializedName('igv')]
-        public ?string $igv = null,
+        public ?float $igv = null,
         #[SerializedName('rc')]
-        public ?string $rc = null,
+        public ?float $rc = null,
         #[SerializedName('total')]
-        public ?string $total = null,
+        public ?float $total = null,
         #[SerializedName('discount_percent')]
         public ?int $discount_percent = null,
         #[SerializedName('discount_amount')]
-        public ?string $discount_amount = null,
+        public ?float $discount_amount = null,
         #[SerializedName('voided')]
         public ?bool $voided = false,
         #[SerializedName('digest')]

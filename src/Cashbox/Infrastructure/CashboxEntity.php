@@ -41,11 +41,11 @@ class CashboxEntity
     public ?int $estado;
     #[ManyToOne(targetEntity: BranchEntity::class)]
     #[JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
-    public BranchEntity $local;
+    public ?BranchEntity $local;
     #[ManyToOne(targetEntity: UserEntity::class)]
     #[JoinColumn(name: 'usuario_id', referencedColumnName: 'usuario_id')]
-    public UserEntity $user;
-    /** @var CashboxDetailEntity[] $details */
+    public ?UserEntity $user;
+    /** @var ArrayCollection<int , CashboxDetailEntity>|array<int, CashboxDetailEntity> */
     #[OneToMany(mappedBy: 'cashbox', targetEntity: CashboxDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     public array|Collection $details;
 

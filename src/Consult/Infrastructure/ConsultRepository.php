@@ -5,7 +5,9 @@ namespace App\Consult\Infrastructure;
 use App\Consult\Domain\Consult;
 use App\Consult\Domain\ConsultRepositoryInterface;
 use App\Consult\Domain\DocType;
+use App\Core\Domain\Exception\ServiceException;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class ConsultRepository implements ConsultRepositoryInterface
 {
@@ -16,17 +18,15 @@ class ConsultRepository implements ConsultRepositoryInterface
         $url = self::API_URL . $docType->value . '/' . $id . '?token=abcxyz';
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', $url);
+        if ($response->getStatusCode() !== 200) {
+            throw new ServiceException('No se pudo consultar el documento, intente nuevamente');
+        }
         $data = $response->toArray();
 
-        if ($docType === DocType::DNI) {
-            return $this->mapDni($data);
-        }
-
-        if ($docType === DocType::RUC) {
-            return $this->mapRuc($data);
-        }
-
-        throw new \Exception('Invalid DocType');
+        return match ($docType) {
+            DocType::DNI => $this->mapDni($data),
+            DocType::RUC => $this->mapRuc($data)
+        };
     }
 
     /**
@@ -36,7 +36,7 @@ class ConsultRepository implements ConsultRepositoryInterface
     private function mapDni(array $data): Consult
     {
         return new Consult(
-            $data['dni'],
+            strval($data['dni']),
             $data['nombres'] . ' ' . $data['apellidoPaterno'] . ' ' . $data['apellidoMaterno'],
             '',
             true
@@ -50,10 +50,10 @@ class ConsultRepository implements ConsultRepositoryInterface
     private function mapRuc(array $data): Consult
     {
         return new Consult(
-            $data['ruc'],
-            $data['razonSocial'],
-            $data['direccion'],
-            $data['estado'] === 'ACTIVO'
+            strval($data['ruc']),
+            strval($data['razonSocial']),
+            strval($data['direccion']),
+            strval($data['estado']) === 'ACTIVO'
         );
     }
 }

@@ -193,10 +193,9 @@ export default class Invoice {
 
         this.dataGrid.showLoading('Enviando comprobante por correo...');
         this.invoiceService.sendEmail(selected['movimiento_id']).subscribe((data) => {
-            this.dataGrid.hideLoading();
             messenger.show('Información', 'Comprobante enviado por correo');
             this.dataGrid.reload();
-        });
+        }).add(() => this.dataGrid.hideLoading());
     }
 
     view() {

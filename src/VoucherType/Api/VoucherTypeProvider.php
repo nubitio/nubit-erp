@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\VoucherType\Domain\GetAllVoucherTypeUseCase;
 use App\VoucherType\Domain\GetOneVoucherTypeUseCase;
@@ -16,7 +15,6 @@ use App\VoucherType\Infrastructure\VoucherTypeEntity;
 
 /**
  * @implements ApiProviderInterface<VoucherType>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class VoucherTypeProvider implements ApiProviderInterface
 {
@@ -37,6 +35,6 @@ readonly class VoucherTypeProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['id']));
     }
 }

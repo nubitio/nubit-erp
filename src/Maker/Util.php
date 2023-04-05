@@ -6,6 +6,9 @@ use Doctrine\DBAL\Schema\Table;
 
 class Util
 {
+    /**
+     * @return array<int, string>
+     */
     public static function getIgnoredColumns(): array
     {
         return ['created_at', 'updated_at', 'created_by', 'updated_by', 'date_created', 'date_updated'];
@@ -28,7 +31,7 @@ class Util
         $primaryKey = $entity->getPrimaryKey();
         $field = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $field = "    public ?" . self::getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
                 break;
             }
@@ -56,7 +59,7 @@ class Util
             if (in_array($column, $foreignKeys)) {
                 $formType = 'FormType.SELECT';
             }
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $formType = 'FormType.NONE';
                 $field .= "            .isIdentity(true)\n";
                 $field .= "            .visible(false)\n";

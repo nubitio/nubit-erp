@@ -4,21 +4,32 @@ namespace App\Maker;
 
 use App\Core\Domain\Util\StringUtils;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-readonly class SimpleCrudMaker implements CrudMakerInterface
+class SimpleCrudMaker implements CrudMakerInterface
 {
     private Table $entity;
 
+    /**
+     * @template T of AbstractPlatform
+     *
+     * @param SymfonyStyle $io
+     * @param AbstractSchemaManager<T> $schemaManager
+     * @param string $moduleName
+     * @param string $modulePath
+     * @param bool $isInteractive
+     * @param bool $overwrite
+     */
     public function __construct(
-        private SymfonyStyle          $io,
-        private AbstractSchemaManager $schemaManager,
-        private string                $moduleName,
-        private string                $modulePath,
-        private bool                  $isInteractive,
-        private bool                  $overwrite,
+        private readonly SymfonyStyle          $io,
+        private readonly AbstractSchemaManager $schemaManager,
+        private readonly string                $moduleName,
+        private readonly string                $modulePath,
+        private readonly bool                  $isInteractive,
+        private readonly bool                  $overwrite,
     )
     {
     }
@@ -34,7 +45,7 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $this->io->text('Please select the entity');
         $tables = $this->schemaManager->listTableNames();
         $entityName = $this->io->choice('Entity', $tables);
-        $this->entity = $this->schemaManager->introspectTable($entityName);
+        $this->entity = $this->schemaManager->introspectTable(strval($entityName));
         $this->makeController();
         $this->makeRepositoryInterface();
         $this->makeCreateUseCase();
@@ -76,6 +87,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $controllerTemplate = dirname(__FILE__) . '/skeleton/crud/controller.tpl';
         $controllerContent = file_get_contents($controllerTemplate);
+        if ($controllerContent === false) {
+            throw new \RuntimeException('Could not read controller template');
+        }
         $controllerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $controllerContent);
         $controllerContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $controllerContent);
         $controllerContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $controllerContent);
@@ -107,6 +121,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $repositoryInterfaceTemplate = dirname(__FILE__) . '/skeleton/crud/repository-interface.tpl';
         $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
+        if ($repositoryInterfaceContent === false) {
+            throw new \RuntimeException('Could not read repository interface template');
+        }
         $repositoryInterfaceContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryInterfaceContent);
         $repositoryInterfaceContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryInterfaceContent);
 
@@ -137,6 +154,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $createUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/create.tpl';
         $createUseCaseContent = file_get_contents($createUseCaseTemplate);
+        if ($createUseCaseContent === false) {
+            throw new \RuntimeException('Could not read create use case template');
+        }
         $createUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $createUseCaseContent);
         $createUseCaseContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $createUseCaseContent);
 
@@ -167,6 +187,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $updateUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/update.tpl';
         $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
+        if ($updateUseCaseContent === false) {
+            throw new \RuntimeException('Could not read update use case template');
+        }
         $updateUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $updateUseCaseContent);
         $updateUseCaseContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $updateUseCaseContent);
 
@@ -197,6 +220,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $deleteUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/delete.tpl';
         $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
+        if ($deleteUseCaseContent === false) {
+            throw new \RuntimeException('Could not read delete use case template');
+        }
         $deleteUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $deleteUseCaseContent);
 
         file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
@@ -226,6 +252,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $getAllUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-all.tpl';
         $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
+        if ($getAllUseCaseContent === false) {
+            throw new \RuntimeException('Could not read get all use case template');
+        }
         $getAllUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getAllUseCaseContent);
 
         file_put_contents($getAllUseCasePath, $getAllUseCaseContent);
@@ -255,6 +284,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $getOneUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-one.tpl';
         $getOneUseCaseContent = file_get_contents($getOneUseCaseTemplate);
+        if ($getOneUseCaseContent === false) {
+            throw new \RuntimeException('Could not read get one use case template');
+        }
         $getOneUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getOneUseCaseContent);
 
         file_put_contents($getOneUseCasePath, $getOneUseCaseContent);
@@ -285,6 +317,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $columns = $this->entity->getColumns();
         $modelTemplate = dirname(__FILE__) . '/skeleton/crud/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
+        if ($modelContent === false) {
+            throw new \RuntimeException('Could not read model template');
+        }
         $modelContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $modelContent);
         $modelFields = '';
         foreach ($columns as $column) {
@@ -324,12 +359,15 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $entityTemplate = dirname(__FILE__) . '/skeleton/crud/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
+        if ($entityContent === false) {
+            throw new \RuntimeException('Could not read entity template');
+        }
         $entityContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{table}}', $this->entity->getName(), $entityContent);
         $entityFields = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $entityFields .= "        #[ORM\Id]\n";
                 $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
@@ -366,10 +404,13 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/repository.tpl';
         $repositoryContent = file_get_contents($repositoryTemplate);
+        if ($repositoryContent === false) {
+            throw new \RuntimeException('Could not read repository template');
+        }
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
-        $repositoryContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $repositoryContent);
+        $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -398,6 +439,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $dtoTemplate = dirname(__FILE__) . '/skeleton/crud/dto.tpl';
         $dtoContent = file_get_contents($dtoTemplate);
+        if ($dtoContent === false) {
+            throw new \RuntimeException('Could not read dto template');
+        }
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
         $dtoContent = str_replace('{{entityIdField}}', Util::getEntityIdField($this->entity), $dtoContent);
 
@@ -429,8 +473,11 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $processorTemplate = dirname(__FILE__) . '/skeleton/crud/processor.tpl';
         $processorContent = file_get_contents($processorTemplate);
+        if ($processorContent === false) {
+            throw new \RuntimeException('Could not read processor template');
+        }
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
-        $processorContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $processorContent);
+        $processorContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $processorContent);
 
         file_put_contents($processorPath, $processorContent);
     }
@@ -466,10 +513,13 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
         $providerContent = file_get_contents($providerTemplate);
+        if ($providerContent === false) {
+            throw new \RuntimeException('Could not read provider template');
+        }
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
-        $providerContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $providerContent);
-        $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
-        $providerContent = str_replace('{{sortOrder}}', $sortOrder, $providerContent);
+        $providerContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $providerContent);
+        $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
+        $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
 
         file_put_contents($providerPath, $providerContent);
     }
@@ -498,6 +548,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $viewTemplate = dirname(__FILE__) . '/skeleton/crud/view.tpl';
         $viewContent = file_get_contents($viewTemplate);
+        if ($viewContent === false) {
+            throw new \RuntimeException('Could not read view template');
+        }
         $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
         $viewContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $viewContent);
         $viewFields = Util::getViewFields($this->entity);
@@ -530,6 +583,9 @@ readonly class SimpleCrudMaker implements CrudMakerInterface
         }
         $twigTemplate = dirname(__FILE__) . '/skeleton/crud/index.tpl';
         $twigContent = file_get_contents($twigTemplate);
+        if ($twigContent === false) {
+            throw new \RuntimeException('Could not read twig template');
+        }
         $twigContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $twigContent);
         $twigContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $twigContent);
         file_put_contents($templateFile, $twigContent);

@@ -66,8 +66,15 @@ export default class Auth {
     }
 
     render() {
+        let ref = this;
         this.form = new Form('fm', this.fields, {
             events: Auth.EVENTS,
+        });
+
+        this.form.getField('password').textbox('textbox').bind('keyup', function (e: any) {
+            if (e.keyCode === 13) {
+                ref.login();
+            }
         });
     }
 

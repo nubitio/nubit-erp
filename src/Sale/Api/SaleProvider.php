@@ -10,7 +10,6 @@ use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Sale\Domain\GetAllSaleUseCase;
 use App\Sale\Domain\GetOneSaleUseCase;
@@ -19,7 +18,6 @@ use App\Sale\Infrastructure\SaleEntity;
 
 /**
  * @implements ApiProviderInterface<Sale>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class SaleProvider implements ApiProviderInterface
 {
@@ -30,7 +28,7 @@ readonly class SaleProvider implements ApiProviderInterface
     {
     }
 
-    /** @inheritDoc */
+    /** @inheritdoc */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
@@ -46,6 +44,6 @@ readonly class SaleProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['movimiento_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['movimiento_id']));
     }
 }

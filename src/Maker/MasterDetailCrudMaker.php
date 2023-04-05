@@ -4,6 +4,7 @@ namespace App\Maker;
 
 use App\Core\Domain\Util\StringUtils;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -20,6 +21,16 @@ class MasterDetailCrudMaker implements CrudMakerInterface
     private string $joinColumn;
     private bool $handlingDetail = false;
 
+    /**
+     * @template T of AbstractPlatform
+     *
+     * @param SymfonyStyle $io
+     * @param AbstractSchemaManager<T> $schemaManager
+     * @param string $moduleName
+     * @param string $modulePath
+     * @param bool $isInteractive
+     * @param bool $overwrite
+     */
     public function __construct(
         private readonly SymfonyStyle          $io,
         private readonly AbstractSchemaManager $schemaManager,
@@ -43,16 +54,16 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->io->title('Master detail crud generator');
         $this->io->text('Please select the master entity');
         $masterEntityName = $this->io->choice('Master entity', $this->schemaManager->listTableNames());
-        $this->masterEntity = $this->schemaManager->introspectTable($masterEntityName);
+        $this->masterEntity = $this->schemaManager->introspectTable(strval($masterEntityName));
         $this->io->newLine();
         $this->io->text('Please select the detail entity');
         $detailEntityName = $this->io->choice('Detail entity', $this->schemaManager->listTableNames());
-        $this->detailEntity = $this->schemaManager->introspectTable($detailEntityName);
+        $this->detailEntity = $this->schemaManager->introspectTable(strval($detailEntityName));
         $detailColumns = [];
         foreach ($this->detailEntity->getColumns() as $column) {
             $detailColumns[] = $column->getName();
         }
-        $this->joinColumn = $this->io->choice('Join column', $detailColumns);
+        $this->joinColumn = strval($this->io->choice('Join column', $detailColumns));
 
         $this->io->newLine();
         $this->io->text('Generating master');
@@ -116,6 +127,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $controllerTemplate = dirname(__FILE__) . '/skeleton/crud/controller.tpl';
         $controllerContent = file_get_contents($controllerTemplate);
+        if ($controllerContent === false) {
+            throw new \RuntimeException('Could not read controller template');
+        }
         $controllerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $controllerContent);
         $controllerContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $controllerContent);
         $controllerContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $controllerContent);
@@ -150,6 +164,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $repositoryInterfaceTemplate = dirname(__FILE__) . '/skeleton/crud/detail/repository-interface.tpl';
         }
         $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
+        if ($repositoryInterfaceContent === false) {
+            throw new \RuntimeException('Could not read repository interface template');
+        }
         $repositoryInterfaceContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryInterfaceContent);
         $repositoryInterfaceContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryInterfaceContent);
 
@@ -180,6 +197,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $createUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/create.tpl';
         $createUseCaseContent = file_get_contents($createUseCaseTemplate);
+        if ($createUseCaseContent === false) {
+            throw new \RuntimeException('Could not read create use case template');
+        }
         $createUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $createUseCaseContent);
         $createUseCaseContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $createUseCaseContent);
 
@@ -210,6 +230,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $updateUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/update.tpl';
         $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
+        if ($updateUseCaseContent === false) {
+            throw new \RuntimeException('Could not read update use case template');
+        }
         $updateUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $updateUseCaseContent);
         $updateUseCaseContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $updateUseCaseContent);
 
@@ -240,6 +263,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $deleteUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/delete.tpl';
         $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
+        if ($deleteUseCaseContent === false) {
+            throw new \RuntimeException('Could not read delete use case template');
+        }
         $deleteUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $deleteUseCaseContent);
 
         file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
@@ -269,6 +295,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $getAllUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-all.tpl';
         $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
+        if ($getAllUseCaseContent === false) {
+            throw new \RuntimeException('Could not read get all use case template');
+        }
         $getAllUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getAllUseCaseContent);
 
         file_put_contents($getAllUseCasePath, $getAllUseCaseContent);
@@ -298,6 +327,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $getOneUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-one.tpl';
         $getOneUseCaseContent = file_get_contents($getOneUseCaseTemplate);
+        if ($getOneUseCaseContent === false) {
+            throw new \RuntimeException('Could not read get one use case template');
+        }
         $getOneUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getOneUseCaseContent);
 
         file_put_contents($getOneUseCasePath, $getOneUseCaseContent);
@@ -328,6 +360,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $columns = $this->entity->getColumns();
         $modelTemplate = dirname(__FILE__) . '/skeleton/crud/detail/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
+        if ($modelContent === false) {
+            throw new \RuntimeException('Could not read model template');
+        }
         $modelContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $modelContent);
         $modelFields = '';
         foreach ($columns as $column) {
@@ -378,12 +413,15 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $entityTemplate = dirname(__FILE__) . '/skeleton/crud/detail/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
+        if ($entityContent === false) {
+            throw new \RuntimeException('Could not read entity template');
+        }
         $entityContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $entityContent);
         $entityContent = str_replace('{{table}}', $this->entity->getName(), $entityContent);
         $entityFields = '';
         foreach ($columns as $column) {
-            if (!empty($primaryKey->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $entityFields .= "        #[ORM\Id]\n";
                 $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
@@ -440,10 +478,13 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/detail/repository.tpl';
         }
         $repositoryContent = file_get_contents($repositoryTemplate);
+        if ($repositoryContent === false) {
+            throw new \RuntimeException('Could not read repository template');
+        }
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
-        $repositoryContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $repositoryContent);
+        $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -476,10 +517,13 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $dtoTemplate = dirname(__FILE__) . '/skeleton/crud/detail/dto.tpl';
         }
         $dtoContent = file_get_contents($dtoTemplate);
+        if ($dtoContent === false) {
+            throw new \RuntimeException('Could not read dto template');
+        }
         $dtoContent = str_replace('{{masterModule}}', StringUtils::toPascalCase($this->masterModuleName), $dtoContent);
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
         $dtoContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->masterModuleName), $dtoContent);
-        $dtoContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $dtoContent);
+        $dtoContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $dtoContent);
         $dtoContent = str_replace('{{entityIdField}}', Util::getEntityIdField($this->masterEntity), $dtoContent);
 
         file_put_contents($dtoPath, $dtoContent);
@@ -510,8 +554,11 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $primaryKey = $this->entity->getPrimaryKey();
         $processorTemplate = dirname(__FILE__) . '/skeleton/crud/processor.tpl';
         $processorContent = file_get_contents($processorTemplate);
+        if ($processorContent === false) {
+            throw new \RuntimeException('Could not read processor template');
+        }
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
-        $processorContent = str_replace('{{entityId}}', $primaryKey->getColumns()[0], $processorContent);
+        $processorContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $processorContent);
 
         file_put_contents($processorPath, $processorContent);
     }
@@ -549,10 +596,13 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $providerTemplate = dirname(__FILE__) . '/skeleton/crud/detail/provider.tpl';
         }
         $providerContent = file_get_contents($providerTemplate);
+        if ($providerContent === false) {
+            throw new \RuntimeException('Could not read provider template');
+        }
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
         $providerContent = str_replace('{{joinColumn}}', $this->joinColumn, $providerContent);
-        $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
-        $providerContent = str_replace('{{sortOrder}}', $sortOrder, $providerContent);
+        $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
+        $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
 
         file_put_contents($providerPath, $providerContent);
     }
@@ -581,6 +631,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $viewTemplate = dirname(__FILE__) . '/skeleton/crud/view-detail.tpl';
         $viewContent = file_get_contents($viewTemplate);
+        if ($viewContent === false) {
+            throw new \RuntimeException('Could not read view template');
+        }
         $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
         $viewContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $viewContent);
         $fields = Util::getViewFields($this->masterEntity);
@@ -615,6 +668,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $twigTemplate = dirname(__FILE__) . '/skeleton/crud/index.tpl';
         $twigContent = file_get_contents($twigTemplate);
+        if ($twigContent === false) {
+            throw new \RuntimeException('Could not read twig template');
+        }
         $twigContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $twigContent);
         $twigContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $twigContent);
         file_put_contents($templateFile, $twigContent);

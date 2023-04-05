@@ -23,11 +23,13 @@ readonly class WarehouseProcessor implements ApiProcessorInterface
     {
     }
 
-    /** @inheritDoc */
+    /** @inheritdoc */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Warehouse
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->WarehouseDeleteUseCase->__invoke($data->almacen_id);
+            if ($data->almacen_id) {
+                $this->WarehouseDeleteUseCase->__invoke($data->almacen_id);
+            }
             return null;
         }
 

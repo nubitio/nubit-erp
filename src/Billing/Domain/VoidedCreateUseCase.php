@@ -29,15 +29,15 @@ class VoidedCreateUseCase
         $sale = $this->saleRepository->getOneById($saleId);
 
         $voidedDetail = new VoidedDetail();
-        $voidedDetail->tipoDoc = $sale['header']['doc_type'];
-        $voidedDetail->serie = $sale['header']['doc_series'];
-        $voidedDetail->correlativo = $sale['header']['doc_number'];
-        $voidedDetail->desMotivoBaja = $sale['header']['doc_notes'];
+        $voidedDetail->tipoDoc = strval($sale['header']['doc_type']);
+        $voidedDetail->serie = strval($sale['header']['doc_series']);
+        $voidedDetail->correlativo = strval($sale['header']['doc_number']);
+        $voidedDetail->desMotivoBaja = strval($sale['header']['doc_notes']);
         $voided = new Voided();
-        $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate($sale['header']['doc_date']);
+        $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($sale['header']['doc_date']));
         $voided->correlativo = (string)($lastCorrelative + 1);
-        $voided->fecGeneracion = new \DateTime($sale['header']['doc_date']);
-        $voided->fecComunicacion = new \DateTime($sale['header']['doc_date']);
+        $voided->fecGeneracion = new \DateTime(strval($sale['header']['doc_date']));
+        $voided->fecComunicacion = new \DateTime(strval($sale['header']['doc_date']));
         $voided->company = $this->invoiceUtils->getCompany();
         $voided->details = [$voidedDetail];
         $response = $this->voidedRepository->voidInvoice($voided);

@@ -11,6 +11,9 @@ class RoleMenuCreateUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param RoleMenu[] $roleMenuList
+     */
     public function __invoke(int $roleId, array $roleMenuList): void
     {
         $this->repository->insertMultiple($roleId, $roleMenuList);

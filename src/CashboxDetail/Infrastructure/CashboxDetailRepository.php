@@ -5,6 +5,8 @@ namespace App\CashboxDetail\Infrastructure;
 use App\Cashbox\Infrastructure\CashboxEntity;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
+use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,8 +26,7 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     }
 
     /**
-     * @param array<int , array<string, mixed>>|null $filter
-     * @return array<string, mixed>
+     * @inheritdoc
      * @throws \Doctrine\DBAL\Exception
      */
     public function getAll(?array $filter = null): array
@@ -40,28 +41,40 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     public function insert(CashboxDetail $cashboxDetail): void
     {
         $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
+        if (!$nextIndex) {
+            throw new ORMException('No se pudo obtener el siguiente índice');
+        }
         $cashBox = $this->entityManager->getReference(CashboxEntity::class, $cashboxDetail->caja_id);
-        $cashboxDetail->uid = $nextIndex;
-        $entity = new CashboxDetailEntity();
-        $entity->mapFromDomainModel($cashboxDetail);
+        $cashboxDetail->uid = intval($nextIndex);
+        $entity = DataMapper::map($cashboxDetail, CashboxDetailEntity::class);
         $entity->cashbox = $cashBox;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
     }
 
     /**
-     * @throws \Doctrine\DBAL\Exception
+     * @throws ServiceException
      */
     public function update(CashboxDetail $cashboxDetail): void
     {
         $entity = $this->entityManager->find(CashboxDetailEntity::class, $cashboxDetail->id);
-        $entity->mapFromDomainModel($cashboxDetail);
+
+        if (!$entity) {
+            throw new ServiceException('Detalle de caja no encontrado');
+        }
+
+        DataMapper::map($cashboxDetail, $entity);
         $this->entityManager->flush();
     }
 
     public function delete(int $id): void
     {
         $entity = $this->entityManager->find(CashboxDetailEntity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

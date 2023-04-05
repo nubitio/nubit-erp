@@ -2,11 +2,15 @@
 
 namespace App\Warehouse\Domain;
 
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface WarehouseRepositoryInterface
 {
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<Warehouse>
+     */
     public function getAll(Options $options): PaginatorInterface;
 
     public function getOne(string $id): ?Warehouse;

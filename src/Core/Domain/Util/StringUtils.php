@@ -14,7 +14,7 @@ class StringUtils
 
     public static function toKebabCase(string $str): string
     {
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '-$0', $str));
+        return strtolower(strval(preg_replace('/(?<!^)[A-Z]/', '-$0', $str)));
     }
 
     public static function toPascalCase(string $str): string

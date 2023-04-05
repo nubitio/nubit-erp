@@ -13,12 +13,10 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<Category>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class CategoryProvider implements ApiProviderInterface
 {
@@ -40,6 +38,6 @@ readonly class CategoryProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['categoria_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['categoria_id']));
     }
 }

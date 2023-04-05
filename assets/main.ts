@@ -78,4 +78,10 @@ window.app.priceList = PriceList;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
+
+    setupGlobalObservers();
 });
+
+function setupGlobalObservers() {
+    bus.on<any>('app:reload', () => window.location.reload());
+}

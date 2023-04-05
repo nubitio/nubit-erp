@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Infrastructure\DataLoader;
+namespace App\Core\Infrastructure\DataLoader\Paginator;
 
 use ApiPlatform\State\Pagination\PaginatorInterface as ApiPlatformPaginatorInterface;
 

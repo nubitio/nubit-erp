@@ -3,6 +3,7 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Sale\Domain\DocType;
@@ -23,7 +24,7 @@ class SaleController extends BaseController
     #[Route('/sale', name: 'sale_index', methods: ['GET'])]
     public function index(): Response
     {
-        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
+        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), strval(session_id()));
         $printScript = WebClientPrint::createScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), $this->generateUrl('wcp_print', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
 
         return $this->render('sale/index.html.twig', [
@@ -88,16 +89,15 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, $id, SaleGetOneById $getOneById): Response
+    public function print(Request $request, string $id, SaleGetOneById $getOneById): Response
     {
         $sale = $getOneById($id);
         $qr = '';
         if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode())->render($sale['header']['doc_qr_data']);
+            $qr = (new QRCode())->render(strval($sale['header']['doc_qr_data']));
         }
-        $logo = base64_encode(file_get_contents('assets/images/logo.png'));
+
         $content = $this->renderView('sale/report/invoice.html.twig', [
-            'logo' => "data:image/png;base64,{$logo}",
             'qr'   => $qr,
             'sale' => $sale,
         ]);
@@ -129,19 +129,20 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
-    public function void(Request $request, SaleVoidUseCase $voidUseCase, $id): Response
+    public function void(Request $request, SaleVoidUseCase $voidUseCase, string $id): Response
     {
         $userId = $request->getSession()->get('user_id');
-        $voidUseCase($id, json_decode($request->getContent())->reason, $userId);
+        /** @var array<string, string> $requestBody */
+        $requestBody = json_decode($request->getContent(), true);
+        $voidUseCase($id, $requestBody['reason'], intval($userId));
 
         return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
     }
 
     #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['POST'])]
-    public function invoice(Request $request, SaleInvoiceUseCase $saleInvoiceUseCase, $id): Response
+    public function invoice(string $id, SaleInvoiceUseCase $saleInvoiceUseCase): Response
     {
-        $localId = $request->getSession()->get('branch_id');
-        $saleInvoiceUseCase($id, $localId);
+        $saleInvoiceUseCase($id);
 
         return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
     }

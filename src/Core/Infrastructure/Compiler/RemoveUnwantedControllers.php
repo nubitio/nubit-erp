@@ -13,6 +13,7 @@ final class RemoveUnwantedControllers implements CompilerPassInterface
     public function process(ContainerBuilder $container): void
     {
         $definitions = $container->getDefinitions();
+        /** @var class-string $fqcn */
         foreach ($definitions as $fqcn => $definition) {
             if (str_starts_with($fqcn, 'App\\')) {
                 try {

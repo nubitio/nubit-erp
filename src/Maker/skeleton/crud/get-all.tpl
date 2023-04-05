@@ -14,8 +14,11 @@ class GetAll{{module}}UseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Options $options): PaginatorInterface
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<{{module}}>
+     */
     {
-        return $this->repository->getAll($options);
+        return $this->repository->getAll($options): PaginatorInterface;
     }
 }

@@ -22,7 +22,18 @@ class InvoiceUpdater
         $pending = $this->connection->fetchAllAssociative('select * from comprobante where envio_sunat is null');
         foreach ($pending as $invoice) {
             $sale = $this->connection->fetchAssociative('SELECT * FROM vw_movimiento WHERE movimiento_id = ?', [$invoice['movimiento_id']]);
-            $invoiceCalculator = new InvoiceCalculator($sale['total'], $sale['descuento'] ?? 0.0, $sale['igv'], $sale['recargo_consumo'] ?? 0.0);
+
+            if ($sale === false) {
+                continue;
+            }
+
+            $invoiceCalculator = new InvoiceCalculator(
+                floatval($sale['total']),
+                floatval($sale['descuento'] ?? 0.0),
+                floatval($sale['igv']),
+                floatval($sale['recargo_consumo'] ?? 0.0)
+            );
+
             $invoiceAmounts = $invoiceCalculator->calculate();
             $this->connection->executeStatement('
                 update 
@@ -46,6 +57,6 @@ class InvoiceUpdater
             ]);
         }
 
-        return 'Registros actualizados: '.count($pending);
+        return 'Registros actualizados: ' . count($pending);
     }
 }

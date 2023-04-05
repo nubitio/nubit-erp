@@ -19,6 +19,7 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
     {
     }
 
+    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -57,6 +58,11 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find({{module}}Entity::class, $id);
+
+        if (!$entity) {
+            return;
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }

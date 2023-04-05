@@ -2,6 +2,7 @@
 
 namespace App\RoleMenu\Infrastructure;
 
+use App\Core\Domain\Util\DataMapper;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuRepositoryInterface;
 use Doctrine\DBAL\Connection;
@@ -19,14 +20,17 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
         $this->entityManager = $entityManager;
     }
 
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
     public function getAllByRole(int $roleId): array
     {
         return $this->connection->fetchAllAssociative('CALL sp_menu_by_rol(:roleId)', ['roleId' => $roleId]);
     }
 
     /**
-     * @param RoleMenu[] $roleMenuList
-     *
+     * @inheritdoc
      * @throws Exception
      */
     public function insertMultiple(int $roleId, array $roleMenuList): void
@@ -35,8 +39,7 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
         try {
             $this->connection->executeStatement('delete from menu_rol where rol_id = :roleId', ['roleId' => $roleId]);
             foreach ($roleMenuList as $roleMenu) {
-                $entity = new RoleMenuEntity();
-                $entity->mapFromDomainModel($roleMenu);
+                $entity = DataMapper::map($roleMenu, RoleMenu::class);
                 $this->entityManager->persist($entity);
             }
             $this->entityManager->flush();

@@ -10,7 +10,7 @@ class PdfExporter
     /**
      * @param string $content
      * @param string $filename
-     * @param array<string, mixed> $options
+     * @param array<int|string, mixed> $options
      *
      * @return StreamedResponse
      */

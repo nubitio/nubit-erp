@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation as ApiOperation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Operation\Domain\GetAllOperationUseCase;
 use App\Operation\Domain\GetOneOperationUseCase;
@@ -16,7 +15,6 @@ use App\Operation\Infrastructure\OperationEntity;
 
 /**
  * @implements ApiProviderInterface<Operation>
- * @implements ApiProviderInterface<PaginatorInterface>
  */
 readonly class OperationProvider implements ApiProviderInterface
 {
@@ -37,6 +35,6 @@ readonly class OperationProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['operacion_id']);
+        return $this->getOneUseCase->__invoke(strval($uriVariables['operacion_id']));
     }
 }

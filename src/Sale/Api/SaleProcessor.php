@@ -29,7 +29,9 @@ readonly class SaleProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Sale
     {
         if ($operation instanceof DeleteOperationInterface) {
-            $this->deleteUseCase->__invoke($data->movimiento_id);
+            if ($data->movimiento_id) {
+                $this->deleteUseCase->__invoke($data->movimiento_id);
+            }
             return null;
         }
 

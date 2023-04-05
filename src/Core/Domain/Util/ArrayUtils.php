@@ -5,7 +5,7 @@ namespace App\Core\Domain\Util;
 class ArrayUtils
 {
     /**
-     * @param array $array
+     * @param array<int, mixed> $array
      * @param callable $callback
      * @return mixed|null
      */

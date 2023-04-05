@@ -36,9 +36,10 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function authenticate(Request $request): Passport
     {
-        $data = json_decode($request->getContent());
-        $username = $data->username;
-        $password = $data->password;
+        /** @var array<string, string> $data */
+        $data = json_decode($request->getContent(), true);
+        $username = $data['username'];
+        $password = $data['password'];
 
         return new Passport(
             new UserBadge($username),

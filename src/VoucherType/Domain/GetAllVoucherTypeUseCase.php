@@ -3,7 +3,7 @@
 namespace App\VoucherType\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 class GetAllVoucherTypeUseCase
 {
@@ -14,6 +14,10 @@ class GetAllVoucherTypeUseCase
         $this->repository = $repository;
     }
 
+    /**
+     * @param Options $options
+     * @return PaginatorInterface<VoucherType>
+     */
     public function __invoke(Options $options): PaginatorInterface
     {
         return $this->repository->getAll($options);

@@ -79,6 +79,7 @@ export default class Outbound {
             .textField('descripcion')
             .visible(false)
             .required(true)
+            .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
@@ -137,7 +138,7 @@ export default class Outbound {
             url: 'outbound/get',
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
-            detailUrl: 'api/sale/{id}/details',
+            detailUrl: 'api/sales/{id}/details',
             detailFields: this.detailFields
         });
     }

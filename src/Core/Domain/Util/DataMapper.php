@@ -8,13 +8,14 @@ use Doctrine\Common\Collections\Collection;
 class DataMapper
 {
     /**
-     * @template I
-     * @template O
+     * @template I of object
+     * @template O of object
      *
      * @param I $input
      * @param O|class-string<O> $output
      *
      * @return O
+     * @phpstan-return O
      */
     public static function map($input, mixed $output)
     {
@@ -22,7 +23,7 @@ class DataMapper
             $output = new $output();
         }
 
-        foreach ($input as $key => $value) {
+        foreach (get_object_vars($input) as $key => $value) {
             if ($value === null) {
                 continue;
             }
@@ -41,17 +42,27 @@ class DataMapper
                 if (is_object($value) && !($value instanceof \DateTimeInterface)) {
                     if ($value instanceof Collection) {
                         $output->$key = [];
+                        /** @var object $item */
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType($output, $key);
+                            if ($type === null) {
+                                throw new \RuntimeException('Type not found');
+                            }
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
                         $type = ReflectionUtil::getPropertyType($output, $key);
+                        if ($type === null) {
+                            throw new \RuntimeException('Type not found');
+                        }
                         $output->$key = self::map($value, $type);
                     }
                 } else {
                     if (is_array($value)) {
                         $type = ReflectionUtil::getPropertyType($output, $key);
+                        if ($type === null) {
+                            throw new \RuntimeException('Type not found');
+                        }
                         $output->$key = [];
                         foreach ($value as $item) {
                             $output->$key[] = self::map($item, $type);

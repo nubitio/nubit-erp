@@ -22,13 +22,13 @@ class XlsExporter
     }
 
     /**
-     * @param array<int, mixed> $data
+     * @param array<int, array<string, mixed>> $data
      * @throws Exception
      */
     public function export(array $data, string $filename): StreamedResponse
     {
         $accentColor = $this->settingsService->get('app_theme_accent_color');
-        $arr = explode(' ', $accentColor);
+        $arr = explode(' ', strval($accentColor));
         $accentColor = dechex((int)$arr[0]) . dechex((int)$arr[1]) . dechex((int)$arr[2]);
         $lightenAccentColor = ColorUtils::lightenColor($accentColor, 60);
         $lightenAccentColor = str_replace('#', '', $lightenAccentColor);
