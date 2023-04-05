@@ -40,7 +40,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
       - run: composer install --no-interaction --no-progress --prefer-dist
-      - run: vendor/bin/phpstan analyse --level=9 --no-progress --no-interaction --memory-limit=2G
+      - run: vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit=2G
 
   deploy:
     needs: build

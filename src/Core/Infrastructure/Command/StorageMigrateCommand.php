@@ -56,7 +56,6 @@ class StorageMigrateCommand extends Command
 
                 if (!$data) {
                     throw new \Exception('Error al leer el archivo: ' . $file);
-                    continue;
                 }
 
                 $this->fileManager->write($newPath . '/' . $file, $data);
