@@ -117,7 +117,10 @@ export default class Home {
             }
         )
 
-        bus.on(LocalPicker.EVENTS.PICKED, () => window.location.href = '/');
+        bus.on<any>(LocalPicker.EVENTS.PICKED, (payload) => {
+            StorageUtils.setItem('session', payload);
+            window.location.reload();
+        })
 
         window.onresize = () => {
             this.layout.layout('resize');

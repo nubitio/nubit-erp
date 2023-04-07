@@ -83,7 +83,11 @@ readonly class DataLoader
     private function addSort(QueryBuilder $queryBuilder, array $sort): void
     {
         foreach ($sort as $sortItem) {
-            $queryBuilder->addOrderBy("e.{$sortItem->field}", $sortItem->order);
+            if (str_contains($sortItem->field, '.')) {
+                $queryBuilder->addOrderBy($sortItem->field, $sortItem->order);
+            } else {
+                $queryBuilder->addOrderBy("e.$sortItem->field", $sortItem->order);
+            }
         }
     }
 }

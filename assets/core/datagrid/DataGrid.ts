@@ -214,6 +214,14 @@ export default class DataGrid {
                 if (!options.url) {
                     return false;
                 }
+                console.log('param', param);
+                let defaultFilters = this.options.defaultFilters ?? [];
+                if (param.filterRules) {
+                    param.filterRules = JSON.stringify(defaultFilters.concat(param.filterRules));
+                } else {
+                    param.filterRules = JSON.stringify(defaultFilters);
+                }
+                console.log('param', param);
                 let url = options.url + '?' + $.param(param);
                 httpClient.get(url).subscribe(
                     (response) => {
