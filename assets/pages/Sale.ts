@@ -19,6 +19,7 @@ import {reactRoot} from "../core/common/ReactRoot";
 import NumberUtils from "../core/utils/NumberUtils";
 import {httpClient} from "../core/http/HttpClient";
 import {PriceListItemDto} from "../dto/PriceListItemDto";
+import FilterRule from "../core/common/FilterRule";
 
 export default class Sale {
     private readonly container: string;
@@ -266,9 +267,17 @@ export default class Sale {
             }
         ];
 
+        let session = StorageUtils.getItem('session');
+        let branchId = session['branch_id'];
+        let branchFilter: FilterRule = {
+            field: 'a.local',
+            op: 'equal',
+            value: branchId
+        };
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Ventas',
             url: Sale.API_URL,
+            defaultFilters: [branchFilter],
             method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
