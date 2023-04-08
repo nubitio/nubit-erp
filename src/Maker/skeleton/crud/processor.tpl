@@ -28,9 +28,9 @@ readonly class {{module}}Processor implements ApiProcessorInterface
     {
         if ($operation instanceof DeleteOperationInterface) {
             if (!$data->{{entityId}}) {
-                $this->deleteUseCase->__invoke($data->{{entityId}});
+                return null;
             }
-            return null;
+            return $this->deleteUseCase->__invoke($data->{{entityId}});
         }
 
         if($data->{{entityId}}) {

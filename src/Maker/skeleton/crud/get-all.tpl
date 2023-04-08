@@ -3,22 +3,22 @@
 namespace App\{{module}}\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
-class GetAll{{module}}UseCase
+readonly class GetAll{{module}}UseCase
 {
-    private {{module}}RepositoryInterface $repository;
-
-    public function __construct({{module}}RepositoryInterface $repository)
+    public function __construct(
+        private {{module}}RepositoryInterface $repository
+    )
     {
-        $this->repository = $repository;
     }
 
     /**
      * @param Options $options
      * @return PaginatorInterface<{{module}}>
      */
+    public function __invoke(Options $options): PaginatorInterface
     {
-        return $this->repository->getAll($options): PaginatorInterface;
+        return $this->repository->getAll($options);
     }
 }

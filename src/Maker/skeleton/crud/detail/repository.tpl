@@ -7,7 +7,7 @@ use App\{{module}}\Domain\{{module}};
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 readonly class {{module}}Repository implements {{module}}RepositoryInterface
 {

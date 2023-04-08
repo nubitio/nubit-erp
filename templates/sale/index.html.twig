@@ -17,6 +17,10 @@
                 console.log("WCPP version 4 not detected");
             }
         }
+
+        function wcppDetectOnFailure() {
+            console.log("WCPP not detected");
+        }
     </script>
     {{ parent() }}
     {{ printDetectionScript | raw }}
