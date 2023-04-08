@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\{{module}}\Domain\{{module}};
 use App\{{module}}\Domain\GetAll{{module}}UseCase;
@@ -36,6 +36,6 @@ readonly class {{module}}Provider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        return $this->getOneUseCase->__invoke($uriVariables['{{entityId}}']);
+        return $this->getOneUseCase->__invoke({{castType}}($uriVariables['{{entityId}}']));
     }
 }

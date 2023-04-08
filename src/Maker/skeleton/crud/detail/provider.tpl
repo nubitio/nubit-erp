@@ -9,7 +9,7 @@ use App\Core\Infrastructure\DataLoader\FilterOperation;
 use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\{{module}}\Domain\{{module}};
 use App\{{module}}\Domain\GetAll{{module}}UseCase;
