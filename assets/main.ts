@@ -36,6 +36,7 @@ import Kardex from "./pages/Kardex";
 import CreditNote from "./pages/CreditNote";
 import Branch from "./pages/Branch";
 import PriceList from "./pages/PriceList";
+import Position from "./pages/Position";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -75,6 +76,7 @@ window.app.transfer = Transfer;
 window.app.kardex = Kardex;
 window.app.creditNote = CreditNote;
 window.app.priceList = PriceList;
+window.app.position = Position;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();

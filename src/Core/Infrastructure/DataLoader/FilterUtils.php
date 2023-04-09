@@ -25,6 +25,9 @@ class FilterUtils
 
     public static function getUniqueParam(QueryBuilder $queryBuilder, string $field): string
     {
+        if (str_contains($field, '.')) {
+            $field = substr($field, strrpos($field, '.') + 1);
+        }
         $param = $field;
         $i = 1;
         while ($queryBuilder->getParameter($param)) {

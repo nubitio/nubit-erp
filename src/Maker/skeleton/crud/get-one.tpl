@@ -11,7 +11,7 @@ class GetOne{{module}}UseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): ?{{module}}
+    public function __invoke({{entityIdParam}}): ?{{module}}
     {
         return $this->repository->getOne($id);
     }

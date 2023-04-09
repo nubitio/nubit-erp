@@ -2,12 +2,13 @@
 
 namespace App\{{module}}\Infrastructure;
 
-use App\{{module}}\Domain\{{module}}RepositoryInterface;
-use App\{{module}}\Domain\{{module}};
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\{{module}}\Domain\{{module}}RepositoryInterface;
+use App\{{module}}\Domain\{{module}};
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class {{module}}Repository implements {{module}}RepositoryInterface
@@ -25,9 +26,8 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
         return $this->dataLoader->load($options);
     }
 
-    public function getOne(string $id): ?{{module}}
+    public function getOne({{entityIdParam}}): ?{{module}}
     {
-        /** @var ?{{module}}Entity $entity */
         $entity = $this->entityManager->find({{module}}Entity::class, $id);
 
         if (!$entity) {
@@ -49,13 +49,18 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
     public function update({{module}} ${{camelModule}}): {{module}}
     {
         $entity = $this->entityManager->find({{module}}Entity::class, ${{camelModule}}->{{entityId}});
+
+        if (!$entity) {
+            throw new ServiceException('Entity not found');
+        }
+
         $entity = DataMapper::map(${{camelModule}}, $entity);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, {{module}}::class);
     }
 
-    public function delete(string $id): void
+    public function delete({{entityIdParam}}): void
     {
         $entity = $this->entityManager->find({{module}}Entity::class, $id);
 

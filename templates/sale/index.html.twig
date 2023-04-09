@@ -4,7 +4,27 @@
     <div id="wrapper" class="wrapper"></div>
 {% endblock %}
 {% block javascripts %}
+    <script>
+        var wcppPingTimeout_ms = 30000; //30 sec
+        var wcppPingTimeoutStep_ms = 1000; //1 sec
+
+        function wcppDetectOnSuccess() {
+            let version = arguments[0];
+            console.log(version);
+            if (version.substring(0, 1) === "4") {
+                console.log("WCPP version 4 detected");
+            } else {
+                console.log("WCPP version 4 not detected");
+            }
+        }
+
+        function wcppDetectOnFailure() {
+            console.log("WCPP not detected");
+        }
+    </script>
     {{ parent() }}
+    {{ printDetectionScript | raw }}
+    {{ printScript | raw }}
     <script>
         window.addEventListener('load', function () {
             const sale = new window.app.sale('wrapper');
