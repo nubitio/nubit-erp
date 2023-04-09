@@ -10,25 +10,11 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: npm install
-      - run: npm run build
-      - uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: public/build
-
-  static-analysis:
+  analyze:
     runs-on: ubuntu-latest
     steps:
-      - uses: shivammathur/setup-php@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
           extensions: mbstring, intl, zip, dom, curl, json, xml, gd, pdo, pdo_mysql, bcmath, imagick
@@ -41,6 +27,45 @@ jobs:
             ${{ runner.os }}-php-
       - run: composer install --no-interaction --no-progress --prefer-dist
       - run: vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit=2G
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, intl, zip, dom, curl, json, xml, gd, pdo, pdo_mysql, bcmath, imagick
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Run tests
+        run: vendor/bin/phpunit --coverage-clover=coverage.xml
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm install
+      - run: npm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: public/build
 
   deploy:
     needs: build
