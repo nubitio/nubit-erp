@@ -2,6 +2,7 @@
 
 namespace App\Maker;
 
+use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
 
 class Util
@@ -14,9 +15,32 @@ class Util
         return ['created_at', 'updated_at', 'created_by', 'updated_by', 'date_created', 'date_updated'];
     }
 
+    public static function getIdColumn(Table $entity): Column
+    {
+        $columns = $entity->getColumns();
+        $primaryKey = $entity->getPrimaryKey();
+        foreach ($columns as $column) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                return $column;
+            }
+        }
+        throw new \Exception('No primary key found');
+    }
+
     public static function getType(string $type): string
     {
         return match ($type) {
+            'integer' => 'int',
+            'decimal', 'float' => 'float',
+            'boolean' => 'bool',
+            'date', 'datetime' => '\DateTimeInterface',
+            default => 'string',
+        };
+    }
+
+    public static function getColumnType(Column $column): string
+    {
+        return match ($column->getType()->getName()) {
             'integer' => 'int',
             'decimal', 'float' => 'float',
             'boolean' => 'bool',
@@ -37,6 +61,30 @@ class Util
             }
         }
         return $field;
+    }
+
+    public static function getEntityIdParam(Table $entity): string
+    {
+        $columns = $entity->getColumns();
+        $primaryKey = $entity->getPrimaryKey();
+        $param = '';
+        foreach ($columns as $column) {
+            if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
+                $param = self::getType($column->getType()->getName()) . " \$id";
+                break;
+            }
+        }
+        return $param;
+    }
+
+    public static function getCastType(string $type): string
+    {
+        return match ($type) {
+            'int' => 'intval',
+            'float' => 'floatval',
+            'bool' => 'boolval',
+            default => 'strval',
+        };
     }
 
     public static function getViewFields(Table $entity, string $varName = 'fields'): string

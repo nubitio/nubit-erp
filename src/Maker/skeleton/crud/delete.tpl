@@ -11,7 +11,7 @@ class Delete{{module}}UseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): void
+    public function __invoke({{entityIdParam}}): void
     {
         $this->repository->delete($id);
     }

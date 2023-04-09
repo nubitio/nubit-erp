@@ -18,7 +18,11 @@ readonly class FilterRule implements FilterInterface
     {
         $op = FilterUtils::getOperation($this->op);
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
-        $queryBuilder->andWhere("e.{$this->field} {$op} :{$uniqueParam}");
+        if (str_contains($this->field, '.')) {
+            $queryBuilder->andWhere("$this->field $op :$uniqueParam");
+        } else {
+            $queryBuilder->andWhere("e.$this->field $op :$uniqueParam");
+        }
 
         $value = strval($this->value);
         if ($this->op === FilterOperation::Contains) {

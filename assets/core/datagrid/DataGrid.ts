@@ -6,6 +6,7 @@ import {messenger} from "../utils/Messenger";
 import {httpClient} from "../http/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
 import DataGridUtils from "../utils/DataGridUtils";
+import FilterRule from "../common/FilterRule";
 
 export default class DataGrid {
     private container: HTMLElement;
@@ -213,6 +214,14 @@ export default class DataGrid {
                 let options = this.dataGrid.datagrid('options');
                 if (!options.url) {
                     return false;
+                }
+                let defaultFilters = this.options.defaultFilters;
+                let rules = JSON.parse(param.filterRules ?? '[]');
+                if (defaultFilters) {
+                    defaultFilters.forEach((filter: any) => {
+                        rules.push(filter);
+                    });
+                    param.filterRules = JSON.stringify(rules);
                 }
                 let url = options.url + '?' + $.param(param);
                 httpClient.get(url).subscribe(

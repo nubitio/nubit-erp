@@ -27,7 +27,7 @@ readonly class {{module}}Processor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?{{module}}
     {
         if ($operation instanceof DeleteOperationInterface) {
-            if (!$data->{{entityId}}) {
+            if ($data->{{entityId}}) {
                 $this->deleteUseCase->__invoke($data->{{entityId}});
             }
             return null;

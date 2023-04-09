@@ -3,10 +3,11 @@
 namespace App\WebClientPrint;
 
 use App\Base\BaseController;
+use App\Core\Infrastructure\Extension\RemoteEscposImage;
+use App\Core\Infrastructure\Service\LogoProvider;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleGetOneById;
-use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PrintESCPOSController extends BaseController
 {
+    public function __construct(
+        private readonly LogoProvider $logoProvider
+    )
+    {
+        parent::__construct();
+    }
+
     /**
      * @throws \Exception
      */
@@ -33,13 +41,13 @@ class PrintESCPOSController extends BaseController
         $sale = $getOneById($saleId);
         $header = $sale['header'];
         $details = $sale['details'];
-        $logo = EscposImage::load(dirname(__FILE__, 3) . '/public/assets/images/logo.png');
+        $logo = RemoteEscposImage::loadImage($this->logoProvider->getLogo());
 
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
-        if ($_ENV['PRINTER_PRINT_LOGO']) {
+        if ($_ENV['PRINTER_PRINT_LOGO'] == 'true') {
             $printer->graphics($logo);
             $printer->feed();
         }
@@ -95,43 +103,25 @@ class PrintESCPOSController extends BaseController
             $discount = $total * $header['doc_discount_percent'] / 100;
             $discount = number_format($discount, 2, '.', '');
             $printer->text(new SaleItem('Descuento', '-' . $discount));
-            $total = $total - $discount;
         }
 
         $app_option_rc_get = (int)$settingsService->get('app_option_rc');
         $app_option_igv_get = (int)$settingsService->get('app_option_igv');
-        $valor_rc = 0;
-        $igv = $app_option_igv_get / 100;
-        if ($app_option_rc_get >= 1) {
-            $rc = $app_option_rc_get / 100;
-            $divisor = 1 + $igv + $rc;
-            $valor_venta = $total / $divisor;
-            $valor_igv = $valor_venta * $igv;
-            $valor_rc = $valor_venta * $rc;
-        } else {
-            $divisor = 1 + $igv;
-            $valor_venta = $total / $divisor;
-            $valor_igv = $valor_venta * $igv;
-        }
 
-        $str_opg = number_format($valor_venta, 2, '.', '');
-        $str_igv = number_format($valor_igv, 2, '.', '');
-        $str_consumo = number_format($valor_rc, 2, '.', '');
-        $str_total = number_format($total, 2, '.', '');
         $printer->text($divider);
         if ($header['doc_type'] != DocType::NOTA_VENTA->value) {
-            $printer->text(new SaleItem('IMPORTE', $str_total));
-            $printer->text(new SaleItem('OP. GRAVADA', $str_opg));
+            $printer->text(new SaleItem('IMPORTE', $header['doc_sale_amount']));
+            $printer->text(new SaleItem('OP. GRAVADA', $header['doc_taxed_amount']));
             $printer->text(new SaleItem('OP. INAFECTA', '0.00'));
             $printer->text(new SaleItem('OP. EXONERADA', '0.00'));
-            $printer->text(new SaleItem('IGV ' . $app_option_igv_get . '% :', $str_igv));
+            $printer->text(new SaleItem('IGV ' . $app_option_igv_get . '% :', $header['doc_igv_amount']));
             if ($app_option_rc_get >= 1) {
-                $printer->text(new SaleItem('RC' . $app_option_rc_get . '% :', $str_consumo));
+                $printer->text(new SaleItem('RC ' . $app_option_rc_get . '% :', $header['doc_other_charges']));
             }
         }
-        $printer->text(new SaleItem('TOTAL', $str_total));
+        $printer->text(new SaleItem('TOTAL', $header['doc_sale_amount']));
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
-        $parts = explode('.', $str_total);
+        $parts = explode('.', $header['doc_sale_amount']);
         $amount = $formatter->format((int)$parts[0]);
         $strAmount = mb_strtoupper($amount . ' Y ' . $parts[1] . '/100');
 
@@ -140,7 +130,7 @@ class PrintESCPOSController extends BaseController
         $printer->text($divider);
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         if ($header['doc_type'] != DocType::NOTA_VENTA->value) {
-            if ($_ENV['PRINTER_PRINT_QR']) {
+            if ($_ENV['PRINTER_PRINT_QR'] == 'true') {
                 $printer->qrCode($header['doc_qr_data'], Printer::QR_ECLEVEL_L, 8);
             }
             $printer->feed();
@@ -151,7 +141,7 @@ class PrintESCPOSController extends BaseController
             $printer->text($_ENV['EFACT_URL'] . "\n");
         }
         $printer->feed();
-        $printer->text(date('d-m-Y H:i:s') . "\n");
+        $printer->text(date('d/m/Y H:i:s') . "\n");
         $printer->text('** Gracias por su preferencia **' . "\n");
         $printer->feed();
         $printer->cut();
