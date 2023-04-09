@@ -28,7 +28,6 @@ readonly class PositionRepository implements PositionRepositoryInterface
 
     public function getOne(int $id): ?Position
     {
-        /** @var ?PositionEntity $entity */
         $entity = $this->entityManager->find(PositionEntity::class, $id);
 
         if (!$entity) {

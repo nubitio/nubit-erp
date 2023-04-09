@@ -27,10 +27,10 @@ readonly class PositionProcessor implements ApiProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Position
     {
         if ($operation instanceof DeleteOperationInterface) {
-            if (!$data->id) {
-                return null;
+            if ($data->id) {
+                $this->deleteUseCase->__invoke($data->id);
             }
-            return $this->deleteUseCase->__invoke($data->id);
+            return null;
         }
 
         if($data->id) {
