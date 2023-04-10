@@ -2,14 +2,12 @@
 
 namespace App\WebClientPrint;
 
-use Exception;
-
 // Setting WebClientPrint
 WebClientPrint::$licenseOwner = 'Johan Guerreros - 1 WebApp Lic - 1 WebServer Lic';
 WebClientPrint::$licenseKey = 'F16EFE6B2A2876EA3D7243163CA10948583CAA71';
 
 // Set wcpcache folder RELATIVE to WebClientPrint.php file
-// FILE WRITE permission on this folder is required!!!
+// WRITE permission on this folder is required!!!
 WebClientPrint::$wcpCacheFolder = 'wcpcache/';
 
 /**
