@@ -78,7 +78,7 @@ class TenantConnection extends Connection
         return $this->tenantParams;
     }
 
-    public function close()
+    public function close(): void
     {
         $this->isConnected = false;
         $this->_conn = null;

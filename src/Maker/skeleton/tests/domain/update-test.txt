@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Tests\{{module}}\Domain;
+
+use App\{{module}}\Domain\{{module}};
+use App\{{module}}\Domain\{{module}}RepositoryInterface;
+use App\{{module}}\Domain\Update{{module}}UseCase;
+use PHPUnit\Framework\TestCase;
+
+class Update{{module}}UseCaseTest extends TestCase
+{
+    public function testUpdate{{module}}(): void
+    {
+        // Set up the mock repository
+        $mockRepository = $this->createMock({{module}}RepositoryInterface::class);
+
+        // Create a position to update
+        $position = new {{module}}();
+
+        // Set up the expected return value of the mock repository
+        $mockRepository->expects($this->once())
+            ->method('update')
+            ->with($position)
+            ->willReturn($position);
+
+        // Instantiate the use case and call the invoke method
+        $useCase = new Update{{module}}UseCase($mockRepository);
+        $updated{{module}} = $useCase($position);
+
+        // Assert that the updated position returned by the use case is the same as the original position
+        $this->assertSame($position, $updated{{module}});
+    }
+}
