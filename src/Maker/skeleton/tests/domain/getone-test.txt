@@ -1,0 +1,50 @@
+<?php
+
+namespace App\Tests\{{module}}\Domain;
+
+use App\{{module}}\Domain\GetOne{{module}}UseCase;
+use App\{{module}}\Domain\{{module}};
+use App\{{module}}\Domain\{{module}}RepositoryInterface;
+use PHPUnit\Framework\TestCase;
+
+class GetOne{{module}}UseCaseTest extends TestCase
+{
+    public function testGetOne{{module}}(): void
+    {
+        // Create a mock repository
+        $mockRepository = $this->createMock({{module}}RepositoryInterface::class);
+
+        // Set up the expected return value of the mock repository
+        $expected{{module}} = new {{module}}();
+        $mockRepository->expects($this->once())
+            ->method('getOne')
+            ->with(1)
+            ->willReturn($expected{{module}});
+
+        // Instantiate the use case and call the invoke method
+        $useCase = new GetOne{{module}}UseCase($mockRepository);
+        $position = $useCase(1);
+
+        // Assert that the position returned by the use case matches the expected position
+        $this->assertEquals($expected{{module}}, $position);
+    }
+
+    public function testGetOne{{module}}NotFound(): void
+    {
+        // Create a mock repository
+        $mockRepository = $this->createMock({{module}}RepositoryInterface::class);
+
+        // Set up the mock repository to return null when getOne is called
+        $mockRepository->expects($this->once())
+            ->method('getOne')
+            ->with(1)
+            ->willReturn(null);
+
+        // Instantiate the use case and call the invoke method
+        $useCase = new GetOne{{module}}UseCase($mockRepository);
+        $position = $useCase(1);
+
+        // Assert that the position returned by the use case is null
+        $this->assertNull($position);
+    }
+}
