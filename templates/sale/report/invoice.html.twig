@@ -67,8 +67,14 @@
                 Cliente: {{ sale.header.client_name }}<br>
                 {% if sale.header.doc_type != '00' %}
                     RUC: {{ sale.header.client_doc_number }}<br>
+                {% elseif sale.header.company_id == '20369393546' %}
+                    DNI: {{ sale.header.client_doc_number }}<br>
+                    Grado: {{ sale.header.client_address }}<br>
+                    CIP: {{ sale.header.client_phone }}<br>
+                    Arma: {{ sale.header.client_email }}<br>
+                {%  else %}
+                    Dirección: {{ sale.header.client_address }}<br>
                 {% endif %}
-                Dirección: {{ sale.header.client_address }}<br>
             </td>
         </tr>
     </table>
