@@ -3,6 +3,7 @@
 namespace App\Admin\Tenant;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,11 +13,12 @@ class TenantManager extends AbstractController
     private string $configPath;
     private string $configContent;
 
-    public function __construct()
+    public function __construct(
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir
+    )
     {
-        /** @var string $rootDir */
-        $rootDir = $this->getParameter('kernel.project_dir');
-        $this->configPath = $rootDir . '/config/tenants.json';
+        $this->configPath = $this->projectDir . '/config/tenants.json';
 
         if (!file_exists($this->configPath)) {
             file_put_contents($this->configPath, '[]');
@@ -48,8 +50,8 @@ class TenantManager extends AbstractController
         $data = json_decode($this->configContent, true);
 
         $data[] = [
-            'id'         => count($data) + 1,
-            'name'       => $request->get('name'),
+            'id' => count($data) + 1,
+            'name' => $request->get('name'),
             'connection' => $request->get('connection')
         ];
 
