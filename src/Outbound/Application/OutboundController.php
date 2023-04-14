@@ -3,13 +3,13 @@
 namespace App\Outbound\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
 use App\Outbound\Domain\Outbound;
 use App\Outbound\Domain\OutboundCreateUseCase;
 use App\Outbound\Domain\OutboundDeleteUseCase;
 use App\Outbound\Domain\OutboundGetAllUseCase;
 use App\Outbound\Domain\OutboundUpdateUseCase;
 use App\SaleDetail\Domain\SaleDetail;
-use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,16 +29,16 @@ class OutboundController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'numero',
-                'op' => 'isnull',
+                'op'    => 'isnull',
             ],
             [
                 'field' => 'tipo_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => 2,
             ],
             [
                 'field' => 'local_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
@@ -53,6 +53,19 @@ class OutboundController extends BaseController
          * @var Outbound $outbound
          */
         $outbound = $this->serializer->deserialize(json_encode($request->request->all()), Outbound::class, 'json');
+        /**
+         * @var array<int, mixed> $detail
+         */
+        $detail = $request->get('details');
+        $detailItems = [];
+        foreach ($detail as $item) {
+            /**
+             * @var SaleDetail $saleDetail
+             */
+            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
+            $detailItems[] = $saleDetail;
+        }
+        $outbound->items = $detailItems;
         $createUseCase($outbound);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
