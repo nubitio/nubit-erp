@@ -27,7 +27,7 @@ RUN apt -y install php8.2 mcrypt php8.2-xdebug php8.2-mbstring php8.2-xml php8.2
 RUN apt install -y libapache2-mod-php8.2
 
 # configure php
-RUN sed -i -e '$a xdebug.mode=develop,debug,coverage' /etc/php/8.2/mods-available/xdebug.ini
+RUN sed -i -e '$a xdebug.mode=debug,coverage' /etc/php/8.2/mods-available/xdebug.ini
 
 # install wkhtmltopdf
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
