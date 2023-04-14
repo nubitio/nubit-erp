@@ -3,13 +3,13 @@
 namespace App\Inbound\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
 use App\Inbound\Domain\Inbound;
 use App\Inbound\Domain\InboundCreateUseCase;
 use App\Inbound\Domain\InboundDeleteUseCase;
 use App\Inbound\Domain\InboundGetAllUseCase;
 use App\Inbound\Domain\InboundUpdateUseCase;
 use App\SaleDetail\Domain\SaleDetail;
-use App\Core\Domain\Util\Constants;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,12 +29,12 @@ class InboundController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'tipo_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => 1,
             ],
             [
                 'field' => 'local_id',
-                'op' => 'equal',
+                'op'    => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
@@ -49,6 +49,19 @@ class InboundController extends BaseController
          * @var Inbound $inbound
          */
         $inbound = $this->serializer->deserialize(json_encode($request->request->all()), Inbound::class, 'json');
+        /**
+         * @var array<int, mixed> $detail
+         */
+        $detail = $request->get('details');
+        $detailItems = [];
+        foreach ($detail as $item) {
+            /**
+             * @var SaleDetail $saleDetail
+             */
+            $saleDetail = $this->serializer->deserialize(json_encode($item), SaleDetail::class, 'json');
+            $detailItems[] = $saleDetail;
+        }
+        $inbound->items = $detailItems;
         $createUseCase($inbound);
 
         return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
