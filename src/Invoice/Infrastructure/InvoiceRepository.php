@@ -5,30 +5,29 @@ namespace App\Invoice\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
-class InvoiceRepository implements InvoiceRepositoryInterface
+readonly class InvoiceRepository implements InvoiceRepositoryInterface
 {
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private Connection             $connection,
+        private DataLoader             $dataLoader,
+    )
     {
-        $this->connection = $connection;
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
     /** @inheritdoc */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('vw_comprobante', 'created_at', 'desc', filter: $filter);
+        return $this->dataLoader->load($options);
     }
 
     /**

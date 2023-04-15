@@ -18,7 +18,7 @@ export default class Invoice {
     private saleService: SaleService = new SaleService();
     private invoiceService: InvoiceService = new InvoiceService();
 
-    static readonly ROUTES = {}
+    static readonly API_URL = 'api/invoices';
 
     static readonly EVENTS = {
         ADD: 'invoice:add',
@@ -148,8 +148,8 @@ export default class Invoice {
         ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Invoice',
-            url: 'invoice/get',
-            routes: Invoice.ROUTES,
+            url: Invoice.API_URL,
+            method: 'get',
             events: Invoice.EVENTS,
             toolbar: toolbar,
         });
@@ -161,7 +161,7 @@ export default class Invoice {
         });
 
         this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Invoice.ROUTES,
+            url: Invoice.API_URL,
             events: Invoice.EVENTS,
         });
     }

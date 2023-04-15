@@ -7,13 +7,8 @@ use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
-use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceConsultUseCase;
-use App\Invoice\Domain\InvoiceCreateUseCase;
-use App\Invoice\Domain\InvoiceDeleteUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
-use App\Invoice\Domain\InvoiceGetAllUseCase;
-use App\Invoice\Domain\InvoiceUpdateUseCase;
 use App\Sale\Domain\SaleGetOneById;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,51 +22,13 @@ class InvoiceController extends BaseController
         private readonly FileManager     $fileManager
     )
     {
+        parent::__construct();
     }
 
     #[Route('/invoice', name: 'invoice_index', methods: ['GET'])]
     public function index(): Response
     {
         return $this->render('invoice/index.html.twig');
-    }
-
-    #[Route('/invoice/get', name: 'invoice_list', methods: ['POST'])]
-    public function getAll(InvoiceGetAllUseCase $getAllUseCase): Response
-    {
-        return $this->json($getAllUseCase());
-    }
-
-    #[Route('/invoice/add', name: 'invoice_create', methods: ['POST'])]
-    public function add(Request $request, InvoiceCreateUseCase $createUseCase): Response
-    {
-        /**
-         * @var Invoice $invoice
-         */
-        $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
-        $createUseCase($invoice);
-
-        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
-    }
-
-    #[Route('/invoice/edit/{id}', name: 'invoice_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, InvoiceUpdateUseCase $updateUseCase, string $id): Response
-    {
-        $request->request->add(['comprobante_id' => $id]);
-        /**
-         * @var Invoice $invoice
-         */
-        $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
-        $updateUseCase($invoice);
-
-        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
-    }
-
-    #[Route('/invoice/delete/{id}', name: 'invoice_delete', methods: ['DELETE', 'POST'])]
-    public function delete(InvoiceDeleteUseCase $deleteUseCase, string $id): Response
-    {
-        $deleteUseCase($id);
-
-        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
     }
 
     #[Route('/invoice/{id}', name: 'invoice_show', methods: ['GET'])]
@@ -87,18 +44,18 @@ class InvoiceController extends BaseController
 
         return $this->render('invoice/show.html.twig', [
             'company_name' => $invoice['header']['company_name'],
-            'type'         => $type,
-            'series'       => $invoice['header']['doc_series'],
-            'number'       => $invoice['header']['doc_number'],
-            'date'         => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
-            'total'        => $invoice['header']['doc_sale_amount'],
-            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
-            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
-            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
+            'type' => $type,
+            'series' => $invoice['header']['doc_series'],
+            'number' => $invoice['header']['doc_number'],
+            'date' => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
+            'total' => $invoice['header']['doc_sale_amount'],
+            'pdf' => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
-    #[Route('/invoice/{id}/consult', name: 'invoice_pdf', methods: ['GET'])]
+    #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
     public function consult(InvoiceConsultUseCase $consultUseCase, string $id): Response
     {
         $consultUseCase($id);
