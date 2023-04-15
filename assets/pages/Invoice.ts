@@ -8,6 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
 import {InvoiceService} from "../services/invoice.service";
+import NumberUtils from "../core/utils/NumberUtils";
 
 export default class Invoice {
     private readonly container: string;
@@ -48,21 +49,25 @@ export default class Invoice {
             .type(FormType.DATE)
             .name('fecha')
             .label('Fecha')
+            .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
             .name('cliente_id')
             .label('DNI/RUC')
+            .formatter((value: any, row: any) => row['cliente']?.['ruc'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
-            .name('cliente')
+            .name('cliente_name')
             .label('Cliente')
+            .formatter((value: any, row: any) => row['cliente']?.['razon_social'])
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
-            .name('tipo_comprobante')
+            .name('tipo_comprobante_id')
             .label('Tipo')
+            .formatter((value: any) => value === '01' ? 'Factura' : 'Boleta')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.TEXT)
@@ -79,6 +84,7 @@ export default class Invoice {
             .name('total')
             .label('Total')
             .align('right')
+            .formatter((value: number) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FormType.NONE)
