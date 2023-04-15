@@ -2,7 +2,7 @@
 
 namespace App\Invoice\Domain;
 
-class InvoiceDeleteUseCase
+class DeleteInvoiceUseCase
 {
     private InvoiceRepositoryInterface $repository;
 

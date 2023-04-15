@@ -2,7 +2,7 @@
 
 namespace App\Invoice\Domain;
 
-class InvoiceUpdateUseCase
+class GetOneInvoiceUseCase
 {
     private InvoiceRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class InvoiceUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Invoice $invoice): void
+    public function __invoke(string $id): ?Invoice
     {
-        $this->repository->update($invoice);
+        return $this->repository->getOne($id);
     }
 }
