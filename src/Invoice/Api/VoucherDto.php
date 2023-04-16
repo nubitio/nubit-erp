@@ -14,7 +14,8 @@ use App\Invoice\Domain\Voucher;
             uriTemplate: '/invoices/{sale_id}/voucher',
             uriVariables: [
                 'sale_id' => 'sale_id'
-            ]
+            ],
+            output: Voucher::class
         )
     ],
     provider: VoucherProvider::class,

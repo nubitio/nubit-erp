@@ -11,7 +11,7 @@ class GetOneVoucherUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): ?Voucher
+    public function __invoke(string $id): Voucher
     {
         return $this->repository->getVoucher($id);
     }

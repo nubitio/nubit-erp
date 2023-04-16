@@ -8,28 +8,27 @@ use Doctrine\Common\Collections\Collection;
 class DataMapper
 {
     /**
-     * @template I of object
-     * @template O of object
+     * @template T of object
      *
-     * @param I $input
-     * @param O|class-string<O> $output
+     * @param mixed $input
+     * @param T|class-string<T> $output
      *
-     * @return O
-     * @phpstan-return O
+     * @return T
+     * @phpstan-return T
      */
-    public static function map($input, mixed $output)
+    public static function map(mixed $input, mixed $output): object
     {
         if (is_string($output)) {
             $output = new $output();
         }
 
-        foreach (get_object_vars($input) as $key => $value) {
+        foreach (get_object_vars((object)$input) as $key => $value) {
             if ($value === null) {
                 continue;
             }
 
             try {
-                $reflectionProperty = new \ReflectionProperty(get_class($output), $key);
+                $reflectionProperty = new \ReflectionProperty(get_class($output), strval($key));
                 $ignore = $reflectionProperty->getAttributes(Ignore::class)[0] ?? null;
                 if (null !== $ignore) {
                     continue;
@@ -38,20 +37,20 @@ class DataMapper
                 continue;
             }
 
-            if (property_exists($output, $key)) {
+            if (property_exists($output, strval($key))) {
                 if (is_object($value) && !($value instanceof \DateTimeInterface)) {
                     if ($value instanceof Collection) {
                         $output->$key = [];
                         /** @var object $item */
                         foreach ($value as $item) {
-                            $type = ReflectionUtil::getPropertyType($output, $key);
+                            $type = ReflectionUtil::getPropertyType($output, strval($key));
                             if ($type === null) {
                                 throw new \RuntimeException('Type not found');
                             }
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
-                        $type = ReflectionUtil::getPropertyType($output, $key);
+                        $type = ReflectionUtil::getPropertyType($output, strval($key));
                         if ($type === null) {
                             throw new \RuntimeException('Type not found');
                         }
@@ -59,7 +58,7 @@ class DataMapper
                     }
                 } else {
                     if (is_array($value)) {
-                        $type = ReflectionUtil::getPropertyType($output, $key);
+                        $type = ReflectionUtil::getPropertyType($output, strval($key));
                         if ($type === null) {
                             throw new \RuntimeException('Type not found');
                         }

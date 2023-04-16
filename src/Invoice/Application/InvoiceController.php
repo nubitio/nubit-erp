@@ -7,9 +7,9 @@ use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
-use App\Sale\Domain\SaleGetOneById;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -32,26 +32,26 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}', name: 'invoice_show', methods: ['GET'])]
-    public function show(SaleGetOneById $getOneById, string $id): Response
+    public function show(GetOneVoucherUseCase $getOneById, string $id): Response
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $type = match ($invoice['header']['doc_type']) {
+        $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',
             '03' => 'BOLETA',
             default => '',
         };
 
         return $this->render('invoice/show.html.twig', [
-            'company_name' => $invoice['header']['company_name'],
-            'type' => $type,
-            'series' => $invoice['header']['doc_series'],
-            'number' => $invoice['header']['doc_number'],
-            'date' => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
-            'total' => $invoice['header']['doc_sale_amount'],
-            'pdf' => $this->generateUrl('invoice_pdf', ['id' => $id]),
-            'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
-            'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
+            'company_name' => $voucher->company_name,
+            'type'         => $type,
+            'series'       => $voucher->voucher_series,
+            'number'       => $voucher->voucher_number,
+            'date'         => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
+            'total'        => $voucher->voucher_sale_amount,
+            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
@@ -64,12 +64,12 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}/xml', name: 'invoice_xml', methods: ['GET'])]
-    public function xml(SaleGetOneById $getOneById, string $id): StreamedResponse
+    public function xml(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
 
         $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
 
@@ -84,12 +84,12 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
-    public function cdr(SaleGetOneById $getOneById, string $id): StreamedResponse
+    public function cdr(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
 
         $cdrPath = $this->settings->get(Constants::COMPANY_ID) . '/' . 'R-' . $docFullName . '.zip';
 

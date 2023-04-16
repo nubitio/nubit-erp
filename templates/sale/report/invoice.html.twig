@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css"
           integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 
-    <title>{{ sale.header.doc_series }} - {{ sale.header.doc_number }}</title>
+    <title>{{ voucher.voucher_series }} - {{ voucher.voucher_number }}</title>
     <style>
         .table {
             font-size: 12px;
@@ -38,43 +38,44 @@
         </tr>
         <tr class="row-border">
             <td class="text-center">
-                {{ sale.header.company_name }}<br>
-                RUC: {{ sale.header.company_id }}<br>
-                {{ sale.header.company_address }}<br>
-                {{ sale.header.company_phone }}<br>
+                <b>{{ voucher.company_name }}</b><br>
+                RUC: {{ voucher.company_id }}<br>
+                {{ voucher.company_address }}<br>
+                Tel.: {{ voucher.company_phone }}<br>
             </td>
         </tr>
         <tr class="row-bt row-bb">
             <td class="text-center">
-                {% if sale.header.doc_type == '01' %}
+                {% if voucher.voucher_type == '01' %}
                     <h5>FACTURA ELECTRONICA</h5>
-                {% elseif sale.header.doc_type == '03' %}
+                {% elseif voucher.voucher_type == '03' %}
                     <h5>BOLETA ELECTRONICA</h5>
                 {% else %}
                     <h5>NOTA DE VENTA</h5>
                 {% endif %}
-                <strong>{{ sale.header.doc_series }} - {{ sale.header.doc_number }}</strong>
+                <strong>{{ voucher.voucher_series }} - {{ voucher.voucher_number }}</strong>
             </td>
         </tr>
         <tr class="row-bb">
             <td>
-                Fecha: {{ sale.header.doc_date|date('d/m/Y') }}<br>
+                Fecha: {{ voucher.voucher_date|date('d/m/Y') }}<br>
                 Moneda: Soles
             </td>
         </tr>
         <tr>
             <td>
-                Cliente: {{ sale.header.client_name }}<br>
-                {% if sale.header.doc_type != '00' %}
-                    RUC: {{ sale.header.client_doc_number }}<br>
-                {% elseif sale.header.company_id == '20369393546' %}
-                    DNI: {{ sale.header.client_doc_number }}<br>
-                    Grado: {{ sale.header.client_address }}<br>
-                    CIP: {{ sale.header.client_phone }}<br>
-                    Arma: {{ sale.header.client_email }}<br>
-                {%  else %}
-                    Dirección: {{ sale.header.client_address }}<br>
+                CLIENTE: {{ voucher.customer_name }}<br>
+                {% if voucher.voucher_type != '00' %}
+                    RUC: {{ voucher.customer_doc_number }}<br>
+                {% elseif voucher.company_id == '20369393546' %}
+                    DNI: {{ voucher.customer_doc_number }}<br>
+                    Grado: {{ voucher.customer_address }}<br>
+                    CIP: {{ voucher.customer_phone }}<br>
+                    Arma: {{ voucher.customer_email }}<br>
+                {% else %}
+                    DIRECCION: {{ voucher.customer_address }}<br>
                 {% endif %}
+                FORMA DE PAGO: CONTADO
             </td>
         </tr>
     </table>
@@ -87,51 +88,54 @@
             </tr>
             </thead>
             <tbody>
-            {% for item in sale.details %}
+            {% for item in voucher.voucher_items %}
                 <tr>
-                    <td class="left">{{ item['quantity']|round }} {{ item['product'] }}</td>
-                    <td class="text-right text-end">{{ item['total'] }}</td>
+                    <td class="left">{{ item.quantity|round }} {{ item.product_name }}</td>
+                    <td class="text-right text-end">{{ item.total|number_format(2, '.', '') }}</td>
                 </tr>
             {% endfor %}
             <tr class="row-bt">
                 <td></td>
                 <td></td>
             </tr>
-            {% if sale.header.doc_discount_percent > 0 %}
+            {% if voucher.voucher_discount_percentage > 0 %}
                 <tr>
-                    <td class="left">Dscto.</td>
-                    <td class="text-right text-end">-{{ sale.header.doc_discount_amount }}</td>
+                    <td class="left">DTO.:</td>
+                    <td class="text-right text-end">
+                        -{{ voucher.voucher_discount_amount|number_format(2, '.', '') }}</td>
                 </tr>
             {% endif %}
-            {% if sale.header.doc_type != '00' %}
+            {% if voucher.voucher_type != '00' %}
                 <tr>
-                    <td class="left">OP. Gravada.</td>
-                    <td class="text-right text-end">{{ sale.header.doc_taxed_amount }}</td>
+                    <td class="left">OP. GRAVADA:</td>
+                    <td class="text-right text-end">{{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td>
                 </tr>
                 <tr>
-                    <td class="left">OP. Inafecta.</td>
+                    <td class="left">OP. INAFECTA:</td>
                     <td class="text-right text-end">0.00</td>
                 </tr>
                 <tr>
-                    <td class="left">OP. Exonerada.</td>
+                    <td class="left">OP. EXONERADA:</td>
                     <td class="text-right text-end">0.00</td>
                 </tr>
                 <tr>
-                    <td class="left">IGV.</td>
-                    <td class="text-right text-end">{{ sale.header.doc_total_taxes }}</td>
+                    <td class="left">IGV ({{ voucher.voucher_tax_percentage }}%):</td>
+                    <td class="text-right text-end">{{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td>
                 </tr>
-                {% if sale.header.doc_other_charges_percent > 0 %}
+                {% if voucher.voucher_consumption_surcharge_amount > 0 %}
                     <tr>
-                        <td class="left">RC.</td>
-                        <td class="text-right text-end">{{ sale.header.doc_other_charges }}</td>
+                        <td class="left">RC ({{ voucher.voucher_consumption_surcharge_percentage }}%):</td>
+                        <td class="text-right text-end">
+                            {{ voucher.voucher_consumption_surcharge_amount|number_format(2, '.', '') }}
+                        </td>
                     </tr>
                 {% endif %}
             {% endif %}
             <tr>
                 <td class="left">
-                    <strong>Total</strong></td>
+                    <strong>TOTAL:</strong></td>
                 <td class="text-right text-end">
-                    <strong>{{ sale.header.doc_sale_amount }}</strong>
+                    <strong>{{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</strong>
                 </td>
             </tr>
             </tbody>
@@ -141,16 +145,17 @@
         <tbody>
         <tr class="row-bt row-bb">
             <td class="text-center">
-                {% set total = sale.header.doc_sale_amount|split('.') %}
-                <strong>SON: {{ total[0]|format_number(style='spellout', locale='es')|upper }} Y {{ total[1] }}
-                    /100</strong>
+                {% set total = voucher.voucher_sale_amount|number_format(2, '.', '')|split('.') %}
+                <strong>
+                    Son: {{ total[0]|format_number(style='spellout', locale='es')|upper }} Y {{ total[1] }}/100
+                </strong>
             </td>
         </tr>
-        {% if sale.header.doc_type != '00' %}
+        {% if voucher.voucher_type != '00' %}
             <tr>
                 <td class="text-center">
                     <img src="{{ qr|default('') }}" alt="QR" style="position: relative; max-height: 120px"><br>
-                    <p>Resumen: {{ sale.header.doc_digest }}</p>
+                    <p>Resumen: {{ voucher.voucher_hash }}</p>
                     <p>Representacion impresa del comprobante electronico, consulte en https://fe.efact.com/</p>
                 </td>
             </tr>
