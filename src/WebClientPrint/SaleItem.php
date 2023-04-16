@@ -5,9 +5,9 @@ namespace App\WebClientPrint;
 class SaleItem
 {
     public function __construct(
-        private string          $name = '',
-        private readonly string $price = '',
-        private readonly bool   $dollarSign = false
+        private string         $name = '',
+        private ?string        $price = '',
+        private readonly ?bool $dollarSign = false
     )
     {
     }
@@ -23,6 +23,9 @@ class SaleItem
         $this->name = strlen($this->name) > $leftCols ? substr($this->name, 0, $leftCols) : $this->name;
         $left = str_pad($this->name, $leftCols);
         $sign = ($this->dollarSign ? 'S/ ' : '');
+        if (is_numeric($this->price)) {
+            $this->price = number_format($this->price, 2, '.', '');
+        }
         $right = str_pad($sign . $this->price, $rightCols, ' ', STR_PAD_LEFT);
 
         return "$left$right\n";

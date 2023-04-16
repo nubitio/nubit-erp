@@ -7,12 +7,15 @@ use App\Billing\Domain\VoidedCreateUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
+use League\Flysystem\FilesystemException;
 
 readonly class SaleVoidUseCase
 {
     public function __construct(
         private SaleRepositoryInterface    $saleRepository,
+        private GetOneVoucherUseCase       $getOneVoucherUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
         private VoidedCreateUseCase        $voidedCreateUseCase,
         private SummaryCreateUseCase       $summaryCreateUseCase,
@@ -24,10 +27,11 @@ readonly class SaleVoidUseCase
 
     /**
      * @throws \Exception
+     * @throws FilesystemException
      */
     public function __invoke(string $saleId, string $reason, int $userId): void
     {
-        $receipt = $this->saleRepository->getOneById($saleId);
+        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $sale = $this->saleRepository->getOne($saleId);
 
         if ($sale->estado === 2) {
@@ -38,9 +42,9 @@ readonly class SaleVoidUseCase
             throw SaleException::tooOld();
         }
 
-        if ($receipt['header']['doc_type'] === DocType::FACTURA->value) {
+        if ($voucher->voucher_type === DocType::FACTURA->value) {
             $this->voidInvoice($saleId, $reason);
-        } elseif ($receipt['header']['doc_type'] === DocType::BOLETA->value) {
+        } elseif ($voucher->voucher_type === DocType::BOLETA->value) {
             $this->voidReceipt($saleId);
         }
 
@@ -54,6 +58,7 @@ readonly class SaleVoidUseCase
 
     /**
      * @throws \Exception
+     * @throws FilesystemException
      */
     private function voidInvoice(string $saleId, string $reason): void
     {
@@ -73,6 +78,7 @@ readonly class SaleVoidUseCase
 
     /**
      * @throws \Exception
+     * @throws FilesystemException
      */
     private function voidReceipt(string $saleId): void
     {

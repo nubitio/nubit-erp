@@ -10,7 +10,9 @@ use App\Invoice\Domain\Invoice;
 #[ApiResource(
     shortName: 'Invoice',
     operations: [
-        new GetCollection()
+        new GetCollection(
+            output: Invoice::class,
+        )
     ],
     provider: InvoiceProvider::class,
     processor: InvoiceProcessor::class
