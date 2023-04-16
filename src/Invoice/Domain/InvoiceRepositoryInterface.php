@@ -18,9 +18,11 @@ interface InvoiceRepositoryInterface
 
     public function create(Sale $sale): void;
 
-    public function insert(Invoice $invoice): void;
+    public function insert(Invoice $invoice): Invoice;
 
-    public function update(Invoice $invoice): void;
+    public function update(Invoice $invoice): Invoice;
 
     public function delete(string $id): void;
+
+    public function getVoucher(string $saleId): Voucher;
 }
