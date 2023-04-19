@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
@@ -40,79 +40,79 @@ export default class Invoice {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('comprobante_id')
             .label('Comprobante id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('cliente_id')
             .label('DNI/RUC')
             .formatter((value: any, row: any) => row['cliente']?.['ruc'])
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('cliente_name')
             .label('Cliente')
             .formatter((value: any, row: any) => row['cliente']?.['razon_social'])
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('tipo_comprobante_id')
             .label('Tipo')
             .formatter((value: any) => value === '01' ? 'Factura' : 'Boleta')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('serie')
             .label('Serie')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('numero')
             .label('Numero')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('total')
             .label('Total')
             .align('right')
             .formatter((value: number) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('nota')
             .label('NC')
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Anulado')
             .formatter(SharedUtils.voidedFormatter)
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('ticket_baja')
             .label('Ticket baja')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('envio_sunat')
             .label('Envio sunat')
             .formatter(SharedUtils.billStatusFormatter)
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('mensaje_sunat')
             .label('Mensaje sunat')
             .build());

@@ -1,6 +1,6 @@
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
-import {FormType} from "../core/form/FormType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
 import {bus} from "../core/event/EventBus";
@@ -27,7 +27,7 @@ export default class SaleConsult {
     init() {
         this.fields = [
             new FieldBuilder()
-                .type(FormType.ENUM)
+                .type(FieldType.ENUM)
                 .name('report')
                 .label('Reporte')
                 .data([
@@ -41,14 +41,14 @@ export default class SaleConsult {
                 .required(true)
                 .build(),
             new FieldBuilder()
-                .type(FormType.DATE)
+                .type(FieldType.DATE)
                 .name('date_from')
                 .label('Desde')
                 .defaultValue('Today')
                 .required(true)
                 .build(),
             new FieldBuilder()
-                .type(FormType.DATE)
+                .type(FieldType.DATE)
                 .name('date_to')
                 .label('Hasta')
                 .defaultValue('Today')

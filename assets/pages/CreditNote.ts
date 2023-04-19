@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class CreditNote {
@@ -38,13 +38,13 @@ export default class CreditNote {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('nota_id')
             .label('Nota id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('movimiento_id')
             .label('Comprobante')
             .visible(false)
@@ -55,18 +55,18 @@ export default class CreditNote {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('tipo_id')
             .label('Tipo')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SELECT)
+            .type(FieldType.SELECT)
             .name('codigo_motivo')
             .label('Codigo motivo')
             .data(
@@ -105,35 +105,35 @@ export default class CreditNote {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('descripcion_motivo')
             .label('Descripcion motivo')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('serie')
             .label('Serie')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('correlativo')
             .label('Numero')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('doc_afectado')
             .label('Doc. afectado')
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('envio_sunat')
             .label('Envio sunat')
             .align('center')
             .formatter(SharedUtils.billStatusFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('mensaje_sunat')
             .label('Mensaje sunat')
             .build());

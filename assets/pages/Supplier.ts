@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {bus} from "../core/event/EventBus";
@@ -38,37 +38,37 @@ export default class Supplier {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('proveedor_id')
             .label('Proveedor id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('ruc')
             .label('Ruc')
             .validators(['length[11, 11]'])
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('razon_social')
             .label('Proveedor')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('domicilio_fiscal')
             .label('Dirección')
             .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('telefono')
             .label('Telefono')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Activo')
             .formatter(SharedUtils.booleanFormatter)

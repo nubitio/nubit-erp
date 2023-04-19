@@ -4,6 +4,7 @@ namespace App\Tests\Position\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Department\Domain\Department;
 use App\Position\Domain\GetAllPositionUseCase;
 use App\Position\Domain\Position;
 use App\Position\Domain\PositionRepositoryInterface;
@@ -17,11 +18,12 @@ class GetAllPositionUseCaseTest extends TestCase
         // Mock the repository
         $mockRepository = $this->createMock(PositionRepositoryInterface::class);
 
+        $department = new Department(1);
         // Set up the expected return value of the mock repository
         $expectedPositions = [
-            new Position(1, 'Position 1', 'Description 1'),
-            new Position(2, 'Position 2', 'Description 2'),
-            new Position(3, 'Position 3', 'Description 3'),
+            new Position(1, $department, 'Position 1', 'Description 1'),
+            new Position(2, $department, 'Position 2', 'Description 2'),
+            new Position(3, $department, 'Position 3', 'Description 3'),
         ];
         $mockPaginator = $this->createMock(PaginatorInterface::class);
         $mockPaginator->expects($this->once())

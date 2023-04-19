@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class VoucherType {
@@ -33,27 +33,27 @@ export default class VoucherType {
     init() {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('id')
             .label('Id')
             .required(true)
             .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('codigo')
             .label('Codigo')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('descripcion')
             .label('Descripcion')
             .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Activo')
             .formatter(SharedUtils.booleanFormatter)

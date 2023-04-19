@@ -1,6 +1,6 @@
-import {FormType} from "./FormType";
+import {FieldType} from "../field/FieldType";
 import {SharedUtils} from "../utils/SharedUtils";
-import {Field} from "./Field";
+import {Field} from "../field/Field";
 import {DateUtils} from "../utils/DateUtils";
 import {bus} from "../event/EventBus";
 import {httpClient} from "../http/HttpClient";
@@ -154,7 +154,7 @@ export default class Form {
             let tableRow = document.createElement('tr');
 
             this.detailFields.forEach(field => {
-                if (field.type === FormType.NONE) {
+                if (field.type === FieldType.NONE) {
                     return;
                 }
                 let tableHeader = document.createElement('th');
@@ -222,7 +222,7 @@ export default class Form {
 
     private buildFields(container: HTMLElement, fields: Field[], containerType = 'div', rowIndex: number | null = null) {
         fields.forEach(field => {
-            if (field.type === FormType.NONE) {
+            if (field.type === FieldType.NONE) {
                 if (field.isIdentity && this.options.url) {
                     let input: HTMLInputElement = document.createElement('input');
                     input.setAttribute('type', 'hidden');
@@ -238,7 +238,7 @@ export default class Form {
             }
 
             let input: HTMLElement;
-            if (field.type !== FormType.SUBMIT) {
+            if (field.type !== FieldType.SUBMIT) {
                 input = document.createElement('input');
                 if (containerType === 'td') {
                     if (rowIndex == null) {
@@ -304,40 +304,40 @@ export default class Form {
     buildFormFields(fields: Field[]) {
         fields.forEach(field => {
             switch (field.type) {
-                case FormType.FILE:
+                case FieldType.FILE:
                     this.buildFileInput(field);
                     break;
-                case FormType.TEXT:
+                case FieldType.TEXT:
                     this.buildTextInput(field);
                     break;
-                case FormType.PASSWORD:
+                case FieldType.PASSWORD:
                     this.buildPasswordInput(field);
                     break;
-                case FormType.TEXTAREA:
+                case FieldType.TEXTAREA:
                     this.buildTextAreaInput(field);
                     break;
-                case FormType.DATE:
+                case FieldType.DATE:
                     this.buildDateInput(field);
                     break;
-                case FormType.NUMBER:
+                case FieldType.NUMBER:
                     this.buildNumberInput(field);
                     break;
-                case FormType.CURRENCY:
+                case FieldType.CURRENCY:
                     this.buildCurrencyInput(field);
                     break;
-                case FormType.SELECT:
+                case FieldType.SELECT:
                     this.buildSelectInput(field);
                     break;
-                case FormType.ENUM:
+                case FieldType.ENUM:
                     this.buildEnumInput(field);
                     break;
-                case FormType.ENTITY:
+                case FieldType.ENTITY:
                     this.buildEntityInput(field);
                     break;
-                case FormType.SWITCH:
+                case FieldType.SWITCH:
                     this.buildSwitchInput(field);
                     break;
-                case FormType.SUBMIT:
+                case FieldType.SUBMIT:
                     this.buildSubmitButton(field);
                     break;
                 default:
@@ -686,16 +686,16 @@ export default class Form {
                 return;
             }
             switch (field.type) {
-                case FormType.TEXT:
+                case FieldType.TEXT:
                     this.getField(field.name).textbox('setValue', field.defaultValue);
                     break;
-                case FormType.DATE:
+                case FieldType.DATE:
                     this.getField(field.name).datebox('setValue', field.defaultValue);
                     break;
-                case FormType.ENTITY:
+                case FieldType.ENTITY:
                     this.getField(field.name).combobox('select', field.defaultValue);
                     break;
-                case FormType.SWITCH:
+                case FieldType.SWITCH:
                     this.getField(field.name).switchbutton('check');
                     break;
             }
@@ -704,7 +704,7 @@ export default class Form {
 
     edit(route = null, row: any) {
         this.fields.forEach(field => {
-            if (field.type === FormType.PASSWORD) {
+            if (field.type === FieldType.PASSWORD) {
                 row[field.name] = '';
             }
         });
@@ -765,12 +765,12 @@ export default class Form {
         }
         let value: any = item.value;
         switch (field?.type) {
-            case FormType.NUMBER:
-            case FormType.CURRENCY:
+            case FieldType.NUMBER:
+            case FieldType.CURRENCY:
                 value = Number(value);
                 break;
-            case FormType.FILE:
-            case FormType.ENTITY:
+            case FieldType.FILE:
+            case FieldType.ENTITY:
                 let id = field.valueField || 'id';
                 if (value === '') {
                     value = null;
@@ -782,18 +782,18 @@ export default class Form {
                     value = {[id]: value};
                 }
                 break;
-            case FormType.ENUM:
+            case FieldType.ENUM:
                 if (NumberUtils.isNumber(value)) {
                     value = Number(value);
                 }
                 break;
-            case FormType.TEXT:
+            case FieldType.TEXT:
                 value = value.trim();
                 if (value === '') {
                     value = null;
                 }
                 break;
-            case FormType.SWITCH:
+            case FieldType.SWITCH:
                 value = value === 'true';
                 break;
             default:

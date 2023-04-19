@@ -1,4 +1,4 @@
-import {FormType} from "./FormType";
+import {FieldType} from "./FieldType";
 import {Field} from "./Field";
 
 export class FieldBuilder {
@@ -7,7 +7,7 @@ export class FieldBuilder {
     constructor() {
         this._field = {
             isIdentity: false,
-            type: FormType.TEXT,
+            type: FieldType.TEXT,
             col: 12,
             name: '',
             label: '',
@@ -40,7 +40,7 @@ export class FieldBuilder {
         return this;
     }
 
-    type(type: FormType): FieldBuilder {
+    type(type: FieldType): FieldBuilder {
         this._field.type = type;
         return this;
     }

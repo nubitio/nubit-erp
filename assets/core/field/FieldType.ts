@@ -1,4 +1,4 @@
-export enum FormType {
+export enum FieldType {
     NONE = 'none',
     TEXT = 'text',
     PASSWORD = 'password',

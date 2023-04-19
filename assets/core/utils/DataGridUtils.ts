@@ -1,18 +1,18 @@
-import {Field} from "../form/Field";
-import {FormType} from "../form/FormType";
+import {Field} from "../field/Field";
+import {FieldType} from "../field/FieldType";
 import {httpClient} from "../http/HttpClient";
 import {DateUtils} from "./DateUtils";
 
 export default class DataGridUtils {
     static makeFilter(grid: JQuery, field: Field): any {
         switch (field.type) {
-            case FormType.DATE:
+            case FieldType.DATE:
                 return DataGridUtils.makeDateFilter(grid, field);
-            case FormType.ENTITY:
+            case FieldType.ENTITY:
                 return DataGridUtils.makeEntityFilter(grid, field);
-            case FormType.ENUM:
+            case FieldType.ENUM:
                 return DataGridUtils.makeEnumFilter(grid, field);
-            case FormType.SWITCH:
+            case FieldType.SWITCH:
                 return this.makeSwitchFilter(grid, field);
             default:
                 return null;

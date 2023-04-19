@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
@@ -41,21 +41,21 @@ export default class Inbound {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('movimiento_id')
             .label('Movimiento id')
             .required(true)
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
             .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"1"}]')
@@ -65,7 +65,7 @@ export default class Inbound {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('operacion')
             .label('Operacion')
             .width(100)
@@ -73,7 +73,7 @@ export default class Inbound {
         let session = StorageUtils.getItem('session');
         let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('almacen_id')
             .label('Almacen')
             .url(warehouseUrl)
@@ -84,12 +84,12 @@ export default class Inbound {
             .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('almacen')
             .label('Almacen')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('proveedor_id')
             .label('Proveedor')
             .url('api/suppliers')
@@ -98,13 +98,13 @@ export default class Inbound {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('glosa')
             .label('Glosa')
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('total')
             .label('Total')
             .visible(false)
@@ -112,7 +112,7 @@ export default class Inbound {
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.SELECT)
+            .type(FieldType.SELECT)
             .valueField('producto_id')
             .textField('descripcion')
             .name('producto_id')
@@ -124,14 +124,14 @@ export default class Inbound {
             .visible(false)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('producto')
             .label('Producto')
             .width(100)
             .formatter((value: any) => value?.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FieldType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .align('center')
@@ -139,7 +139,7 @@ export default class Inbound {
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('precio_unitario')
             .label('P. compra')
             .align('right')
@@ -147,7 +147,7 @@ export default class Inbound {
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('precio_total')
             .label('Total')
             .align('right')

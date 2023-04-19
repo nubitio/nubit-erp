@@ -4,7 +4,7 @@ import DataGrid from "./core/datagrid/DataGrid";
 import Dialog from "./core/dialog/Dialog";
 import Form from "./core/form/Form";
 import {EventType} from "./core/event/EventType";
-import {FormType} from "./core/form/FormType";
+import {FieldType} from "./core/field/FieldType";
 import {Constants} from "./core/common/Constants";
 import ThemeManager from "./core/utils/ThemeManager";
 import Customer from "./pages/Customer";
@@ -37,6 +37,9 @@ import CreditNote from "./pages/CreditNote";
 import Branch from "./pages/Branch";
 import PriceList from "./pages/PriceList";
 import Position from "./pages/Position";
+import Employee from "./pages/Employee";
+import Department from "./pages/Department";
+import Specialty from "./pages/Specialty";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -44,7 +47,7 @@ window.Dialog = Dialog;
 window.Drawer = Drawer;
 window.Form = Form;
 window.EventType = EventType;
-window.FormType = FormType;
+window.FormType = FieldType;
 window.Constants = Constants;
 
 window.app = window.app || {};
@@ -77,6 +80,9 @@ window.app.kardex = Kardex;
 window.app.creditNote = CreditNote;
 window.app.priceList = PriceList;
 window.app.position = Position;
+window.app.employee = Employee;
+window.app.department = Department;
+window.app.specialty = Specialty;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();

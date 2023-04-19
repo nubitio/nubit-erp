@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import {ProductService} from "../components/product/product.service";
 
@@ -39,21 +39,21 @@ export default class Outbound {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('movimiento_id')
             .label('Movimiento id')
             .required(true)
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
             .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"2"}]')
@@ -63,7 +63,7 @@ export default class Outbound {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('operacion')
             .label('Operacion')
             .width(100)
@@ -71,7 +71,7 @@ export default class Outbound {
         let session = StorageUtils.getItem('session');
         let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('almacen_id')
             .label('Almacen')
             .url(warehouseUrl)
@@ -82,19 +82,19 @@ export default class Outbound {
             .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('almacen')
             .label('Almacen')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('glosa')
             .label('Glosa')
             .visible(false)
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.SELECT)
+            .type(FieldType.SELECT)
             .valueField('producto_id')
             .textField('descripcion')
             .name('producto_id')
@@ -105,14 +105,14 @@ export default class Outbound {
             .visible(false)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('producto')
             .label('Producto')
             .width(100)
             .formatter((value: any) => value?.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FieldType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .align('center')
