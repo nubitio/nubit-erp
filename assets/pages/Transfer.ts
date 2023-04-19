@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {ProductService} from "../components/product/product.service";
 import {StorageUtils} from "../core/utils/StorageUtils";
 
@@ -41,13 +41,13 @@ export default class Transfer {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('transfer_id')
             .label('Transfer id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
@@ -56,7 +56,7 @@ export default class Transfer {
         let session = StorageUtils.getItem('session');
         let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('almacen_origen')
             .label('Almacen origen')
             .url(warehouseUrl)
@@ -66,12 +66,12 @@ export default class Transfer {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('origen')
             .label('Almacen origen')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('almacen_destino')
             .label('Almacen destino')
             .url(warehouseUrl)
@@ -81,19 +81,19 @@ export default class Transfer {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('destino')
             .label('Almacen destino')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .width(100)
             .name('nota')
             .label('Nota')
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.SELECT)
+            .type(FieldType.SELECT)
             .valueField('producto_id')
             .textField('descripcion')
             .name('producto_id')
@@ -101,7 +101,7 @@ export default class Transfer {
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FieldType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .required(true)

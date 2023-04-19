@@ -1,7 +1,7 @@
-import {Field} from "../core/form/Field";
+import {Field} from "../core/field/Field";
 import Form from "../core/form/Form";
-import {FieldBuilder} from "../core/form/FieldBuilder";
-import {FormType} from "../core/form/FormType";
+import {FieldBuilder} from "../core/field/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
 import {authService} from "../services/auth.service";
 import {messenger} from "../core/utils/Messenger";
 import LocalPicker from "../modules/LocalPicker";
@@ -29,19 +29,19 @@ export default class Auth {
 
     init() {
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('username')
             .label('Usuario')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.PASSWORD)
+            .type(FieldType.PASSWORD)
             .name('password')
             .label('Contraseña')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SUBMIT)
+            .type(FieldType.SUBMIT)
             .name('submit')
             .label('Ingresar')
             .onClick(() => this.login())

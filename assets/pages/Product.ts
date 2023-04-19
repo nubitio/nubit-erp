@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
 
@@ -35,18 +35,18 @@ export default class Product {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('producto_id')
             .label('Producto id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('codigo')
             .label('Codigo')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENUM)
+            .type(FieldType.ENUM)
             .name('tipo_id')
             .label('Tipo')
             .data([
@@ -61,14 +61,14 @@ export default class Product {
             })
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('descripcion')
             .label('Descripcion')
             .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('categoria')
             .label('Categoria')
             .url('api/categories')
@@ -78,7 +78,7 @@ export default class Product {
             .formatter((value: any, row: any) => value.descripcion ?? '')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('precio')
             .label('Precio')
             .align('right')
@@ -86,13 +86,13 @@ export default class Product {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.FILE)
+            .type(FieldType.FILE)
             .name('imagen')
             .label('Imagen')
             .formatter((val: any, row: any) => SharedUtils.imageFormatter(val?.path, row['descripcion']))
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Activo')
             .align('center')

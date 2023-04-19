@@ -1,7 +1,7 @@
-import {Field} from "../core/form/Field";
+import {Field} from "../core/field/Field";
 import DataGrid from "../core/datagrid/DataGrid";
-import {FieldBuilder} from "../core/form/FieldBuilder";
-import {FormType} from "../core/form/FormType";
+import {FieldBuilder} from "../core/field/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
 
 export default class Kardex {
     private readonly container: string;
@@ -26,36 +26,36 @@ export default class Kardex {
     init() {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('producto_id')
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('producto')
             .label('Producto')
             .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('saldo')
             .label('Saldo inicial')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('ingresos')
             .label('Ingreso')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('salidas')
             .label('Salida')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('stock')
             .label('Saldo final')
             .align('right')

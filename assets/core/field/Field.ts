@@ -1,8 +1,8 @@
-import {FormType} from "./FormType";
+import {FieldType} from "./FieldType";
 
 export interface Field {
     isIdentity: boolean;
-    type: FormType;
+    type: FieldType;
     col: number;
     name: string;
     label: string;

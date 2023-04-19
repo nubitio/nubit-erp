@@ -1,12 +1,11 @@
 import {Constants} from "../common/Constants";
 import {SharedUtils} from "../utils/SharedUtils";
-import {Field} from "../form/Field";
+import {Field} from "../field/Field";
 import {bus} from "../event/EventBus";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../http/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
 import DataGridUtils from "../utils/DataGridUtils";
-import FilterRule from "../common/FilterRule";
 
 export default class DataGrid {
     private container: HTMLElement;

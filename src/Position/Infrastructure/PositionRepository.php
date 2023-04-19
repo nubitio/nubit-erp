@@ -7,15 +7,16 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\Position\Domain\PositionRepositoryInterface;
+use App\Department\Infrastructure\DepartmentEntity;
 use App\Position\Domain\Position;
+use App\Position\Domain\PositionRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PositionRepository implements PositionRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -40,6 +41,7 @@ readonly class PositionRepository implements PositionRepositoryInterface
     public function insert(Position $position): Position
     {
         $entity = DataMapper::map($position, PositionEntity::class);
+        $entity->department = $this->entityManager->getReference(DepartmentEntity::class, $position->department?->id);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -55,6 +57,7 @@ readonly class PositionRepository implements PositionRepositoryInterface
         }
 
         $entity = DataMapper::map($position, $entity);
+        $entity->department = $this->entityManager->getReference(DepartmentEntity::class, $position->department?->id);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Position::class);
