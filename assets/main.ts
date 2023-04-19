@@ -40,6 +40,7 @@ import Position from "./pages/Position";
 import Employee from "./pages/Employee";
 import Department from "./pages/Department";
 import Specialty from "./pages/Specialty";
+import Recipe from "./pages/Recipe";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -83,6 +84,7 @@ window.app.position = Position;
 window.app.employee = Employee;
 window.app.department = Department;
 window.app.specialty = Specialty;
+window.app.recipe = Recipe;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
