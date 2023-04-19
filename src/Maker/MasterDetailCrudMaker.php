@@ -169,6 +169,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $repositoryInterfaceContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryInterfaceContent);
         $repositoryInterfaceContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryInterfaceContent);
+        $repositoryInterfaceContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $repositoryInterfaceContent);
 
         file_put_contents($repositoryInterfacePath, $repositoryInterfaceContent);
     }
@@ -267,6 +268,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read delete use case template');
         }
         $deleteUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $deleteUseCaseContent);
+        $deleteUseCaseContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $deleteUseCaseContent);
 
         file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
     }
@@ -331,6 +333,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read get one use case template');
         }
         $getOneUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getOneUseCaseContent);
+        $getOneUseCaseContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $getOneUseCaseContent);
 
         file_put_contents($getOneUseCasePath, $getOneUseCaseContent);
     }
@@ -485,6 +488,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
         $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
+        $repositoryContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -592,6 +596,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
         $sortColumn = $this->io->choice('Which column do you want to use for sorting?', $columns);
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
+        $primaryKey = $this->entity->getPrimaryKey();
         if ($this->handlingDetail) {
             $providerTemplate = dirname(__FILE__) . '/skeleton/crud/detail/provider.tpl';
         }
@@ -599,7 +604,10 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         if ($providerContent === false) {
             throw new \RuntimeException('Could not read provider template');
         }
+        $idColumn = Util::getIdColumn($this->entity);
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
+        $providerContent = str_replace('{{castType}}', Util::getCastType(Util::getColumnType($idColumn)), $providerContent);
+        $providerContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $providerContent);
         $providerContent = str_replace('{{joinColumn}}', $this->joinColumn, $providerContent);
         $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
         $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
