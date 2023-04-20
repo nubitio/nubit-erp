@@ -9,14 +9,14 @@ import {ConsultService} from "../services/consult.service";
 import {Constants} from "../core/common/Constants";
 
 export default class Customer {
-    private readonly container: string;
-    private fields: Field[] = [];
-    private dataGrid: DataGrid;
-    private dialog: Dialog;
-    private form: Form;
-    private consultService = new ConsultService();
+    protected readonly container: string;
+    protected fields: Field[] = [];
+    protected dataGrid: DataGrid;
+    protected dialog: Dialog;
+    protected form: Form;
+    protected consultService = new ConsultService();
 
-    static readonly API_URL = 'api/customers';
+    static readonly API_URL: string = 'api/customers';
 
     static readonly EVENTS = {
         ADD: 'customer:add',
