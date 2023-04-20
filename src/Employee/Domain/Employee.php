@@ -37,4 +37,10 @@ class Employee
     )
     {
     }
+
+    #[SerializedName('full_name')]
+    public function getFullName(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
 }
