@@ -117,13 +117,9 @@ class PrintESCPOSController extends BaseController
             }
         }
         $printer->text(new SaleItem('TOTAL:', $voucher->voucher_sale_amount));
-        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
-        $parts = explode('.', number_format($voucher->voucher_sale_amount, 2, '.', ''));
-        $amount = $formatter->format((int)$parts[0]);
-        $strAmount = mb_strtoupper($amount . ' Y ' . $parts[1] . '/100');
 
         $printer->text($divider);
-        $printer->text("Son: " . $strAmount . "\n");
+        $printer->text($voucher->getVoucherTotalText() . "\n");
         $printer->text($divider);
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {

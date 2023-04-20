@@ -319,6 +319,9 @@ export default class Form {
                 case FieldType.DATE:
                     this.buildDateInput(field);
                     break;
+                case FieldType.TIME:
+                    this.buildTimeInput(field);
+                    break;
                 case FieldType.NUMBER:
                     this.buildNumberInput(field);
                     break;
@@ -448,6 +451,23 @@ export default class Form {
             formatter: DateUtils.dateFormatter,
             parser: DateUtils.dateParser,
             required: field.required,
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildTimeInput(field: Field) {
+        let input = $('#' + field.name);
+        input.timepicker({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            hour24: true,
+            required: field.required,
+            onChange: (newValue: string, oldValue: string) => {
+                if (field.onChange) {
+                    field.onChange(newValue, oldValue, field);
+                }
+            }
         });
         this.formFields[field.name] = input;
     }
