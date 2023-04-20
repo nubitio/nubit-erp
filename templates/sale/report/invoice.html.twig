@@ -145,9 +145,8 @@
         <tbody>
         <tr class="row-bt row-bb">
             <td class="text-center">
-                {% set total = voucher.voucher_sale_amount|number_format(2, '.', '')|split('.') %}
                 <strong>
-                    Son: {{ total[0]|format_number(style='spellout', locale='es')|upper }} Y {{ total[1] }}/100
+                    {{ voucher.voucherTotalText }}
                 </strong>
             </td>
         </tr>

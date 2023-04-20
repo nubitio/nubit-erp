@@ -38,6 +38,7 @@ declare global {
         textbox: any;
         passwordbox: any;
         datebox: any;
+        timepicker: any;
         numberbox: any;
         combobox: any;
         switchbutton: any;

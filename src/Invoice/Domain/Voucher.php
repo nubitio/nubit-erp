@@ -2,6 +2,8 @@
 
 namespace App\Invoice\Domain;
 
+use Symfony\Component\Serializer\Annotation\SerializedName;
+
 class Voucher
 {
     public function __construct(
@@ -40,5 +42,14 @@ class Voucher
         public array   $voucher_items = []
     )
     {
+    }
+
+    #[SerializedName('voucher_sale_amount_text')]
+    public function getVoucherTotalText(): string
+    {
+        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
+        $parts = explode('.', number_format($this->voucher_sale_amount, 2, '.', ''));
+        $amount = $formatter->format((int)$parts[0]);
+        return 'Son: ' . mb_strtoupper($amount . ' Y ' . $parts[1] . '/100');
     }
 }
