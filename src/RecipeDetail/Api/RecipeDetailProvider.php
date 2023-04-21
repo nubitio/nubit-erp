@@ -32,6 +32,7 @@ readonly class RecipeDetailProvider implements ApiProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addJoin($context, new JoinRule('e.material', 'm'));
             $context = OptionUtils::addFilter($context, new FilterRule('recipe_id', FilterOperation::Equals, $uriVariables['id']));
             $context = OptionUtils::addSort($context, new SortRule('id', 'asc'));
             $options = OptionsBuilder::build($context, RecipeDetailEntity::class, RecipeDetail::class);
