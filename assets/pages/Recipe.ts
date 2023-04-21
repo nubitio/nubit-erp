@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class Recipe {
     private readonly container: string;
@@ -37,17 +38,22 @@ export default class Recipe {
             .type(FieldType.NONE)
             .name('id')
             .label('Id')
+            .valueType('number')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('name')
-            .label('Name')
+            .label('Nombre')
+            .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
             .name('active')
-            .label('Active')
+            .label('Activo')
+            .formatter(SharedUtils.booleanFormatter)
+            .defaultValue(true)
             .build())
 
         this.detailFields.push(new FieldBuilder()
@@ -59,19 +65,19 @@ export default class Recipe {
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('recipe_id')
-            .label('Recipe id')
+            .type(FieldType.ENTITY)
+            .name('material')
+            .label('Material')
+            .url('api/products')
+            .textField('descripcion')
+            .valueField('producto_id')
+            .valueType('number')
+            .formatter((value: any) => value.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.NUMBER)
-            .name('material_id')
-            .label('Material id')
-            .build());
-        this.detailFields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
             .name('quantity')
-            .label('Quantity')
+            .label('Cantidad')
             .build())
     };
 
