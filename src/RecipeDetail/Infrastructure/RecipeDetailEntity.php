@@ -3,6 +3,8 @@
 namespace App\RecipeDetail\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Option\Infrastructure\OptionEntity;
+use App\Product\Infrastructure\ProductEntity;
 use App\Recipe\Infrastructure\RecipeEntity;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -18,8 +20,9 @@ class RecipeDetailEntity
         public ?int $id = null,
         #[ORM\Column(name: 'recipe_id', type: 'integer')]
         public ?int $recipe_id = null,
-        #[ORM\Column(name: 'material_id', type: 'integer')]
-        public ?int $material_id = null,
+        #[ORM\ManyToOne(targetEntity: ProductEntity::class)]
+        #[ORM\JoinColumn(name: 'material_id', referencedColumnName: 'producto_id')]
+        public ?ProductEntity $material = null,
         #[ORM\Column(name: 'quantity', type: 'decimal')]
         public ?float $quantity = null,
         #[ORM\ManyToOne(targetEntity: RecipeEntity::class, inversedBy: 'details')]

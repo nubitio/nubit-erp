@@ -7,8 +7,11 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Product\Infrastructure\ProductEntity;
 use App\Recipe\Domain\RecipeRepositoryInterface;
 use App\Recipe\Domain\Recipe;
+use App\SaleDetail\Infrastructure\SaleDetailEntity;
+use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class RecipeRepository implements RecipeRepositoryInterface
@@ -40,6 +43,14 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
     public function insert(Recipe $recipe): Recipe
     {
         $entity = DataMapper::map($recipe, RecipeEntity::class);
+        $producto = $this->entityManager->getReference(ProductEntity::class, $recipe->producto?->producto_id);
+        $entity->producto = $producto;
+        /** @var SaleDetailEntity $detail */
+        foreach ($entity->details as $detail) {
+            $detail->product = $entity;
+            $detail->product = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
+            $subtotal += $detail->precio_total;
+
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
