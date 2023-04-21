@@ -17,12 +17,15 @@ class RecipeEntity
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
-        public ?int $id = null,
+        public ?int             $id = null,
         #[ORM\Column(name: 'name', type: 'string')]
-        public ?string $name = null,
+        public ?string          $name = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null,
-        /** @var RecipeDetailEntity[] $details */
+        public ?bool            $active = null,
+        /**
+         * @var RecipeDetailEntity[] $details
+         * @phpstan-var ArrayCollection<int , RecipeEntity>|array<int , RecipeEntity>
+         */
         #[ORM\OneToMany(mappedBy: 'recipe', targetEntity: RecipeDetailEntity::class, cascade: ['persist', 'remove'])]
         public Collection|array $details = new ArrayCollection(),
     )

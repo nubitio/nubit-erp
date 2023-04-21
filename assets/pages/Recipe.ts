@@ -68,10 +68,10 @@ export default class Recipe {
             .type(FieldType.ENTITY)
             .name('material')
             .label('Material')
+            .width(100)
             .url('api/products')
             .textField('descripcion')
             .valueField('producto_id')
-            .valueType('number')
             .formatter((value: any) => value.descripcion)
             .build());
         this.detailFields.push(new FieldBuilder()
