@@ -26,9 +26,7 @@ export default class Patient extends Customer {
     constructor(container: string) {
         super(container);
         this.container = container;
-        //this.init();
         super.init();
-        console.log(this.fields)
     }
 
     init() {
