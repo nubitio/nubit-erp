@@ -2,6 +2,7 @@
 
 namespace App\Performance\Infrastructure;
 
+use App\ComboOption\Infrastructure\ComboOptionEntity;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
@@ -40,6 +41,8 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
     public function insert(Performance $performance): Performance
     {
         $entity = DataMapper::map($performance, PerformanceEntity::class);
+        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines->id);
+        $entity->lines = $line;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -55,6 +58,9 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
         }
 
         $entity = DataMapper::map($performance, $entity);
+        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines->id);
+        $entity->lines = $line;
+
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Performance::class);

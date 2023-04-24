@@ -2,6 +2,7 @@
 
 namespace App\Performance\Infrastructure;
 
+use App\ComboOption\Infrastructure\ComboOptionEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -15,8 +16,9 @@ class PerformanceEntity
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
         public ?int $id = null,
-        #[ORM\Column(name: 'line_fk', type: 'integer')]
-        public ?int $line_fk = null,
+        #[ORM\ManyToOne(targetEntity: ComboOptionEntity::class)]
+        #[ORM\JoinColumn(name: 'line_fk', referencedColumnName: 'id')]
+        public ?ComboOptionEntity $lines = null,
         #[ORM\Column(name: 'product_fk', type: 'string')]
         public ?string $product_fk = null,
         #[ORM\Column(name: 'type_fk', type: 'integer')]
