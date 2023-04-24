@@ -41,6 +41,8 @@ import Employee from "./pages/Employee";
 import Department from "./pages/Department";
 import Specialty from "./pages/Specialty";
 import Physician from "./pages/Physician";
+import Performance from "./pages/Performance";
+import ComboOption from "./pages/ComboOption";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -85,6 +87,8 @@ window.app.employee = Employee;
 window.app.department = Department;
 window.app.specialty = Specialty;
 window.app.physician = Physician;
+window.app.performance = Performance;
+window.app.comboOption = ComboOption;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
