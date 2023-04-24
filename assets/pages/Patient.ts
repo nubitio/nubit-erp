@@ -26,8 +26,9 @@ export default class Patient extends Customer {
     constructor(container: string) {
         super(container);
         this.container = container;
+        //this.init();
         super.init();
-        this.init();
+        console.log(this.fields)
     }
 
     init() {
@@ -38,28 +39,44 @@ export default class Patient extends Customer {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
+            .type(FieldType.NONE)
             .name('customer_id')
             .label('Customer id')
             .required(true)
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
+            .type(FieldType.ENUM)
             .name('type_id')
-            .label('Type id')
+            .label('Tipo')
+            .data([
+                {value: 1, text: 'Particular'},
+                {value: 2, text: 'Asegurado'},
+            ])
+            .formatter((value: any) => {
+                switch (value) {
+                    case 1:
+                        return 'Particular';
+                    case 2:
+                        return 'Asegurado';
+                    default:
+                        return '';
+                }
+            })
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('insurance_provider')
-            .label('Insurance provider')
+            .label('Aseguradora')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('medical_record_number')
-            .label('Medical record number')
+            .label('Nro. Historia Clínica')
             .build())
     };
 

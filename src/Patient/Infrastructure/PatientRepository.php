@@ -7,15 +7,17 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\Patient\Domain\PatientRepositoryInterface;
+use App\Customer\Infrastructure\CustomerEntity;
 use App\Patient\Domain\Patient;
+use App\Patient\Domain\PatientRepositoryInterface;
+use App\PriceList\Infrastructure\PriceListEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class PatientRepository implements PatientRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader $dataLoader,
+        private DataLoader             $dataLoader,
     )
     {
     }
@@ -39,7 +41,19 @@ readonly class PatientRepository implements PatientRepositoryInterface
 
     public function insert(Patient $patient): Patient
     {
+        $customer = $this->entityManager->find(CustomerEntity::class, $patient->ruc);
+
+        if (!$customer) {
+            $customer = DataMapper::map($patient, CustomerEntity::class);
+        } else {
+            $customer = DataMapper::map($patient, $customer);
+        }
+
+        $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $patient->price_list?->id);
         $entity = DataMapper::map($patient, PatientEntity::class);
+        $entity->customer = $customer;
+
+        $this->entityManager->persist($customer);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -48,12 +62,16 @@ readonly class PatientRepository implements PatientRepositoryInterface
 
     public function update(Patient $patient): Patient
     {
+        $customer = $this->entityManager->find(CustomerEntity::class, $patient->ruc);
         $entity = $this->entityManager->find(PatientEntity::class, $patient->id);
 
-        if (!$entity) {
+        if (!$entity || !$customer) {
             throw new ServiceException('Entity not found');
         }
 
+        /** @var CustomerEntity $customer */
+        $customer = DataMapper::map($patient, $customer);
+        $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $patient->price_list?->id);
         $entity = DataMapper::map($patient, $entity);
         $this->entityManager->flush();
 

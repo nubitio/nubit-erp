@@ -12,8 +12,8 @@ class Patient extends Customer
     public function __construct(
         #[SerializedName('id')]
         public ?int                $id = null,
-        #[SerializedName('customer_id')]
-        public ?string             $customer_id = null,
+        #[SerializedName('customer')]
+        public ?Customer           $customer = null,
         #[SerializedName('type_id')]
         public ?int                $type_id = null,
         #[SerializedName('insurance_provider')]
@@ -30,16 +30,6 @@ class Patient extends Customer
         public ?\DateTimeInterface $updated_at = null
     )
     {
-        parent::__construct(
-            id: $id,
-            customer_id: $customer_id,
-            type_id: $type_id,
-            insurance_provider: $insurance_provider,
-            medical_record_number: $medical_record_number,
-            created_by: $created_by,
-            updated_by: $updated_by,
-            created_at: $created_at,
-            updated_at: $updated_at
-        );
+        parent::__construct();
     }
 }
