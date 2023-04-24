@@ -44,4 +44,9 @@ class ReflectionUtil
 
         return null;
     }
+
+    public static function hasProperty(object|string $obj, string $field): bool
+    {
+        return property_exists($obj, $field);
+    }
 }

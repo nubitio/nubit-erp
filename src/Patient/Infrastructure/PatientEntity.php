@@ -3,6 +3,7 @@
 namespace App\Patient\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Customer\Infrastructure\CustomerEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -15,8 +16,9 @@ class PatientEntity
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
         public ?int $id = null,
-        #[ORM\Column(name: 'customer_id', type: 'string')]
-        public ?string $customer_id = null,
+        #[ORM\ManyToOne(targetEntity: CustomerEntity::class)]
+        #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'ruc')]
+        public ?CustomerEntity $customer = null,
         #[ORM\Column(name: 'type_id', type: 'integer')]
         public ?int $type_id = null,
         #[ORM\Column(name: 'insurance_provider', type: 'string')]
