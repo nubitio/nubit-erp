@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}ComboOption{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const comboOption = new window.app.comboOption('wrapper');
+            comboOption.render();
+        });
+    </script>
+{% endblock %}
