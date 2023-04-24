@@ -1,0 +1,42 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+
+jobs:
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: mbstring, intl, zip, dom, curl, json, xml, gd, pdo, pdo_mysql, bcmath, imagick
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+      - run: composer install --no-interaction --no-progress --prefer-dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: public/build
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary
+      - name: Adding known hosts
+        run: echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
+      - name: Delete old files
+        run: ssh -p22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -rf /web/vendor && rm -rf /web/public/build && rm -rf /web/public/assets"
+      - name: Deploy with rsync
+        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/web/
+      - name: Cache clear
+        run: ssh -p22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && php8.2 bin/console cache:clear"
