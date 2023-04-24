@@ -39,10 +39,26 @@ export default class Performance {
             .label('Id')
             .required(true)
             .build());
+
+        let filterLine = JSON.stringify({
+            'field':'_key',
+            'op':'equal',
+            'value':'linea'
+        });
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('line_fk')
-            .label('Line fk')
+            .type(FieldType.ENTITY)
+            .name('lines')
+            .label('Línea')
+            .url('api/combo-options?filterRules=['+filterLine+']')
+            .valueType('number')
+            .textField('_value')
+            .valueField('id')
+            .formatter((value: any) => {
+                if (value)
+                {
+                    return value['_value']
+                }
+            })
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()

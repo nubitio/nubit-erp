@@ -5,6 +5,8 @@ namespace App\Performance\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
+use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
@@ -30,6 +32,7 @@ readonly class PerformanceProvider implements ApiProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addJoin($context, new JoinRule('e.lines','l',JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('id', 'desc'));
             $options = OptionsBuilder::build($context, PerformanceEntity::class, Performance::class);
 

@@ -2,6 +2,7 @@
 
 namespace App\Performance\Domain;
 
+use App\ComboOption\Domain\ComboOption;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -11,8 +12,8 @@ class Performance
     public function __construct(
         #[SerializedName('id')]
         public ?int $id = null,
-        #[SerializedName('line_fk')]
-        public ?int $line_fk = null,
+        #[SerializedName('lines')]
+        public ?ComboOption $lines = null,
         #[SerializedName('product_fk')]
         public ?string $product_fk = null,
         #[SerializedName('type_fk')]
