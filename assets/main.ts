@@ -41,6 +41,7 @@ import Employee from "./pages/Employee";
 import Department from "./pages/Department";
 import Specialty from "./pages/Specialty";
 import Physician from "./pages/Physician";
+import Patient from "./pages/Patient";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -85,6 +86,7 @@ window.app.employee = Employee;
 window.app.department = Department;
 window.app.specialty = Specialty;
 window.app.physician = Physician;
+window.app.patient = Patient;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
