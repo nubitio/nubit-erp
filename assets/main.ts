@@ -43,6 +43,7 @@ import Specialty from "./pages/Specialty";
 import Physician from "./pages/Physician";
 import Patient from "./pages/Patient";
 import MilitaryPatient from "./pages/MilitaryPatient";
+import Consultation from "./pages/Consultation";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -89,6 +90,7 @@ window.app.specialty = Specialty;
 window.app.physician = Physician;
 window.app.patient = Patient;
 window.app.militaryPatient = MilitaryPatient;
+window.app.consultation = Consultation;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
