@@ -41,6 +41,7 @@ import Employee from "./pages/Employee";
 import Department from "./pages/Department";
 import Specialty from "./pages/Specialty";
 import Physician from "./pages/Physician";
+import Patient from "./pages/Patient";
 import Performance from "./pages/Performance";
 import ComboOption from "./pages/ComboOption";
 
@@ -87,6 +88,7 @@ window.app.employee = Employee;
 window.app.department = Department;
 window.app.specialty = Specialty;
 window.app.physician = Physician;
+window.app.patient = Patient;
 window.app.performance = Performance;
 window.app.comboOption = ComboOption;
 
