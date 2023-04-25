@@ -62,43 +62,70 @@ export default class Performance {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
-            .name('product_fk')
-            .label('Product fk')
+            .type(FieldType.ENTITY)
+            .name('products')
+            .label('Productos')
+            .url('api/products')
+            .valueType('string')
+            .textField('descripcion')
+            .valueField('producto_id')
+            .formatter((value: any) => {
+                if (value)
+                {
+                    return value['descripcion']
+                }
+            })
+            .width(100)
             .required(true)
             .build());
+
+        let filterType = JSON.stringify({
+            'field':'_key',
+            'op':'equal',
+            'value':'litraje'
+        });
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('type_fk')
-            .label('Type fk')
+            .type(FieldType.ENTITY)
+            .name('types')
+            .label('Tipo')
+            .url('api/combo-options?filterRules=['+filterType+']')
+            .valueType('number')
+            .textField('_value')
+            .valueField('id')
+            .formatter((value: any) => {
+                if (value)
+                {
+                    return value['_value']
+                }
+            })
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.DATE)
             .name('date')
-            .label('Date')
+            .label('Fecha')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TIME)
             .name('start')
-            .label('Start')
+            .label('Hora inicio')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TIME)
             .name('end')
-            .label('End')
+            .label('Hora de fin')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NUMBER)
             .valueType('float')
             .precision(3)
             .name('quantity')
-            .label('Quantity')
+            .label('Cantidad de producciones')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('obs')
-            .label('Obs')
+            .label('Comentarios')
             .build())
     };
 
@@ -109,7 +136,7 @@ export default class Performance {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Performance',
+            title: 'Módulo de rendimiento',
             url: Performance.API_URL,
             method: 'get',
             allowAdd: true,

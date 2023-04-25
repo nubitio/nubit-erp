@@ -33,6 +33,8 @@ readonly class PerformanceProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.lines','l',JoinType::LEFT));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.products','p', JoinType::LEFT));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.types','t',JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('id', 'desc'));
             $options = OptionsBuilder::build($context, PerformanceEntity::class, Performance::class);
 
