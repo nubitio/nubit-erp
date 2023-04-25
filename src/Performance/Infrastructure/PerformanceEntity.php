@@ -4,6 +4,7 @@ namespace App\Performance\Infrastructure;
 
 use App\ComboOption\Infrastructure\ComboOptionEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Product\Infrastructure\ProductEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -19,10 +20,12 @@ class PerformanceEntity
         #[ORM\ManyToOne(targetEntity: ComboOptionEntity::class)]
         #[ORM\JoinColumn(name: 'line_fk', referencedColumnName: 'id')]
         public ?ComboOptionEntity $lines = null,
-        #[ORM\Column(name: 'product_fk', type: 'string')]
-        public ?string $product_fk = null,
-        #[ORM\Column(name: 'type_fk', type: 'integer')]
-        public ?int $type_fk = null,
+        #[ORM\ManyToOne(targetEntity: ProductEntity::class)]
+        #[ORM\JoinColumn(name: 'product_fk', referencedColumnName: 'producto_id')]
+        public ?ProductEntity $products = null,
+        #[ORM\ManyToOne(targetEntity: ComboOptionEntity::class)]
+        #[ORM\JoinColumn(name: 'type_fk', referencedColumnName:  'id')]
+        public ?ComboOptionEntity $types = null,
         #[ORM\Column(name: 'date', type: 'date')]
         public ?\DateTimeInterface $date = null,
         #[ORM\Column(name: 'start', type: 'time')]

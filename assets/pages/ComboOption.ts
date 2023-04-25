@@ -35,6 +35,7 @@ export default class ComboOption {
             .isIdentity(true)
             .visible(false)
             .type(FieldType.NONE)
+            .valueType('number')
             .name('id')
             .label('Id')
             .required(true)

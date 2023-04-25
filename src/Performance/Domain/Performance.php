@@ -4,6 +4,7 @@ namespace App\Performance\Domain;
 
 use App\ComboOption\Domain\ComboOption;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Product\Domain\Product;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -14,10 +15,10 @@ class Performance
         public ?int $id = null,
         #[SerializedName('lines')]
         public ?ComboOption $lines = null,
-        #[SerializedName('product_fk')]
-        public ?string $product_fk = null,
-        #[SerializedName('type_fk')]
-        public ?int $type_fk = null,
+        #[SerializedName('products')]
+        public ?Product $products = null,
+        #[SerializedName('types')]
+        public ?ComboOption $types = null,
         #[SerializedName('date')]
         public ?\DateTimeInterface $date = null,
         #[SerializedName('start')]
