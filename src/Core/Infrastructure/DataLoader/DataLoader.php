@@ -61,7 +61,7 @@ readonly class DataLoader
             foreach (get_object_vars($mappedItem) as $key => $value) {
                 $type = ReflectionUtil::getPropertyType($mappedItem, $key);
                 if ($parent === $type) {
-                    DataMapper::map($mappedItem->$key, $mappedItem);
+                    DataMapper::map($mappedItem->$key, $mappedItem, ['id']);
                 }
             }
             $this->mapParent($parent, $mappedItem);

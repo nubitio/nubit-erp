@@ -37,6 +37,18 @@ export default class MilitaryPatient extends Patient {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.ENTITY)
+            .name('patient')
+            .label('Patient')
+            .textField('id')
+            .valueField('id')
+            .valueType('number')
+            .required(true)
+            .visible(false)
+            .hidden(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)

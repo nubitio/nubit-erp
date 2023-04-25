@@ -5,9 +5,9 @@ namespace App\MilitaryPatient\Api;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProcessorInterface;
-use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\CreateMilitaryPatientUseCase;
 use App\MilitaryPatient\Domain\DeleteMilitaryPatientUseCase;
+use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\UpdateMilitaryPatientUseCase;
 
 /**
@@ -33,7 +33,12 @@ readonly class MilitaryPatientProcessor implements ApiProcessorInterface
             return null;
         }
 
-        if($data->id) {
+        if ($data->id || intval($uriVariables['id']) > 0) {
+            if ($data->id) {
+                $data->id = intval($data->id);
+            } else {
+                $data->id = intval($uriVariables['id']);
+            }
             return $this->updateUseCase->__invoke($data);
         }
 

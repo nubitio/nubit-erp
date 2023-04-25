@@ -9,11 +9,10 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\GetAllMilitaryPatientUseCase;
 use App\MilitaryPatient\Domain\GetOneMilitaryPatientUseCase;
+use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Infrastructure\MilitaryPatientEntity;
 
 /**

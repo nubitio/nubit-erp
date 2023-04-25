@@ -15,5 +15,4 @@ class MilitaryPatientDto extends MilitaryPatient
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

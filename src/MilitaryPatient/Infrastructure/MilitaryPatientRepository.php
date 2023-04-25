@@ -83,9 +83,10 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
         $customer = DataMapper::map($militaryPatient, $customer);
         $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $militaryPatient->price_list?->id);
         /** @var PatientEntity $patient */
-        $patient = DataMapper::map($militaryPatient, $patient);
+        $patient = DataMapper::map($militaryPatient, $patient, ['id']);
         $patient->customer = $customer;
         $entity = DataMapper::map($militaryPatient, $entity);
+        $entity->patient = $patient;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, MilitaryPatient::class);
