@@ -32,4 +32,10 @@ class Patient extends Customer
     {
         parent::__construct();
     }
+
+    #[SerializedName('full_name')]
+    public function getFullName(): string
+    {
+        return $this->customer?->razon_social;
+    }
 }

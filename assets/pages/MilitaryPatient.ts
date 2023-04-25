@@ -46,7 +46,6 @@ export default class MilitaryPatient extends Patient {
             .textField('id')
             .valueField('id')
             .valueType('number')
-            .required(true)
             .visible(false)
             .hidden(true)
             .build());
