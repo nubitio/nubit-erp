@@ -1,0 +1,85 @@
+import DataGrid from "../core/datagrid/DataGrid";
+import Dialog from "../core/dialog/Dialog";
+import Form from "../core/form/Form";
+import {FieldType} from "../core/field/FieldType";
+import {FieldBuilder} from "../core/field/FieldBuilder";
+import Patient from "./Patient";
+
+export default class MilitaryPatient extends Patient {
+    protected readonly container: string;
+    declare dataGrid: DataGrid;
+    declare dialog: Dialog;
+    declare form: Form;
+
+    static readonly API_URL: string = 'api/military-patients';
+
+    static readonly EVENTS = {
+        ADD: 'military-patient:add',
+        EDIT: 'military-patient:edit',
+        DELETE: 'military-patient:delete',
+        SAVE: 'military-patient:save',
+        CANCEL: 'military-patient:cancel',
+        SUCCESS: 'military-patient:success',
+        LOADING: 'military-patient:loading',
+    }
+
+    constructor(container: string) {
+        super(container);
+        this.container = container;
+        super.init();
+    }
+
+    init() {
+        this.fields.push(new FieldBuilder()
+            .isIdentity(true)
+            .visible(false)
+            .type(FieldType.NONE)
+            .name('id')
+            .label('Id')
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('cip_code')
+            .label('Cip code')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('rank')
+            .label('Rank')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('weapon_code')
+            .label('Weapon code')
+            .build())
+    };
+
+    render() {
+        this.renderDataGrid();
+        this.renderDialog();
+    }
+
+    renderDataGrid() {
+        this.dataGrid = new DataGrid(this.container, this.fields, {
+            title: 'MilitaryPatient',
+            url: MilitaryPatient.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
+            events: MilitaryPatient.EVENTS,
+        });
+    }
+
+    renderDialog() {
+        this.dialog = new Dialog(this.container, {
+            events: MilitaryPatient.EVENTS,
+        });
+
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: MilitaryPatient.API_URL,
+            events: MilitaryPatient.EVENTS,
+        });
+    }
+}
