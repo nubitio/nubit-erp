@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}MilitaryPatient{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const militaryPatient = new window.app.militaryPatient('wrapper');
+            militaryPatient.render();
+        });
+    </script>
+{% endblock %}
