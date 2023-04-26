@@ -41,6 +41,7 @@ export default class PriceList {
             .type(FormType.NONE)
             .name('id')
             .label('Id')
+            .valueType('number')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
