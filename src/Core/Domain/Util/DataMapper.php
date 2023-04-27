@@ -12,11 +12,12 @@ class DataMapper
      *
      * @param mixed $input
      * @param T|class-string<T> $output
+     * @param array<string> $ignoredFields
      *
      * @return T
      * @phpstan-return T
      */
-    public static function map(mixed $input, mixed $output): object
+    public static function map(mixed $input, mixed $output, array $ignoredFields = []): object
     {
         if (is_string($output)) {
             $output = new $output();
@@ -24,6 +25,10 @@ class DataMapper
 
         foreach (get_object_vars((object)$input) as $key => $value) {
             if ($value === null) {
+                continue;
+            }
+
+            if (in_array($key, $ignoredFields, true)) {
                 continue;
             }
 
