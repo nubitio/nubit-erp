@@ -29,31 +29,7 @@ readonly class DataLoader
         $queryBuilder->select('e')
             ->from($options->entity, 'e');
 
-        $parent = get_parent_class($options->mapping);
-        $alias = null;
-        if ($parent) {
-            $obj = new $options->mapping();
-            foreach (get_object_vars($obj) as $key => $value) {
-                $type = ReflectionUtil::getPropertyType($obj, $key);
-                if ($parent === $type) {
-                    /** @var JoinRule $join */
-                    foreach ($options->joins as $join) {
-                        $joinColumn = substr($join->entity, strpos($join->entity, '.') + 1);
-                        if ($joinColumn === $key) {
-                            $alias = $join->alias;
-                            break;
-                        }
-                    }
-                }
-            }
-            /** @var FilterRule $filter */
-            foreach ($options->filters as $filter) {
-                $parentObj = new $parent();
-                if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
-                    $filter->field = $alias . '.' . $filter->field;
-                }
-            }
-        }
+        $this->fillFilterAlias($options->mapping, $options);
 
         $this->addJoins($queryBuilder, $options->joins);
         $this->addFilters($queryBuilder, $options->filters);
@@ -70,20 +46,56 @@ readonly class DataLoader
         $data = [];
 
         foreach ($paginator->getIterator() as $item) {
-            $parent = get_parent_class($options->mapping);
             $mappedItem = DataMapper::map($item, $options->mapping);
-            if ($parent) {
-                foreach (get_object_vars($mappedItem) as $key => $value) {
-                    $type = ReflectionUtil::getPropertyType($mappedItem, $key);
-                    if ($parent === $type) {
-                        DataMapper::map($mappedItem->$key, $mappedItem);
-                    }
-                }
-            }
+            $this->mapParent($options->mapping, $mappedItem);
             $data[] = $mappedItem;
         }
 
         return new Paginator($data, new ApiPlatformPaginator($paginator));
+    }
+
+    private function mapParent(string $mapping, object $mappedItem): void
+    {
+        $parent = get_parent_class($mapping);
+        if ($parent) {
+            foreach (get_object_vars($mappedItem) as $key => $value) {
+                $type = ReflectionUtil::getPropertyType($mappedItem, $key);
+                if ($parent === $type) {
+                    DataMapper::map($mappedItem->$key, $mappedItem, ['id']);
+                }
+            }
+            $this->mapParent($parent, $mappedItem);
+        }
+    }
+
+    private function fillFilterAlias(string $mapping, Options $options): void
+    {
+        $parent = get_parent_class($mapping);
+        $alias = null;
+        if ($parent) {
+            $obj = new $mapping();
+            foreach (get_object_vars($obj) as $key => $value) {
+                $type = ReflectionUtil::getPropertyType($obj, $key);
+                if ($parent === $type) {
+                    /** @var JoinRule $join */
+                    foreach ($options->joins as $join) {
+                        $joinColumn = substr($join->entity, strpos($join->entity, '.') + 1);
+                        if ($joinColumn === $key) {
+                            $alias = $join->alias;
+                            break;
+                        }
+                    }
+                    /** @var FilterRule $filter */
+                    foreach ($options->filters as $filter) {
+                        $parentObj = new $parent();
+                        if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
+                            $filter->field = $alias . '.' . $filter->field;
+                        }
+                    }
+                }
+            }
+            $this->fillFilterAlias($parent, $options);
+        }
     }
 
     /**

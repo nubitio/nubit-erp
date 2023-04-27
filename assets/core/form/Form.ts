@@ -611,6 +611,9 @@ export default class Form {
             },
             required: field.required,
         });
+        if (field.hidden) {
+            input.combobox('hide');
+        }
         this.formFields[field.name] = input;
     }
 
