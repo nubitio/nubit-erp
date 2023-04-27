@@ -127,6 +127,11 @@ export default class Performance {
             .name('obs')
             .label('Comentarios')
             .build())
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .name('suma')
+            .label('suma')
+            .build())
     };
 
     render() {

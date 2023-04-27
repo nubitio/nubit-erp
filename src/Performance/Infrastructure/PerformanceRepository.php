@@ -42,11 +42,11 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
     public function insert(Performance $performance): Performance
     {
         $entity = DataMapper::map($performance, PerformanceEntity::class);
-        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines->id);
+        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines?->id);
         $entity->lines = $line;
-        $product = $this->entityManager->getReference(ProductEntity::class, $performance->products->producto_id);
+        $product = $this->entityManager->getReference(ProductEntity::class, $performance->products?->producto_id);
         $entity->products = $product;
-        $type = $this->entityManager->getReference(ComboOptionEntity::class, $performance->types->id);
+        $type = $this->entityManager->getReference(ComboOptionEntity::class, $performance->types?->id);
         $entity->types = $type;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -63,11 +63,11 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
         }
 
         $entity = DataMapper::map($performance, $entity);
-        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines->id);
+        $line = $this->entityManager->getReference(ComboOptionEntity::class, $performance->lines?->id);
         $entity->lines = $line;
-        $product = $this->entityManager->getReference(ProductEntity::class, $performance->products->producto_id);
+        $product = $this->entityManager->getReference(ProductEntity::class, $performance->products?->producto_id);
         $entity->products = $product;
-        $type = $this->entityManager->getReference(ComboOptionEntity::class, $performance->types->id);
+        $type = $this->entityManager->getReference(ComboOptionEntity::class, $performance->types?->id);
         $entity->types = $type;
         $this->entityManager->flush();
 

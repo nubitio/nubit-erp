@@ -32,4 +32,9 @@ class Performance
     )
     {
     }
+    #[SerializedName('suma')]
+    public function getSum():float
+    {
+        return 10.0;
+    }
 }
