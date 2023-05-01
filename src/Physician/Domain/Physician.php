@@ -12,14 +12,20 @@ class Physician
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int $id = null,
+        public ?int       $id = null,
         #[SerializedName('employee')]
-        public ?Employee $employee = null,
+        public ?Employee  $employee = null,
         #[SerializedName('specialty')]
         public ?Specialty $specialty = null,
         #[SerializedName('licence')]
-        public ?string $licence = null
+        public ?string    $licence = null
     )
     {
+    }
+
+    #[SerializedName('full_name')]
+    public function getFullName(): string
+    {
+        return $this->employee?->getFullName();
     }
 }
