@@ -32,6 +32,7 @@ export class FieldBuilder {
             disabled: false,
             hidden: false,
             required: false,
+            precision: 0
         };
     }
 
@@ -162,6 +163,11 @@ export class FieldBuilder {
 
     required(required: boolean): FieldBuilder {
         this._field.required = required;
+        return this;
+    }
+
+    precision(value:number): FieldBuilder {
+        this._field.precision = value;
         return this;
     }
 

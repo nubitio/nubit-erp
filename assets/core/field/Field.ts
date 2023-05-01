@@ -27,4 +27,5 @@ export interface Field {
     disabled: boolean;
     hidden: boolean;
     required: boolean;
+    precision: number;
 }
