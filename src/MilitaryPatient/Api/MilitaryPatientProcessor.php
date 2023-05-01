@@ -33,7 +33,7 @@ readonly class MilitaryPatientProcessor implements ApiProcessorInterface
             return null;
         }
 
-        if ($data->id || intval($uriVariables['id']) > 0) {
+        if ($data->id || intval($uriVariables['id'] ?? 0) > 0) {
             if ($data->id) {
                 $data->id = intval($data->id);
             } else {
