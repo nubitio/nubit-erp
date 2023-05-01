@@ -442,6 +442,10 @@ label {
   box-shadow: 0 0 0 .2rem rgba(0, 123, 255, 0.25);
 }
 
+.textbox .numberbox {
+  min-height: calc(2.25rem + 2px) !important;
+}
+
 .datagrid-filter-c > .textbox .textbox-text {
   font-size: 12px;
   padding: 0 4px !important;
@@ -507,6 +511,14 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .datagrid-row {
   height: 36px;
+}
+
+.datagrid-row-editing .datagrid-cell {
+  height: 36px !important;
+}
+
+.datagrid-row-editing .textbox, .datagrid-row-editing .textbox-text {
+  height: 100% !important;
 }
 
 .datagrid-cell-rownumber {
