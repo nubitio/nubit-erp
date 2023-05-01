@@ -481,6 +481,7 @@ export default class Form {
             label: field.label,
             labelPosition: 'top',
             min: 0,
+            precision: field.precision ?? 0,
             validType: field.validators,
             onChange: (newValue: number, oldValue: number) => {
                 if (field.onChange) {

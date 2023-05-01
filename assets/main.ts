@@ -43,6 +43,8 @@ import Specialty from "./pages/Specialty";
 import Physician from "./pages/Physician";
 import Patient from "./pages/Patient";
 import MilitaryPatient from "./pages/MilitaryPatient";
+import Performance from "./pages/Performance";
+import ComboOption from "./pages/ComboOption";
 import Consultation from "./pages/Consultation";
 
 window.observer = bus;
@@ -90,6 +92,8 @@ window.app.specialty = Specialty;
 window.app.physician = Physician;
 window.app.patient = Patient;
 window.app.militaryPatient = MilitaryPatient;
+window.app.performance = Performance;
+window.app.comboOption = ComboOption;
 window.app.consultation = Consultation;
 
 window.addEventListener('load', () => {
