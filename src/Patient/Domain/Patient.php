@@ -34,7 +34,7 @@ class Patient extends Customer
     }
 
     #[SerializedName('full_name')]
-    public function getFullName(): string
+    public function getFullName(): ?string
     {
         return $this->customer?->razon_social;
     }

@@ -44,7 +44,7 @@ export default class DataGrid {
 
     setupView() {
         let table = document.createElement('table');
-        table.setAttribute('id', 'data-grid');
+        table.setAttribute('id', SharedUtils.randomId());
         this.container.appendChild(table);
         this.dataGrid = $('#' + table.id);
     }
