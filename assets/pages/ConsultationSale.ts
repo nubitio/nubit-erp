@@ -6,6 +6,8 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
+import {bus} from "../core/event/EventBus";
+import FilterRule from "../core/common/FilterRule";
 
 export default class ConsultationSale {
     private readonly container: string;
@@ -29,6 +31,7 @@ export default class ConsultationSale {
     constructor(container: string) {
         this.container = container;
         this.init();
+        this.setupObservers();
     }
 
     init() {
@@ -41,33 +44,44 @@ export default class ConsultationSale {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('consultation_id')
-            .label('Consultation id')
+            .type(FieldType.ENTITY)
+            .name('consultation')
+            .label('Consultation')
+            .url('api/consultations')
+            .valueField('id')
+            .textField('id')
+            .valueType('number')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('sale_id')
-            .label('Sale id')
+            .type(FieldType.ENTITY)
+            .name('sale')
+            .label('Sale')
+            .url('api/sales')
+            .valueField('movimiento_id')
+            .textField('numero')
+            .formatter((row: any) => `${row.sale.serie} - ${row.sale.numero}`)
+            .valueType('string')
+            .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('numero')
             .label('Voucher')
-            .formatter(SharedUtils.voucherFormatter)
+            .formatter((value: any, row: any) => SharedUtils.voucherFormatter(row.sale, row.sale))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('invoice')
             .label('Comprobante')
-            .formatter(SharedUtils.invoiceFormatter)
+            .formatter((value: any, row: any) => SharedUtils.invoiceFormatter(row.sale.invoice, row.sale))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('total')
             .label('Total')
             .align('right')
-            .formatter((value: any) => NumberUtils.formatCurrency(value))
+            .formatter((value: any, row: any) => NumberUtils.formatCurrency(row.sale.total))
             .build());
     };
 
@@ -76,10 +90,10 @@ export default class ConsultationSale {
         this.renderDialog(this.container);
     }
 
-    renderDataGrid(container: string) {
+    renderDataGrid(container: string, options?: any) {
         this.dataGrid = new DataGrid(container, this.fields, {
             title: 'ConsultationSale',
-            url: ConsultationSale.API_URL,
+            url: options?.url || ConsultationSale.API_URL,
             method: 'get',
             allowAdd: true,
             allowEdit: true,
@@ -96,6 +110,25 @@ export default class ConsultationSale {
         this.form = new Form(this.dialog.id, this.fields, {
             url: ConsultationSale.API_URL,
             events: ConsultationSale.EVENTS,
+        });
+    }
+
+    setupObservers() {
+        bus.on('consultation:select', (data: any) => {
+            let consultationField = this.fields.find(field => field.name === 'consultation');
+            if (consultationField) {
+                consultationField.defaultValue = data.id;
+            }
+            let saleField = this.fields.find(field => field.name === 'sale');
+            if (saleField) {
+                let filterRule: FilterRule = {
+                    field: 'c.ruc',
+                    op: 'equal',
+                    value: data.patient.customer.ruc
+                }
+                saleField.url = `api/sales?filterRules=[${JSON.stringify(filterRule)}]`;
+                this.form.getField('sale').combobox('reload');
+            }
         });
     }
 }

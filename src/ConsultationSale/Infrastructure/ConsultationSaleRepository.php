@@ -2,6 +2,7 @@
 
 namespace App\ConsultationSale\Infrastructure;
 
+use App\Consultation\Infrastructure\ConsultationEntity;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
@@ -9,6 +10,7 @@ use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\ConsultationSale\Domain\ConsultationSaleRepositoryInterface;
 use App\ConsultationSale\Domain\ConsultationSale;
+use App\Sale\Infrastructure\SaleEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class ConsultationSaleRepository implements ConsultationSaleRepositoryInterface
@@ -40,6 +42,8 @@ readonly class ConsultationSaleRepository implements ConsultationSaleRepositoryI
     public function insert(ConsultationSale $consultationSale): ConsultationSale
     {
         $entity = DataMapper::map($consultationSale, ConsultationSaleEntity::class);
+        $entity->consultation = $this->entityManager->getReference(ConsultationEntity::class, $consultationSale->consultation?->id);
+        $entity->sale = $this->entityManager->getReference(SaleEntity::class, $consultationSale->sale?->movimiento_id);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -55,6 +59,8 @@ readonly class ConsultationSaleRepository implements ConsultationSaleRepositoryI
         }
 
         $entity = DataMapper::map($consultationSale, $entity);
+        $entity->consultation = $this->entityManager->getReference(ConsultationEntity::class, $consultationSale->consultation?->id);
+        $entity->sale = $this->entityManager->getReference(SaleEntity::class, $consultationSale->sale?->movimiento_id);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, ConsultationSale::class);
