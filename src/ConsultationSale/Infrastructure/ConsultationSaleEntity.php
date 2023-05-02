@@ -2,7 +2,9 @@
 
 namespace App\ConsultationSale\Infrastructure;
 
+use App\Consultation\Infrastructure\ConsultationEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Sale\Infrastructure\SaleEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -14,11 +16,13 @@ class ConsultationSaleEntity
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
-        public ?int $id = null,
-        #[ORM\Column(name: 'consultation_id', type: 'integer')]
-        public ?int $consultation_id = null,
-        #[ORM\Column(name: 'sale_id', type: 'integer')]
-        public ?int $sale_id = null
+        public ?int                $id = null,
+        #[ORM\ManyToOne(targetEntity: ConsultationEntity::class)]
+        #[ORM\JoinColumn(name: 'consultation_id', referencedColumnName: 'id')]
+        public ?ConsultationEntity $consultation = null,
+        #[ORM\ManyToOne(targetEntity: SaleEntity::class)]
+        #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'movimiento_id')]
+        public ?SaleEntity         $sale = null
     )
     {
     }

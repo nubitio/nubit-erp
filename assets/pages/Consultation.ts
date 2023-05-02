@@ -8,6 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import ConsultationSale from "./ConsultationSale";
 import {messenger} from "../core/utils/Messenger";
+import {bus} from "../core/event/EventBus";
 
 export default class Consultation {
     private readonly container: string;
@@ -120,6 +121,7 @@ export default class Consultation {
                         messenger.show('Info', 'Debe seleccionar una consulta');
                         return;
                     }
+                    bus.emit('consultation:select', selected)
                     this.paymentsDrawer.show();
                 }
             }],
