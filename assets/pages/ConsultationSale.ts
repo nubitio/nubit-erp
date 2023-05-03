@@ -60,7 +60,7 @@ export default class ConsultationSale {
             .url('api/sales')
             .valueField('movimiento_id')
             .textField('numero')
-            .formatter((row: any) => `${row.sale.serie} - ${row.sale.numero}`)
+            .formatter((row: any) => `<b>Voucher: ${row.serie}-${row.numero}</b><br><b>C.P:</b> ${row.invoice??''}<br><b>Total:</b> ${NumberUtils.formatCurrency(row.total)}`)
             .valueType('string')
             .visible(false)
             .build());
@@ -68,6 +68,7 @@ export default class ConsultationSale {
             .type(FieldType.NONE)
             .name('numero')
             .label('Voucher')
+            .width(100)
             .formatter((value: any, row: any) => SharedUtils.voucherFormatter(row.sale, row.sale))
             .build());
         this.fields.push(new FieldBuilder()
@@ -91,15 +92,17 @@ export default class ConsultationSale {
     }
 
     renderDataGrid(container: string, options?: any) {
-        this.dataGrid = new DataGrid(container, this.fields, {
+        let defaultOptions = {
             title: 'ConsultationSale',
-            url: options?.url || ConsultationSale.API_URL,
+            url: ConsultationSale.API_URL,
             method: 'get',
             allowAdd: true,
             allowEdit: true,
             allowDelete: true,
             events: ConsultationSale.EVENTS,
-        });
+        }
+
+        this.dataGrid = new DataGrid(container, this.fields, Object.assign(defaultOptions, options));
     }
 
     renderDialog(container: string) {
@@ -118,6 +121,7 @@ export default class ConsultationSale {
             let consultationField = this.fields.find(field => field.name === 'consultation');
             if (consultationField) {
                 consultationField.defaultValue = data.id;
+                this.form.getField('consultation').combobox('hide');
             }
             let saleField = this.fields.find(field => field.name === 'sale');
             if (saleField) {
@@ -129,6 +133,12 @@ export default class ConsultationSale {
                 saleField.url = `api/sales?filterRules=[${JSON.stringify(filterRule)}]`;
                 this.form.getField('sale').combobox('reload');
             }
+            let patientFilter: FilterRule = {
+                field: 'c.patient',
+                op: 'equal',
+                value: data.patient.id
+            }
+            this.dataGrid.addFilterRule(patientFilter);
         });
     }
 }
