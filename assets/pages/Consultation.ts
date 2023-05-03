@@ -148,7 +148,10 @@ export default class Consultation {
             events: ConsultationSale.EVENTS,
         });
 
-        consultationSale.renderDataGrid(this.paymentsDrawer.id)
+        consultationSale.renderDataGrid(this.paymentsDrawer.id, {
+            title: 'Pagos',
+            pagination: false,
+        })
         consultationSale.renderDialog(this.container)
     }
 }

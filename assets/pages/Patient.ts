@@ -4,6 +4,8 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import Customer from "./Customer";
+import {router} from "../core/router/Router";
+import {messenger} from "../core/utils/Messenger";
 
 export default class Patient extends Customer {
     protected readonly container: string;
@@ -92,6 +94,19 @@ export default class Patient extends Customer {
             allowEdit: true,
             allowDelete: true,
             events: Patient.EVENTS,
+            toolbar: [{
+                text: 'Historia Clínica',
+                iconCls: 'fas fa-1x fa-file-medical text-info',
+                handler: () => {
+                    let selected = this.dataGrid.selectedRow;
+
+                    if (!selected) {
+                        messenger.show('Info', 'Debe seleccionar un registro');
+                    }
+
+                    router.navigate('/medical-record/' + selected.id);
+                }
+            }]
         });
     }
 
