@@ -5,6 +5,8 @@ namespace App\Performance\Domain;
 use App\ComboOption\Domain\ComboOption;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Product\Domain\Product;
+use DateTime;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -32,9 +34,67 @@ class Performance
     )
     {
     }
-    #[SerializedName('suma')]
-    public function getSum():float
+    #[SerializedName('nominal')]
+    public function getProdNominal():int
     {
-        return 10.0;
+        $value = intval($this->types->_value);
+        return match ($value) {
+            220 => 13600,
+            400, 450 => 7000,
+            620 => 4500,
+            650 => 5385,
+            2 => 2500,
+            3 => 1800,
+            default => 0,
+        };
+    }
+    #[SerializedName('real')]
+    public function getProdReal():float
+    {
+        $result = 0;
+        if ($this->getNumericWorkedTime() * 24 != 0) {
+            $result = $this->getProdRealOpt();
+            $result *= $this->quantity / ($this->getNumericWorkedTime() * 24);
+        }
+        return round($result);
+    }
+    #[SerializedName('efficiency')]
+    public function getEfficiency():int
+    {
+        $efficiency = 0;
+        $real = $this->getProdReal();
+        $pNom = $this->getProdNominal();
+        if($this->getProdReal() != 0)
+        {
+            $efficiency = $real/$pNom;
+            $efficiency = round($efficiency,2) * 100;
+        }
+        return $efficiency;
+    }
+    #[SerializedName('workedTime')]
+    public function getWorkedTime():string
+    {
+        $diff = $this->start->diff($this->end);
+        return $diff->format('%H:%I');
+    }
+
+    private function getNumericWorkedTime():float
+    {
+        $diff = $this->start->diff($this->end);
+        return ($diff->h / 24) + ($diff->i / (24*60));
+    }
+
+    private  function getProdRealOpt():int{
+        $value = intval($this->types->_value);
+        return match ($value) {
+            220 => 18180,
+            400 => 10000,
+            450 => 8888,
+            620 => 6450,
+            650 => 6155,
+            2 => 2000,
+            3 => 1333,
+            default => 0,
+        };
     }
 }
