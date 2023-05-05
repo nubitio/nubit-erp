@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class Performance {
     private readonly container: string;
@@ -104,34 +105,57 @@ export default class Performance {
             .type(FieldType.DATE)
             .name('date')
             .label('Fecha')
+            .defaultValue('Today')
+            .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TIME)
+            .type(FieldType.TIMES)
             .name('start')
             .label('Hora inicio')
+            .formatter(SharedUtils.timeFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TIME)
+            .type(FieldType.TIMES)
             .name('end')
             .label('Hora de fin')
+            .formatter(SharedUtils.timeFormatter)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .name('workedTime')
+            .label('Hrs Trab')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NUMBER)
             .valueType('float')
             .precision(3)
             .name('quantity')
-            .label('Cantidad de producciones')
+            .label('Nro de prod')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .name('nominal')
+            .valueType('float')
+            .precision(3)
+            .label('P.nominal')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .name('real')
+            .valueType('float')
+            .label('P.real')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .name('efficiency')
+            .valueType('number')
+            .label('Eficiencia')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('obs')
             .label('Comentarios')
-            .build())
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.NONE)
-            .name('suma')
-            .label('suma')
-            .build())
+            .build());
     };
 
     render() {

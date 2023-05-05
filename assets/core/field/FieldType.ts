@@ -5,6 +5,7 @@ export enum FieldType {
     TEXTAREA = 'textarea',
     DATE = 'date',
     TIME = 'time',
+    TIMES = 'times',
     NUMBER = 'number',
     CURRENCY = 'currency',
     SELECT = 'select',

@@ -322,6 +322,9 @@ export default class Form {
                 case FieldType.TIME:
                     this.buildTimeInput(field);
                     break;
+                case FieldType.TIMES:
+                    this.buildTimeSpinnerInput(field)
+                    break;
                 case FieldType.NUMBER:
                     this.buildNumberInput(field);
                     break;
@@ -468,6 +471,21 @@ export default class Form {
                     field.onChange(newValue, oldValue, field);
                 }
             }
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildTimeSpinnerInput(field: Field) {
+        let input = $('#' + field.name);
+        input.timespinner({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            required: field.required,
+            hour12: false,
+            showSeconds: false,
+            ampm: ['AM','PM'],
+            highlight: 0
         });
         this.formFields[field.name] = input;
     }
