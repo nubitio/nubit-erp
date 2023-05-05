@@ -123,4 +123,9 @@ export class SharedUtils {
         const date = new Date(value);
         return date.toLocaleDateString('es-PE', {timeZone: 'UTC'});
     }
+
+    static timeFormatter(value: string) {
+        const time = new Date(value);
+        return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
+    }
 }
