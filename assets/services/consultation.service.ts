@@ -1,5 +1,6 @@
 import {httpClient} from "../core/http/HttpClient";
 import FilterRule from "../core/common/FilterRule";
+import {ConsultationDto} from "../dto/consultation.dto";
 
 class ConsultationService {
     getConsultationsByPatientId(patientId: number) {
@@ -8,7 +9,7 @@ class ConsultationService {
             op: 'equal',
             value: patientId
         }
-        return httpClient.get<any>(`/api/consultations?filterRules=[${JSON.stringify(patientFilter)}]`);
+        return httpClient.get<ConsultationDto[]>(`/api/consultations?filterRules=[${JSON.stringify(patientFilter)}]`);
     }
 }
 
