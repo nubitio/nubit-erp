@@ -31,9 +31,9 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: stg
-      secrets:
-        SSH_HOST: ${{ vars.STG_SSH_HOST }}
-        SSH_HOST_KEY: ${{ vars.STG_SSH_HOST_KEY }}
-        SSH_USER: ${{ vars.STG_SSH_USER }}
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    secrets:
+      SSH_HOST: ${{ vars.STG_SSH_HOST }}
+      SSH_HOST_KEY: ${{ vars.STG_SSH_HOST_KEY }}
+      SSH_USER: ${{ vars.STG_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     needs: [ build, unit_tests ]
