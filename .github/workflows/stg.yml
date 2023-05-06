@@ -11,24 +11,24 @@ on:
 jobs:
   static_code_analysis:
     name: Static Code Analysis
-    uses: ./github/workflows/analyze.yml@develop
+    uses: ./.github/workflows/analyze.yml@develop
 
   code_quality_check:
     name: Code Quality Check
-    uses: ./github/workflows/code_quality.yml@develop
+    uses: ./.github/workflows/code_quality.yml@develop
 
   build:
     name: Build
-    uses: ./github/workflows/build.yml@develop
+    uses: ./.github/workflows/build.yml@develop
     needs: [ static_code_analysis, code_quality_check ]
 
   unit_tests:
     name: Unit Tests
-    uses: ./github/workflows/test.yml@develop
+    uses: ./.github/workflows/test.yml@develop
 
   deployment:
     name: Deployment
-    uses: ./github/workflows/deploy.yml@develop
+    uses: ./.github/workflows/deploy.yml@develop
     with:
       environment: stg
     needs: [ build, unit_tests ]
