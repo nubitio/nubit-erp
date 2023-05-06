@@ -15,4 +15,9 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: prod
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
     needs: [ build ]
