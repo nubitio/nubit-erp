@@ -2,8 +2,8 @@ import {useEffect, useRef, useState} from "react";
 import {Observable} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 
-export function useService(subscription: Observable<ApiResponse<any>>, initialState?: any) {
-    const [data, setData] = useState(initialState);
+export function useService<T>(subscription: Observable<ApiResponse<any>>, initialState?: any): [T, boolean, boolean, string] {
+    const [data, setData] = useState<T>(initialState);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string>('');
