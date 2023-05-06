@@ -36,6 +36,8 @@ readonly class PatientRepository implements PatientRepositoryInterface
             return null;
         }
 
+
+
         return DataMapper::map($entity, Patient::class);
     }
 

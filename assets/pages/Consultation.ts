@@ -5,6 +5,10 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Drawer} from "../core/drawer/Drawer";
+import ConsultationSale from "./ConsultationSale";
+import {messenger} from "../core/utils/Messenger";
+import {bus} from "../core/event/EventBus";
 
 export default class Consultation {
     private readonly container: string;
@@ -12,6 +16,7 @@ export default class Consultation {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
+    private paymentsDrawer: Drawer;
 
     static readonly API_URL = 'api/consultations';
 
@@ -96,6 +101,7 @@ export default class Consultation {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        this.renderPayments();
     }
 
     renderDataGrid() {
@@ -106,6 +112,19 @@ export default class Consultation {
             allowAdd: true,
             allowEdit: true,
             allowDelete: true,
+            toolbar: [{
+                text: 'Pagos',
+                iconCls: 'fas fa-receipt fa-1x text-info',
+                handler: () => {
+                    let selected = this.dataGrid.selectedRow;
+                    if (!selected) {
+                        messenger.show('Info', 'Debe seleccionar una consulta');
+                        return;
+                    }
+                    bus.emit('consultation:select', selected)
+                    this.paymentsDrawer.show();
+                }
+            }],
             events: Consultation.EVENTS,
         });
     }
@@ -119,5 +138,20 @@ export default class Consultation {
             url: Consultation.API_URL,
             events: Consultation.EVENTS,
         });
+    }
+
+    renderPayments() {
+        const consultationSale = new ConsultationSale(this.container);
+
+        this.paymentsDrawer = new Drawer({
+            width: 500,
+            events: ConsultationSale.EVENTS,
+        });
+
+        consultationSale.renderDataGrid(this.paymentsDrawer.id, {
+            title: 'Pagos',
+            pagination: false,
+        })
+        consultationSale.renderDialog(this.container)
     }
 }

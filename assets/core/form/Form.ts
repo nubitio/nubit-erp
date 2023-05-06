@@ -623,6 +623,7 @@ export default class Form {
             textField: field.textField,
             panelHeight: 200,
             limitToList: true,
+            formatter: field.formatter,
             onSelect: (record: any) => {
                 if (field.onSelect) {
                     field.onSelect(record, field);

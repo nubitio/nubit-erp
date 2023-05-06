@@ -24,7 +24,7 @@ class Physician
     }
 
     #[SerializedName('full_name')]
-    public function getFullName(): string
+    public function getFullName(): ?string
     {
         return $this->employee?->getFullName();
     }
