@@ -109,13 +109,13 @@ export default class Performance {
             .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TIMES)
+            .type(FieldType.TIME_SPINNER)
             .name('start')
             .label('Hora inicio')
             .formatter(SharedUtils.timeFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TIMES)
+            .type(FieldType.TIME_SPINNER)
             .name('end')
             .label('Hora de fin')
             .formatter(SharedUtils.timeFormatter)
