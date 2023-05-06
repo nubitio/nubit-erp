@@ -182,7 +182,6 @@ export default class PriceList {
                         price: parseFloat(data[i].price)
                     });
                 }
-                console.log(prices);
                 httpClient.post<any>('price-list/update', prices).subscribe(
                     response => {
                         SharedUtils.showMessage('Info', response.data.msg);
