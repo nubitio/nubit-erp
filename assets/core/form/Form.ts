@@ -323,7 +323,7 @@ export default class Form {
                 case FieldType.TIME:
                     this.buildTimeInput(field);
                     break;
-                case FieldType.TIMES:
+                case FieldType.TIME_SPINNER:
                     this.buildTimeSpinnerInput(field)
                     break;
                 case FieldType.NUMBER:

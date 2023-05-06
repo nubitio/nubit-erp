@@ -8,11 +8,11 @@ on:
 jobs:
   build:
     name: Build
-    uses: ./github/workflows/build.yml
+    uses: ./.github/workflows/build.yml
 
   deployment:
     name: Deployment
-    uses: ./github/workflows/deploy.yml
+    uses: ./.github/workflows/deploy.yml
     with:
       environment: prod
     needs: [ build ]
