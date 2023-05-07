@@ -1,8 +1,14 @@
+/**
+ * DataGrid DetailView for jQuery EasyUI
+ * version: 1.0.2
+ */
+
 $.extend($.fn.datagrid.defaults, {
 	autoUpdateDetail: true  // Define if update the row detail content when update a row
 });
 
 var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
+	type: 'detailview',
 	render: function(target, container, frozen){
 		var state = $.data(target, 'datagrid');
 		var opts = state.options;
@@ -107,11 +113,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				if (col.checkbox){
 					cc.push('class="datagrid-cell-check ');
 				} else {
-					if (col.cellClass){
-						cc.push('class="datagrid-cell ' + col.cellClass);
-					}else {
-						cc.push('class="datagrid-cell-rownumber');
-					}
+					cc.push('class="datagrid-cell ' + col.cellClass);
 				}
 				cc.push('">');
 
@@ -145,6 +147,8 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 		var rowLength = $(target).datagrid('getRows').length;
 		if (rowLength == 0){
 			$(target).datagrid('loadData',{total:1,rows:[row]});
+			var insertedRows = $.data(target, 'datagrid').insertedRows;
+			insertedRows.push(row);
 			return;
 		}
 
@@ -227,7 +231,7 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				e.stopPropagation();
 
 			} else {
-				clickHandler(e);
+				// clickHandler(e);
 			}
 		});
 	},
@@ -480,6 +484,7 @@ $.extend($.fn.datagrid.methods, {
 						}
 					},
 					onLoadSuccess: function(data){
+						var opts = $(this).datagrid('options');
 						setParentHeight(this);
 						if (conf.options.onLoadSuccess){
 							conf.options.onLoadSuccess.call(this, data);
