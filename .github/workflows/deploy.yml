@@ -54,6 +54,9 @@ jobs:
       - name: Add known hosts
         run: echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
 
+      - name: Enable maintenance mode
+        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && touch .maintenance"
+
       - name: Delete old files
         run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -rf /web/vendor && rm -rf /web/public/build && rm -rf /web/public/assets"
 
@@ -62,3 +65,13 @@ jobs:
 
       - name: Clear cache
         run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && php8.2 bin/console cache:clear"
+
+      - name: Get latest tag
+        id: latest_tag
+        run: echo ::set-output name=tag::$(git describe --tags --always)
+
+      - name: Update version
+        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && echo ${{ steps.latest_tag.outputs.tag }} > .version"
+
+      - name: Disable maintenance mode
+        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && rm .maintenance"
