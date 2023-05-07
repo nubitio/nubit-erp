@@ -21,14 +21,16 @@ class SettingsExtension extends AbstractExtension
         ];
     }
 
-    public function getSetting(string $settingName): string
+    public function getSetting(string $settingName): mixed
     {
         $version = 'dev';
-        $maintenance = 'false';
 
         if ($settingName === 'version') {
             $versionFile = dirname(__DIR__, 4) . '/.version';
-            $version = file_exists($versionFile) ? trim(file_get_contents($versionFile)) : 'dev';
+            if (file_exists($versionFile)) {
+                $fileContent = file_get_contents($versionFile);
+                $version = trim(strval($fileContent ?: $version));
+            }
         }
 
         return match ($settingName) {
