@@ -37,11 +37,12 @@ export default class Physician {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('employee')
-            .label('Employee')
+            .label('Empleado')
             .width(100)
             .url('api/employees')
             .valueField('id')
@@ -53,7 +54,7 @@ export default class Physician {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('specialty')
-            .label('Specialty')
+            .label('Especialidad')
             .url('api/specialties')
             .valueField('id')
             .textField('name')
@@ -64,7 +65,7 @@ export default class Physician {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('licence')
-            .label('Licence')
+            .label('Licencia')
             .build())
     };
 
@@ -75,7 +76,7 @@ export default class Physician {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Physician',
+            title: 'Médicos',
             url: Physician.API_URL,
             method: 'get',
             allowAdd: true,

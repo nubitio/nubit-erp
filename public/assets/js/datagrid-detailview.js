@@ -113,7 +113,11 @@ var detailview = $.extend({}, $.fn.datagrid.defaults.view, {
 				if (col.checkbox){
 					cc.push('class="datagrid-cell-check ');
 				} else {
-					cc.push('class="datagrid-cell ' + col.cellClass);
+					if (col.cellClass) {
+						cc.push('class="datagrid-cell ' + col.cellClass);
+					} else {
+						cc.push('class="datagrid-cell-rownumber');
+					}
 				}
 				cc.push('">');
 

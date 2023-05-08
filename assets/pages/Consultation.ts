@@ -48,7 +48,7 @@ export default class Consultation {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('patient')
-            .label('Patient')
+            .label('Paciente')
             .url('api/patients')
             .valueField('id')
             .textField('razon_social')
@@ -59,7 +59,7 @@ export default class Consultation {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('physician')
-            .label('Physician')
+            .label('Médico')
             .url('api/physicians')
             .valueField('id')
             .textField('full_name')
@@ -70,31 +70,31 @@ export default class Consultation {
         this.fields.push(new FieldBuilder()
             .type(FieldType.DATE)
             .name('date')
-            .label('Date')
+            .label('Fecha')
             .formatter(SharedUtils.dateFormatter)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('reason')
-            .label('Reason')
+            .label('Motivo')
             .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXTAREA)
             .name('diagnosis')
-            .label('Diagnosis')
+            .label('Diagnóstico')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXTAREA)
             .name('treatment')
-            .label('Treatment')
+            .label('Tratamiento')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXTAREA)
             .name('notes')
-            .label('Notes')
+            .label('Notas')
             .build())
     };
 
@@ -106,7 +106,7 @@ export default class Consultation {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Consultation',
+            title: 'Consultas',
             url: Consultation.API_URL,
             method: 'get',
             allowAdd: true,

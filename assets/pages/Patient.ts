@@ -87,7 +87,7 @@ export default class Patient extends Customer {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Patient',
+            title: 'Pacientes',
             url: Patient.API_URL,
             method: 'get',
             allowAdd: true,

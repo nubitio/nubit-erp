@@ -3,6 +3,7 @@ import {ToolbarItem} from "devextreme-react/popup";
 import {useCallback, useEffect, useState} from "react";
 import {bus} from "../../core/event/EventBus";
 import NumberUtils from "../../core/utils/NumberUtils";
+import "../../styles/dx.material.efact.scss"
 
 export enum DiscountDialogEvent {
     OPEN = 'discount:dialog:open',
