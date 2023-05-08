@@ -52,17 +52,17 @@ export default class MilitaryPatient extends Patient {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('cip_code')
-            .label('Cip code')
+            .label('Código CIP')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('rank')
-            .label('Rank')
+            .label('Grado')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('weapon_code')
-            .label('Weapon code')
+            .label('Arma')
             .build())
     };
 
@@ -73,7 +73,7 @@ export default class MilitaryPatient extends Patient {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'MilitaryPatient',
+            title: 'Pacientes',
             url: MilitaryPatient.API_URL,
             method: 'get',
             allowAdd: true,

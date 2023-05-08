@@ -2,7 +2,8 @@ import {useEffect} from "react";
 import Supplier from "../Supplier";
 
 export const SupplierPage = () => {
-    const supplier = new Supplier('wrapper')
+    const container = "wrapper"
+    const supplier = new Supplier(container)
     let alreadyRender = false;
 
     useEffect(() => {
@@ -13,7 +14,7 @@ export const SupplierPage = () => {
     }, [])
 
     return (
-        <div id="wrapper">
+        <div id={container}>
         </div>
     );
 };
