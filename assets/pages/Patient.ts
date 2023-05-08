@@ -49,24 +49,15 @@ export default class Patient extends Customer {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.ENUM)
-            .name('type_id')
+            .type(FieldType.ENTITY)
+            .name('type')
             .label('Tipo')
-            .data([
-                {value: 1, text: 'Particular'},
-                {value: 2, text: 'Asegurado'},
-            ])
-            .formatter((value: any) => {
-                switch (value) {
-                    case 1:
-                        return 'Particular';
-                    case 2:
-                        return 'Asegurado';
-                    default:
-                        return '';
-                }
-            })
+            .url('api/patient-types')
+            .valueField('id')
+            .textField('name')
+            .formatter((value: any) => value?.name)
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)

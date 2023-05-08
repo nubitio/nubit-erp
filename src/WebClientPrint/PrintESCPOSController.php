@@ -73,14 +73,11 @@ class PrintESCPOSController extends BaseController
         $printer->text('Fecha emision: ' . $docDate . "\n");
         $printer->text("Moneda: Soles\n");
         $printer->text($divider);
+        $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
         if ($voucher->voucher_type == DocType::FACTURA->value) {
-            $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
             $printer->text('RUC: ' . $voucher->customer_doc_number . "\n");
         } elseif ($voucher->voucher_type == DocType::BOLETA->value) {
-            $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
             $printer->text('DNI: ' . $voucher->customer_doc_number . "\n");
-        } else {
-            $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
         }
         $printer->text('DIRECCION: ' . $voucher->customer_address . "\n");
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {

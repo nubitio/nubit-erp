@@ -32,6 +32,7 @@ readonly class MilitaryPatientProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.patient', 'p'));
+            $context = OptionUtils::addJoin($context, new JoinRule('p.type', 't'));
             $context = OptionUtils::addJoin($context, new JoinRule('p.customer', 'c'));
             $context = OptionUtils::addJoin($context, new JoinRule('c.price_list', 'pl', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('c.razon_social', 'asc'));

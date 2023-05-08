@@ -33,6 +33,7 @@ readonly class PatientProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.customer', 'c'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.type', 't'));
             $context = OptionUtils::addJoin($context, new JoinRule('c.price_list', 'p', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('c.razon_social', 'asc'));
             $options = OptionsBuilder::build($context, PatientEntity::class, Patient::class);

@@ -1,0 +1,9 @@
+{% extends 'sale/report/invoice.html.twig' %}
+
+{% block extra %}
+    {{ parent() }}
+    CIP: {{ patient.cip_code }} <br>
+    GRADO: {{ patient.rank }} <br>
+    ARMA: {{ patient.weapon_code }} <br>
+    Nº HISTORIA: {{ patient.medical_record_number }} <br>
+{% endblock %}
