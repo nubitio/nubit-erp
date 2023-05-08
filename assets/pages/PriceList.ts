@@ -174,7 +174,7 @@ export default class PriceList {
         bus.on(EVENTS.SAVE, () => {
                 let row = this.dataGrid.selectedRow;
                 let data = pricesGrid.datagrid('getChanges');
-                let prices = [];
+                let prices: { price_list_id: number, product_id: string, price: number }[] = [];
                 for (let i = 0; i < data.length; i++) {
                     prices.push({
                         price_list_id: row.id,

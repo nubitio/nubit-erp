@@ -1,0 +1,17 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { appRoutes } from './app-routes';
+import {SideNavOuterToolbar} from "./layouts/side-nav/SideNavOuterToolbar";
+
+export const Content = () => {
+    return (
+        <SideNavOuterToolbar title='Efact'>
+            <Routes>
+                {appRoutes.map(({ path, element }) => (
+                    <Route key={path} path={path} element={element} />
+                ))}
+                <Route path='*' element={<Navigate to='/crm-contact-list' />} />
+            </Routes>
+        </SideNavOuterToolbar>
+    );
+};

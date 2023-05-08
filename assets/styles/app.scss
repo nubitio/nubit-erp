@@ -25,6 +25,12 @@ pre {
   color: var(--text-color);
 }
 
+#wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .wrapper {
   height: 100%;
   opacity: 0;

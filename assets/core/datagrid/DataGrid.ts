@@ -5,7 +5,7 @@ import {bus} from "../event/EventBus";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../http/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
-import DataGridUtils from "../utils/DataGridUtils";
+import DataGridUtils from "./DataGridUtils";
 import FilterRule from "../common/FilterRule";
 
 export default class DataGrid {
