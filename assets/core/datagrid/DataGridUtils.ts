@@ -1,7 +1,8 @@
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
 import {httpClient} from "../http/HttpClient";
-import {DateUtils} from "./DateUtils";
+import {DateUtils} from "../utils/DateUtils";
+import {EnumData} from "../types";
 
 export default class DataGridUtils {
     static makeFilter(grid: JQuery, field: Field): any {
@@ -72,7 +73,7 @@ export default class DataGridUtils {
     }
 
     static makeEnumFilter(grid: JQuery, field: Field): any {
-        let data = [];
+        let data: EnumData[] = [];
         data.push({value: '', text: 'Todos'});
         data = data.concat(field.data);
         return {

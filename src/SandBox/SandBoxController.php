@@ -23,4 +23,10 @@ class SandBoxController extends BaseController
             'content' => $content,
         ]);
     }
+
+    #[Route('/spa', name: 'sandbox_spa', methods: ['GET'])]
+    public function spa(): Response
+    {
+        return $this->render('layout/index.html.twig');
+    }
 }
