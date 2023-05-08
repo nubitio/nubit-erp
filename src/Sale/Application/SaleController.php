@@ -102,7 +102,7 @@ class SaleController extends BaseController
         $template = 'sale/report/invoice.html.twig';
         if ($voucher->company_id == '20369393546') {
             $template = 'sale/report/hmr_invoice.html.twig';
-            $patient = $getOneMilitaryPatientByCustomerIdUseCase($voucher->customer_doc_number);
+            $patient = $getOneMilitaryPatientByCustomerIdUseCase(strval($voucher->customer_doc_number));
         }
         $content = $this->renderView($template, [
             'qr'      => $qr,
