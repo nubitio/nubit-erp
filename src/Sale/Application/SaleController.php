@@ -6,6 +6,8 @@ use App\Base\BaseController;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\MilitaryPatient\Domain\GetOneMilitaryPatientByCustomerIdUseCase;
+use App\MilitaryPatient\Domain\GetOneMilitaryPatientUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
@@ -89,7 +91,7 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById): Response
+    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById, GetOneMilitaryPatientByCustomerIdUseCase $getOneMilitaryPatientByCustomerIdUseCase): Response
     {
         $voucher = $getOneById($id);
         $qr = '';
@@ -97,9 +99,15 @@ class SaleController extends BaseController
             $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));
         }
 
-        $content = $this->renderView('sale/report/invoice.html.twig', [
-            'qr'   => $qr,
+        $template = 'sale/report/invoice.html.twig';
+        if ($voucher->company_id == '20369393546') {
+            $template = 'sale/report/hmr_invoice.html.twig';
+            $patient = $getOneMilitaryPatientByCustomerIdUseCase($voucher->customer_doc_number);
+        }
+        $content = $this->renderView($template, [
+            'qr'      => $qr,
             'voucher' => $voucher,
+            'patient' => $patient ?? null,
         ]);
 
         $preview = $request->get('preview');

@@ -4,6 +4,7 @@ namespace App\Patient\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
+use App\PatientType\Domain\PatientType;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -14,8 +15,8 @@ class Patient extends Customer
         public ?int                $id = null,
         #[SerializedName('customer')]
         public ?Customer           $customer = null,
-        #[SerializedName('type_id')]
-        public ?int                $type_id = null,
+        #[SerializedName('type')]
+        public ?PatientType        $type = null,
         #[SerializedName('insurance_provider')]
         public ?string             $insurance_provider = null,
         #[SerializedName('medical_record_number')]

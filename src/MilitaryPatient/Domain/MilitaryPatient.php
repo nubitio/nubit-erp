@@ -4,6 +4,7 @@ namespace App\MilitaryPatient\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Patient\Domain\Patient;
+use App\PatientType\Domain\PatientType;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]

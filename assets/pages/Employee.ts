@@ -39,27 +39,32 @@ export default class Employee {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('id_number')
-            .label('Id number')
+            .label('DNI')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('first_name')
-            .label('First name')
+            .label('Nombres')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('last_name')
-            .label('Last name')
+            .label('Apellidos')
             .width(100)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENUM)
             .name('gender')
-            .label('Gender')
+            .label('Sexo')
+            .required(true)
             .data([
                 {value: 1, text: "Masculino"},
                 {value: 2, text: "Femenino"}
@@ -77,29 +82,29 @@ export default class Employee {
         this.fields.push(new FieldBuilder()
             .type(FieldType.DATE)
             .name('birthdate')
-            .label('Birthdate')
+            .label('Fecha de nacimiento')
             .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('address')
-            .label('Address')
+            .label('Dirección')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('phone')
-            .label('Phone')
+            .label('Teléfono')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.DATE)
             .name('hire_date')
-            .label('Hire date')
+            .label('Fecha de contratación')
             .formatter(SharedUtils.dateFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('position')
-            .label('Position')
+            .label('Cargo')
             .url('api/positions')
             .valueField('id')
             .textField('name')
@@ -110,13 +115,13 @@ export default class Employee {
         this.fields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
             .name('salary')
-            .label('Salary')
+            .label('Salario')
             .formatter((value: number) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
             .name('active')
-            .label('Active')
+            .label('Activo')
             .formatter(SharedUtils.booleanFormatter)
             .defaultValue(true)
             .build())
@@ -129,7 +134,7 @@ export default class Employee {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Employee',
+            title: 'Empleados',
             url: Employee.API_URL,
             method: 'get',
             allowAdd: true,

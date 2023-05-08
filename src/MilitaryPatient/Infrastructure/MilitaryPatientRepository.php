@@ -11,8 +11,10 @@ use App\Customer\Infrastructure\CustomerEntity;
 use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\MilitaryPatientRepositoryInterface;
 use App\Patient\Infrastructure\PatientEntity;
+use App\PatientType\Infrastructure\PatientTypeEntity;
 use App\PriceList\Infrastructure\PriceListEntity;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 
 readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInterface
 {
@@ -59,6 +61,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
 
         $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $militaryPatient->price_list?->id);
         $patient->customer = $customer;
+        $patient->type = $this->entityManager->getReference(PatientTypeEntity::class, $militaryPatient->patient?->type?->id);
         $entity = DataMapper::map($militaryPatient, MilitaryPatientEntity::class);
         $entity->patient = $patient;
         $this->entityManager->persist($customer);
@@ -85,6 +88,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
         /** @var PatientEntity $patient */
         $patient = DataMapper::map($militaryPatient, $patient, ['id']);
         $patient->customer = $customer;
+        $patient->type = $this->entityManager->getReference(PatientTypeEntity::class, $militaryPatient->type?->id);
         $entity = DataMapper::map($militaryPatient, $entity);
         $entity->patient = $patient;
         $this->entityManager->flush();
@@ -102,5 +106,22 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
 
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function getOneByCustomerId(string $id): ?MilitaryPatient
+    {
+        $query = $this->entityManager->createQueryBuilder()
+            ->select('m')
+            ->from(MilitaryPatientEntity::class, 'm')
+            ->join('m.patient', 'p')
+            ->join('p.customer', 'c')
+            ->where('c.ruc = :id')
+            ->setParameter('id', $id)
+            ->getQuery();
+
+        return DataMapper::map($query->getOneOrNullResult(), MilitaryPatient::class);
     }
 }

@@ -65,17 +65,15 @@
         <tr>
             <td>
                 CLIENTE: {{ voucher.customer_name }}<br>
-                {% if voucher.voucher_type != '00' %}
+                {% if voucher.voucher_type == '01' %}
                     RUC: {{ voucher.customer_doc_number }}<br>
-                {% elseif voucher.company_id == '20369393546' %}
+                {% elseif voucher.voucher_type == '03' %}
                     DNI: {{ voucher.customer_doc_number }}<br>
-                    Grado: {{ voucher.customer_address }}<br>
-                    CIP: {{ voucher.customer_phone }}<br>
-                    Arma: {{ voucher.customer_email }}<br>
-                {% else %}
-                    DIRECCION: {{ voucher.customer_address }}<br>
                 {% endif %}
-                FORMA DE PAGO: CONTADO
+                DIRECCION: {{ voucher.customer_address }}<br>
+                {% block extra %}
+                    FORMA DE PAGO: CONTADO<br>
+                {% endblock %}
             </td>
         </tr>
     </table>

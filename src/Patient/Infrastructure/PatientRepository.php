@@ -10,6 +10,7 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Patient\Domain\Patient;
 use App\Patient\Domain\PatientRepositoryInterface;
+use App\PatientType\Infrastructure\PatientTypeEntity;
 use App\PriceList\Infrastructure\PriceListEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -37,7 +38,6 @@ readonly class PatientRepository implements PatientRepositoryInterface
         }
 
 
-
         return DataMapper::map($entity, Patient::class);
     }
 
@@ -54,6 +54,7 @@ readonly class PatientRepository implements PatientRepositoryInterface
         $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $patient->price_list?->id);
         $entity = DataMapper::map($patient, PatientEntity::class);
         $entity->customer = $customer;
+        $entity->type = $this->entityManager->getReference(PatientTypeEntity::class, $patient->type?->id);
 
         $this->entityManager->persist($customer);
         $this->entityManager->persist($entity);
@@ -74,7 +75,9 @@ readonly class PatientRepository implements PatientRepositoryInterface
         /** @var CustomerEntity $customer */
         $customer = DataMapper::map($patient, $customer);
         $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $patient->price_list?->id);
+        /** @var PatientEntity $entity */
         $entity = DataMapper::map($patient, $entity);
+        $entity->type = $this->entityManager->getReference(PatientTypeEntity::class, $patient->type?->id);
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Patient::class);
