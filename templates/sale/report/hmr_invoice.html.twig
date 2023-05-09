@@ -2,8 +2,9 @@
 
 {% block extra %}
     {{ parent() }}
-    CIP: {{ patient.cip_code }} <br>
-    GRADO: {{ patient.rank }} <br>
-    ARMA: {{ patient.weapon_code }} <br>
-    Nº HISTORIA: {{ patient.medical_record_number }} <br>
+    CIP: {{ extraData.cipCode }} <br>
+    GRADO: {{ extraData.rank }} <br>
+    ARMA: {{ extraData.weaponCode }} <br>
+    Nº HISTORIA: {{ extraData.medicalRecordNumber }} <br>
+    MEDICO: {{ extraData.physicianFullName }} <br>
 {% endblock %}
