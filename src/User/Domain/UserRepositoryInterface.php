@@ -23,8 +23,5 @@ interface UserRepositoryInterface
 
     public function getOneByUsername(string $username): ?User;
 
-    public function changePassword(int $userId, string $newPassword);
-
-    public function findById(int $userId);
-
+    public function changePassword(int $userId, string $newPassword): void;
 }

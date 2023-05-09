@@ -17,8 +17,8 @@ readonly class ChangePasswordUseCase
      */
     public function __invoke(int $userId, string $currentPassword, string $newPassword): void
     {
-        $user = $this->repository->findById($userId);
-        if (!password_verify($currentPassword, $user->getPassword($currentPassword))) {
+        $user = $this->repository->getOne($userId);
+        if (!password_verify($currentPassword, $user?->getPassword() ?? '')) {
             throw new ServiceException('La contraseña actual es incorrecta.');
         }
         $this->repository->changePassword($userId, $newPassword);

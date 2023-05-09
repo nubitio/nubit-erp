@@ -1,13 +1,12 @@
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
 import {bus} from "../core/event/EventBus";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import {messenger} from "../core/utils/Messenger";
 import {authService} from "../services/auth.service";
-import ApiResponse from "../core/http/ApiResponse";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
 
 export default class ChangePassword {
     private readonly container: string;
@@ -33,21 +32,21 @@ export default class ChangePassword {
 
     init() {
         this.fields.push(new FieldBuilder()
-            .type(FormType.PASSWORD)
+            .type(FieldType.PASSWORD)
             .width(100)
             .name('actual_password')
             .label('Contraseña Actual')
             .required(true)
             .build())
         this.fields.push(new FieldBuilder()
-            .type(FormType.PASSWORD)
+            .type(FieldType.PASSWORD)
             .width(100)
             .name('new_password')
             .label('Nueva Contraseña')
             .required(true)
             .build())
         this.fields.push(new FieldBuilder()
-            .type(FormType.PASSWORD)
+            .type(FieldType.PASSWORD)
             .width(100)
             .name('confirm_password')
             .label('Confirmar Contraseña')
@@ -82,20 +81,32 @@ export default class ChangePassword {
         });
 
         bus.on(ChangePassword.EVENTS.SAVE, (): void => {
-            let data: any = this.form.getData();
             let dataObject = this.form.getDataObject();
-            let session = StorageUtils.getItem('session');
-            let userId = session['user_id'];
-            let finalData: string = data + '&user_id=' + userId;
-
-            if (dataObject.new_password !== dataObject.confirm_password) {
-                messenger.show('Error', 'Las contraseñas no coinciden');
+            if (!this.validateForm(dataObject)) {
                 return;
             }
-            authService.changePassword(userId, dataObject.actual_password, dataObject.new_password ).subscribe((response)=>{
-                console.log(response.data)
+            let session = StorageUtils.getItem('session');
+            let userId = session['user_id'];
+
+            if (dataObject.new_password !== dataObject.confirm_password) {
+                messenger.show('Error', 'La contraseña nueva no coincide con la confirmación');
+                return;
+            }
+            authService.changePassword(userId, dataObject.actual_password, dataObject.new_password).subscribe((response) => {
                 messenger.show('Información', 'Contraseña actualizada');
+                this.form.reset();
+                setTimeout(() => {
+                    location.href = '/auth/logout';
+                }, 1000);
             })
         });
+    }
+
+    validateForm(data: Record<string, any>): boolean {
+        if (data.actual_password === '' || data.new_password === '' || data.confirm_password === '') {
+            messenger.show('Error', 'Todos los campos son obligatorios');
+            return false;
+        }
+        return true;
     }
 }
