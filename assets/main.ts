@@ -47,6 +47,7 @@ import Performance from "./pages/Performance";
 import ComboOption from "./pages/ComboOption";
 import Consultation from "./pages/Consultation";
 import PatientType from "./pages/PatientType";
+import ChangePassword from "./pages/ChangePassword";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -97,6 +98,7 @@ window.app.performance = Performance;
 window.app.comboOption = ComboOption;
 window.app.consultation = Consultation;
 window.app.patientType = PatientType;
+window.app.changePassword = ChangePassword;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
