@@ -22,4 +22,9 @@ interface UserRepositoryInterface
     public function delete(int $id): void;
 
     public function getOneByUsername(string $username): ?User;
+
+    public function changePassword(int $userId, string $newPassword);
+
+    public function findById(int $userId);
+
 }
