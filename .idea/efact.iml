@@ -185,6 +185,9 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/league/flysystem-aws-s3-v3" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/psr-http-message-bridge" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/sentry/sentry-symfony" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/data-fixtures" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/doctrine-fixtures-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/predis/predis" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -53,3 +53,5 @@ yarn-error.log
 ###< friendsofphp/php-cs-fixer ###
 /config/tenants.json
 /src/WebClientPrint/wcpcache/
+.maintenance
+.version

@@ -2,6 +2,7 @@
 
 namespace App\Tests\Position\Domain;
 
+use App\Department\Domain\Department;
 use App\Position\Domain\GetOnePositionUseCase;
 use App\Position\Domain\Position;
 use App\Position\Domain\PositionRepositoryInterface;
@@ -15,7 +16,7 @@ class GetOnePositionUseCaseTest extends TestCase
         $mockRepository = $this->createMock(PositionRepositoryInterface::class);
 
         // Set up the expected return value of the mock repository
-        $expectedPosition = new Position(1, 'Position 1', 'Description 1');
+        $expectedPosition = new Position(1, new Department(1), 'Position 1', 'Description 1');
         $mockRepository->expects($this->once())
             ->method('getOne')
             ->with(1)

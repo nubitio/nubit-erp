@@ -18,4 +18,15 @@ export class DateUtils {
             return new Date();
         }
     }
+
+    static format(dateString: string, formatOptions?: Intl.DateTimeFormatOptions) {
+        const date = new Date(dateString);
+        console.log(date);
+        date.setHours(date.getHours() + 5);
+        console.log(date);
+        if (!formatOptions) {
+            formatOptions = {day: 'numeric', month: 'short', year: 'numeric'};
+        }
+        return date.toLocaleDateString('es-PE', formatOptions);
+    }
 }

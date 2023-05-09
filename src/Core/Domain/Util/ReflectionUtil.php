@@ -44,4 +44,25 @@ class ReflectionUtil
 
         return null;
     }
+
+    public static function hasProperty(object|string $obj, string $field): bool
+    {
+        if (is_string($obj)) {
+            $obj = new $obj();
+        }
+
+        $parent = get_parent_class($obj);
+
+        if ($parent) {
+            $parentObj = new $parent();
+            $parentAttributes = get_object_vars($parentObj);
+            $childAttributes = get_object_vars($obj);
+
+            $attributes = array_diff_key($childAttributes, $parentAttributes);
+
+            return array_key_exists($field, $attributes);
+        }
+
+        return property_exists($obj, $field);
+    }
 }

@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Employee{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const employee = new window.app.employee('wrapper');
+            employee.render();
+        });
+    </script>
+{% endblock %}

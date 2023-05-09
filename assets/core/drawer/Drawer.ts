@@ -39,7 +39,7 @@ export class Drawer {
     }
 
     get id() {
-        return this.drawer.attr('id');
+        return this.drawer.attr('id') ?? '';
     }
 
     show() {

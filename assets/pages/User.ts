@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class User {
@@ -34,32 +34,32 @@ export default class User {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('usuario_id')
             .label('Usuario id')
             .required(true)
             .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('username')
             .label('Username')
             .width(100)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.PASSWORD)
+            .type(FieldType.PASSWORD)
             .name('password')
             .label('Password')
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('pin')
             .label('Pin')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('rol')
             .label('Rol')
             .url('api/roles')
@@ -70,7 +70,7 @@ export default class User {
             .formatter((value: any) => value.descripcion)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Activo')
             .formatter(SharedUtils.booleanFormatter)

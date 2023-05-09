@@ -3,9 +3,11 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
-use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
+use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\MilitaryPatient\Domain\GetOneMilitaryPatientByCustomerIdUseCase;
+use App\MilitaryPatient\Domain\GetOneMilitaryPatientUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
@@ -89,17 +91,23 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, string $id, SaleGetOneById $getOneById): Response
+    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById, GetOneMilitaryPatientByCustomerIdUseCase $getOneMilitaryPatientByCustomerIdUseCase): Response
     {
-        $sale = $getOneById($id);
+        $voucher = $getOneById($id);
         $qr = '';
-        if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode())->render(strval($sale['header']['doc_qr_data']));
+        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
+            $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));
         }
 
-        $content = $this->renderView('sale/report/invoice.html.twig', [
-            'qr'   => $qr,
-            'sale' => $sale,
+        $template = 'sale/report/invoice.html.twig';
+        if ($voucher->company_id == '20369393546') {
+            $template = 'sale/report/hmr_invoice.html.twig';
+            $patient = $getOneMilitaryPatientByCustomerIdUseCase(strval($voucher->customer_doc_number));
+        }
+        $content = $this->renderView($template, [
+            'qr'      => $qr,
+            'voucher' => $voucher,
+            'patient' => $patient ?? null,
         ]);
 
         $preview = $request->get('preview');
@@ -109,11 +117,11 @@ class SaleController extends BaseController
         }
 
         $pageHeight = 150;
-        if ($sale['header']['doc_type'] != DocType::NOTA_VENTA->value) {
+        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $pageHeight = 220;
         }
 
-        $items = count($sale['details']);
+        $items = count($voucher->voucher_items);
 
         $pageHeight += $items * 5;
 

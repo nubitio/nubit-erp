@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Department{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const department = new window.app.department('wrapper');
+            department.render();
+        });
+    </script>
+{% endblock %}
