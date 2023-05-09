@@ -4,6 +4,7 @@ namespace App\MilitaryPatient\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Sale\Domain\InvoiceExtraData;
 
 interface MilitaryPatientRepositoryInterface
 {
@@ -21,5 +22,5 @@ interface MilitaryPatientRepositoryInterface
 
     public function delete(int $id): void;
 
-    public function getOneByCustomerId(string $id): ?MilitaryPatient;
+    public function getInvoiceExtraDataByCustomerId(string $customerId, string $saleId): ?InvoiceExtraData;
 }

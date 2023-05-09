@@ -2,6 +2,7 @@
 
 namespace App\MilitaryPatient\Infrastructure;
 
+use App\ConsultationSale\Infrastructure\ConsultationSaleEntity;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
@@ -13,6 +14,7 @@ use App\MilitaryPatient\Domain\MilitaryPatientRepositoryInterface;
 use App\Patient\Infrastructure\PatientEntity;
 use App\PatientType\Infrastructure\PatientTypeEntity;
 use App\PriceList\Infrastructure\PriceListEntity;
+use App\Sale\Domain\InvoiceExtraData;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 
@@ -111,7 +113,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
     /**
      * @throws NonUniqueResultException
      */
-    public function getOneByCustomerId(string $id): ?MilitaryPatient
+    public function getInvoiceExtraDataByCustomerId(string $customerId, string $saleId): ?InvoiceExtraData
     {
         $query = $this->entityManager->createQueryBuilder()
             ->select('m')
@@ -119,9 +121,20 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             ->join('m.patient', 'p')
             ->join('p.customer', 'c')
             ->where('c.ruc = :id')
-            ->setParameter('id', $id)
+            ->setParameter('id', $customerId)
             ->getQuery();
 
-        return DataMapper::map($query->getOneOrNullResult(), MilitaryPatient::class);
+        /** @var  MilitaryPatientEntity $militaryPatient */
+        $militaryPatient = $query->getOneOrNullResult();
+
+        $consultationSale = $this->entityManager->getRepository(ConsultationSaleEntity::class)->findOneBy(['sale' => $saleId]);
+
+        return new InvoiceExtraData(
+            cipCode: $militaryPatient?->cip_code,
+            rank: $militaryPatient?->rank,
+            weaponCode: $militaryPatient?->weapon_code,
+            medicalRecordNumber: $militaryPatient?->patient?->medical_record_number,
+            physicianFullName: $consultationSale?->consultation?->physician?->getFullName()
+        );
     }
 }
