@@ -11,6 +11,10 @@ class AuthService {
     setLocal(localId: string) {
         return httpClient.post<AppResponse>(`/auth/local`, {localId});
     }
+
+    changePassword(userId: number, actualPassword: string, newPassword: string){
+        return httpClient.post<AppResponse>('/changePassword/update-password', {userId, actualPassword, newPassword});
+    }
 }
 
 export const authService = new AuthService();

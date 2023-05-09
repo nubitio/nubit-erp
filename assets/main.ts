@@ -37,6 +37,7 @@ import CreditNote from "./pages/CreditNote";
 import Branch from "./pages/Branch";
 import PriceList from "./pages/PriceList";
 import Position from "./pages/Position";
+import ChangePassword from "./pages/ChangePassword";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -77,6 +78,7 @@ window.app.kardex = Kardex;
 window.app.creditNote = CreditNote;
 window.app.priceList = PriceList;
 window.app.position = Position;
+window.app.changePassword = ChangePassword;
 
 window.addEventListener('load', () => {
     window.ThemeManager = new ThemeManager();
