@@ -20,23 +20,32 @@ readonly class MenuBuilder
     {
         $data = $this->getMenuForRole($roleId);
         $menu = [];
-        $i = 0;
+
         foreach ($data as $parent) {
-            if (0 == $parent['parent_id'] && '' == $parent['link']) {
+            if ($parent['parent_id'] == 0 && empty($parent['link'])) {
                 $items = [];
-                $j = 0;
+
                 foreach ($data as $child) {
-                    if ($parent['menu_id'] == $child['parent_id']) {
-                        $items[$j] = ['text' => $child['descripcion'], 'iconCls' => $child['icon'], 'url' => $child['link']];
-                        ++$j;
+                    if ($child['parent_id'] == $parent['menu_id']) {
+                        $items[] = [
+                            'text' => $child['descripcion'],
+                            'path' => $child['link']
+                        ];
                     }
                 }
-                $menu[$i] = ['text' => $parent['descripcion'], 'iconCls' => $parent['icon'], 'children' => $items];
-                ++$i;
+
+                $menu[] = [
+                    'text' => $parent['descripcion'],
+                    'icon' => $parent['icon'],
+                    'items' => $items
+                ];
             } else {
-                if (0 == $parent['parent_id'] && '' != $parent['link']) {
-                    $menu[$i] = ['text' => $parent['descripcion'], 'iconCls' => $parent['icon'], 'url' => $parent['link']];
-                    ++$i;
+                if ($parent['parent_id'] == 0 && !empty($parent['link'])) {
+                    $menu[] = [
+                        'text' => $parent['descripcion'],
+                        'icon' => $parent['icon'],
+                        'path' => $parent['link']
+                    ];
                 }
             }
         }

@@ -1,33 +1,44 @@
-import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import TreeView from 'devextreme-react/tree-view';
 
-import { Footer } from '../footer/Footer';
-import { navigation } from '../../app-navigation';
-import { useNavigation } from '../../contexts/navigation';
-import { useScreenSize } from '../../utils/media-query';
+import {Footer} from '../footer/Footer';
+import {useNavigation} from '../../contexts/navigation';
+import {useScreenSize} from '../../utils/media-query';
 
-import type { SideNavigationMenuProps } from '../../types';
+import type {SideNavigationMenuProps} from '../../types';
 
 import './side-navigation-menu.scss';
 
 import * as events from 'devextreme/events';
+import {menuService} from "../../services/menu.service";
+import {StorageUtils} from "../../core/utils/StorageUtils";
 
 export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigationMenuProps>) => {
-    const { children, selectedItemChanged, openMenu, compactMode, onMenuReady } = props;
+    const {children, selectedItemChanged, openMenu, compactMode, onMenuReady} = props;
+    const [navigation, setNavigation] = useState<any[]>([]);
 
-    const { isLarge } = useScreenSize();
+    const {isLarge} = useScreenSize();
+    useEffect(() => {
+        let session = StorageUtils.getItem('session');
+        let userId = session['role_id'];
+        menuService.getMenuByRoleId(userId).subscribe((response) => {
+            setNavigation(response.data);
+        });
+    }, []);
+
     function normalizePath() {
-        return navigation.map((item) => ({ ...item, expanded: isLarge, path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path }));
+        return navigation.map((item: any) => ({
+            ...item,
+            expanded: isLarge,
+            path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path
+        }));
     }
 
-    const items = useMemo(
-        normalizePath,
-        []
-    );
+    const items = useMemo(normalizePath, [navigation]);
 
     const {
-        navigationData: { currentPath },
+        navigationData: {currentPath},
     } = useNavigation();
 
     const treeViewRef = useRef<TreeView>(null);
@@ -80,7 +91,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
                 />
             </div>
             <Footer>
-                Copyright © {new Date().getFullYear()} <br /> Nubit Inc.
+                Copyright © {new Date().getFullYear()} <br/> Nubit Inc.
             </Footer>
         </div>
     );
