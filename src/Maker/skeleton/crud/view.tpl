@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 
 export default class {{module}} {
     private readonly container: string;

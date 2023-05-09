@@ -14,14 +14,11 @@ use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class SaleRepository implements SaleRepositoryInterface
 {
     public function __construct(
-        private Connection             $connection,
         private EntityManagerInterface $entityManager,
         private DataLoader             $dataLoader,
         private SaleUtils              $saleUtils,
@@ -33,26 +30,6 @@ readonly class SaleRepository implements SaleRepositoryInterface
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception
-     * @throws ServiceException
-     */
-    public function getOneById(string $id): array
-    {
-        $header = $this->connection->executeQuery('CALL sp_sale_header(?)', [$id])->fetchAssociative();
-        $details = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$id])->fetchAllAssociative();
-
-        if (!$header || !$details) {
-            throw new ServiceException('No se encontró el movimiento de venta');
-        }
-
-        return [
-            'header'  => $header,
-            'details' => $details,
-        ];
     }
 
     public function getOne(string $id): Sale

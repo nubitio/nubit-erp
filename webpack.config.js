@@ -18,6 +18,7 @@ Encore
      */
     .addEntry('main', './assets/main.ts')
     .addEntry('product', './assets/product.tsx')
+    .addEntry('spa', './assets/spa.tsx')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()

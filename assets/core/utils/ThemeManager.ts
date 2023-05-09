@@ -10,10 +10,7 @@ export default class ThemeManager {
         DARK: 'dark'
     };
 
-    static readonly CLASS = {
-        LIGHT: 'light-theme',
-        DARK: 'dark-theme',
-    }
+    static readonly DARK_MODE = 'dark-mode';
 
     constructor() {
         this.accentColor = "";
@@ -26,9 +23,7 @@ export default class ThemeManager {
         const theme = localStorage.getItem('theme');
 
         if (theme === ThemeManager.THEME.DARK) {
-            document.body.classList.add(ThemeManager.CLASS.DARK);
-        } else {
-            document.body.classList.add(ThemeManager.CLASS.LIGHT);
+            document.body.classList.add(ThemeManager.DARK_MODE);
         }
 
         bus.emit(EventType.THEME_CHANGE, theme);
@@ -40,12 +35,10 @@ export default class ThemeManager {
 
         if (actualTheme === ThemeManager.THEME.DARK) {
             localStorage.setItem('theme', newTheme);
-            document.body.classList.remove(ThemeManager.CLASS.DARK);
-            document.body.classList.add(ThemeManager.CLASS.LIGHT);
+            document.body.classList.remove(ThemeManager.DARK_MODE);
         } else {
             localStorage.setItem('theme', newTheme);
-            document.body.classList.remove(ThemeManager.CLASS.LIGHT);
-            document.body.classList.add(ThemeManager.CLASS.DARK);
+            document.body.classList.add(ThemeManager.DARK_MODE);
         }
 
         bus.emit(EventType.THEME_CHANGE, newTheme);

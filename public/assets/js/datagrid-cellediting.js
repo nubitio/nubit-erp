@@ -48,7 +48,7 @@
 							field: param.field,
 							value: c
 						});
-						return false;					
+						return false;
 					}
 				}
 			}
@@ -109,7 +109,7 @@
 				value: ''
 			});
 			return false;
-		}		
+		}
 	}
 
 	function getCurrCell(target){

@@ -99,16 +99,16 @@ class Util
             }
             $field = "        this." . $varName . ".push(new FieldBuilder()\n";
             $formType = match ($column->getType()->getName()) {
-                'integer' => 'FormType.NUMBER',
-                'boolean' => 'FormType.SWITCH',
-                'date' => 'FormType.DATE',
-                default => 'FormType.TEXT'
+                'integer' => 'FieldType.NUMBER',
+                'boolean' => 'FieldType.SWITCH',
+                'date' => 'FieldType.DATE',
+                default => 'FieldType.TEXT'
             };
             if (in_array($column, $foreignKeys)) {
-                $formType = 'FormType.SELECT';
+                $formType = 'FieldType.SELECT';
             }
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $formType = 'FormType.NONE';
+                $formType = 'FieldType.NONE';
                 $field .= "            .isIdentity(true)\n";
                 $field .= "            .visible(false)\n";
             }
