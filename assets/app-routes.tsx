@@ -1,10 +1,20 @@
 import {SupplierPage} from "./pages/supplier/SupplierPage";
 import {withNavigationWatcher} from './contexts/navigation';
+import {DashboardPage} from "./pages/dashboard/DashboardPage";
+import {ProductPage} from "./pages/product/ProductPage";
 
 const routes = [
     {
-        path: '/crm-contact-details',
+        path: '/dashboard',
+        element: DashboardPage,
+    },
+    {
+        path: '/supplier',
         element: SupplierPage,
+    },
+    {
+        path: '/product',
+        element: ProductPage,
     }
 ];
 
