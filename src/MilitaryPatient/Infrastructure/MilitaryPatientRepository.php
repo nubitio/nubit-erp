@@ -61,7 +61,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
 
         $customer->price_list = $this->entityManager->getReference(PriceListEntity::class, $militaryPatient->price_list?->id);
         $patient->customer = $customer;
-        $patient->type = $this->entityManager->getReference(PatientTypeEntity::class, $militaryPatient->patient?->type?->id);
+        $patient->type = $this->entityManager->getReference(PatientTypeEntity::class, $militaryPatient->type?->id);
         $entity = DataMapper::map($militaryPatient, MilitaryPatientEntity::class);
         $entity->patient = $patient;
         $this->entityManager->persist($customer);
