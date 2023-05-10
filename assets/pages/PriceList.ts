@@ -41,6 +41,7 @@ export default class PriceList {
             .type(FieldType.NONE)
             .name('id')
             .label('Id')
+            .valueType('number')
             .required(true)
             .valueType('number')
             .build());
