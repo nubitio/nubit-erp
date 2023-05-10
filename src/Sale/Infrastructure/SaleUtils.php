@@ -4,7 +4,7 @@ namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
@@ -12,8 +12,8 @@ use Doctrine\DBAL\Connection;
 readonly class SaleUtils
 {
     public function __construct(
-        private Connection      $connection,
-        private SettingsService $settings,
+        private Connection                 $connection,
+        private TenantAwareSettingsService $settings,
     )
     {
     }

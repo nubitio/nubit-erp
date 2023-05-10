@@ -6,7 +6,7 @@ use App\Base\BaseController;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
@@ -18,8 +18,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class InvoiceController extends BaseController
 {
     public function __construct(
-        private readonly SettingsService $settings,
-        private readonly FileManager     $fileManager
+        private readonly TenantAwareSettingsService $settings,
+        private readonly FileManager                $fileManager
     )
     {
         parent::__construct();
