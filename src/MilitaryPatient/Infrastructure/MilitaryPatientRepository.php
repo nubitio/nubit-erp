@@ -124,7 +124,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             ->setParameter('id', $customerId)
             ->getQuery();
 
-        /** @var  MilitaryPatientEntity $militaryPatient */
+        /** @var  ?MilitaryPatientEntity $militaryPatient */
         $militaryPatient = $query->getOneOrNullResult();
 
         $consultationSale = $this->entityManager->getRepository(ConsultationSaleEntity::class)->findOneBy(['sale' => $saleId]);

@@ -21,7 +21,7 @@ readonly class TenantAwareSettingsService
 
     public function get(string $key, ?string $default = null): mixed
     {
-        $tenant = $this->request->getCurrentRequest()->headers->get('tenant') ?? 'default';
+        $tenant = $this->request->getCurrentRequest()?->headers->get('tenant') ?? 'default';
         $tenantKey = $tenant . '_' . $key;
         return $this->cache->get($tenantKey, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(10);
