@@ -5,7 +5,7 @@ namespace App\WebClientPrint;
 use App\Base\BaseController;
 use App\Core\Infrastructure\Extension\RemoteEscposImage;
 use App\Core\Infrastructure\Service\LogoProvider;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Sale\Domain\DocType;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
@@ -27,7 +27,7 @@ class PrintESCPOSController extends BaseController
      * @throws \Exception
      */
     #[Route('/wcp/print', name: 'wcp_print', methods: ['GET'])]
-    public function printCommands(Request $request, GetOneVoucherUseCase $getOneById, SettingsService $settingsService): Response
+    public function printCommands(Request $request, GetOneVoucherUseCase $getOneById, TenantAwareSettingsService $settingsService): Response
     {
         if (!$request->query->has(WebClientPrint::CLIENT_PRINT_JOB)) {
             return new Response('No print job sent!', 400);

@@ -6,7 +6,7 @@ use App\Billing\Domain\BillSendUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
@@ -21,7 +21,7 @@ readonly class SaleInvoiceUseCase
         private BillSendUseCase            $billSendUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
         private FileManager                $fileManager,
-        private SettingsService            $settings
+        private TenantAwareSettingsService $settings
     )
     {
     }

@@ -22,6 +22,7 @@ readonly class TenantListener
         $subdomain = explode('.', $host)[0];
         $excludedSubdomains = ['localhost', 'www', 'demo', 'api', 'app', 'admin'];
         if ($subdomain && !in_array($subdomain, $excludedSubdomains)) {
+            $event->getRequest()->headers->set('tenant', $subdomain);
             $this->switchConnection($subdomain);
         }
     }

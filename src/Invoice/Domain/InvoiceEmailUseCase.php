@@ -5,7 +5,7 @@ namespace App\Invoice\Domain;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -25,7 +25,7 @@ readonly class InvoiceEmailUseCase
         private UrlGeneratorInterface $urlGenerator,
         private BillPdfUseCase        $billPdfUseCase,
         private FileManager           $fileManager,
-        private SettingsService       $settings
+        private TenantAwareSettingsService $settings
     )
     {
     }
