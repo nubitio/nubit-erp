@@ -6,15 +6,10 @@ use App\Base\BaseController;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
-use App\Invoice\Domain\Invoice;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceConsultUseCase;
-use App\Invoice\Domain\InvoiceCreateUseCase;
-use App\Invoice\Domain\InvoiceDeleteUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
-use App\Invoice\Domain\InvoiceGetAllUseCase;
-use App\Invoice\Domain\InvoiceUpdateUseCase;
-use App\Sale\Domain\SaleGetOneById;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -23,10 +18,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class InvoiceController extends BaseController
 {
     public function __construct(
-        private readonly SettingsService $settings,
-        private readonly FileManager     $fileManager
+        private readonly TenantAwareSettingsService $settings,
+        private readonly FileManager                $fileManager
     )
     {
+        parent::__construct();
     }
 
     #[Route('/invoice', name: 'invoice_index', methods: ['GET'])]
@@ -35,70 +31,31 @@ class InvoiceController extends BaseController
         return $this->render('invoice/index.html.twig');
     }
 
-    #[Route('/invoice/get', name: 'invoice_list', methods: ['POST'])]
-    public function getAll(InvoiceGetAllUseCase $getAllUseCase): Response
-    {
-        return $this->json($getAllUseCase());
-    }
-
-    #[Route('/invoice/add', name: 'invoice_create', methods: ['POST'])]
-    public function add(Request $request, InvoiceCreateUseCase $createUseCase): Response
-    {
-        /**
-         * @var Invoice $invoice
-         */
-        $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
-        $createUseCase($invoice);
-
-        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
-    }
-
-    #[Route('/invoice/edit/{id}', name: 'invoice_update', methods: ['PUT', 'POST'])]
-    public function edit(Request $request, InvoiceUpdateUseCase $updateUseCase, string $id): Response
-    {
-        $request->request->add(['comprobante_id' => $id]);
-        /**
-         * @var Invoice $invoice
-         */
-        $invoice = $this->serializer->deserialize(json_encode($request->request->all()), Invoice::class, 'json');
-        $updateUseCase($invoice);
-
-        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
-    }
-
-    #[Route('/invoice/delete/{id}', name: 'invoice_delete', methods: ['DELETE', 'POST'])]
-    public function delete(InvoiceDeleteUseCase $deleteUseCase, string $id): Response
-    {
-        $deleteUseCase($id);
-
-        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
-    }
-
     #[Route('/invoice/{id}', name: 'invoice_show', methods: ['GET'])]
-    public function show(SaleGetOneById $getOneById, string $id): Response
+    public function show(GetOneVoucherUseCase $getOneById, string $id): Response
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $type = match ($invoice['header']['doc_type']) {
+        $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',
             '03' => 'BOLETA',
             default => '',
         };
 
         return $this->render('invoice/show.html.twig', [
-            'company_name' => $invoice['header']['company_name'],
+            'company_name' => $voucher->company_name,
             'type'         => $type,
-            'series'       => $invoice['header']['doc_series'],
-            'number'       => $invoice['header']['doc_number'],
-            'date'         => date('d/m/Y', intval(strtotime(strval($invoice['header']['doc_date'])))),
-            'total'        => $invoice['header']['doc_sale_amount'],
+            'series'       => $voucher->voucher_series,
+            'number'       => $voucher->voucher_number,
+            'date'         => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
+            'total'        => $voucher->voucher_sale_amount,
             'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
             'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
             'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
-    #[Route('/invoice/{id}/consult', name: 'invoice_pdf', methods: ['GET'])]
+    #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
     public function consult(InvoiceConsultUseCase $consultUseCase, string $id): Response
     {
         $consultUseCase($id);
@@ -107,12 +64,12 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}/xml', name: 'invoice_xml', methods: ['GET'])]
-    public function xml(SaleGetOneById $getOneById, string $id): StreamedResponse
+    public function xml(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
 
         $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
 
@@ -127,12 +84,12 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
-    public function cdr(SaleGetOneById $getOneById, string $id): StreamedResponse
+    public function cdr(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
-        $invoice = $getOneById($id);
+        $voucher = $getOneById($id);
 
-        $docName = $invoice['header']['doc_series'] . '-' . $invoice['header']['doc_number'];
-        $docFullName = $invoice['header']['company_id'] . '-' . $invoice['header']['doc_type'] . '-' . $docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
 
         $cdrPath = $this->settings->get(Constants::COMPANY_ID) . '/' . 'R-' . $docFullName . '.zip';
 

@@ -1,7 +1,7 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
+import {FieldType} from "../core/form/FieldType";
 import {Field} from "../core/form/Field";
 import {FieldBuilder} from "../core/form/FieldBuilder";
 

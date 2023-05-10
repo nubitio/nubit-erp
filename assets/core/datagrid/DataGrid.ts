@@ -1,11 +1,11 @@
 import {Constants} from "../common/Constants";
 import {SharedUtils} from "../utils/SharedUtils";
-import {Field} from "../form/Field";
+import {Field} from "../field/Field";
 import {bus} from "../event/EventBus";
 import {messenger} from "../utils/Messenger";
 import {httpClient} from "../http/HttpClient";
 import GridOptionsDto from "./grid.options.dto";
-import DataGridUtils from "../utils/DataGridUtils";
+import DataGridUtils from "./DataGridUtils";
 import FilterRule from "../common/FilterRule";
 
 export default class DataGrid {
@@ -45,7 +45,7 @@ export default class DataGrid {
 
     setupView() {
         let table = document.createElement('table');
-        table.setAttribute('id', 'data-grid');
+        table.setAttribute('id', SharedUtils.randomId());
         this.container.appendChild(table);
         this.dataGrid = $('#' + table.id);
     }
@@ -326,5 +326,10 @@ export default class DataGrid {
     hideLoading() {
         this.dataGrid.datagrid('loaded');
         this.dataGrid.datagrid('options').loadMsg = Constants.TEXT_LOADING;
+    }
+
+    addFilterRule(filterRule: FilterRule) {
+        this.dataGrid.datagrid('addFilterRule', filterRule);
+        this.dataGrid.datagrid('doFilter');
     }
 }

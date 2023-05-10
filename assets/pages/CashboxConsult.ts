@@ -1,7 +1,7 @@
 import DataGrid from "../core/datagrid/DataGrid";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {Constants} from "../core/common/Constants";
 import {SharedUtils} from "../core/utils/SharedUtils";
 
@@ -24,41 +24,41 @@ export default class CashboxConsult {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('caja_id')
             .label('Caja')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('apertura')
             .label('Apertura')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('cierre')
             .label('Cierre')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FieldType.NUMBER)
             .name('usuario')
             .label('Cajero')
             .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('saldo_inicial')
             .label('Saldo inicial')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('saldo_final')
             .label('Saldo final')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Estado')
             .align('center')
@@ -66,24 +66,24 @@ export default class CashboxConsult {
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('tipo_id')
             .label('Tipo')
             .formatter(this.typeFormatter)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('descripcion')
             .label('Descripcion')
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('referencia')
             .label('Observacion')
             .width(100)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('monto')
             .label('Monto')
             .align('right')

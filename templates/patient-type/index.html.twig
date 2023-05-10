@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}PatientType{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const patientType = new window.app.patientType('wrapper');
+            patientType.render();
+        });
+    </script>
+{% endblock %}

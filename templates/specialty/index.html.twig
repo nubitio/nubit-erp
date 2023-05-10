@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Specialty{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const specialty = new window.app.specialty('wrapper');
+            specialty.render();
+        });
+    </script>
+{% endblock %}

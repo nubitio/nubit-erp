@@ -2,6 +2,7 @@
 
 namespace App\Core\Infrastructure\Doctrine\DBAL;
 
+use App\Core\Domain\Exception\ServiceException;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
@@ -21,6 +22,11 @@ class TenantConnection extends Connection
         parent::__construct($params, $driver, $config, $eventManager);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function switchTenant(string $tenantName): void
     {
         /** @var array<string, array<string, mixed>> $tenants */
@@ -38,7 +44,7 @@ class TenantConnection extends Connection
         }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {
-            throw new \Exception('Tenant not found');
+            throw new ServiceException('Tenant not found');
         }
 
         $tenant = array_values(array_filter($tenants, fn($item) => $item['name'] === $tenantName))[0];

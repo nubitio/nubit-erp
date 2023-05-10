@@ -1,4 +1,4 @@
-import {Field} from "../form/Field";
+import {Field} from "../field/Field";
 
 export default class EasyComponent {
     protected fields: Field[] = [];

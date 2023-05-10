@@ -4,6 +4,7 @@ import {messenger} from "../utils/Messenger";
 import {StorageUtils} from "../utils/StorageUtils";
 import ApiResponse from "./ApiResponse";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import {HttpCode} from "./HttpCode";
 
 class HttpClient {
     private axiosClient: Axios;
@@ -35,10 +36,15 @@ class HttpClient {
         this.axiosClient.interceptors.response.use(
             (response) => response,
             (error) => {
-                if (error.response.status !== 500) {
-                    messenger.show('Error', error.response.data.message ?? DEFAULT_ERROR_MESSAGE);
-                } else {
-                    messenger.show('Error', DEFAULT_ERROR_MESSAGE);
+                switch (error.response.status) {
+                    case HttpCode.UNAUTHORIZED:
+                        window.location.href = '/auth/logout';
+                        break;
+                    case HttpCode.INTERNAL_SERVER_ERROR:
+                        throw new Error(DEFAULT_ERROR_MESSAGE);
+                    default:
+                        const errorMessage = error.response?.data?.message ?? DEFAULT_ERROR_MESSAGE;
+                        messenger.show('Error', errorMessage);
                 }
                 return Promise.reject(error);
             });

@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {StorageUtils} from "../core/utils/StorageUtils";
@@ -53,13 +53,13 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('movimiento_id')
             .label('Movimiento id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.DATE)
+            .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
             .defaultValue('Today')
@@ -69,7 +69,7 @@ export default class Sale {
         let session = StorageUtils.getItem('session');
         let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('almacen')
             .label('Almacen')
             .url(warehouseUrl)
@@ -80,7 +80,7 @@ export default class Sale {
             .defaultValue(session['warehouse_id'])
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('cliente')
             .label('Cliente')
             .width(100)
@@ -98,7 +98,7 @@ export default class Sale {
             })
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('tarifa')
             .label('Tarifa')
             .url('api/price-lists')
@@ -116,7 +116,7 @@ export default class Sale {
             })
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('tipo_pago')
             .label('Metodo de pago')
             .url('api/payment-methods')
@@ -128,32 +128,32 @@ export default class Sale {
             .formatter((value: any, row: any) => value.name)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('numero')
             .label('Voucher')
             .formatter(SharedUtils.voucherFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('invoice')
             .label('Comprobante')
             .formatter(SharedUtils.invoiceFormatter)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('total')
             .label('Total')
             .align('right')
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('glosa')
             .label('Nota')
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .col(6)
             .name('descuento')
             .label('Descuento %')
@@ -169,7 +169,7 @@ export default class Sale {
             .visible(false)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .col(6)
             .name('total')
             .label('Total')
@@ -177,7 +177,7 @@ export default class Sale {
             .disabled(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('estado')
             .label('Estado')
             .formatter(SharedUtils.invoiceStatusFormatter)
@@ -185,7 +185,7 @@ export default class Sale {
             .build());
 
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('producto')
             .label('Producto')
             .width(100)
@@ -198,14 +198,14 @@ export default class Sale {
             .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.NUMBER)
+            .type(FieldType.NUMBER)
             .name('cantidad')
             .label('Cantidad')
             .align('center')
             .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('precio_unitario')
             .label('Precio')
             .align('right')
@@ -213,7 +213,7 @@ export default class Sale {
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.detailFields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('precio_total')
             .label('Total')
             .align('right')

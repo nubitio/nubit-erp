@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
@@ -37,14 +37,14 @@ export default class Role {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('rol_id')
             .label('Rol id')
             .required(true)
             .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('descripcion')
             .label('Descripcion')
             .width(100)

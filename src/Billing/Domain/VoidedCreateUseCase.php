@@ -5,39 +5,33 @@ namespace App\Billing\Domain;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Billing\Model\Voided\Voided;
 use App\Billing\Model\Voided\VoidedDetail;
-use App\Sale\Domain\SaleRepositoryInterface;
+use App\Invoice\Domain\GetOneVoucherUseCase;
 
-class VoidedCreateUseCase
+readonly class VoidedCreateUseCase
 {
-    private VoidedRepositoryInterface $voidedRepository;
-    private SaleRepositoryInterface $saleRepository;
-    private BillUtilsInterface $invoiceUtils;
 
     public function __construct(
-        VoidedRepositoryInterface $voidedRepository,
-        SaleRepositoryInterface   $saleRepository,
-        BillUtilsInterface        $invoiceUtils
+        private VoidedRepositoryInterface $voidedRepository,
+        private GetOneVoucherUseCase      $getOneVoucherUseCase,
+        private BillUtilsInterface        $invoiceUtils
     )
     {
-        $this->voidedRepository = $voidedRepository;
-        $this->saleRepository = $saleRepository;
-        $this->invoiceUtils = $invoiceUtils;
     }
 
     public function __invoke(string $saleId, string $reason): DocumentResponse
     {
-        $sale = $this->saleRepository->getOneById($saleId);
+        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
 
         $voidedDetail = new VoidedDetail();
-        $voidedDetail->tipoDoc = strval($sale['header']['doc_type']);
-        $voidedDetail->serie = strval($sale['header']['doc_series']);
-        $voidedDetail->correlativo = strval($sale['header']['doc_number']);
-        $voidedDetail->desMotivoBaja = strval($sale['header']['doc_notes']);
+        $voidedDetail->tipoDoc = strval($voucher->voucher_type);
+        $voidedDetail->serie = strval($voucher->voucher_series);
+        $voidedDetail->correlativo = strval($voucher->voucher_number);
+        $voidedDetail->desMotivoBaja = strval($voucher->voucher_note);
         $voided = new Voided();
-        $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($sale['header']['doc_date']));
+        $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
         $voided->correlativo = (string)($lastCorrelative + 1);
-        $voided->fecGeneracion = new \DateTime(strval($sale['header']['doc_date']));
-        $voided->fecComunicacion = new \DateTime(strval($sale['header']['doc_date']));
+        $voided->fecGeneracion = new \DateTime(strval($voucher->voucher_date));
+        $voided->fecComunicacion = new \DateTime(strval($voucher->voucher_date));
         $voided->company = $this->invoiceUtils->getCompany();
         $voided->details = [$voidedDetail];
         $response = $this->voidedRepository->voidInvoice($voided);

@@ -2,6 +2,7 @@ import {Constants} from "../common/Constants";
 import {Animation} from "../common/Animation";
 import {bus} from "../event/EventBus";
 import {SharedUtils} from "../utils/SharedUtils";
+import {Button} from "../types";
 
 export default class Dialog {
     private container: HTMLElement;
@@ -24,7 +25,7 @@ export default class Dialog {
         this.setupView();
         let ref = this;
 
-        let buttons = [];
+        let buttons: Button[] = [];
         if (this.options.closable ?? true) {
             buttons.push({
                 id: 'negative-button' + this.randomId,

@@ -1,0 +1,10 @@
+{% extends 'sale/report/invoice.html.twig' %}
+
+{% block extra %}
+    {{ parent() }}
+    CIP: {{ extraData.cipCode }} <br>
+    GRADO: {{ extraData.rank }} <br>
+    ARMA: {{ extraData.weaponCode }} <br>
+    Nº HISTORIA: {{ extraData.medicalRecordNumber }} <br>
+    MEDICO: {{ extraData.physicianFullName }} <br>
+{% endblock %}
