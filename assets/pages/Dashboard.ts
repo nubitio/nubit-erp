@@ -22,7 +22,7 @@ export default class Dashboard {
     dataLoaded = false;
     rotationDataLoaded = false;
 
-    constructor(container: HTMLElement) {
+    constructor(container: string) {
         (Exporting as any)(Highcharts);
         (HighchartsMore as any)(Highcharts);
         (Dumbbell as any)(Highcharts);

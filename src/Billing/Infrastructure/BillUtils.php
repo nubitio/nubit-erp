@@ -5,13 +5,13 @@ namespace App\Billing\Infrastructure;
 use App\Billing\Domain\BillUtilsInterface;
 use App\Billing\Model\Address\Address;
 use App\Billing\Model\Company\Company;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 
 class BillUtils implements BillUtilsInterface
 {
-    private SettingsService $settingsService;
+    private TenantAwareSettingsService $settingsService;
 
-    public function __construct(SettingsService $settingsService)
+    public function __construct(TenantAwareSettingsService $settingsService)
     {
         $this->settingsService = $settingsService;
     }

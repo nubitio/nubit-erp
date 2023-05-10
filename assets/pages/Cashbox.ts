@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {messenger} from "../core/utils/Messenger";
 import {httpClient} from "../core/http/HttpClient";
 import {bus} from "../core/event/EventBus";
@@ -41,21 +41,21 @@ export default class Cashbox {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('id')
             .label('Id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .visible(false)
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('caja_id')
             .label('Caja')
             .hidden(true)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENUM)
+            .type(FieldType.ENUM)
             .name('tipo_id')
             .label('Tipo')
             .data([
@@ -66,19 +66,19 @@ export default class Cashbox {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('descripcion')
             .label('Concepto')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('referencia')
             .label('Observaciones')
             .width(100)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.CURRENCY)
+            .type(FieldType.CURRENCY)
             .name('monto')
             .label('Monto')
             .align('right')
@@ -167,7 +167,7 @@ export default class Cashbox {
         });
         let form = new Form(dialog.id ?? '', [
             new FieldBuilder()
-                .type(FormType.CURRENCY)
+                .type(FieldType.CURRENCY)
                 .name('monto_inicial')
                 .label('Monto inicial')
                 .required(true)

@@ -5,30 +5,33 @@ namespace App\Invoice\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Customer\Infrastructure\CustomerEntity;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Invoice\Domain\Voucher;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
-class InvoiceRepository implements InvoiceRepositoryInterface
+readonly class InvoiceRepository implements InvoiceRepositoryInterface
 {
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private Connection             $connection,
+        private DataLoader             $dataLoader,
+    )
     {
-        $this->connection = $connection;
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
     /** @inheritdoc */
-    public function getAll(?array $filter = null): array
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('vw_comprobante', 'created_at', 'desc', filter: $filter);
+        return $this->dataLoader->load($options);
     }
 
     /**
@@ -70,17 +73,20 @@ class InvoiceRepository implements InvoiceRepositoryInterface
         ]);
     }
 
-    public function insert(Invoice $invoice): void
+    public function insert(Invoice $invoice): Invoice
     {
         $entity = DataMapper::map($invoice, InvoiceEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Invoice::class);
     }
 
     /**
      * @throws ServiceException
+     * @throws ORMException
      */
-    public function update(Invoice $invoice): void
+    public function update(Invoice $invoice): Invoice
     {
         $entity = $this->entityManager->find(InvoiceEntity::class, $invoice->comprobante_id);
 
@@ -88,8 +94,12 @@ class InvoiceRepository implements InvoiceRepositoryInterface
             throw new ServiceException('La factura no existe');
         }
 
-        DataMapper::map($invoice, $entity);
+        $entity = DataMapper::map($invoice, $entity);
+
+        $entity->cliente = $this->entityManager->getReference(CustomerEntity::class, $invoice->cliente?->ruc);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, Invoice::class);
     }
 
     public function delete(string $id): void
@@ -102,5 +112,23 @@ class InvoiceRepository implements InvoiceRepositoryInterface
 
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     */
+    public function getVoucher(string $saleId): Voucher
+    {
+        $voucher = $this->connection->executeQuery('CALL sp_sale_header(?)', [$saleId])->fetchAssociative();
+        $items = $this->connection->executeQuery('CALL sp_sale_detail(?)', [$saleId])->fetchAllAssociative();
+
+        if (!$voucher) {
+            throw new ServiceException('La venta no existe');
+        }
+
+        $voucher['voucher_items'] = $items;
+
+        return DataMapper::map($voucher, Voucher::class);
     }
 }

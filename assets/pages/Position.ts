@@ -1,9 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 
 export default class Position {
     private readonly container: string;
@@ -33,23 +33,32 @@ export default class Position {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
             .visible(false)
-            .type(FormType.NONE)
+            .type(FieldType.NONE)
             .name('id')
             .label('Id')
+            .valueType('number')
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.ENTITY)
+            .name('department')
+            .label('Department')
+            .url('api/departments')
+            .valueField('id')
+            .textField('name')
+            .formatter((value: any) => value?.name)
             .required(true)
             .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('name')
-            .label('Nombre')
-            .required(true)
+            .label('Name')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXT)
+            .type(FieldType.TEXT)
             .name('description')
-            .label('Descripcion')
-            .width(100)
+            .label('Description')
             .build())
     };
 

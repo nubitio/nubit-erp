@@ -1,22 +1,22 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FormType} from "../core/form/FormType";
-import {Field} from "../core/form/Field";
-import {FieldBuilder} from "../core/form/FieldBuilder";
+import {FieldType} from "../core/field/FieldType";
+import {Field} from "../core/field/Field";
+import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {ConsultService} from "../services/consult.service";
 import {Constants} from "../core/common/Constants";
 
 export default class Customer {
-    private readonly container: string;
-    private fields: Field[] = [];
-    private dataGrid: DataGrid;
-    private dialog: Dialog;
-    private form: Form;
-    private consultService = new ConsultService();
+    protected readonly container: string;
+    protected fields: Field[] = [];
+    protected dataGrid: DataGrid;
+    protected dialog: Dialog;
+    protected form: Form;
+    protected consultService = new ConsultService();
 
-    static readonly API_URL = 'api/customers';
+    static readonly API_URL: string = 'api/customers';
 
     static readonly EVENTS = {
         ADD: 'customer:add',
@@ -44,14 +44,14 @@ export default class Customer {
             .valueType('string')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('razon_social')
             .label('Cliente')
             .required(true)
             .sortable(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.TEXTAREA)
+            .type(FieldType.TEXTAREA)
             .name('domicilio_fiscal')
             .label('Domicilio')
             .width(100)
@@ -65,7 +65,7 @@ export default class Customer {
             .label('Email')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.ENTITY)
+            .type(FieldType.ENTITY)
             .name('price_list')
             .label('Tarifa')
             .url('api/price-lists')
@@ -75,7 +75,7 @@ export default class Customer {
             .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FormType.SWITCH)
+            .type(FieldType.SWITCH)
             .name('estado')
             .label('Activo')
             .align('center')

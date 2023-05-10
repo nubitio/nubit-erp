@@ -3,32 +3,38 @@
 namespace App\Sale\Domain;
 
 use App\Billing\Domain\BillSendUseCase;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Invoice\Domain\Voucher;
+use League\Flysystem\FilesystemException;
 
 readonly class SaleInvoiceUseCase
 {
     public function __construct(
         private GetOneSaleUseCase          $getOneSaleUseCase,
+        private GetOneVoucherUseCase       $getOneVoucherUseCase,
         private UpdateSaleUseCase          $updateSaleUseCase,
         private BillSendUseCase            $billSendUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
         private FileManager                $fileManager,
-        private SettingsService            $settings
+        private TenantAwareSettingsService $settings
     )
     {
     }
 
     /**
-     * @throws \Exception
+     * @throws FilesystemException
+     * @throws ServiceException
      */
-    public function __invoke(string $saleId): void
+    public function __invoke(string $saleId): ?Voucher
     {
         $sale = $this->getOneSaleUseCase->__invoke($saleId);
         if ($sale->has_invoice) {
-            return;
+            return $this->getOneVoucherUseCase->__invoke($saleId);
         }
         $this->invoiceRepository->create($sale);
         $invoice = $this->invoiceRepository->getOne($saleId);
@@ -49,7 +55,9 @@ readonly class SaleInvoiceUseCase
             $invoice->envio_sunat = $response->sunatResponse->error->code;
             $invoice->mensaje_sunat = $response->sunatResponse->error->message;
             $this->invoiceRepository->update($invoice);
-            throw new \Exception($response->sunatResponse->error->message);
+            throw new ServiceException($response->sunatResponse->error->message);
         }
+
+        return $this->getOneVoucherUseCase->__invoke($saleId);
     }
 }
