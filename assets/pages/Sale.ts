@@ -118,7 +118,7 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('tipo_pago')
-            .label('Metodo de pago')
+            .label('Método de pago')
             .url('api/payment-methods')
             .valueField('id')
             .textField('name')
@@ -143,7 +143,7 @@ export default class Sale {
             .type(FieldType.NONE)
             .name('total')
             .label('Total')
-            .align('right')
+            .align('left')
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
         this.fields.push(new FieldBuilder()
@@ -208,7 +208,7 @@ export default class Sale {
             .type(FieldType.CURRENCY)
             .name('precio_unitario')
             .label('Precio')
-            .align('right')
+            .align('left')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .build());
@@ -216,7 +216,7 @@ export default class Sale {
             .type(FieldType.CURRENCY)
             .name('precio_total')
             .label('Total')
-            .align('right')
+            .align('left')
             .readonly(true)
             .onChange(this.calculateGrandTotal.bind(this))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
@@ -259,7 +259,7 @@ export default class Sale {
                     ref.voidSale();
                 }
             }, {
-                text: 'Comprobante',
+                text: 'Generar Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
                     ref.makeInvoice();

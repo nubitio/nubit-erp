@@ -103,7 +103,7 @@ export default class Cashbox {
             }
         ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Cashbox',
+            title: 'Caja',
             url: 'cashbox/last',
             routes: Cashbox.ROUTES,
             events: Cashbox.EVENTS,

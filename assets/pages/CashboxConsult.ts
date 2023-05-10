@@ -79,7 +79,7 @@ export default class CashboxConsult {
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('referencia')
-            .label('Observacion')
+            .label('Observación')
             .width(100)
             .build());
         this.detailFields.push(new FieldBuilder()
@@ -97,7 +97,7 @@ export default class CashboxConsult {
     renderDataGrid() {
         let toolbar = [
             {
-                text: 'Exportar',
+                text: 'Reporte Simple',
                 iconCls: Constants.ICON_PDF,
                 handler: () => {
                     let row: any = this.dataGrid.selectedRow;
@@ -109,7 +109,7 @@ export default class CashboxConsult {
                 }
             },
             {
-                text: 'Reporte',
+                text: 'Reporte Detallado',
                 iconCls: Constants.ICON_PDF,
                 handler: () => {
                     let row: any = this.dataGrid.selectedRow;
@@ -122,7 +122,7 @@ export default class CashboxConsult {
             },
         ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Cashbox Report',
+            title: 'Reporte de Caja',
             url: 'cashbox/get',
             routes: CashboxConsult.ROUTES,
             events: CashboxConsult.EVENTS,
