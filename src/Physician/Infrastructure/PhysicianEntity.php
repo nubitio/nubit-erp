@@ -29,8 +29,8 @@ class PhysicianEntity
     {
     }
 
-    public function getFullName(): string
+    public function getFullName(): ?string
     {
-        return $this->employee->getFullName();
+        return $this->employee?->getFullName();
     }
 }
