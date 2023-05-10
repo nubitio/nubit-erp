@@ -46,14 +46,14 @@ export default class Supplier {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('ruc')
-            .label('Ruc')
+            .label('R.U.C.')
             .validators(['length[11, 11]'])
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXTAREA)
             .name('razon_social')
-            .label('Proveedor')
+            .label('Razón Social')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -65,7 +65,7 @@ export default class Supplier {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('telefono')
-            .label('Telefono')
+            .label('Teléfono')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
@@ -83,7 +83,7 @@ export default class Supplier {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Supplier',
+            title: 'Módulo Supplier',
             url: Supplier.API_URL,
             method: 'get',
             allowAdd: true,

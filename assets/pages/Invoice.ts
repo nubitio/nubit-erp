@@ -77,7 +77,7 @@ export default class Invoice {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('numero')
-            .label('Numero')
+            .label('Número')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
