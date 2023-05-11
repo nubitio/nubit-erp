@@ -81,7 +81,7 @@ export default class Product {
             .type(FieldType.CURRENCY)
             .name('precio')
             .label('Precio')
-            .align('left')
+            .align('right')
             .formatter((value: any) => NumberUtils.formatCurrency(value))
             .required(true)
             .build());

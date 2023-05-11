@@ -45,8 +45,8 @@ class InvoiceEntity
         public ?int                $discount_percent = null,
         #[ORM\Column(name: 'discount_amount', type: 'decimal')]
         public ?float              $discount_amount = null,
-        #[ORM\Column(name: 'voided', type: 'boolean')]
-        public ?bool               $voided = null,
+        #[ORM\Column(name: 'voided', type: 'integer')]
+        public ?int               $voided = null,
         #[ORM\Column(name: 'digest', type: 'string')]
         public ?string             $digest = null,
         #[ORM\Column(name: 'ticket_baja', type: 'string')]

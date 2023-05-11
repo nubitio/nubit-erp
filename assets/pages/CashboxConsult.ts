@@ -74,7 +74,7 @@ export default class CashboxConsult {
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('descripcion')
-            .label('Descripcion')
+            .label('Descripción')
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.NONE)
