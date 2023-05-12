@@ -74,7 +74,7 @@ export default class Sale {
             .label('Almacen')
             .url(warehouseUrl)
             .valueField('almacen_id')
-            .textField('descripcion')
+            .textField('Descripción')
             .visible(false)
             .required(true)
             .defaultValue(session['warehouse_id'])
@@ -118,7 +118,7 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('tipo_pago')
-            .label('Metodo de pago')
+            .label('Método de pago')
             .url('api/payment-methods')
             .valueField('id')
             .textField('name')
@@ -179,7 +179,7 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('estado')
-            .label('Estado')
+            .label('Anulado')
             .formatter(SharedUtils.invoiceStatusFormatter)
             .align('center')
             .build());
@@ -259,7 +259,7 @@ export default class Sale {
                     ref.voidSale();
                 }
             }, {
-                text: 'Comprobante',
+                text: 'Generar Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
                     ref.makeInvoice();

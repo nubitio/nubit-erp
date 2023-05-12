@@ -41,7 +41,7 @@ class Invoice
         #[SerializedName('discount_amount')]
         public ?float              $discount_amount = null,
         #[SerializedName('voided')]
-        public ?bool               $voided = false,
+        public ?int               $voided = null,
         #[SerializedName('digest')]
         public ?string             $digest = null,
         #[SerializedName('ticket_baja')]
