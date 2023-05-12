@@ -18,11 +18,15 @@ class FilterRule implements FilterInterface
     {
         $op = FilterUtils::getOperation($this->op);
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
+        $field = 'e.' . $this->field;
         if (str_contains($this->field, '.')) {
-            $queryBuilder->andWhere("$this->field $op :$uniqueParam");
-        } else {
-            $queryBuilder->andWhere("e.$this->field $op :$uniqueParam");
+            $field = $this->field;
         }
+        if ($this->op === FilterOperation::IsNull || $this->op === FilterOperation::IsNotNull) {
+            $queryBuilder->andWhere("$field $op");
+            return;
+        }
+        $queryBuilder->andWhere("$field $op :$uniqueParam");
 
         $value = strval($this->value);
         if ($this->op === FilterOperation::Contains) {

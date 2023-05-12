@@ -5,6 +5,8 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import NumberUtils from "../core/utils/NumberUtils";
+import FilterRule from "../core/common/FilterRule";
 
 export default class CreditNote {
     private readonly container: string;
@@ -43,15 +45,21 @@ export default class CreditNote {
             .label('Nota id')
             .required(true)
             .build());
+        let saleFilter: FilterRule = {
+            field: 'invoice',
+            value: '',
+            op: 'isnotnull'
+        }
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('movimiento_id')
             .label('Comprobante')
             .visible(false)
             .mode('remote')
-            .url('api/invoice')
-            .textField('comprobante')
+            .url('api/sales?filterRules=[' + JSON.stringify(saleFilter) + ']')
+            .textField('invoice')
             .valueField('movimiento_id')
+            .formatter((row: any) => `<b>C.P:</b> ${row.invoice ?? ''}<br><b>Total:</b> ${NumberUtils.formatCurrency(row.total)}`)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
