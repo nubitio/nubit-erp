@@ -5,10 +5,10 @@ namespace App\Core\Infrastructure\DataLoader;
 class OptionUtils
 {
     /**
-     * @param array<string, array<string, mixed>> $context
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      * @param SortRule $sort
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addSort(array $context, SortRule $sort): array
     {
@@ -19,10 +19,10 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, array<string, mixed>> $context
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      * @param FilterRule $filter
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addFilter(array $context, FilterRule $filter): array
     {
@@ -40,10 +40,10 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, array<string, mixed>> $context
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      * @param JoinRule $join
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addJoin(array $context, JoinRule $join): array
     {

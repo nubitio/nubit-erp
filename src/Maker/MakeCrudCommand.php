@@ -42,7 +42,8 @@ class MakeCrudCommand extends Command
             $crudType = $io->choice('Crud type', ['Simple', 'Master detail']);
             $io->newLine();
 
-            $moduleName = strval($io->ask('Module name'));
+            /** @var string $moduleName */
+            $moduleName = $io->ask('Module name');
             $modulePath = dirname(__DIR__, 2) . '/src/' . StringUtils::toPascalCase($moduleName);
 
             $schemaManager = $this->connection->createSchemaManager();

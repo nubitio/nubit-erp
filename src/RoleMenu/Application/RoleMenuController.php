@@ -24,7 +24,7 @@ class RoleMenuController extends BaseController
     #[Route('/role-menu/add', name: 'role-menu_create', methods: ['POST'])]
     public function add(Request $request, RoleMenuCreateUseCase $createUseCase): Response
     {
-        /** @var array<string, array<int, mixed>> $data */
+        /** @var array<string, array<int, int>> $data */
         $data = json_decode($request->getContent(), true);
         $roleMenuList = [];
         foreach ($data['permissions'] as $menu) {

@@ -48,8 +48,10 @@ class CashboxController extends BaseController
     #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET', 'POST'])]
     public function getLast(Request $request, CashboxGetLastUseCase $getLastUseCase): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
-        $userId = intval($request->getSession()->get('user_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
+        /** @var int $userId */
+        $userId = $request->getSession()->get('user_id');
         $cashBox = $getLastUseCase($localId, $userId);
 
         if (!$cashBox) {
@@ -87,6 +89,10 @@ class CashboxController extends BaseController
     #[Route('/cashbox/open', name: 'cashbox_open', methods: ['POST'])]
     public function open(Request $request, CashboxCreateUseCase $createUseCase): Response
     {
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
+        /** @var int $userId */
+        $userId = $request->getSession()->get('user_id');
         $cashBoxDetail = new CashboxDetail(
             uid: 1,
             tipo_id: 1,
@@ -95,9 +101,9 @@ class CashboxController extends BaseController
         );
 
         $cashBox = new Cashbox(
-            local_id: strval($request->getSession()->get('branch_id')),
+            local_id: $localId,
             apertura: new \DateTime(),
-            usuario_id: intval($request->getSession()->get('user_id')),
+            usuario_id: $userId,
             estado: 1,
             details: [$cashBoxDetail],
         );

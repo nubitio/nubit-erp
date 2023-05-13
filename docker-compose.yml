@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   web:
+    container_name: efact-web
     build: .
     ports:
       - '8080:80'

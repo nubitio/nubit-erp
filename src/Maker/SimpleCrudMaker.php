@@ -44,8 +44,9 @@ class SimpleCrudMaker implements CrudMakerInterface
         $this->io->newLine();
         $this->io->text('Please select the entity');
         $tables = $this->schemaManager->listTableNames();
+        /** @var string $entityName */
         $entityName = $this->io->choice('Entity', $tables);
-        $this->entity = $this->schemaManager->introspectTable(strval($entityName));
+        $this->entity = $this->schemaManager->introspectTable($entityName);
         $this->makeController();
         $this->makeRepositoryInterface();
         $this->makeCreateUseCase();
@@ -512,7 +513,9 @@ class SimpleCrudMaker implements CrudMakerInterface
         foreach ($this->entity->getColumns() as $column) {
             $columns[] = $column->getName();
         }
+        /** @var string $sortColumn */
         $sortColumn = $this->io->choice('Which column do you want to use for sorting?', $columns);
+        /** @var string $sortOrder */
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
         $primaryKey = $this->entity->getPrimaryKey();
         $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
@@ -524,7 +527,7 @@ class SimpleCrudMaker implements CrudMakerInterface
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
         $providerContent = str_replace('{{castType}}', Util::getCastType(Util::getColumnType($idColumn)), $providerContent);
         $providerContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $providerContent);
-        $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
+        $providerContent = str_replace('{{sortColumn}}', $sortColumn, $providerContent);
         $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);
 
         file_put_contents($providerPath, $providerContent);
