@@ -22,10 +22,9 @@ readonly class WarehouseProvider implements ApiProviderInterface
 {
     public function __construct(
         private WarehouseGetAllUseCase $getAllUseCase,
-        private GetAllByBranchUseCase  $getAllByBranchUseCase,
+        private GetAllByBranchUseCase $getAllByBranchUseCase,
         private WarehouseGetOneUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

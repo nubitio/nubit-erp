@@ -20,11 +20,10 @@ readonly class PriceListDetailProvider implements ApiProviderInterface
 {
     public function __construct(
         private GetAllPriceListDetailUseCase $getAllUseCase
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

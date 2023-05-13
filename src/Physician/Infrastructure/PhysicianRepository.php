@@ -8,8 +8,8 @@ use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Employee\Infrastructure\EmployeeEntity;
-use App\Physician\Domain\PhysicianRepositoryInterface;
 use App\Physician\Domain\Physician;
+use App\Physician\Domain\PhysicianRepositoryInterface;
 use App\Specialty\Infrastructure\SpecialtyEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -18,11 +18,10 @@ readonly class PhysicianRepository implements PhysicianRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -8,8 +8,7 @@ class Consult
         public string $id,
         public string $name,
         public string $address,
-        public bool   $active
-    )
-    {
+        public bool $active
+    ) {
     }
 }

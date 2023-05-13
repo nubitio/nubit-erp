@@ -9,12 +9,10 @@ readonly class GetAllConsultationUseCase
 {
     public function __construct(
         private ConsultationRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Consultation>
      */
     public function __invoke(Options $options): PaginatorInterface

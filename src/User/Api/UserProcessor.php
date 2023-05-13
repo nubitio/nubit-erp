@@ -19,17 +19,17 @@ readonly class UserProcessor implements ApiProcessorInterface
         public CreateUserUseCase $createUseCase,
         public UpdateUserUseCase $updateUseCase,
         public DeleteUserUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?User
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->usuario_id) {
                 $this->deleteUseCase->__invoke($data->usuario_id);
             }
+
             return null;
         }
 

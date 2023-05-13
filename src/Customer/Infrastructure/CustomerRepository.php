@@ -9,7 +9,6 @@ use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Domain\Customer;
 use App\Customer\Domain\CustomerRepositoryInterface;
-use App\CustomerType\Infrastructure\CustomerTypeEntity;
 use App\PriceList\Infrastructure\PriceListEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -18,12 +17,11 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

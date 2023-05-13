@@ -21,23 +21,24 @@ readonly class SaleProcessor implements ApiProcessorInterface
         public CreateSaleUseCase $createUseCase,
         public UpdateSaleUseCase $updateUseCase,
         public DeleteSaleUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Sale
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->movimiento_id) {
                 $this->deleteUseCase->__invoke($data->movimiento_id);
             }
+
             return null;
         }
 
         if ($data->movimiento_id) {
             return $this->updateUseCase->__invoke($data);
         }
+
         return $this->createUseCase->__invoke($data);
     }
 }

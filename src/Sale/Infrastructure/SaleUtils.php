@@ -13,10 +13,9 @@ use Doctrine\DBAL\Exception;
 readonly class SaleUtils
 {
     public function __construct(
-        private Connection                 $connection,
+        private Connection $connection,
         private TenantAwareSettingsService $settings,
-    )
-    {
+    ) {
     }
 
     /**

@@ -7,7 +7,6 @@ use App\Consult\Domain\ConsultRepositoryInterface;
 use App\Consult\Domain\DocType;
 use App\Core\Domain\Exception\ServiceException;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
 class ConsultRepository implements ConsultRepositoryInterface
 {
@@ -15,10 +14,10 @@ class ConsultRepository implements ConsultRepositoryInterface
 
     public function consult(string $id, DocType $docType): Consult
     {
-        $url = self::API_URL . $docType->value . '/' . $id . '?token=abcxyz';
+        $url = self::API_URL.$docType->value.'/'.$id.'?token=abcxyz';
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', $url);
-        if ($response->getStatusCode() !== 200) {
+        if (200 !== $response->getStatusCode()) {
             throw new ServiceException('No se pudo consultar el documento, intente nuevamente');
         }
         /** @var array<string, bool|float|int|string|null> $data */
@@ -32,13 +31,12 @@ class ConsultRepository implements ConsultRepositoryInterface
 
     /**
      * @param array<string, bool|float|int|string|null> $data
-     * @return Consult
      */
     private function mapDni(array $data): Consult
     {
         return new Consult(
             strval($data['dni']),
-            $data['nombres'] . ' ' . $data['apellidoPaterno'] . ' ' . $data['apellidoMaterno'],
+            $data['nombres'].' '.$data['apellidoPaterno'].' '.$data['apellidoMaterno'],
             '',
             true
         );
@@ -46,7 +44,6 @@ class ConsultRepository implements ConsultRepositoryInterface
 
     /**
      * @param array<string, bool|float|int|string|null> $data
-     * @return Consult
      */
     private function mapRuc(array $data): Consult
     {
@@ -54,7 +51,7 @@ class ConsultRepository implements ConsultRepositoryInterface
             strval($data['ruc']),
             strval($data['razonSocial']),
             strval($data['direccion']),
-            strval($data['estado']) === 'ACTIVO'
+            'ACTIVO' === strval($data['estado'])
         );
     }
 }

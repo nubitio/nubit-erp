@@ -14,15 +14,14 @@ use League\Flysystem\FilesystemException;
 readonly class SaleVoidUseCase
 {
     public function __construct(
-        private SaleRepositoryInterface    $saleRepository,
-        private GetOneVoucherUseCase       $getOneVoucherUseCase,
+        private SaleRepositoryInterface $saleRepository,
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
-        private VoidedCreateUseCase        $voidedCreateUseCase,
-        private SummaryCreateUseCase       $summaryCreateUseCase,
-        private FileManager                $fileManager,
+        private VoidedCreateUseCase $voidedCreateUseCase,
+        private SummaryCreateUseCase $summaryCreateUseCase,
+        private FileManager $fileManager,
         private TenantAwareSettingsService $settings
-    )
-    {
+    ) {
     }
 
     /**
@@ -34,7 +33,7 @@ readonly class SaleVoidUseCase
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $sale = $this->saleRepository->getOne($saleId);
 
-        if ($sale->estado === 2) {
+        if (2 === $sale->estado) {
             throw SaleException::alreadyVoided();
         }
 
@@ -66,7 +65,7 @@ readonly class SaleVoidUseCase
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         if ($response->sunatResponse->success) {
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();
@@ -86,7 +85,7 @@ readonly class SaleVoidUseCase
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         if ($response->sunatResponse->success) {
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();

@@ -22,7 +22,6 @@ class Warehouse
         public ?bool $is_default = false,
         #[SerializedName('estado')]
         public ?bool $estado = false
-    )
-    {
+    ) {
     }
 }

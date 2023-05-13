@@ -2,13 +2,13 @@
 
 namespace App\ComboOption\Infrastructure;
 
+use App\ComboOption\Domain\ComboOption;
+use App\ComboOption\Domain\ComboOptionRepositoryInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\ComboOption\Domain\ComboOptionRepositoryInterface;
-use App\ComboOption\Domain\ComboOption;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class ComboOptionRepository implements ComboOptionRepositoryInterface
@@ -16,11 +16,10 @@ readonly class ComboOptionRepository implements ComboOptionRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

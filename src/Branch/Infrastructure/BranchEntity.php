@@ -14,26 +14,25 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "local")]
+#[Table(name: 'local')]
 class BranchEntity
 {
     public function __construct(
         #[Id]
         #[GeneratedValue]
-        #[Column(name: "local_id", type: "string")]
-        public ?string        $local_id = null,
+        #[Column(name: 'local_id', type: 'string')]
+        public ?string $local_id = null,
         #[ManyToOne(targetEntity: CompanyEntity::class)]
-        #[JoinColumn(name: "empresa_id", referencedColumnName: "empresa_id")]
+        #[JoinColumn(name: 'empresa_id', referencedColumnName: 'empresa_id')]
         public ?CompanyEntity $empresa = null,
-        #[Column(name: "descripcion", type: "string")]
-        public ?string        $descripcion = null,
-        #[Column(name: "direccion", type: "string")]
-        public ?string        $direccion = null,
-        #[Column(name: "telefono", type: "string")]
-        public ?string        $telefono = null,
-        #[Column(name: "estado", type: "boolean")]
-        public ?bool          $estado = null
-    )
-    {
+        #[Column(name: 'descripcion', type: 'string')]
+        public ?string $descripcion = null,
+        #[Column(name: 'direccion', type: 'string')]
+        public ?string $direccion = null,
+        #[Column(name: 'telefono', type: 'string')]
+        public ?string $telefono = null,
+        #[Column(name: 'estado', type: 'boolean')]
+        public ?bool $estado = null
+    ) {
     }
 }

@@ -6,8 +6,7 @@ readonly class GetPricesByList
 {
     public function __construct(
         private PriceListRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**

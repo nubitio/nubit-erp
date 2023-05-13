@@ -9,12 +9,10 @@ readonly class GetAllDepartmentUseCase
 {
     public function __construct(
         private DepartmentRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Department>
      */
     public function __invoke(Options $options): PaginatorInterface

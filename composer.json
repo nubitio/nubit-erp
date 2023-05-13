@@ -137,7 +137,7 @@
       "vendor/bin/phpstan analyse --memory-limit=2G --no-progress"
     ],
     "format": [
-      "vendor/bin/php-cs-fixer fix --config=.php_cs-fixer.dist.php --ansi --verbose --diff --diff-format=udiff"
+      "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php"
     ]
   },
   "conflict": {

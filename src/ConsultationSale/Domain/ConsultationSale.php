@@ -12,12 +12,11 @@ class ConsultationSale
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int          $id = null,
+        public ?int $id = null,
         #[SerializedName('consultation')]
         public ?Consultation $consultation = null,
         #[SerializedName('sale')]
-        public ?Sale         $sale = null
-    )
-    {
+        public ?Sale $sale = null
+    ) {
     }
 }

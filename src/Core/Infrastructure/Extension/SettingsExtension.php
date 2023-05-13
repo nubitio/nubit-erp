@@ -10,8 +10,7 @@ class SettingsExtension extends AbstractExtension
 {
     public function __construct(
         private readonly TenantAwareSettingsService $settingsService
-    )
-    {
+    ) {
     }
 
     public function getFunctions(): array
@@ -25,8 +24,8 @@ class SettingsExtension extends AbstractExtension
     {
         $version = 'dev';
 
-        if ($settingName === 'version') {
-            $versionFile = dirname(__DIR__, 4) . '/.version';
+        if ('version' === $settingName) {
+            $versionFile = dirname(__DIR__, 4).'/.version';
             if (file_exists($versionFile)) {
                 $fileContent = file_get_contents($versionFile);
                 $version = trim(strval($fileContent ?: $version));

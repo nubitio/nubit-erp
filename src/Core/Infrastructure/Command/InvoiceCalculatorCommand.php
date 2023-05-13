@@ -26,13 +26,13 @@ class InvoiceCalculatorCommand extends Command
         try {
             $io->title('Invoice calculator');
             /** @var string $total */
-            $total = $io->ask('Total', "0");
+            $total = $io->ask('Total', '0');
             /** @var string $discountPercentage */
-            $discountPercentage = $io->ask('Discount percentage', "0");
+            $discountPercentage = $io->ask('Discount percentage', '0');
             /** @var string $taxPercentage */
-            $taxPercentage = $io->ask('Tax percentage', "0");
+            $taxPercentage = $io->ask('Tax percentage', '0');
             /** @var string $chargesPercentage */
-            $chargesPercentage = $io->ask('Charges percentage', "0");
+            $chargesPercentage = $io->ask('Charges percentage', '0');
             $invoiceCalculator = new InvoiceCalculator(
                 floatval($total),
                 floatval($discountPercentage),

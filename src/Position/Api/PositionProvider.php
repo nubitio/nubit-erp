@@ -8,11 +8,10 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\Position\Domain\Position;
 use App\Position\Domain\GetAllPositionUseCase;
 use App\Position\Domain\GetOnePositionUseCase;
+use App\Position\Domain\Position;
 use App\Position\Infrastructure\PositionEntity;
 
 /**
@@ -23,8 +22,7 @@ readonly class PositionProvider implements ApiProviderInterface
     public function __construct(
         private GetAllPositionUseCase $getAllUseCase,
         private GetOnePositionUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

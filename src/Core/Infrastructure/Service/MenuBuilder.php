@@ -14,6 +14,7 @@ readonly class MenuBuilder
 
     /**
      * @return array<int, array<string, mixed>>
+     *
      * @throws Exception
      */
     public function buildMenuForRole(int $roleId): array
@@ -22,14 +23,14 @@ readonly class MenuBuilder
         $menu = [];
 
         foreach ($data as $parent) {
-            if ($parent['parent_id'] == 0 && empty($parent['link'])) {
+            if (0 == $parent['parent_id'] && empty($parent['link'])) {
                 $items = [];
 
                 foreach ($data as $child) {
                     if ($child['parent_id'] == $parent['menu_id']) {
                         $items[] = [
                             'text' => $child['descripcion'],
-                            'path' => $child['link']
+                            'path' => $child['link'],
                         ];
                     }
                 }
@@ -37,14 +38,14 @@ readonly class MenuBuilder
                 $menu[] = [
                     'text' => $parent['descripcion'],
                     'icon' => $parent['icon'],
-                    'items' => $items
+                    'items' => $items,
                 ];
             } else {
-                if ($parent['parent_id'] == 0 && !empty($parent['link'])) {
+                if (0 == $parent['parent_id'] && !empty($parent['link'])) {
                     $menu[] = [
                         'text' => $parent['descripcion'],
                         'icon' => $parent['icon'],
-                        'path' => $parent['link']
+                        'path' => $parent['link'],
                     ];
                 }
             }
@@ -55,6 +56,7 @@ readonly class MenuBuilder
 
     /**
      * @return array<int, array<string, mixed>>
+     *
      * @throws Exception
      */
     public function getMenuForRole(int $roleId): array

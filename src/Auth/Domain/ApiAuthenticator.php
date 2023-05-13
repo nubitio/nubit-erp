@@ -24,7 +24,7 @@ class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has(self::AUTH_HEADER) && $request->attributes->get('_route') !== self::LOGIN_ROUTE;
+        return $request->headers->has(self::AUTH_HEADER) && self::LOGIN_ROUTE !== $request->attributes->get('_route');
     }
 
     public function authenticate(Request $request): Passport

@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class ProductCreateUseCaseTest extends TestCase
 {
-    public function test_invoke(): void
+    public function testInvoke(): void
     {
         $productRepository = $this->createConfiguredMock(ProductRepositoryInterface::class, []);
         $productRepository->expects($this->once())

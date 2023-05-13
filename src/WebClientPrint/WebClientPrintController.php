@@ -22,7 +22,7 @@ class WebClientPrintController extends BaseController
         $reqType = WebClientPrint::GetProcessRequestType($query);
 
         if (WebClientPrint::GenPrintScript == $reqType || WebClientPrint::GenWcppDetectScript == $reqType) {
-            $currentAbsoluteURL = $request->getScheme() . '://' . $request->getHttpHost() . $request->getBaseUrl() . $request->getPathInfo();
+            $currentAbsoluteURL = $request->getScheme().'://'.$request->getHttpHost().$request->getBaseUrl().$request->getPathInfo();
 
             return new Response(WebClientPrint::generateScript($currentAbsoluteURL, $query), 200, ['Content-Type' => 'text/javascript']);
         } elseif (WebClientPrint::ClientSetWcppVersion == $reqType) {
@@ -44,12 +44,15 @@ class WebClientPrintController extends BaseController
             return new Response('OK', 200, ['Content-Type' => 'text/plain']);
         } elseif (WebClientPrint::ClientGetWcppVersion == $reqType) {
             $content = $cache->get(WebClientPrint::WCP_CACHE_WCPP_VER);
+
             return new Response($content, 200, ['Content-Type' => 'text/plain']);
         } elseif (WebClientPrint::ClientGetInstalledPrinters == $reqType) {
             $content = $cache->get(WebClientPrint::WCP_CACHE_PRINTERS);
+
             return new Response(base64_decode($content), 200, ['Content-Type' => 'text/plain']);
         } elseif (WebClientPrint::ClientGetInstalledPrintersInfo == $reqType) {
             $content = $cache->get(WebClientPrint::WCP_CACHE_PRINTERSINFO);
+
             return new Response(base64_decode($content), 200, ['Content-Type' => 'text/plain']);
         } else {
             return new Response('Invalid Request', 400, ['Content-Type' => 'text/plain']);

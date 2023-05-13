@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "performance")]
+#[ORM\Table(name: 'performance')]
 class PerformanceEntity
 {
     public function __construct(
@@ -24,7 +24,7 @@ class PerformanceEntity
         #[ORM\JoinColumn(name: 'product_fk', referencedColumnName: 'producto_id')]
         public ?ProductEntity $products = null,
         #[ORM\ManyToOne(targetEntity: ComboOptionEntity::class)]
-        #[ORM\JoinColumn(name: 'type_fk', referencedColumnName:  'id')]
+        #[ORM\JoinColumn(name: 'type_fk', referencedColumnName: 'id')]
         public ?ComboOptionEntity $types = null,
         #[ORM\Column(name: 'date', type: 'date')]
         public ?\DateTimeInterface $date = null,
@@ -36,7 +36,6 @@ class PerformanceEntity
         public ?float $quantity = null,
         #[ORM\Column(name: 'obs', type: 'string')]
         public ?string $obs = null
-    )
-    {
+    ) {
     }
 }

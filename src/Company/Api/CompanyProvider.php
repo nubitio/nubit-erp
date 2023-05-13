@@ -23,11 +23,10 @@ readonly class CompanyProvider implements ApiProviderInterface
     public function __construct(
         private GetAllCompanyUseCase $getAllUseCase,
         private GetOneCompanyUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

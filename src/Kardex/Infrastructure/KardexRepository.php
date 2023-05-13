@@ -9,11 +9,10 @@ class KardexRepository implements KardexRepositoryInterface
 {
     public function __construct(
         private readonly Connection $connection
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(string $localId, ?string $warehouseId, ?string $categoryId, ?string $dateFrom, ?string $dateTo): array
     {
         if (empty($dateFrom) || empty($dateTo)) {
@@ -26,11 +25,11 @@ class KardexRepository implements KardexRepositoryInterface
             $warehouseId,
             $categoryId,
             $dateFrom,
-            $dateTo
+            $dateTo,
         ]);
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getOne(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array
     {
         return $this->connection->fetchAllAssociative('call sp_kardex (?,?,?,?)', [

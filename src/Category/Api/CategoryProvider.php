@@ -23,11 +23,10 @@ readonly class CategoryProvider implements ApiProviderInterface
     public function __construct(
         private CategoryGetAllUseCase $getAllUseCase,
         private CategoryGetOneUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

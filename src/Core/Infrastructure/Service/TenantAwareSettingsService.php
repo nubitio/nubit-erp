@@ -11,25 +11,22 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 readonly class TenantAwareSettingsService
 {
-
     public function __construct(
-        private Connection     $db,
+        private Connection $db,
         private CacheInterface $cache,
-        private RequestStack   $request
-    )
-    {
+        private RequestStack $request
+    ) {
     }
 
     /**
-     * @param string $key
-     * @param string|null $default
      * @return bool|float|int|string|null
+     *
      * @throws InvalidArgumentException
      */
     public function get(string $key, ?string $default = null): mixed
     {
         $tenant = $this->request->getCurrentRequest()?->headers->get('tenant') ?? 'default';
-        $tenantKey = $tenant . '_' . $key;
+        $tenantKey = $tenant.'_'.$key;
         /** @var bool|float|int|string|null $value */
         $value = $this->cache->get($tenantKey, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(10);

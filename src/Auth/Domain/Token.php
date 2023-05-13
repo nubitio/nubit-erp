@@ -6,7 +6,6 @@ class Token
 {
     public function __construct(
         public string $token
-    )
-    {
+    ) {
     }
 }

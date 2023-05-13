@@ -23,8 +23,7 @@ readonly class MilitaryPatientProvider implements ApiProviderInterface
     public function __construct(
         private GetAllMilitaryPatientUseCase $getAllUseCase,
         private GetOneMilitaryPatientUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

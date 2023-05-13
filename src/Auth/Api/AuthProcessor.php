@@ -18,12 +18,11 @@ readonly class AuthProcessor implements ApiProcessorInterface
 {
     public function __construct(
         private GetOneUserByUsernameUseCase $getOneUserByUsernameUseCase,
-        private GetTokenUseCase             $getTokenUseCase
-    )
-    {
+        private GetTokenUseCase $getTokenUseCase
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Token
     {
         $user = $this->getOneUserByUsernameUseCase->__invoke(strval($data->username));

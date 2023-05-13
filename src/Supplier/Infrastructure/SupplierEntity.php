@@ -8,7 +8,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "proveedor")]
+#[ORM\Table(name: 'proveedor')]
 class SupplierEntity
 {
     public function __construct(
@@ -26,8 +26,7 @@ class SupplierEntity
         #[ORM\Column(name: 'telefono', type: 'string')]
         public ?string $telefono = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool   $estado = null
-    )
-    {
+        public ?bool $estado = null
+    ) {
     }
 }
