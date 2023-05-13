@@ -74,7 +74,7 @@ export default class Sale {
             .label('Almacen')
             .url(warehouseUrl)
             .valueField('almacen_id')
-            .textField('Descripción')
+            .textField('descripcion')
             .visible(false)
             .required(true)
             .defaultValue(session['warehouse_id'])
