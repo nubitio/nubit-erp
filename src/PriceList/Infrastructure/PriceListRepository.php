@@ -18,14 +18,13 @@ use Doctrine\ORM\EntityManagerInterface;
 readonly class PriceListRepository implements PriceListRepositoryInterface
 {
     public function __construct(
-        private Connection             $connection,
+        private Connection $connection,
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -82,12 +81,13 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws Exception
      */
     public function getPricesByList(int $id): array
     {
-        $sql = "
+        $sql = '
             select
                 p.producto_id as id,
                 p.descripcion as name,
@@ -96,7 +96,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
             left join price_list_detail pld on p.producto_id = pld.product_id
             and pld.price_list_id = :id
             where p.estado = 1
-            order by p.descripcion";
+            order by p.descripcion';
 
         return $this->connection->fetchAllAssociative($sql, ['id' => $id]);
     }

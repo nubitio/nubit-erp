@@ -5,18 +5,17 @@ namespace App\WebClientPrint;
 class SaleItem
 {
     public function __construct(
-        private string         $name = '',
-        private ?string        $price = '',
+        private string $name = '',
+        private ?string $price = '',
         private readonly ?bool $dollarSign = false
-    )
-    {
+    ) {
     }
 
     public function __toString()
     {
         $line_width = $_ENV['PRINTER_LINE_WIDTH'];
-        $rightCols = (int)round(20 / 100 * $line_width);
-        $leftCols = (int)round(80 / 100 * $line_width);
+        $rightCols = (int) round(20 / 100 * $line_width);
+        $leftCols = (int) round(80 / 100 * $line_width);
         if ($this->dollarSign) {
             $leftCols = $leftCols / 2 - $rightCols / 2;
         }
@@ -26,7 +25,7 @@ class SaleItem
         if (is_numeric($this->price)) {
             $this->price = number_format($this->price, 2, '.', '');
         }
-        $right = str_pad($sign . $this->price, $rightCols, ' ', STR_PAD_LEFT);
+        $right = str_pad($sign.$this->price, $rightCols, ' ', STR_PAD_LEFT);
 
         return "$left$right\n";
     }

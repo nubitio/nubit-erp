@@ -32,7 +32,7 @@ class FilterUtils
         $i = 1;
         while ($queryBuilder->getParameter($param)) {
             $param = "{$field}_{$i}";
-            $i++;
+            ++$i;
         }
 
         return $param;

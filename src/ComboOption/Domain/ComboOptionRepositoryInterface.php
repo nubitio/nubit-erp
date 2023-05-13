@@ -2,13 +2,12 @@
 
 namespace App\ComboOption\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface ComboOptionRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<ComboOption>
      */
     public function getAll(Options $options): PaginatorInterface;

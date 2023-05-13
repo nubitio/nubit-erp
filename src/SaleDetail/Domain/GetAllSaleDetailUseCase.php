@@ -15,7 +15,6 @@ class GetAllSaleDetailUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<SaleDetail>
      */
     public function __invoke(Options $options): PaginatorInterface

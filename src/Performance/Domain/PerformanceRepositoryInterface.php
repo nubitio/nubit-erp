@@ -2,13 +2,12 @@
 
 namespace App\Performance\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface PerformanceRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Performance>
      */
     public function getAll(Options $options): PaginatorInterface;

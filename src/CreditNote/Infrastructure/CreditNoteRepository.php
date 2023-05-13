@@ -21,7 +21,7 @@ class CreditNoteRepository implements CreditNoteRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_nota', 'created_at', 'DESC', filter: $filter);

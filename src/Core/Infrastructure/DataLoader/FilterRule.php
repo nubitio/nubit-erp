@@ -7,11 +7,10 @@ use Doctrine\ORM\QueryBuilder;
 class FilterRule implements FilterInterface
 {
     public function __construct(
-        public string                     $field,
-        public FilterOperation            $op,
+        public string $field,
+        public FilterOperation $op,
         public bool|float|int|string|null $value,
-    )
-    {
+    ) {
     }
 
     public function apply(QueryBuilder $queryBuilder): void
@@ -25,11 +24,11 @@ class FilterRule implements FilterInterface
         }
 
         $value = strval($this->value);
-        if ($this->op === FilterOperation::Contains) {
+        if (FilterOperation::Contains === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "%{$value}%");
-        } elseif ($this->op === FilterOperation::BeginsWith) {
+        } elseif (FilterOperation::BeginsWith === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "{$value}%");
-        } elseif ($this->op === FilterOperation::EndsWith) {
+        } elseif (FilterOperation::EndsWith === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "%{$value}");
         } else {
             $queryBuilder->setParameter($uniqueParam, $this->value);

@@ -22,12 +22,11 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -124,7 +123,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             ->setParameter('id', $customerId)
             ->getQuery();
 
-        /** @var  ?MilitaryPatientEntity $militaryPatient */
+        /** @var ?MilitaryPatientEntity $militaryPatient */
         $militaryPatient = $query->getOneOrNullResult();
 
         $consultationSale = $this->entityManager->getRepository(ConsultationSaleEntity::class)->findOneBy(['sale' => $saleId]);

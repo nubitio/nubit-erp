@@ -11,11 +11,10 @@ readonly class PriceListDetailRepository implements PriceListDetailRepositoryInt
 {
     public function __construct(
         private DataLoader $dataLoader
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

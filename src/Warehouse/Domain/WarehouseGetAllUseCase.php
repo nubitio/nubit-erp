@@ -15,7 +15,6 @@ class WarehouseGetAllUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Warehouse>
      */
     public function __invoke(Options $options): PaginatorInterface

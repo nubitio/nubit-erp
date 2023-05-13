@@ -9,12 +9,10 @@ readonly class GetAllPositionUseCase
 {
     public function __construct(
         private PositionRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Position>
      */
     public function __invoke(Options $options): PaginatorInterface

@@ -9,7 +9,6 @@ use App\Sale\Domain\InvoiceExtraData;
 interface MilitaryPatientRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<MilitaryPatient>
      */
     public function getAll(Options $options): PaginatorInterface;

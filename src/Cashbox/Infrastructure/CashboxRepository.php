@@ -29,7 +29,9 @@ class CashboxRepository implements CashboxRepositoryInterface
 
     /**
      * @param array<int , array<string, mixed>>|null $filter
+     *
      * @return array<string, mixed>
+     *
      * @throws Exception
      */
     public function getAll(?array $filter = null): array
@@ -51,9 +53,9 @@ class CashboxRepository implements CashboxRepositoryInterface
     public function getLast(string $localId, int $userId): ?Cashbox
     {
         $entity = $this->entityManager->getRepository(CashboxEntity::class)->findOneBy([
-            'local_id'   => $localId,
+            'local_id' => $localId,
             'usuario_id' => $userId,
-            'estado'     => 1,
+            'estado' => 1,
         ]);
 
         if (!$entity) {
@@ -64,8 +66,8 @@ class CashboxRepository implements CashboxRepositoryInterface
     }
 
     /**
-     * @param string $id
      * @return array<int, array<string, mixed>>
+     *
      * @throws Exception
      */
     public function getInfoByReceiptType(string $id): array
@@ -144,11 +146,11 @@ class CashboxRepository implements CashboxRepositoryInterface
             foreach ($totalSales as $totalSale) {
                 /** @var ?CashboxDetailEntity $cashBoxDetail */
                 $cashBoxDetail = $this->entityManager->getRepository(CashboxDetailEntity::class)->findOneBy([
-                    'caja_id'     => $cashBoxId,
+                    'caja_id' => $cashBoxId,
                     'descripcion' => $totalSale['name'],
                 ]);
 
-                if ($cashBoxDetail != null) {
+                if (null != $cashBoxDetail) {
                     $cashBoxDetail->monto = floatval($totalSale['total']);
                     $this->entityManager->flush();
                     continue;
@@ -172,6 +174,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
     /**
      * @return array<int, array<string, bool|float|int|string|null>>
+     *
      * @throws Exception
      */
     private function getTotalSales(int $userId, string $startDate, string $endDate): array
@@ -196,6 +199,7 @@ class CashboxRepository implements CashboxRepositoryInterface
 
         /** @var array<int, array<string, bool|float|int|string|null>> $data */
         $data = $this->connection->fetchAllAssociative($sql, [$userId, $startDate, $endDate]);
+
         return $data;
     }
 }

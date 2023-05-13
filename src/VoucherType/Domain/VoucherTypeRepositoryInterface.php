@@ -8,7 +8,6 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 interface VoucherTypeRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<VoucherType>
      */
     public function getAll(Options $options): PaginatorInterface;

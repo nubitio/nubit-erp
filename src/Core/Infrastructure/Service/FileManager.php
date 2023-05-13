@@ -9,8 +9,7 @@ final readonly class FileManager
 {
     public function __construct(
         private FilesystemOperator $uploadsFilesystem
-    )
-    {
+    ) {
     }
 
     /**

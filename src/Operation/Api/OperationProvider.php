@@ -21,11 +21,10 @@ readonly class OperationProvider implements ApiProviderInterface
     public function __construct(
         private GetAllOperationUseCase $getAllUseCase,
         private GetOneOperationUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(ApiOperation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

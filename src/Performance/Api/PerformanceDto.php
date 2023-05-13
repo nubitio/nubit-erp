@@ -15,5 +15,4 @@ class PerformanceDto extends Performance
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

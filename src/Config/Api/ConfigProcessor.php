@@ -19,17 +19,17 @@ readonly class ConfigProcessor implements ApiProcessorInterface
         public ConfigCreateUseCase $ConfigCreateUseCase,
         public ConfigUpdateUseCase $ConfigUpdateUseCase,
         public ConfigDeleteUseCase $ConfigDeleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Config
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->ConfigDeleteUseCase->__invoke(intval($data->id));
             }
+
             return null;
         }
 

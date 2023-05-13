@@ -9,12 +9,10 @@ readonly class GetAllPatientTypeUseCase
 {
     public function __construct(
         private PatientTypeRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<PatientType>
      */
     public function __invoke(Options $options): PaginatorInterface

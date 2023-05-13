@@ -26,17 +26,17 @@ use App\Media\Domain\Media;
                                 'properties' => [
                                     'file' => [
                                         'type' => 'string',
-                                        'format' => 'binary'
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
+                                        'format' => 'binary',
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
             ],
             deserialize: false,
         ),
-        new Delete()
+        new Delete(),
     ],
     provider: MediaProvider::class,
     processor: MediaProcessor::class

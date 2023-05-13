@@ -12,25 +12,24 @@ class Patient extends Customer
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int                $id = null,
+        public ?int $id = null,
         #[SerializedName('customer')]
-        public ?Customer           $customer = null,
+        public ?Customer $customer = null,
         #[SerializedName('type')]
-        public ?PatientType        $type = null,
+        public ?PatientType $type = null,
         #[SerializedName('insurance_provider')]
-        public ?string             $insurance_provider = null,
+        public ?string $insurance_provider = null,
         #[SerializedName('medical_record_number')]
-        public ?string             $medical_record_number = null,
+        public ?string $medical_record_number = null,
         #[SerializedName('created_by')]
-        public ?int                $created_by = null,
+        public ?int $created_by = null,
         #[SerializedName('updated_by')]
-        public ?int                $updated_by = null,
+        public ?int $updated_by = null,
         #[SerializedName('created_at')]
         public ?\DateTimeInterface $created_at = null,
         #[SerializedName('updated_at')]
         public ?\DateTimeInterface $updated_at = null
-    )
-    {
+    ) {
         parent::__construct();
     }
 
