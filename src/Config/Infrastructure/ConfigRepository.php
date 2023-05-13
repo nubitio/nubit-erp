@@ -26,7 +26,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         return $this->dataLoader->load($options);
     }
 
-    public function getOne(string $id): ?Config
+    public function getOne(int $id): ?Config
     {
         /** @var ?ConfigEntity $entity */
         $entity = $this->entityManager->find(ConfigEntity::class, $id);

@@ -11,6 +11,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 
 class CashboxRepository implements CashboxRepositoryInterface
@@ -29,6 +30,7 @@ class CashboxRepository implements CashboxRepositoryInterface
     /**
      * @param array<int , array<string, mixed>>|null $filter
      * @return array<string, mixed>
+     * @throws Exception
      */
     public function getAll(?array $filter = null): array
     {
@@ -64,7 +66,7 @@ class CashboxRepository implements CashboxRepositoryInterface
     /**
      * @param string $id
      * @return array<int, array<string, mixed>>
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function getInfoByReceiptType(string $id): array
     {
@@ -152,6 +154,7 @@ class CashboxRepository implements CashboxRepositoryInterface
                     continue;
                 }
 
+                /** @var false|int $nextIndex */
                 $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashBoxId]);
 
                 $cashBoxDetail = new CashboxDetailEntity();
@@ -168,8 +171,8 @@ class CashboxRepository implements CashboxRepositoryInterface
     }
 
     /**
-     * @return array<int, array<string, mixed>>
-     * @throws \Doctrine\DBAL\Exception
+     * @return array<int, array<string, bool|float|int|string|null>>
+     * @throws Exception
      */
     private function getTotalSales(int $userId, string $startDate, string $endDate): array
     {
@@ -191,6 +194,8 @@ class CashboxRepository implements CashboxRepositoryInterface
                 pt.id
         ';
 
-        return $this->connection->fetchAllAssociative($sql, [$userId, $startDate, $endDate]);
+        /** @var array<int, array<string, bool|float|int|string|null>> $data */
+        $data = $this->connection->fetchAllAssociative($sql, [$userId, $startDate, $endDate]);
+        return $data;
     }
 }

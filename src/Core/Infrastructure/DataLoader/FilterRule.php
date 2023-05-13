@@ -7,9 +7,9 @@ use Doctrine\ORM\QueryBuilder;
 class FilterRule implements FilterInterface
 {
     public function __construct(
-        public string          $field,
-        public FilterOperation $op,
-        public mixed           $value,
+        public string                     $field,
+        public FilterOperation            $op,
+        public bool|float|int|string|null $value,
     )
     {
     }

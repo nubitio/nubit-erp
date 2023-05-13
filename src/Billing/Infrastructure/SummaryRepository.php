@@ -35,6 +35,7 @@ class SummaryRepository implements SummaryRepositoryInterface
     public function getLastCorrelativeByDate(string $date): int
     {
         $sql = 'select ifnull(max(right(correlative, 1)), 0) as correlative from summary where date = ?';
+        /** @var false|array<string, bool|float|int|string|null> $result */
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
 
         if (!$result) {

@@ -28,7 +28,7 @@ readonly class AuthProcessor implements ApiProcessorInterface
     {
         $user = $this->getOneUserByUsernameUseCase->__invoke(strval($data->username));
 
-        if (!$user && !$user?->estado) {
+        if (!$user || !$user->estado) {
             throw new UserNotFoundException('User not found');
         }
 

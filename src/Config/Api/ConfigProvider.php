@@ -7,7 +7,6 @@ use ApiPlatform\Metadata\Operation;
 use App\Config\Domain\Config;
 use App\Config\Domain\ConfigGetAllUseCase;
 use App\Config\Domain\ConfigGetOneUseCase;
-use App\Config\Domain\GetOneSettingByKeyUseCase;
 use App\Config\Infrastructure\ConfigEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
@@ -20,9 +19,8 @@ use App\Core\Infrastructure\DataLoader\SortRule;
 readonly class ConfigProvider implements ApiProviderInterface
 {
     public function __construct(
-        private ConfigGetAllUseCase       $getAllUseCase,
-        private ConfigGetOneUseCase       $getOneUseCase,
-        private GetOneSettingByKeyUseCase $getOneByKeyUseCase
+        private ConfigGetAllUseCase $getAllUseCase,
+        private ConfigGetOneUseCase $getOneUseCase,
     )
     {
     }
@@ -37,10 +35,6 @@ readonly class ConfigProvider implements ApiProviderInterface
             return $this->getAllUseCase->__invoke($options);
         }
 
-        if (isset($uriVariables['name'])) {
-            return $this->getOneByKeyUseCase->__invoke(strval($uriVariables['name']));
-        }
-
-        return $this->getOneUseCase->__invoke(strval($uriVariables['id']));
+        return $this->getOneUseCase->__invoke(intval($uriVariables['id']));
     }
 }
