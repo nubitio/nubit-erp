@@ -8,8 +8,10 @@ use App\Core\Infrastructure\Service\LogoProvider;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Sale\Domain\DocType;
+use Doctrine\DBAL\Exception;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,13 +25,14 @@ class PrintESCPOSController extends BaseController
     }
 
     /**
+     * @throws InvalidArgumentException|Exception
      * @throws \Exception
      */
     #[Route('/wcp/print', name: 'wcp_print', methods: ['GET'])]
     public function printCommands(Request $request, GetOneVoucherUseCase $getOneById, TenantAwareSettingsService $settingsService): Response
     {
         if (!$request->query->has(WebClientPrint::CLIENT_PRINT_JOB)) {
-            return new Response('No print job sent!', 400);
+            return new Response('No print job sent!', Response::HTTP_BAD_REQUEST);
         }
         $useDefaultPrinter = $request->query->get('useDefaultPrinter');
         $printerName = $request->query->get('printerName');
@@ -146,6 +149,6 @@ class PrintESCPOSController extends BaseController
             $cpj->clientPrinter = new InstalledPrinter($printerName);
         }
 
-        return new Response($cpj->sendToClient(), 200, ['Content-Type' => 'application/octet-stream']);
+        return new Response($cpj->sendToClient(), Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
     }
 }

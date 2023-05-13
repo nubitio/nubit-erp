@@ -155,7 +155,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]
-    public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, string $id): StreamedResponse
+    public function export(CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
 
@@ -168,7 +168,7 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
-    public function report(Request $request, CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, string $id): StreamedResponse
+    public function report(CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
         $infoReceipt = $getInfoReceiptUseCase($id);
