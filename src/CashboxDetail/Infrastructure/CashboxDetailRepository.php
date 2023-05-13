@@ -9,6 +9,7 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\Common\DataGridLoader;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
@@ -27,7 +28,7 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
 
     /**
      * @inheritdoc
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function getAll(?array $filter = null): array
     {
@@ -35,11 +36,12 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     }
 
     /**
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      * @throws ORMException
      */
     public function insert(CashboxDetail $cashboxDetail): void
     {
+        /** @var false|bool|float|int|string|null $nextIndex */
         $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
         if (!$nextIndex) {
             throw new ORMException('No se pudo obtener el siguiente índice');

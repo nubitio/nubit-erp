@@ -138,6 +138,7 @@ class SaleController extends BaseController
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
     public function void(Request $request, SaleVoidUseCase $voidUseCase, string $id): Response
     {
+        /** @var string $userId */
         $userId = $request->getSession()->get('user_id');
         /** @var array<string, string> $requestBody */
         $requestBody = json_decode($request->getContent(), true);

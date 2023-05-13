@@ -11,7 +11,7 @@ class ConfigGetOneUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): ?Config
+    public function __invoke(int $id): ?Config
     {
         return $this->repository->getOne($id);
     }

@@ -21,6 +21,7 @@ class ConsultRepository implements ConsultRepositoryInterface
         if ($response->getStatusCode() !== 200) {
             throw new ServiceException('No se pudo consultar el documento, intente nuevamente');
         }
+        /** @var array<string, bool|float|int|string|null> $data */
         $data = $response->toArray();
 
         return match ($docType) {
@@ -30,7 +31,7 @@ class ConsultRepository implements ConsultRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, bool|float|int|string|null> $data
      * @return Consult
      */
     private function mapDni(array $data): Consult
@@ -44,7 +45,7 @@ class ConsultRepository implements ConsultRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string, bool|float|int|string|null> $data
      * @return Consult
      */
     private function mapRuc(array $data): Consult

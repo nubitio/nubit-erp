@@ -25,7 +25,8 @@ class DashboardController extends BaseController
     #[Route('/bi/venta-dia', name: 'bi_daily_sales', methods: ['GET'])]
     public function getDailySales(Request $request, SalesDailyUseCase $salesDaily): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
         $data = $salesDaily($localId);
 
         return $this->json($data);
@@ -34,7 +35,8 @@ class DashboardController extends BaseController
     #[Route('/bi/venta-semana', name: 'bi_weekly_sales', methods: ['GET'])]
     public function getWeeklySales(Request $request, SalesWeeklyUseCase $salesWeekly): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
         $data = $salesWeekly($localId);
 
         return $this->json($data);
@@ -43,7 +45,8 @@ class DashboardController extends BaseController
     #[Route('/bi/venta-mes', name: 'bi_monthly_sales', methods: ['GET'])]
     public function getMonthlySales(Request $request, SalesMonthlyUseCase $salesMonthly): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
         $data = $salesMonthly($localId);
 
         return $this->json($data);
@@ -52,7 +55,8 @@ class DashboardController extends BaseController
     #[Route('/bi/monthly-invoicing', name: 'bi_monthly_invoicing', methods: ['GET'])]
     public function getMonthlyInvoicing(Request $request, BillingMonthlyUseCase $monthlyInvoicing): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
         $data = $monthlyInvoicing($localId);
 
         return $this->json($data);
@@ -61,7 +65,8 @@ class DashboardController extends BaseController
     #[Route('/bi/product-rotation/{lapse}', name: 'bi_product_rotation', methods: ['GET'])]
     public function getProductRotation(Request $request, ProductRotationUseCase $productRotation, string $lapse): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
         $data = $productRotation($localId, $lapse);
 
         return $this->json($data);
