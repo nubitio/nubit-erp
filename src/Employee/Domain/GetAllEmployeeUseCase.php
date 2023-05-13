@@ -9,12 +9,10 @@ readonly class GetAllEmployeeUseCase
 {
     public function __construct(
         private EmployeeRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Employee>
      */
     public function __invoke(Options $options): PaginatorInterface

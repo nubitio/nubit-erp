@@ -8,8 +8,7 @@ readonly class ChangePasswordUseCase
 {
     public function __construct(
         private UserRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**

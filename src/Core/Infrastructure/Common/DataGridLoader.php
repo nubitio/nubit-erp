@@ -16,7 +16,9 @@ class DataGridLoader
 
     /**
      * @param array<int, array<string, mixed>> $filter
+     *
      * @return array<string, mixed>
+     *
      * @throws Exception
      */
     public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array

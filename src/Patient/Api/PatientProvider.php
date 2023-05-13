@@ -9,11 +9,10 @@ use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\Patient\Domain\Patient;
 use App\Patient\Domain\GetAllPatientUseCase;
 use App\Patient\Domain\GetOnePatientUseCase;
+use App\Patient\Domain\Patient;
 use App\Patient\Infrastructure\PatientEntity;
 
 /**
@@ -24,8 +23,7 @@ readonly class PatientProvider implements ApiProviderInterface
     public function __construct(
         private GetAllPatientUseCase $getAllUseCase,
         private GetOnePatientUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

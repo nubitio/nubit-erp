@@ -19,17 +19,17 @@ readonly class PriceListProcessor implements ApiProcessorInterface
         public CreatePriceListUseCase $createUseCase,
         public UpdatePriceListUseCase $updateUseCase,
         public DeletePriceListUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?PriceList
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->deleteUseCase->__invoke($data->id);
             }
+
             return null;
         }
 

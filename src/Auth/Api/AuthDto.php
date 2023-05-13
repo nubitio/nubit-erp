@@ -14,13 +14,13 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
         new Post(
             status: 200,
             exceptionToStatus: [
-                UserNotFoundException::class   => 404,
+                UserNotFoundException::class => 404,
                 AuthenticationException::class => 401,
             ],
             input: AuthDto::class,
             output: TokenDto::class,
             processor: AuthProcessor::class,
-        )
+        ),
     ]
 )]
 class AuthDto

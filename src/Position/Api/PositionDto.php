@@ -15,5 +15,4 @@ class PositionDto extends Position
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

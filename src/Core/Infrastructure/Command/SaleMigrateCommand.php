@@ -17,8 +17,7 @@ class SaleMigrateCommand extends Command
 {
     public function __construct(
         private readonly Connection $connection,
-    )
-    {
+    ) {
         parent::__construct();
     }
 
@@ -35,9 +34,11 @@ class SaleMigrateCommand extends Command
             $io->text('Esto puede tardar unos minutos');
             $this->update($io);
             $io->success('Success');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+            $io->error('Error: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }
@@ -48,11 +49,11 @@ class SaleMigrateCommand extends Command
         $progressBar = $io->createProgressBar(count($pending));
         $progressBar->start();
         foreach ($pending as $sale) {
-            $progressBar->setMessage('Updating sale ' . $sale['movimiento_id']);
+            $progressBar->setMessage('Updating sale '.$sale['movimiento_id']);
             $invoice = $this->connection->fetchAssociative('SELECT * FROM comprobante WHERE movimiento_id = ?', [$sale['movimiento_id']]);
             $receipt = null;
             if ($invoice) {
-                $receipt = $invoice['serie'] . '-' . $invoice['numero'];
+                $receipt = $invoice['serie'].'-'.$invoice['numero'];
             }
             $subtotal = null;
             $total = null;
@@ -75,7 +76,7 @@ class SaleMigrateCommand extends Command
                 $receipt,
                 $subtotal,
                 $total,
-                $sale['movimiento_id']
+                $sale['movimiento_id'],
             ]);
             $progressBar->advance();
         }

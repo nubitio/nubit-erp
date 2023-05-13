@@ -8,7 +8,6 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Employee\Domain\Employee;
 use App\Employee\Domain\GetAllEmployeeUseCase;
@@ -23,8 +22,7 @@ readonly class EmployeeProvider implements ApiProviderInterface
     public function __construct(
         private GetAllEmployeeUseCase $getAllUseCase,
         private GetOneEmployeeUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

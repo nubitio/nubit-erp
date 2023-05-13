@@ -9,8 +9,7 @@ readonly class CacheManager
 {
     public function __construct(
         private CacheItemPoolInterface $cache
-    )
-    {
+    ) {
     }
 
     /**
@@ -35,7 +34,7 @@ readonly class CacheManager
         $item = $this->cache->getItem($key);
         $item->set($value);
 
-        if ($ttl !== null) {
+        if (null !== $ttl) {
             $item->expiresAfter($ttl);
         }
 

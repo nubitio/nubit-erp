@@ -14,11 +14,10 @@ readonly class MediaProvider implements ApiProviderInterface
 {
     public function __construct(
         private GetOneMediaUseCase $getOneUseCase
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         return $this->getOneUseCase->__invoke(strval($uriVariables['id']));

@@ -19,9 +19,8 @@ class InvoiceController extends BaseController
 {
     public function __construct(
         private readonly TenantAwareSettingsService $settings,
-        private readonly FileManager                $fileManager
-    )
-    {
+        private readonly FileManager $fileManager
+    ) {
         parent::__construct();
     }
 
@@ -44,14 +43,14 @@ class InvoiceController extends BaseController
 
         return $this->render('invoice/show.html.twig', [
             'company_name' => $voucher->company_name,
-            'type'         => $type,
-            'series'       => $voucher->voucher_series,
-            'number'       => $voucher->voucher_number,
-            'date'         => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
-            'total'        => $voucher->voucher_sale_amount,
-            'pdf'          => $this->generateUrl('invoice_pdf', ['id' => $id]),
-            'xml'          => $this->generateUrl('invoice_xml', ['id' => $id]),
-            'cdr'          => $this->generateUrl('invoice_cdr', ['id' => $id]),
+            'type' => $type,
+            'series' => $voucher->voucher_series,
+            'number' => $voucher->voucher_number,
+            'date' => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
+            'total' => $voucher->voucher_sale_amount,
+            'pdf' => $this->generateUrl('invoice_pdf', ['id' => $id]),
+            'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
+            'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
     }
 
@@ -68,17 +67,17 @@ class InvoiceController extends BaseController
     {
         $voucher = $getOneById($id);
 
-        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
+        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
+        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
 
-        $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
+        $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
 
         $respone = new StreamedResponse(function () use ($xmlPath) {
             echo $this->fileManager->read($xmlPath);
         });
 
         $respone->headers->set('Content-Type', 'text/xml');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="' . $docFullName . '.xml"');
+        $respone->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
 
         return $respone;
     }
@@ -88,17 +87,17 @@ class InvoiceController extends BaseController
     {
         $voucher = $getOneById($id);
 
-        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
+        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
+        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
 
-        $cdrPath = $this->settings->get(Constants::COMPANY_ID) . '/' . 'R-' . $docFullName . '.zip';
+        $cdrPath = $this->settings->get(Constants::COMPANY_ID).'/R-'.$docFullName.'.zip';
 
         $respone = new StreamedResponse(function () use ($cdrPath) {
             echo $this->fileManager->read($cdrPath);
         });
 
         $respone->headers->set('Content-Type', 'application/zip');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="R-' . $docFullName . '.zip"');
+        $respone->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
 
         return $respone;
     }
@@ -106,7 +105,7 @@ class InvoiceController extends BaseController
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
     public function pdf(Request $request, BillPdfUseCase $billPdfUseCase, string $id): StreamedResponse
     {
-        $preview = (bool)$request->query->get('preview', false);
+        $preview = (bool) $request->query->get('preview', false);
 
         $fileResponse = $billPdfUseCase($id);
 
@@ -118,9 +117,9 @@ class InvoiceController extends BaseController
         $response->headers->set('Content-Type', 'application/pdf');
 
         if ($preview) {
-            $response->headers->set('Content-Disposition', 'inline; filename="' . $fileResponse->name . '"');
+            $response->headers->set('Content-Disposition', 'inline; filename="'.$fileResponse->name.'"');
         } else {
-            $response->headers->set('Content-Disposition', 'attachment; filename="' . $fileResponse->name . '"');
+            $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileResponse->name.'"');
         }
 
         return $response;

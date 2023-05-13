@@ -50,7 +50,7 @@ class AuthController extends BaseController
 
         $warehouses = $getAllByBranchUseCase($localId);
         /** @var ?Warehouse $defaultWarehouse */
-        $defaultWarehouse = ArrayUtils::find($warehouses, fn($warehouse) => $warehouse->is_default);
+        $defaultWarehouse = ArrayUtils::find($warehouses, fn ($warehouse) => $warehouse->is_default);
 
         $session = $request->getSession();
         $session->set('branch_id', $localId);
@@ -59,7 +59,7 @@ class AuthController extends BaseController
 
         return $this->json([
             'success' => true,
-            'data'    => $session->all(),
+            'data' => $session->all(),
         ]);
     }
 }

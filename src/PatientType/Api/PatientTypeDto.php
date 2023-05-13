@@ -15,5 +15,4 @@ class PatientTypeDto extends PatientType
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

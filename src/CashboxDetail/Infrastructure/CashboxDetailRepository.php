@@ -27,7 +27,8 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws Exception
      */
     public function getAll(?array $filter = null): array

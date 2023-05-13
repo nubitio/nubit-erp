@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "combo_option")]
+#[ORM\Table(name: 'combo_option')]
 class ComboOptionEntity
 {
     public function __construct(
@@ -21,7 +21,6 @@ class ComboOptionEntity
         public ?string $_value = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
         public ?bool $active = null
-    )
-    {
+    ) {
     }
 }

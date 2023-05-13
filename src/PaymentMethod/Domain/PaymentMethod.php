@@ -15,7 +15,6 @@ class PaymentMethod
         public ?string $name = null,
         #[SerializedName('active')]
         public ?bool $active = false
-    )
-    {
+    ) {
     }
 }

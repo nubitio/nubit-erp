@@ -8,11 +8,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PdfExporter
 {
     /**
-     * @param string $content
-     * @param string $filename
      * @param array<int|string, mixed> $options
-     *
-     * @return StreamedResponse
      */
     public function export(string $content, string $filename, array $options = []): StreamedResponse
     {

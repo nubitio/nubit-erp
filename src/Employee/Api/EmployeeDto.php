@@ -15,5 +15,4 @@ class EmployeeDto extends Employee
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

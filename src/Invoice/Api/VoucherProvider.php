@@ -14,8 +14,7 @@ readonly class VoucherProvider implements ApiProviderInterface
 {
     public function __construct(
         private GetOneVoucherUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

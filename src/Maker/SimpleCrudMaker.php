@@ -16,22 +16,16 @@ class SimpleCrudMaker implements CrudMakerInterface
     /**
      * @template T of AbstractPlatform
      *
-     * @param SymfonyStyle $io
      * @param AbstractSchemaManager<T> $schemaManager
-     * @param string $moduleName
-     * @param string $modulePath
-     * @param bool $isInteractive
-     * @param bool $overwrite
      */
     public function __construct(
-        private readonly SymfonyStyle          $io,
+        private readonly SymfonyStyle $io,
         private readonly AbstractSchemaManager $schemaManager,
-        private readonly string                $moduleName,
-        private readonly string                $modulePath,
-        private readonly bool                  $isInteractive,
-        private readonly bool                  $overwrite,
-    )
-    {
+        private readonly string $moduleName,
+        private readonly string $modulePath,
+        private readonly bool $isInteractive,
+        private readonly bool $overwrite,
+    ) {
     }
 
     /**
@@ -66,7 +60,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeController(): void
     {
-        $applicationPath = $this->modulePath . '/Application/';
+        $applicationPath = $this->modulePath.'/Application/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the controller?');
             if (!$confirm) {
@@ -77,7 +71,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($applicationPath, 0777, true);
         }
         $this->io->text('Generating controller');
-        $controllerPath = $applicationPath . StringUtils::toPascalCase($this->moduleName) . 'Controller.php';
+        $controllerPath = $applicationPath.StringUtils::toPascalCase($this->moduleName).'Controller.php';
         if (!$this->overwrite) {
             if (file_exists($controllerPath)) {
                 $confirm = $this->io->confirm('Controller already exists, do you want to overwrite it?');
@@ -86,9 +80,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $controllerTemplate = dirname(__FILE__) . '/skeleton/crud/controller.tpl';
+        $controllerTemplate = dirname(__FILE__).'/skeleton/crud/controller.tpl';
         $controllerContent = file_get_contents($controllerTemplate);
-        if ($controllerContent === false) {
+        if (false === $controllerContent) {
             throw new \RuntimeException('Could not read controller template');
         }
         $controllerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $controllerContent);
@@ -100,7 +94,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeRepositoryInterface(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the repository interface?');
             if (!$confirm) {
@@ -111,7 +105,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating repository interface');
-        $repositoryInterfacePath = $domainPath . StringUtils::toPascalCase($this->moduleName) . 'RepositoryInterface.php';
+        $repositoryInterfacePath = $domainPath.StringUtils::toPascalCase($this->moduleName).'RepositoryInterface.php';
         if (!$this->overwrite) {
             if (file_exists($repositoryInterfacePath)) {
                 $confirm = $this->io->confirm('Repository interface already exists, do you want to overwrite it?');
@@ -120,9 +114,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $repositoryInterfaceTemplate = dirname(__FILE__) . '/skeleton/crud/repository-interface.tpl';
+        $repositoryInterfaceTemplate = dirname(__FILE__).'/skeleton/crud/repository-interface.tpl';
         $repositoryInterfaceContent = file_get_contents($repositoryInterfaceTemplate);
-        if ($repositoryInterfaceContent === false) {
+        if (false === $repositoryInterfaceContent) {
             throw new \RuntimeException('Could not read repository interface template');
         }
         $repositoryInterfaceContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryInterfaceContent);
@@ -134,7 +128,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeCreateUseCase(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the create use case?');
             if (!$confirm) {
@@ -145,7 +139,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating create use case');
-        $createUseCasePath = $domainPath . 'Create' . StringUtils::toPascalCase($this->moduleName) . 'UseCase.php';
+        $createUseCasePath = $domainPath.'Create'.StringUtils::toPascalCase($this->moduleName).'UseCase.php';
         if (!$this->overwrite) {
             if (file_exists($createUseCasePath)) {
                 $confirm = $this->io->confirm('Create use case already exists, do you want to overwrite it?');
@@ -154,9 +148,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $createUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/create.tpl';
+        $createUseCaseTemplate = dirname(__FILE__).'/skeleton/crud/create.tpl';
         $createUseCaseContent = file_get_contents($createUseCaseTemplate);
-        if ($createUseCaseContent === false) {
+        if (false === $createUseCaseContent) {
             throw new \RuntimeException('Could not read create use case template');
         }
         $createUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $createUseCaseContent);
@@ -167,7 +161,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeUpdateUseCase(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the update use case?');
             if (!$confirm) {
@@ -178,7 +172,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating update use case');
-        $updateUseCasePath = $domainPath . 'Update' . StringUtils::toPascalCase($this->moduleName) . 'UseCase.php';
+        $updateUseCasePath = $domainPath.'Update'.StringUtils::toPascalCase($this->moduleName).'UseCase.php';
         if (!$this->overwrite) {
             if (file_exists($updateUseCasePath)) {
                 $confirm = $this->io->confirm('Update use case already exists, do you want to overwrite it?');
@@ -187,9 +181,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $updateUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/update.tpl';
+        $updateUseCaseTemplate = dirname(__FILE__).'/skeleton/crud/update.tpl';
         $updateUseCaseContent = file_get_contents($updateUseCaseTemplate);
-        if ($updateUseCaseContent === false) {
+        if (false === $updateUseCaseContent) {
             throw new \RuntimeException('Could not read update use case template');
         }
         $updateUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $updateUseCaseContent);
@@ -200,7 +194,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeDeleteUseCase(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the delete use case?');
             if (!$confirm) {
@@ -211,7 +205,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating delete use case');
-        $deleteUseCasePath = $domainPath . 'Delete' . StringUtils::toPascalCase($this->moduleName) . 'UseCase.php';
+        $deleteUseCasePath = $domainPath.'Delete'.StringUtils::toPascalCase($this->moduleName).'UseCase.php';
         if (!$this->overwrite) {
             if (file_exists($deleteUseCasePath)) {
                 $confirm = $this->io->confirm('Delete use case already exists, do you want to overwrite it?');
@@ -220,9 +214,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $deleteUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/delete.tpl';
+        $deleteUseCaseTemplate = dirname(__FILE__).'/skeleton/crud/delete.tpl';
         $deleteUseCaseContent = file_get_contents($deleteUseCaseTemplate);
-        if ($deleteUseCaseContent === false) {
+        if (false === $deleteUseCaseContent) {
             throw new \RuntimeException('Could not read delete use case template');
         }
         $deleteUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $deleteUseCaseContent);
@@ -233,7 +227,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeGetAllUseCase(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the get all use case?');
             if (!$confirm) {
@@ -244,7 +238,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating get all use case');
-        $getAllUseCasePath = $domainPath . 'GetAll' . StringUtils::toPascalCase($this->moduleName) . 'UseCase.php';
+        $getAllUseCasePath = $domainPath.'GetAll'.StringUtils::toPascalCase($this->moduleName).'UseCase.php';
         if (!$this->overwrite) {
             if (file_exists($getAllUseCasePath)) {
                 $confirm = $this->io->confirm('Get all use case already exists, do you want to overwrite it?');
@@ -253,9 +247,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $getAllUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-all.tpl';
+        $getAllUseCaseTemplate = dirname(__FILE__).'/skeleton/crud/get-all.tpl';
         $getAllUseCaseContent = file_get_contents($getAllUseCaseTemplate);
-        if ($getAllUseCaseContent === false) {
+        if (false === $getAllUseCaseContent) {
             throw new \RuntimeException('Could not read get all use case template');
         }
         $getAllUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getAllUseCaseContent);
@@ -265,7 +259,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeGetOneUseCase(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the get one use case?');
             if (!$confirm) {
@@ -276,7 +270,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating get one use case');
-        $getOneUseCasePath = $domainPath . 'GetOne' . StringUtils::toPascalCase($this->moduleName) . 'UseCase.php';
+        $getOneUseCasePath = $domainPath.'GetOne'.StringUtils::toPascalCase($this->moduleName).'UseCase.php';
         if (!$this->overwrite) {
             if (file_exists($getOneUseCasePath)) {
                 $confirm = $this->io->confirm('Get one use case already exists, do you want to overwrite it?');
@@ -285,9 +279,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $getOneUseCaseTemplate = dirname(__FILE__) . '/skeleton/crud/get-one.tpl';
+        $getOneUseCaseTemplate = dirname(__FILE__).'/skeleton/crud/get-one.tpl';
         $getOneUseCaseContent = file_get_contents($getOneUseCaseTemplate);
-        if ($getOneUseCaseContent === false) {
+        if (false === $getOneUseCaseContent) {
             throw new \RuntimeException('Could not read get one use case template');
         }
         $getOneUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getOneUseCaseContent);
@@ -298,7 +292,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeModel(): void
     {
-        $domainPath = $this->modulePath . '/Domain/';
+        $domainPath = $this->modulePath.'/Domain/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the model?');
             if (!$confirm) {
@@ -309,7 +303,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($domainPath, 0777, true);
         }
         $this->io->text('Generating model');
-        $modelPath = $domainPath . StringUtils::toPascalCase($this->moduleName) . '.php';
+        $modelPath = $domainPath.StringUtils::toPascalCase($this->moduleName).'.php';
         if (!$this->overwrite) {
             if (file_exists($modelPath)) {
                 $confirm = $this->io->confirm('Model already exists, do you want to overwrite it?');
@@ -319,18 +313,18 @@ class SimpleCrudMaker implements CrudMakerInterface
             }
         }
         $columns = $this->entity->getColumns();
-        $modelTemplate = dirname(__FILE__) . '/skeleton/crud/model.tpl';
+        $modelTemplate = dirname(__FILE__).'/skeleton/crud/model.tpl';
         $modelContent = file_get_contents($modelTemplate);
-        if ($modelContent === false) {
+        if (false === $modelContent) {
             throw new \RuntimeException('Could not read model template');
         }
         $modelContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $modelContent);
         $modelFields = '';
         foreach ($columns as $column) {
             $columnType = $column->getType()->getName();
-            $default = ($columnType === 'boolean') ? 'false' : 'null';
-            $modelFields .= "        #[SerializedName('" . $column->getName() . "')]\n";
-            $modelFields .= '        public ?' . Util::getType($columnType) . ' $' . $column->getName() . " = $default,\n";
+            $default = ('boolean' === $columnType) ? 'false' : 'null';
+            $modelFields .= "        #[SerializedName('".$column->getName()."')]\n";
+            $modelFields .= '        public ?'.Util::getType($columnType).' $'.$column->getName()." = $default,\n";
         }
         $modelContent = str_replace('{{fields}}', substr($modelFields, 0, -2), $modelContent);
 
@@ -339,7 +333,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeEntity(): void
     {
-        $infrastructurePath = $this->modulePath . '/Infrastructure/';
+        $infrastructurePath = $this->modulePath.'/Infrastructure/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the entity?');
             if (!$confirm) {
@@ -350,7 +344,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($infrastructurePath, 0777, true);
         }
         $this->io->text('Generating entity');
-        $entityPath = $infrastructurePath . StringUtils::toPascalCase($this->moduleName) . 'Entity.php';
+        $entityPath = $infrastructurePath.StringUtils::toPascalCase($this->moduleName).'Entity.php';
         if (!$this->overwrite) {
             if (file_exists($entityPath)) {
                 $confirm = $this->io->confirm('Entity already exists, do you want to overwrite it?');
@@ -361,9 +355,9 @@ class SimpleCrudMaker implements CrudMakerInterface
         }
         $columns = $this->entity->getColumns();
         $primaryKey = $this->entity->getPrimaryKey();
-        $entityTemplate = dirname(__FILE__) . '/skeleton/crud/entity.tpl';
+        $entityTemplate = dirname(__FILE__).'/skeleton/crud/entity.tpl';
         $entityContent = file_get_contents($entityTemplate);
-        if ($entityContent === false) {
+        if (false === $entityContent) {
             throw new \RuntimeException('Could not read entity template');
         }
         $entityContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $entityContent);
@@ -375,8 +369,8 @@ class SimpleCrudMaker implements CrudMakerInterface
                 $entityFields .= "        #[ORM\Id]\n";
                 $entityFields .= "        #[ORM\GeneratedValue]\n";
             }
-            $entityFields .= "        #[ORM\Column(name: '" . $column->getName() . "', type: '" . $column->getType()->getName() . "')]\n";
-            $entityFields .= "        public ?" . Util::getType($column->getType()->getName()) . " $" . $column->getName() . " = null,\n";
+            $entityFields .= "        #[ORM\Column(name: '".$column->getName()."', type: '".$column->getType()->getName()."')]\n";
+            $entityFields .= '        public ?'.Util::getType($column->getType()->getName()).' $'.$column->getName()." = null,\n";
         }
         $entityContent = str_replace('{{fields}}', substr($entityFields, 0, -2), $entityContent);
 
@@ -385,7 +379,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeRepository(): void
     {
-        $infrastructurePath = $this->modulePath . '/Infrastructure/';
+        $infrastructurePath = $this->modulePath.'/Infrastructure/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the repository?');
             if (!$confirm) {
@@ -396,7 +390,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($infrastructurePath, 0777, true);
         }
         $this->io->text('Generating repository');
-        $repositoryPath = $infrastructurePath . StringUtils::toPascalCase($this->moduleName) . 'Repository.php';
+        $repositoryPath = $infrastructurePath.StringUtils::toPascalCase($this->moduleName).'Repository.php';
         if (!$this->overwrite) {
             if (file_exists($repositoryPath)) {
                 $confirm = $this->io->confirm('Repository already exists, do you want to overwrite it?');
@@ -406,9 +400,9 @@ class SimpleCrudMaker implements CrudMakerInterface
             }
         }
         $primaryKey = $this->entity->getPrimaryKey();
-        $repositoryTemplate = dirname(__FILE__) . '/skeleton/crud/repository.tpl';
+        $repositoryTemplate = dirname(__FILE__).'/skeleton/crud/repository.tpl';
         $repositoryContent = file_get_contents($repositoryTemplate);
-        if ($repositoryContent === false) {
+        if (false === $repositoryContent) {
             throw new \RuntimeException('Could not read repository template');
         }
         $repositoryContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryContent);
@@ -422,7 +416,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeDto(): void
     {
-        $apiPath = $this->modulePath . '/Api/';
+        $apiPath = $this->modulePath.'/Api/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the DTO?');
             if (!$confirm) {
@@ -433,7 +427,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($apiPath, 0777, true);
         }
         $this->io->text('Generating dto');
-        $dtoPath = $apiPath . StringUtils::toPascalCase($this->moduleName) . 'Dto.php';
+        $dtoPath = $apiPath.StringUtils::toPascalCase($this->moduleName).'Dto.php';
         if (!$this->overwrite) {
             if (file_exists($dtoPath)) {
                 $confirm = $this->io->confirm('DTO already exists, do you want to overwrite it?');
@@ -442,9 +436,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $dtoTemplate = dirname(__FILE__) . '/skeleton/crud/dto.tpl';
+        $dtoTemplate = dirname(__FILE__).'/skeleton/crud/dto.tpl';
         $dtoContent = file_get_contents($dtoTemplate);
-        if ($dtoContent === false) {
+        if (false === $dtoContent) {
             throw new \RuntimeException('Could not read dto template');
         }
         $dtoContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $dtoContent);
@@ -455,7 +449,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeProcessor(): void
     {
-        $apiPath = $this->modulePath . '/Api/';
+        $apiPath = $this->modulePath.'/Api/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the processor?');
             if (!$confirm) {
@@ -466,7 +460,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($apiPath, 0777, true);
         }
         $this->io->text('Generating processor');
-        $processorPath = $apiPath . StringUtils::toPascalCase($this->moduleName) . 'Processor.php';
+        $processorPath = $apiPath.StringUtils::toPascalCase($this->moduleName).'Processor.php';
         if (!$this->overwrite) {
             if (file_exists($processorPath)) {
                 $confirm = $this->io->confirm('Processor already exists, do you want to overwrite it?');
@@ -476,9 +470,9 @@ class SimpleCrudMaker implements CrudMakerInterface
             }
         }
         $primaryKey = $this->entity->getPrimaryKey();
-        $processorTemplate = dirname(__FILE__) . '/skeleton/crud/processor.tpl';
+        $processorTemplate = dirname(__FILE__).'/skeleton/crud/processor.tpl';
         $processorContent = file_get_contents($processorTemplate);
-        if ($processorContent === false) {
+        if (false === $processorContent) {
             throw new \RuntimeException('Could not read processor template');
         }
         $processorContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $processorContent);
@@ -489,7 +483,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeProvider(): void
     {
-        $apiPath = $this->modulePath . '/Api/';
+        $apiPath = $this->modulePath.'/Api/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the provider?');
             if (!$confirm) {
@@ -500,7 +494,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($apiPath, 0777, true);
         }
         $this->io->text('Generating provider');
-        $providerPath = $apiPath . StringUtils::toPascalCase($this->moduleName) . 'Provider.php';
+        $providerPath = $apiPath.StringUtils::toPascalCase($this->moduleName).'Provider.php';
         if (!$this->overwrite) {
             if (file_exists($providerPath)) {
                 $confirm = $this->io->confirm('Provider already exists, do you want to overwrite it?');
@@ -518,9 +512,9 @@ class SimpleCrudMaker implements CrudMakerInterface
         /** @var string $sortOrder */
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
         $primaryKey = $this->entity->getPrimaryKey();
-        $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
+        $providerTemplate = dirname(__FILE__).'/skeleton/crud/provider.tpl';
         $providerContent = file_get_contents($providerTemplate);
-        if ($providerContent === false) {
+        if (false === $providerContent) {
             throw new \RuntimeException('Could not read provider template');
         }
         $idColumn = Util::getIdColumn($this->entity);
@@ -535,7 +529,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeView(): void
     {
-        $jsPath = dirname(__DIR__, 2) . '/assets/pages/';
+        $jsPath = dirname(__DIR__, 2).'/assets/pages/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the view?');
             if (!$confirm) {
@@ -546,7 +540,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($jsPath, 0777, true);
         }
         $this->io->text('Generating view');
-        $viewFile = $jsPath . StringUtils::toPascalCase($this->moduleName) . '.ts';
+        $viewFile = $jsPath.StringUtils::toPascalCase($this->moduleName).'.ts';
         if (!$this->overwrite) {
             if (file_exists($viewFile)) {
                 $confirm = $this->io->confirm('View already exists, do you want to overwrite it?');
@@ -555,9 +549,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $viewTemplate = dirname(__FILE__) . '/skeleton/crud/view.tpl';
+        $viewTemplate = dirname(__FILE__).'/skeleton/crud/view.tpl';
         $viewContent = file_get_contents($viewTemplate);
-        if ($viewContent === false) {
+        if (false === $viewContent) {
             throw new \RuntimeException('Could not read view template');
         }
         $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
@@ -570,7 +564,7 @@ class SimpleCrudMaker implements CrudMakerInterface
 
     private function makeTemplate(): void
     {
-        $templatePath = dirname(__DIR__, 2) . '/templates/' . StringUtils::toKebabCase($this->moduleName);
+        $templatePath = dirname(__DIR__, 2).'/templates/'.StringUtils::toKebabCase($this->moduleName);
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the template?');
             if (!$confirm) {
@@ -581,7 +575,7 @@ class SimpleCrudMaker implements CrudMakerInterface
             mkdir($templatePath, 0777, true);
         }
         $this->io->text('Generating template');
-        $templateFile = $templatePath . '/index.html.twig';
+        $templateFile = $templatePath.'/index.html.twig';
         if (!$this->overwrite) {
             if (file_exists($templateFile)) {
                 $confirm = $this->io->confirm('Template already exists, do you want to overwrite it?');
@@ -590,9 +584,9 @@ class SimpleCrudMaker implements CrudMakerInterface
                 }
             }
         }
-        $twigTemplate = dirname(__FILE__) . '/skeleton/crud/index.tpl';
+        $twigTemplate = dirname(__FILE__).'/skeleton/crud/index.tpl';
         $twigContent = file_get_contents($twigTemplate);
-        if ($twigContent === false) {
+        if (false === $twigContent) {
             throw new \RuntimeException('Could not read twig template');
         }
         $twigContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $twigContent);

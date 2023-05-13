@@ -15,5 +15,4 @@ class DepartmentDto extends Department
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

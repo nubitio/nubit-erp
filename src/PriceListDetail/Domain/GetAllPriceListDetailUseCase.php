@@ -7,15 +7,12 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 readonly class GetAllPriceListDetailUseCase
 {
-
     public function __construct(
         private PriceListDetailRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<PriceListDetail>
      */
     public function __invoke(Options $options): PaginatorInterface

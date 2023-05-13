@@ -19,17 +19,17 @@ readonly class OperationProcessor implements ApiProcessorInterface
         public CreateOperationUseCase $createUseCase,
         public UpdateOperationUseCase $updateUseCase,
         public DeleteOperationUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, ApiPlatformOperation $operation, array $uriVariables = [], array $context = []): ?Operation
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->operacion_id) {
                 $this->deleteUseCase->__invoke($data->operacion_id);
             }
+
             return null;
         }
 

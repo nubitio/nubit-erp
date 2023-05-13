@@ -10,8 +10,6 @@ use Symfony\Component\PropertyInfo\Type;
 class ReflectionUtil
 {
     /**
-     * @param object $object
-     * @param string $property
      * @return class-string|null
      */
     public static function getPropertyType(object $object, string $property): ?string
@@ -27,14 +25,14 @@ class ReflectionUtil
         if (count($types) > 0) {
             if ($types[0]->isCollection()) {
                 $className = $types[0]->getCollectionValueTypes()[0]->getClassName();
-                if ($className !== null && class_exists($className)) {
+                if (null !== $className && class_exists($className)) {
                     return $className;
                 } else {
                     return null;
                 }
             } else {
                 $className = $types[0]->getClassName();
-                if ($className !== null && class_exists($className)) {
+                if (null !== $className && class_exists($className)) {
                     return $className;
                 } else {
                     return null;

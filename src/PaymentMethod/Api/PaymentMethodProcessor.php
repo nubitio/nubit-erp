@@ -19,17 +19,17 @@ readonly class PaymentMethodProcessor implements ApiProcessorInterface
         public CreatePaymentMethodUseCase $createUseCase,
         public UpdatePaymentMethodUseCase $updateUseCase,
         public DeletePaymentMethodUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?PaymentMethod
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->deleteUseCase->__invoke($data->id);
             }
+
             return null;
         }
 

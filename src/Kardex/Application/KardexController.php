@@ -22,10 +22,10 @@ class KardexController extends BaseController
     {
         /** @var string $branchId */
         $branchId = $request->getSession()->get('branch_id');
-        $warehouseId = (string)$request->request->get('warehouse_id');
-        $categoryId = (string)$request->request->get('category_id');
-        $dateFrom = (string)$request->request->get('date_from');
-        $dateTo = (string)$request->request->get('date_to');
+        $warehouseId = (string) $request->request->get('warehouse_id');
+        $categoryId = (string) $request->request->get('category_id');
+        $dateFrom = (string) $request->request->get('date_from');
+        $dateTo = (string) $request->request->get('date_to');
 
         $kardex = $kardexGetAllUseCase->__invoke($branchId, $warehouseId, $categoryId, $dateFrom, $dateTo);
 

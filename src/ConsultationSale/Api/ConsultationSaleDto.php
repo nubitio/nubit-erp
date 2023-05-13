@@ -15,5 +15,4 @@ class ConsultationSaleDto extends ConsultationSale
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

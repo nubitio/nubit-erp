@@ -56,10 +56,11 @@ class Util
         $field = '';
         foreach ($columns as $column) {
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $field = "    public ?" . self::getType($column->getType()->getName()) . " $" . $column->getName() . ";\n";
+                $field = '    public ?'.self::getType($column->getType()->getName()).' $'.$column->getName().";\n";
                 break;
             }
         }
+
         return $field;
     }
 
@@ -70,10 +71,11 @@ class Util
         $param = '';
         foreach ($columns as $column) {
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $param = self::getType($column->getType()->getName()) . " \$id";
+                $param = self::getType($column->getType()->getName()).' $id';
                 break;
             }
         }
+
         return $param;
     }
 
@@ -97,7 +99,7 @@ class Util
             if (in_array($column->getName(), Util::getIgnoredColumns())) {
                 continue;
             }
-            $field = "        this." . $varName . ".push(new FieldBuilder()\n";
+            $field = '        this.'.$varName.".push(new FieldBuilder()\n";
             $formType = match ($column->getType()->getName()) {
                 'integer' => 'FieldType.NUMBER',
                 'boolean' => 'FieldType.SWITCH',
@@ -112,15 +114,16 @@ class Util
                 $field .= "            .isIdentity(true)\n";
                 $field .= "            .visible(false)\n";
             }
-            $field .= '            .type(' . $formType . ")\n";
-            $field .= "            .name('" . $column->getName() . "')\n";
-            $field .= "            .label('" . ucfirst(str_replace('_', ' ', $column->getName())) . "')\n";
+            $field .= '            .type('.$formType.")\n";
+            $field .= "            .name('".$column->getName()."')\n";
+            $field .= "            .label('".ucfirst(str_replace('_', ' ', $column->getName()))."')\n";
             if ($column->getNotnull()) {
                 $field .= "            .required(true)\n";
             }
             $field .= "            .build());\n";
             $fields .= $field;
         }
+
         return $fields;
     }
 }

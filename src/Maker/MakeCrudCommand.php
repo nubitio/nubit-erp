@@ -44,7 +44,7 @@ class MakeCrudCommand extends Command
 
             /** @var string $moduleName */
             $moduleName = $io->ask('Module name');
-            $modulePath = dirname(__DIR__, 2) . '/src/' . StringUtils::toPascalCase($moduleName);
+            $modulePath = dirname(__DIR__, 2).'/src/'.StringUtils::toPascalCase($moduleName);
 
             $schemaManager = $this->connection->createSchemaManager();
             $tables = $schemaManager->listTableNames();
@@ -54,7 +54,7 @@ class MakeCrudCommand extends Command
                 return Command::FAILURE;
             }
 
-            if ($crudType === 'Master detail') {
+            if ('Master detail' === $crudType) {
                 $crudMaker = new MasterDetailCrudMaker($io, $schemaManager, $moduleName, $modulePath, $isInteractive, $overwrite);
             } else {
                 $crudMaker = new SimpleCrudMaker($io, $schemaManager, $moduleName, $modulePath, $isInteractive, $overwrite);

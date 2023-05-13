@@ -4,15 +4,14 @@ namespace App\ComboOption\Api;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\Core\Infrastructure\DataLoader\SortRule;
 use App\ComboOption\Domain\ComboOption;
 use App\ComboOption\Domain\GetAllComboOptionUseCase;
 use App\ComboOption\Domain\GetOneComboOptionUseCase;
 use App\ComboOption\Infrastructure\ComboOptionEntity;
+use App\Core\Domain\Api\ApiProviderInterface;
+use App\Core\Infrastructure\DataLoader\OptionsBuilder;
+use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<ComboOption>
@@ -22,8 +21,7 @@ readonly class ComboOptionProvider implements ApiProviderInterface
     public function __construct(
         private GetAllComboOptionUseCase $getAllUseCase,
         private GetOneComboOptionUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

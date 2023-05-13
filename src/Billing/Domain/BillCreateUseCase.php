@@ -15,9 +15,8 @@ readonly class BillCreateUseCase
 {
     public function __construct(
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private BillUtilsInterface   $billUtils,
-    )
-    {
+        private BillUtilsInterface $billUtils,
+    ) {
     }
 
     public function __invoke(string $saleId): Bill
@@ -90,8 +89,8 @@ readonly class BillCreateUseCase
 
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
-        $amount = $formatter->format((int)$parts[0]);
-        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
+        $amount = $formatter->format((int) $parts[0]);
+        $strTotal = mb_strtoupper('SON '.$amount.' CON '.$parts[1].' / 100 SOLES');
 
         $legend = new Legend();
         $legend->code = '1000';

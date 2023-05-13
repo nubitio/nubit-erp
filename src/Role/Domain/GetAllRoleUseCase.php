@@ -15,7 +15,6 @@ class GetAllRoleUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Role>
      */
     public function __invoke(Options $options): PaginatorInterface

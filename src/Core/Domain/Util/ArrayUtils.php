@@ -6,10 +6,10 @@ class ArrayUtils
 {
     /**
      * @param array<int, mixed> $array
-     * @param callable $callback
+     *
      * @return mixed|null
      */
-    static public function find(array $array, callable $callback): mixed
+    public static function find(array $array, callable $callback): mixed
     {
         foreach ($array as $key => $value) {
             if ($callback($value, $key)) {
