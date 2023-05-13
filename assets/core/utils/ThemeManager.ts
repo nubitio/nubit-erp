@@ -1,6 +1,7 @@
 import {SharedUtils} from "./SharedUtils";
 import {EventType} from "../event/EventType";
 import {bus} from "../event/EventBus";
+import FilterRule from "../common/FilterRule";
 
 export default class ThemeManager {
     private accentColor: string;
@@ -51,10 +52,15 @@ export default class ThemeManager {
             this.setupAppColors();
         }
 
-        fetch('api/settings/find/app_theme_accent_color')
+        let filter: FilterRule = {
+            field: 'name',
+            op: 'equal',
+            value: 'app_theme_accent_color'
+        }
+        fetch('api/settings?filterRules=[' + JSON.stringify(filter) + ']')
             .then(response => response.json())
             .then(result => {
-                this.accentColor = result.value;
+                this.accentColor = result[0].value;
                 localStorage.setItem('accentColor', this.accentColor);
                 this.setupAppColors();
             })

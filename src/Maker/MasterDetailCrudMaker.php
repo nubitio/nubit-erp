@@ -53,17 +53,21 @@ class MasterDetailCrudMaker implements CrudMakerInterface
     {
         $this->io->title('Master detail crud generator');
         $this->io->text('Please select the master entity');
+        /** @var string $masterEntityName */
         $masterEntityName = $this->io->choice('Master entity', $this->schemaManager->listTableNames());
-        $this->masterEntity = $this->schemaManager->introspectTable(strval($masterEntityName));
+        $this->masterEntity = $this->schemaManager->introspectTable($masterEntityName);
         $this->io->newLine();
         $this->io->text('Please select the detail entity');
+        /** @var string $detailEntityName */
         $detailEntityName = $this->io->choice('Detail entity', $this->schemaManager->listTableNames());
-        $this->detailEntity = $this->schemaManager->introspectTable(strval($detailEntityName));
+        $this->detailEntity = $this->schemaManager->introspectTable($detailEntityName);
         $detailColumns = [];
         foreach ($this->detailEntity->getColumns() as $column) {
             $detailColumns[] = $column->getName();
         }
-        $this->joinColumn = strval($this->io->choice('Join column', $detailColumns));
+        /** @var string $joinColumn */
+        $joinColumn = $this->io->choice('Join column', $detailColumns);
+        $this->joinColumn = $joinColumn;
 
         $this->io->newLine();
         $this->io->text('Generating master');
@@ -169,6 +173,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         }
         $repositoryInterfaceContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $repositoryInterfaceContent);
         $repositoryInterfaceContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryInterfaceContent);
+        $repositoryInterfaceContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $repositoryInterfaceContent);
 
         file_put_contents($repositoryInterfacePath, $repositoryInterfaceContent);
     }
@@ -267,6 +272,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read delete use case template');
         }
         $deleteUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $deleteUseCaseContent);
+        $deleteUseCaseContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $deleteUseCaseContent);
 
         file_put_contents($deleteUseCasePath, $deleteUseCaseContent);
     }
@@ -331,6 +337,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             throw new \RuntimeException('Could not read get one use case template');
         }
         $getOneUseCaseContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $getOneUseCaseContent);
+        $getOneUseCaseContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $getOneUseCaseContent);
 
         file_put_contents($getOneUseCasePath, $getOneUseCaseContent);
     }
@@ -485,6 +492,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $repositoryContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $repositoryContent);
         $repositoryContent = str_replace('{{table}}', $this->entity->getName(), $repositoryContent);
         $repositoryContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $repositoryContent);
+        $repositoryContent = str_replace('{{entityIdParam}}', Util::getEntityIdParam($this->entity), $repositoryContent);
 
         file_put_contents($repositoryPath, $repositoryContent);
     }
@@ -590,8 +598,11 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             $columns[] = $column->getName();
         }
         $providerTemplate = dirname(__FILE__) . '/skeleton/crud/provider.tpl';
+        /** @var string $sortColumn */
         $sortColumn = $this->io->choice('Which column do you want to use for sorting?', $columns);
+        /** @var string $sortOrder */
         $sortOrder = $this->io->choice('Which order do you want to use for sorting?', ['asc', 'desc'], 'asc');
+        $primaryKey = $this->entity->getPrimaryKey();
         if ($this->handlingDetail) {
             $providerTemplate = dirname(__FILE__) . '/skeleton/crud/detail/provider.tpl';
         }
@@ -599,7 +610,10 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         if ($providerContent === false) {
             throw new \RuntimeException('Could not read provider template');
         }
+        $idColumn = Util::getIdColumn($this->entity);
         $providerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $providerContent);
+        $providerContent = str_replace('{{castType}}', Util::getCastType(Util::getColumnType($idColumn)), $providerContent);
+        $providerContent = str_replace('{{entityId}}', strval($primaryKey?->getColumns()[0]), $providerContent);
         $providerContent = str_replace('{{joinColumn}}', $this->joinColumn, $providerContent);
         $providerContent = str_replace('{{sortColumn}}', strval($sortColumn), $providerContent);
         $providerContent = str_replace('{{sortOrder}}', strval($sortOrder), $providerContent);

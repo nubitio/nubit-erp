@@ -8,7 +8,7 @@ class OptionsBuilder
      * @template E of object
      * @template M of object
      *
-     * @param array<string, array<string, mixed>> $context
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      * @param class-string<E> $entity
      * @param class-string<M> $mapping
      *
@@ -16,18 +16,22 @@ class OptionsBuilder
      */
     public static function build(array $context, string $entity, string $mapping): Options
     {
+        /** @var string $joinRules */
         $joinRules = $context['filters']['joinRules'] ?? '[]';
-        /** @var array<int, array<string, mixed>> $joinRules */
+        /** @var array<int, array<string, bool|float|int|string|null>> $joinRules */
         $joinRules = json_decode(strval($joinRules), true);
 
+        /** @var string|null $sortFields */
         $sortFields = $context['filters']['sort'] ?? null;
+        /** @var string|null $orderFields */
         $orderFields = $context['filters']['order'] ?? null;
         $sortArray = $sortFields ? explode(',', strval($sortFields)) : [];
         $orderArray = $orderFields ? explode(',', strval($orderFields)) : [];
         $sortRules = array_map(null, $sortArray, $orderArray);
 
+        /** @var string $filterRules */
         $filterRules = $context['filters']['filterRules'] ?? '[]';
-        /** @var array<int, array<string, mixed>> $filterRules */
+        /** @var array<int, array<string, bool|float|int|string|null>> $filterRules */
         $filterRules = json_decode(strval($filterRules), true);
 
         return new Options(
@@ -42,7 +46,7 @@ class OptionsBuilder
     }
 
     /**
-     * @param array<int, array<string, mixed>> $joinRules
+     * @param array<int, array<string, bool|float|int|string|null>> $joinRules
      *
      * @return array<JoinRule>
      */
@@ -62,7 +66,7 @@ class OptionsBuilder
     }
 
     /**
-     * @param array<int, array<int, mixed>> $sortRules
+     * @param array<int, array<int, bool|float|int|string|null>> $sortRules
      *
      * @return array<SortRule>
      */
@@ -75,7 +79,7 @@ class OptionsBuilder
     }
 
     /**
-     * @param array<int, array<string, mixed>> $filterRules
+     * @param array<int, array<string, bool|float|int|string|null>> $filterRules
      *
      * @return array<FilterRule>
      */
