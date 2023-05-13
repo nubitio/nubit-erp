@@ -51,4 +51,3 @@ class GetAllPositionUseCaseTest extends TestCase
         $this->assertSame($expectedPositions, iterator_to_array($paginator->getIterator()));
     }
 }
-

@@ -16,12 +16,11 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -32,7 +31,7 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
         /** @var ?CategoryEntity $entity */
         $entity = $this->entityManager->getRepository(CategoryEntity::class)->find($id);
 
-        if ($entity === null) {
+        if (null === $entity) {
             return null;
         }
 
@@ -42,7 +41,7 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     public function insert(Category $category): Category
     {
         $entity = DataMapper::map($category, CategoryEntity::class);
-        if ($category->parent !== null) {
+        if (null !== $category->parent) {
             $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
             $entity->parent = $parent;
         }
@@ -60,12 +59,12 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     {
         $entity = $this->entityManager->find(CategoryEntity::class, $category->categoria_id);
 
-        if ($entity === null) {
+        if (null === $entity) {
             throw new ServiceException('La categoría no existe.');
         }
 
         $entity = DataMapper::map($category, $entity);
-        if ($category->parent !== null) {
+        if (null !== $category->parent) {
             $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
             $entity->parent = $parent;
         } else {

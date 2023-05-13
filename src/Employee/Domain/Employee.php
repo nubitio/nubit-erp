@@ -11,31 +11,30 @@ class Employee
 {
     public function __construct(
         #[SerializedName('id')]
-        public ?int                $id = null,
+        public ?int $id = null,
         #[SerializedName('id_number')]
-        public ?string             $id_number = null,
+        public ?string $id_number = null,
         #[SerializedName('first_name')]
-        public ?string             $first_name = null,
+        public ?string $first_name = null,
         #[SerializedName('last_name')]
-        public ?string             $last_name = null,
+        public ?string $last_name = null,
         #[SerializedName('gender')]
-        public ?int                $gender = null,
+        public ?int $gender = null,
         #[SerializedName('birthdate')]
         public ?\DateTimeInterface $birthdate = null,
         #[SerializedName('address')]
-        public ?string             $address = null,
+        public ?string $address = null,
         #[SerializedName('phone')]
-        public ?string             $phone = null,
+        public ?string $phone = null,
         #[SerializedName('hire_date')]
         public ?\DateTimeInterface $hire_date = null,
         #[SerializedName('position')]
-        public ?Position           $position = null,
+        public ?Position $position = null,
         #[SerializedName('salary')]
-        public ?float              $salary = null,
+        public ?float $salary = null,
         #[SerializedName('active')]
-        public ?bool               $active = false
-    )
-    {
+        public ?bool $active = false
+    ) {
     }
 
     #[SerializedName('full_name')]

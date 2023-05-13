@@ -19,17 +19,17 @@ readonly class MilitaryPatientProcessor implements ApiProcessorInterface
         public CreateMilitaryPatientUseCase $createUseCase,
         public UpdateMilitaryPatientUseCase $updateUseCase,
         public DeleteMilitaryPatientUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?MilitaryPatient
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->deleteUseCase->__invoke($data->id);
             }
+
             return null;
         }
 
@@ -39,6 +39,7 @@ readonly class MilitaryPatientProcessor implements ApiProcessorInterface
             } else {
                 $data->id = intval($uriVariables['id']);
             }
+
             return $this->updateUseCase->__invoke($data);
         }
 

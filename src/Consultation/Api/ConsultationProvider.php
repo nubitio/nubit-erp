@@ -22,8 +22,7 @@ readonly class ConsultationProvider implements ApiProviderInterface
     public function __construct(
         private GetAllConsultationUseCase $getAllUseCase,
         private GetOneConsultationUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

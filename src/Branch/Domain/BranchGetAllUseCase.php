@@ -15,7 +15,6 @@ class BranchGetAllUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Branch>
      */
     public function __invoke(Options $options): PaginatorInterface

@@ -15,7 +15,6 @@ class ConfigGetAllUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Config>
      */
     public function __invoke(Options $options): PaginatorInterface

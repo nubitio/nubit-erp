@@ -8,11 +8,10 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\Physician\Domain\Physician;
 use App\Physician\Domain\GetAllPhysicianUseCase;
 use App\Physician\Domain\GetOnePhysicianUseCase;
+use App\Physician\Domain\Physician;
 use App\Physician\Infrastructure\PhysicianEntity;
 
 /**
@@ -23,8 +22,7 @@ readonly class PhysicianProvider implements ApiProviderInterface
     public function __construct(
         private GetAllPhysicianUseCase $getAllUseCase,
         private GetOnePhysicianUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

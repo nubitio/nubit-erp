@@ -8,7 +8,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "media")]
+#[ORM\Table(name: 'media')]
 class MediaEntity
 {
     public function __construct(
@@ -19,7 +19,6 @@ class MediaEntity
         public ?string $id = null,
         #[ORM\Column(name: 'path', type: 'string')]
         public ?string $path = null
-    )
-    {
+    ) {
     }
 }

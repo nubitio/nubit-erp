@@ -8,8 +8,7 @@ readonly class SavePriceList
 {
     public function __construct(
         private PriceListRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**

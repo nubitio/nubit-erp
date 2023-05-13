@@ -31,11 +31,11 @@ class TenantConnection extends Connection
     {
         /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
-        $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
+        $tenantsConfigFilePath = dirname(__DIR__, 5).'/config/tenants.json';
         if (file_exists($tenantsConfigFilePath)) {
             $configContent = file_get_contents($tenantsConfigFilePath);
 
-            if ($configContent === false) {
+            if (false === $configContent) {
                 throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
             }
 
@@ -47,7 +47,7 @@ class TenantConnection extends Connection
             throw new ServiceException('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn($item) => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn ($item) => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
@@ -71,14 +71,14 @@ class TenantConnection extends Connection
         $this->_conn = $this->_driver->connect($this->tenantParams);
         $this->isConnected = true;
 
-        if ($this->autoCommit !== true) {
+        if (true !== $this->autoCommit) {
             $this->beginTransaction();
         }
 
         return true;
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getParams(): array
     {
         return $this->tenantParams;

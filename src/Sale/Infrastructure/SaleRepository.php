@@ -20,13 +20,12 @@ readonly class SaleRepository implements SaleRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-        private SaleUtils              $saleUtils,
-    )
-    {
+        private DataLoader $dataLoader,
+        private SaleUtils $saleUtils,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

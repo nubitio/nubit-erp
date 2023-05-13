@@ -26,20 +26,19 @@ class CategoryEntity
         #[GeneratedValue(strategy: 'CUSTOM')]
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'categoria_id', type: 'string')]
-        public ?string          $categoria_id = null,
+        public ?string $categoria_id = null,
         #[Column(name: 'descripcion', type: 'string')]
-        public ?string          $descripcion = null,
+        public ?string $descripcion = null,
         #[ManyToOne(targetEntity: CategoryEntity::class, inversedBy: 'children')]
         #[JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
-        public ?CategoryEntity  $parent = null,
+        public ?CategoryEntity $parent = null,
         #[Column(name: 'imagen', type: 'string')]
-        public ?string          $imagen = null,
+        public ?string $imagen = null,
         #[Column(name: 'estado', type: 'boolean')]
-        public ?bool            $estado = false,
+        public ?bool $estado = false,
         /** @var ArrayCollection<int, CategoryEntity>|array<int, CategoryEntity> */
         #[OneToMany(mappedBy: 'parent', targetEntity: CategoryEntity::class)]
         public Collection|array $children = new ArrayCollection(),
-    )
-    {
+    ) {
     }
 }

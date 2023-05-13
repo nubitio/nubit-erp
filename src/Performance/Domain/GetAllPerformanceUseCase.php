@@ -9,12 +9,10 @@ readonly class GetAllPerformanceUseCase
 {
     public function __construct(
         private PerformanceRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Performance>
      */
     public function __invoke(Options $options): PaginatorInterface

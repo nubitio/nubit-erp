@@ -17,7 +17,7 @@ class SandBoxController extends BaseController
         $companyNameByTenant = $tenantAwareSettingsService->get(Constants::COMPANY_NAME, 'No hay datos');
         $companyName = $settingsService->get(Constants::COMPANY_NAME, 'No hay datos');
 
-        $content = "Company name by tenant: " . $companyNameByTenant . " <br> Company name: " . $companyName;
+        $content = 'Company name by tenant: '.$companyNameByTenant.' <br> Company name: '.$companyName;
 
         return $this->render('sandbox/index.html.twig', [
             'content' => $content,

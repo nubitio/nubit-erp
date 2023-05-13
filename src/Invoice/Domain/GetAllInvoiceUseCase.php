@@ -9,12 +9,10 @@ readonly class GetAllInvoiceUseCase
 {
     public function __construct(
         private InvoiceRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Invoice>
      */
     public function __invoke(Options $options): PaginatorInterface

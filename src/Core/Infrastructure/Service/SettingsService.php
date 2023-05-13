@@ -9,12 +9,10 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 readonly class SettingsService
 {
-
     public function __construct(
-        private Connection     $db,
+        private Connection $db,
         private CacheInterface $cache
-    )
-    {
+    ) {
     }
 
     public function get(string $key, ?string $default = null): mixed

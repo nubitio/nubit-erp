@@ -9,10 +9,8 @@ class OptionsBuilder
      * @template M of object
      *
      * @param array<string, array<string, bool|float|int|string|null>> $context
-     * @param class-string<E> $entity
-     * @param class-string<M> $mapping
-     *
-     * @return Options
+     * @param class-string<E>                                          $entity
+     * @param class-string<M>                                          $mapping
      */
     public static function build(array $context, string $entity, string $mapping): Options
     {
@@ -72,7 +70,7 @@ class OptionsBuilder
      */
     private static function buildSort(array $sortRules): array
     {
-        return array_map(fn($item) => new SortRule(
+        return array_map(fn ($item) => new SortRule(
             field: strval($item[0]),
             order: strval($item[1] ?? 'ASC'),
         ), $sortRules);

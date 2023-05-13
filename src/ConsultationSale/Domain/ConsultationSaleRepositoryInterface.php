@@ -2,13 +2,12 @@
 
 namespace App\ConsultationSale\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface ConsultationSaleRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<ConsultationSale>
      */
     public function getAll(Options $options): PaginatorInterface;

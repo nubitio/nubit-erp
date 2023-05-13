@@ -9,12 +9,10 @@ readonly class GetAllSpecialtyUseCase
 {
     public function __construct(
         private SpecialtyRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Specialty>
      */
     public function __invoke(Options $options): PaginatorInterface

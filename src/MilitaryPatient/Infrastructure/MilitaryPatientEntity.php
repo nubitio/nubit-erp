@@ -8,24 +8,23 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "military_patient")]
+#[ORM\Table(name: 'military_patient')]
 class MilitaryPatientEntity
 {
     public function __construct(
         #[ORM\Id]
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
-        public ?int           $id = null,
+        public ?int $id = null,
         #[ORM\ManyToOne(targetEntity: PatientEntity::class)]
         #[ORM\JoinColumn(name: 'patient_id', referencedColumnName: 'id')]
         public ?PatientEntity $patient = null,
         #[ORM\Column(name: 'cip_code', type: 'string')]
-        public ?string        $cip_code = null,
+        public ?string $cip_code = null,
         #[ORM\Column(name: 'rank', type: 'string')]
-        public ?string        $rank = null,
+        public ?string $rank = null,
         #[ORM\Column(name: 'weapon_code', type: 'string')]
-        public ?string        $weapon_code = null
-    )
-    {
+        public ?string $weapon_code = null
+    ) {
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Core\Infrastructure\DataLoader\Paginator;
 
 use ApiPlatform\State\Pagination\PaginatorInterface as ApiPlatformPaginatorInterface;
-use Traversable;
 
 /**
  * @template T of object
@@ -11,17 +10,16 @@ use Traversable;
 readonly class Paginator implements PaginatorInterface
 {
     /**
-     * @param array<T> $items
+     * @param array<T>                         $items
      * @param ApiPlatformPaginatorInterface<T> $paginator
      */
     public function __construct(
-        public array                         $items,
+        public array $items,
         public ApiPlatformPaginatorInterface $paginator
-    )
-    {
+    ) {
     }
 
-    public function getIterator(): Traversable
+    public function getIterator(): \Traversable
     {
         return new \ArrayIterator($this->items);
     }

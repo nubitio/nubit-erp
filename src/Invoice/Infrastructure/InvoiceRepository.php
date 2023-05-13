@@ -22,13 +22,12 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private Connection             $connection,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private Connection $connection,
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -69,7 +68,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
             $invoiceAmounts->getTaxedAmount(),
             $invoiceAmounts->getDiscountAmount(),
             $invoiceAmounts->getTax(),
-            $invoiceAmounts->getTotal()
+            $invoiceAmounts->getTotal(),
         ]);
     }
 

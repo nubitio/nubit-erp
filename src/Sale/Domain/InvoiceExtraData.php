@@ -10,7 +10,6 @@ class InvoiceExtraData
         public ?string $weaponCode = null,
         public ?string $medicalRecordNumber = null,
         public ?string $physicianFullName = null,
-    )
-    {
+    ) {
     }
 }

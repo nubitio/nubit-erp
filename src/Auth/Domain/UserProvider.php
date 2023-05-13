@@ -15,8 +15,7 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
 {
     public function __construct(
         private GetOneUserByUsernameUseCase $userGetOneByUsernameUseCase,
-    )
-    {
+    ) {
     }
 
     public function loadUserByIdentifier(string $identifier): UserInterface

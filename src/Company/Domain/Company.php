@@ -25,7 +25,7 @@ class Company
         #[SerializedName('telefono')]
         public ?string $telefono = null,
         #[SerializedName('logo')]
-        public ?Media  $logo = null,
+        public ?Media $logo = null,
         #[SerializedName('certificado')]
         public ?string $certificado = null,
         #[SerializedName('sunat_user')]
@@ -33,8 +33,7 @@ class Company
         #[SerializedName('sunat_password')]
         public ?string $sunat_password = null,
         #[SerializedName('estado')]
-        public ?bool   $estado = false
-    )
-    {
+        public ?bool $estado = false
+    ) {
     }
 }

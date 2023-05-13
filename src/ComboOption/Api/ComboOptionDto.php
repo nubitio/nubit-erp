@@ -15,5 +15,4 @@ class ComboOptionDto extends ComboOption
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

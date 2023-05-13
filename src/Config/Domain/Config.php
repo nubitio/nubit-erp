@@ -15,7 +15,6 @@ class Config
         public ?string $name = null,
         #[SerializedName('value')]
         public ?string $value = null
-    )
-    {
+    ) {
     }
 }
