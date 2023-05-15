@@ -198,10 +198,10 @@ export default class CreditNote {
             messenger.show('Información', 'Seleccione un registro');
             return;
         }
-        /*if (selected['envio_sunat'] === '0') {
+        if (selected['envio_sunat'] === '0') {
             messenger.show('Información', 'El comprobante ya fue enviado a SUNAT');
             return;
-        }*/
+        }
         this.dataGrid.showLoading('Enviando comprobante a SUNAT...');
         saleService.makeNote(selected['nota_id']).subscribe((data) => {
             messenger.show('Información', 'Comprobante enviado a SUNAT');
