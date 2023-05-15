@@ -7,7 +7,7 @@ use App\Billing\Model\Response\DocumentResponse;
 readonly class BillSendUseCase
 {
     public function __construct(
-        private BillCreateUseCase       $billCreateUseCase,
+        private BillCreateUseCase $billCreateUseCase,
         private BillRepositoryInterface $billRepository,
     ) {
     }

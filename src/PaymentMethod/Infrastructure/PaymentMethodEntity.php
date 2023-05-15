@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "payment_type")]
+#[Table(name: 'payment_type')]
 class PaymentMethodEntity
 {
     public function __construct(
@@ -23,7 +23,6 @@ class PaymentMethodEntity
         public ?string $name = null,
         #[Column(name: 'active', type: 'boolean')]
         public ?bool $active = null
-    )
-    {
+    ) {
     }
 }

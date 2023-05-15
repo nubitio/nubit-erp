@@ -2,13 +2,12 @@
 
 namespace App\Patient\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface PatientRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Patient>
      */
     public function getAll(Options $options): PaginatorInterface;

@@ -5,9 +5,9 @@ namespace App\PatientType\Api;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProcessorInterface;
-use App\PatientType\Domain\PatientType;
 use App\PatientType\Domain\CreatePatientTypeUseCase;
 use App\PatientType\Domain\DeletePatientTypeUseCase;
+use App\PatientType\Domain\PatientType;
 use App\PatientType\Domain\UpdatePatientTypeUseCase;
 
 /**
@@ -19,21 +19,21 @@ readonly class PatientTypeProcessor implements ApiProcessorInterface
         public CreatePatientTypeUseCase $createUseCase,
         public UpdatePatientTypeUseCase $updateUseCase,
         public DeletePatientTypeUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?PatientType
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->deleteUseCase->__invoke($data->id);
             }
+
             return null;
         }
 
-        if($data->id) {
+        if ($data->id) {
             return $this->updateUseCase->__invoke($data);
         }
 

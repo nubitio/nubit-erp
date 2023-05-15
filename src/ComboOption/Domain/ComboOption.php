@@ -17,7 +17,6 @@ class ComboOption
         public ?string $_value = null,
         #[SerializedName('active')]
         public ?bool $active = false
-    )
-    {
+    ) {
     }
 }

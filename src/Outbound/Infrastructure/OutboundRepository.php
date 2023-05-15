@@ -28,7 +28,7 @@ class OutboundRepository implements OutboundRepositoryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAll(?array $filter = null): array
     {
@@ -51,7 +51,7 @@ class OutboundRepository implements OutboundRepositoryInterface
             $this->entityManager->flush();
             $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
 
-            if ($outbound->items === null) {
+            if (null === $outbound->items) {
                 throw new \Exception('No se encontraron productos');
             }
 

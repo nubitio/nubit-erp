@@ -22,11 +22,10 @@ readonly class UserProvider implements ApiProviderInterface
     public function __construct(
         private GetAllUserUseCase $getAllUseCase,
         private GetOneUserUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

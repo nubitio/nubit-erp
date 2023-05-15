@@ -15,5 +15,4 @@ class ConsultationDto extends Consultation
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

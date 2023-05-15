@@ -2,13 +2,12 @@
 
 namespace App\Department\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface DepartmentRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Department>
      */
     public function getAll(Options $options): PaginatorInterface;

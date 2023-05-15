@@ -31,7 +31,6 @@ class Consultation
         public ?\DateTimeInterface $created_at = null,
         #[SerializedName('updated_at')]
         public ?\DateTimeInterface $updated_at = null
-    )
-    {
+    ) {
     }
 }

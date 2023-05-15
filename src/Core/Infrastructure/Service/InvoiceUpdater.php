@@ -21,9 +21,10 @@ class InvoiceUpdater
     {
         $pending = $this->connection->fetchAllAssociative('select * from comprobante where envio_sunat is null');
         foreach ($pending as $invoice) {
+            /** @var false|array<string, string|int|float|null> $sale */
             $sale = $this->connection->fetchAssociative('SELECT * FROM vw_movimiento WHERE movimiento_id = ?', [$invoice['movimiento_id']]);
 
-            if ($sale === false) {
+            if (false === $sale) {
                 continue;
             }
 
@@ -57,6 +58,6 @@ class InvoiceUpdater
             ]);
         }
 
-        return 'Registros actualizados: ' . count($pending);
+        return 'Registros actualizados: '.count($pending);
     }
 }

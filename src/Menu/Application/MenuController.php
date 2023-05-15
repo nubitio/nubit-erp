@@ -13,6 +13,7 @@ class MenuController extends BaseController
     public function getMenuByRole(int $roleId, MenuBuilder $menuBuilder): JsonResponse
     {
         $menu = $menuBuilder->buildMenuForRole($roleId);
+
         return $this->json($menu);
     }
 }

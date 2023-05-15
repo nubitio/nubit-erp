@@ -8,7 +8,6 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 interface PaymentMethodRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<PaymentMethod>
      */
     public function getAll(Options $options): PaginatorInterface;

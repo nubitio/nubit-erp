@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "rol")]
+#[ORM\Table(name: 'rol')]
 class RoleEntity
 {
     public function __construct(
@@ -17,7 +17,6 @@ class RoleEntity
         public ?int $rol_id = null,
         #[ORM\Column(name: 'descripcion', type: 'string')]
         public ?string $descripcion = null
-    )
-    {
+    ) {
     }
 }

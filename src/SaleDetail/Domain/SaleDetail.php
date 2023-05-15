@@ -19,14 +19,13 @@ class SaleDetail
         public ?Product $producto = null,
         public ?string $producto_id = null,
         #[SerializedName('cantidad')]
-        public ?float  $cantidad = null,
+        public ?float $cantidad = null,
         #[SerializedName('precio_unitario')]
-        public ?float  $precio_unitario = null,
+        public ?float $precio_unitario = null,
         #[SerializedName('descuento')]
-        public ?float  $descuento = null,
+        public ?float $descuento = null,
         #[SerializedName('precio_total')]
-        public ?float  $precio_total = null
-    )
-    {
+        public ?float $precio_total = null
+    ) {
     }
 }

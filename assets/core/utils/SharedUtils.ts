@@ -84,9 +84,9 @@ export class SharedUtils {
             value = Number(value);
         }
         if (value === 1) {
-            return '<span class="badge rounded-pill bg-success">INGRESADO</span>';
+            return '<span class="badge rounded-pill bg-success">NO</span>';
         } else if (value === 2) {
-            return '<span class="badge rounded-pill bg-danger">ANULADO</span>';
+            return '<span class="badge rounded-pill bg-danger">SI</span>';
         } else {
             return '';
         }

@@ -13,7 +13,6 @@ class Media
         public ?string $id = null,
         #[SerializedName('path')]
         public ?string $path = null
-    )
-    {
+    ) {
     }
 }

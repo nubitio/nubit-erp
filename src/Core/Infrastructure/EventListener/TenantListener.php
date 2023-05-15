@@ -12,8 +12,7 @@ readonly class TenantListener
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry
-    )
-    {
+    ) {
     }
 
     public function __invoke(RequestEvent $event): void

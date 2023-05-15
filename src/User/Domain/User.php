@@ -13,28 +13,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public function __construct(
         #[SerializedName('usuario_id')]
-        public ?int                $usuario_id = null,
+        public ?int $usuario_id = null,
         #[SerializedName('rol')]
-        public ?Role               $rol = null,
+        public ?Role $rol = null,
         #[SerializedName('username')]
-        public ?string             $username = null,
+        public ?string $username = null,
         #[SerializedName('password')]
-        public ?string             $password = null,
+        public ?string $password = null,
         #[SerializedName('date_created')]
         public ?\DateTimeInterface $date_created = null,
         #[SerializedName('date_updated')]
         public ?\DateTimeInterface $date_updated = null,
         #[SerializedName('pin')]
-        public ?string             $pin = null,
+        public ?string $pin = null,
         #[SerializedName('estado')]
-        public ?bool               $estado = false
-    )
-    {
+        public ?bool $estado = false
+    ) {
     }
 
     public function getRoles(): array
     {
-        if ($this->username === 'root') {
+        if ('root' === $this->username) {
             return ['ROLE_SUPER_ADMIN'];
         }
 

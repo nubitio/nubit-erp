@@ -8,8 +8,8 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\Performance\Domain\PerformanceRepositoryInterface;
 use App\Performance\Domain\Performance;
+use App\Performance\Domain\PerformanceRepositoryInterface;
 use App\Product\Infrastructure\ProductEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -18,11 +18,10 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -15,7 +15,6 @@ class PatientType
         public ?string $name = null,
         #[SerializedName('description')]
         public ?string $description = null
-    )
-    {
+    ) {
     }
 }

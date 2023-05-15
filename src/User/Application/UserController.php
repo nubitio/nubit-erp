@@ -19,7 +19,7 @@ class UserController extends BaseController
     #[Route('/changePassword/update-password', name: 'update_password', methods: ['POST'])]
     public function changePassword(Request $request, ChangePasswordUseCase $changePasswordUseCase): Response
     {
-        /** @var array<string, mixed> $data */
+        /** @var array<string, bool|float|int|string|null> $data */
         $data = json_decode($request->getContent(), true);
         $userId = $data['userId'];
         $actualPassword = $data['actualPassword'];

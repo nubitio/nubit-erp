@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "usuario")]
+#[ORM\Table(name: 'usuario')]
 class UserEntity
 {
     public function __construct(
@@ -31,7 +31,6 @@ class UserEntity
         public ?string $pin = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
         public ?bool $estado = null
-    )
-    {
+    ) {
     }
 }

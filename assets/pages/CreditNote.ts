@@ -76,7 +76,7 @@ export default class CreditNote {
         this.fields.push(new FieldBuilder()
             .type(FieldType.SELECT)
             .name('codigo_motivo')
-            .label('Codigo motivo')
+            .label('Código')
             .data(
                 [{
                     value: '01',
@@ -115,7 +115,7 @@ export default class CreditNote {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXTAREA)
             .name('descripcion_motivo')
-            .label('Descripcion motivo')
+            .label('Motivo Descripción')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
@@ -125,7 +125,7 @@ export default class CreditNote {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('correlativo')
-            .label('Numero')
+            .label('Número')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)

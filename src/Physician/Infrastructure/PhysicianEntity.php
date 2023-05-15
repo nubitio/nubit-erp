@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "physician")]
+#[ORM\Table(name: 'physician')]
 class PhysicianEntity
 {
     public function __construct(
@@ -25,8 +25,7 @@ class PhysicianEntity
         public ?SpecialtyEntity $specialty = null,
         #[ORM\Column(name: 'licence', type: 'string')]
         public ?string $licence = null
-    )
-    {
+    ) {
     }
 
     public function getFullName(): ?string

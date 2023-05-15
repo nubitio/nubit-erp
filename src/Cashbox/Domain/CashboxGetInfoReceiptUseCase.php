@@ -12,7 +12,6 @@ class CashboxGetInfoReceiptUseCase
     }
 
     /**
-     * @param string $id
      * @return array<int, array<string, mixed>>
      */
     public function __invoke(string $id): array

@@ -7,11 +7,10 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\PatientType\Domain\PatientType;
 use App\PatientType\Domain\GetAllPatientTypeUseCase;
 use App\PatientType\Domain\GetOnePatientTypeUseCase;
+use App\PatientType\Domain\PatientType;
 use App\PatientType\Infrastructure\PatientTypeEntity;
 
 /**
@@ -22,8 +21,7 @@ readonly class PatientTypeProvider implements ApiProviderInterface
     public function __construct(
         private GetAllPatientTypeUseCase $getAllUseCase,
         private GetOnePatientTypeUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

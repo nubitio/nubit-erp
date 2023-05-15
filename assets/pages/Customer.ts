@@ -91,7 +91,7 @@ export default class Customer {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Customer',
+            title: 'Clientes',
             url: Customer.API_URL,
             method: 'get',
             allowAdd: true,

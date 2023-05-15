@@ -15,5 +15,4 @@ class SpecialtyDto extends Specialty
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

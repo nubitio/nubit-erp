@@ -6,6 +6,7 @@ interface VoucherSeriesRepositoryInterface
 {
     /**
      * @param array<int, array<string, mixed>> $filter
+     *
      * @return array<string, mixed>
      */
     public function getAll(?array $filter = null): array;
