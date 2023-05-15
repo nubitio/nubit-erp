@@ -10,8 +10,6 @@ use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Infrastructure\Service\SerializerService;
-use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -47,6 +45,7 @@ class BillRepository implements BillRepositoryInterface
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+
         return $documentResponse;
     }
 

@@ -122,7 +122,7 @@ class WebClientPrint
      * @param string $sid The user's session id
      * @param string $key The cache entry key
      *
-     * @return string Returns the value from the cache for the specified sid & key if it's found; or an empty string otherwise.
+     * @return string returns the value from the cache for the specified sid & key if it's found; or an empty string otherwise
      *
      * @throws \Exception
      */
@@ -155,7 +155,7 @@ class WebClientPrint
     /**
      * Cleans the built-in file system cache.
      *
-     * @param int $minutes The number of minutes after any files on the cache will be removed.
+     * @param int $minutes the number of minutes after any files on the cache will be removed
      */
     public static function cacheClean($minutes)
     {
@@ -186,10 +186,10 @@ class WebClientPrint
      *
      * var wcppPingDelay_ms = 5000;
      *
-     * @param string $webClientPrintControllerAbsoluteUrl The Absolute URL to the WebClientPrintController file.
-     * @param string $sessionID                           The current Session ID.
+     * @param string $webClientPrintControllerAbsoluteUrl the Absolute URL to the WebClientPrintController file
+     * @param string $sessionID                           the current Session ID
      *
-     * @return string A [script] tag linking to the WCPP-detection script code.
+     * @return string a [script] tag linking to the WCPP-detection script code
      *
      * @throws \Exception
      */
@@ -237,8 +237,8 @@ class WebClientPrint
     /**
      * Generates the WebClientPrint scripts based on the specified query string. Result is stored in the HTTP Response Content.
      *
-     * @param string $webClientPrintControllerAbsoluteUrl The Absolute URL to the WebClientPrintController file.
-     * @param string $queryString                         The Query String from current HTTP Request.
+     * @param string $webClientPrintControllerAbsoluteUrl the Absolute URL to the WebClientPrintController file
+     * @param string $queryString                         the Query String from current HTTP Request
      */
     public static function generateScript($webClientPrintControllerAbsoluteUrl, $queryString)
     {
@@ -331,7 +331,7 @@ class WebClientPrint
     /**
      * Determines the type of process request based on the Query String value.
      *
-     * @param string $queryString The query string of the current request.
+     * @param string $queryString the query string of the current request
      *
      * @return int A valid type of process request. In case of an invalid value, an Exception is thrown.
      *
@@ -433,7 +433,7 @@ class InstalledPrinter extends ClientPrinter
     /**
      * Creates an instance of the InstalledPrinter class with the specified printer name.
      *
-     * @param string $printerName The name of the printer installed in the client machine.
+     * @param string $printerName the name of the printer installed in the client machine
      */
     public function __construct($printerName)
     {
@@ -486,7 +486,7 @@ class ParallelPortPrinter extends ClientPrinter
     /**
      * Creates an instance of the ParallelPortPrinter class with the specified port name.
      *
-     * @param string $portName The parallel port name, for example LPT1.
+     * @param string $portName the parallel port name, for example LPT1
      */
     public function __construct($portName)
     {
@@ -552,12 +552,12 @@ class SerialPortPrinter extends ClientPrinter
     /**
      * Creates an instance of the SerialPortPrinter class wiht the specified information.
      *
-     * @param string $portName    The serial port name, for example COM1.
-     * @param int    $baudRate    The serial port baud rate in bits per second.
-     * @param int    $parity      The serial port parity-checking protocol.
-     * @param int    $stopBits    The serial port standard number of stopbits per byte.
-     * @param int    $dataBits    The serial port standard length of data bits per byte.
-     * @param int    $flowControl The handshaking protocol for serial port transmission of data.
+     * @param string $portName    the serial port name, for example COM1
+     * @param int    $baudRate    the serial port baud rate in bits per second
+     * @param int    $parity      the serial port parity-checking protocol
+     * @param int    $stopBits    the serial port standard number of stopbits per byte
+     * @param int    $dataBits    the serial port standard length of data bits per byte
+     * @param int    $flowControl the handshaking protocol for serial port transmission of data
      */
     public function __construct($portName, $baudRate, $parity, $stopBits, $dataBits, $flowControl)
     {
@@ -607,9 +607,9 @@ class NetworkPrinter extends ClientPrinter
     /**
      * Creates an instance of the NetworkPrinter class with the specified DNS name or IP Address, and port number.
      *
-     * @param string $dnsName   The DNS name assigned to the printer.
-     * @param string $ipAddress The Internet Protocol (IP) address assigned to the printer.
-     * @param int    $port      The port number assigned to the printer.
+     * @param string $dnsName   the DNS name assigned to the printer
+     * @param string $ipAddress the Internet Protocol (IP) address assigned to the printer
+     * @param int    $port      the port number assigned to the printer
      */
     public function __construct($dnsName, $ipAddress, $port)
     {
@@ -769,9 +769,9 @@ class PrintFile
     public const SEP = '|';
 
     /**
-     * @param string $filePath          The path of the file at the server side that will be printed at the client side.
+     * @param string $filePath          the path of the file at the server side that will be printed at the client side
      * @param string $fileName          The file name that will be created at the client side. It must include the file extension like .pdf, .txt, .doc, .xls, etc.
-     * @param string $fileBinaryContent The binary content of the file at the server side that will be printed at the client side.
+     * @param string $fileBinaryContent the binary content of the file at the server side that will be printed at the client side
      */
     public function __construct($filePath, $fileName, $fileBinaryContent)
     {
@@ -1292,7 +1292,7 @@ class ClientPrintJob
      * Sends this ClientPrintJob object to the client for further processing.
      * The ClientPrintJob object will be processed by the WCPP installed at the client machine.
      *
-     * @return string A string representing a ClientPrintJob object.
+     * @return string a string representing a ClientPrintJob object
      */
     public function sendToClient()
     {
@@ -1386,7 +1386,7 @@ class ClientPrintJobGroup
      * Sends this ClientPrintJobGroup object to the client for further processing.
      * The ClientPrintJobGroup object will be processed by the WCPP installed at the client machine.
      *
-     * @return string|null A string representing a ClientPrintJobGroup object.
+     * @return string|null a string representing a ClientPrintJobGroup object
      */
     public function sendToClient(): ?string
     {

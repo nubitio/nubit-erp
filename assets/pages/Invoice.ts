@@ -77,7 +77,7 @@ export default class Invoice {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('numero')
-            .label('Numero')
+            .label('Número')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
@@ -90,11 +90,12 @@ export default class Invoice {
             .type(FieldType.NONE)
             .name('nota')
             .label('NC')
+            .formatter(SharedUtils.voidedFormatter)
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
-            .name('estado')
+            .name('voided')
             .label('Anulado')
             .formatter(SharedUtils.voidedFormatter)
             .align('center')

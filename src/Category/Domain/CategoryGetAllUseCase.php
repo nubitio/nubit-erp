@@ -15,7 +15,6 @@ class CategoryGetAllUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Category>
      */
     public function __invoke(Options $options): PaginatorInterface

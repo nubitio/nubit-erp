@@ -8,12 +8,11 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 interface ConfigRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Config>
      */
     public function getAll(Options $options): PaginatorInterface;
 
-    public function getOne(string $id): ?Config;
+    public function getOne(int $id): ?Config;
 
     public function insert(Config $config): Config;
 

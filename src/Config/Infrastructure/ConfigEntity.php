@@ -11,20 +11,18 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: "options")]
+#[Table(name: 'options')]
 class ConfigEntity
 {
-
     public function __construct(
         #[Id]
         #[GeneratedValue]
-        #[Column(name: "id", type: "integer")]
+        #[Column(name: 'id', type: 'integer')]
         public ?int $id = null,
-        #[Column(name: "name", type: "string")]
+        #[Column(name: 'name', type: 'string')]
         public ?string $name = null,
-        #[Column(name: "value", type: "string")]
+        #[Column(name: 'value', type: 'string')]
         public ?string $value = null
-    )
-    {
+    ) {
     }
 }

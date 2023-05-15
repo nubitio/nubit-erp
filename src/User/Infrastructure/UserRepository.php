@@ -17,12 +17,11 @@ readonly class UserRepository implements UserRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -46,7 +45,7 @@ readonly class UserRepository implements UserRepositoryInterface
         $entity = DataMapper::map($user, UserEntity::class);
         $role = $this->entityManager->getReference(RoleEntity::class, $user->rol?->rol_id);
         $entity->rol = $role;
-        $entity->password = password_hash((string)$user->password, PASSWORD_DEFAULT);
+        $entity->password = password_hash((string) $user->password, PASSWORD_DEFAULT);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 

@@ -15,8 +15,7 @@ readonly class DataLoader
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-    )
-    {
+    ) {
     }
 
     /**
@@ -89,7 +88,7 @@ readonly class DataLoader
                     foreach ($options->filters as $filter) {
                         $parentObj = new $parent();
                         if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
-                            $filter->field = $alias . '.' . $filter->field;
+                            $filter->field = $alias.'.'.$filter->field;
                         }
                     }
                 }
@@ -105,7 +104,7 @@ readonly class DataLoader
     {
         $aliases = [];
         foreach ($joins as $join) {
-            if ($join->type === JoinType::INNER) {
+            if (JoinType::INNER === $join->type) {
                 $queryBuilder->innerJoin($join->entity, $join->alias);
             } else {
                 $queryBuilder->leftJoin($join->entity, $join->alias);

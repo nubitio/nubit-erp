@@ -95,17 +95,17 @@ class ColorUtils
     public static function lightenColor(string $hexColor, int $percent): string
     {
         $hexColor = str_replace('#', '', $hexColor);
-        $r = (int)hexdec(substr($hexColor, 0, 2));
-        $g = (int)hexdec(substr($hexColor, 2, 2));
-        $b = (int)hexdec(substr($hexColor, 4, 2));
+        $r = (int) hexdec(substr($hexColor, 0, 2));
+        $g = (int) hexdec(substr($hexColor, 2, 2));
+        $b = (int) hexdec(substr($hexColor, 4, 2));
         $hsl = self::rgbToHsl($r, $g, $b);
         $hsl[2] += $percent / 100;
         $hsl[2] = min($hsl[2], 1);
         $rgb = self::hslToRgb($hsl[0], $hsl[1], $hsl[2]);
-        $r = dechex((int)$rgb[0]);
-        $g = dechex((int)$rgb[1]);
-        $b = dechex((int)$rgb[2]);
+        $r = dechex((int) $rgb[0]);
+        $g = dechex((int) $rgb[1]);
+        $b = dechex((int) $rgb[2]);
 
-        return '#' . $r . $g . $b;
+        return '#'.$r.$g.$b;
     }
 }

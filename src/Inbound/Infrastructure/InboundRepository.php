@@ -27,7 +27,7 @@ class InboundRepository implements InboundRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
@@ -49,7 +49,7 @@ class InboundRepository implements InboundRepositoryInterface
             $this->entityManager->flush();
             $ref = $this->entityManager->getReference(SaleEntity::class, $entity->movimiento_id);
 
-            if ($inbound->items === null) {
+            if (null === $inbound->items) {
                 throw new \Exception('No se encontraron productos');
             }
 

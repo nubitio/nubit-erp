@@ -3,13 +3,13 @@
 namespace App\ConsultationSale\Infrastructure;
 
 use App\Consultation\Infrastructure\ConsultationEntity;
+use App\ConsultationSale\Domain\ConsultationSale;
+use App\ConsultationSale\Domain\ConsultationSaleRepositoryInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\ConsultationSale\Domain\ConsultationSaleRepositoryInterface;
-use App\ConsultationSale\Domain\ConsultationSale;
 use App\Sale\Infrastructure\SaleEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -18,11 +18,10 @@ readonly class ConsultationSaleRepository implements ConsultationSaleRepositoryI
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
