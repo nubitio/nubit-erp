@@ -20,7 +20,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Ejecutar php-cs-fixer dentro del contenedor web
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && vendor/bin/php-cs-fixer fix --dry-run --diff"
+docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff"
 
 # Verificar el resultado del comando anterior
 if [ $? -ne 0 ]; then

@@ -2,8 +2,8 @@
 
 namespace App\Billing\Model\Summary;
 
-use App\Billing\Model\Company\Company;
 use App\Core\Domain\Util\DateUtils;
+use Greenter\Model\Company\Company;
 
 class Summary
 {
@@ -29,6 +29,6 @@ class Summary
 
     public function getName(): string
     {
-        return $this->company->ruc.'-'.$this->getXmlId();
+        return $this->company->getRuc().'-'.$this->getXmlId();
     }
 }

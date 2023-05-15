@@ -2,7 +2,7 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Company\Company;
+use Greenter\Model\Company\Company;
 
 interface BillUtilsInterface
 {

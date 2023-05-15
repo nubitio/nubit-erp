@@ -2,7 +2,7 @@
 
 namespace App\CreditNote\Domain;
 
-class CreditNoteUpdateUseCase
+class UpdateCreditNoteUseCase
 {
     private CreditNoteRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CreditNoteUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(CreditNote $creditNote): void
+    public function __invoke(CreditNote $creditNote): CreditNote
     {
-        $this->repository->update($creditNote);
+        return $this->repository->update($creditNote);
     }
 }

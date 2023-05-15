@@ -7,6 +7,8 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
 import FilterRule from "../core/common/FilterRule";
+import {messenger} from "../core/utils/Messenger";
+import {saleService} from "../services/sale.service";
 
 export default class CreditNote {
     private readonly container: string;
@@ -15,11 +17,7 @@ export default class CreditNote {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'credit-note/add',
-        EDIT: 'credit-note/edit/',
-        DELETE: 'credit-note/delete/',
-    }
+    static readonly API_URL = 'api/credit-notes';
 
     static readonly EVENTS = {
         ADD: 'credit-note:add',
@@ -52,7 +50,7 @@ export default class CreditNote {
         }
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
-            .name('movimiento_id')
+            .name('sale')
             .label('Comprobante')
             .visible(false)
             .mode('remote')
@@ -66,6 +64,7 @@ export default class CreditNote {
             .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
+            .formatter(SharedUtils.dateFormatter)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -116,6 +115,7 @@ export default class CreditNote {
             .type(FieldType.TEXTAREA)
             .name('descripcion_motivo')
             .label('Motivo Descripción')
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
@@ -129,9 +129,10 @@ export default class CreditNote {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
-            .name('doc_afectado')
+            .name('sale')
             .label('Doc. afectado')
             .align('center')
+            .formatter((value: any) => value?.invoice)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
@@ -153,11 +154,30 @@ export default class CreditNote {
     }
 
     renderDataGrid() {
+        let toolbar = [
+            {
+                text: 'Enviar a SUNAT',
+                iconCls: 'fas fa-cloud-upload fa-1x text-info',
+                handler: () => {
+                    this.send();
+                }
+            }, {
+                text: 'Ver',
+                iconCls: 'fas fa-eye fa-1x text-primary',
+                handler: () => {
+                    this.view();
+                }
+            }
+        ];
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'CreditNote',
-            url: 'credit-note/get',
-            routes: CreditNote.ROUTES,
+            url: CreditNote.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: CreditNote.EVENTS,
+            toolbar: toolbar,
         });
     }
 
@@ -166,9 +186,37 @@ export default class CreditNote {
             events: CreditNote.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: CreditNote.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: CreditNote.API_URL,
             events: CreditNote.EVENTS,
         });
+    }
+
+    send() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+        /*if (selected['envio_sunat'] === '0') {
+            messenger.show('Información', 'El comprobante ya fue enviado a SUNAT');
+            return;
+        }*/
+        this.dataGrid.showLoading('Enviando comprobante a SUNAT...');
+        saleService.makeNote(selected['nota_id']).subscribe((data) => {
+            messenger.show('Información', 'Comprobante enviado a SUNAT');
+            this.dataGrid.reload();
+        }).add(() => {
+            this.dataGrid.hideLoading();
+        });
+    }
+
+    view() {
+        let selected = this.dataGrid.selectedRow;
+        if (!selected) {
+            messenger.show('Información', 'Seleccione un registro');
+            return;
+        }
+        window.open('invoice/' + selected['nota_id']);
     }
 }
