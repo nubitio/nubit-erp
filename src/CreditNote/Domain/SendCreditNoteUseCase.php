@@ -38,7 +38,7 @@ readonly class SendCreditNoteUseCase
         }
 
         if (null !== $note->envio_sunat) {
-            // return $this->getOneVoucherUseCase->__invoke($saleId);
+            return $this->getOneVoucherUseCase->__invoke($saleId);
         }
         $response = $this->noteSendUseCase->__invoke($noteId);
         $note->digest = $response->hash;
