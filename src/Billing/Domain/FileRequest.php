@@ -2,16 +2,16 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Bill\Bill;
 use App\Billing\Model\Report\Parameters;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use Greenter\Model\DocumentInterface;
 
 #[IgnoreAutowire]
-class FileRequest
+readonly class FileRequest
 {
     public function __construct(
-        public readonly Bill $document,
-        public readonly Parameters $parameters,
+        public DocumentInterface $document,
+        public ?Parameters $parameters = null,
     ) {
     }
 }

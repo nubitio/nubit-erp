@@ -3,9 +3,10 @@
 namespace App\Billing\Model\Bill;
 
 use App\Billing\Model\Client\Client;
-use App\Billing\Model\Company\Company;
+use Greenter\Model\Company\Company;
+use Greenter\Model\DocumentInterface;
 
-class Bill
+class Bill implements DocumentInterface
 {
     public string $ublVersion;
     public string $tipoOperacion;
@@ -37,7 +38,7 @@ class Bill
     public function getName(): string
     {
         $parts = [
-            $this->company->ruc,
+            $this->company->getRuc(),
             $this->tipoDoc,
             $this->serie,
             $this->correlativo,

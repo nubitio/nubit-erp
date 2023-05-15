@@ -9,4 +9,10 @@ export class SaleService {
     makeInvoice(saleId: string) {
         return httpClient.post<any>(`/sale/invoice/${saleId}`);
     }
+
+    makeNote(noteId: string) {
+        return httpClient.post<any>(`/credit-note/send/${noteId}`);
+    }
 }
+
+export const saleService = new SaleService();
