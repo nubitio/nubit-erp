@@ -55,3 +55,7 @@ Dentro del contenedor webpack ejecutar comando para correr
 **Insertar las credenciales en el  navicat u otro IDE de SQL del archivo .env.local**
        
     DATABASE_URL="mysql://c1_demo:Admin.3000@database:3306/c1_demo?serverVersion=mariadb-10.7.1&charset=utf8mb4"
+
+
+## Libreria para componentes de vistas ##
+ >Jeasyui
