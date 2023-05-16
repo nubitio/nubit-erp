@@ -8,13 +8,11 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\FilterOperation;
 use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\RecipeDetail\Domain\RecipeDetail;
 use App\RecipeDetail\Domain\GetAllRecipeDetailUseCase;
+use App\RecipeDetail\Domain\RecipeDetail;
 use App\RecipeDetail\Infrastructure\RecipeDetailEntity;
 
 /**
@@ -24,8 +22,7 @@ readonly class RecipeDetailProvider implements ApiProviderInterface
 {
     public function __construct(
         private GetAllRecipeDetailUseCase $getAllUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

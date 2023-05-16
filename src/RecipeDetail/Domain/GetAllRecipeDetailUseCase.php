@@ -9,12 +9,10 @@ readonly class GetAllRecipeDetailUseCase
 {
     public function __construct(
         private RecipeDetailRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<RecipeDetail>
      */
     public function __invoke(Options $options): PaginatorInterface

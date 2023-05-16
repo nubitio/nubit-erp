@@ -15,5 +15,4 @@ class RecipeDto extends Recipe
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }

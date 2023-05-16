@@ -19,7 +19,6 @@ class Recipe
         /** @var RecipeDetail[] $details */
         #[SerializedName('details')]
         public array $details = []
-    )
-    {
+    ) {
     }
 }
