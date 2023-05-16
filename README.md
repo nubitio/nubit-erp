@@ -11,7 +11,7 @@ Sistema desarrollado en PHP
 >git clone https://github.com/CompuExpress/efact.git
 
 ## Clonar el archivo .env ##
->cp env env.local
+>cp .env .env.local
 
 ## Instalacion del sistema de forma local ##
 
@@ -52,6 +52,6 @@ Dentro del contenedor webpack ejecutar comando para correr
 
 **Instalar navicat u otro IDE de SQL**
 
-**Insertar las credenciales en el  navicat u otro IDE de SQL del archivo env.local**
+**Insertar las credenciales en el  navicat u otro IDE de SQL del archivo .env.local**
        
     DATABASE_URL="mysql://c1_demo:Admin.3000@database:3306/c1_demo?serverVersion=mariadb-10.7.1&charset=utf8mb4"
