@@ -177,12 +177,12 @@ export default class Form {
         }
     }
 
-    private addRow() {
+    private addRow(): number {
         this.rowIndex++;
         let detailTableBody = document.getElementById('detailTableBody' + this.randomId);
 
         if (!detailTableBody) {
-            return;
+            return -1;
         }
 
         let tableRow = document.createElement('tr');
@@ -202,6 +202,7 @@ export default class Form {
 
         this.buildFormFields(rowFields);
         bus.emit(Form.EVENTS.ROW_ADDED, this.rowIndex);
+        return this.rowIndex;
     }
 
     private removeRow(rowIndex: string) {
@@ -485,7 +486,7 @@ export default class Form {
             required: field.required,
             hour12: false,
             showSeconds: false,
-            ampm: ['AM','PM'],
+            ampm: ['AM', 'PM'],
             highlight: 0
         });
         this.formFields[field.name] = input;
@@ -888,5 +889,36 @@ export default class Form {
             .add(() => {
                 bus.emit(this.events.LOADING, false);
             })
+    }
+
+    loadDetailData(data: any[]) {
+        data.forEach((item, index) => {
+            let rowIndex = this.addRow();
+            this.detailFields.forEach(field => {
+                console.log(field.name, item[field.name]);
+                let formField = this.getField(field.name + '-' + rowIndex);
+                if (formField.length === 0) {
+                    return;
+                }
+                switch (field.type) {
+                    case FieldType.TEXT:
+                    case FieldType.TEXTAREA:
+                    case FieldType.NUMBER:
+                    case FieldType.CURRENCY:
+                        formField.textbox('setValue', item[field.name]);
+                        break;
+                    case FieldType.DATE:
+                        formField.datebox('setValue', item[field.name]);
+                        break;
+                    case FieldType.ENTITY:
+                        let value = item[field.name] ?? {};
+                        formField.combobox('select', value[field.valueField]);
+                        break;
+                    case FieldType.SWITCH:
+                        formField.switchbutton('check', item[field.name]);
+                        break;
+                }
+            });
+        });
     }
 }

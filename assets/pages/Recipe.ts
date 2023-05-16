@@ -5,6 +5,8 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {bus} from "../core/event/EventBus";
+import {httpClient} from "../core/http/HttpClient";
 
 export default class Recipe {
     private readonly container: string;
@@ -57,14 +59,6 @@ export default class Recipe {
             .build())
 
         this.detailFields.push(new FieldBuilder()
-            .isIdentity(true)
-            .visible(false)
-            .type(FieldType.NONE)
-            .name('id')
-            .label('Id')
-            .required(true)
-            .build());
-        this.detailFields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('material')
             .label('Material')
@@ -84,6 +78,7 @@ export default class Recipe {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        this.setupObservers();
     }
 
     renderDataGrid() {
@@ -111,6 +106,17 @@ export default class Recipe {
             url: Recipe.API_URL,
             events: Recipe.EVENTS,
             detailFields: this.detailFields,
+        });
+    }
+
+    setupObservers() {
+        bus.on(Recipe.EVENTS.EDIT, () => {
+            let selected = this.dataGrid.selectedRow;
+            let recipeId = selected[this.dataGrid.getIdField()]
+
+            httpClient.get<any>(Recipe.API_URL + '/' + recipeId + '/details').subscribe((response) => {
+                this.form.loadDetailData(response.data);
+            });
         });
     }
 }
