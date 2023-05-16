@@ -2,8 +2,8 @@
 
 namespace App\Billing\Model\Voided;
 
-use App\Billing\Model\Company\Company;
 use App\Core\Domain\Util\DateUtils;
+use Greenter\Model\Company\Company;
 
 class Voided
 {
@@ -28,6 +28,6 @@ class Voided
 
     public function getName(): string
     {
-        return $this->company->ruc.'-'.$this->getXmlId();
+        return $this->company->getRuc().'-'.$this->getXmlId();
     }
 }

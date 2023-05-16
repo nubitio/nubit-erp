@@ -2,7 +2,7 @@
 
 namespace App\CreditNote\Domain;
 
-class CreditNoteCreateUseCase
+class DeleteCreditNoteUseCase
 {
     private CreditNoteRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class CreditNoteCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(CreditNote $creditNote): void
+    public function __invoke(string $id): void
     {
-        $this->repository->insert($creditNote);
+        $this->repository->delete($id);
     }
 }
