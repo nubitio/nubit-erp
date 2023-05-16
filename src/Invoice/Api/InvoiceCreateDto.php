@@ -13,7 +13,7 @@ use App\Invoice\Domain\Voucher;
         new Post(
             input: InvoiceCreateDto::class,
             output: Voucher::class,
-        )
+        ),
     ],
     processor: VoucherProcessor::class
 )]

@@ -30,12 +30,14 @@ export default class Home {
             .then(data => {
                 let menu: any[] = []
                 data.forEach((item: any) => {
+                    item.children = item.items;
                     if (item.children) {
                         item.children.forEach((child: any) => {
                             child.parent = item.text;
                             child.iconCls = '';
                         })
                     }
+                    item.iconCls = item.icon;
                     menu.push(item);
                 });
 
@@ -67,15 +69,15 @@ export default class Home {
             border: false,
             multiple: false,
             onSelect: function (item: any) {
-                if (ref.selectedMenu !== null && ref.selectedMenu === item.url) {
+                if (ref.selectedMenu !== null && ref.selectedMenu === item.path) {
                     return;
                 }
-                window.location.href = item.url;
+                window.location.href = item.path;
             }
         });
 
         if (this.selectedMenu !== '') {
-            let item = menu.flatMap((item: any) => item.children ?? []).find((item: any) => item.url === this.selectedMenu);
+            let item = menu.flatMap((item: any) => item.children ?? []).find((item: any) => item.path === this.selectedMenu);
             this.sidebar.sidemenu('setSelected', item ?? menu[0]);
         }
     }
@@ -86,7 +88,7 @@ export default class Home {
         let selectedMenu = location.pathname.split('/')[1];
         if (selectedMenu !== '') {
             let menu = JSON.parse(localStorage.getItem('menu') ?? '[]');
-            let item = menu.flatMap((item: any) => item.children ?? []).find((item: any) => item.url === selectedMenu);
+            let item = menu.flatMap((item: any) => item.items ?? []).find((item: any) => item.path === selectedMenu);
             this.sidebar.sidemenu('setSelected', item ?? menu[0]);
         }
     }

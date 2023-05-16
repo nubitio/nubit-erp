@@ -4,22 +4,27 @@ namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 readonly class SaleUtils
 {
     public function __construct(
-        private Connection      $connection,
-        private SettingsService $settings,
-    )
-    {
+        private Connection $connection,
+        private TenantAwareSettingsService $settings,
+    ) {
     }
 
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     */
     public function getSaleSeries(string $docType, string $wareHouseId): string
     {
+        /** @var false|string $series */
         $series = $this->connection->fetchOne('
             select
                 serie
@@ -36,8 +41,13 @@ readonly class SaleUtils
         return strval($series);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     */
     public function getSaleNumber(string $series): string
     {
+        /** @var false|string $number */
         $number = $this->connection->fetchOne('
             select
                 ifnull(max(cast(numero as int)), 0) + 1 as numero

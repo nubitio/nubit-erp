@@ -21,11 +21,10 @@ readonly class RoleProvider implements ApiProviderInterface
     public function __construct(
         private GetAllRoleUseCase $getAllUseCase,
         private GetOneRoleUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

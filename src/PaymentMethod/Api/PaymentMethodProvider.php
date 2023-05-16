@@ -21,11 +21,10 @@ readonly class PaymentMethodProvider implements ApiProviderInterface
     public function __construct(
         private GetAllPaymentMethodUseCase $getAllUseCase,
         private GetOnePaymentMethodUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

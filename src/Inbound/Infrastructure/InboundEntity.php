@@ -3,7 +3,6 @@
 namespace App\Inbound\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Inbound\Domain\Inbound;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;

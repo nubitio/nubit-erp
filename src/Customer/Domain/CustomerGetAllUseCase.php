@@ -15,7 +15,6 @@ class CustomerGetAllUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Customer>
      */
     public function __invoke(Options $options): PaginatorInterface

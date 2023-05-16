@@ -39,7 +39,7 @@ class CashboxController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));
@@ -48,8 +48,10 @@ class CashboxController extends BaseController
     #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET', 'POST'])]
     public function getLast(Request $request, CashboxGetLastUseCase $getLastUseCase): Response
     {
-        $localId = strval($request->getSession()->get('branch_id'));
-        $userId = intval($request->getSession()->get('user_id'));
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
+        /** @var int $userId */
+        $userId = $request->getSession()->get('user_id');
         $cashBox = $getLastUseCase($localId, $userId);
 
         if (!$cashBox) {
@@ -61,23 +63,23 @@ class CashboxController extends BaseController
         $data = [];
 
         $data['header'] = [
-            'caja_id'  => $cashBox->caja_id,
-            'fecha'    => $cashBox->apertura?->format('Y-m-d'),
+            'caja_id' => $cashBox->caja_id,
+            'fecha' => $cashBox->apertura?->format('Y-m-d'),
             'apertura' => $cashBox->apertura?->format('H:i:s'),
         ];
         $data['rows'] = $cashBox->details;
         $data['footer'] = [
             [
                 'descripcion' => 'Ingresos',
-                'monto'       => $cashBox->getIncome(),
+                'monto' => $cashBox->getIncome(),
             ],
             [
                 'descripcion' => 'Egresos',
-                'monto'       => $cashBox->getOutcome(),
+                'monto' => $cashBox->getOutcome(),
             ],
             [
                 'descripcion' => 'Saldo',
-                'monto'       => $cashBox->getBalance(),
+                'monto' => $cashBox->getBalance(),
             ],
         ];
 
@@ -87,17 +89,21 @@ class CashboxController extends BaseController
     #[Route('/cashbox/open', name: 'cashbox_open', methods: ['POST'])]
     public function open(Request $request, CashboxCreateUseCase $createUseCase): Response
     {
+        /** @var string $localId */
+        $localId = $request->getSession()->get('branch_id');
+        /** @var int $userId */
+        $userId = $request->getSession()->get('user_id');
         $cashBoxDetail = new CashboxDetail(
             uid: 1,
             tipo_id: 1,
             descripcion: 'Fondo de caja',
-            monto: (float)$request->request->get('monto_inicial'),
+            monto: (float) $request->request->get('monto_inicial'),
         );
 
         $cashBox = new Cashbox(
-            local_id: strval($request->getSession()->get('branch_id')),
+            local_id: $localId,
             apertura: new \DateTime(),
-            usuario_id: intval($request->getSession()->get('user_id')),
+            usuario_id: $userId,
             estado: 1,
             details: [$cashBoxDetail],
         );
@@ -149,30 +155,30 @@ class CashboxController extends BaseController
     }
 
     #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]
-    public function export(Request $request, CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, string $id): StreamedResponse
+    public function export(CashboxGetOneUseCase $getOneUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox.html.twig', [
-            'title'   => 'Reporte de caja',
+            'title' => 'Reporte de caja',
             'cashbox' => $cashBox,
         ]);
 
-        return $exporter->export($content, 'caja_' . $id);
+        return $exporter->export($content, 'caja_'.$id);
     }
 
     #[Route('/cashbox/report/{id}', name: 'cashbox_report', methods: ['GET'])]
-    public function report(Request $request, CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, string $id): StreamedResponse
+    public function report(CashboxGetOneUseCase $getOneUseCase, CashboxGetInfoReceiptUseCase $getInfoReceiptUseCase, PdfExporter $exporter, string $id): StreamedResponse
     {
         $cashBox = $getOneUseCase($id);
         $infoReceipt = $getInfoReceiptUseCase($id);
 
         $content = $this->renderView('cashbox/report/cashbox_full.html.twig', [
-            'title'   => 'Reporte de caja',
+            'title' => 'Reporte de caja',
             'cashbox' => $cashBox,
             'receipt' => $infoReceipt,
         ]);
 
-        return $exporter->export($content, 'caja_' . $id);
+        return $exporter->export($content, 'caja_'.$id);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Core\Infrastructure\Doctrine\DBAL;
 
+use App\Core\Domain\Exception\ServiceException;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
@@ -21,15 +22,20 @@ class TenantConnection extends Connection
         parent::__construct($params, $driver, $config, $eventManager);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function switchTenant(string $tenantName): void
     {
         /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
-        $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
+        $tenantsConfigFilePath = dirname(__DIR__, 5).'/config/tenants.json';
         if (file_exists($tenantsConfigFilePath)) {
             $configContent = file_get_contents($tenantsConfigFilePath);
 
-            if ($configContent === false) {
+            if (false === $configContent) {
                 throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
             }
 
@@ -38,10 +44,10 @@ class TenantConnection extends Connection
         }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {
-            throw new \Exception('Tenant not found');
+            throw new ServiceException('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn($item) => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn ($item) => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
@@ -65,14 +71,14 @@ class TenantConnection extends Connection
         $this->_conn = $this->_driver->connect($this->tenantParams);
         $this->isConnected = true;
 
-        if ($this->autoCommit !== true) {
+        if (true !== $this->autoCommit) {
             $this->beginTransaction();
         }
 
         return true;
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getParams(): array
     {
         return $this->tenantParams;

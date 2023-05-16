@@ -6,8 +6,8 @@ use App\Base\BaseController;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\MilitaryPatient\Domain\GetInvoiceExtraDataByCustomerIdUseCase;
 use App\Sale\Domain\DocType;
-use App\Sale\Domain\SaleGetOneById;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
 use App\WebClientPrint\WebClientPrint;
@@ -29,7 +29,7 @@ class SaleController extends BaseController
 
         return $this->render('sale/index.html.twig', [
             'printDetectionScript' => $printDetectionScript,
-            'printScript'          => $printScript,
+            'printScript' => $printScript,
         ]);
     }
 
@@ -47,9 +47,9 @@ class SaleController extends BaseController
         $dateTo = $request->get('date-to');
         $localId = $request->getSession()->get('branch_id');
         $params = [
-            'local_id'  => $localId,
+            'local_id' => $localId,
             'date_from' => $dateFrom,
-            'date_to'   => $dateTo,
+            'date_to' => $dateTo,
         ];
         switch ($report) {
             case 'sale-by-product':
@@ -82,14 +82,13 @@ class SaleController extends BaseController
                 break;
             default:
                 throw new \Exception('Reporte no encontrado');
-
         }
 
         return $reportFile;
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById): Response
+    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById, GetInvoiceExtraDataByCustomerIdUseCase $getInvoiceExtraDataByCustomerIdUseCase): Response
     {
         $voucher = $getOneById($id);
         $qr = '';
@@ -97,9 +96,15 @@ class SaleController extends BaseController
             $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));
         }
 
-        $content = $this->renderView('sale/report/invoice.html.twig', [
-            'qr'   => $qr,
+        $template = 'sale/report/invoice.html.twig';
+        if ('20369393546' == $voucher->company_id) {
+            $template = 'sale/report/hmr_invoice.html.twig';
+            $extraData = $getInvoiceExtraDataByCustomerIdUseCase(strval($voucher->customer_doc_number), $id);
+        }
+        $content = $this->renderView($template, [
+            'qr' => $qr,
             'voucher' => $voucher,
+            'extraData' => $extraData ?? null,
         ]);
 
         $preview = $request->get('preview');
@@ -121,9 +126,9 @@ class SaleController extends BaseController
 
         return $pdfExporter->export($content, 'invoice', [
             'no-outline',
-            'page-width'   => '80mm',
-            'page-height'  => $pageHeight . 'mm',
-            'margin-left'  => 0,
+            'page-width' => '80mm',
+            'page-height' => $pageHeight.'mm',
+            'margin-left' => 0,
             'margin-right' => 0,
         ]);
     }
@@ -131,6 +136,7 @@ class SaleController extends BaseController
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]
     public function void(Request $request, SaleVoidUseCase $voidUseCase, string $id): Response
     {
+        /** @var string $userId */
         $userId = $request->getSession()->get('user_id');
         /** @var array<string, string> $requestBody */
         $requestBody = json_decode($request->getContent(), true);

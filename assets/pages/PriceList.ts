@@ -41,7 +41,9 @@ export default class PriceList {
             .type(FieldType.NONE)
             .name('id')
             .label('Id')
+            .valueType('number')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
@@ -174,7 +176,7 @@ export default class PriceList {
         bus.on(EVENTS.SAVE, () => {
                 let row = this.dataGrid.selectedRow;
                 let data = pricesGrid.datagrid('getChanges');
-                let prices = [];
+                let prices: { price_list_id: number, product_id: string, price: number }[] = [];
                 for (let i = 0; i < data.length; i++) {
                     prices.push({
                         price_list_id: row.id,
@@ -182,7 +184,6 @@ export default class PriceList {
                         price: parseFloat(data[i].price)
                     });
                 }
-                console.log(prices);
                 httpClient.post<any>('price-list/update', prices).subscribe(
                     response => {
                         SharedUtils.showMessage('Info', response.data.msg);

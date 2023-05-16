@@ -19,10 +19,17 @@ class ExceptionListener
             return;
         }
 
-        $response = new JsonResponse([
-            'message' => $exception->getMessage(),
-            'code' => $exception->getCode(),
-        ], Response::HTTP_BAD_REQUEST);
+        $isDev = 'dev' === $_ENV['APP_ENV'];
+
+        $data = [];
+        $data['message'] = $exception->getMessage();
+        $data['code'] = $exception->getCode();
+
+        if ($isDev) {
+            $data['trace'] = $exception->getTrace();
+        }
+
+        $response = new JsonResponse($data, Response::HTTP_BAD_REQUEST);
         $event->setResponse($response);
     }
 }

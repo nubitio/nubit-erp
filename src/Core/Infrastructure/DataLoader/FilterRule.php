@@ -4,32 +4,36 @@ namespace App\Core\Infrastructure\DataLoader;
 
 use Doctrine\ORM\QueryBuilder;
 
-readonly class FilterRule implements FilterInterface
+class FilterRule implements FilterInterface
 {
     public function __construct(
-        public string          $field,
+        public string $field,
         public FilterOperation $op,
-        public mixed           $value,
-    )
-    {
+        public bool|float|int|string|null $value,
+    ) {
     }
 
     public function apply(QueryBuilder $queryBuilder): void
     {
         $op = FilterUtils::getOperation($this->op);
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
+        $field = 'e.'.$this->field;
         if (str_contains($this->field, '.')) {
-            $queryBuilder->andWhere("$this->field $op :$uniqueParam");
-        } else {
-            $queryBuilder->andWhere("e.$this->field $op :$uniqueParam");
+            $field = $this->field;
         }
+        if (FilterOperation::IsNull === $this->op || FilterOperation::IsNotNull === $this->op) {
+            $queryBuilder->andWhere("$field $op");
+
+            return;
+        }
+        $queryBuilder->andWhere("$field $op :$uniqueParam");
 
         $value = strval($this->value);
-        if ($this->op === FilterOperation::Contains) {
+        if (FilterOperation::Contains === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "%{$value}%");
-        } elseif ($this->op === FilterOperation::BeginsWith) {
+        } elseif (FilterOperation::BeginsWith === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "{$value}%");
-        } elseif ($this->op === FilterOperation::EndsWith) {
+        } elseif (FilterOperation::EndsWith === $this->op) {
             $queryBuilder->setParameter($uniqueParam, "%{$value}");
         } else {
             $queryBuilder->setParameter($uniqueParam, $this->value);

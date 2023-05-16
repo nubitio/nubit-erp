@@ -37,17 +37,18 @@ export default class Specialty {
             .name('id')
             .label('Id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('name')
-            .label('Name')
+            .label('Nombre')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('description')
-            .label('Description')
+            .label('Descripción')
             .width(100)
             .build())
     };
@@ -59,7 +60,7 @@ export default class Specialty {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Specialty',
+            title: 'Espacialidades',
             url: Specialty.API_URL,
             method: 'get',
             allowAdd: true,

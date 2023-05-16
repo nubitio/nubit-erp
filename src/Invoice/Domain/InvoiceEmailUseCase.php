@@ -5,7 +5,7 @@ namespace App\Invoice\Domain;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -19,15 +19,14 @@ use Twig\Error\SyntaxError;
 readonly class InvoiceEmailUseCase
 {
     public function __construct(
-        private GetOneVoucherUseCase  $getOneVoucherUseCase,
-        private MailerInterface       $mailer,
-        private Environment           $twig,
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private MailerInterface $mailer,
+        private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
-        private BillPdfUseCase        $billPdfUseCase,
-        private FileManager           $fileManager,
-        private SettingsService       $settings
-    )
-    {
+        private BillPdfUseCase $billPdfUseCase,
+        private FileManager $fileManager,
+        private TenantAwareSettingsService $settings
+    ) {
     }
 
     /**
@@ -41,7 +40,7 @@ readonly class InvoiceEmailUseCase
     {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
 
-        $type = match ($voucher->voucher_type){
+        $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',
             '03' => 'BOLETA',
             default => '',
@@ -49,24 +48,24 @@ readonly class InvoiceEmailUseCase
 
         $invoiceUrl = $this->urlGenerator->generate('invoice_show', ['id' => $saleId], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
+        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
+        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
         $companyName = $this->settings->get('company_name') ?? $voucher->company_name;
 
-        $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
-        $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
+        $subject = $companyName.': Tu comprobante de pago electrónico - '.$docName;
+        $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
         $pdfResponse = $this->billPdfUseCase->__invoke($saleId);
         $pdfContent = $pdfResponse->file;
 
         $content = $this->twig->render('invoice/tpl/email.html.twig', [
-            'type'            => $type,
-            'date'            => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
-            'invoice_url'     => $invoiceUrl,
-            'series'          => $voucher->voucher_series,
-            'number'          => $voucher->voucher_number,
-            'total'           => $voucher->voucher_sale_amount,
-            'company'         => $companyName,
+            'type' => $type,
+            'date' => date('d/m/Y', intval(strtotime(strval($voucher->voucher_date)))),
+            'invoice_url' => $invoiceUrl,
+            'series' => $voucher->voucher_series,
+            'number' => $voucher->voucher_number,
+            'total' => $voucher->voucher_sale_amount,
+            'company' => $companyName,
             'company_address' => $voucher->company_address,
         ]);
 
@@ -77,8 +76,8 @@ readonly class InvoiceEmailUseCase
             ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
             ->subject($subject)
             ->html($content)
-            ->attach($xmlContent, $docFullName . '.xml')
-            ->attach($pdfContent, $docFullName . '.pdf');
+            ->attach($xmlContent, $docFullName.'.xml')
+            ->attach($pdfContent, $docFullName.'.pdf');
         $this->mailer->send($email);
     }
 }

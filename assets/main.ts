@@ -6,7 +6,6 @@ import Form from "./core/form/Form";
 import {EventType} from "./core/event/EventType";
 import {FieldType} from "./core/field/FieldType";
 import {Constants} from "./core/common/Constants";
-import ThemeManager from "./core/utils/ThemeManager";
 import Customer from "./pages/Customer";
 import {Drawer} from "./core/drawer/Drawer";
 import User from "./pages/User";
@@ -40,6 +39,15 @@ import Position from "./pages/Position";
 import Employee from "./pages/Employee";
 import Department from "./pages/Department";
 import Specialty from "./pages/Specialty";
+import Physician from "./pages/Physician";
+import Patient from "./pages/Patient";
+import MilitaryPatient from "./pages/MilitaryPatient";
+import Performance from "./pages/Performance";
+import ComboOption from "./pages/ComboOption";
+import Consultation from "./pages/Consultation";
+import PatientType from "./pages/PatientType";
+import ChangePassword from "./pages/ChangePassword";
+import { themeManager } from './core/utils/ThemeManager';
 import Recipe from "./pages/Recipe";
 
 window.observer = bus;
@@ -84,10 +92,18 @@ window.app.position = Position;
 window.app.employee = Employee;
 window.app.department = Department;
 window.app.specialty = Specialty;
+window.app.physician = Physician;
+window.app.patient = Patient;
+window.app.militaryPatient = MilitaryPatient;
+window.app.performance = Performance;
+window.app.comboOption = ComboOption;
+window.app.consultation = Consultation;
+window.app.patientType = PatientType;
+window.app.changePassword = ChangePassword;
 window.app.recipe = Recipe;
 
 window.addEventListener('load', () => {
-    window.ThemeManager = new ThemeManager();
+    window.ThemeManager = themeManager;
 
     setupGlobalObservers();
 });

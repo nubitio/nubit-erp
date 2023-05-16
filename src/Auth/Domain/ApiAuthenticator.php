@@ -2,6 +2,7 @@
 
 namespace App\Auth\Domain;
 
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +24,7 @@ class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has(self::AUTH_HEADER) && $request->attributes->get('_route') !== self::LOGIN_ROUTE;
+        return $request->headers->has(self::AUTH_HEADER) && self::LOGIN_ROUTE !== $request->attributes->get('_route');
     }
 
     public function authenticate(Request $request): Passport
@@ -36,7 +37,13 @@ class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         $apiToken = str_replace('Bearer ', '', $apiToken);
 
-        $tokenData = JWT::decode($apiToken, new Key($_ENV['APP_SECRET'], 'HS256'));
+        try {
+            $tokenData = JWT::decode($apiToken, new Key($_ENV['APP_SECRET'], 'HS256'));
+        } catch (ExpiredException $e) {
+            throw new AuthenticationException('Expired token', Response::HTTP_UNAUTHORIZED);
+        } catch (\Throwable $e) {
+            throw new AuthenticationException('Invalid token', Response::HTTP_UNAUTHORIZED);
+        }
 
         $username = $tokenData->username;
 

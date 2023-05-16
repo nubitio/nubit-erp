@@ -12,7 +12,7 @@ use App\Invoice\Domain\Invoice;
     operations: [
         new GetCollection(
             output: Invoice::class,
-        )
+        ),
     ],
     provider: InvoiceProvider::class,
     processor: InvoiceProcessor::class

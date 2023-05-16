@@ -3,91 +3,52 @@
 namespace App\CreditNote\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\CreditNote\Domain\CreditNote;
-use Doctrine\ORM\Mapping\Column;
-use Doctrine\ORM\Mapping\Entity;
-use Doctrine\ORM\Mapping\Id;
-use Doctrine\ORM\Mapping\Table;
+use App\Sale\Infrastructure\SaleEntity;
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\CustomIdGenerator;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
-#[Entity]
-#[Table(name: 'nota')]
+#[ORM\Entity]
+#[ORM\Table(name: 'nota')]
 class CreditNoteEntity
 {
     public function __construct(
-        #[Id]
-        #[Column(name: 'nota_id', type: 'string')]
+        #[ORM\Id]
+        #[GeneratedValue(strategy: 'CUSTOM')]
+        #[CustomIdGenerator(class: UuidGenerator::class)]
+        #[ORM\Column(name: 'nota_id', type: 'string')]
         public ?string $nota_id = null,
-        #[Column(name: 'movimiento_id', type: 'string')]
-        public ?string $movimiento_id = null,
-        #[Column(name: 'fecha', type: 'date')]
-        public ?\DateTime $fecha = null,
-        #[Column(name: 'tipo_id', type: 'string')]
+        #[ORM\ManyToOne(targetEntity: SaleEntity::class)]
+        #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
+        public ?SaleEntity $sale = null,
+        #[ORM\Column(name: 'fecha', type: 'date')]
+        public ?\DateTimeInterface $fecha = null,
+        #[ORM\Column(name: 'tipo_id', type: 'string')]
         public ?string $tipo_id = null,
-        #[Column(name: 'codigo_motivo', type: 'string')]
+        #[ORM\Column(name: 'codigo_motivo', type: 'string')]
         public ?string $codigo_motivo = null,
-        #[Column(name: 'descripcion_motivo', type: 'string')]
+        #[ORM\Column(name: 'descripcion_motivo', type: 'string')]
         public ?string $descripcion_motivo = null,
-        #[Column(name: 'serie', type: 'string')]
+        #[ORM\Column(name: 'serie', type: 'string')]
         public ?string $serie = null,
-        #[Column(name: 'correlativo', type: 'integer')]
+        #[ORM\Column(name: 'correlativo', type: 'integer')]
         public ?int $correlativo = null,
-        #[Column(name: 'digest', type: 'string')]
+        #[ORM\Column(name: 'digest', type: 'string')]
         public ?string $digest = null,
-        #[Column(name: 'envio_sunat', type: 'string')]
+        #[ORM\Column(name: 'envio_sunat', type: 'string')]
         public ?string $envio_sunat = null,
-        #[Column(name: 'mensaje_sunat', type: 'string')]
+        #[ORM\Column(name: 'mensaje_sunat', type: 'string')]
         public ?string $mensaje_sunat = null,
-        #[Column(name: 'created_by', type: 'integer')]
+        #[ORM\Column(name: 'created_by', type: 'integer')]
         public ?int $created_by = null,
-        #[Column(name: 'updated_by', type: 'integer')]
+        #[ORM\Column(name: 'updated_by', type: 'integer')]
         public ?int $updated_by = null,
-        #[Column(name: 'created_at', type: 'datetime')]
-        public ?\DateTime $created_at = null,
-        #[Column(name: 'updated_at', type: 'datetime')]
-        public ?\DateTime $updated_at = null,
+        #[ORM\Column(name: 'created_at', type: 'datetime')]
+        public ?\DateTimeInterface $created_at = null,
+        #[ORM\Column(name: 'updated_at', type: 'datetime')]
+        public ?\DateTimeInterface $updated_at = null
     ) {
-    }
-
-    public function mapToDomainModel(): CreditNote
-    {
-        return new CreditNote(
-            $this->nota_id,
-            $this->movimiento_id,
-            $this->fecha,
-            $this->tipo_id,
-            $this->codigo_motivo,
-            $this->descripcion_motivo,
-            $this->serie,
-            $this->correlativo,
-            $this->digest,
-            $this->envio_sunat,
-            $this->mensaje_sunat,
-            $this->created_by,
-            $this->updated_by,
-            $this->created_at,
-            $this->updated_at,
-        );
-    }
-
-    public static function mapFromDomainModel(CreditNote $creditNote): CreditNoteEntity
-    {
-        return new self(
-            $creditNote->nota_id,
-            $creditNote->movimiento_id,
-            $creditNote->fecha,
-            $creditNote->tipo_id,
-            $creditNote->codigo_motivo,
-            $creditNote->descripcion_motivo,
-            $creditNote->serie,
-            $creditNote->correlativo,
-            $creditNote->digest,
-            $creditNote->envio_sunat,
-            $creditNote->mensaje_sunat,
-            $creditNote->created_by,
-            $creditNote->updated_by,
-            $creditNote->created_at,
-            $creditNote->updated_at,
-        );
     }
 }

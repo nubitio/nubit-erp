@@ -15,11 +15,10 @@ readonly class ConsultProvider implements ApiProviderInterface
 {
     public function __construct(
         private ConsultUseCase $consultUseCase
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (isset($uriVariables['dni'])) {

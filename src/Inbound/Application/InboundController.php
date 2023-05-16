@@ -29,12 +29,12 @@ class InboundController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'tipo_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => 1,
             ],
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));

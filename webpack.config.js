@@ -16,8 +16,10 @@ Encore
      * Each entry will result in one JavaScript file (e.g. main.ts)
      * and one CSS file (e.g. app.css) if your JavaScript imports CSS.
      */
+    .addStyleEntry('dx.material.dark', './assets/styles/dx.material.dark.scss')
+    .addStyleEntry('dx.material.light', './assets/styles/dx.material.light.scss')
     .addEntry('main', './assets/main.ts')
-    .addEntry('product', './assets/product.tsx')
+    .addEntry('spa', './assets/spa.tsx')
 
     // When enabled, Webpack "splits" your files into smaller pieces for greater optimization.
     .splitEntryChunks()

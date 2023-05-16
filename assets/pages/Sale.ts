@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductService} from "../components/product/product.service";
 import Customer from "./Customer";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
@@ -28,7 +27,6 @@ export default class Sale {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private productService = new ProductService();
     private saleService = new SaleService();
     private priceList: Array<PriceListItemDto> = [];
 
@@ -118,7 +116,7 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('tipo_pago')
-            .label('Metodo de pago')
+            .label('Método de pago')
             .url('api/payment-methods')
             .valueField('id')
             .textField('name')
@@ -179,7 +177,7 @@ export default class Sale {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('estado')
-            .label('Estado')
+            .label('Anulado')
             .formatter(SharedUtils.invoiceStatusFormatter)
             .align('center')
             .build());
@@ -259,7 +257,7 @@ export default class Sale {
                     ref.voidSale();
                 }
             }, {
-                text: 'Comprobante',
+                text: 'Generar Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
                     ref.makeInvoice();

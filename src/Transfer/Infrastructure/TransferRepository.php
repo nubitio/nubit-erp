@@ -22,7 +22,7 @@ class TransferRepository implements TransferRepositoryInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAll(?array $filter = null): array
     {

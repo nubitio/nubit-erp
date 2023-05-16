@@ -19,17 +19,17 @@ readonly class ProductProcessor implements ApiProcessorInterface
         public CreateProductUseCase $createUseCase,
         public UpdateProductUseCase $updateUseCase,
         public DeleteProductUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Product
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->producto_id) {
                 $this->deleteUseCase->__invoke($data->producto_id);
             }
+
             return null;
         }
 
