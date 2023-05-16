@@ -3,7 +3,7 @@ import {EventType} from "../event/EventType";
 import {bus} from "../event/EventBus";
 import FilterRule from "../common/FilterRule";
 
-export default class ThemeManager {
+class ThemeManager {
     private accentColor: string;
 
     static readonly THEME = {
@@ -84,3 +84,5 @@ export default class ThemeManager {
         return (sum >= 128) ? '#000' : '#fff';
     }
 }
+
+export const themeManager = new ThemeManager();
