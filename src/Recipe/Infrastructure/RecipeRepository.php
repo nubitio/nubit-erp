@@ -63,6 +63,12 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
         }
 
         $entity = DataMapper::map($recipe, $entity);
+        $this->deleteDetails($entity);
+        /** @var RecipeDetailEntity $detail */
+        foreach ($entity->details as $detail) {
+            $detail->recipe = $entity;
+            $detail->material = $this->entityManager->getReference(ProductEntity::class, $detail->material?->producto_id);
+        }
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Recipe::class);
@@ -76,7 +82,16 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
             return;
         }
 
+        $this->deleteDetails($entity);
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    private function deleteDetails(RecipeEntity $entity): void
+    {
+        $this->entityManager->createQuery('DELETE FROM App\RecipeDetail\Infrastructure\RecipeDetailEntity r WHERE r.recipe = :recipe')
+            ->setParameter('recipe', $entity)
+            ->execute();
     }
 }
