@@ -6,6 +6,8 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
+import {bus} from "../core/event/EventBus";
+import {messenger} from "../core/utils/Messenger";
 
 export default class Product {
     private readonly container: string;
@@ -63,7 +65,7 @@ export default class Product {
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('descripcion')
-            .label('Descripcion')
+            .label('Descripción')
             .width(100)
             .required(true)
             .build());
