@@ -1,3 +1,4 @@
+import { ColumnCellTemplateData } from "devextreme/ui/data_grid";
 import React from "react";
 
 export class SharedUtils {
@@ -22,10 +23,10 @@ export class SharedUtils {
         }
     }
 
-    static dxBooleanFormatter(data: any) {
-        if (Number(data.text) === 1) {
+    static dxBooleanFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.data.estado) === 1) {
             return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
-        } else if (Number(data.text) === 0) {
+        } else if (Number(cell.data.estado) === 0) {
             return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
         } else {
             return '';
@@ -44,18 +45,19 @@ export class SharedUtils {
         }
     }
 
-    static dxImageFormatter(data: any) {
-        if (data.value) {
+    static dxImageFormatter(cell: ColumnCellTemplateData) {
+        console.log(cell);
+        if (cell.data.imagen) {
             return React.createElement('a', {
-                href: data.value,
+                href: cell.data.imagen.path,
                 target: '_blank',
-            }, React.createElement('img', {src: data.value, style: {width: '30px', height: '30px'}}));
+            }, React.createElement('img', {src: cell.data.imagen.path, style: {width: '30px', height: '30px'}}));
         } else {
             return React.createElement('a', {
-                href: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
+                href: 'https://ui-avatars.com/api/?name=' + cell.data.descripcion,
                 target: '_blank',
             }, React.createElement('img', {
-                src: 'https://ui-avatars.com/api/?name=' + data.row.data.descripcion,
+                src: 'https://ui-avatars.com/api/?name=' + cell.data.descripcion,
                 style: {width: '30px', height: '30px'}
             }));
         }

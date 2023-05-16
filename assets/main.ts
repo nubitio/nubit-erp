@@ -6,7 +6,6 @@ import Form from "./core/form/Form";
 import {EventType} from "./core/event/EventType";
 import {FieldType} from "./core/field/FieldType";
 import {Constants} from "./core/common/Constants";
-import ThemeManager from "./core/utils/ThemeManager";
 import Customer from "./pages/Customer";
 import {Drawer} from "./core/drawer/Drawer";
 import User from "./pages/User";
@@ -48,6 +47,7 @@ import ComboOption from "./pages/ComboOption";
 import Consultation from "./pages/Consultation";
 import PatientType from "./pages/PatientType";
 import ChangePassword from "./pages/ChangePassword";
+import { themeManager } from './core/utils/ThemeManager';
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -101,7 +101,7 @@ window.app.patientType = PatientType;
 window.app.changePassword = ChangePassword;
 
 window.addEventListener('load', () => {
-    window.ThemeManager = new ThemeManager();
+    window.ThemeManager = themeManager;
 
     setupGlobalObservers();
 });

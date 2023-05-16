@@ -9,7 +9,6 @@ import { AuthProvider, useAuth } from './contexts/auth';
 import { useScreenSizeClass } from './utils/media-query';
 import { Content } from './Content';
 
-import 'devextreme/scss/bundles/dx.material.blue.light.compact.scss';
 import './styles/app.scss';
 import './styles/styles.scss';
 
