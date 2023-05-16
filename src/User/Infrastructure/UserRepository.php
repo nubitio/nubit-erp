@@ -17,12 +17,11 @@ readonly class UserRepository implements UserRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private DataLoader             $dataLoader,
-    )
-    {
+        private DataLoader $dataLoader,
+    ) {
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -46,7 +45,7 @@ readonly class UserRepository implements UserRepositoryInterface
         $entity = DataMapper::map($user, UserEntity::class);
         $role = $this->entityManager->getReference(RoleEntity::class, $user->rol?->rol_id);
         $entity->rol = $role;
-        $entity->password = password_hash((string)$user->password, PASSWORD_DEFAULT);
+        $entity->password = password_hash((string) $user->password, PASSWORD_DEFAULT);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -101,5 +100,21 @@ readonly class UserRepository implements UserRepositoryInterface
         }
 
         return DataMapper::map($entity, User::class);
+    }
+
+    /**
+     * @throws ServiceException
+     */
+    public function changePassword(int $userId, string $newPassword): void
+    {
+        $entity = $this->entityManager->find(UserEntity::class, $userId);
+
+        if (!$entity) {
+            throw new ServiceException('El usuario no existe');
+        }
+
+        $entity->password = password_hash($newPassword, PASSWORD_DEFAULT);
+
+        $this->entityManager->flush();
     }
 }

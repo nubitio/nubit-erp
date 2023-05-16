@@ -11,8 +11,7 @@ class LogoExtension extends AbstractExtension
 {
     public function __construct(
         private readonly LogoProvider $logoProvider,
-    )
-    {
+    ) {
     }
 
     public function getFunctions(): array

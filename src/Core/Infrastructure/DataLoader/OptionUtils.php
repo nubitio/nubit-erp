@@ -5,10 +5,9 @@ namespace App\Core\Infrastructure\DataLoader;
 class OptionUtils
 {
     /**
-     * @param array<string, array<string, mixed>> $context
-     * @param SortRule $sort
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addSort(array $context, SortRule $sort): array
     {
@@ -19,10 +18,9 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, array<string, mixed>> $context
-     * @param FilterRule $filter
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addFilter(array $context, FilterRule $filter): array
     {
@@ -31,7 +29,7 @@ class OptionUtils
         $filterRules = json_decode(strval($context['filters']['filterRules']), true);
         $filterRules[] = [
             'field' => $filter->field,
-            'op'    => $filter->op->value,
+            'op' => $filter->op->value,
             'value' => $filter->value,
         ];
         $context['filters']['filterRules'] = json_encode($filterRules);
@@ -40,10 +38,9 @@ class OptionUtils
     }
 
     /**
-     * @param array<string, array<string, mixed>> $context
-     * @param JoinRule $join
+     * @param array<string, array<string, bool|float|int|string|null>> $context
      *
-     * @return array<string, array<string, mixed>>
+     * @return array<string, array<string, bool|float|int|string|null>>
      */
     public static function addJoin(array $context, JoinRule $join): array
     {
@@ -51,9 +48,9 @@ class OptionUtils
         /** @var array<int, array<string, mixed>> $joinRules */
         $joinRules = json_decode(strval($context['filters']['joinRules']), true);
         $joinRules[] = [
-            'entity'    => $join->entity,
-            'alias'     => $join->alias,
-            'type'      => $join->type,
+            'entity' => $join->entity,
+            'alias' => $join->alias,
+            'type' => $join->type,
             'condition' => $join->condition,
         ];
         $context['filters']['joinRules'] = json_encode($joinRules);

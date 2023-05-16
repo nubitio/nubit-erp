@@ -2,17 +2,21 @@
 
 namespace App\CreditNote\Domain;
 
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+
 interface CreditNoteRepositoryInterface
 {
     /**
-     * @param array<int, array<string, mixed>>|null $filter
-     * @return array<string, mixed>
+     * @return PaginatorInterface<CreditNote>
      */
-    public function getAll(?array $filter = null): array;
+    public function getAll(Options $options): PaginatorInterface;
 
-    public function insert(CreditNote $creditNote): void;
+    public function getOne(string $id): ?CreditNote;
 
-    public function update(CreditNote $creditNote): void;
+    public function insert(CreditNote $creditNote): CreditNote;
+
+    public function update(CreditNote $creditNote): CreditNote;
 
     public function delete(string $id): void;
 }

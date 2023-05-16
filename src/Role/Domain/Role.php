@@ -13,7 +13,6 @@ class Role
         public ?int $rol_id = null,
         #[SerializedName('descripcion')]
         public ?string $descripcion = null
-    )
-    {
+    ) {
     }
 }

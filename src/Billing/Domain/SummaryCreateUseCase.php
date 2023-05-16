@@ -9,13 +9,11 @@ use App\Invoice\Domain\GetOneVoucherUseCase;
 
 readonly class SummaryCreateUseCase
 {
-
     public function __construct(
         private SummaryRepositoryInterface $summaryRepository,
-        private GetOneVoucherUseCase       $getOneVoucherUseCase,
-        private BillUtilsInterface         $invoiceUtils
-    )
-    {
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private BillUtilsInterface $invoiceUtils
+    ) {
     }
 
     /**
@@ -26,7 +24,7 @@ readonly class SummaryCreateUseCase
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $summaryDetail = new SummaryDetail();
         $summaryDetail->tipoDoc = strval($voucher->voucher_type);
-        $summaryDetail->serieNro = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $summaryDetail->serieNro = $voucher->voucher_series.'-'.$voucher->voucher_number;
         $summaryDetail->estado = '3';
         $summaryDetail->clienteTipo = strval($voucher->customer_doc_type);
         $summaryDetail->clienteNro = strval($voucher->customer_doc_number);
@@ -38,7 +36,7 @@ readonly class SummaryCreateUseCase
         $summaryDetail->mtoIgv = floatval($voucher->voucher_tax_amount);
         $summary = new Summary();
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
-        $summary->correlativo = (string)($lastCorrelative + 1);
+        $summary->correlativo = (string) ($lastCorrelative + 1);
         $summary->fecGeneracion = new \DateTime(strval($voucher->voucher_date));
         $summary->fecResumen = new \DateTime(strval($voucher->voucher_date));
         $summary->company = $this->invoiceUtils->getCompany();

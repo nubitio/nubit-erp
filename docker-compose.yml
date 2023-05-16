@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   web:
+    container_name: efact-web
     build: .
     ports:
       - '8080:80'
@@ -25,3 +26,9 @@ services:
     volumes:
       - '.:/home/node/app'
     stdin_open: true
+  redis:
+    image: redis:6.2.6
+    ports:
+      - '6379:6379'
+    volumes:
+      - '~/Apps/redis:/data'

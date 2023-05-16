@@ -19,17 +19,17 @@ readonly class CompanyProcessor implements ApiProcessorInterface
         public CreateCompanyUseCase $createUseCase,
         public UpdateCompanyUseCase $updateUseCase,
         public DeleteCompanyUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Company
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->empresa_id) {
                 $this->deleteUseCase->__invoke($data->empresa_id);
             }
+
             return null;
         }
 

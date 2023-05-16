@@ -23,9 +23,8 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly GetTokenUseCase       $getTokenUseCase
-    )
-    {
+        private readonly GetTokenUseCase $getTokenUseCase
+    ) {
     }
 
     public function supports(Request $request): ?bool
@@ -57,7 +56,7 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $user = $token->getUser();
         $session->set('user_id', $user->usuario_id);
         $session->set('username', $user->username);
-        $session->set('role_id', $user->rol?->rol_id);
+        $session->set('role_id', $user->rol?->rol_id ?? 0);
 
         $token = $this->getTokenUseCase->__invoke($user);
 

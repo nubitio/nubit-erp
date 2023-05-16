@@ -21,11 +21,10 @@ readonly class VoucherTypeProvider implements ApiProviderInterface
     public function __construct(
         private GetAllVoucherTypeUseCase $getAllUseCase,
         private GetOneVoucherTypeUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

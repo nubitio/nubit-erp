@@ -29,16 +29,16 @@ class OutboundController extends BaseController
         return $this->json($getAllUseCase([
             [
                 'field' => 'numero',
-                'op'    => 'isnull',
+                'op' => 'isnull',
             ],
             [
                 'field' => 'tipo_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => 2,
             ],
             [
                 'field' => 'local_id',
-                'op'    => 'equal',
+                'op' => 'equal',
                 'value' => $request->getSession()->get('branch_id'),
             ],
         ]));

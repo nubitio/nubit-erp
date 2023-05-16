@@ -14,29 +14,39 @@ readonly class MenuBuilder
 
     /**
      * @return array<int, array<string, mixed>>
+     *
      * @throws Exception
      */
     public function buildMenuForRole(int $roleId): array
     {
         $data = $this->getMenuForRole($roleId);
         $menu = [];
-        $i = 0;
+
         foreach ($data as $parent) {
-            if (0 == $parent['parent_id'] && '' == $parent['link']) {
+            if (0 == $parent['parent_id'] && empty($parent['link'])) {
                 $items = [];
-                $j = 0;
+
                 foreach ($data as $child) {
-                    if ($parent['menu_id'] == $child['parent_id']) {
-                        $items[$j] = ['text' => $child['descripcion'], 'iconCls' => $child['icon'], 'url' => $child['link']];
-                        ++$j;
+                    if ($child['parent_id'] == $parent['menu_id']) {
+                        $items[] = [
+                            'text' => $child['descripcion'],
+                            'path' => $child['link'],
+                        ];
                     }
                 }
-                $menu[$i] = ['text' => $parent['descripcion'], 'iconCls' => $parent['icon'], 'children' => $items];
-                ++$i;
+
+                $menu[] = [
+                    'text' => $parent['descripcion'],
+                    'icon' => $parent['icon'],
+                    'items' => $items,
+                ];
             } else {
-                if (0 == $parent['parent_id'] && '' != $parent['link']) {
-                    $menu[$i] = ['text' => $parent['descripcion'], 'iconCls' => $parent['icon'], 'url' => $parent['link']];
-                    ++$i;
+                if (0 == $parent['parent_id'] && !empty($parent['link'])) {
+                    $menu[] = [
+                        'text' => $parent['descripcion'],
+                        'icon' => $parent['icon'],
+                        'path' => $parent['link'],
+                    ];
                 }
             }
         }
@@ -46,6 +56,7 @@ readonly class MenuBuilder
 
     /**
      * @return array<int, array<string, mixed>>
+     *
      * @throws Exception
      */
     public function getMenuForRole(int $roleId): array

@@ -16,20 +16,22 @@ final class MediaNormalizer implements NormalizerInterface, NormalizerAwareInter
     private const ALREADY_CALLED = 'MEDIA_NORMALIZER_ALREADY_CALLED';
 
     /**
-     * @param Media $object
+     * @param Media                $object
      * @param array<string, mixed> $context
+     *
      * @return array<string, mixed>|\ArrayObject<int, Media>|bool|float|int|string|null
+     *
      * @throws ExceptionInterface
      */
     public function normalize($object, string $format = null, array $context = []): array|float|\ArrayObject|bool|int|string|null
     {
         $context[self::ALREADY_CALLED] = true;
 
-        $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
+        $baseUrl = $_ENV['S3_ENDPOINT'].'/'.$_ENV['S3_BUCKET_NAME'].'/';
 
         $folder = Constants::IMAGE_UPLOAD_DIR;
 
-        $object->path = $baseUrl . $folder . $object->path;
+        $object->path = $baseUrl.$folder.$object->path;
 
         return $this->normalizer->normalize($object, $format, $context);
     }

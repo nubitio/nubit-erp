@@ -21,10 +21,9 @@ class VoidedRepository implements VoidedRepositoryInterface
     private SerializerService $serializer;
 
     public function __construct(
-        Connection        $connection,
+        Connection $connection,
         SerializerService $serializer
-    )
-    {
+    ) {
         $this->connection = $connection;
         $this->serializer = $serializer;
     }
@@ -35,6 +34,7 @@ class VoidedRepository implements VoidedRepositoryInterface
     public function getLastCorrelativeByDate(string $date): int
     {
         $sql = 'SELECT COUNT(*) AS correlative FROM vw_movimiento WHERE estado = 2 AND fecha = ?';
+        /** @var false|array<string, bool|float|int|string|null> $result */
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
 
         if (!$result) {
@@ -58,7 +58,7 @@ class VoidedRepository implements VoidedRepositoryInterface
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
-            'body'    => $requestBody,
+            'body' => $requestBody,
         ]);
         $responseBody = $response->getContent();
         /** @var DocumentResponse $documentResponse */
@@ -76,7 +76,7 @@ class VoidedRepository implements VoidedRepositoryInterface
     public function getStatus(string $ticket, string $ruc): StatusResponse
     {
         $httpClient = HttpClient::create();
-        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/voided/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
+        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/voided/status?token=123456&ticket='.$ticket.'&ruc='.$ruc);
         $responseBody = $response->getContent();
         /** @var StatusResponse $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusResponse::class, 'json');

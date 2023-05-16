@@ -6,8 +6,7 @@ readonly class GetAllByBranchUseCase
 {
     public function __construct(
         private WarehouseRepositoryInterface $warehouseRepository,
-    )
-    {
+    ) {
     }
 
     /** @return Warehouse[] */

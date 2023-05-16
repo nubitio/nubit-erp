@@ -49,6 +49,7 @@ export default class Form {
             iframe: false,
             onSubmit: function () {
                 let valid = ref.validate();
+                console.log('valid', valid)
                 if (valid) {
                     bus.emit(ref.events.LOADING, true);
                     if (ref.options.url) {
@@ -319,6 +320,12 @@ export default class Form {
                 case FieldType.DATE:
                     this.buildDateInput(field);
                     break;
+                case FieldType.TIME:
+                    this.buildTimeInput(field);
+                    break;
+                case FieldType.TIME_SPINNER:
+                    this.buildTimeSpinnerInput(field)
+                    break;
                 case FieldType.NUMBER:
                     this.buildNumberInput(field);
                     break;
@@ -452,6 +459,38 @@ export default class Form {
         this.formFields[field.name] = input;
     }
 
+    buildTimeInput(field: Field) {
+        let input = $('#' + field.name);
+        input.timepicker({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            hour24: true,
+            required: field.required,
+            onChange: (newValue: string, oldValue: string) => {
+                if (field.onChange) {
+                    field.onChange(newValue, oldValue, field);
+                }
+            }
+        });
+        this.formFields[field.name] = input;
+    }
+
+    buildTimeSpinnerInput(field: Field) {
+        let input = $('#' + field.name);
+        input.timespinner({
+            width: '100%',
+            label: field.label,
+            labelPosition: 'top',
+            required: field.required,
+            hour12: false,
+            showSeconds: false,
+            ampm: ['AM','PM'],
+            highlight: 0
+        });
+        this.formFields[field.name] = input;
+    }
+
     buildNumberInput(field: Field) {
         let input = $('#' + field.name);
         input.numberbox({
@@ -460,6 +499,7 @@ export default class Form {
             label: field.label,
             labelPosition: 'top',
             min: 0,
+            precision: field.precision ?? 0,
             validType: field.validators,
             onChange: (newValue: number, oldValue: number) => {
                 if (field.onChange) {
@@ -583,6 +623,7 @@ export default class Form {
             textField: field.textField,
             panelHeight: 200,
             limitToList: true,
+            formatter: field.formatter,
             onSelect: (record: any) => {
                 if (field.onSelect) {
                     field.onSelect(record, field);
@@ -590,6 +631,9 @@ export default class Form {
             },
             required: field.required,
         });
+        if (field.hidden) {
+            input.combobox('hide');
+        }
         this.formFields[field.name] = input;
     }
 

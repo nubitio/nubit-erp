@@ -1,0 +1,14 @@
+{% extends 'layout/base.html.twig' %}
+{% block title %}Cambiar contraseña{% endblock %}
+{% block body %}
+    <div id="wrapper" class="wrapper"></div>
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.addEventListener('load', function () {
+            const changePassword = new window.app.changePassword('wrapper');
+            changePassword.render();
+        });
+    </script>
+{% endblock %}

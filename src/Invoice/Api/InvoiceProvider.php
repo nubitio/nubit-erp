@@ -22,8 +22,7 @@ readonly class InvoiceProvider implements ApiProviderInterface
     public function __construct(
         private GetAllInvoiceUseCase $getAllUseCase,
         private GetOneInvoiceUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */

@@ -4,8 +4,8 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
-import {ProductService} from "../components/product/product.service";
 import {StorageUtils} from "../core/utils/StorageUtils";
+import { productService } from "../services/product.service";
 
 export default class Transfer {
     private readonly container: string;
@@ -14,7 +14,6 @@ export default class Transfer {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private productService = new ProductService();
 
     static readonly ROUTES = {
         ADD: 'transfer/add',
@@ -109,7 +108,7 @@ export default class Transfer {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((response) => {
+        productService.getProducts('1').subscribe((response) => {
             this.detailFields.forEach((field) => {
                 if (field.name === 'producto_id') {
                     field.data = response.data;

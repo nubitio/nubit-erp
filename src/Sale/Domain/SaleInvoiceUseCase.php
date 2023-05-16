@@ -6,7 +6,7 @@ use App\Billing\Domain\BillSendUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
@@ -15,15 +15,14 @@ use League\Flysystem\FilesystemException;
 readonly class SaleInvoiceUseCase
 {
     public function __construct(
-        private GetOneSaleUseCase          $getOneSaleUseCase,
-        private GetOneVoucherUseCase       $getOneVoucherUseCase,
-        private UpdateSaleUseCase          $updateSaleUseCase,
-        private BillSendUseCase            $billSendUseCase,
+        private GetOneSaleUseCase $getOneSaleUseCase,
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private UpdateSaleUseCase $updateSaleUseCase,
+        private BillSendUseCase $billSendUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
-        private FileManager                $fileManager,
-        private SettingsService            $settings
-    )
-    {
+        private FileManager $fileManager,
+        private TenantAwareSettingsService $settings
+    ) {
     }
 
     /**
@@ -39,17 +38,17 @@ readonly class SaleInvoiceUseCase
         $this->invoiceRepository->create($sale);
         $invoice = $this->invoiceRepository->getOne($saleId);
         $sale->has_invoice = true;
-        $sale->invoice = $invoice->serie . '-' . $invoice->numero;
+        $sale->invoice = $invoice->serie.'-'.$invoice->numero;
         $sale->total = $invoice->total;
         $this->updateSaleUseCase->__invoke($sale);
         $response = $this->billSendUseCase->__invoke($saleId);
         $invoice->digest = $response->hash;
-        $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
+        $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
         if ($response->sunatResponse->success) {
             $invoice->envio_sunat = $response->sunatResponse->cdrResponse->code;
             $invoice->mensaje_sunat = $response->sunatResponse->cdrResponse->description;
             $cdr = base64_decode($response->sunatResponse->cdrZip);
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . 'R-' . $response->name . '.zip', $cdr);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/R-'.$response->name.'.zip', $cdr);
             $this->invoiceRepository->update($invoice);
         } else {
             $invoice->envio_sunat = $response->sunatResponse->error->code;

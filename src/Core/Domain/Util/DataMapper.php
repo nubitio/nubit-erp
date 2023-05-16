@@ -10,20 +10,25 @@ class DataMapper
     /**
      * @template T of object
      *
-     * @param mixed $input
      * @param T|class-string<T> $output
+     * @param array<string>     $ignoredFields
      *
      * @return T
+     *
      * @phpstan-return T
      */
-    public static function map(mixed $input, mixed $output): object
+    public static function map(mixed $input, mixed $output, array $ignoredFields = []): object
     {
         if (is_string($output)) {
             $output = new $output();
         }
 
-        foreach (get_object_vars((object)$input) as $key => $value) {
-            if ($value === null) {
+        foreach (get_object_vars((object) $input) as $key => $value) {
+            if (null === $value) {
+                continue;
+            }
+
+            if (in_array($key, $ignoredFields, true)) {
                 continue;
             }
 
@@ -44,14 +49,14 @@ class DataMapper
                         /** @var object $item */
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType($output, strval($key));
-                            if ($type === null) {
+                            if (null === $type) {
                                 throw new \RuntimeException('Type not found');
                             }
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
                         $type = ReflectionUtil::getPropertyType($output, strval($key));
-                        if ($type === null) {
+                        if (null === $type) {
                             throw new \RuntimeException('Type not found');
                         }
                         $output->$key = self::map($value, $type);
@@ -59,7 +64,7 @@ class DataMapper
                 } else {
                     if (is_array($value)) {
                         $type = ReflectionUtil::getPropertyType($output, strval($key));
-                        if ($type === null) {
+                        if (null === $type) {
                             throw new \RuntimeException('Type not found');
                         }
                         $output->$key = [];

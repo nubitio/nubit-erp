@@ -9,7 +9,6 @@ use App\Sale\Domain\Sale;
 interface InvoiceRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Invoice>
      */
     public function getAll(Options $options): PaginatorInterface;

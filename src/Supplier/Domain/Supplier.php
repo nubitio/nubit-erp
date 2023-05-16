@@ -21,7 +21,6 @@ class Supplier
         public ?string $telefono = null,
         #[SerializedName('estado')]
         public ?bool $estado = false
-    )
-    {
+    ) {
     }
 }

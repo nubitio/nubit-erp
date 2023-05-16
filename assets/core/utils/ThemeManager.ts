@@ -1,8 +1,9 @@
 import {SharedUtils} from "./SharedUtils";
 import {EventType} from "../event/EventType";
 import {bus} from "../event/EventBus";
+import FilterRule from "../common/FilterRule";
 
-export default class ThemeManager {
+class ThemeManager {
     private accentColor: string;
 
     static readonly THEME = {
@@ -10,10 +11,7 @@ export default class ThemeManager {
         DARK: 'dark'
     };
 
-    static readonly CLASS = {
-        LIGHT: 'light-theme',
-        DARK: 'dark-theme',
-    }
+    static readonly DARK_MODE = 'dark-mode';
 
     constructor() {
         this.accentColor = "";
@@ -26,9 +24,7 @@ export default class ThemeManager {
         const theme = localStorage.getItem('theme');
 
         if (theme === ThemeManager.THEME.DARK) {
-            document.body.classList.add(ThemeManager.CLASS.DARK);
-        } else {
-            document.body.classList.add(ThemeManager.CLASS.LIGHT);
+            document.body.classList.add(ThemeManager.DARK_MODE);
         }
 
         bus.emit(EventType.THEME_CHANGE, theme);
@@ -40,12 +36,10 @@ export default class ThemeManager {
 
         if (actualTheme === ThemeManager.THEME.DARK) {
             localStorage.setItem('theme', newTheme);
-            document.body.classList.remove(ThemeManager.CLASS.DARK);
-            document.body.classList.add(ThemeManager.CLASS.LIGHT);
+            document.body.classList.remove(ThemeManager.DARK_MODE);
         } else {
             localStorage.setItem('theme', newTheme);
-            document.body.classList.remove(ThemeManager.CLASS.LIGHT);
-            document.body.classList.add(ThemeManager.CLASS.DARK);
+            document.body.classList.add(ThemeManager.DARK_MODE);
         }
 
         bus.emit(EventType.THEME_CHANGE, newTheme);
@@ -58,10 +52,15 @@ export default class ThemeManager {
             this.setupAppColors();
         }
 
-        fetch('api/settings/find/app_theme_accent_color')
+        let filter: FilterRule = {
+            field: 'name',
+            op: 'equal',
+            value: 'app_theme_accent_color'
+        }
+        fetch('api/settings?filterRules=[' + JSON.stringify(filter) + ']')
             .then(response => response.json())
             .then(result => {
-                this.accentColor = result.value;
+                this.accentColor = result[0].value;
                 localStorage.setItem('accentColor', this.accentColor);
                 this.setupAppColors();
             })
@@ -85,3 +84,5 @@ export default class ThemeManager {
         return (sum >= 128) ? '#000' : '#fff';
     }
 }
+
+export const themeManager = new ThemeManager();

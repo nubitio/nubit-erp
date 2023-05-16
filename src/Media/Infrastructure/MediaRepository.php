@@ -16,10 +16,9 @@ readonly class MediaRepository implements MediaRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private FilesystemOperator     $uploadsFilesystem,
-        private LoggerInterface        $logger
-    )
-    {
+        private FilesystemOperator $uploadsFilesystem,
+        private LoggerInterface $logger
+    ) {
     }
 
     public function getOne(string $id): ?Media
@@ -69,7 +68,7 @@ readonly class MediaRepository implements MediaRepositoryInterface
         }
 
         try {
-            $this->uploadsFilesystem->delete(Constants::IMAGE_UPLOAD_DIR . $entity->path);
+            $this->uploadsFilesystem->delete(Constants::IMAGE_UPLOAD_DIR.$entity->path);
         } catch (FilesystemException $e) {
             $this->logger->alert($e->getMessage());
         }

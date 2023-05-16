@@ -8,7 +8,6 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 interface CategoryRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Category>
      */
     public function getAll(Options $options): PaginatorInterface;

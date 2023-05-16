@@ -14,11 +14,10 @@ readonly class VoucherProcessor implements ApiProcessorInterface
 {
     public function __construct(
         public SaleInvoiceUseCase $saleInvoiceUseCase
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Voucher
     {
         if (!$data->sale_id) {

@@ -15,7 +15,6 @@ class GetAllVoucherTypeUseCase
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<VoucherType>
      */
     public function __invoke(Options $options): PaginatorInterface

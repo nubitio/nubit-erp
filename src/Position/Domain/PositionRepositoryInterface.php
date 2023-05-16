@@ -2,13 +2,12 @@
 
 namespace App\Position\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface PositionRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Position>
      */
     public function getAll(Options $options): PaginatorInterface;

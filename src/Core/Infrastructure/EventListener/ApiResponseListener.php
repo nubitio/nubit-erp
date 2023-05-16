@@ -16,7 +16,7 @@ class ApiResponseListener
         if ($data instanceof PaginatorInterface) {
             $response = $event->getResponse();
             $response->headers->add([
-                'X-Total-Count' => $data->getTotalItems()
+                'X-Total-Count' => $data->getTotalItems(),
             ]);
         }
     }

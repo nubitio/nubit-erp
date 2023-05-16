@@ -16,9 +16,8 @@ class TenantManager extends AbstractController
     public function __construct(
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir
-    )
-    {
-        $this->configPath = $this->projectDir . '/config/tenants.json';
+    ) {
+        $this->configPath = $this->projectDir.'/config/tenants.json';
 
         if (!file_exists($this->configPath)) {
             file_put_contents($this->configPath, '[]');
@@ -26,7 +25,7 @@ class TenantManager extends AbstractController
 
         $content = file_get_contents($this->configPath);
 
-        if ($content === false) {
+        if (false === $content) {
             throw new \RuntimeException('Could not read config file');
         }
 
@@ -39,7 +38,7 @@ class TenantManager extends AbstractController
         $tenants = json_decode($this->configContent, true);
 
         return $this->render('admin/tenant/index.html.twig', [
-            'tenants' => $tenants
+            'tenants' => $tenants,
         ]);
     }
 
@@ -52,7 +51,7 @@ class TenantManager extends AbstractController
         $data[] = [
             'id' => count($data) + 1,
             'name' => $request->get('name'),
-            'connection' => $request->get('connection')
+            'connection' => $request->get('connection'),
         ];
 
         file_put_contents($this->configPath, json_encode($data));
