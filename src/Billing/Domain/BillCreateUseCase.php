@@ -98,7 +98,7 @@ readonly class BillCreateUseCase
 
         $bill->details = $details;
         $bill->legends = [$legend];
-        $bill->obs = strval($voucher->voucher_notes ?? null);
+        $bill->obs = strval($voucher->voucher_note ?? null);
 
         return $bill;
     }

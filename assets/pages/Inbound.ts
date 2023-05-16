@@ -5,9 +5,9 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductService} from "../components/product/product.service";
 import {bus} from "../core/event/EventBus";
 import NumberUtils from "../core/utils/NumberUtils";
+import { productService } from "../services/product.service";
 
 export default class Inbound {
     private readonly container: string;
@@ -16,7 +16,6 @@ export default class Inbound {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private productService = new ProductService();
 
     static readonly ROUTES = {
         ADD: 'inbound/add',
@@ -157,7 +156,7 @@ export default class Inbound {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((response) => {
+        productService.getProducts('1').subscribe((response) => {
             this.detailFields.forEach((field) => {
                 if (field.name === 'producto_id') {
                     field.data = response.data;

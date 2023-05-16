@@ -3,7 +3,7 @@ import {ToolbarItem} from "devextreme-react/popup";
 import {useCallback, useEffect, useState} from "react";
 import {bus} from "../../core/event/EventBus";
 import NumberUtils from "../../core/utils/NumberUtils";
-import "../../styles/dx.material.efact.scss"
+import "../../styles/dx.material.dark.scss"
 
 export enum DiscountDialogEvent {
     OPEN = 'discount:dialog:open',
@@ -48,9 +48,9 @@ export const DiscountDialog = () => {
                 dragEnabled={false}
                 hideOnOutsideClick={true}
                 showTitle={true}
-                title="Discount"
+                title="Descuento"
                 width={420}
-                height={360}
+                height={300}
             >
                 <ToolbarItem
                     key="apply-button"
@@ -58,7 +58,7 @@ export const DiscountDialog = () => {
                     widget="dxButton"
                     toolbar="bottom"
                     options={{
-                        text: "Apply",
+                        text: "Aceptar",
                         onClick: () => onApply(discountPercent)
                     }}
                 />
