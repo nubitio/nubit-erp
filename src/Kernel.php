@@ -16,4 +16,10 @@ class Kernel extends BaseKernel
         parent::build($container);
         $container->addCompilerPass(new RemoveUnwantedServices());
     }
+
+    public function boot(): void
+    {
+        date_default_timezone_set('America/Lima');
+        parent::boot();
+    }
 }
