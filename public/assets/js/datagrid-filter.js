@@ -1,8 +1,3 @@
-/**
- * DataGrid Filter for jQuery EasyUI
- * version: 1.0.6
- */
-
 (function($){
 	function getPluginName(target){
 		if ($(target).data('treegrid')){
@@ -15,7 +10,6 @@
 	var autoSizeColumn1 = $.fn.datagrid.methods.autoSizeColumn;
 	var loadDataMethod1 = $.fn.datagrid.methods.loadData;
 	var appendMethod1 = $.fn.datagrid.methods.appendRow;
-	var insertMethod1 = $.fn.datagrid.methods.insertRow;
 	var deleteMethod1 = $.fn.datagrid.methods.deleteRow;
 	$.extend($.fn.datagrid.methods, {
 		autoSizeColumn: function(jq, field){
@@ -54,23 +48,6 @@
 			});
 			return result;
 		},
-		insertRow: function(jq, param){
-			var result = insertMethod1.call($.fn.datagrid.methods, jq, param);
-			jq.each(function(){
-				var state = $(this).data('datagrid');
-				if (state.filterSource){
-					state.filterSource.total++;
-					if (state.filterSource.rows != state.data.rows){
-						var index = param.index || 0;
-						if (index > state.filterSource.rows.length){
-							index = state.filterSource.rows.length;
-						}
-						state.filterSource.rows.splice(index, 0, param.row);
-					}
-				}
-			});
-			return result;
-		},
 		deleteRow: function(jq, index){
 			jq.each(function(){
 				var state = $(this).data('datagrid');
@@ -90,7 +67,7 @@
 					}
 				}
 			});
-			return deleteMethod1.call($.fn.datagrid.methods, jq, index);
+			return deleteMethod1.call($.fn.datagrid.methods, jq, index);		
 		}
 	});
 
@@ -174,7 +151,6 @@
 		filterBtnPosition: 'right',
 		filterPosition: 'bottom',
 		remoteFilter: false,
-		clientPaging: true,
 		showFilterBar: true,
 		filterDelay: 400,
 		filterRules: [],
@@ -224,7 +200,7 @@
 				};
 			}
 			return data;
-
+			
 			function isMatch(row, index){
 				if (opts.val == $.fn.combogrid.defaults.val){
 					opts.val = extendedOptions.val;
@@ -239,7 +215,7 @@
 					// if (col && col.formatter){
 					// 	source = col.formatter(row[rule.field], row, index);
 					// }
-
+					
 					var col = dg.datagrid('getColumnOption', rule.field);
 					var formattedValue = (col && col.formatter) ? col.formatter(row[rule.field], row, index) : undefined;
 					var source = opts.val.call(dg[0], row, rule.field, formattedValue);
@@ -290,19 +266,16 @@
 		},
 		defaultFilterType: 'text',
 		defaultFilterOperator: 'contains',
-		defaultFilterTrigger: 'keydown',
 		defaultFilterOptions: {
 			onInit: function(target){
 				var name = getPluginName(target);
 				var opts = $(target)[name]('options');
-				var filterOpts = this.filterOptions;
 				var field = $(this).attr('name');
 				var input = $(this);
 				if (input.data('textbox')){
 					input = input.textbox('textbox');
 				}
-				var trigger = filterOpts.trigger || opts.defaultFilterTrigger;
-				input.off('.filter').on(trigger+'.filter', function(e){
+				input.unbind('.filter').bind('keydown.filter', function(e){
 					var t = $(this);
 					if (this.timer){
 						clearTimeout(this.timer);
@@ -318,16 +291,11 @@
 				function _doFilter(){
 					var rule = $(target)[name]('getFilterRule', field);
 					var value = input.val();
-					if (filterOpts.options.prompt && filterOpts.options.prompt==value){
-						value = '';
-					}
 					if (value != ''){
 						if ((rule && rule.value!=value) || !rule){
-							var op = rule ? rule.op : (filterOpts ? filterOpts.defaultFilterOperator||opts.defaultFilterOperator : opts.defaultFilterOperator);
 							$(target)[name]('addFilterRule', {
 								field: field,
-								// op: opts.defaultFilterOperator,
-								op: op,
+								op: opts.defaultFilterOperator,
 								value: value
 							});
 							$(target)[name]('doFilter');
@@ -352,7 +320,7 @@
 	};
 	$.extend($.fn.datagrid.defaults, extendedOptions);
 	$.extend($.fn.treegrid.defaults, extendedOptions);
-
+	
 	// filter types
 	$.fn.datagrid.defaults.filters = $.extend({}, $.fn.datagrid.defaults.editors, {
 		label: {
@@ -371,7 +339,7 @@
 		}
 	});
 	$.fn.treegrid.defaults.filters = $.fn.datagrid.defaults.filters;
-
+	
 	// filter operators
 	$.fn.datagrid.defaults.operators = {
 		nofilter: {
@@ -439,7 +407,7 @@
 		}
 	};
 	$.fn.treegrid.defaults.operators = $.fn.datagrid.defaults.operators;
-
+	
 	function resizeFilter(target, field){
 		var toFixColumnSize = false;
 		var dg = $(target);
@@ -463,7 +431,7 @@
 			}
 		});
 		if (toFixColumnSize){
-			$(target).datagrid('fixColumnSize');
+			$(target).datagrid('fixColumnSize');			
 		}
 
 		function _getContentWidth(cc){
@@ -474,12 +442,12 @@
 			return w;
 		}
 	}
-
+	
 	function getFilterComponent(target, field){
 		var header = $(target).datagrid('getPanel').find('div.datagrid-header');
 		return header.find('tr.datagrid-filter-row td[field="'+field+'"] .datagrid-filter');
 	}
-
+	
 	/**
 	 * get filter rule index, return -1 if not found.
 	 */
@@ -504,7 +472,7 @@
 			return null;
 		}
 	}
-
+	
 	function addFilterRule(target, param){
 		var name = getPluginName(target);
 		var opts = $(target)[name]('options');
@@ -529,7 +497,7 @@
 					value = input.textbox('getText');
 				}
 				if (value != param.value){
-					input[0].filter.setValue(input, param.value);
+					input[0].filter.setValue(input, param.value);					
 				}
 			}
 			var menu = input[0].menu;
@@ -543,7 +511,7 @@
 			}
 		}
 	}
-
+	
 	function removeFilterRule(target, field){
 		var name = getPluginName(target);
 		var dg = $(target);
@@ -559,7 +527,7 @@
 			var fields = dg.datagrid('getColumnFields',true).concat(dg.datagrid('getColumnFields'));
 			_clear(fields);
 		}
-
+		
 		function _clear(fields){
 			for(var i=0; i<fields.length; i++){
 				var input = getFilterComponent(target, fields[i]);
@@ -573,7 +541,7 @@
 			}
 		}
 	}
-
+	
 	function doFilter(target){
 		var name = getPluginName(target);
 		var state = $.data(target, name);
@@ -589,7 +557,7 @@
 			$(target)[name]('loadData', state.filterSource || state.data);
 		}
 	}
-
+	
 	function translateTreeData(target, children, pid){
 		var opts = $(target).treegrid('options');
 		if (!children || !children.length){return []}
@@ -600,8 +568,7 @@
 			rows = rows.concat(translateTreeData(target, item.children, item[opts.idField]));
 		});
 		$.map(rows, function(row){
-			// row.children = undefined;
-			delete row.children;
+			row.children = undefined;
 		});
 		return rows;
 	}
@@ -624,7 +591,7 @@
 				rows: rows
 			}
 		}
-		if (!opts.remoteFilter || opts.clientPaging){
+		if (!opts.remoteFilter){
 			if (!state.filterSource){
 				state.filterSource = data;
 			} else {
@@ -668,51 +635,46 @@
 				rows: state.filterSource.rows,
 				footer: state.filterSource.footer||[]
 			});
-			data.filterRows = data.rows;
-		}
-		if (opts.pagination && opts.clientPaging){
-			var dg = $(target);
-			var pager = dg[name]('getPager');
-			pager.pagination({
-				onSelectPage:function(pageNum, pageSize){
-					opts.pageNumber = pageNum;
-					opts.pageSize = pageSize;
-					pager.pagination('refresh',{
-						pageNumber:pageNum,
-						pageSize:pageSize
-					});
-					// dg[name]('loadData', state.filterSource);
-					if (opts.clientPaging){
-						dg[name]('loadData', state.filterSource);
-					} else {
+
+			if (opts.pagination){
+				var dg = $(target);
+				var pager = dg[name]('getPager');
+				pager.pagination({
+					onSelectPage:function(pageNum, pageSize){
+	                    opts.pageNumber = pageNum;
+	                    opts.pageSize = pageSize;
+	                    pager.pagination('refresh',{
+	                        pageNumber:pageNum,
+	                        pageSize:pageSize
+	                    });
+	                    //dg.datagrid('loadData', state.filterSource);
+	                    dg[name]('loadData', state.filterSource);
+					},
+					onBeforeRefresh:function(){
 						dg[name]('reload');
+						return false;
 					}
-				},
-				onBeforeRefresh:function(){
-					dg[name]('reload');
-					return false;
-				}
-			});
-			if (name == 'datagrid'){
-				var pd = getPageData(data.rows);
-				opts.pageNumber = pd.pageNumber;
-				data.rows = pd.rows;
-			} else {
-				var topRows = [];
-				var childRows = [];
-				$.map(data.rows, function(row){
-					row._parentId ? childRows.push(row) : topRows.push(row);
 				});
-				data.total = topRows.length;
-				var pd = getPageData(topRows);
-				opts.pageNumber = pd.pageNumber;
-				data.rows = pd.rows.concat(childRows);
+				if (name == 'datagrid'){
+					var pd = getPageData(data.rows);
+					opts.pageNumber = pd.pageNumber;
+					data.rows = pd.rows;
+				} else {
+			        var topRows = [];
+			        var childRows = [];
+			        $.map(data.rows, function(row){
+			        	row._parentId ? childRows.push(row) : topRows.push(row);
+			        });
+			        data.total = topRows.length;
+			        var pd = getPageData(topRows);
+			        opts.pageNumber = pd.pageNumber;
+			        data.rows = pd.rows.concat(childRows);
+				}
 			}
+			$.map(data.rows, function(row){
+				row.children = undefined;
+			});
 		}
-		$.map(data.rows, function(row){
-			// row.children = undefined;
-			delete row.children;
-		});
 		return data;
 
 		function getPageData(dataRows){
@@ -733,7 +695,7 @@
 			};
 		}
 	}
-
+	
 	function init(target, filters){
 		filters = filters || [];
 		var name = getPluginName(target);
@@ -744,7 +706,7 @@
 		}
 		opts.filterCache = opts.filterCache || {};
 		var dgOpts = $.data(target, 'datagrid').options;
-
+		
 		var onResize = dgOpts.onResize;
 		dgOpts.onResize = function(width,height){
 			resizeFilter(target);
@@ -754,7 +716,7 @@
 		dgOpts.onBeforeSortColumn = function(sort, order){
 			var result = onBeforeSortColumn.call(this, sort, order);
 			if (result != false){
-				opts.isSorting = true;
+				opts.isSorting = true;				
 			}
 			return result;
 		};
@@ -763,22 +725,14 @@
 		opts.onResizeColumn = function(field,width){
 			var fc = $(this).datagrid('getPanel').find('.datagrid-header .datagrid-filter-c');
 			var focusOne = fc.find('.datagrid-filter:focus');
-			// fc.hide();
-			fc.css({
-				width:'1px',
-				height:0
-			});
+			fc.hide();
 			$(target).datagrid('fitColumns');
 			if (opts.fitColumns){
 				resizeFilter(target);
 			} else {
 				resizeFilter(target, field);
 			}
-			// fc.show();
-			fc.css({
-				width:'',
-				height:''
-			});
+			fc.show();
 			focusOne.blur().focus();
 			onResizeColumn.call(target, field, width);
 		};
@@ -810,54 +764,19 @@
 			}
 			return result;
 		};
-		if ((opts.view.type == 'detailview' || opts.view.type == 'scrollview') && opts.frozenColumns && opts.frozenColumns.length) {
-			var onBeforeRender = opts.view.onBeforeRender;
-			opts.view.onBeforeRender = function(target){
-				onBeforeRender.call(opts.view, target)
-				if (!opts.detailviewFilterInited){
-					opts.detailviewFilterInited = true;
-					var fields = $(target).datagrid('getColumnFields', true);
-					if (opts.rownumbers){
-						fields.unshift('_');
-					}
-					var tr = $(target).data('datagrid').dc.header1.find('.datagrid-filter-row');
-					if (tr.length < fields.length){
-						var index = $.inArray('_expander', fields);
-						if (index >= 0){
-							var td = tr.children().eq(index);
-							if (td.length){
-								$('<td class="_expander"></td>').insertBefore(td);
-							} else {
-								$('<td class="_expander"></td>').appendTo(tr);
-							}
-						}
-					}
-
-				}
-			}
-		}
 
 		// opts.loadFilter = myLoadFilter;
 		opts.loadFilter = function(data, parentId){
 			var d = opts.oldLoadFilter.call(this, data, parentId);
 			return myLoadFilter.call(this, d, parentId);
 		};
-		state.dc.view2.children('.datagrid-header').off('.filter').on('focusin.filter', function(e){
+		state.dc.view2.children('.datagrid-header').unbind('.filter').bind('focusin.filter', function(e){
 			var header = $(this);
 			setTimeout(function(){
 				state.dc.body2._scrollLeft(header._scrollLeft());
 			},0);
-		}).on('keydown.filter', function(e){
-			e.stopPropagation();
-		}).on('keypress.filter', function(e){
-			e.stopPropagation();
 		});
-		state.dc.view1.children('.datagrid-header').off('.filter').on('keydown.filter', function(e){
-			e.stopPropagation();
-		}).on('keypress.filter', function(e){
-			e.stopPropagation();
-		});
-
+		
 		initCss();
 		createFilter(true);
 		createFilter();
@@ -870,7 +789,7 @@
 		$.map(opts.filterRules, function(rule){
 			addFilterRule(target, rule);
 		});
-
+		
 		function initCss(){
 			if (!$('#datagrid-filter-style').length){
 				$('head').append(
@@ -885,7 +804,7 @@
 				);
 			}
 		}
-
+		
 		/**
 		 * create filter component
 		 */
@@ -896,7 +815,7 @@
 				fields.unshift('_');
 			}
 			var table = (frozen?dc.header1:dc.header2).find('table.datagrid-htable');
-
+			
 			// clear the old filter component
 			table.find('.datagrid-filter').each(function(){
 				if (this.filter.destroy){
@@ -907,7 +826,7 @@
 				}
 			});
 			table.find('tr.datagrid-filter-row').remove();
-
+			
 			var tr = $('<tr class="datagrid-header-row datagrid-filter-row"></tr>');
 			if (opts.filterPosition == 'bottom'){
 				tr.appendTo(table.find('tbody'));
@@ -917,7 +836,7 @@
 			if (!opts.showFilterBar){
 				tr.hide();
 			}
-
+			
 			for(var i=0; i<fields.length; i++){
 				var field = fields[i];
 				var col = $(target).datagrid('getColumnOption', field);
@@ -950,24 +869,14 @@
 					var input = filter.init(div, $.extend({height:opts.editorHeight},fopts.options||{}));
 					input.addClass('datagrid-filter').attr('name', field);
 					input[0].filter = filter;
-					input[0].filterOptions = fopts;
 					input[0].menu = createFilterButton(div, fopts.op);
-					if (fopts.op && fopts.op.length){
-						if (fopts.options && fopts.options.onInit){
+					if (fopts.options){
+						if (fopts.options.onInit){
 							fopts.options.onInit.call(input[0], target);
-						} else if (fopts.defaultFilterOperator){
-							opts.defaultFilterOptions.onInit.call(input[0], target);
 						}
 					} else {
 						opts.defaultFilterOptions.onInit.call(input[0], target);
 					}
-					// if (fopts.options){
-					// 	if (fopts.options.onInit){
-					// 		fopts.options.onInit.call(input[0], target);
-					// 	}
-					// } else {
-					// 	opts.defaultFilterOptions.onInit.call(input[0], target);
-					// }
 					opts.filterCache[field] = div;
 					resizeFilter(target, field);
 				} else {
@@ -975,10 +884,10 @@
 				}
 			}
 		}
-
+		
 		function createFilterButton(container, operators){
 			if (!operators){return null;}
-
+			
 			var btn = $('<a class="datagrid-filter-btn">&nbsp;</a>').addClass(opts.filterBtnIconCls);
 			btn.css('height',opts.editorHeight);
 			if (opts.filterBtnPosition == 'right'){
@@ -1002,29 +911,29 @@
 					var field = td.attr('field');
 					var input = td.find('.datagrid-filter');
 					var value = input[0].filter.getValue(input);
-
+					
 					if (opts.onClickMenu.call(target, item, btn, field) == false){
 						return;
 					}
-
+					
 					addFilterRule(target, {
 						field: field,
 						op: item.name,
 						value: value
 					});
-
+					
 					doFilter(target);
 				}
 			});
 
 			btn[0].menu = menu;
-			btn.on('click', {menu:menu}, function(e){
+			btn.bind('click', {menu:menu}, function(e){
 				$(this.menu).menu('show');
 				return false;
 			});
 			return menu;
 		}
-
+		
 		function getFilter(field){
 			for(var i=0; i<filters.length; i++){
 				var filter = filters[i];
@@ -1035,17 +944,8 @@
 			return null;
 		}
 	}
-
+	
 	$.extend($.fn.datagrid.methods, {
-		isFilterEnabled: function(jq){
-			var name = getPluginName(jq[0]);
-			var opts = $.data(jq[0], name).options;
-			if (opts.oldLoadFilter){
-				return true;
-			} else {
-				return false;
-			}
-		},
 		enableFilter: function(jq, filters){
 			return jq.each(function(){
 				var name = getPluginName(this);
@@ -1089,8 +989,7 @@
 				if (state.filterSource){
 					data = state.filterSource;
 					$.map(data.rows, function(row){
-						// row.children = undefined;
-						delete row.children;
+						row.children = undefined;
 					});
 				}
 				dc.header1.add(dc.header2).find('tr.datagrid-filter-row').remove();
