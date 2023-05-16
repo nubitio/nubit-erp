@@ -3,14 +3,13 @@
 namespace App\RecipeDetail\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Option\Infrastructure\OptionEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Recipe\Infrastructure\RecipeEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "recipe_detail")]
+#[ORM\Table(name: 'recipe_detail')]
 class RecipeDetailEntity
 {
     public function __construct(
@@ -28,7 +27,6 @@ class RecipeDetailEntity
         #[ORM\ManyToOne(targetEntity: RecipeEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'recipe_id', referencedColumnName: 'id')]
         public ?RecipeEntity $recipe = null
-    )
-    {
+    ) {
     }
 }

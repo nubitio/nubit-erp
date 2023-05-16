@@ -5,9 +5,9 @@ namespace App\Recipe\Api;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProcessorInterface;
-use App\Recipe\Domain\Recipe;
 use App\Recipe\Domain\CreateRecipeUseCase;
 use App\Recipe\Domain\DeleteRecipeUseCase;
+use App\Recipe\Domain\Recipe;
 use App\Recipe\Domain\UpdateRecipeUseCase;
 
 /**
@@ -19,21 +19,21 @@ readonly class RecipeProcessor implements ApiProcessorInterface
         public CreateRecipeUseCase $createUseCase,
         public UpdateRecipeUseCase $updateUseCase,
         public DeleteRecipeUseCase $deleteUseCase,
-    )
-    {
+    ) {
     }
 
-    /** @inheritDoc */
+    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Recipe
     {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->id) {
                 $this->deleteUseCase->__invoke($data->id);
             }
+
             return null;
         }
 
-        if($data->id) {
+        if ($data->id) {
             return $this->updateUseCase->__invoke($data);
         }
 
