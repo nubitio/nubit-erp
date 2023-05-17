@@ -48,6 +48,7 @@ import Consultation from "./pages/Consultation";
 import PatientType from "./pages/PatientType";
 import ChangePassword from "./pages/ChangePassword";
 import { themeManager } from './core/utils/ThemeManager';
+import Recipe from "./pages/Recipe";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -99,6 +100,7 @@ window.app.comboOption = ComboOption;
 window.app.consultation = Consultation;
 window.app.patientType = PatientType;
 window.app.changePassword = ChangePassword;
+window.app.recipe = Recipe;
 
 window.addEventListener('load', () => {
     window.ThemeManager = themeManager;
