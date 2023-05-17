@@ -32,6 +32,7 @@ readonly class ConsultationProvider implements ApiProviderInterface
             $context = OptionUtils::addJoin($context, new JoinRule('e.patient', 'p'));
             $context = OptionUtils::addJoin($context, new JoinRule('p.customer', 'c'));
             $context = OptionUtils::addJoin($context, new JoinRule('e.physician', 'd'));
+            $context = OptionUtils::addJoin($context, new JoinRule('d.specialty', 's'));
             $context = OptionUtils::addJoin($context, new JoinRule('d.employee', 'y'));
             $context = OptionUtils::addSort($context, new SortRule('id', 'desc'));
             $options = OptionsBuilder::build($context, ConsultationEntity::class, Consultation::class);

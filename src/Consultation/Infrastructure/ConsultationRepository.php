@@ -18,6 +18,7 @@ readonly class ConsultationRepository implements ConsultationRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
+        private ConsultationUtils $consultationUtils,
     ) {
     }
 
@@ -40,6 +41,7 @@ readonly class ConsultationRepository implements ConsultationRepositoryInterface
 
     public function insert(Consultation $consultation): Consultation
     {
+        $consultation = $this->consultationUtils->fillQueueValue($consultation);
         $entity = DataMapper::map($consultation, ConsultationEntity::class);
         $entity->patient = $this->entityManager->find(PatientEntity::class, $consultation->patient?->id);
         $entity->physician = $this->entityManager->find(PhysicianEntity::class, $consultation->physician?->id);

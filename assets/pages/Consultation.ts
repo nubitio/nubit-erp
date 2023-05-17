@@ -63,7 +63,7 @@ export default class Consultation {
             .url('api/physicians')
             .valueField('id')
             .textField('full_name')
-            .formatter((value: any) => value?.full_name)
+            .formatter((value: any) => value?.full_name+'<br>'+value?.specialty?.name)
             .required(true)
             .valueType('number')
             .build());
@@ -95,6 +95,12 @@ export default class Consultation {
             .type(FieldType.TEXTAREA)
             .name('notes')
             .label('Notas')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
+            .readonly(true)
+            .name('queue')
+            .label('Turno')
             .build())
     };
 
