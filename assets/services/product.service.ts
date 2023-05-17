@@ -1,19 +1,19 @@
 import {lastValueFrom} from "rxjs";
-import {ProductDto} from "./product.dto";
-import {httpClient} from "../../core/http/HttpClient";
-import GridData from "../common/GridData";
-import ApiResponse from "../../core/http/ApiResponse";
+import {ProductDto} from "../dto/product.dto";
+import {httpClient} from "../core/http/HttpClient";
+import GridData from "../components/common/GridData";
+import ApiResponse from "../core/http/ApiResponse";
 
-export class ProductService {
+class ProductService {
 
     getAll(loadOptions: any): Promise<GridData<ProductDto>> {
-        let subscription = httpClient.get<ProductDto[]>(`/product/get`, {params: loadOptions});
+        let subscription = httpClient.get<ProductDto[]>(`/api/products`, {params: loadOptions});
 
         return lastValueFrom(subscription)
             .then((response: ApiResponse<ProductDto[]>) => {
                 return {
                     data: response.data,
-                    totalCount: 32
+                    totalCount: Number(response.headers['x-total-count'])
                 } as GridData<ProductDto>;
             });
     }
@@ -23,7 +23,9 @@ export class ProductService {
         return httpClient.get<ProductDto[]>(`/api/products?rows=1000`);
     }
 
-    insert(values: any) {
+    create(values: any) {
         return Promise.resolve("insert");
     }
 }
+
+export const productService = new ProductService();

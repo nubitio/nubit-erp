@@ -7,7 +7,6 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductService} from "../components/product/product.service";
 import Customer from "./Customer";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
@@ -28,7 +27,6 @@ export default class Sale {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private productService = new ProductService();
     private saleService = new SaleService();
     private priceList: Array<PriceListItemDto> = [];
 
