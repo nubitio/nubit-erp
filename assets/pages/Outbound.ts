@@ -5,7 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
-import {ProductService} from "../components/product/product.service";
+import { productService } from "../services/product.service";
 
 export default class Outbound {
     private readonly container: string;
@@ -14,7 +14,6 @@ export default class Outbound {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private productService = new ProductService();
 
     static readonly ROUTES = {
         ADD: 'outbound/add',
@@ -121,7 +120,7 @@ export default class Outbound {
     };
 
     render() {
-        this.productService.getProducts('1').subscribe((response) => {
+        productService.getProducts('1').subscribe((response) => {
             this.detailFields.forEach((field) => {
                 if (field.name === 'producto_id') {
                     field.data = response.data;
