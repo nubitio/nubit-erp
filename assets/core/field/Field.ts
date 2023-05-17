@@ -18,6 +18,7 @@ export interface Field {
     valueType: string;
     data: any[];
     formatter: any;
+    fieldFormatter: any;
     visible: boolean;
     defaultValue: string | number | boolean | null;
     onChange: any;
