@@ -11,6 +11,7 @@ class InvoiceExtraData
         public ?string $medicalRecordNumber = null,
         public ?string $physicianFullName = null,
         public ?int $queue = null,
+        public ?string $physicianSpecialty = null,
     ) {
     }
 }
