@@ -14,16 +14,26 @@ class OptionsBuilder
      */
     public static function build(array $context, string $entity, string $mapping): Options
     {
+        dump($context);
         /** @var string $joinRules */
         $joinRules = $context['filters']['joinRules'] ?? '[]';
         /** @var array<int, array<string, bool|float|int|string|null>> $joinRules */
         $joinRules = json_decode(strval($joinRules), true);
 
-        /** @var string|null $sortFields */
+        /** @var string|array<int, string>|null $sortFields */
         $sortFields = $context['filters']['sort'] ?? null;
+        $strSortFields = '';
+        if (is_array($sortFields)) {
+            foreach ($sortFields as $sortField) {
+                /** @var array<string, string> $sortRule */
+                $sortRule = json_decode($sortField, true);
+                $strSortFields .= $sortRule['selector'].',';
+            }
+            $sortFields = $strSortFields ? substr($strSortFields, 0, -1) : null;
+        }
         /** @var string|null $orderFields */
         $orderFields = $context['filters']['order'] ?? null;
-        $sortArray = $sortFields ? explode(',', strval($sortFields)) : [];
+        $sortArray = $sortFields ? explode(',', $sortFields) : [];
         $orderArray = $orderFields ? explode(',', strval($orderFields)) : [];
         $sortRules = array_map(null, $sortArray, $orderArray);
 
@@ -32,11 +42,36 @@ class OptionsBuilder
         /** @var array<int, array<string, bool|float|int|string|null>> $filterRules */
         $filterRules = json_decode(strval($filterRules), true);
 
+        /** @var array<int, string> $filters */
+        $filters = $context['filters']['filter'] ?? [];
+
+        foreach ($filters as $filter) {
+            $filterRule = json_decode($filter, true);
+            if (!is_array($filterRule)) {
+                continue;
+            }
+            $filterRules[] = [
+                'field' => $filterRule[0],
+                'op' => $filterRule[1],
+                'value' => $filterRule[2] ?? '',
+            ];
+        }
+        if (3 === count($filters) && !is_array(json_decode($filters[0], true))) {
+            $filterRules[] = [
+                'field' => $filters[0],
+                'op' => $filters[1],
+                'value' => $filters[2],
+            ];
+        }
+        dump($filterRules);
+
         return new Options(
             entity: $entity,
             mapping: $mapping,
             page: intval($context['filters']['page'] ?? 1),
             rows: intval($context['filters']['rows'] ?? 10),
+            skip: intval($context['filters']['skip'] ?? 0),
+            take: intval($context['filters']['take'] ?? 0),
             joins: self::buildJoins($joinRules),
             sort: self::buildSort($sortRules),
             filters: self::buildFilters($filterRules)
@@ -85,7 +120,12 @@ class OptionsBuilder
     {
         $filters = [];
         foreach ($filterRules as $filter) {
-            $op = FilterOperation::tryFrom(strval($filter['op'])) ?? FilterOperation::Contains;
+            $op = FilterOperation::tryFrom(strval($filter['op'])) ?? FilterOperation::fromString(strval($filter['op']));
+            if ('true' === $filter['value']) {
+                $filter['value'] = true;
+            } elseif ('false' === $filter['value']) {
+                $filter['value'] = false;
+            }
             $filters[] = new FilterRule(
                 field: strval($filter['field']),
                 op: $op,
