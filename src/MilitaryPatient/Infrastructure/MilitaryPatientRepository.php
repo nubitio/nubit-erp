@@ -136,7 +136,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             medicalRecordNumber: $militaryPatient?->patient?->medical_record_number,
             physicianFullName: $consultationSale?->consultation?->physician?->getFullName(),
             queue: $consultationSale?->consultation?->queue,
-            physicianSpecialty: $consultationSale?->consultation?->physician->specialty->name
+            physicianSpecialty: $consultationSale?->consultation?->physician?->specialty?->name
         );
     }
 }
