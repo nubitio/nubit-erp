@@ -2,11 +2,25 @@
 
 {% block extra %}
     {{ parent() }}
-    CIP: {{ extraData.cipCode }} <br>
-    GRADO: {{ extraData.rank }} <br>
-    ARMA: {{ extraData.weaponCode }} <br>
-    Nº HISTORIA: {{ extraData.medicalRecordNumber }} <br>
-    MEDICO: {{ extraData.physicianFullName }}
-    ({{ extraData.physicianSpecialty }}) <br>
-    TURNO: {{ extraData.queue }} <br>
+    {% if not extraData.cipCode is null and not extraData.cipCode is empty %}
+        CIP: {{ extraData.cipCode }} <br>
+    {% endif %}
+
+    {% if not extraData.rank is null and not extraData.rank is empty %}
+        GRADO: {{ extraData.rank }} <br>
+    {% endif %}
+
+    {% if not extraData.weaponCode is null and not extraData.weaponCode is empty %}
+        ARMA: {{ extraData.weaponCode }} <br>
+    {% endif %}
+
+    {% if not extraData.medicalRecordNumber is null and not extraData.medicalRecordNumber is empty %}
+        Nº HISTORIA: {{ extraData.medicalRecordNumber }} <br>
+    {% endif %}
+
+    {% if not extraData.physicianFullName is null and not extraData.physicianFullName is empty %}
+        MEDICO: {{ extraData.physicianFullName }}
+        ({{ extraData.physicianSpecialty }}) <br>
+        TURNO: {{ extraData.queue }} <br>
+    {% endif %}
 {% endblock %}
