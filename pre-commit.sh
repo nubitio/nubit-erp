@@ -1,46 +1,36 @@
 #!/bin/sh
 
-# Nombre del contenedor web
+# Web container name
 WEB_CONTAINER="efact-web"
 
-# Ruta al directorio donde se encuentra el archivo composer.json dentro del contenedor
+# Path to the directory where the composer.json file is located inside the container
 COMPOSER_PATH="/var/www/html/"
 
-# Ejecutar phpstan dentro del contenedor web
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && vendor/bin/phpstan analyse --memory-limit=2G --no-progress"
+# Function to execute commands inside the web container
+run_in_container() {
+  docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && $1"
+}
 
-# Verificar el resultado del comando anterior
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "****************************************************"
-  echo "¡Se encontraron errores de phpstan! No se puede realizar el commit."
-  echo "****************************************************"
-  echo ""
-  exit 1
-fi
+# Function to check the result of the previous command
+check_result() {
+  if [ $? -ne 0 ]; then
+    echo ""
+    echo "****************************************************"
+    echo "Errors found! Commit cannot proceed."
+    echo "****************************************************"
+    echo ""
+    exit 1
+  fi
+}
 
-# Ejecutar php-cs-fixer dentro del contenedor web
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff"
+# Run phpstan inside the web container
+run_in_container "vendor/bin/phpstan analyse --memory-limit=2G --no-progress"
+check_result
 
-# Verificar el resultado del comando anterior
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "****************************************************"
-  echo "¡Se encontraron errores de php-cs-fixer! No se puede realizar el commit."
-  echo "****************************************************"
-  echo ""
-  exit 1
-fi
+# Run php-cs-fixer inside the web container
+run_in_container "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff"
+check_result
 
-# Ejecutar phpunit dentro del contenedor web
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && bin/phpunit"
-
-# Verificar el resultado del comando anterior
-if [ $? -ne 0 ]; then
-  echo ""
-  echo "****************************************************"
-  echo "¡Se encontraron errores de PHPUnit! No se puede realizar el commit."
-  echo "****************************************************"
-  echo ""
-  exit 1
-fi
+# Run phpunit inside the web container
+run_in_container "bin/phpunit"
+check_result
