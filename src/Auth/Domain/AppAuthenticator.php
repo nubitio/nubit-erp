@@ -2,6 +2,7 @@
 
 namespace App\Auth\Domain;
 
+use App\Core\Domain\Common\ApiResponse;
 use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -60,14 +61,12 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         $token = $this->getTokenUseCase->__invoke($user);
 
-        return new JsonResponse($token);
+        return new JsonResponse(new ApiResponse(true, 'Login success', $token));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        return new JsonResponse([
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
-        ], Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(new ApiResponse(false, $exception->getMessage()), Response::HTTP_UNAUTHORIZED);
     }
 
     public function start(Request $request, AuthenticationException $authException = null): Response
