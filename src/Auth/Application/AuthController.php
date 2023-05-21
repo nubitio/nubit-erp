@@ -4,6 +4,7 @@ namespace App\Auth\Application;
 
 use App\Base\BaseController;
 use App\Branch\Domain\BranchGetOneUseCase;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\ArrayUtils;
 use App\User\Domain\User;
 use App\Warehouse\Domain\GetAllByBranchUseCase;
@@ -57,9 +58,15 @@ class AuthController extends BaseController
         $session->set('branch_name', $local?->descripcion ?? null);
         $session->set('warehouse_id', $defaultWarehouse?->almacen_id ?? null);
 
-        return $this->json([
-            'success' => true,
-            'data' => $session->all(),
-        ]);
+        $sessionInfo = [
+            'user_id' => $session->get('user_id'),
+            'username' => $session->get('username'),
+            'role_id' => $session->get('role_id'),
+            'branch_id' => $session->get('branch_id'),
+            'branch_name' => $session->get('branch_name'),
+            'warehouse_id' => $session->get('warehouse_id'),
+        ];
+
+        return $this->json(new ApiResponse(true, '', $sessionInfo));
     }
 }
