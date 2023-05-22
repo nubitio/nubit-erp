@@ -20,6 +20,7 @@ readonly class ConsultationUtils
      */
     public function getQueue(int $physician_id): int
     {
+        $date = date('Y-m-d');
         /** @var false|int $queue */
         $queue = $this->connection->fetchOne('
             SELECT
@@ -29,8 +30,8 @@ readonly class ConsultationUtils
             WHERE
                 physician_id = ?
                 AND
-                `date` = CURDATE()
-        ', [$physician_id]);
+                `date` = ?
+        ', [$physician_id, $date]);
 
         if (!$queue) {
             throw new ServiceException('Error al obtener numero de cola');
