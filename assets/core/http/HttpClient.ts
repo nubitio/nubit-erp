@@ -22,6 +22,7 @@ class HttpClient {
         const AUTH_HEADER = 'Authorization';
         const BEARER_PREFIX = 'Bearer ';
         const DEFAULT_ERROR_MESSAGE = 'Something went wrong';
+        const DEFAULT_UNAUTHORIZED_MESSAGE = 'Session expired';
 
         this.axiosClient.interceptors.request.use((config) => {
             if (config.headers) {
@@ -38,7 +39,16 @@ class HttpClient {
             (error) => {
                 switch (error.response.status) {
                     case HttpCode.UNAUTHORIZED:
-                        window.location.href = '/auth/logout';
+                        const message = error.response?.data?.message ?? DEFAULT_UNAUTHORIZED_MESSAGE;
+                        let token = StorageUtils.getItem('token');
+                        if (token) {
+                            messenger.confirm('Error', message, () => {
+                                StorageUtils.removeItem('token');
+                                window.location.href = '/auth/logout';
+                            });
+                        } else {
+                            messenger.show('Error', message);
+                        }
                         break;
                     case HttpCode.INTERNAL_SERVER_ERROR:
                         throw new Error(DEFAULT_ERROR_MESSAGE);
