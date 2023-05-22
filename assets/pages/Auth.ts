@@ -24,6 +24,10 @@ export default class Auth {
     constructor(container: string) {
         this.container = container;
         this.localPicker = new LocalPicker(this.container);
+        let token = StorageUtils.getItem('token');
+        if (token) {
+            StorageUtils.removeItem('token');
+        }
         this.init();
     }
 
@@ -87,10 +91,11 @@ export default class Auth {
 
         authService.login(username, password).subscribe({
             next: (response) => {
-                StorageUtils.setItem('token', response.data.token);
+                StorageUtils.setItem('token', response.data.data.token);
                 this.localPicker.show();
             },
             error: (error) => {
+                this.form.getField('password').textbox('textbox').focus();
                 loginButton.linkbutton('enable');
             }
         });
