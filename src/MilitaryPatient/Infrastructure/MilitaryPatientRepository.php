@@ -126,6 +126,7 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
         /** @var ?MilitaryPatientEntity $militaryPatient */
         $militaryPatient = $query->getOneOrNullResult();
 
+        /** @var ?ConsultationSaleEntity $consultationSale */
         $consultationSale = $this->entityManager->getRepository(ConsultationSaleEntity::class)->findOneBy(['sale' => $saleId]);
 
         return new InvoiceExtraData(
@@ -133,7 +134,9 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             rank: $militaryPatient?->rank,
             weaponCode: $militaryPatient?->weapon_code,
             medicalRecordNumber: $militaryPatient?->patient?->medical_record_number,
-            physicianFullName: $consultationSale?->consultation?->physician?->getFullName()
+            physicianFullName: $consultationSale?->consultation?->physician?->getFullName(),
+            queue: $consultationSale?->consultation?->queue,
+            physicianSpecialty: $consultationSale?->consultation?->physician?->specialty?->name
         );
     }
 }
