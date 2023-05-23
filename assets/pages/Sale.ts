@@ -19,6 +19,8 @@ import NumberUtils from "../core/utils/NumberUtils";
 import {httpClient} from "../core/http/HttpClient";
 import {PriceListItemDto} from "../dto/PriceListItemDto";
 import FilterRule from "../core/common/FilterRule";
+import {Setting, settings} from "../Settings";
+import ApiResponse from "../core/http/ApiResponse";
 
 export default class Sale {
     private readonly container: string;
@@ -227,6 +229,7 @@ export default class Sale {
         reactRoot.render(
             React.createElement(DiscountDialog)
         );
+        this.setupObservers();
     }
 
     private renderDataGrid() {
@@ -260,7 +263,30 @@ export default class Sale {
                 text: 'Generar Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
-                    ref.makeInvoice();
+                    let row = ref.dataGrid.selectedRow;
+                    if (!row) {
+                        messenger.show('Información', 'Seleccione una venta para generar el comprobante');
+                        return;
+                    }
+                    if (row['invoice']) {
+                        messenger.show('Información', 'El comprobante ya fue generado');
+                        return;
+                    }
+                    if (row['estado'] == 2) {
+                        messenger.show('Información', 'La venta se encuentra anulada');
+                        return;
+                    }
+                    let confirmMessage = '';
+                    if (row['cliente']['ruc'].length === 11) {
+                        confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+                    } else {
+                        confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+                    }
+                    messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
+                        if (r) {
+                            ref.makeInvoice(row['movimiento_id'])
+                        }
+                    })
                 }
             }
         ];
@@ -326,6 +352,16 @@ export default class Sale {
         )
 
         bus.on(Sale.EVENTS.ADD, () => this.priceList = []);
+    }
+
+    private setupObservers() {
+        settings.get(Setting.AUTO_INVOICE).then((setting) => {
+            if (setting?.value === 'true') {
+                bus.on<ApiResponse<any>>(Sale.EVENTS.SUCCESS, (response) => {
+                    this.makeInvoice(response.data['movimiento_id'])
+                });
+            }
+        });
     }
 
     private onSelectProduct(record: any, field: Field) {
@@ -400,13 +436,25 @@ export default class Sale {
         });
     }
 
-    private print(sale: any = null) {
-        let selected = this.dataGrid.selectedRow ?? sale;
+    private print(saleId?: string) {
+        if (saleId) {
+            jsWebClientPrint.print(`useDefaultPrinter=checked&saleId=${saleId}`);
+            return;
+        }
+
+        const selected = this.dataGrid.selectedRow;
         if (!selected) {
             messenger.show('Información', 'Debe seleccionar una venta');
-            return
+            return;
         }
-        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + selected['movimiento_id']);
+
+        const id = selected.movimiento_id;
+        if (!id) {
+            messenger.show('Información', 'ID de venta no válido');
+            return;
+        }
+
+        jsWebClientPrint.print(`useDefaultPrinter=checked&saleId=${id}`);
     }
 
     private voidSale() {
@@ -430,38 +478,15 @@ export default class Sale {
         });
     }
 
-    private makeInvoice() {
-        let ref = this;
-        let row = this.dataGrid.selectedRow;
-        if (!row) {
-            messenger.show('Información', 'Seleccione una venta para generar el comprobante');
-            return;
-        }
-        if (row['invoice']) {
-            messenger.show('Información', 'El comprobante ya fue generado');
-            return;
-        }
-        if (row['estado'] == 2) {
-            messenger.show('Información', 'La venta se encuentra anulada');
-            return;
-        }
-        let confirmMessage = '';
-        if (row['cliente']['ruc'].length === 11) {
-            confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
-        } else {
-            confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
-        }
-        messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
-            if (r) {
-                ref.dataGrid.showLoading('Generando comprobante...')
-                ref.saleService.makeInvoice(row['movimiento_id']).subscribe((data) => {
-                    messenger.show('Información', 'Comprobante generado');
-                    ref.dataGrid.reload();
-                }).add(() => {
-                    ref.dataGrid.hideLoading();
-                });
-            }
-        })
+    private makeInvoice(saleId: string) {
+        this.dataGrid.showLoading('Generando comprobante...')
+        this.saleService.makeInvoice(saleId).subscribe((response) => {
+            messenger.show('Información', 'Comprobante generado');
+            this.dataGrid.reload();
+            this.print(saleId);
+        }).add(() => {
+            this.dataGrid.hideLoading();
+        });
     }
 
     private updatePricesByPriceList() {

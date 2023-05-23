@@ -49,6 +49,7 @@ import PatientType from "./pages/PatientType";
 import ChangePassword from "./pages/ChangePassword";
 import { themeManager } from './core/utils/ThemeManager';
 import Recipe from "./pages/Recipe";
+import {settings} from "./Settings";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -102,9 +103,9 @@ window.app.patientType = PatientType;
 window.app.changePassword = ChangePassword;
 window.app.recipe = Recipe;
 
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     window.ThemeManager = themeManager;
-
+    await settings.init();
     setupGlobalObservers();
 });
 

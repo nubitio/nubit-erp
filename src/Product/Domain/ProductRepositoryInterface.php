@@ -19,4 +19,6 @@ interface ProductRepositoryInterface
     public function update(Product $product): Product;
 
     public function delete(string $id): void;
+
+    public function getStock(string $productId): ProductStock;
 }
