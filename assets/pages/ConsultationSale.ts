@@ -8,6 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
 import {bus} from "../core/event/EventBus";
 import FilterRule from "../core/common/FilterRule";
+import {Constants} from "../core/common/Constants";
 
 export default class ConsultationSale {
     private readonly container: string;
@@ -16,7 +17,7 @@ export default class ConsultationSale {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/consultation-sales';
+    static readonly API_URL = Constants.API_BASE_URL + 'consultation-sales';
 
     static readonly EVENTS = {
         ADD: 'consultation-sale:add',
@@ -47,7 +48,7 @@ export default class ConsultationSale {
             .type(FieldType.ENTITY)
             .name('consultation')
             .label('Consultation')
-            .url('api/consultations')
+            .url(Constants.API_BASE_URL + 'consultations')
             .valueField('id')
             .textField('id')
             .valueType('number')
@@ -57,7 +58,7 @@ export default class ConsultationSale {
             .type(FieldType.ENTITY)
             .name('sale')
             .label('Sale')
-            .url('api/sales')
+            .url(Constants.API_BASE_URL + 'sales')
             .valueField('movimiento_id')
             .textField('numero')
             .formatter((row: any) => `<b>Voucher: ${row.serie}-${row.numero}</b><br><b>C.P:</b> ${row.invoice??''}<br><b>Total:</b> ${NumberUtils.formatCurrency(row.total)}`)
@@ -130,7 +131,7 @@ export default class ConsultationSale {
                     op: 'equal',
                     value: data.patient.customer.ruc
                 }
-                saleField.url = `api/sales?filterRules=[${JSON.stringify(filterRule)}]`;
+                saleField.url = `${Constants.API_BASE_URL}sales?filterRules=[${JSON.stringify(filterRule)}]`;
                 this.form.getField('sale').combobox('reload');
             }
             let patientFilter: FilterRule = {

@@ -3,12 +3,13 @@ import {ProductDto} from "../dto/product.dto";
 import {httpClient} from "../core/http/HttpClient";
 import GridData from "../components/common/GridData";
 import ApiResponse from "../core/http/ApiResponse";
+import {Constants} from "../core/common/Constants";
 import {ProductStockDto} from "../dto/product.stock.dto";
 
 class ProductService {
 
     getAll(loadOptions: any): Promise<GridData<ProductDto>> {
-        let subscription = httpClient.get<ProductDto[]>(`/api/products`, {params: loadOptions});
+        let subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {params: loadOptions});
 
         return lastValueFrom(subscription)
             .then((response: ApiResponse<ProductDto[]>) => {
@@ -20,8 +21,8 @@ class ProductService {
     }
 
     getProducts(warehouseId: String) {
-        //return httpClient.get<ProductDto[]>(`/api/warehouses/${warehouseId}/product`);
-        return httpClient.get<ProductDto[]>(`/api/products?rows=1000`);
+        //return httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}warehouses/${warehouseId}/product`);
+        return httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products?rows=1000`);
     }
 
     create(values: any) {
@@ -29,7 +30,7 @@ class ProductService {
     }
 
     getStock(id: string) {
-        return httpClient.get<ProductStockDto>(`/api/products/${id}/stock`);
+        return httpClient.get<ProductStockDto>(`${Constants.API_BASE_URL}products/${id}/stock`);
     }
 }
 

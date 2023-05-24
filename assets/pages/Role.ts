@@ -8,6 +8,7 @@ import {SharedUtils} from "../core/utils/SharedUtils";
 import {Drawer} from "../core/drawer/Drawer";
 import {bus} from "../core/event/EventBus";
 import {httpClient} from "../core/http/HttpClient";
+import {Constants} from "../core/common/Constants";
 
 export default class Role {
     private readonly container: string;
@@ -16,7 +17,7 @@ export default class Role {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/roles';
+    static readonly API_URL = Constants.API_BASE_URL + 'roles';
 
     static readonly EVENTS = {
         ADD: 'role:add',

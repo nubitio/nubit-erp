@@ -33,7 +33,7 @@ export default class Sale {
     private saleService = new SaleService();
     private priceList: Array<PriceListItemDto> = [];
 
-    static readonly API_URL = 'api/sales';
+    static readonly API_URL = Constants.API_BASE_URL + 'sales';
 
     static readonly EVENTS = {
         ADD: 'sale:add',
@@ -68,7 +68,7 @@ export default class Sale {
             .formatter(SharedUtils.dateFormatter)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
+        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('almacen')
@@ -85,7 +85,7 @@ export default class Sale {
             .name('cliente')
             .label('Cliente')
             .width(100)
-            .url('api/customers')
+            .url(Constants.API_BASE_URL + 'customers')
             .mode('remote')
             .valueField('ruc')
             .textField('razon_social')
@@ -102,7 +102,7 @@ export default class Sale {
             .type(FieldType.ENTITY)
             .name('tarifa')
             .label('Tarifa')
-            .url('api/price-lists')
+            .url(Constants.API_BASE_URL + 'price-lists')
             .valueField('id')
             .textField('name')
             .visible(false)
@@ -120,7 +120,7 @@ export default class Sale {
             .type(FieldType.ENTITY)
             .name('tipo_pago')
             .label('Método de pago')
-            .url('api/payment-methods')
+            .url(Constants.API_BASE_URL + 'payment-methods')
             .valueField('id')
             .textField('name')
             .valueType('number')
@@ -190,7 +190,7 @@ export default class Sale {
             .name('producto')
             .label('Producto')
             .width(100)
-            .url('api/products')
+            .url(Constants.API_BASE_URL + 'products')
             .mode('remote')
             .valueField('producto_id')
             .textField('descripcion')
@@ -309,7 +309,7 @@ export default class Sale {
             method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
-            detailUrl: 'api/sales/{id}/details',
+            detailUrl: Constants.API_BASE_URL + 'sales/{id}/details',
             detailFields: this.detailFields
         });
     }

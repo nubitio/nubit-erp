@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class VoucherType {
     private readonly container: string;
@@ -13,7 +14,7 @@ export default class VoucherType {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/voucher-types';
+    static readonly API_URL = Constants.API_BASE_URL + 'voucher-types';
 
     static readonly EVENTS = {
         ADD: 'voucherType:add',

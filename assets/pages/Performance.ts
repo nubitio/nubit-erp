@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class Performance {
     private readonly container: string;
@@ -13,7 +14,7 @@ export default class Performance {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/performances';
+    static readonly API_URL = Constants.API_BASE_URL + 'performances';
 
     static readonly EVENTS = {
         ADD: 'performance:add',
@@ -50,7 +51,7 @@ export default class Performance {
             .type(FieldType.ENTITY)
             .name('lines')
             .label('Línea')
-            .url('api/combo-options?filterRules=['+filterLine+']')
+            .url(Constants.API_BASE_URL + 'combo-options?filterRules=['+filterLine+']')
             .valueType('number')
             .textField('_value')
             .valueField('id')
@@ -66,7 +67,7 @@ export default class Performance {
             .type(FieldType.ENTITY)
             .name('products')
             .label('Productos')
-            .url('api/products')
+            .url(Constants.API_BASE_URL + 'products')
             .valueType('string')
             .textField('descripcion')
             .valueField('producto_id')
@@ -89,7 +90,7 @@ export default class Performance {
             .type(FieldType.ENTITY)
             .name('types')
             .label('Tipo')
-            .url('api/combo-options?filterRules=['+filterType+']')
+            .url(Constants.API_BASE_URL + 'combo-options?filterRules=['+filterType+']')
             .valueType('number')
             .textField('_value')
             .valueField('id')
