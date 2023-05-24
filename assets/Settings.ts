@@ -4,6 +4,7 @@ import {lastValueFrom} from "rxjs";
 
 export const Setting = {
     AUTO_INVOICE: 'app_option_invoicing_automatically',
+    CHECK_STOCK: 'app_option_stock',
 } as const;
 
 class Settings {
