@@ -6,6 +6,7 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import { productService } from "../services/product.service";
+import {Constants} from "../core/common/Constants";
 
 export default class Outbound {
     private readonly container: string;
@@ -55,7 +56,7 @@ export default class Outbound {
             .type(FieldType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
-            .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"2"}]')
+            .url(Constants.API_BASE_URL + 'operations?filterRules=[{"field":"tipo_id","op":"equal","value":"2"}]')
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)
@@ -68,7 +69,7 @@ export default class Outbound {
             .width(100)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
+        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('almacen_id')
@@ -137,7 +138,7 @@ export default class Outbound {
             url: 'outbound/get',
             routes: Outbound.ROUTES,
             events: Outbound.EVENTS,
-            detailUrl: 'api/sales/{id}/details',
+            detailUrl: Constants.API_BASE_URL + 'sales/{id}/details',
             detailFields: this.detailFields
         });
     }

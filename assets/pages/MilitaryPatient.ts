@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import Patient from "./Patient";
+import {Constants} from "../core/common/Constants";
 
 export default class MilitaryPatient extends Patient {
     protected readonly container: string;
@@ -11,7 +12,7 @@ export default class MilitaryPatient extends Patient {
     declare dialog: Dialog;
     declare form: Form;
 
-    static readonly API_URL: string = 'api/military-patients';
+    static readonly API_URL = Constants.API_BASE_URL + 'military-patients';
 
     static readonly EVENTS = {
         ADD: 'military-patient:add',

@@ -6,6 +6,7 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import NumberUtils from "../core/utils/NumberUtils";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class Employee {
     private readonly container: string;
@@ -14,7 +15,7 @@ export default class Employee {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/employees';
+    static readonly API_URL = Constants.API_BASE_URL + 'employees';
 
     static readonly EVENTS = {
         ADD: 'employee:add',
@@ -105,7 +106,7 @@ export default class Employee {
             .type(FieldType.ENTITY)
             .name('position')
             .label('Cargo')
-            .url('api/positions')
+            .url(Constants.API_BASE_URL + 'positions')
             .valueField('id')
             .textField('name')
             .formatter((value: any) => value?.name)

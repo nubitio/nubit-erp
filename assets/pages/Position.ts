@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {Constants} from "../core/common/Constants";
 
 export default class Position {
     private readonly container: string;
@@ -12,7 +13,7 @@ export default class Position {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/positions';
+    static readonly API_URL = Constants.API_BASE_URL + 'positions';
 
     static readonly EVENTS = {
         ADD: 'position:add',
@@ -43,7 +44,7 @@ export default class Position {
             .type(FieldType.ENTITY)
             .name('department')
             .label('Department')
-            .url('api/departments')
+            .url(Constants.API_BASE_URL + 'departments')
             .valueField('id')
             .textField('name')
             .formatter((value: any) => value?.name)
