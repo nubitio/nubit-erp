@@ -7,6 +7,7 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {bus} from "../core/event/EventBus";
 import {httpClient} from "../core/http/HttpClient";
+import {Constants} from "../core/common/Constants";
 
 export default class Recipe {
     private readonly container: string;
@@ -16,7 +17,7 @@ export default class Recipe {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/recipes';
+    static readonly API_URL = Constants.API_BASE_URL + 'recipes';
 
     static readonly EVENTS = {
         ADD: 'recipe:add',
@@ -63,7 +64,7 @@ export default class Recipe {
             .name('material')
             .label('Material')
             .width(100)
-            .url('api/products')
+            .url(Constants.API_BASE_URL + 'products')
             .textField('descripcion')
             .valueField('producto_id')
             .formatter((value: any) => value.descripcion)

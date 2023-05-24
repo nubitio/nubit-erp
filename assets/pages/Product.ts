@@ -6,6 +6,7 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import NumberUtils from "../core/utils/NumberUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class Product {
     private readonly container: string;
@@ -14,7 +15,7 @@ export default class Product {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/products';
+    static readonly API_URL = Constants.API_BASE_URL + 'products';
 
     static readonly EVENTS = {
         ADD: 'product:add',
@@ -71,7 +72,7 @@ export default class Product {
             .type(FieldType.ENTITY)
             .name('categoria')
             .label('Categoría')
-            .url('api/categories')
+            .url(Constants.API_BASE_URL + 'categories')
             .valueField('categoria_id')
             .textField('descripcion')
             .required(true)

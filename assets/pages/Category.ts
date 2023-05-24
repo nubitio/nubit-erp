@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {Constants} from "../core/common/Constants";
 
 export default class Category {
     private readonly container: string;
@@ -13,7 +14,7 @@ export default class Category {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/categories';
+    static readonly API_URL = Constants.API_BASE_URL + 'categories';
 
     static readonly EVENTS = {
         ADD: 'category:add',
@@ -49,7 +50,7 @@ export default class Category {
             .type(FieldType.ENTITY)
             .name('parent')
             .label('Categoria padre')
-            .url('api/categories')
+            .url(Constants.API_BASE_URL + 'categories')
             .valueField('categoria_id')
             .textField('descripcion')
             .formatter((value: any, row: any) => {

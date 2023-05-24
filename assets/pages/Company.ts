@@ -17,7 +17,7 @@ export default class Company {
     private form: Form;
     private consultService: ConsultService = new ConsultService();
 
-    static readonly API_URL = 'api/companies';
+    static readonly API_URL = Constants.API_BASE_URL + 'companies';
 
     static readonly EVENTS = {
         ADD: 'company:add',

@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {Constants} from "../core/common/Constants";
 
 export default class Config {
     private readonly container: string;
@@ -12,7 +13,7 @@ export default class Config {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/settings';
+    static readonly API_URL = Constants.API_BASE_URL + 'settings';
 
     static readonly EVENTS = {
         ADD: 'config:add',
