@@ -8,9 +8,9 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 class ProductStock
 {
     public function __construct(
-        public string $id,
-        public string $name,
-        public float $stock
+        public ?string $id = null,
+        public ?string $name = null,
+        public ?float $stock = null
     ) {
     }
 }

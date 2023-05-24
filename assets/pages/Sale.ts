@@ -21,6 +21,7 @@ import {PriceListItemDto} from "../dto/PriceListItemDto";
 import FilterRule from "../core/common/FilterRule";
 import {Setting, settings} from "../Settings";
 import ApiResponse from "../core/http/ApiResponse";
+import {productService} from "../services/product.service";
 
 export default class Sale {
     private readonly container: string;
@@ -203,6 +204,7 @@ export default class Sale {
             .label('Cantidad')
             .align('center')
             .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
@@ -211,6 +213,7 @@ export default class Sale {
             .align('right')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
@@ -220,6 +223,7 @@ export default class Sale {
             .readonly(true)
             .onChange(this.calculateGrandTotal.bind(this))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
+            .required(true)
             .build());
     };
 
@@ -379,11 +383,17 @@ export default class Sale {
         row['precio_total-' + index].numberbox('setValue', price);
     }
 
-    private onQuantityChange(newValue: number, oldValue: number, field: Field) {
+    private onQuantityChange(newValue: number|string, oldValue: number, field: Field) {
+        if (newValue === '') {
+            return;
+        }
+
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(Number(index));
         let price = row['precio_unitario-' + index].numberbox('getValue');
-        row['precio_total-' + index].numberbox('setValue', Number(newValue * price).toFixed(2));
+        row['precio_total-' + index].numberbox('setValue', Number(Number(newValue) * price).toFixed(2));
+
+        this.checkStock(field);
     }
 
     private onPriceChange(newValue: number, oldValue: number, field: Field) {
@@ -504,5 +514,29 @@ export default class Sale {
                 }
             }
         }
+    }
+
+    private checkStock(field: Field) {
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(Number(index));
+        settings.get(Setting.CHECK_STOCK).then((setting) => {
+            if (setting?.value !== 'true') {
+                return;
+            }
+
+            this.dialog.setLoading(true, 'Verificando stock...')
+            let productId = row['producto-' + index].combobox('getValue');
+            productService.getStock(productId).subscribe((response) => {
+                let stock = response.data.stock;
+                let quantity = row['cantidad-' + index].numberbox('getValue');
+                if (quantity > stock) {
+                    row['cantidad-' + index].numberbox('clear');
+                    messenger.show('Información', `Stock disponible: ${stock}`);
+                    row['precio_total-' + index].numberbox('setValue', 0);
+                }
+            }).add(() => {
+                this.dialog.setLoading(false);
+            });
+        });
     }
 }

@@ -3,6 +3,7 @@ import {ProductDto} from "../dto/product.dto";
 import {httpClient} from "../core/http/HttpClient";
 import GridData from "../components/common/GridData";
 import ApiResponse from "../core/http/ApiResponse";
+import {ProductStockDto} from "../dto/product.stock.dto";
 
 class ProductService {
 
@@ -25,6 +26,10 @@ class ProductService {
 
     create(values: any) {
         return Promise.resolve("insert");
+    }
+
+    getStock(id: string) {
+        return httpClient.get<ProductStockDto>(`/api/products/${id}/stock`);
     }
 }
 

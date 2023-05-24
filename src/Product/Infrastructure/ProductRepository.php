@@ -102,18 +102,30 @@ readonly class ProductRepository implements ProductRepositoryInterface
      */
     public function getStock(string $productId): ProductStock
     {
-        /** @var false|array<string, mixed> $stock */
+        /** @var false|array<string, string|float|int> $stock */
         $stock = $this->connection->fetchAssociative(
-            'select
-                        md.producto_id as id,
-                        p.descripcion as name,
-                        sum(if(m.tipo_id = 1, md.cantidad, md.cantidad * -1)) as stock
-                    from movimiento_detalle md
-                        inner join producto p on md.producto_id = p.producto_id
-                        inner join movimiento m on md.movimiento_id = m.movimiento_id
-                    where md.producto_id = :id and m.estado = 1',
+            'SELECT
+                        p.producto_id AS id,
+                        p.descripcion AS `name`,
+                        SUM(IF(m.tipo_id = 1, IFNULL(md.cantidad, 0), IFNULL(md.cantidad, 0) * -1)) AS stock
+                    FROM
+                        producto p
+                        LEFT JOIN movimiento_detalle md ON p.producto_id = md.producto_id
+                        LEFT JOIN movimiento m ON md.movimiento_id = m.movimiento_id AND m.estado = 1
+                    WHERE
+                        p.producto_id = :id
+                    GROUP BY
+                        p.producto_id, p.descripcion',
             ['id' => $productId]);
 
-        return DataMapper::map($stock, ProductStock::class);
+        if (!$stock) {
+            return new ProductStock($productId, '', 0.0);
+        }
+
+        return new ProductStock(
+            strval($stock['id']),
+            strval($stock['name']),
+            floatval($stock['stock']),
+        );
     }
 }
