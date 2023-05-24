@@ -3,7 +3,6 @@
 namespace App\RoleMenu\Application;
 
 use App\Base\BaseController;
-use App\Core\Domain\Util\Constants;
 use App\RoleMenu\Domain\RoleMenu;
 use App\RoleMenu\Domain\RoleMenuCreateUseCase;
 use App\RoleMenu\Domain\RoleMenuGetAllByRoleUseCase;
@@ -37,6 +36,6 @@ class RoleMenuController extends BaseController
         }
         $createUseCase(intval($data['roleId']), $roleMenuList);
 
-        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
+        return $this->json(['success' => true, 'msg' => 'Permisos asignados correctamente']);
     }
 }
