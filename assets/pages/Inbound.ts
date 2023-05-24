@@ -8,6 +8,7 @@ import {StorageUtils} from "../core/utils/StorageUtils";
 import {bus} from "../core/event/EventBus";
 import NumberUtils from "../core/utils/NumberUtils";
 import { productService } from "../services/product.service";
+import {Constants} from "../core/common/Constants";
 
 export default class Inbound {
     private readonly container: string;
@@ -57,7 +58,7 @@ export default class Inbound {
             .type(FieldType.ENTITY)
             .name('operacion_id')
             .label('Operacion')
-            .url('api/operations?filterRules=[{"field":"tipo_id","op":"equal","value":"1"}]')
+            .url(Constants.API_BASE_URL + 'operations?filterRules=[{"field":"tipo_id","op":"equal","value":"1"}]')
             .valueField('operacion_id')
             .textField('descripcion')
             .visible(false)
@@ -70,7 +71,7 @@ export default class Inbound {
             .width(100)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
+        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('almacen_id')
@@ -91,7 +92,7 @@ export default class Inbound {
             .type(FieldType.ENTITY)
             .name('proveedor_id')
             .label('Proveedor')
-            .url('api/suppliers')
+            .url(Constants.API_BASE_URL + 'suppliers')
             .valueField('proveedor_id')
             .textField('razon_social')
             .visible(false)
@@ -173,7 +174,7 @@ export default class Inbound {
             url: 'inbound/get',
             routes: Inbound.ROUTES,
             events: Inbound.EVENTS,
-            detailUrl: 'api/sales/{id}/details',
+            detailUrl: Constants.API_BASE_URL + 'sales/{id}/details',
             detailFields: this.detailFields
         });
     }

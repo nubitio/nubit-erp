@@ -9,6 +9,7 @@ import NumberUtils from "../core/utils/NumberUtils";
 import FilterRule from "../core/common/FilterRule";
 import {messenger} from "../core/utils/Messenger";
 import {saleService} from "../services/sale.service";
+import {Constants} from "../core/common/Constants";
 
 export default class CreditNote {
     private readonly container: string;
@@ -17,7 +18,7 @@ export default class CreditNote {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/credit-notes';
+    static readonly API_URL = Constants.API_BASE_URL + 'credit-notes';
 
     static readonly EVENTS = {
         ADD: 'credit-note:add',
@@ -54,7 +55,7 @@ export default class CreditNote {
             .label('Comprobante')
             .visible(false)
             .mode('remote')
-            .url('api/sales?filterRules=[' + JSON.stringify(saleFilter) + ']')
+            .url(Constants.API_BASE_URL + 'sales?filterRules=[' + JSON.stringify(saleFilter) + ']')
             .textField('invoice')
             .valueField('movimiento_id')
             .formatter((row: any) => `<b>C.P:</b> ${row.invoice ?? ''}<br><b>Total:</b> ${NumberUtils.formatCurrency(row.total)}`)

@@ -9,6 +9,7 @@ import {Drawer} from "../core/drawer/Drawer";
 import ConsultationSale from "./ConsultationSale";
 import {messenger} from "../core/utils/Messenger";
 import {bus} from "../core/event/EventBus";
+import {Constants} from "../core/common/Constants";
 
 export default class Consultation {
     private readonly container: string;
@@ -18,7 +19,7 @@ export default class Consultation {
     private form: Form;
     private paymentsDrawer: Drawer;
 
-    static readonly API_URL = 'api/consultations';
+    static readonly API_URL = Constants.API_BASE_URL + 'consultations';
 
     static readonly EVENTS = {
         ADD: 'consultation:add',
@@ -49,7 +50,7 @@ export default class Consultation {
             .type(FieldType.ENTITY)
             .name('patient')
             .label('Paciente')
-            .url('api/patients')
+            .url(Constants.API_BASE_URL + 'patients')
             .valueField('id')
             .textField('razon_social')
             .formatter((value: any) => value?.full_name)
@@ -60,7 +61,7 @@ export default class Consultation {
             .type(FieldType.ENTITY)
             .name('physician')
             .label('Médico')
-            .url('api/physicians')
+            .url(Constants.API_BASE_URL + 'physicians')
             .valueField('id')
             .textField('full_name')
             .formatter((value: any) => value?.full_name+'<br>'+value?.specialty?.name)

@@ -6,6 +6,7 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {StorageUtils} from "../core/utils/StorageUtils";
 import { productService } from "../services/product.service";
+import {Constants} from "../core/common/Constants";
 
 export default class Transfer {
     private readonly container: string;
@@ -53,7 +54,7 @@ export default class Transfer {
             .required(true)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
+        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('almacen_origen')

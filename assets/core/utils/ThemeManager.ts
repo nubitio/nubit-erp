@@ -2,6 +2,7 @@ import {SharedUtils} from "./SharedUtils";
 import {EventType} from "../event/EventType";
 import {bus} from "../event/EventBus";
 import FilterRule from "../common/FilterRule";
+import {Constants} from "../common/Constants";
 
 class ThemeManager {
     private accentColor: string;
@@ -57,7 +58,7 @@ class ThemeManager {
             op: 'equal',
             value: 'app_theme_accent_color'
         }
-        fetch('api/settings?filterRules=[' + JSON.stringify(filter) + ']')
+        fetch(Constants.API_BASE_URL + 'settings?filterRules=[' + JSON.stringify(filter) + ']')
             .then(response => response.json())
             .then(result => {
                 this.accentColor = result[0].value;

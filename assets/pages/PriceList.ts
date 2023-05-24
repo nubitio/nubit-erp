@@ -9,6 +9,7 @@ import {bus} from "../core/event/EventBus";
 import {Drawer} from "../core/drawer/Drawer";
 import {httpClient} from "../core/http/HttpClient";
 import NumberUtils from "../core/utils/NumberUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class PriceList {
     private readonly container: string;
@@ -17,7 +18,7 @@ export default class PriceList {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/price-lists';
+    static readonly API_URL = Constants.API_BASE_URL + 'price-lists';
 
     static readonly EVENTS = {
         ADD: 'price-list:add',
