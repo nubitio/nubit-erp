@@ -4,6 +4,7 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
+import {Constants} from "../core/common/Constants";
 
 export default class Physician {
     private readonly container: string;
@@ -12,7 +13,7 @@ export default class Physician {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/physicians';
+    static readonly API_URL = Constants.API_BASE_URL + 'physicians';
 
     static readonly EVENTS = {
         ADD: 'physician:add',
@@ -44,7 +45,7 @@ export default class Physician {
             .name('employee')
             .label('Empleado')
             .width(100)
-            .url('api/employees')
+            .url(Constants.API_BASE_URL + 'employees')
             .valueField('id')
             .textField('full_name')
             .formatter((value: any) => value?.first_name + ' ' + value?.last_name)
@@ -55,7 +56,7 @@ export default class Physician {
             .type(FieldType.ENTITY)
             .name('specialty')
             .label('Especialidad')
-            .url('api/specialties')
+            .url(Constants.API_BASE_URL + 'specialties')
             .valueField('id')
             .textField('name')
             .formatter((value: any) => value?.name)
