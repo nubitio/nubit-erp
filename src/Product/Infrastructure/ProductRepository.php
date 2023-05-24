@@ -18,7 +18,8 @@ use Doctrine\ORM\Exception\ORMException;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
-    private const ERROR_MESSAGE = "Ya existe un producto con el mismo nombre";
+    private const ERROR_MESSAGE = 'Ya existe un producto con el mismo nombre';
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
