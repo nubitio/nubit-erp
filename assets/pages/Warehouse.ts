@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class Warehouse {
     private readonly container: string;
@@ -13,7 +14,7 @@ export default class Warehouse {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/warehouses';
+    static readonly API_URL = Constants.API_BASE_URL + 'warehouses';
 
     static readonly EVENTS = {
         ADD: 'warehouse:add',
@@ -43,7 +44,7 @@ export default class Warehouse {
             .type(FieldType.ENTITY)
             .name('local')
             .label('Local')
-            .url('api/branches')
+            .url(Constants.API_BASE_URL + 'branches')
             .valueField('local_id')
             .textField('descripcion')
             .required(true)

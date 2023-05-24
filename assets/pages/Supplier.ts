@@ -17,7 +17,7 @@ export default class Supplier {
     private form: Form;
     private consultService: ConsultService = new ConsultService();
 
-    static readonly API_URL = 'api/suppliers';
+    static readonly API_URL = Constants.API_BASE_URL + 'suppliers';
 
     static readonly EVENTS = {
         ADD: 'supplier:add',

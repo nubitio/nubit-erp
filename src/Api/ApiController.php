@@ -5,23 +5,24 @@ namespace App\Api;
 use App\Base\BaseController;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use Firebase\JWT\JWT;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends BaseController
 {
     /**
-     * @param array<string, string|bool|int|float|null> $body
+     * @var array<string, string|bool|int|float|null>
      */
+    private array $body;
+
     public function __construct(
-        private readonly Request $request,
-        private array $body,
+        private readonly RequestStack $request,
         private readonly ApiRepository $apiRepository,
     ) {
         parent::__construct();
         /** @var array<string, string|bool|int|float|null> $body */
-        $body = json_decode($this->request->getContent(), true);
+        $body = json_decode($this->request->getCurrentRequest()?->getContent() ?? '[]', true);
 
         $this->body = $body;
     }
