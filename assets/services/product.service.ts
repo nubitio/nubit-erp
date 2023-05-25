@@ -4,6 +4,7 @@ import {httpClient} from "../core/http/HttpClient";
 import GridData from "../components/common/GridData";
 import ApiResponse from "../core/http/ApiResponse";
 import {Constants} from "../core/common/Constants";
+import {ProductStockDto} from "../dto/product.stock.dto";
 
 class ProductService {
 
@@ -26,6 +27,10 @@ class ProductService {
 
     create(values: any) {
         return Promise.resolve("insert");
+    }
+
+    getStock(id: string, warehouseId: string) {
+        return httpClient.get<ProductStockDto>(`${Constants.API_BASE_URL}products/${id}/stock/${warehouseId}`);
     }
 }
 

@@ -21,8 +21,12 @@ class ApiController extends BaseController
         private readonly ApiRepository $apiRepository,
     ) {
         parent::__construct();
-        /** @var array<string, string|bool|int|float|null> $body */
+        /** @var array<string, string|bool|int|float|null>|null $body */
         $body = json_decode($this->request->getCurrentRequest()?->getContent() ?? '[]', true);
+
+        if (null === $body) {
+            $body = [];
+        }
 
         $this->body = $body;
     }
