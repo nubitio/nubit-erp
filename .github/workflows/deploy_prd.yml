@@ -12,7 +12,7 @@ jobs:
 
   deployment:
     name: Deployment
-    uses: ./.github/workflows/deploy.yml
+    uses: ./.github/workflows/deployment.yml
     with:
       environment: prod
     secrets:

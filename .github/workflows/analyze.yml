@@ -28,4 +28,7 @@ jobs:
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run PHPStan
-        run: vendor/bin/phpstan analyze --no-progress --no-interaction --memory-limit=2G
+        run: vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit=2G
+
+      - name: Run PHP CS Fixer
+        run: vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff
