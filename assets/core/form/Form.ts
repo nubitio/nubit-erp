@@ -516,6 +516,9 @@ export default class Form {
                 field.onClick(field);
             });
         }
+        if (field.hidden) {
+            input.numberbox('hide');
+        }
         this.formFields[field.name] = input;
     }
 
@@ -732,6 +735,8 @@ export default class Form {
             }
             switch (field.type) {
                 case FieldType.TEXT:
+                case FieldType.NUMBER:
+                case FieldType.CURRENCY:
                     this.getField(field.name).textbox('setValue', field.defaultValue);
                     break;
                 case FieldType.DATE:

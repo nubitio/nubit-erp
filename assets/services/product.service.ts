@@ -29,8 +29,8 @@ class ProductService {
         return Promise.resolve("insert");
     }
 
-    getStock(id: string) {
-        return httpClient.get<ProductStockDto>(`${Constants.API_BASE_URL}products/${id}/stock`);
+    getStock(id: string, warehouseId: string) {
+        return httpClient.get<ProductStockDto>(`${Constants.API_BASE_URL}products/${id}/stock/${warehouseId}`);
     }
 }
 

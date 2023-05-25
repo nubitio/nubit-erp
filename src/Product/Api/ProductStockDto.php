@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Get;
 use App\Product\Domain\ProductStock;
 
 #[ApiResource(
-    uriTemplate: '/products/{id}/stock',
+    uriTemplate: '/products/{id}/stock/{warehouseId}',
     shortName: 'ProductStock',
     operations: [new Get(
         status: 200,
@@ -23,6 +23,7 @@ class ProductStockDto extends ProductStock
         public ?string $id,
         public ?string $name,
         public ?float $stock,
+        public ?string $warehouseId,
     ) {
         parent::__construct($id, $name, $stock);
     }
