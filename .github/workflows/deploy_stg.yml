@@ -1,0 +1,23 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+
+  deployment:
+    name: Deployment
+    uses: ./.github/workflows/deployment.yml
+    with:
+      environment: stg
+    secrets:
+      SSH_HOST: ${{ vars.STG_SSH_HOST }}
+      SSH_HOST_KEY: ${{ vars.STG_SSH_HOST_KEY }}
+      SSH_USER: ${{ vars.STG_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+    needs: [ build ]
