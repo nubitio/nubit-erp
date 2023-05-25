@@ -4,6 +4,7 @@ namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Exception\ValidationException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
@@ -16,6 +17,8 @@ use Doctrine\ORM\Exception\ORMException;
 
 readonly class ProductRepository implements ProductRepositoryInterface
 {
+    private const ERROR_MESSAGE = 'Ya existe un producto con el mismo nombre';
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
@@ -40,6 +43,10 @@ readonly class ProductRepository implements ProductRepositoryInterface
         return DataMapper::map($entity, Product::class);
     }
 
+    /**
+     * @throws ValidationException
+     * @throws ORMException
+     */
     public function insert(Product $product): Product
     {
         $entity = DataMapper::map($product, ProductEntity::class);
@@ -49,6 +56,13 @@ readonly class ProductRepository implements ProductRepositoryInterface
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
             $entity->imagen = $image;
         }
+
+        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $entity->descripcion]);
+
+        if ($product) {
+            throw new ValidationException(self::ERROR_MESSAGE);
+        }
+
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -73,6 +87,12 @@ readonly class ProductRepository implements ProductRepositoryInterface
         if ($product->imagen?->id) {
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
             $entity->imagen = $image;
+        }
+
+        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $entity->descripcion]);
+
+        if ($product) {
+            throw new ValidationException(self::ERROR_MESSAGE);
         }
 
         $entity->categoria = $category;
