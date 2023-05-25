@@ -119,8 +119,9 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
     /**
      * @throws Exception
+     * @throws ServiceException
      */
-    public function getStock(string $productId): ProductStock
+    public function getStock(string $productId, string $warehouseId): ProductStock
     {
         /** @var false|array<string, string|float|int> $stock */
         $stock = $this->connection->fetchAssociative(
@@ -130,16 +131,18 @@ readonly class ProductRepository implements ProductRepositoryInterface
                         SUM(IF(m.tipo_id = 1, IFNULL(md.cantidad, 0), IFNULL(md.cantidad, 0) * -1)) AS stock
                     FROM
                         producto p
-                        LEFT JOIN movimiento_detalle md ON p.producto_id = md.producto_id
-                        LEFT JOIN movimiento m ON md.movimiento_id = m.movimiento_id AND m.estado = 1
+                        INNER JOIN movimiento_detalle md ON p.producto_id = md.producto_id
+                        INNER JOIN movimiento m ON md.movimiento_id = m.movimiento_id
                     WHERE
-                        p.producto_id = :id
+                        m.estado = 1
+                        AND p.producto_id = :id
+                        AND m.almacen_id = :warehouseId
                     GROUP BY
                         p.producto_id, p.descripcion',
-            ['id' => $productId]);
+            ['id' => $productId, 'warehouseId' => $warehouseId]);
 
         if (!$stock) {
-            return new ProductStock($productId, '', 0.0);
+            throw new ServiceException('No se encontró el stock del producto');
         }
 
         return new ProductStock(

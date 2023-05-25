@@ -9,8 +9,8 @@ readonly class GetProductStockUseCase
     ) {
     }
 
-    public function __invoke(string $productId): ProductStock
+    public function __invoke(string $productId, string $warehouseId): ProductStock
     {
-        return $this->productRepository->getStock($productId);
+        return $this->productRepository->getStock($productId, $warehouseId);
     }
 }

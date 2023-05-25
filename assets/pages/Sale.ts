@@ -22,6 +22,7 @@ import FilterRule from "../core/common/FilterRule";
 import {Setting, settings} from "../Settings";
 import ApiResponse from "../core/http/ApiResponse";
 import {productService} from "../services/product.service";
+import {cashboxService} from "../services/cashbox.service";
 
 export default class Sale {
     private readonly container: string;
@@ -48,6 +49,7 @@ export default class Sale {
     constructor(container: string) {
         this.container = container;
         this.init();
+        this.checkCashBox();
     }
 
     init() {
@@ -184,6 +186,13 @@ export default class Sale {
             .formatter(SharedUtils.invoiceStatusFormatter)
             .align('center')
             .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NUMBER)
+            .name('created_by')
+            .defaultValue(session['user_id'])
+            .visible(false)
+            .hidden(true)
+            .build());
 
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
@@ -226,6 +235,23 @@ export default class Sale {
             .required(true)
             .build());
     };
+
+    private checkCashBox() {
+        cashboxService.getLast().subscribe((response) => {
+            if (response.data.header.length === 0) {
+                messenger.confirm(
+                    'Confirmar',
+                    'No se ha aperturado caja, ¿Desea aperturar caja ahora?',
+                    (result) => {
+                        if (result) {
+                            window.location.href = 'cashbox';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    });
+            }
+        });
+    }
 
     render() {
         this.renderDataGrid();
@@ -383,7 +409,7 @@ export default class Sale {
         row['precio_total-' + index].numberbox('setValue', price);
     }
 
-    private onQuantityChange(newValue: number|string, oldValue: number, field: Field) {
+    private onQuantityChange(newValue: number | string, oldValue: number, field: Field) {
         if (newValue === '') {
             return;
         }
@@ -526,7 +552,9 @@ export default class Sale {
 
             this.dialog.setLoading(true, 'Verificando stock...')
             let productId = row['producto-' + index].combobox('getValue');
-            productService.getStock(productId).subscribe((response) => {
+            let session = JSON.parse(localStorage.getItem('session') ?? '{}');
+            let warehouseId = session['warehouse_id'];
+            productService.getStock(productId, warehouseId).subscribe((response) => {
                 let stock = response.data.stock;
                 let quantity = row['cantidad-' + index].numberbox('getValue');
                 if (quantity > stock) {

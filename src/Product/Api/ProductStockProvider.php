@@ -20,6 +20,6 @@ readonly class ProductStockProvider implements ApiProviderInterface
     /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        return $this->getProductStockUseCase->__invoke(strval($uriVariables['id']));
+        return $this->getProductStockUseCase->__invoke(strval($uriVariables['id']), strval($uriVariables['warehouseId']));
     }
 }
