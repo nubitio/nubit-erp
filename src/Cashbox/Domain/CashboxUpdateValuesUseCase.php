@@ -2,10 +2,10 @@
 
 namespace App\Cashbox\Domain;
 
-class CashboxUpdateValuesUseCase
+readonly class CashboxUpdateValuesUseCase
 {
     public function __construct(
-        private readonly CashboxRepositoryInterface $repository,
+        private CashboxRepositoryInterface $repository,
     ) {
     }
 
