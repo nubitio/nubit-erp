@@ -60,7 +60,7 @@ export default class Invoice {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
-            .name('cliente_name')
+            .name('c.razon_social')
             .label('Cliente')
             .formatter((value: any, row: any) => row['cliente']?.['razon_social'])
             .build());
