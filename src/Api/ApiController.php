@@ -53,11 +53,13 @@ class ApiController extends BaseController
         }
     }
 
+    #[Route('/api/config', name: 'api_getConfig', methods: ['GET'])]
     public function getConfig(): Response
     {
         return $this->json($this->apiRepository->getConfig());
     }
 
+    #[Route('/api/locals', name: 'api_getAllLocals', methods: ['GET'])]
     public function getAllLocals(): Response
     {
         return $this->json($this->apiRepository->getAllLocals());
@@ -230,7 +232,8 @@ class ApiController extends BaseController
         }
     }
 
-    public function uploadImage(): Response
+    #[Route('/api/products/{id}/image/upload', name: 'api_uploadImageProduct', methods: ['POST'])]
+    public function uploadImage(string $id): Response
     {
         return $this->json(['success' => true, 'message' => 'Image uploaded'], Response::HTTP_OK);
     }
@@ -298,6 +301,7 @@ class ApiController extends BaseController
         }
     }
 
+    #[Route('/api/dashboard/sales/{date}', name: 'api_getSalesByDate', methods: ['GET'])]
     public function getSalesByDate(string $date): Response
     {
         $data = $this->apiRepository->getSalesByDate($date);
@@ -309,17 +313,7 @@ class ApiController extends BaseController
         return $this->json($data['total']);
     }
 
-    public function getSalesByDayForWeek(string $date): Response
-    {
-        $data = $this->apiRepository->getSalesByDayForWeek($date);
-
-        if (null == $data) {
-            return $this->json(0);
-        }
-
-        return $this->json($data['total']);
-    }
-
+    #[Route('/api/dashboard/salesWeekly/{date}', name: 'api_getWeeklySales', methods: ['GET'])]
     public function getWeeklySales(string $date): Response
     {
         $data = $this->apiRepository->getWeeklySales();
@@ -327,16 +321,19 @@ class ApiController extends BaseController
         return $this->json($data);
     }
 
+    #[Route('/api/dashboard/salesWeeklySoles/{local_id}/{date}', name: 'api_getWeeklySalesSoles', methods: ['GET'])]
     public function getWeeklySalesSoles(string $date, string $local_id): Response
     {
         return $this->json($this->apiRepository->getWeeklySalesSoles($local_id));
     }
 
+    #[Route('/api/dashboard/salesMonthSoles/{local_id}/{date}', name: 'api_getMonthSalesSoles', methods: ['GET'])]
     public function getMonthSalesSoles(string $date, string $local_id): Response
     {
         return $this->json($this->apiRepository->getMonthSalesSoles($local_id));
     }
 
+    #[Route('/api/dashboard/salesMonth/{date}', name: 'api_getMonthSales', methods: ['GET'])]
     public function getMonthSales(string $date): Response
     {
         $data = $this->apiRepository->getMonthSales();
@@ -344,18 +341,21 @@ class ApiController extends BaseController
         return $this->json($data);
     }
 
-    public function getTopProduct(string $date): Response
+    #[Route('/api/dashboard/TopProduct', name: 'api_getTopProduct', methods: ['GET'])]
+    public function getTopProduct(): Response
     {
         $data = $this->apiRepository->getTopProduct();
 
         return $this->json($data);
     }
 
+    #[Route('/api/dashboard/VoucherForMonth/{local_id}', name: 'api_getVoucherForMonth', methods: ['GET'])]
     public function getVoucherForMonth(string $local_id): Response
     {
         return $this->json($this->apiRepository->getVoucherForMonth($local_id));
     }
 
+    #[Route('/api/dashboard/VoucherForMonthSoles/{local_id}', name: 'api_getVoucherForMonthSoles', methods: ['GET'])]
     public function getVoucherForMonthSoles(string $local_id): Response
     {
         return $this->json($this->apiRepository->getVoucherForMonthSoles($local_id));
