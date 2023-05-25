@@ -78,13 +78,13 @@ class CashboxRepository implements CashboxRepositoryInterface
                 c.serie,
                 min( c.numero ) AS desde,
                 max( c.numero ) AS hasta,
-                sum( c.total - c.discount_amount ) AS total 
+                sum( c.total - c.discount_amount ) AS total
             FROM
                 comprobante c
                 INNER JOIN tipo_comprobante tc ON tc.codigo = c.tipo_comprobante_id
-                INNER JOIN movimiento m ON m.movimiento_id = c.movimiento_id 
+                INNER JOIN movimiento m ON m.movimiento_id = c.movimiento_id
             WHERE
-                m.caja_id = ? 
+                m.caja_id = ?
             GROUP BY
                 tc.codigo
         ';
@@ -142,6 +142,7 @@ class CashboxRepository implements CashboxRepositoryInterface
             $cashBoxEntity = $this->entityManager->getReference(CashboxEntity::class, $cashBoxId);
 
             $totalSales = $this->getTotalSales($userId, $startDate, $endDate);
+            dump($totalSales);
 
             foreach ($totalSales as $totalSale) {
                 /** @var ?CashboxDetailEntity $cashBoxDetail */
@@ -183,18 +184,18 @@ class CashboxRepository implements CashboxRepositoryInterface
             SELECT
                 pt.id,
                 pt.`name`,
-                SUM( ROUND( precio_total - ( precio_total * IFNULL( m.descuento, 0 ) / 100 ), 2 ) ) as total
+                SUM( ROUND( IFNULL( precio_total - ( precio_total * IFNULL( m.descuento, 0 ) / 100 ), 0 ), 2 ) ) AS total
             FROM
-                movimiento_detalle md
-            INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id
-            INNER JOIN payment_type pt ON pt.id = m.tipo_pago 
-                AND m.estado = 1 
-                AND m.numero > 0 
-            WHERE
-                m.created_by = ?
-                AND (m.date_created BETWEEN ? AND ?) 
+                payment_type pt
+                LEFT JOIN movimiento m ON pt.id = m.tipo_pago
+                LEFT JOIN movimiento_detalle md ON m.movimiento_id = md.movimiento_id
+                AND m.estado = 1
+                AND m.numero > 0
+                AND m.created_by = ?
+                AND ( m.date_created BETWEEN ? AND ? )
             GROUP BY
-                pt.id
+                pt.id,
+                pt.`name`;
         ';
 
         /** @var array<int, array<string, bool|float|int|string|null>> $data */
