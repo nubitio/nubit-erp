@@ -6,11 +6,96 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\Uid\Uuid;
 
-readonly class ApiRepository
+class ApiRepository
 {
+    /**
+     * @param array<string, int> $customerColumns
+     * @param array<string, int> $categoryColumns
+     * @param array<string, int> $productColumns
+     * @param array<string, int> $saleColumns
+     * @param array<string, int> $saleDetailColumns
+     */
     public function __construct(
-        private Connection $db
+        private readonly Connection $db,
+        private array $customerColumns = [],
+        private array $categoryColumns = [],
+        private array $productColumns = [],
+        private array $saleColumns = [],
+        private array $saleDetailColumns = [],
     ) {
+        $this->customerColumns = array_flip([
+            'ruc',
+            'razon_social',
+            'domicilio_fiscal',
+            'telefono',
+            'email',
+            'imagen',
+            'price_list_id',
+            'estado',
+        ]);
+
+        $this->categoryColumns = array_flip([
+            'categoria_id',
+            'descripcion',
+            'parent_id',
+            'imagen',
+            'estado',
+        ]);
+
+        $this->productColumns = array_flip([
+            'producto_id',
+            'codigo',
+            'tipo_id',
+            'descripcion',
+            'categoria_id',
+            'unidad_id',
+            'destino_id',
+            'stock_minimo',
+            'precio',
+            'precio_compra',
+            'imagen',
+            'estado',
+        ]);
+
+        $this->saleColumns = array_flip([
+            'movimiento_id',
+            'tipo_id',
+            'fecha',
+            'operacion_id',
+            'almacen_id',
+            'proveedor_id',
+            'cliente_id',
+            'tipo_pago',
+            'tipo_tarjeta',
+            'serie',
+            'numero',
+            'descuento',
+            'glosa',
+            'orden_id',
+            'has_invoice',
+            'is_consume',
+            'caja_id',
+            'estado',
+            'date_created',
+            'date_updated',
+            'created_by',
+            'updated_by',
+            'igv',
+            'recargo_consumo',
+            'invoice',
+            'subtotal',
+            'total',
+        ]);
+
+        $this->saleDetailColumns = array_flip([
+            'id',
+            'movimiento_id',
+            'producto_id',
+            'cantidad',
+            'precio_unitario',
+            'descuento',
+            'precio_total',
+        ]);
     }
 
     /**
@@ -68,7 +153,8 @@ readonly class ApiRepository
         $category['categoria_id'] = Uuid::v4();
         $category['estado'] = 1;
         try {
-            $this->db->insert('categoria', $category);
+            $filteredCategory = array_intersect_key($category, $this->categoryColumns);
+            $this->db->insert('categoria', $filteredCategory);
 
             return ['success' => true, 'data' => $category, 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
@@ -84,7 +170,8 @@ readonly class ApiRepository
     public function updateCategory(string $id, array $category): array
     {
         try {
-            $this->db->update('categoria', $category, ['categoria_id' => $id]);
+            $filteredCategory = array_intersect_key($category, $this->categoryColumns);
+            $this->db->update('categoria', $filteredCategory, ['categoria_id' => $id]);
 
             return ['success' => true, 'data' => $category, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
@@ -140,7 +227,8 @@ readonly class ApiRepository
     {
         $customer['estado'] = 1;
         try {
-            $this->db->insert('cliente', $customer);
+            $filteredCustomer = array_intersect_key($customer, $this->customerColumns);
+            $this->db->insert('cliente', $filteredCustomer);
 
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
@@ -156,7 +244,8 @@ readonly class ApiRepository
     public function updateCustomer(string $id, array $customer): array
     {
         try {
-            $this->db->update('cliente', $customer, ['ruc' => $id]);
+            $filteredCustomer = array_intersect_key($customer, $this->customerColumns);
+            $this->db->update('cliente', $filteredCustomer, ['ruc' => $id]);
 
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
@@ -221,7 +310,8 @@ readonly class ApiRepository
         $product['tipo_id'] = 2;
         $product['estado'] = 1;
         try {
-            $this->db->insert('producto', $product);
+            $filteredProduct = array_intersect_key($product, $this->productColumns);
+            $this->db->insert('producto', $filteredProduct);
 
             return ['success' => true, 'data' => $product, 'msg' => 'Registro insertado'];
         } catch (Exception $e) {
@@ -237,7 +327,8 @@ readonly class ApiRepository
     public function updateProduct(string $local_id, string $id, array $product): array
     {
         try {
-            $this->db->update('producto', $product, ['producto_id' => $id]);
+            $filteredProduct = array_intersect_key($product, $this->productColumns);
+            $this->db->update('producto', $filteredProduct, ['producto_id' => $id]);
 
             return ['success' => true, 'data' => $product, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
@@ -337,13 +428,20 @@ readonly class ApiRepository
         $sale['estado'] = 1;
         $sale['igv'] = (int) $this->getOption('app_option_igv');
         $sale['recargo_consumo'] = (int) $this->getOption('app_option_rc');
+        /** @var array<int, array<string, mixed>> $saleDetail */
+        $saleDetail = $sale['detail'];
+        $sale['subtotal'] = 0;
+        foreach ($saleDetail as $item) {
+            $sale['subtotal'] += $item['precio_total'];
+        }
+        $sale['total'] = $sale['subtotal'] - ($sale['subtotal'] * ($sale['descuento'] / 100));
+        $filteredSale = array_intersect_key($sale, $this->saleColumns);
         try {
-            $this->db->insert('movimiento', $sale);
-            /** @var array<int, array<string, mixed>> $saleDetail */
-            $saleDetail = $sale['detail'];
+            $this->db->insert('movimiento', $filteredSale);
             foreach ($saleDetail as $item) {
                 $item['movimiento_id'] = $sale['movimiento_id'];
-                $this->db->insert('movimiento_detalle', $item);
+                $filteredItem = array_intersect_key($item, $this->saleDetailColumns);
+                $this->db->insert('movimiento_detalle', $filteredItem);
             }
 
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro insertado'];
@@ -363,7 +461,8 @@ readonly class ApiRepository
         $sale['is_consume'] = (1 == $sale['is_consume']) ? 1 : 0;
         $sale['estado'] = 1;
         try {
-            $this->db->update('movimiento', $sale, ['movimiento_id' => $id]);
+            $filteredSale = array_intersect_key($sale, $this->saleColumns);
+            $this->db->update('movimiento', $filteredSale, ['movimiento_id' => $id]);
 
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro actualizado'];
         } catch (Exception $e) {
@@ -391,21 +490,6 @@ readonly class ApiRepository
      * @throws Exception
      */
     public function getSalesByDate(string $date): ?array
-    {
-        $data = $this->db->fetchAllAssociative('select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)', ['date' => $date]);
-        if ($data) {
-            return $data[0];
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     *
-     * @throws Exception
-     */
-    public function getSalesByDayForWeek(string $date): ?array
     {
         $data = $this->db->fetchAllAssociative('select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)', ['date' => $date]);
         if ($data) {
@@ -532,32 +616,6 @@ readonly class ApiRepository
         where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
         group by p.descripcion, p.producto_id
         order by total desc
-        limit 10
-        ';
-
-        return $this->db->fetchAllAssociative($sql);
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     *
-     * @throws Exception
-     */
-    public function getTopProductM(): array
-    {
-        $sql = '
-        select
-			p.producto_id,
-            p.descripcion as product,
-            sum(md.cantidad) as total
-
-        from time_dimension t
-        left join movimiento m on (date(m.date_created) = t.db_date) and (m.estado = 1 and m.numero > 0)
-        inner join movimiento_detalle md on m.movimiento_id = md.movimiento_id
-        inner join producto p on md.producto_id = p.producto_id
-        where month(curdate()) = month(t.db_date) and year(curdate()) = year(t.db_date)
-        group by p.descripcion, p.producto_id
-        order by total
         limit 10
         ';
 
