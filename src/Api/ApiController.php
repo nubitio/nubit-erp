@@ -265,7 +265,7 @@ class ApiController extends BaseController
     {
         $result = $this->apiRepository->createSale($this->body);
         if ($result['success']) {
-            if (1 == $this->body['has_invoice']) {
+            if (1 == $this->body['make_invoice']) {
                 /** @var array<string, mixed> $data */
                 $data = $result['data'];
                 /** @var string $saleId */
