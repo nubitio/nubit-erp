@@ -55,6 +55,7 @@ export default class DataGridUtils {
                 method: 'get',
                 mode: field.mode ?? 'local',
                 limitToList: true,
+                selectOnNavigation: false,
                 loader: (param: any, success: any, error: any) => {
                     let url = field.url;
                     if (param.q) {
