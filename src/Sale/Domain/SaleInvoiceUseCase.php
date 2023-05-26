@@ -32,18 +32,26 @@ readonly class SaleInvoiceUseCase
     public function __invoke(string $saleId): ?Voucher
     {
         $sale = $this->getOneSaleUseCase->__invoke($saleId);
-        if ($sale->has_invoice) {
-            return $this->getOneVoucherUseCase->__invoke($saleId);
+
+        if (!$sale->has_invoice) {
+            $this->invoiceRepository->create($sale);
         }
-        $this->invoiceRepository->create($sale);
+
         $invoice = $this->invoiceRepository->getOne($saleId);
+
         $sale->has_invoice = true;
         $sale->invoice = $invoice->serie.'-'.$invoice->numero;
         $sale->total = $invoice->total;
         $this->updateSaleUseCase->__invoke($sale);
+
+        if (null !== $invoice->envio_sunat) {
+            return $this->getOneVoucherUseCase->__invoke($saleId);
+        }
+
         $response = $this->billSendUseCase->__invoke($saleId);
         $invoice->digest = $response->hash;
         $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
+
         if ($response->sunatResponse->success) {
             $invoice->envio_sunat = $response->sunatResponse->cdrResponse->code;
             $invoice->mensaje_sunat = $response->sunatResponse->cdrResponse->description;
