@@ -87,8 +87,8 @@ class ApiController extends BaseController
         }
     }
 
-    #[Route('/api/categories/{id}', name: 'api_createCategory', methods: ['POST'])]
-    public function createCategory(string $id): Response
+    #[Route('/api/categories', name: 'api_createCategory', methods: ['POST'])]
+    public function createCategory(): Response
     {
         $result = $this->apiRepository->createCategory($this->body);
         if ($result['success']) {
