@@ -7,6 +7,7 @@ use App\Sale\Domain\SaleInvoiceUseCase;
 use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends BaseController
@@ -87,8 +88,8 @@ class ApiController extends BaseController
         }
     }
 
-    #[Route('/api/categories/{id}', name: 'api_createCategory', methods: ['POST'])]
-    public function createCategory(string $id): Response
+    #[Route('/api/categories', name: 'api_createCategory', methods: ['POST'])]
+    public function createCategory(): Response
     {
         $result = $this->apiRepository->createCategory($this->body);
         if ($result['success']) {
@@ -265,7 +266,7 @@ class ApiController extends BaseController
     {
         $result = $this->apiRepository->createSale($this->body);
         if ($result['success']) {
-            if (1 == $this->body['has_invoice']) {
+            if (1 == $this->body['make_invoice']) {
                 /** @var array<string, mixed> $data */
                 $data = $result['data'];
                 /** @var string $saleId */
@@ -367,23 +368,35 @@ class ApiController extends BaseController
 
     // Customer
     #[Route('/api/image/customer/{ruc}', name: 'api_getImageCustomer', methods: ['GET'])]
-    public function getImageCustomer(string $id): void
+    public function getImageCustomer(string $id): Response
     {
         $data = $this->apiRepository->getImageCustomer($id);
-        header('Location: https://ui-avatars.com/api/?name='.$data[0]['nombre']);
+        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+
+        return new StreamedResponse(function () use ($imageUrl) {
+            readfile($imageUrl);
+        });
     }
 
     #[Route('/api/image/product/{id}', name: 'api_getImageProduct', methods: ['GET'])]
-    public function getImageProduct(string $id): void
+    public function getImageProduct(string $id): Response
     {
         $data = $this->apiRepository->getImageProduct($id);
-        header('Location: https://ui-avatars.com/api/?name='.$data[0]['nombre']);
+        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+
+        return new StreamedResponse(function () use ($imageUrl) {
+            readfile($imageUrl);
+        });
     }
 
     #[Route('/api/image/category/{id}', name: 'api_getImageCategory', methods: ['GET'])]
-    public function getImageCategory(string $id): void
+    public function getImageCategory(string $id): Response
     {
         $data = $this->apiRepository->getImageCategory($id);
-        header('Location: https://ui-avatars.com/api/?name='.$data[0]['nombre']);
+        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+
+        return new StreamedResponse(function () use ($imageUrl) {
+            readfile($imageUrl);
+        });
     }
 }

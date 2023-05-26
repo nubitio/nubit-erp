@@ -21,10 +21,14 @@ readonly class SaleCreatedListener
     public function __invoke(SaleEntity $entity): void
     {
         $session = $this->requestStack->getSession();
-        /** @var string $branchId */
+        /** @var ?string $branchId */
         $branchId = $session->get('branch_id');
-        /** @var int $userId */
+        /** @var ?int $userId */
         $userId = $session->get('user_id');
+
+        if (!$branchId || !$userId) {
+            return;
+        }
 
         $this->cashboxUpdateValuesUseCase->__invoke($branchId, $userId);
     }
