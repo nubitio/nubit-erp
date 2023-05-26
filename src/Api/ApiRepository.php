@@ -430,6 +430,11 @@ class ApiRepository
         $sale['recargo_consumo'] = (int) $this->getOption('app_option_rc');
         /** @var array<int, array<string, mixed>> $saleDetail */
         $saleDetail = $sale['detail'];
+        $sale['subtotal'] = 0;
+        foreach ($saleDetail as $item) {
+            $sale['subtotal'] += $item['precio_total'];
+        }
+        $sale['total'] = $sale['subtotal'] - ($sale['subtotal'] * ($sale['descuento'] / 100));
         $filteredSale = array_intersect_key($sale, $this->saleColumns);
         try {
             $this->db->insert('movimiento', $filteredSale);
