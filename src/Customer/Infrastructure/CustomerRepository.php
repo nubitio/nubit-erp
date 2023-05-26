@@ -90,7 +90,6 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
             throw new ValidationException('No se puede eliminar el cliente porque tiene ventas asociadas');
         }
 
-
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
