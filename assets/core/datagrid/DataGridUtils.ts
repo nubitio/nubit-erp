@@ -43,6 +43,7 @@ export default class DataGridUtils {
     }
 
     static makeEntityFilter(grid: JQuery, field: Field): any {
+        let timer: any;
         return {
             field: field.name,
             type: 'combobox',
@@ -52,21 +53,45 @@ export default class DataGridUtils {
                 textField: field.textField,
                 url: field.url,
                 method: 'get',
+                mode: field.mode ?? 'local',
                 limitToList: true,
+                selectOnNavigation: false,
                 loader: (param: any, success: any, error: any) => {
-                    httpClient.get<any>(field.url)
-                        .subscribe((response) => {
+                    let url = field.url;
+                    if (param.q) {
+                        url += '?filterRules=' + encodeURIComponent(JSON.stringify([{
+                            field: field.textField,
+                            op: 'contains',
+                            value: param.q
+                        }]));
+                    } else {
+                        if (url.indexOf("rows") > -1) {
+                            url = url.replace(/row=\d+/, "rows=100");
+                        } else {
+                            if (url.indexOf("?") > -1) {
+                                url += "&rows=100";
+                            } else {
+                                url += "?rows=100";
+                            }
+                        }
+                    }
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        httpClient.get(url).subscribe((response: any) => {
                             response.data.unshift({[field.valueField]: '', [field.textField]: 'Todos'});
                             success(response.data);
                         });
+                    }, 400);
                 },
                 onChange: (value: any) => {
-                    if (value == '') {
-                        grid.datagrid('removeFilterRule', field.name);
-                    } else {
-                        grid.datagrid('addFilterRule', {field: field.name, op: 'equal', value: value});
-                    }
-                    grid.datagrid('doFilter');
+                    timer = setTimeout(() => {
+                        if (value == '') {
+                            grid.datagrid('removeFilterRule', field.name);
+                        } else {
+                            grid.datagrid('addFilterRule', {field: field.name, op: 'equal', value: value});
+                        }
+                        grid.datagrid('doFilter');
+                    }, 1000);
                 }
             }
         }

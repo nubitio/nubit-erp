@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class User {
     private readonly container: string;
@@ -13,7 +14,7 @@ export default class User {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/users';
+    static readonly API_URL = Constants.API_BASE_URL + 'users';
 
     static readonly EVENTS = {
         ADD: 'user:add',
@@ -62,7 +63,7 @@ export default class User {
             .type(FieldType.ENTITY)
             .name('rol')
             .label('Rol')
-            .url('api/roles')
+            .url(Constants.API_BASE_URL + 'roles')
             .textField('descripcion')
             .valueField('rol_id')
             .valueType('number')

@@ -6,6 +6,7 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import Customer from "./Customer";
 import {router} from "../core/router/Router";
 import {messenger} from "../core/utils/Messenger";
+import {Constants} from "../core/common/Constants";
 
 export default class Patient extends Customer {
     protected readonly container: string;
@@ -13,7 +14,7 @@ export default class Patient extends Customer {
     declare dialog: Dialog;
     declare form: Form;
 
-    static readonly API_URL: string = 'api/patients';
+    static readonly API_URL = Constants.API_BASE_URL + 'patients';
 
     static readonly EVENTS = {
         ADD: 'patient:add',
@@ -52,7 +53,7 @@ export default class Patient extends Customer {
             .type(FieldType.ENTITY)
             .name('type')
             .label('Tipo')
-            .url('api/patient-types')
+            .url(Constants.API_BASE_URL + 'patient-types')
             .valueField('id')
             .textField('name')
             .formatter((value: any) => value?.name)

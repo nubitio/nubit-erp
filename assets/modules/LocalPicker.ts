@@ -1,6 +1,7 @@
 import Dialog from "../core/dialog/Dialog";
 import {authService} from "../services/auth.service";
 import {bus} from "../core/event/EventBus";
+import {Constants} from "../core/common/Constants";
 
 export default class LocalPicker {
     private readonly container: string;
@@ -55,7 +56,7 @@ export default class LocalPicker {
         this.localList = $('#local-list');
         this.localList.datalist({
             method: 'get',
-            url: 'api/branches',
+            url: Constants.API_BASE_URL + 'branches',
             fit: true,
             valueField: 'local_id',
             textField: 'descripcion',

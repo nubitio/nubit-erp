@@ -19,6 +19,10 @@ import NumberUtils from "../core/utils/NumberUtils";
 import {httpClient} from "../core/http/HttpClient";
 import {PriceListItemDto} from "../dto/PriceListItemDto";
 import FilterRule from "../core/common/FilterRule";
+import {Setting, settings} from "../Settings";
+import ApiResponse from "../core/http/ApiResponse";
+import {productService} from "../services/product.service";
+import {cashboxService} from "../services/cashbox.service";
 
 export default class Sale {
     private readonly container: string;
@@ -30,7 +34,7 @@ export default class Sale {
     private saleService = new SaleService();
     private priceList: Array<PriceListItemDto> = [];
 
-    static readonly API_URL = 'api/sales';
+    static readonly API_URL = Constants.API_BASE_URL + 'sales';
 
     static readonly EVENTS = {
         ADD: 'sale:add',
@@ -45,6 +49,7 @@ export default class Sale {
     constructor(container: string) {
         this.container = container;
         this.init();
+        this.checkCashBox();
     }
 
     init() {
@@ -65,7 +70,7 @@ export default class Sale {
             .formatter(SharedUtils.dateFormatter)
             .build());
         let session = StorageUtils.getItem('session');
-        let warehouseUrl = `api/branches/${session['branch_id']}/warehouses`;
+        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('almacen')
@@ -82,7 +87,7 @@ export default class Sale {
             .name('cliente')
             .label('Cliente')
             .width(100)
-            .url('api/customers')
+            .url(Constants.API_BASE_URL + 'customers')
             .mode('remote')
             .valueField('ruc')
             .textField('razon_social')
@@ -99,7 +104,7 @@ export default class Sale {
             .type(FieldType.ENTITY)
             .name('tarifa')
             .label('Tarifa')
-            .url('api/price-lists')
+            .url(Constants.API_BASE_URL + 'price-lists')
             .valueField('id')
             .textField('name')
             .visible(false)
@@ -117,7 +122,7 @@ export default class Sale {
             .type(FieldType.ENTITY)
             .name('tipo_pago')
             .label('Método de pago')
-            .url('api/payment-methods')
+            .url(Constants.API_BASE_URL + 'payment-methods')
             .valueField('id')
             .textField('name')
             .valueType('number')
@@ -181,13 +186,20 @@ export default class Sale {
             .formatter(SharedUtils.invoiceStatusFormatter)
             .align('center')
             .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NUMBER)
+            .name('created_by')
+            .defaultValue(session['user_id'])
+            .visible(false)
+            .hidden(true)
+            .build());
 
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('producto')
             .label('Producto')
             .width(100)
-            .url('api/products')
+            .url(Constants.API_BASE_URL + 'products')
             .mode('remote')
             .valueField('producto_id')
             .textField('descripcion')
@@ -201,6 +213,7 @@ export default class Sale {
             .label('Cantidad')
             .align('center')
             .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
@@ -209,6 +222,7 @@ export default class Sale {
             .align('right')
             .onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
+            .required(true)
             .build());
         this.detailFields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
@@ -218,8 +232,26 @@ export default class Sale {
             .readonly(true)
             .onChange(this.calculateGrandTotal.bind(this))
             .formatter((value: any) => NumberUtils.formatCurrency(value))
+            .required(true)
             .build());
     };
+
+    private checkCashBox() {
+        cashboxService.getLast().subscribe((response) => {
+            if (response.data.header.length === 0) {
+                messenger.confirm(
+                    'Confirmar',
+                    'No se ha aperturado caja, ¿Desea aperturar caja ahora?',
+                    (result) => {
+                        if (result) {
+                            window.location.href = 'cashbox';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    });
+            }
+        });
+    }
 
     render() {
         this.renderDataGrid();
@@ -227,6 +259,7 @@ export default class Sale {
         reactRoot.render(
             React.createElement(DiscountDialog)
         );
+        this.setupObservers();
     }
 
     private renderDataGrid() {
@@ -260,7 +293,30 @@ export default class Sale {
                 text: 'Generar Comprobante',
                 iconCls: Constants.ICON_INVOICE,
                 handler: function () {
-                    ref.makeInvoice();
+                    let row = ref.dataGrid.selectedRow;
+                    if (!row) {
+                        messenger.show('Información', 'Seleccione una venta para generar el comprobante');
+                        return;
+                    }
+                    if (row['invoice']) {
+                        messenger.show('Información', 'El comprobante ya fue generado');
+                        return;
+                    }
+                    if (row['estado'] == 2) {
+                        messenger.show('Información', 'La venta se encuentra anulada');
+                        return;
+                    }
+                    let confirmMessage = '';
+                    if (row['cliente']['ruc'].length === 11) {
+                        confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
+                    } else {
+                        confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
+                    }
+                    messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
+                        if (r) {
+                            ref.makeInvoice(row['movimiento_id'])
+                        }
+                    })
                 }
             }
         ];
@@ -279,7 +335,7 @@ export default class Sale {
             method: 'get',
             events: Sale.EVENTS,
             toolbar: toolbarButtons,
-            detailUrl: 'api/sales/{id}/details',
+            detailUrl: Constants.API_BASE_URL + 'sales/{id}/details',
             detailFields: this.detailFields
         });
     }
@@ -328,6 +384,16 @@ export default class Sale {
         bus.on(Sale.EVENTS.ADD, () => this.priceList = []);
     }
 
+    private setupObservers() {
+        settings.get(Setting.AUTO_INVOICE).then((setting) => {
+            if (setting?.value === 'true') {
+                bus.on<ApiResponse<any>>(Sale.EVENTS.SUCCESS, (response) => {
+                    this.makeInvoice(response.data['movimiento_id'])
+                });
+            }
+        });
+    }
+
     private onSelectProduct(record: any, field: Field) {
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(Number(index));
@@ -343,11 +409,17 @@ export default class Sale {
         row['precio_total-' + index].numberbox('setValue', price);
     }
 
-    private onQuantityChange(newValue: number, oldValue: number, field: Field) {
+    private onQuantityChange(newValue: number | string, oldValue: number, field: Field) {
+        if (newValue === '') {
+            return;
+        }
+
         let index = field.name.split('-')[1];
         let row = this.form.getRowFormFieldsByIndex(Number(index));
         let price = row['precio_unitario-' + index].numberbox('getValue');
-        row['precio_total-' + index].numberbox('setValue', Number(newValue * price).toFixed(2));
+        row['precio_total-' + index].numberbox('setValue', Number(Number(newValue) * price).toFixed(2));
+
+        this.checkStock(field);
     }
 
     private onPriceChange(newValue: number, oldValue: number, field: Field) {
@@ -400,13 +472,25 @@ export default class Sale {
         });
     }
 
-    private print(sale: any = null) {
-        let selected = this.dataGrid.selectedRow ?? sale;
+    private print(saleId?: string) {
+        if (saleId) {
+            jsWebClientPrint.print(`useDefaultPrinter=checked&saleId=${saleId}`);
+            return;
+        }
+
+        const selected = this.dataGrid.selectedRow;
         if (!selected) {
             messenger.show('Información', 'Debe seleccionar una venta');
-            return
+            return;
         }
-        jsWebClientPrint.print('useDefaultPrinter=checked&saleId=' + selected['movimiento_id']);
+
+        const id = selected.movimiento_id;
+        if (!id) {
+            messenger.show('Información', 'ID de venta no válido');
+            return;
+        }
+
+        jsWebClientPrint.print(`useDefaultPrinter=checked&saleId=${id}`);
     }
 
     private voidSale() {
@@ -430,38 +514,15 @@ export default class Sale {
         });
     }
 
-    private makeInvoice() {
-        let ref = this;
-        let row = this.dataGrid.selectedRow;
-        if (!row) {
-            messenger.show('Información', 'Seleccione una venta para generar el comprobante');
-            return;
-        }
-        if (row['invoice']) {
-            messenger.show('Información', 'El comprobante ya fue generado');
-            return;
-        }
-        if (row['estado'] == 2) {
-            messenger.show('Información', 'La venta se encuentra anulada');
-            return;
-        }
-        let confirmMessage = '';
-        if (row['cliente']['ruc'].length === 11) {
-            confirmMessage = 'Se emitira una factura electrónica, ¿Desea continuar?'
-        } else {
-            confirmMessage = 'Se emitira una boleta electrónica, ¿Desea continuar?'
-        }
-        messenger.confirm('Confirmar', confirmMessage, function (r: boolean) {
-            if (r) {
-                ref.dataGrid.showLoading('Generando comprobante...')
-                ref.saleService.makeInvoice(row['movimiento_id']).subscribe((data) => {
-                    messenger.show('Información', 'Comprobante generado');
-                    ref.dataGrid.reload();
-                }).add(() => {
-                    ref.dataGrid.hideLoading();
-                });
-            }
-        })
+    private makeInvoice(saleId: string) {
+        this.dataGrid.showLoading('Generando comprobante...')
+        this.saleService.makeInvoice(saleId).subscribe((response) => {
+            messenger.show('Información', 'Comprobante generado');
+            this.dataGrid.reload();
+            this.print(saleId);
+        }).add(() => {
+            this.dataGrid.hideLoading();
+        });
     }
 
     private updatePricesByPriceList() {
@@ -479,5 +540,31 @@ export default class Sale {
                 }
             }
         }
+    }
+
+    private checkStock(field: Field) {
+        let index = field.name.split('-')[1];
+        let row = this.form.getRowFormFieldsByIndex(Number(index));
+        settings.get(Setting.CHECK_STOCK).then((setting) => {
+            if (setting?.value !== 'true') {
+                return;
+            }
+
+            this.dialog.setLoading(true, 'Verificando stock...')
+            let productId = row['producto-' + index].combobox('getValue');
+            let session = JSON.parse(localStorage.getItem('session') ?? '{}');
+            let warehouseId = session['warehouse_id'];
+            productService.getStock(productId, warehouseId).subscribe((response) => {
+                let stock = response.data.stock;
+                let quantity = row['cantidad-' + index].numberbox('getValue');
+                if (quantity > stock) {
+                    row['cantidad-' + index].numberbox('clear');
+                    messenger.show('Información', `Stock disponible: ${stock}`);
+                    row['precio_total-' + index].numberbox('setValue', 0);
+                }
+            }).add(() => {
+                this.dialog.setLoading(false);
+            });
+        });
     }
 }

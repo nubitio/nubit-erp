@@ -7,7 +7,7 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {messenger} from "../core/utils/Messenger";
 import {httpClient} from "../core/http/HttpClient";
 import {bus} from "../core/event/EventBus";
-import {EventObject} from "../core/event/EventObject";
+import NumberUtils from "../core/utils/NumberUtils";
 
 export default class Cashbox {
     private readonly container: string;
@@ -82,6 +82,7 @@ export default class Cashbox {
             .name('monto')
             .label('Monto')
             .align('right')
+            .formatter((value: number) => NumberUtils.formatCurrency(value))
             .required(true)
             .build());
     };
@@ -164,16 +165,23 @@ export default class Cashbox {
         }
         let dialog = new Dialog(this.container, {
             events: events,
+            positiveText: 'Abrir',
+            negativeText: 'Cancelar',
+            title: 'Abrir caja',
         });
-        let form = new Form(dialog.id ?? '', [
-            new FieldBuilder()
-                .type(FieldType.CURRENCY)
-                .name('monto_inicial')
-                .label('Monto inicial')
-                .required(true)
-                .defaultValue(initialAmount)
-                .build(),
-        ]);
+        let form = new Form(dialog.id, [
+                new FieldBuilder()
+                    .type(FieldType.CURRENCY)
+                    .name('monto_inicial')
+                    .label('Monto inicial')
+                    .required(true)
+                    .defaultValue(initialAmount)
+                    .build(),
+            ], {
+                events: events,
+                preventDefault: true
+            }
+        );
 
         bus.on(events.SAVE, () => {
                 let params = new URLSearchParams();
@@ -187,6 +195,10 @@ export default class Cashbox {
         );
 
         bus.on(events.CANCEL, () => this.dataGrid.reload());
+
+        dialog.onNegativeClick(() => {
+            window.location.href = '/';
+        });
     }
 
     private closeCashbox() {

@@ -9,6 +9,7 @@ import {messenger} from "../core/utils/Messenger";
 import {SaleService} from "../services/sale.service";
 import {InvoiceService} from "../services/invoice.service";
 import NumberUtils from "../core/utils/NumberUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class Invoice {
     private readonly container: string;
@@ -19,7 +20,7 @@ export default class Invoice {
     private saleService: SaleService = new SaleService();
     private invoiceService: InvoiceService = new InvoiceService();
 
-    static readonly API_URL = 'api/invoices';
+    static readonly API_URL = Constants.API_BASE_URL + 'invoices';
 
     static readonly EVENTS = {
         ADD: 'invoice:add',
@@ -59,7 +60,7 @@ export default class Invoice {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
-            .name('cliente_name')
+            .name('c.razon_social')
             .label('Cliente')
             .formatter((value: any, row: any) => row['cliente']?.['razon_social'])
             .build());
