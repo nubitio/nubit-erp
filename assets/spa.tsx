@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import {App} from "./App";
 
+import './spa.scss';
+
 window.addEventListener('load', () => {
     const root = ReactDOM.createRoot(
         document.getElementById('root') as HTMLElement

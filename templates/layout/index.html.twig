@@ -24,8 +24,6 @@
     <title>UI Template Gallery</title>
     {% block stylesheets %}
         {{ encore_entry_link_tags('spa') }}
-        <link rel="dx-theme" data-theme="material.dark" href="{{ encore_entry_css_files('dx.material.dark')[0] }}" data-active="true">
-        <link rel="dx-theme" data-theme="material.light" href="{{ encore_entry_css_files('dx.material.light')[0] }}" data-active="false">
     {% endblock %}
     {% block js %}
         <script src="{{ asset('assets/js/jquery.min.js') }}"></script>

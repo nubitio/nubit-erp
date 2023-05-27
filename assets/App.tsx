@@ -9,8 +9,10 @@ import { AuthProvider, useAuth } from './contexts/auth';
 import { useScreenSizeClass } from './utils/media-query';
 import { Content } from './Content';
 
-import './styles/app.scss';
+import 'devexpress-gantt/dist/dx-gantt.css';
 import './styles/styles.scss';
+import './theme/theme';
+import { useThemeContext, ThemeContext } from './theme/theme';
 
 function RootApp() {
     const { user, loading } = useAuth();
@@ -35,16 +37,21 @@ function RootApp() {
 
 export const App = () => {
     const screenSizeClass = useScreenSizeClass();
+    const themeContext = useThemeContext();
 
     return (
         <Router>
-            <AuthProvider>
-                <NavigationProvider>
-                    <div className={`app ${screenSizeClass}`}>
-                        <RootApp />
-                    </div>
-                </NavigationProvider>
-            </AuthProvider>
+            <ThemeContext.Provider value={themeContext}>
+                <AuthProvider>
+                    <NavigationProvider>
+                        <div className={`app ${screenSizeClass}`}>
+                            {
+                                themeContext.isLoaded ? <RootApp /> : ''
+                            }
+                        </div>
+                    </NavigationProvider>
+                </AuthProvider>
+            </ThemeContext.Provider>
         </Router>
     );
 };
