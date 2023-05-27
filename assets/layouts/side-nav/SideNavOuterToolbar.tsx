@@ -5,13 +5,13 @@ import {Template} from 'devextreme-react/core/template';
 
 import {useNavigate} from 'react-router';
 
-import {Footer, Header, SideNavigationMenu} from '../../components';
+import {AppFooter, AppHeader, SideNavigationMenu} from '../../components';
 import {useScreenSize} from '../../utils/media-query';
 import {useMenuPatch} from '../../utils/patches';
 
 import type {SideNavToolbarProps} from '../../types';
 
-import './side-nav.scss';
+import './side-nav-outer-toolbar.scss';
 import {ClickEvent} from "devextreme/ui/button";
 
 export const SideNavOuterToolbar = ({title, children}: React.PropsWithChildren<SideNavToolbarProps>) => {
@@ -22,9 +22,7 @@ export const SideNavOuterToolbar = ({title, children}: React.PropsWithChildren<S
 
     const toggleMenu = useCallback(({event}: ClickEvent) => {
         setMenuStatus((prevMenuStatus) => (prevMenuStatus === MenuStatus.Closed ? MenuStatus.Opened : MenuStatus.Closed));
-        if (event) {
-            event.stopPropagation();
-        }
+        event?.stopPropagation();
     }, []);
 
     const temporaryOpenMenu = useCallback(() => {
@@ -53,7 +51,7 @@ export const SideNavOuterToolbar = ({title, children}: React.PropsWithChildren<S
 
     return (
         <div className='side-nav-outer-toolbar'>
-            <Header className='layout-header' menuToggleEnabled toggleMenu={toggleMenu} title={title}/>
+            <AppHeader className='layout-header' menuToggleEnabled toggleMenu={toggleMenu} title={title}/>
             <Drawer
                 className={['drawer layout-body', patchCssClass].join(' ')}
                 position='before'
@@ -68,7 +66,7 @@ export const SideNavOuterToolbar = ({title, children}: React.PropsWithChildren<S
             >
                 <div className='content'>
                     {React.Children.map(children, (item) => {
-                        return React.isValidElement(item) && item.type !== Footer && item;
+                        return React.isValidElement(item) && item.type !== AppFooter && item;
                     })}
                 </div>
                 <Template name='menu'>
