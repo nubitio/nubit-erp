@@ -9,7 +9,7 @@ import { AuthProvider, useAuth } from './contexts/auth';
 import { useScreenSizeClass } from './utils/media-query';
 import { Content } from './Content';
 
-import 'devexpress-gantt/dist/dx-gantt.css';
+import './styles/app.scss';
 import './styles/styles.scss';
 import './theme/theme';
 import { useThemeContext, ThemeContext } from './theme/theme';
