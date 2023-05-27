@@ -34,7 +34,8 @@ export const SideNavOuterToolbar = ({title, children}: React.PropsWithChildren<S
         return !isLarge;
     }, [isLarge]);
 
-    const onNavigationChanged = useCallback(({itemData: {path}, event, node}) => {
+    const onNavigationChanged = useCallback(
+        ({itemData: {path}, event, node}) => {
             if (menuStatus === MenuStatus.Closed || !path || node.selected) {
                 event.preventDefault();
                 return;
