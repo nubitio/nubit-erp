@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
+import {Constants} from "../core/common/Constants";
 
 export default class VoucherSeries {
     private readonly container: string;
@@ -47,7 +48,7 @@ export default class VoucherSeries {
             .type(FieldType.ENTITY)
             .name('local_id')
             .label('Local')
-            .url('api/branches')
+            .url(Constants.API_BASE_URL + 'branches')
             .valueField('local_id')
             .textField('descripcion')
             .visible(false)
@@ -62,7 +63,7 @@ export default class VoucherSeries {
             .type(FieldType.ENTITY)
             .name('tipo_comprobante_id')
             .label('Tipo comprobante')
-            .url('api/voucher-types')
+            .url(Constants.API_BASE_URL + 'voucher-types')
             .valueField('codigo')
             .textField('descripcion')
             .visible(false)

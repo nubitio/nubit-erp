@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import EasyComponent from "../core/common/EasyComponent";
+import {Constants} from "../core/common/Constants";
 
 export default class Branch extends EasyComponent {
     private readonly container: string;
@@ -12,7 +13,7 @@ export default class Branch extends EasyComponent {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly API_URL = 'api/branches';
+    static readonly API_URL = Constants.API_BASE_URL + 'branches';
 
     static readonly EVENTS = {
         ADD: 'branch:add',
@@ -43,7 +44,7 @@ export default class Branch extends EasyComponent {
             .type(FieldType.ENTITY)
             .name('empresa')
             .label('Empresa')
-            .url('api/companies')
+            .url(Constants.API_BASE_URL + 'companies')
             .valueField('empresa_id')
             .textField('razon_social')
             .required(true)

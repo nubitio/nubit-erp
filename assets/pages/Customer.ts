@@ -16,7 +16,7 @@ export default class Customer {
     protected form: Form;
     protected consultService = new ConsultService();
 
-    static readonly API_URL: string = 'api/customers';
+    static readonly API_URL = Constants.API_BASE_URL + 'customers';
 
     static readonly EVENTS = {
         ADD: 'customer:add',
@@ -68,7 +68,7 @@ export default class Customer {
             .type(FieldType.ENTITY)
             .name('price_list')
             .label('Tarifa')
-            .url('api/price-lists')
+            .url(Constants.API_BASE_URL + 'price-lists')
             .valueField('id')
             .textField('name')
             .formatter((value: any) => value?.name)

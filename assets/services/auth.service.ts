@@ -5,7 +5,7 @@ import AuthResponse from "../core/http/AuthResponse";
 class AuthService {
 
     login(username: string, password: string) {
-        return httpClient.post<AuthResponse>(`/auth/login`, {username, password});
+        return httpClient.post<AppResponse>(`/auth/login`, {username, password});
     }
 
     setLocal(localId: string) {

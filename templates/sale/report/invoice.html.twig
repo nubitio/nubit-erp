@@ -39,7 +39,9 @@
         <tr class="row-border">
             <td class="text-center">
                 <b>{{ voucher.company_name }}</b><br>
-                RUC: {{ voucher.company_id }}<br>
+                {% if not voucher.voucher_type == '00' %}
+                    RUC: {{ voucher.company_id }}<br>
+                {% endif %}
                 {{ voucher.company_address }}<br>
                 Tel.: {{ voucher.company_phone }}<br>
             </td>

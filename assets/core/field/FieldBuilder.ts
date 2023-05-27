@@ -23,6 +23,7 @@ export class FieldBuilder {
             valueType: 'string',
             data: [],
             formatter: null,
+            fieldFormatter: null,
             visible: true,
             defaultValue: null,
             onChange: null,
@@ -118,6 +119,11 @@ export class FieldBuilder {
 
     formatter(formatter: any): FieldBuilder {
         this._field.formatter = formatter;
+        return this;
+    }
+
+    fieldFormatter(fieldFormatter: any): FieldBuilder {
+        this._field.fieldFormatter = fieldFormatter;
         return this;
     }
 

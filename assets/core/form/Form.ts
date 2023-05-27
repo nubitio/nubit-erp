@@ -375,7 +375,7 @@ export default class Form {
                         return;
                     }
                     bus.emit(this.events.LOADING, true);
-                    httpClient.delete('api/media/' + field.defaultValue).subscribe(() => {
+                    httpClient.delete(Constants.API_BASE_URL + 'media/' + field.defaultValue).subscribe(() => {
                         field.defaultValue = null;
                         input.filebox('clear');
                         hiddenInput.setAttribute('value', '');
@@ -390,7 +390,7 @@ export default class Form {
                     let formData = new FormData();
                     formData.append('file', file);
                     bus.emit(this.events.LOADING, true);
-                    httpClient.post('api/media', formData, {
+                    httpClient.post(Constants.API_BASE_URL + 'media', formData, {
                         headers: {
                             'Content-Type': 'multipart/form-data'
                         }
@@ -515,6 +515,9 @@ export default class Form {
             input.numberbox('textbox').click(() => {
                 field.onClick(field);
             });
+        }
+        if (field.hidden) {
+            input.numberbox('hide');
         }
         this.formFields[field.name] = input;
     }
@@ -732,6 +735,8 @@ export default class Form {
             }
             switch (field.type) {
                 case FieldType.TEXT:
+                case FieldType.NUMBER:
+                case FieldType.CURRENCY:
                     this.getField(field.name).textbox('setValue', field.defaultValue);
                     break;
                 case FieldType.DATE:

@@ -24,7 +24,7 @@ check_result() {
 }
 
 # Run phpstan inside the web container
-run_in_container "vendor/bin/phpstan analyse --memory-limit=2G --no-progress"
+run_in_container "vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit=2G"
 check_result
 
 # Run php-cs-fixer inside the web container
