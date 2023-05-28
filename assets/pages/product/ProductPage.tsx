@@ -1,11 +1,25 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, DataGrid, DropDownButton } from "devextreme-react";
-import { Column, ColumnChooser, Selection, Export, FilterRow, HeaderFilter, Item, LoadPanel, Pager, Paging, Popup, Scrolling, SearchPanel, Sorting, Toolbar } from "devextreme-react/data-grid";
-import { SharedUtils } from "../../core/utils/SharedUtils";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {Button, DataGrid, DropDownButton} from "devextreme-react";
+import {
+    Column,
+    ColumnChooser,
+    Export,
+    FilterRow,
+    HeaderFilter,
+    Item,
+    LoadPanel,
+    Pager,
+    Paging,
+    Scrolling,
+    Selection,
+    Sorting,
+    Toolbar
+} from "devextreme-react/data-grid";
+import {SharedUtils} from "../../core/utils/SharedUtils";
 import CustomStore from "devextreme/data/custom_store";
-import { productService } from "../../services/product.service";
-import { SelectionChangedEvent } from "devextreme/ui/drop_down_button";
-import { ColumnCellTemplateData } from "devextreme/ui/data_grid";
+import {productService} from "../../services/product.service";
+import {SelectionChangedEvent} from "devextreme/ui/drop_down_button";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import './product.scss'
 
 type FilterContactStatus = '' | 'All';
@@ -14,7 +28,7 @@ export const ProductPage = () => {
     const container = "wrapper"
     const gridRef = useRef<DataGrid>(null);
     const exportFormats = ['xlsx', 'pdf'];
-    const dropDownOptions = { width: 'auto' };
+    const dropDownOptions = {width: 'auto'};
     const filterStatusList = ['All', 'Active', 'Inactive'];
     const [status, setStatus] = useState(filterStatusList[0]);
 
@@ -28,7 +42,7 @@ export const ProductPage = () => {
     }, [])
 
     const filterByStatus = useCallback((e: SelectionChangedEvent) => {
-        const { item: status }: { item: FilterContactStatus } = e;
+        const {item: status}: { item: FilterContactStatus } = e;
         if (status === 'All') {
             gridRef.current?.instance.clearFilter();
         } else {
@@ -50,6 +64,11 @@ export const ProductPage = () => {
         return (String(cell.data.categoria.descripcion));
     }
 
+    const categoryHeaderFilter = [
+        {text: 'Jaja', value: 'xd'},
+        {text: 'Jaja1', value: 'xd1'}
+    ]
+
     return (
         <div id={container} className='view crm-contact-list'>
             <div className='view-wrapper view-wrapper-contact-list'>
@@ -59,28 +78,24 @@ export const ProductPage = () => {
                     focusedRowEnabled
                     height='100%'
                     dataSource={products}
-                    showBorders={true}
-                    columnMinWidth={50}
-                    columnAutoWidth={true}
-                    repaintChangesOnly={true}
+                    allowColumnReordering
                     remoteOperations={true}
                     ref={gridRef}
                 >
-                    <LoadPanel showPane={false} />
-                    <SearchPanel visible placeholder='Contact Search' />
-                    <ColumnChooser enabled />
-                    <Export enabled allowExportSelectedData formats={exportFormats} />
+                    <LoadPanel showPane={false}/>
+                    <ColumnChooser enabled/>
+                    <Export enabled allowExportSelectedData formats={exportFormats}/>
                     <Selection
                         selectAllMode='allPages'
                         showCheckBoxesMode='always'
                         mode='multiple'
                     />
-                    <HeaderFilter visible />
-                    <Sorting mode='multiple' />
-                    <Scrolling mode='virtual' />
+                    <HeaderFilter visible/>
+                    <Sorting mode='multiple'/>
+                    <Scrolling mode='virtual'/>
                     <Toolbar>
                         <Item location='before'>
-                            <div className='grid-header'>Contacts</div>
+                            <div className='grid-header'>Products</div>
                         </Item>
                         <Item location='before' locateInMenu='auto'>
                             <DropDownButton
@@ -95,7 +110,7 @@ export const ProductPage = () => {
                         <Item location='after' locateInMenu='auto'>
                             <Button
                                 icon='plus'
-                                text='Add Contact'
+                                text='Add Product'
                                 type='default'
                                 stylingMode='contained'
                                 onClick={onAddContactClick}
@@ -115,25 +130,36 @@ export const ProductPage = () => {
                             />
                         </Item>
                         <Item location='after' locateInMenu='auto'>
-                            <div className='separator' />
+                            <div className='separator'/>
                         </Item>
-                        <Item name='exportButton' />
+                        <Item name='exportButton'/>
                         <Item location='after' locateInMenu='auto'>
-                            <div className='separator' />
+                            <div className='separator'/>
                         </Item>
-                        <Item name='columnChooserButton' locateInMenu='auto' />
-                        <Item name='searchPanel' locateInMenu='auto' />
+                        <Item name='columnChooserButton' locateInMenu='auto'/>
+                        <Item name='searchPanel' locateInMenu='auto'/>
                     </Toolbar>
-                    <FilterRow visible={true} />
-                    <Column dataField="codigo" />
-                    <Column dataField="tipo" />
-                    <Column dataField="descripcion" />
-                    <Column dataField="categoria" cellRender={categoryCellRender} />
-                    <Column dataField="precio" dataType="number" format="#.00" />
-                    <Column dataField="imagen" cellRender={SharedUtils.dxImageFormatter} alignment="center" />
-                    <Column dataField="estado" cellRender={SharedUtils.dxBooleanFormatter} dataType="boolean" />
-                    <Paging defaultPageSize={10} />
-                    <Pager visible={true} />
+                    <FilterRow visible={true}/>
+                    <Column dataField="codigo"/>
+                    <Column dataField="tipo_id"/>
+                    <Column dataField="descripcion" caption='Nombre' sortOrder='asc'/>
+                    <Column
+                        dataField="categoria"
+                        cellRender={categoryCellRender}
+                    >
+                        <HeaderFilter dataSource={categoryHeaderFilter} allowSearch={true}/>
+                    </Column>
+                    <Column dataField="precio" dataType="number" format="#.00"/>
+                    <Column
+                        dataField="imagen"
+                        allowFiltering={false}
+                        allowSorting={false}
+                        cellRender={SharedUtils.dxImageFormatter}
+                        alignment="center"
+                    />
+                    <Column dataField="estado" cellRender={SharedUtils.dxBooleanFormatter} dataType="boolean"/>
+                    <Paging defaultPageSize={20}/>
+                    <Pager visible={true}/>
                 </DataGrid>
             </div>
         </div>
