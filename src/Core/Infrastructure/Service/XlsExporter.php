@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class XlsExporter
@@ -25,6 +26,7 @@ class XlsExporter
      * @param array<int, array<string, mixed>> $data
      *
      * @throws Exception
+     * @throws InvalidArgumentException
      */
     public function export(array $data, string $filename): StreamedResponse
     {
@@ -93,20 +95,25 @@ class XlsExporter
             ->setTitle('Efact export');
 
         $spreadsheet->setActiveSheetIndex(0);
-        $spreadsheet->getActiveSheet()->fromArray($data);
+        if (count($data) > 0) {
+            $spreadsheet->getActiveSheet()->fromArray($data);
+        } else {
+            $spreadsheet->getActiveSheet()->setCellValue('A1', 'No data');
+        }
 
-        foreach (range('A', $columnLetters[count($headers) - 1]) as $columnID) {
+        $lastColumn = 0 === count($headers) ? 'A' : $columnLetters[count($headers) - 1];
+        foreach (range('A', $lastColumn) as $columnID) {
             $spreadsheet->getActiveSheet()->getColumnDimension($columnID)
                 ->setAutoSize(true);
         }
 
-        $spreadsheet->getActiveSheet()->getStyle('A1:'.$columnLetters[count($headers) - 1].'1')
+        $spreadsheet->getActiveSheet()->getStyle('A1:'.$lastColumn.'1')
             ->applyFromArray($headerStyle);
 
-        $spreadsheet->getActiveSheet()->getStyle('A2:'.$columnLetters[count($headers) - 1].count($data))
+        $spreadsheet->getActiveSheet()->getStyle('A2:'.$lastColumn.count($data))
             ->setConditionalStyles([$zebraStyle]);
 
-        $spreadsheet->getActiveSheet()->getStyle('A2:'.$columnLetters[count($headers) - 1].count($data))
+        $spreadsheet->getActiveSheet()->getStyle('A2:'.$lastColumn.count($data))
             ->applyFromArray($borderStyle);
 
         $writer = new Xlsx($spreadsheet);
