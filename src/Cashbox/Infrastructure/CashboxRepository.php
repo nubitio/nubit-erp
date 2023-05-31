@@ -116,7 +116,15 @@ class CashboxRepository implements CashboxRepositoryInterface
             throw new ServiceException('La caja no existe');
         }
 
-        DataMapper::map($cashbox, $entity);
+        $details = $entity->details;
+        $entity = DataMapper::map($cashbox, $entity);
+        $entity->details = $details;
+
+        /** @var CashboxDetailEntity $detail */
+        foreach ($entity->details as $detail) {
+            $detail->cashbox = $entity;
+        }
+
         $this->entityManager->flush();
     }
 
