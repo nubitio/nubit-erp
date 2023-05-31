@@ -93,5 +93,18 @@ export default class MilitaryPatient extends Patient {
             url: MilitaryPatient.API_URL,
             events: MilitaryPatient.EVENTS,
         });
+
+        let rucField = this.form.getField('ruc').textbox({
+            icons: [{
+                iconCls: Constants.ICON_SEARCH,
+                handler: () => this.consult()
+            }]
+        })
+
+        rucField.textbox('textbox').bind('keyup', function (e: any) {
+            if (e.keyCode === 13) {
+                ref.consult()
+            }
+        });
     }
 }
