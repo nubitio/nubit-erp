@@ -44,7 +44,7 @@ readonly class BillCreateUseCase
         $bill->mtoOperGravadas = floatval($voucher->voucher_taxed_amount);
         $bill->mtoIGV = floatval($voucher->voucher_tax_amount);
         $bill->totalImpuestos = floatval($voucher->voucher_total_taxes);
-        $bill->sumOtrosCargos = floatval($voucher->voucher_other_charges ?? null);
+        $bill->sumOtrosCargos = floatval($voucher->voucher_consumption_surcharge_amount ?? null);
         $bill->valorVenta = floatval($voucher->voucher_sale_value - $voucher->voucher_discount_amount);
         $bill->subTotal = floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount);
         $bill->mtoImpVenta = floatval($voucher->voucher_sale_amount);
