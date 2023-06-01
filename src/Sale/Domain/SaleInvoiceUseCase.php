@@ -44,7 +44,7 @@ readonly class SaleInvoiceUseCase
         $sale->total = $invoice->total;
         $this->updateSaleUseCase->__invoke($sale);
 
-        if (null !== $invoice->envio_sunat) {
+        if (is_numeric($invoice->envio_sunat)) {
             return $this->getOneVoucherUseCase->__invoke($saleId);
         }
 
