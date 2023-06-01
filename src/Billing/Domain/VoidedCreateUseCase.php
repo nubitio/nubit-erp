@@ -24,7 +24,7 @@ readonly class VoidedCreateUseCase
         $voidedDetail->tipoDoc = strval($voucher->voucher_type);
         $voidedDetail->serie = strval($voucher->voucher_series);
         $voidedDetail->correlativo = strval($voucher->voucher_number);
-        $voidedDetail->desMotivoBaja = strval($voucher->voucher_note);
+        $voidedDetail->desMotivoBaja = $reason;
         $voided = new Voided();
         $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
         $voided->correlativo = (string) ($lastCorrelative + 1);
