@@ -85,6 +85,7 @@ export default class MilitaryPatient extends Patient {
     }
 
     renderDialog() {
+        let ref = this;
         this.dialog = new Dialog(this.container, {
             events: MilitaryPatient.EVENTS,
         });
