@@ -51,7 +51,7 @@ export default class Dialog {
             height: this.options.height || 'auto',
             maxHeight: this.options.maxHeight || 550,
             modal: this.options.modal || true,
-            inline: this.options.inline || false,
+            inline: this.options.inline || true,
             closable: this.options.closable ?? false,
             href: this.options.href ?? null,
             buttons: buttons,

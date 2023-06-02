@@ -28,6 +28,7 @@ export interface UserMenuSectionProps {
 }
 
 export interface User {
+    username: string;
     name: string;
     email: string;
     avatarUrl: string;
