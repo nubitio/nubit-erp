@@ -1,5 +1,6 @@
 import {useEffect} from "react";
 import Dashboard from "../Dashboard";
+import "./DashboardPage.scss";
 
 export const DashboardPage = () => {
     const container = "wrapper"
