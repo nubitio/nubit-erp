@@ -6,6 +6,7 @@ import CustomStore from "devextreme/data/custom_store";
 import { productService } from "../../services/product.service";
 import { SelectionChangedEvent } from "devextreme/ui/drop_down_button";
 import { ColumnCellTemplateData } from "devextreme/ui/data_grid";
+import "./ProductPage.scss";
 
 type FilterContactStatus = '' | 'All';
 
@@ -33,7 +34,7 @@ export const ProductPage = () => {
         } else {
           gridRef.current?.instance.filter(['status', '=', status]);
         }
-    
+
         setStatus(status);
       }, []);
 
