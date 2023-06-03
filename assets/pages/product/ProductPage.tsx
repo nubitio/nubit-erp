@@ -1,13 +1,13 @@
-import {useCallback, useEffect, useRef, useState} from "react";
-import {Button, DataGrid, DropDownButton} from "devextreme-react";
+import {useCallback, useEffect, useRef} from "react";
+import {Button, DataGrid} from "devextreme-react";
 import {
     Column,
     ColumnChooser,
     Export,
     FilterRow,
-    HeaderFilter,
     Item,
     LoadPanel,
+    Lookup,
     Pager,
     Paging,
     Scrolling,
@@ -18,19 +18,14 @@ import {
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {productService} from "../../services/product.service";
-import {SelectionChangedEvent} from "devextreme/ui/drop_down_button";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import './product.scss'
-
-type FilterContactStatus = '' | 'All';
+import CategoryService from "../../services/category.service";
 
 export const ProductPage = () => {
     const container = "wrapper"
     const gridRef = useRef<DataGrid>(null);
     const exportFormats = ['xlsx', 'pdf'];
-    const dropDownOptions = {width: 'auto'};
-    const filterStatusList = ['All', 'Active', 'Inactive'];
-    const [status, setStatus] = useState(filterStatusList[0]);
 
     const products = new CustomStore({
         key: "producto_id",
@@ -41,17 +36,6 @@ export const ProductPage = () => {
     useEffect(() => {
     }, [])
 
-    const filterByStatus = useCallback((e: SelectionChangedEvent) => {
-        const {item: status}: { item: FilterContactStatus } = e;
-        if (status === 'All') {
-            gridRef.current?.instance.clearFilter();
-        } else {
-            gridRef.current?.instance.filter(['status', '=', status]);
-        }
-
-        setStatus(status);
-    }, []);
-
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
     }, []);
@@ -60,14 +44,33 @@ export const ProductPage = () => {
         alert('Add Contact');
     }, []);
 
+    const typeCellRender = (cell: ColumnCellTemplateData) => {
+        return (cell.data.tipo_id === 1 ? 'Producto' : 'Servicio');
+    }
+
     const categoryCellRender = (cell: ColumnCellTemplateData) => {
         return (String(cell.data.categoria.descripcion));
     }
 
-    const categoryHeaderFilter = [
-        {text: 'Jaja', value: 'xd'},
-        {text: 'Jaja1', value: 'xd1'}
-    ]
+    const productTypeDataSource = {
+        store: {
+            type: 'array',
+            data: [
+                {id: 1, name: 'Producto'},
+                {id: 2, name: 'Servicio'}
+            ],
+            key: 'id'
+        }
+    }
+
+    const categoryDataSource = {
+        store: new CustomStore(
+            {
+                key: "categoria_id",
+                load: (loadOptions) => CategoryService.getAll(loadOptions)
+            }
+        )
+    }
 
     return (
         <div id={container} className='view crm-contact-list'>
@@ -80,6 +83,7 @@ export const ProductPage = () => {
                     dataSource={products}
                     allowColumnReordering
                     remoteOperations={true}
+                    syncLookupFilterValues={false}
                     ref={gridRef}
                 >
                     <LoadPanel showPane={false}/>
@@ -90,22 +94,11 @@ export const ProductPage = () => {
                         showCheckBoxesMode='always'
                         mode='multiple'
                     />
-                    <HeaderFilter visible/>
                     <Sorting mode='multiple'/>
                     <Scrolling mode='virtual'/>
                     <Toolbar>
                         <Item location='before'>
                             <div className='grid-header'>Products</div>
-                        </Item>
-                        <Item location='before' locateInMenu='auto'>
-                            <DropDownButton
-                                dataSource={filterStatusList}
-                                stylingMode='text'
-                                selectedItemKey={status}
-                                dropDownOptions={dropDownOptions}
-                                useSelectMode
-                                onSelectionChanged={filterByStatus}
-                            />
                         </Item>
                         <Item location='after' locateInMenu='auto'>
                             <Button
@@ -141,13 +134,16 @@ export const ProductPage = () => {
                     </Toolbar>
                     <FilterRow visible={true}/>
                     <Column dataField="codigo"/>
-                    <Column dataField="tipo_id"/>
-                    <Column dataField="descripcion" caption='Nombre' sortOrder='asc'/>
+                    <Column dataField="tipo_id" caption="Tipo" cellRender={typeCellRender} alignment="left"
+                            filterType="lookup">
+                        <Lookup dataSource={productTypeDataSource} valueExpr="id" displayExpr="name"/>
+                    </Column>
+                    <Column dataField="descripcion" caption='Nombre' sortOrder='asc' minWidth={350}/>
                     <Column
                         dataField="categoria"
                         cellRender={categoryCellRender}
                     >
-                        <HeaderFilter dataSource={categoryHeaderFilter} allowSearch={true}/>
+                        <Lookup dataSource={categoryDataSource} valueExpr="categoria_id" displayExpr="descripcion"/>
                     </Column>
                     <Column dataField="precio" dataType="number" format="#.00"/>
                     <Column
@@ -157,7 +153,11 @@ export const ProductPage = () => {
                         cellRender={SharedUtils.dxImageFormatter}
                         alignment="center"
                     />
-                    <Column dataField="estado" cellRender={SharedUtils.dxBooleanFormatter} dataType="boolean"/>
+                    <Column dataField="estado"
+                            cellRender={SharedUtils.dxBooleanFormatter}
+                            dataType="boolean"
+                            alignment="center"
+                    />
                     <Paging defaultPageSize={20}/>
                     <Pager visible={true}/>
                 </DataGrid>

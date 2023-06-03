@@ -7,7 +7,6 @@ import {Constants} from "../core/common/Constants";
 import {ProductStockDto} from "../dto/product.stock.dto";
 
 class ProductService {
-
     getAll(loadOptions: any): Promise<GridData<ProductDto>> {
         let subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {params: loadOptions});
 
