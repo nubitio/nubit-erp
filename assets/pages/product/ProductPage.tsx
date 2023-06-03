@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {Button, DataGrid} from "devextreme-react";
 import {
     Column,
@@ -18,14 +18,19 @@ import {
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {productService} from "../../services/product.service";
-import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import {ColumnCellTemplateData, RowClickEvent} from "devextreme/ui/data_grid";
 import './product.scss'
 import CategoryService from "../../services/category.service";
+import {ContactPanel, FormPopup} from "../../components";
+import {ProductForm} from "./ProductForm";
 
 export const ProductPage = () => {
     const container = "wrapper"
     const gridRef = useRef<DataGrid>(null);
     const exportFormats = ['xlsx', 'pdf'];
+    const [isPanelOpened, setPanelOpened] = useState(false);
+    const [contactId, setContactId] = useState<string>('');
+    const [popupVisible, setPopupVisible] = useState(false);
 
     const products = new CustomStore({
         key: "producto_id",
@@ -36,12 +41,31 @@ export const ProductPage = () => {
     useEffect(() => {
     }, [])
 
+    const changePopupVisibility = useCallback(() => {
+        setPopupVisible(!popupVisible);
+    }, [popupVisible]);
+
+    const changePanelOpened = useCallback(() => {
+        setPanelOpened(!isPanelOpened);
+        gridRef.current?.instance.option('focusedRowIndex', -1);
+    }, [isPanelOpened]);
+
+    const changePanelPinned = useCallback(() => {
+        gridRef.current?.instance.updateDimensions();
+    }, []);
+
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
     }, []);
 
     const onAddContactClick = useCallback(() => {
-        alert('Add Contact');
+        setPopupVisible(true);
+    }, []);
+
+    const onRowClick = useCallback(({data}: RowClickEvent) => {
+        console.log(data)
+        setContactId(data.producto_id);
+        setPanelOpened(true);
     }, []);
 
     const typeCellRender = (cell: ColumnCellTemplateData) => {
@@ -72,6 +96,16 @@ export const ProductPage = () => {
         )
     }
 
+    const activeDataSource = {
+        store: {
+            type: 'array',
+            data: [
+                {id: 1, name: 'Si'},
+                {id: 0, name: 'No'}
+            ],
+        }
+    }
+
     return (
         <div id={container} className='view crm-contact-list'>
             <div className='view-wrapper view-wrapper-contact-list'>
@@ -81,6 +115,7 @@ export const ProductPage = () => {
                     focusedRowEnabled
                     height='100%'
                     dataSource={products}
+                    onRowClick={onRowClick}
                     allowColumnReordering
                     remoteOperations={true}
                     syncLookupFilterValues={false}
@@ -134,8 +169,7 @@ export const ProductPage = () => {
                     </Toolbar>
                     <FilterRow visible={true}/>
                     <Column dataField="codigo"/>
-                    <Column dataField="tipo_id" caption="Tipo" cellRender={typeCellRender} alignment="left"
-                            filterType="lookup">
+                    <Column dataField="tipo_id" caption="Tipo" cellRender={typeCellRender} alignment="left">
                         <Lookup dataSource={productTypeDataSource} valueExpr="id" displayExpr="name"/>
                     </Column>
                     <Column dataField="descripcion" caption='Nombre' sortOrder='asc' minWidth={350}/>
@@ -157,10 +191,17 @@ export const ProductPage = () => {
                             cellRender={SharedUtils.dxBooleanFormatter}
                             dataType="boolean"
                             alignment="center"
-                    />
+                    >
+                        <Lookup dataSource={activeDataSource} valueExpr="id" displayExpr="name"/>
+                    </Column>
                     <Paging defaultPageSize={20}/>
                     <Pager visible={true}/>
                 </DataGrid>
+                <ContactPanel contactId={contactId} isOpened={isPanelOpened} changePanelOpened={changePanelOpened}
+                              changePanelPinned={changePanelPinned}/>
+                <FormPopup title='New Contact' visible={popupVisible} setVisible={changePopupVisibility}>
+                    <ProductForm/>
+                </FormPopup>
             </div>
         </div>
     );

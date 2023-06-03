@@ -91,7 +91,7 @@ export const ContactPanelDetails = ({ contact, isOpened, changePanelOpened, onDa
   }, [contact]);
 
   return (
-    <div id='contact-panel' className={classNames({ 'panel': true, 'open': isOpened, 'pin': isPinned && (isLarge || isMedium) })}>
+    <div id='contact-panel' className={classNames({ 'contact-panel': true, 'open': isOpened, 'pin': isPinned && (isLarge || isMedium) })}>
       <div className='data-wrapper'>
         <Toolbar className='panel-toolbar'>
           <ToolbarItem location='before'>
