@@ -96,7 +96,7 @@ class CashboxController extends BaseController
         $cashBoxDetail = new CashboxDetail(
             uid: 1,
             tipo_id: 1,
-            descripcion: 'Fondo de caja',
+            descripcion: 'FONDO DE CAJA',
             monto: (float) $request->request->get('monto_inicial'),
         );
 

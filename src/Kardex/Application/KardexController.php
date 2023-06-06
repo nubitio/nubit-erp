@@ -27,6 +27,14 @@ class KardexController extends BaseController
         $dateFrom = (string) $request->request->get('date_from');
         $dateTo = (string) $request->request->get('date_to');
 
+        if ('' === $warehouseId) {
+            $warehouseId = null;
+        }
+
+        if ('' === $categoryId) {
+            $categoryId = null;
+        }
+
         $kardex = $kardexGetAllUseCase->__invoke($branchId, $warehouseId, $categoryId, $dateFrom, $dateTo);
 
         return $this->json($kardex);
