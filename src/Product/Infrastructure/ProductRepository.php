@@ -142,7 +142,7 @@ readonly class ProductRepository implements ProductRepositoryInterface
             ['id' => $productId, 'warehouseId' => $warehouseId]);
 
         if (!$stock) {
-            throw new ServiceException('No se encontró el stock del producto');
+            return new ProductStock($productId, '', 0);
         }
 
         return new ProductStock(
