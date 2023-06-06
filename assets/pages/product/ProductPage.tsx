@@ -33,7 +33,7 @@ export const ProductPage = () => {
         } else {
           gridRef.current?.instance.filter(['status', '=', status]);
         }
-    
+
         setStatus(status);
       }, []);
 
@@ -46,7 +46,6 @@ export const ProductPage = () => {
       }, []);
 
     const categoryCellRender = (cell: ColumnCellTemplateData) => {
-        console.log(cell);
         return (String(cell.data.categoria.descripcion));
     }
 

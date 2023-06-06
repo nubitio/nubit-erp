@@ -2,6 +2,7 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
@@ -9,12 +10,15 @@ use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 readonly class SaleUtils
 {
     public function __construct(
+        private RequestStack $requestStack,
         private Connection $connection,
         private TenantAwareSettingsService $settings,
+        private CashboxGetLastUseCase $cashboxGetLastUseCase,
     ) {
     }
 
@@ -68,10 +72,29 @@ readonly class SaleUtils
         $sale->estado = 1;
         $sale->serie = $this->getSaleSeries($docType->value, $sale->almacen?->almacen_id ?: '');
         $sale->numero = $this->getSaleNumber($sale->serie);
+        $sale->caja_id = $this->getCashBoxId();
         $sale->igv = intval($this->settings->get(Constants::TAX));
         $sale->recargo_consumo = intval($this->settings->get(Constants::CONSUMPTION_TAX));
         $sale->date_created = new \DateTime();
 
         return $sale;
+    }
+
+    public function getCashBoxId(): ?string
+    {
+        $session = $this->requestStack->getSession();
+
+        /** @var string $branchId */
+        $branchId = $session->get('branch_id');
+        /** @var int $userId */
+        $userId = $session->get('user_id');
+
+        if (!$branchId || !$userId) {
+            return null;
+        }
+
+        $cashBox = $this->cashboxGetLastUseCase->__invoke($branchId, $userId);
+
+        return $cashBox?->caja_id;
     }
 }
