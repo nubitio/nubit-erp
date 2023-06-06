@@ -46,7 +46,6 @@ export class SharedUtils {
     }
 
     static dxImageFormatter(cell: ColumnCellTemplateData) {
-        console.log(cell);
         if (cell.data.imagen) {
             return React.createElement('a', {
                 href: cell.data.imagen.path,
