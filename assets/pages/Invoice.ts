@@ -186,10 +186,9 @@ export default class Invoice {
         }
         this.dataGrid.showLoading('Enviando comprobante a SUNAT...');
         this.saleService.makeInvoice(selected['movimiento_id']).subscribe((data) => {
-            this.dataGrid.hideLoading();
             messenger.show('Información', 'Comprobante enviado a SUNAT');
             this.dataGrid.reload();
-        });
+        }).add(() => this.dataGrid.hideLoading());
     }
 
     notify() {
