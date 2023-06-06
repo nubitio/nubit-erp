@@ -404,6 +404,7 @@ export default class Sale {
                 price = priceItem.price;
             }
         }
+        row['cantidad-' + index].numberbox('setValue', 0);
         row['cantidad-' + index].numberbox('setValue', 1);
         row['precio_unitario-' + index].numberbox('setValue', price);
         row['precio_total-' + index].numberbox('setValue', price);
@@ -419,7 +420,9 @@ export default class Sale {
         let price = row['precio_unitario-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(Number(newValue) * price).toFixed(2));
 
-        this.checkStock(field);
+        if (newValue > 0) {
+            this.checkStock(field);
+        }
     }
 
     private onPriceChange(newValue: number, oldValue: number, field: Field) {
@@ -557,9 +560,9 @@ export default class Sale {
             productService.getStock(productId, warehouseId).subscribe((response) => {
                 let stock = response.data.stock;
                 let quantity = row['cantidad-' + index].numberbox('getValue');
+                messenger.show('Información', `Stock disponible: ${stock}`);
                 if (quantity > stock) {
                     row['cantidad-' + index].numberbox('clear');
-                    messenger.show('Información', `Stock disponible: ${stock}`);
                     row['precio_total-' + index].numberbox('setValue', 0);
                 }
             }).add(() => {

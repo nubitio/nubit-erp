@@ -25,8 +25,16 @@ export default class Auth {
         this.container = container;
         this.localPicker = new LocalPicker(this.container);
         let token = StorageUtils.getItem('token');
+        let session = StorageUtils.getItem('session');
+        let menu = StorageUtils.getItem('menu');
         if (token) {
             StorageUtils.removeItem('token');
+        }
+        if (session) {
+            StorageUtils.removeItem('session');
+        }
+        if (menu) {
+            StorageUtils.removeItem('menu');
         }
         this.init();
     }

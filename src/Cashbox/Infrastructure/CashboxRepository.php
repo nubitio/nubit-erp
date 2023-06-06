@@ -39,6 +39,9 @@ class CashboxRepository implements CashboxRepositoryInterface
         return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
     }
 
+    /**
+     * @throws ServiceException
+     */
     public function getOne(string $id): Cashbox
     {
         $entity = $this->entityManager->find(CashboxEntity::class, $id);
@@ -150,7 +153,6 @@ class CashboxRepository implements CashboxRepositoryInterface
             $cashBoxEntity = $this->entityManager->getReference(CashboxEntity::class, $cashBoxId);
 
             $totalSales = $this->getTotalSales($userId, $startDate, $endDate);
-            dump($totalSales);
 
             foreach ($totalSales as $totalSale) {
                 /** @var ?CashboxDetailEntity $cashBoxDetail */
