@@ -221,10 +221,9 @@ export default class Invoice {
         }
 
         this.dataGrid.showLoading('Consultando CDR...');
-        this.invoiceService.consultInvoice(selected['movimiento_id']).subscribe((data) => {
-            this.dataGrid.hideLoading();
-            messenger.show('Información', 'CDR actualizado');
+        this.invoiceService.consultInvoice(selected['movimiento_id']).subscribe((response) => {
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
-        });
+        }).add(() => this.dataGrid.hideLoading());
     }
 }
