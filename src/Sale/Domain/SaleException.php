@@ -15,4 +15,9 @@ class SaleException extends ServiceException
     {
         return new self('No se puede anular una venta con más de una semana de antigüedad');
     }
+
+    public static function notIssued(): self
+    {
+        return new self('No se puede anular una venta que no ha sido registrada en SUNAT');
+    }
 }

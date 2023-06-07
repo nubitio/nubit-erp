@@ -10,6 +10,7 @@ use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use League\Flysystem\FilesystemException;
+use Psr\Cache\InvalidArgumentException;
 
 readonly class SaleVoidUseCase
 {
@@ -27,6 +28,7 @@ readonly class SaleVoidUseCase
     /**
      * @throws \Exception
      * @throws FilesystemException
+     * @throws InvalidArgumentException
      */
     public function __invoke(string $saleId, string $reason, int $userId): void
     {
@@ -58,10 +60,15 @@ readonly class SaleVoidUseCase
     /**
      * @throws \Exception
      * @throws FilesystemException
+     * @throws InvalidArgumentException
      */
     private function voidInvoice(string $saleId, string $reason): void
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
+
+        if ('0' !== $invoice->envio_sunat) {
+            throw SaleException::notIssued();
+        }
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         if ($response->sunatResponse->success) {
@@ -78,10 +85,15 @@ readonly class SaleVoidUseCase
     /**
      * @throws \Exception
      * @throws FilesystemException
+     * @throws InvalidArgumentException
      */
     private function voidReceipt(string $saleId): void
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
+
+        if ('0' !== $invoice->envio_sunat) {
+            throw SaleException::notIssued();
+        }
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         if ($response->sunatResponse->success) {
