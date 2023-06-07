@@ -2,11 +2,11 @@
 
 namespace App\Billing\Domain;
 
-class BillPdfUseCase
+readonly class BillPdfUseCase
 {
     public function __construct(
-        private readonly BillCreateUseCase $billCreateUseCase,
-        private readonly BillRepositoryInterface $billRepository,
+        private BillCreateUseCase $billCreateUseCase,
+        private BillRepositoryInterface $billRepository,
     ) {
     }
 

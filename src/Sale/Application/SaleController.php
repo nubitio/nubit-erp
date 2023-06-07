@@ -3,6 +3,7 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
@@ -150,6 +151,6 @@ class SaleController extends BaseController
     {
         $saleInvoiceUseCase($id);
 
-        return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
+        return $this->json(new ApiResponse(true, 'Comprobante generado correctamente'));
     }
 }
