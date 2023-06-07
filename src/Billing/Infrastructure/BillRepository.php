@@ -2,6 +2,7 @@
 
 namespace App\Billing\Infrastructure;
 
+use App\Billing\Domain\BillConstants;
 use App\Billing\Domain\BillRepositoryInterface;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Model\Bill\Bill;
@@ -10,6 +11,7 @@ use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Infrastructure\Service\SerializerService;
+use Greenter\Model\Response\StatusCdrResult;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -55,6 +57,27 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    public function getXml(Bill $invoice): string
+    {
+        $httpClient = HttpClient::create();
+        $requestBody = $this->serializer->serialize($invoice, 'json');
+
+        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/xml?token=123456', [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'body' => $requestBody,
+        ]);
+
+        return $response->getContent();
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
     public function getPdf(Bill $invoice): string
     {
         $httpClient = HttpClient::create();
@@ -76,5 +99,33 @@ class BillRepository implements BillRepositoryInterface
         ]);
 
         return $response->getContent();
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     */
+    public function getStatus(Bill $invoice): StatusCdrResult
+    {
+        $httpClient = HttpClient::create();
+
+        $params = [
+            'tipo' => $invoice->tipoDoc,
+            'serie' => $invoice->serie,
+            'numero' => $invoice->correlativo,
+        ];
+
+        $urlParams = http_build_query($params);
+        $url = BillConstants::BILL_API_BASE_URL.'invoice/status?token='.BillConstants::BILL_API_TOKEN."&$urlParams";
+
+        $response = $httpClient->request('GET', $url);
+
+        $responseBody = $response->getContent();
+        /** @var StatusCdrResult $statusResponse */
+        $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');
+
+        return $statusResponse;
     }
 }

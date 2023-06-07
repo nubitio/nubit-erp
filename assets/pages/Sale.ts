@@ -520,7 +520,7 @@ export default class Sale {
     private makeInvoice(saleId: string) {
         this.dataGrid.showLoading('Generando comprobante...')
         this.saleService.makeInvoice(saleId).subscribe((response) => {
-            messenger.show('Información', 'Comprobante generado');
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
             this.print(saleId);
         }).add(() => {

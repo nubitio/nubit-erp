@@ -2,15 +2,49 @@
 
 namespace App\Invoice\Domain;
 
-class InvoiceConsultUseCase
+use App\Billing\Domain\BillConsultUseCase;
+use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\FileManager;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use Greenter\Model\Response\StatusCdrResult;
+use League\Flysystem\FilesystemException;
+use Psr\Cache\InvalidArgumentException;
+
+readonly class InvoiceConsultUseCase
 {
+    public function __construct(
+        private InvoiceRepositoryInterface $invoiceRepository,
+        private BillConsultUseCase $billConsultUseCase,
+        private FileManager $fileManager,
+        private TenantAwareSettingsService $settings
+    ) {
+    }
+
     /**
-     * @return array<string, true>
+     * @throws InvalidArgumentException
+     * @throws FilesystemException
      */
-    public function __invoke(string $saleId): array
+    public function __invoke(string $saleId): StatusCdrResult
     {
-        return [
-            'success' => true,
-        ];
+        $consultResponse = $this->billConsultUseCase->__invoke($saleId);
+
+        if ($consultResponse->isSuccess()) {
+            $invoice = $this->invoiceRepository->getOne($saleId);
+
+            if ($consultResponse->getCdrResponse()?->isAccepted()) {
+                $invoice->envio_sunat = $consultResponse->getCdrResponse()->getCode();
+                $invoice->mensaje_sunat = $consultResponse->getCdrResponse()->getDescription();
+                $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
+                $name = $this->settings->get(Constants::COMPANY_ID).$invoice->tipo_comprobante_id.$consultResponse->getCdrResponse()->getId().'.zip';
+                $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/R-'.$name.'.zip', $cdr);
+            } else {
+                $invoice->envio_sunat = $consultResponse->getError()?->getCode();
+                $invoice->mensaje_sunat = $consultResponse->getError()?->getMessage();
+            }
+
+            $this->invoiceRepository->update($invoice);
+        }
+
+        return $consultResponse;
     }
 }
