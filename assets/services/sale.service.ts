@@ -1,4 +1,5 @@
 import {httpClient} from "../core/http/HttpClient";
+import AppResponse from "../core/http/AppResponse";
 
 export class SaleService {
 
@@ -7,7 +8,7 @@ export class SaleService {
     }
 
     makeInvoice(saleId: string) {
-        return httpClient.post<any>(`/sale/invoice/${saleId}`);
+        return httpClient.post<AppResponse>(`/sale/invoice/${saleId}`);
     }
 
     makeNote(noteId: string) {

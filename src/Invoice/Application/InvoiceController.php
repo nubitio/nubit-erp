@@ -4,6 +4,7 @@ namespace App\Invoice\Application;
 
 use App\Base\BaseController;
 use App\Billing\Domain\BillPdfUseCase;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
@@ -55,11 +56,15 @@ class InvoiceController extends BaseController
     }
 
     #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
-    public function consult(InvoiceConsultUseCase $consultUseCase, string $id): Response
+    public function consult(InvoiceConsultUseCase $invoiceConsultUseCase, string $id): Response
     {
-        $consultUseCase($id);
+        $result = $invoiceConsultUseCase($id);
 
-        return $this->json(['success' => true, 'msg' => 'CRD actualizado']);
+        if ($result->isSuccess()) {
+            return $this->json(new ApiResponse(true, $result->getCdrResponse()?->getDescription() ?: ''));
+        } else {
+            return $this->json(new ApiResponse(false, $result->getError()?->getMessage() ?: ''));
+        }
     }
 
     #[Route('/invoice/{id}/xml', name: 'invoice_xml', methods: ['GET'])]
@@ -72,14 +77,14 @@ class InvoiceController extends BaseController
 
         $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
 
-        $respone = new StreamedResponse(function () use ($xmlPath) {
+        $response = new StreamedResponse(function () use ($xmlPath) {
             echo $this->fileManager->read($xmlPath);
         });
 
-        $respone->headers->set('Content-Type', 'text/xml');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
+        $response->headers->set('Content-Type', 'text/xml');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
 
-        return $respone;
+        return $response;
     }
 
     #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
@@ -92,14 +97,14 @@ class InvoiceController extends BaseController
 
         $cdrPath = $this->settings->get(Constants::COMPANY_ID).'/R-'.$docFullName.'.zip';
 
-        $respone = new StreamedResponse(function () use ($cdrPath) {
+        $response = new StreamedResponse(function () use ($cdrPath) {
             echo $this->fileManager->read($cdrPath);
         });
 
-        $respone->headers->set('Content-Type', 'application/zip');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
 
-        return $respone;
+        return $response;
     }
 
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
