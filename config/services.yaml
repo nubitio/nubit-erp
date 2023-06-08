@@ -34,3 +34,6 @@ services:
   App\Core\Infrastructure\EventListener\TenantListener:
     arguments:
       $connectionRegistry: '@doctrine'
+  App\Core\Domain\Messenger\TenantMiddleware:
+    arguments:
+      $connectionRegistry: '@doctrine'
