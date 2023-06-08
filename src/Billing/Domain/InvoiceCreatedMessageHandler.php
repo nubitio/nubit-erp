@@ -2,14 +2,15 @@
 
 namespace App\Billing\Domain;
 
-use App\Invoice\Domain\InvoiceCreatedEvent;
+use App\Core\Domain\Exception\ServiceException;
+use App\Invoice\Domain\InvoiceCreatedMessage;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use League\Flysystem\FilesystemException;
 use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsEventListener]
-readonly class InvoiceCreatedListener
+#[AsMessageHandler]
+readonly class InvoiceCreatedMessageHandler
 {
     public function __construct(
         private InvoiceSendUseCase $invoiceSendUseCase,
@@ -19,10 +20,11 @@ readonly class InvoiceCreatedListener
     /**
      * @throws FilesystemException
      * @throws InvalidArgumentException
+     * @throws ServiceException
      */
-    public function __invoke(InvoiceCreatedEvent $event): void
+    public function __invoke(InvoiceCreatedMessage $invoiceCreatedMessage): void
     {
-        $saleId = $event->invoice->movimiento_id;
+        $saleId = $invoiceCreatedMessage->invoice->movimiento_id;
 
         if (null === $saleId) {
             return;

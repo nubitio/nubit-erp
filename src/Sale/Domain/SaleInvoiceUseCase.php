@@ -3,10 +3,10 @@
 namespace App\Sale\Domain;
 
 use App\Invoice\Domain\GetOneVoucherUseCase;
-use App\Invoice\Domain\InvoiceCreatedEvent;
+use App\Invoice\Domain\InvoiceCreatedMessage;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 readonly class SaleInvoiceUseCase
 {
@@ -15,7 +15,7 @@ readonly class SaleInvoiceUseCase
         private GetOneSaleUseCase $getOneSaleUseCase,
         private UpdateSaleUseCase $updateSaleUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
-        private EventDispatcherInterface $eventDispatcher
+        private MessageBusInterface $messageBus,
     ) {
     }
 
@@ -34,9 +34,7 @@ readonly class SaleInvoiceUseCase
         $sale->total = $invoice->total;
         $this->updateSaleUseCase->__invoke($sale);
 
-        $invoiceCreatedEvent = new InvoiceCreatedEvent($invoice);
-
-        $this->eventDispatcher->dispatch($invoiceCreatedEvent, InvoiceCreatedEvent::NAME);
+        $this->messageBus->dispatch(new InvoiceCreatedMessage($invoice));
 
         return $this->getOneVoucherUseCase->__invoke($saleId);
     }
