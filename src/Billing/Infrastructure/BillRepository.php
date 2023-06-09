@@ -38,13 +38,17 @@ class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/send?token=123456', [
+        $url = BillConstants::BILL_API_BASE_URL.'invoice/send?token='.BillConstants::BILL_API_TOKEN;
+
+        $response = $httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
             'body' => $requestBody,
         ]);
+
         $responseBody = $response->getContent();
+
         /** @var DocumentResponse $documentResponse */
         $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
 
@@ -61,8 +65,9 @@ class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
+        $url = BillConstants::BILL_API_BASE_URL.'invoice/xml?token='.BillConstants::BILL_API_TOKEN;
 
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/xml?token=123456', [
+        $response = $httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -81,6 +86,7 @@ class BillRepository implements BillRepositoryInterface
     public function getPdf(Bill $invoice): string
     {
         $httpClient = HttpClient::create();
+
         $fileRequest = new FileRequest($invoice, new Parameters(
             user: new User(
                 extras: [
@@ -89,9 +95,11 @@ class BillRepository implements BillRepositoryInterface
                 ],
             )
         ));
-        $requestBody = $this->serializer->serialize($fileRequest, 'json');
 
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/invoice/pdf?token=123456', [
+        $requestBody = $this->serializer->serialize($fileRequest, 'json');
+        $url = BillConstants::BILL_API_BASE_URL.'invoice/pdf?token='.BillConstants::BILL_API_TOKEN;
+
+        $response = $httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -112,6 +120,7 @@ class BillRepository implements BillRepositoryInterface
         $httpClient = HttpClient::create();
 
         $params = [
+            'ruc' => $invoice->company->getRuc(),
             'tipo' => $invoice->tipoDoc,
             'serie' => $invoice->serie,
             'numero' => $invoice->correlativo,
