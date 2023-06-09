@@ -11,6 +11,8 @@ use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
+use App\Invoice\Domain\InvoiceSendUseCase;
+use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -53,6 +55,18 @@ class InvoiceController extends BaseController
             'xml' => $this->generateUrl('invoice_xml', ['id' => $id]),
             'cdr' => $this->generateUrl('invoice_cdr', ['id' => $id]),
         ]);
+    }
+
+    #[Route('/invoice/{id}/send', name: 'invoice_send', methods: ['POST'])]
+    public function send(InvoiceSendUseCase $invoiceSendUseCase, string $id): Response
+    {
+        $result = $invoiceSendUseCase($id);
+
+        if ($result->sunatResponse->success) {
+            return $this->json(new ApiResponse(true, $result->sunatResponse->cdrResponse->description ?: ''));
+        } else {
+            return $this->json(new ApiResponse(false, $result->sunatResponse->error->message ?: ''));
+        }
     }
 
     #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
@@ -136,5 +150,20 @@ class InvoiceController extends BaseController
         $emailUseCase($id);
 
         return $this->json(['success' => true, 'msg' => 'Email enviado']);
+    }
+
+    #[Route('/invoice/send/multiple', name: 'invoice_multiple_send', methods: ['GET'])]
+    public function sendMultiple(Connection $connection): Response
+    {
+        $invoices = $connection->fetchAllAssociative("SELECT * FROM comprobante WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)");
+
+        $invoicesIds = array_map(function ($invoice) {
+            return $invoice['movimiento_id'];
+        }, $invoices);
+
+        return $this->render('invoice/send_multiple.html.twig', [
+            'invoices' => $invoices,
+            'invoicesIds' => $invoicesIds,
+        ]);
     }
 }
