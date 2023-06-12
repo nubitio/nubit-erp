@@ -90,7 +90,7 @@ export default class Invoice {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('nota')
-            .label('NC')
+            .label('Nota C.')
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
