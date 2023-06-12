@@ -30,10 +30,8 @@ import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
 import {PerformancePage} from "./pages/Performance/PerformancePage";
 import {PhysicianPage} from "./pages/Physician/PhysicianPage";
 import {PositionPage} from "./pages/Position/PositionPage";
-import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {RecipePage} from "./pages/Recipe/RecipePage";
 import {RolePage} from "./pages/Role/RolePage";
-import {SalePage} from "./pages/Sale/SalePage";
 import {SaleConsultPage} from "./pages/SaleConsult/SaleConsultPage";
 import {SpecialtyPage} from "./pages/Specialty/SpecialtyPage";
 import {TransferPage} from "./pages/Transfer/TransferPage";
@@ -41,6 +39,7 @@ import {UserPage} from "./pages/User/UserPage";
 import {VoucherSeriesPage} from "./pages/VoucherSeries/VoucherSeriesPage";
 import {VoucherTypePage} from "./pages/VoucherType/VoucherTypePage";
 import {WarehousePage} from "./pages/Warehouse/WarehousePage";
+import {PriceListPage} from "./pages/PriceList/PriceListPage";
 
 const routes = [
     {
@@ -167,20 +166,12 @@ const routes = [
         element: PositionPage,
     },
     {
-        path: '/PriceList',
-        element: PriceListPage,
-    },
-    {
         path: '/Recipe',
         element: RecipePage,
     },
     {
         path: '/Role',
         element: RolePage,
-    },
-    {
-        path: '/Sale',
-        element: SalePage,
     },
     {
         path: '/SaleConsult',
@@ -209,6 +200,10 @@ const routes = [
     {
         path: '/Warehouse',
         element: WarehousePage,
+    },
+    {
+        path: '/PriceList',
+        element: PriceListPage,
     },
 ];
 
