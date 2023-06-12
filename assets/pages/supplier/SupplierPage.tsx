@@ -8,8 +8,10 @@ export const SupplierPage = () => {
 
     useEffect(() => {
         if (!alreadyRender) {
-            supplier.render()
-            alreadyRender = true
+            setTimeout(() => {
+                supplier.render()
+                alreadyRender = true
+            }, 1000)
         }
     }, [])
 
