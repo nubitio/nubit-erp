@@ -1,6 +1,5 @@
-import {SupplierPage} from "./pages/supplier/SupplierPage";
 import {withNavigationWatcher} from './contexts/navigation';
-import {DashboardPage} from "./pages/dashboard/DashboardPage";
+import {DashboardPage} from "./pages/Dashboard/DashboardPage";
 import {ProductPage} from "./pages/product/ProductPage";
 import {AuthPage} from "./pages/Auth/AuthPage";
 import {BranchPage} from "./pages/Branch/BranchPage";
@@ -40,6 +39,7 @@ import {VoucherSeriesPage} from "./pages/VoucherSeries/VoucherSeriesPage";
 import {VoucherTypePage} from "./pages/VoucherType/VoucherTypePage";
 import {WarehousePage} from "./pages/Warehouse/WarehousePage";
 import {PriceListPage} from "./pages/PriceList/PriceListPage";
+import {SupplierPage} from "./pages/Supplier/SupplierPage";
 
 const routes = [
     {
@@ -47,163 +47,163 @@ const routes = [
         element: DashboardPage,
     },
     {
-        path: '/supplier',
-        element: SupplierPage,
-    },
-    {
         path: '/product',
         element: ProductPage,
     },
     {
-        path: '/Auth',
+        path: '/auth',
         element: AuthPage,
     },
     {
-        path: '/Branch',
+        path: '/branch',
         element: BranchPage,
     },
     {
-        path: '/Cashbox',
+        path: '/cashbox',
         element: CashboxPage,
     },
     {
-        path: '/CashboxConsult',
+        path: '/cashbox-consult',
         element: CashboxConsultPage,
     },
     {
-        path: '/Category',
+        path: '/category',
         element: CategoryPage,
     },
     {
-        path: '/ChangePassword',
+        path: '/changePassword',
         element: ChangePasswordPage,
     },
     {
-        path: '/ComboOption',
+        path: '/comboOption',
         element: ComboOptionPage,
     },
     {
-        path: '/Company',
+        path: '/company',
         element: CompanyPage,
     },
     {
-        path: '/Config',
+        path: '/config',
         element: ConfigPage,
     },
     {
-        path: '/Consultation',
+        path: '/consultation',
         element: ConsultationPage,
     },
     {
-        path: '/ConsultationSale',
+        path: '/consultation-sale',
         element: ConsultationSalePage,
     },
     {
-        path: '/CreditNote',
+        path: '/credit-note',
         element: CreditNotePage,
     },
     {
-        path: '/Customer',
+        path: '/customer',
         element: CustomerPage,
     },
     {
-        path: '/Department',
+        path: '/department',
         element: DepartmentPage,
     },
     {
-        path: '/Employee',
+        path: '/employee',
         element: EmployeePage,
     },
     {
-        path: '/Inbound',
+        path: '/inbound',
         element: InboundPage,
     },
     {
-        path: '/Invoice',
+        path: '/invoice',
         element: InvoicePage,
     },
     {
-        path: '/Kardex',
+        path: '/kardex',
         element: KardexPage,
     },
     {
-        path: '/MedicalRecord',
+        path: '/medical-record',
         element: MedicalRecord,
     },
     {
-        path: '/MilitaryPatient',
+        path: '/military-patient',
         element: MilitaryPatientPage,
     },
     {
-        path: '/Operation',
+        path: '/operation',
         element: OperationPage,
     },
     {
-        path: '/Outbound',
+        path: '/outbound',
         element: OutboundPage,
     },
     {
-        path: '/Patient',
+        path: '/patient',
         element: PatientPage,
     },{
-        path: '/PatientType',
+        path: '/patient-type',
         element: PatientTypePage,
     },
     {
-        path: '/PaymentMethod',
+        path: '/payment-method',
         element: PaymentMethodPage,
     },
     {
-        path: '/Performance',
+        path: '/performance',
         element: PerformancePage,
     },
     {
-        path: '/Physician',
+        path: '/physician',
         element: PhysicianPage,
     },
     {
-        path: '/Position',
+        path: '/position',
         element: PositionPage,
     },
     {
-        path: '/Recipe',
+        path: '/recipe',
         element: RecipePage,
     },
     {
-        path: '/Role',
+        path: '/role',
         element: RolePage,
     },
     {
-        path: '/SaleConsult',
+        path: '/sale-consult',
         element: SaleConsultPage,
     },
     {
-        path: '/Specialty',
+        path: '/specialty',
         element: SpecialtyPage,
     },
     {
-        path: '/Transfer',
+        path: '/transfer',
         element: TransferPage,
     },
     {
-        path: '/User',
+        path: '/user',
         element: UserPage,
     },
     {
-        path: '/VoucherSeries',
+        path: '/voucher-series',
         element: VoucherSeriesPage,
     },
     {
-        path: '/VoucherType',
+        path: '/voucher-type',
         element: VoucherTypePage,
     },
     {
-        path: '/Warehouse',
+        path: '/warehouse',
         element: WarehousePage,
     },
     {
-        path: '/PriceList',
+        path: '/price-list',
         element: PriceListPage,
+    },
+    {
+        path: '/supplier',
+        element: SupplierPage,
     },
 ];
 

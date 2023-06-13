@@ -1,5 +1,6 @@
 import {useEffect} from "react";
 import Supplier from "../Supplier";
+import "./SupplierPage.scss";
 
 export const SupplierPage = () => {
     const container = "wrapper"
@@ -8,10 +9,8 @@ export const SupplierPage = () => {
 
     useEffect(() => {
         if (!alreadyRender) {
-            setTimeout(() => {
-                supplier.render()
-                alreadyRender = true
-            }, 1000)
+            supplier.render()
+            alreadyRender = true
         }
     }, [])
 
