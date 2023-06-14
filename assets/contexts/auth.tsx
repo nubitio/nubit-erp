@@ -9,7 +9,7 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     useEffect(() => {
         (async function() {
             const result = await getUser();
-            if (result.isOk) {
+            if (result.data) {
                 setUser(result.data);
             }
 
