@@ -2,13 +2,15 @@
 
 namespace App\Kardex\Infrastructure;
 
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Kardex\Domain\KardexRepositoryInterface;
 use Doctrine\DBAL\Connection;
 
 class KardexRepository implements KardexRepositoryInterface
 {
     public function __construct(
-        private readonly Connection $connection
+        private readonly Connection $connection,
+        private readonly DataGridLoader $dataGridLoader
     ) {
     }
 
@@ -20,13 +22,9 @@ class KardexRepository implements KardexRepositoryInterface
             $dateTo = date('Y-m-t');
         }
 
-        return $this->connection->fetchAllAssociative('call sp_reporte_movimientos_pos (?,?,?,?,?)', [
-            $localId,
-            $warehouseId,
-            $categoryId,
-            $dateFrom,
-            $dateTo,
-        ]);
+        $table = 'select producto_id, codigo, descripcion as producto from producto';
+
+        return $this->dataGridLoader->load("($table) t", 'producto_id', 'ASC');
     }
 
     /** {@inheritdoc} */
