@@ -20,9 +20,7 @@ export default class Unit {
         DELETE: 'unit/delete/',
     }
 
-    constructor(container: string, options: any) {
-        this.container = container;
-        this.options = options;
+    constructor(container: string) {
         this.init();
     }
 

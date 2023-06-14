@@ -21,11 +21,9 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>UI Template Gallery</title>
+    <title>Efact</title>
     {% block stylesheets %}
         {{ encore_entry_link_tags('spa') }}
-        <link rel="dx-theme" data-theme="material.dark" href="{{ encore_entry_css_files('dx.material.dark')[0] }}" data-active="true">
-        <link rel="dx-theme" data-theme="material.light" href="{{ encore_entry_css_files('dx.material.light')[0] }}" data-active="false">
     {% endblock %}
     {% block js %}
         <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
@@ -40,6 +38,7 @@
 <body class="dx-viewport">
 <noscript>You need to enable JavaScript to run this app.</noscript>
 <div id="root"></div>
+<div id="main-content"></div>
 {% block javascripts %}
     {{ encore_entry_script_tags('spa') }}
 {% endblock %}
