@@ -404,6 +404,7 @@ export default class Sale {
                 price = priceItem.price;
             }
         }
+        row['cantidad-' + index].numberbox('setValue', 0);
         row['cantidad-' + index].numberbox('setValue', 1);
         row['precio_unitario-' + index].numberbox('setValue', price);
         row['precio_total-' + index].numberbox('setValue', price);
@@ -419,7 +420,9 @@ export default class Sale {
         let price = row['precio_unitario-' + index].numberbox('getValue');
         row['precio_total-' + index].numberbox('setValue', Number(Number(newValue) * price).toFixed(2));
 
-        this.checkStock(field);
+        if (newValue > 0) {
+            this.checkStock(field);
+        }
     }
 
     private onPriceChange(newValue: number, oldValue: number, field: Field) {
@@ -506,9 +509,12 @@ export default class Sale {
         messenger.prompt('Confirmar', 'Ingrese un motivo', (reason: string) => {
             let id = selected['movimiento_id'];
             if (reason) {
+                this.dataGrid.showLoading('Anulando venta...');
                 this.saleService.voidSale(id, reason).subscribe((data) => {
                     messenger.show('Información', 'Venta anulada');
                     this.dataGrid.reload();
+                }).add(() => {
+                    this.dataGrid.hideLoading();
                 });
             }
         });
@@ -517,7 +523,7 @@ export default class Sale {
     private makeInvoice(saleId: string) {
         this.dataGrid.showLoading('Generando comprobante...')
         this.saleService.makeInvoice(saleId).subscribe((response) => {
-            messenger.show('Información', 'Comprobante generado');
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
             this.print(saleId);
         }).add(() => {
@@ -557,9 +563,9 @@ export default class Sale {
             productService.getStock(productId, warehouseId).subscribe((response) => {
                 let stock = response.data.stock;
                 let quantity = row['cantidad-' + index].numberbox('getValue');
+                messenger.show('Información', `Stock disponible: ${stock}`);
                 if (quantity > stock) {
                     row['cantidad-' + index].numberbox('clear');
-                    messenger.show('Información', `Stock disponible: ${stock}`);
                     row['precio_total-' + index].numberbox('setValue', 0);
                 }
             }).add(() => {
