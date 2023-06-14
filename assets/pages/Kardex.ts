@@ -2,6 +2,7 @@ import {Field} from "../core/field/Field";
 import DataGrid from "../core/datagrid/DataGrid";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {FieldType} from "../core/field/FieldType";
+import NumberUtils from "../core/utils/NumberUtils";
 
 export default class Kardex {
     private readonly container: string;

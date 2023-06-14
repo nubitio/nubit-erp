@@ -1,9 +1,10 @@
 import dxTreeView, { ItemClickEvent } from 'devextreme/ui/tree_view';
 import { ClickEvent } from 'devextreme/ui/button';
 import { EventInfo } from 'devextreme/events';
+import List from 'devextreme-react/list';
 import React from 'react';
 
-export interface HeaderProps {
+export interface AppHeaderProps {
     menuToggleEnabled: boolean;
     title?: string;
     toggleMenu: (e: ClickEvent) => void;
@@ -21,7 +22,13 @@ export interface UserPanelProps {
     menuMode: 'context' | 'list';
 }
 
+export interface UserMenuSectionProps {
+    showAvatar?: boolean;
+    listRef?: React.RefObject<List>;
+}
+
 export interface User {
+    username: string;
     name: string;
     email: string;
     avatarUrl: string;
