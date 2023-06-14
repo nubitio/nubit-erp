@@ -115,8 +115,10 @@ export class SharedUtils {
     static voidedFormatter(value: number) {
         if (value === 1) {
             return '<span class="badge rounded-pill bg-success">NO</span>';
-        } else {
+        }if (value === 2) {
             return '<span class="badge rounded-pill bg-danger">SI</span>';
+        } else {
+            return '<span class="badge rounded-pill bg-warning">CON ERROR</span>';
         }
     }
 
