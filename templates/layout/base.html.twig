@@ -62,7 +62,6 @@
     {% endblock %}
 </div>
 <script>
-    window.userRoleId = {{ app.user.role_id|default(0) }};
     window.addEventListener('load', function () {
         let home = new window.app.home();
         $('#wrapper').animate({"opacity": 1});

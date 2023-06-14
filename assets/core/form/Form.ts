@@ -49,7 +49,6 @@ export default class Form {
             iframe: false,
             onSubmit: function () {
                 let valid = ref.validate();
-                console.log('valid', valid)
                 if (valid) {
                     bus.emit(ref.events.LOADING, true);
                     if (ref.options.url) {
@@ -900,7 +899,6 @@ export default class Form {
         data.forEach((item, index) => {
             let rowIndex = this.addRow();
             this.detailFields.forEach(field => {
-                console.log(field.name, item[field.name]);
                 let formField = this.getField(field.name + '-' + rowIndex);
                 if (formField.length === 0) {
                     return;

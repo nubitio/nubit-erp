@@ -4,12 +4,15 @@ namespace App\Invoice\Application;
 
 use App\Base\BaseController;
 use App\Billing\Domain\BillPdfUseCase;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
+use App\Invoice\Domain\InvoiceSendUseCase;
+use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -54,12 +57,28 @@ class InvoiceController extends BaseController
         ]);
     }
 
-    #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
-    public function consult(InvoiceConsultUseCase $consultUseCase, string $id): Response
+    #[Route('/invoice/{id}/send', name: 'invoice_send', methods: ['POST'])]
+    public function send(InvoiceSendUseCase $invoiceSendUseCase, string $id): Response
     {
-        $consultUseCase($id);
+        $result = $invoiceSendUseCase($id);
 
-        return $this->json(['success' => true, 'msg' => 'CRD actualizado']);
+        if ($result->sunatResponse->success) {
+            return $this->json(new ApiResponse(true, $result->sunatResponse->cdrResponse->description ?: ''));
+        } else {
+            return $this->json(new ApiResponse(false, $result->sunatResponse->error->message ?: ''));
+        }
+    }
+
+    #[Route('/invoice/{id}/consult', name: 'invoice_consult', methods: ['GET'])]
+    public function consult(InvoiceConsultUseCase $invoiceConsultUseCase, string $id): Response
+    {
+        $result = $invoiceConsultUseCase($id);
+
+        if ($result->isSuccess()) {
+            return $this->json(new ApiResponse(true, $result->getCdrResponse()?->getDescription() ?: ''));
+        } else {
+            return $this->json(new ApiResponse(false, $result->getError()?->getMessage() ?: ''));
+        }
     }
 
     #[Route('/invoice/{id}/xml', name: 'invoice_xml', methods: ['GET'])]
@@ -72,14 +91,14 @@ class InvoiceController extends BaseController
 
         $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
 
-        $respone = new StreamedResponse(function () use ($xmlPath) {
+        $response = new StreamedResponse(function () use ($xmlPath) {
             echo $this->fileManager->read($xmlPath);
         });
 
-        $respone->headers->set('Content-Type', 'text/xml');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
+        $response->headers->set('Content-Type', 'text/xml');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
 
-        return $respone;
+        return $response;
     }
 
     #[Route('/invoice/{id}/cdr', name: 'invoice_cdr', methods: ['GET'])]
@@ -92,14 +111,14 @@ class InvoiceController extends BaseController
 
         $cdrPath = $this->settings->get(Constants::COMPANY_ID).'/R-'.$docFullName.'.zip';
 
-        $respone = new StreamedResponse(function () use ($cdrPath) {
+        $response = new StreamedResponse(function () use ($cdrPath) {
             echo $this->fileManager->read($cdrPath);
         });
 
-        $respone->headers->set('Content-Type', 'application/zip');
-        $respone->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
+        $response->headers->set('Content-Type', 'application/zip');
+        $response->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
 
-        return $respone;
+        return $response;
     }
 
     #[Route('/invoice/{id}/pdf', name: 'invoice_pdf', methods: ['GET'])]
@@ -131,5 +150,20 @@ class InvoiceController extends BaseController
         $emailUseCase($id);
 
         return $this->json(['success' => true, 'msg' => 'Email enviado']);
+    }
+
+    #[Route('/invoice/send/multiple', name: 'invoice_multiple_send', methods: ['GET'])]
+    public function sendMultiple(Connection $connection): Response
+    {
+        $invoices = $connection->fetchAllAssociative("SELECT * FROM comprobante WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)");
+
+        $invoicesIds = array_map(function ($invoice) {
+            return $invoice['movimiento_id'];
+        }, $invoices);
+
+        return $this->render('invoice/send_multiple.html.twig', [
+            'invoices' => $invoices,
+            'invoicesIds' => $invoicesIds,
+        ]);
     }
 }

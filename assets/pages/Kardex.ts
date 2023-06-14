@@ -33,6 +33,11 @@ export default class Kardex {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
+            .name('codigo')
+            .label('Código')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NONE)
             .name('producto')
             .label('Producto')
             .width(100)
@@ -46,19 +51,19 @@ export default class Kardex {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('ingresos')
-            .label('Ingreso')
+            .label('Entradas')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('salidas')
-            .label('Salida')
+            .label('Salidas')
             .align('right')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('stock')
-            .label('Saldo final')
+            .label('Saldo')
             .align('right')
             .build());
     };

@@ -24,8 +24,10 @@ export default class Home {
         });
 
         this.setupMenu();
+        let session = StorageUtils.getItem('session');
+        let roleId = session?.role_id;
 
-        fetch('/menu/' + window.userRoleId)
+        fetch('/menu/' + roleId)
             .then(response => response.json())
             .then(data => {
                 let menu: any[] = []
