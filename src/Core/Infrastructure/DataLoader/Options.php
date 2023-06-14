@@ -2,7 +2,7 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
-readonly class Options
+readonly class Options implements LoadOptionsInterface
 {
     /**
      * @template E of object

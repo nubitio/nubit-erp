@@ -5,7 +5,7 @@ namespace App\Kardex\Domain;
 interface KardexRepositoryInterface
 {
     /**
-     * @return array<int, mixed>
+     * @return array<string, mixed>
      */
     public function getAll(string $localId, ?string $warehouseId, ?string $categoryId, ?string $dateFrom, ?string $dateTo): array;
 
