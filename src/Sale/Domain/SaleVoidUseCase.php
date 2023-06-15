@@ -74,10 +74,12 @@ readonly class SaleVoidUseCase
         if ($response->sunatResponse->success) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->voided = 2;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();
             $this->invoiceRepository->update($invoice);
         } else {
+            $invoice->voided = 3;
             throw new \Exception($response->sunatResponse->error->message);
         }
     }
@@ -99,10 +101,12 @@ readonly class SaleVoidUseCase
         if ($response->sunatResponse->success) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->voided = 2;
             $invoice->correlativo_baja = explode('-', $response->name)[3];
             $invoice->updated_at = new \DateTime();
             $this->invoiceRepository->update($invoice);
         } else {
+            $invoice->voided = 3;
             throw new \Exception($response->sunatResponse->error->message);
         }
     }
