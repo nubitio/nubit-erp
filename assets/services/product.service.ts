@@ -7,7 +7,6 @@ import {Constants} from "../core/common/Constants";
 import {ProductStockDto} from "../dto/product.stock.dto";
 
 class ProductService {
-
     getAll(loadOptions: any): Promise<GridData<ProductDto>> {
         let subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {params: loadOptions});
 
@@ -17,6 +16,13 @@ class ProductService {
                     data: response.data,
                     totalCount: Number(response.headers['x-total-count'])
                 } as GridData<ProductDto>;
+            });
+    }
+
+    getOne(id: string): Promise<ProductDto> {
+        return lastValueFrom(httpClient.get<ProductDto>(`${Constants.API_BASE_URL}products/${id}`))
+            .then((response: ApiResponse<ProductDto>) => {
+                return response.data;
             });
     }
 
