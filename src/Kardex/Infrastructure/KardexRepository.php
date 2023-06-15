@@ -22,9 +22,20 @@ class KardexRepository implements KardexRepositoryInterface
             $dateTo = date('Y-m-t');
         }
 
-        $table = 'select producto_id, codigo, descripcion as producto from producto';
+        $table = '
+        select
+            p.producto_id,
+            p.codigo,
+            p.descripcion as producto,
+            sum(if(m.tipo_id = 1, md.cantidad, 0)) as ingresos,
+            sum(if(m.tipo_id = 2, md.cantidad, 0)) as salidas,
+            sum(if(m.tipo_id = 1, md.cantidad, 0)) - sum(if(m.tipo_id = 2, md.cantidad, 0)) as stock
+        from producto p
+        left join movimiento_detalle md on p.producto_id = md.producto_id
+        left join movimiento m on md.movimiento_id = m.movimiento_id and m.estado = 1
+        group by p.producto_id, p.codigo, p.descripcion';
 
-        return $this->dataGridLoader->load("($table) t", 'producto_id', 'ASC');
+        return $this->dataGridLoader->load("($table) t", 'producto');
     }
 
     /** {@inheritdoc} */
