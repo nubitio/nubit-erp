@@ -3,6 +3,7 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
@@ -73,7 +74,7 @@ class SaleController extends BaseController
                 $reportFile = $xlsExporter->export($data, 'reporte_ventas_anuladas');
                 break;
             case 'credit-notes':
-                $data = $connection->executeQuery('CALL sp_reporte_notasCredito(:local_id, :date_from, :date_to)', $params)->fetchAllAssociative();
+                $data = $connection->executeQuery('CALL sp_reporte_notasCredito(:date_from, :date_to)', $params)->fetchAllAssociative();
                 $reportFile = $xlsExporter->export($data, 'reporte_notas_de_credito');
                 break;
             case 'sale-notes':
@@ -150,6 +151,6 @@ class SaleController extends BaseController
     {
         $saleInvoiceUseCase($id);
 
-        return $this->json(['success' => true, 'msg' => 'Comprobante generado correctamente']);
+        return $this->json(new ApiResponse(true, 'Comprobante generado correctamente'));
     }
 }
