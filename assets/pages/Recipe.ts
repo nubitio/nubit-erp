@@ -45,10 +45,42 @@ export default class Recipe {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
-            .name('name')
-            .label('Nombre')
+            .type(FieldType.ENTITY)
+            .name('product')
+            .label('Producto')
             .width(100)
+            .url(Constants.API_BASE_URL + 'products')
+            .mode('remote')
+            .valueField('producto_id')
+            .textField('descripcion')
+            .formatter((value: any) => value?.descripcion)
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.ENUM)
+            .name('type_id')
+            .label('Tipo')
+            .data([
+                {value: 1, text: 'Receta'},
+                {value: 2, text: 'Kit'},
+            ])
+            .formatter((value) => {
+                return value === 1 ? 'Receta' : 'Kit';
+            })
+            .defaultValue(1)
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('reference')
+            .label('Referencia')
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.NUMBER)
+            .name('quantity')
+            .label('Cantidad')
+            .precision(2)
+            .defaultValue(1)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -73,6 +105,7 @@ export default class Recipe {
             .type(FieldType.NUMBER)
             .name('quantity')
             .label('Cantidad')
+            .precision(2)
             .build())
     };
 
@@ -84,7 +117,7 @@ export default class Recipe {
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
-            title: 'Recipe',
+            title: 'Lista de materiales',
             url: Recipe.API_URL,
             method: 'get',
             allowAdd: true,

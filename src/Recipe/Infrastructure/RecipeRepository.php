@@ -12,6 +12,7 @@ use App\Recipe\Domain\Recipe;
 use App\Recipe\Domain\RecipeRepositoryInterface;
 use App\RecipeDetail\Infrastructure\RecipeDetailEntity;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
 
 readonly class RecipeRepository implements RecipeRepositoryInterface
 {
@@ -38,9 +39,14 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
         return DataMapper::map($entity, Recipe::class);
     }
 
+    /**
+     * @throws ORMException
+     */
     public function insert(Recipe $recipe): Recipe
     {
         $entity = DataMapper::map($recipe, RecipeEntity::class);
+
+        $entity->product = $this->entityManager->getReference(ProductEntity::class, $recipe->product?->producto_id);
 
         /** @var RecipeDetailEntity $detail */
         foreach ($entity->details as $detail) {
@@ -54,6 +60,10 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
         return DataMapper::map($entity, Recipe::class);
     }
 
+    /**
+     * @throws ServiceException
+     * @throws ORMException
+     */
     public function update(Recipe $recipe): Recipe
     {
         $entity = $this->entityManager->find(RecipeEntity::class, $recipe->id);
@@ -63,6 +73,9 @@ readonly class RecipeRepository implements RecipeRepositoryInterface
         }
 
         $entity = DataMapper::map($recipe, $entity);
+
+        $entity->product = $this->entityManager->getReference(ProductEntity::class, $recipe->product?->producto_id);
+
         $this->deleteDetails($entity);
         /** @var RecipeDetailEntity $detail */
         foreach ($entity->details as $detail) {
