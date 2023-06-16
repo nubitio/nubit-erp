@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {Constants} from "../core/common/Constants";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class UnitOfMeasure {
     private readonly container: string;
@@ -38,31 +39,65 @@ export default class UnitOfMeasure {
             .name('unidad_id')
             .label('Unidad id')
             .required(true)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)
             .name('name')
-            .label('Name')
+            .label('Nombre')
+            .width(100)
+            .required(true)
+            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.ENUM)
+            .name('type_id')
+            .label('Tipo')
+            .data([
+                {value: 1, text: 'Unidad'},
+                {value: 2, text: 'Peso'},
+                {value: 3, text: 'Volumen'},
+                {value: 4, text: 'Longitud'},
+                {value: 5, text: 'Tiempo'},
+            ])
+            .formatter((value) => {
+                switch (value) {
+                    case 1:
+                        return 'Unidad';
+                    case 2:
+                        return 'Peso';
+                    case 3:
+                        return 'Volumen';
+                    case 4:
+                        return 'Longitud';
+                    case 5:
+                        return 'Tiempo';
+                    default:
+                        return '';
+                }
+            })
+            .defaultValue(1)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NUMBER)
-            .name('type_id')
-            .label('Type id')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
             .name('ratio')
             .label('Ratio')
+            .precision(5)
+            .defaultValue(1)
+            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
             .name('is_reference')
-            .label('Is reference')
+            .label('Es referencia')
+            .formatter(SharedUtils.booleanFormatter)
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
             .name('active')
-            .label('Active')
+            .label('Activo')
+            .formatter(SharedUtils.booleanFormatter)
+            .defaultValue(true)
             .build())
     };
 
