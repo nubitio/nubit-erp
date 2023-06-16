@@ -6,7 +6,6 @@ import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {SharedUtils} from "../core/utils/SharedUtils";
 import {messenger} from "../core/utils/Messenger";
-import {SaleService} from "../services/sale.service";
 import {InvoiceService} from "../services/invoice.service";
 import NumberUtils from "../core/utils/NumberUtils";
 import {Constants} from "../core/common/Constants";
@@ -17,7 +16,6 @@ export default class Invoice {
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
-    private saleService: SaleService = new SaleService();
     private invoiceService: InvoiceService = new InvoiceService();
 
     static readonly API_URL = Constants.API_BASE_URL + 'invoices';
@@ -90,7 +88,7 @@ export default class Invoice {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('nota')
-            .label('NC')
+            .label('Nota C.')
             .align('center')
             .build());
         this.fields.push(new FieldBuilder()
@@ -184,8 +182,8 @@ export default class Invoice {
             return;
         }
         this.dataGrid.showLoading('Enviando comprobante a SUNAT...');
-        this.saleService.makeInvoice(selected['movimiento_id']).subscribe((data) => {
-            messenger.show('Información', 'Comprobante enviado a SUNAT');
+        this.invoiceService.sendInvoice(selected['movimiento_id']).subscribe((response) => {
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
         }).add(() => this.dataGrid.hideLoading());
     }
@@ -221,10 +219,9 @@ export default class Invoice {
         }
 
         this.dataGrid.showLoading('Consultando CDR...');
-        this.invoiceService.consultInvoice(selected['movimiento_id']).subscribe((data) => {
-            this.dataGrid.hideLoading();
-            messenger.show('Información', 'CDR actualizado');
+        this.invoiceService.consultInvoice(selected['movimiento_id']).subscribe((response) => {
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
-        });
+        }).add(() => this.dataGrid.hideLoading());
     }
 }

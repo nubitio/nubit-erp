@@ -509,9 +509,12 @@ export default class Sale {
         messenger.prompt('Confirmar', 'Ingrese un motivo', (reason: string) => {
             let id = selected['movimiento_id'];
             if (reason) {
+                this.dataGrid.showLoading('Anulando venta...');
                 this.saleService.voidSale(id, reason).subscribe((data) => {
                     messenger.show('Información', 'Venta anulada');
                     this.dataGrid.reload();
+                }).add(() => {
+                    this.dataGrid.hideLoading();
                 });
             }
         });
@@ -520,7 +523,7 @@ export default class Sale {
     private makeInvoice(saleId: string) {
         this.dataGrid.showLoading('Generando comprobante...')
         this.saleService.makeInvoice(saleId).subscribe((response) => {
-            messenger.show('Información', 'Comprobante generado');
+            messenger.show('Información', response.data.message);
             this.dataGrid.reload();
             this.print(saleId);
         }).add(() => {

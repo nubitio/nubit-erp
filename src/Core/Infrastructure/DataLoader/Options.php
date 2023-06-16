@@ -16,6 +16,8 @@ readonly class Options
         public string $mapping,
         public int $page,
         public int $rows,
+        public int $skip = 0,
+        public int $take = 0,
         /** @var JoinRule[] $joins */
         public array $joins = [],
         /** @var SortRule[] $sort */

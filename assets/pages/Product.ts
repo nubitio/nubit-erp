@@ -66,6 +66,7 @@ export default class Product {
             .name('descripcion')
             .label('Descripción')
             .width(100)
+            .sortable(true)
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
