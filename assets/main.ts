@@ -47,9 +47,11 @@ import ComboOption from "./pages/ComboOption";
 import Consultation from "./pages/Consultation";
 import PatientType from "./pages/PatientType";
 import ChangePassword from "./pages/ChangePassword";
-import { themeManager } from './core/utils/ThemeManager';
+import {themeManager} from './core/utils/ThemeManager';
 import Recipe from "./pages/Recipe";
 import {settings} from "./Settings";
+import Production from "./pages/Production";
+import UnitOfMeasure from "./pages/UnitOfMeasure";
 
 window.observer = bus;
 window.DataGrid = DataGrid;
@@ -102,6 +104,8 @@ window.app.consultation = Consultation;
 window.app.patientType = PatientType;
 window.app.changePassword = ChangePassword;
 window.app.recipe = Recipe;
+window.app.production = Production;
+window.app.unitOfMeasure = UnitOfMeasure;
 
 window.addEventListener('load', async () => {
     window.ThemeManager = themeManager;

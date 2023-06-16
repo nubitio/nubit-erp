@@ -31,6 +31,7 @@ readonly class ProductProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.categoria', 'c'));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.unidad', 'u', JoinType::LEFT));
             $context = OptionUtils::addJoin($context, new JoinRule('e.imagen', 'i', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
             $options = OptionsBuilder::build($context, ProductEntity::class, Product::class);
