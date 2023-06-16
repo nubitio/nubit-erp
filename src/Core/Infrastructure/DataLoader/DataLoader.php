@@ -38,9 +38,7 @@ readonly class DataLoader
 
         $paginator = new DoctrinePaginator($query);
 
-        dump($options);
         if ($options->skip >= 0 && $options->take > 0) {
-            dump('skip');
             $paginator->getQuery()
                 ->setFirstResult($options->skip)
                 ->setMaxResults($options->take);

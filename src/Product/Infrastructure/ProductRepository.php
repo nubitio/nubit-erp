@@ -96,9 +96,9 @@ readonly class ProductRepository implements ProductRepositoryInterface
             $entity->imagen = $image;
         }
 
-        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $entity->descripcion]);
+        $existingProduct = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $product->descripcion]);
 
-        if ($product) {
+        if ($existingProduct && $existingProduct[0]->producto_id !== $entity->producto_id) {
             throw new ValidationException(self::ERROR_MESSAGE);
         }
 

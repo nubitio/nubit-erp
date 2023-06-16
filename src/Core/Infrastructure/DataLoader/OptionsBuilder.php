@@ -14,7 +14,6 @@ class OptionsBuilder
      */
     public static function build(array $context, string $entity, string $mapping): Options
     {
-        dump($context);
         /** @var string $joinRules */
         $joinRules = $context['filters']['joinRules'] ?? '[]';
         /** @var array<int, array<string, bool|float|int|string|null>> $joinRules */
@@ -63,7 +62,6 @@ class OptionsBuilder
                 'value' => $filters[2],
             ];
         }
-        dump($filterRules);
 
         return new Options(
             entity: $entity,
