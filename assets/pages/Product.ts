@@ -88,6 +88,7 @@ export default class Product {
             .textField('name')
             .required(true)
             .formatter((value: any) => value?.name)
+            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)

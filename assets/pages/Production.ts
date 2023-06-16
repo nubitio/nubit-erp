@@ -7,6 +7,7 @@ import {FieldBuilder} from "../core/field/FieldBuilder";
 import {Constants} from "../core/common/Constants";
 import {httpClient} from "../core/http/HttpClient";
 import Recipe from "./Recipe";
+import {bus} from "../core/event/EventBus";
 
 export default class Production {
     private readonly container: string;
@@ -167,6 +168,7 @@ export default class Production {
     render() {
         this.renderDataGrid();
         this.renderDialog();
+        this.setupObservers();
     }
 
     renderDataGrid() {
@@ -194,6 +196,17 @@ export default class Production {
             url: Production.API_URL,
             events: Production.EVENTS,
             detailFields: this.detailFields,
+        });
+    }
+
+    setupObservers() {
+        bus.on(Recipe.EVENTS.EDIT, () => {
+            let selected = this.dataGrid.selectedRow;
+            let productionId = selected[this.dataGrid.getIdField()]
+
+            httpClient.get<any>(Production.API_URL + '/' + productionId + '/details').subscribe((response) => {
+                this.form.loadDetailData(response.data);
+            });
         });
     }
 }
