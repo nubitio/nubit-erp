@@ -41,6 +41,7 @@ class SendInvoiceCommand extends Command
         $io = new SymfonyStyle($input, $output);
         try {
             $tenants = $this->tenantManager->getTenants();
+
             foreach ($tenants as $tenant) {
                 /** @var string $tenantName */
                 $tenantName = $tenant['name'];
@@ -49,6 +50,8 @@ class SendInvoiceCommand extends Command
 
                 $this->sendInvoice($io);
             }
+
+            $io->success('Done!');
 
             return Command::SUCCESS;
         } catch (ServiceException|Exception|FilesystemException|InvalidArgumentException $e) {
