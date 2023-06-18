@@ -6,7 +6,7 @@ $schedule = new Schedule();
 
 $task = $schedule->run('php8.2 bin/console invoice:send');
 $task->description('Send Invoice Task')
-    ->everyFifteenMinutes()
+    ->everyThirtyMinutes()
     ->preventOverlapping();
 
 return $schedule;

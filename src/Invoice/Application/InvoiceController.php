@@ -155,7 +155,14 @@ class InvoiceController extends BaseController
     #[Route('/invoice/send/multiple', name: 'invoice_multiple_send', methods: ['GET'])]
     public function sendMultiple(Connection $connection): Response
     {
-        $invoices = $connection->fetchAllAssociative("SELECT * FROM comprobante WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)");
+        $invoices = $connection->fetchAllAssociative("
+        SELECT
+            *
+        FROM comprobante
+        WHERE
+            (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
+            AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+        ");
 
         $invoicesIds = array_map(function ($invoice) {
             return $invoice['movimiento_id'];
