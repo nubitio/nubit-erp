@@ -5,6 +5,7 @@ namespace App\Product\Infrastructure;
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Media\Infrastructure\MediaEntity;
+use App\UnitOfMeasure\Infrastructure\UnitOfMeasureEntity;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\Entity;
@@ -35,8 +36,9 @@ class ProductEntity
         #[ManyToOne(targetEntity: CategoryEntity::class)]
         #[JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id')]
         public ?CategoryEntity $categoria = null,
-        #[Column(name: 'unidad_id', type: 'string')]
-        public ?string $unidad_id = null,
+        #[ManyToOne(targetEntity: UnitOfMeasureEntity::class)]
+        #[JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id')]
+        public ?UnitOfMeasureEntity $unidad = null,
         #[Column(name: 'destino_id', type: 'integer')]
         public ?int $destino_id = null,
         #[Column(name: 'stock_minimo', type: 'integer')]

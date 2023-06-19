@@ -28,6 +28,7 @@ export default class Form {
         ADD: 'add',
         EDIT: 'edit',
     };
+    private detailTableBody: HTMLElement;
 
     constructor(container: string, fields: Field[], options: any = {}) {
         this.container = document.getElementById(container) || document.body;
@@ -168,9 +169,9 @@ export default class Form {
             tableHead.appendChild(tableRow);
             detailTable.appendChild(tableHead);
 
-            let tableBody = document.createElement('tbody');
-            tableBody.setAttribute('id', 'detailTableBody' + this.randomId);
-            detailTable.appendChild(tableBody);
+            this.detailTableBody = document.createElement('tbody');
+            this.detailTableBody.setAttribute('id', 'detailTableBody' + this.randomId);
+            detailTable.appendChild(this.detailTableBody);
         } else {
             this.buildFields(form, this.fields);
         }
@@ -596,7 +597,8 @@ export default class Form {
             url: field.url,
             method: 'get',
             loader: (param: any, success: any, error: any) => {
-                let url = field.url;
+                let options = input.combobox('options');
+                let url = options.url;
                 if (param.q) {
                     url += '?filterRules=' + encodeURIComponent(JSON.stringify([{
                         field: field.textField,
@@ -741,6 +743,7 @@ export default class Form {
                 case FieldType.DATE:
                     this.getField(field.name).datebox('setValue', field.defaultValue);
                     break;
+                case FieldType.ENUM:
                 case FieldType.ENTITY:
                     this.getField(field.name).combobox('select', field.defaultValue);
                     break;
@@ -896,6 +899,7 @@ export default class Form {
     }
 
     loadDetailData(data: any[]) {
+        this.clearDetailData();
         data.forEach((item, index) => {
             let rowIndex = this.addRow();
             this.detailFields.forEach(field => {
@@ -923,5 +927,9 @@ export default class Form {
                 }
             });
         });
+    }
+
+    private clearDetailData() {
+        this.detailTableBody.innerHTML = '';
     }
 }

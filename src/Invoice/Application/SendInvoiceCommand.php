@@ -2,8 +2,12 @@
 
 namespace App\Invoice\Application;
 
+use App\Core\Domain\Exception\ServiceException;
+use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
+use App\Core\Infrastructure\Service\TenantManager;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -19,6 +23,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class SendInvoiceCommand extends Command
 {
     public function __construct(
+        private readonly TenantManager $tenantManager,
+        private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
         private readonly Connection $connection,
         private readonly InvoiceSendUseCase $invoiceSendUseCase,
     ) {
@@ -34,28 +40,55 @@ class SendInvoiceCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         try {
-            $pending = $this->connection->fetchAllAssociative("SELECT movimiento_id FROM comprobante WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)");
+            $tenants = $this->tenantManager->getTenants();
 
-            /** @var array<string, string> $item */
-            foreach ($pending as $item) {
-                $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
+            foreach ($tenants as $tenant) {
+                /** @var string $tenantName */
+                $tenantName = $tenant['name'];
+                $this->tenantConnectionSwitcher->switchConnection($tenantName);
+                $io->title('Tenant: '.$tenantName);
 
-                if ($response->sunatResponse->success) {
-                    $io->success($response->sunatResponse->cdrResponse->description);
-                } else {
-                    $io->error($response->sunatResponse->error->message);
-                }
+                $this->sendInvoice($io);
             }
 
+            $io->success('Done!');
+
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (ServiceException|Exception|FilesystemException|InvalidArgumentException $e) {
             $io->error('Error: '.$e->getMessage());
 
             return Command::FAILURE;
-        } catch (FilesystemException|InvalidArgumentException $e) {
-            $io->error('Error: '.$e->getMessage());
+        }
+    }
 
-            return Command::FAILURE;
+    /**
+     * @throws InvalidArgumentException
+     * @throws FilesystemException
+     * @throws ServiceException
+     * @throws Exception
+     */
+    private function sendInvoice(SymfonyStyle $io): void
+    {
+        $pending = $this->connection->fetchAllAssociative("
+            SELECT
+                movimiento_id
+            FROM comprobante
+            WHERE
+                (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
+                AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+            ");
+
+        $io->text('Pending: '.count($pending));
+
+        /** @var array<string, string> $item */
+        foreach ($pending as $item) {
+            $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
+
+            if ($response->sunatResponse->success) {
+                $io->success($response->sunatResponse->cdrResponse->description);
+            } else {
+                $io->warning($response->sunatResponse->error->message);
+            }
         }
     }
 }

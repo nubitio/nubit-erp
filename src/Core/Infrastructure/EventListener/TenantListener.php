@@ -2,8 +2,7 @@
 
 namespace App\Core\Infrastructure\EventListener;
 
-use App\Core\Infrastructure\Doctrine\DBAL\TenantConnection;
-use Doctrine\Persistence\ConnectionRegistry;
+use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
@@ -11,7 +10,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 readonly class TenantListener
 {
     public function __construct(
-        private ConnectionRegistry $connectionRegistry
+        private TenantConnectionSwitcher $tenantConnectionSwitcher
     ) {
     }
 
@@ -22,14 +21,7 @@ readonly class TenantListener
         $excludedSubdomains = ['localhost', 'www', 'demo', 'api', 'app', 'admin'];
         if ($subdomain && !in_array($subdomain, $excludedSubdomains)) {
             $event->getRequest()->headers->set('tenant', $subdomain);
-            $this->switchConnection($subdomain);
+            $this->tenantConnectionSwitcher->switchConnection($subdomain);
         }
-    }
-
-    private function switchConnection(string $tenant): void
-    {
-        /** @var TenantConnection $connection */
-        $connection = $this->connectionRegistry->getConnection();
-        $connection->switchTenant($tenant);
     }
 }

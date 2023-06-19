@@ -13,6 +13,7 @@ use App\Media\Infrastructure\MediaEntity;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
 use App\Product\Domain\ProductStock;
+use App\UnitOfMeasure\Infrastructure\UnitOfMeasureEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -54,8 +55,9 @@ readonly class ProductRepository implements ProductRepositoryInterface
     public function insert(Product $product): Product
     {
         $entity = DataMapper::map($product, ProductEntity::class);
-        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
-        $entity->categoria = $category;
+        $entity->categoria = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+        $entity->unidad = $this->entityManager->getReference(UnitOfMeasureEntity::class, $product->unidad?->unidad_id);
+
         if ($product->imagen?->id) {
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
             $entity->imagen = $image;
@@ -86,20 +88,20 @@ readonly class ProductRepository implements ProductRepositoryInterface
         }
 
         $entity = DataMapper::map($product, $entity);
-        $category = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+        $entity->categoria = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+        $entity->unidad = $this->entityManager->getReference(UnitOfMeasureEntity::class, $product->unidad?->unidad_id);
 
         if ($product->imagen?->id) {
             $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
             $entity->imagen = $image;
         }
 
-        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $entity->descripcion]);
+        $existingProduct = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $product->descripcion]);
 
-        if ($product) {
+        if ($existingProduct && $existingProduct[0]->producto_id !== $entity->producto_id) {
             throw new ValidationException(self::ERROR_MESSAGE);
         }
 
-        $entity->categoria = $category;
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Product::class);
@@ -119,7 +121,6 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
     /**
      * @throws Exception
-     * @throws ServiceException
      */
     public function getStock(string $productId, string $warehouseId): ProductStock
     {
