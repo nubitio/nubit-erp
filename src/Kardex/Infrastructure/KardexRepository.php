@@ -6,11 +6,11 @@ use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Kardex\Domain\KardexRepositoryInterface;
 use Doctrine\DBAL\Connection;
 
-class KardexRepository implements KardexRepositoryInterface
+readonly class KardexRepository implements KardexRepositoryInterface
 {
     public function __construct(
-        private readonly Connection $connection,
-        private readonly DataGridLoader $dataGridLoader
+        private Connection $connection,
+        private DataGridLoader $dataGridLoader
     ) {
     }
 
