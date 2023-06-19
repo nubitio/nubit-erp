@@ -31,6 +31,6 @@ services:
           key: '%env(S3_ACCESS_KEY)%'
           secret: '%env(S3_ACCESS_SECRET)%'
 
-  App\Core\Infrastructure\EventListener\TenantListener:
+  App\Core\Infrastructure\Service\TenantConnectionSwitcher:
     arguments:
       $connectionRegistry: '@doctrine'

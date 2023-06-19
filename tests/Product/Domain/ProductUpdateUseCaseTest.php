@@ -7,6 +7,7 @@ use App\Media\Domain\Media;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
 use App\Product\Domain\UpdateProductUseCase;
+use App\UnitOfMeasure\Domain\UnitOfMeasure;
 use PHPUnit\Framework\TestCase;
 
 class ProductUpdateUseCaseTest extends TestCase
@@ -25,7 +26,7 @@ class ProductUpdateUseCaseTest extends TestCase
             2,
             'Product description',
             new Category('1', 'Category name'),
-            '10',
+            new UnitOfMeasure(1, 'Unit'),
             10,
             10,
             10.0,

@@ -80,6 +80,17 @@ export default class Product {
             .formatter((value: any, row: any) => value.descripcion ?? '')
             .build());
         this.fields.push(new FieldBuilder()
+            .type(FieldType.ENTITY)
+            .name('unidad')
+            .label('Unidad')
+            .url(Constants.API_BASE_URL + 'unit-of-measures')
+            .valueField('unidad_id')
+            .textField('name')
+            .required(true)
+            .formatter((value: any) => value?.name)
+            .valueType('number')
+            .build());
+        this.fields.push(new FieldBuilder()
             .type(FieldType.CURRENCY)
             .name('precio')
             .label('Precio')

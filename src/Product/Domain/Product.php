@@ -5,6 +5,7 @@ namespace App\Product\Domain;
 use App\Category\Domain\Category;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Media\Domain\Media;
+use App\UnitOfMeasure\Domain\UnitOfMeasure;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -21,8 +22,8 @@ class Product
         public ?string $descripcion = null,
         #[SerializedName('categoria')]
         public ?Category $categoria = null,
-        #[SerializedName('unidad_id')]
-        public ?string $unidad_id = null,
+        #[SerializedName('unidad')]
+        public ?UnitOfMeasure $unidad = null,
         #[SerializedName('destino_id')]
         public ?int $destino_id = null,
         #[SerializedName('stock_minimo')]
