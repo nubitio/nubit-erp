@@ -2,13 +2,15 @@
 
 namespace App\Kardex\Infrastructure;
 
+use App\Core\Infrastructure\Common\DataGridLoader;
 use App\Kardex\Domain\KardexRepositoryInterface;
 use Doctrine\DBAL\Connection;
 
-class KardexRepository implements KardexRepositoryInterface
+readonly class KardexRepository implements KardexRepositoryInterface
 {
     public function __construct(
-        private readonly Connection $connection
+        private Connection $connection,
+        private DataGridLoader $dataGridLoader
     ) {
     }
 
@@ -20,13 +22,20 @@ class KardexRepository implements KardexRepositoryInterface
             $dateTo = date('Y-m-t');
         }
 
-        return $this->connection->fetchAllAssociative('call sp_reporte_movimientos_pos (?,?,?,?,?)', [
-            $localId,
-            $warehouseId,
-            $categoryId,
-            $dateFrom,
-            $dateTo,
-        ]);
+        $table = '
+        select
+            p.producto_id,
+            p.codigo,
+            p.descripcion as producto,
+            sum(if(m.tipo_id = 1, md.cantidad, 0)) as ingresos,
+            sum(if(m.tipo_id = 2, md.cantidad, 0)) as salidas,
+            sum(if(m.tipo_id = 1, md.cantidad, 0)) - sum(if(m.tipo_id = 2, md.cantidad, 0)) as stock
+        from producto p
+        left join movimiento_detalle md on p.producto_id = md.producto_id
+        left join movimiento m on md.movimiento_id = m.movimiento_id and m.estado = 1
+        group by p.producto_id, p.codigo, p.descripcion';
+
+        return $this->dataGridLoader->load("($table) t", 'producto');
     }
 
     /** {@inheritdoc} */

@@ -11,7 +11,10 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 
-readonly class DataLoader
+/**
+ * @implements DataLoaderInterface<object>
+ */
+readonly class DataLoader implements DataLoaderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -19,9 +22,11 @@ readonly class DataLoader
     }
 
     /**
+     * @param Options $options
+     *
      * @throws \Exception
      */
-    public function load(Options $options): PaginatorInterface
+    public function load(LoadOptionsInterface $options): PaginatorInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -82,7 +87,6 @@ readonly class DataLoader
             foreach (get_object_vars($obj) as $key => $value) {
                 $type = ReflectionUtil::getPropertyType($obj, $key);
                 if ($parent === $type) {
-                    /** @var JoinRule $join */
                     foreach ($options->joins as $join) {
                         $joinColumn = substr($join->entity, strpos($join->entity, '.') + 1);
                         if ($joinColumn === $key) {
