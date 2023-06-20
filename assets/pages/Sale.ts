@@ -212,6 +212,7 @@ export default class Sale {
             .name('cantidad')
             .label('Cantidad')
             .align('center')
+            .precision(2)
             .onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
             .required(true)
             .build());

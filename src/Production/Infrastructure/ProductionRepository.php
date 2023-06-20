@@ -11,17 +11,20 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Employee\Infrastructure\EmployeeEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Production\Domain\Production;
+use App\Production\Domain\ProductionReadyEvent;
 use App\Production\Domain\ProductionRepositoryInterface;
 use App\ProductionDetail\Infrastructure\ProductionDetailEntity;
 use App\Recipe\Infrastructure\RecipeEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 readonly class ProductionRepository implements ProductionRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
+        private EventDispatcherInterface $eventDispatcher
     ) {
     }
 
@@ -93,6 +96,8 @@ readonly class ProductionRepository implements ProductionRepositoryInterface
         }
 
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(new ProductionReadyEvent($production));
 
         return DataMapper::map($entity, Production::class);
     }
