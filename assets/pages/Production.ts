@@ -200,7 +200,7 @@ export default class Production {
     }
 
     setupObservers() {
-        bus.on(Recipe.EVENTS.EDIT, () => {
+        bus.on(Production.EVENTS.EDIT, () => {
             let selected = this.dataGrid.selectedRow;
             let productionId = selected[this.dataGrid.getIdField()]
 

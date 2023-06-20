@@ -60,7 +60,7 @@ readonly class NoteCreateUseCase
             $item = (new SaleDetail())
                 ->setCodProducto(strval($item->product_code))
                 ->setUnidad('NIU')
-                ->setCantidad(intval($item->quantity))
+                ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
                 ->setMtoBaseIgv(floatval($item->taxed_amount))
                 ->setPorcentajeIgv(floatval($item->tax_percentage))
