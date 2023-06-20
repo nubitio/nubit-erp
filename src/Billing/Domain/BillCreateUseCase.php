@@ -74,7 +74,7 @@ readonly class BillCreateUseCase
             $detail = new BillDetail();
             $detail->codProducto = strval($item->product_code);
             $detail->unidad = 'NIU';
-            $detail->cantidad = intval($item->quantity);
+            $detail->cantidad = floatval($item->quantity);
             $detail->descripcion = strval($item->product_name);
             $detail->mtoValorUnitario = floatval($item->unit_value);
             $detail->mtoBaseIgv = floatval($item->taxed_amount);
