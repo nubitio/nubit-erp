@@ -5,7 +5,7 @@ namespace App\Billing\Model\Bill;
 class BillDetail
 {
     public string $unidad;
-    public int $cantidad;
+    public float $cantidad;
     public string $codProducto;
     public string $descripcion;
     public float $mtoValorUnitario;
