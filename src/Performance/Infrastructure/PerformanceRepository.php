@@ -21,7 +21,6 @@ readonly class PerformanceRepository implements PerformanceRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -22,7 +22,6 @@ readonly class DepartmentProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Department
     {
         if ($operation instanceof DeleteOperationInterface) {

@@ -22,7 +22,6 @@ readonly class BranchProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Branch
     {
         if ($operation instanceof DeleteOperationInterface) {

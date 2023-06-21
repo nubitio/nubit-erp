@@ -22,7 +22,6 @@ readonly class PatientProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Patient
     {
         if ($operation instanceof DeleteOperationInterface) {

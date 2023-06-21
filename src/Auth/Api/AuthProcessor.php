@@ -22,7 +22,6 @@ readonly class AuthProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Token
     {
         $user = $this->getOneUserByUsernameUseCase->__invoke(strval($data->username));

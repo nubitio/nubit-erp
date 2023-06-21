@@ -22,7 +22,6 @@ readonly class ComboOptionProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?ComboOption
     {
         if ($operation instanceof DeleteOperationInterface) {

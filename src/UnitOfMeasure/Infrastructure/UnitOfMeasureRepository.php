@@ -19,7 +19,6 @@ readonly class UnitOfMeasureRepository implements UnitOfMeasureRepositoryInterfa
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

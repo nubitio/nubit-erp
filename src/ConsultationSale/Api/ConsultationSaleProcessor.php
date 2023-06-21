@@ -22,7 +22,6 @@ readonly class ConsultationSaleProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?ConsultationSale
     {
         if ($operation instanceof DeleteOperationInterface) {
