@@ -19,7 +19,6 @@ readonly class OperationRepository implements OperationRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

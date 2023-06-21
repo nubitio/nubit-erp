@@ -14,7 +14,6 @@ readonly class ProductionDetailRepository implements ProductionDetailRepositoryI
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

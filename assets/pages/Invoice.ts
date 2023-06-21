@@ -208,7 +208,12 @@ export default class Invoice {
             messenger.show('Información', 'Seleccione un registro');
             return;
         }
-        window.open('invoice/' + selected['movimiento_id']);
+        let payload = {
+            type: selected['tipo_comprobante_id'],
+            id: selected['movimiento_id'],
+        }
+        let payloadEncoded = btoa(JSON.stringify(payload));
+        window.open('receipt/' + payloadEncoded);
     }
 
     consult() {

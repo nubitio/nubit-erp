@@ -22,7 +22,6 @@ readonly class UserProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?User
     {
         if ($operation instanceof DeleteOperationInterface) {
