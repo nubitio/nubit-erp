@@ -19,11 +19,9 @@ readonly class TenantAwareSettingsService
     }
 
     /**
-     * @return bool|float|int|string|null
-     *
      * @throws InvalidArgumentException
      */
-    public function get(string $key, string $default = null): mixed
+    public function get(string $key, string $default = null): bool|float|int|string|null
     {
         $tenant = $this->request->getCurrentRequest()?->headers->get('tenant') ?? 'default';
         $tenantKey = $tenant.'_'.$key;
