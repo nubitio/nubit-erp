@@ -16,7 +16,7 @@ class TenantConnection extends Connection
     protected bool $isConnected = false;
     protected bool $autoCommit = true;
 
-    public function __construct(array $params, Driver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
+    public function __construct(array $params, Driver $driver, Configuration $config = null, EventManager $eventManager = null)
     {
         $this->tenantParams = $params;
         parent::__construct($params, $driver, $config, $eventManager);
@@ -78,7 +78,6 @@ class TenantConnection extends Connection
         return true;
     }
 
-    /** {@inheritdoc} */
     public function getParams(): array
     {
         return $this->tenantParams;

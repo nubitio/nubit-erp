@@ -21,10 +21,7 @@ class TransferRepository implements TransferRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_transfer', 'created_at', 'DESC', filter: $filter);
     }

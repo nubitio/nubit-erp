@@ -22,7 +22,6 @@ readonly class MediaProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Media
     {
         if ($operation instanceof DeleteOperationInterface) {

@@ -1,6 +1,8 @@
 api_platform:
   title: 'Efact API'
-  path_segment_name_generator: 'api_platform.path_segment_name_generator.dash'
+  description: 'Efact API'
+  version: '1.0.0'
+  path_segment_name_generator: 'api_platform.metadata.path_segment_name_generator.dash'
   mapping:
     paths: [ '%kernel.project_dir%/src' ]
   formats:

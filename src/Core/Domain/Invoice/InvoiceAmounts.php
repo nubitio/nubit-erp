@@ -19,9 +19,6 @@ class InvoiceAmounts
         return $this->subtotal;
     }
 
-    /**
-     * @return $this
-     */
     public function setSubtotal(float $subtotal): InvoiceAmounts
     {
         $this->subtotal = $subtotal;
@@ -34,9 +31,6 @@ class InvoiceAmounts
         return $this->taxedAmount;
     }
 
-    /**
-     * @return $this
-     */
     public function setTaxedAmount(float $taxedAmount): InvoiceAmounts
     {
         $this->taxedAmount = $taxedAmount;
@@ -49,9 +43,6 @@ class InvoiceAmounts
         return $this->discountAmount;
     }
 
-    /**
-     * @return $this
-     */
     public function setDiscountAmount(float $discountAmount): InvoiceAmounts
     {
         $this->discountAmount = $discountAmount;
@@ -64,9 +55,6 @@ class InvoiceAmounts
         return $this->chargesAmount;
     }
 
-    /**
-     * @return $this
-     */
     public function setChargesAmount(float $chargesAmount): InvoiceAmounts
     {
         $this->chargesAmount = $chargesAmount;
@@ -79,9 +67,6 @@ class InvoiceAmounts
         return $this->tax;
     }
 
-    /**
-     * @return $this
-     */
     public function setTax(float $tax): InvoiceAmounts
     {
         $this->tax = $tax;
@@ -94,9 +79,6 @@ class InvoiceAmounts
         return $this->total;
     }
 
-    /**
-     * @return $this
-     */
     public function setTotal(float $total): InvoiceAmounts
     {
         $this->total = $total;

@@ -195,8 +195,8 @@ class WebClientPrint
      */
     public static function createWcppDetectionScript($webClientPrintControllerAbsoluteUrl, $sessionID)
     {
-        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl) ||
-            !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
+        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl)
+            || !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
             throw new \Exception('WebClientPrintController absolute URL is missing, please specify it.');
         }
         if (Utils::isNullOrEmptyString($sessionID)) {
@@ -210,12 +210,12 @@ class WebClientPrint
 
     public static function createScript($webClientPrintControllerAbsoluteUrl, $clientPrintJobAbsoluteUrl, $sessionID)
     {
-        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl) ||
-            !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
+        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl)
+            || !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
             throw new \Exception('WebClientPrintController absolute URL is missing, please specify it.');
         }
-        if (Utils::isNullOrEmptyString($clientPrintJobAbsoluteUrl) ||
-            !Utils::strStartsWith($clientPrintJobAbsoluteUrl, 'http')) {
+        if (Utils::isNullOrEmptyString($clientPrintJobAbsoluteUrl)
+            || !Utils::strStartsWith($clientPrintJobAbsoluteUrl, 'http')) {
             throw new \Exception('ClientPrintJob absolute URL is missing, please specify it.');
         }
         if (Utils::isNullOrEmptyString($sessionID)) {
@@ -242,8 +242,8 @@ class WebClientPrint
      */
     public static function generateScript($webClientPrintControllerAbsoluteUrl, $queryString)
     {
-        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl) ||
-            !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
+        if (Utils::isNullOrEmptyString($webClientPrintControllerAbsoluteUrl)
+            || !Utils::strStartsWith($webClientPrintControllerAbsoluteUrl, 'http')) {
             throw new \Exception('WebClientPrintController absolute URL is missing, please specify it.');
         }
 
@@ -1169,10 +1169,10 @@ class Utils
         while ($i < $l) {
             if ('0' == $s[$i]) {
                 if ($i + 1 < $l && ('0' == $s[$i] && 'x' == $s[$i + 1])) {
-                    if ($i + 2 < $l &&
-                        (($s[$i + 2] >= '0' && $s[$i + 2] <= '9') || ($s[$i + 2] >= 'a' && $s[$i + 2] <= 'f') || ($s[$i + 2] >= 'A' && $s[$i + 2] <= 'F'))) {
-                        if ($i + 3 < $l &&
-                            (($s[$i + 3] >= '0' && $s[$i + 3] <= '9') || ($s[$i + 3] >= 'a' && $s[$i + 3] <= 'f') || ($s[$i + 3] >= 'A' && $s[$i + 3] <= 'F'))) {
+                    if ($i + 2 < $l
+                        && (($s[$i + 2] >= '0' && $s[$i + 2] <= '9') || ($s[$i + 2] >= 'a' && $s[$i + 2] <= 'f') || ($s[$i + 2] >= 'A' && $s[$i + 2] <= 'F'))) {
+                        if ($i + 3 < $l
+                            && (($s[$i + 3] >= '0' && $s[$i + 3] <= '9') || ($s[$i + 3] >= 'a' && $s[$i + 3] <= 'f') || ($s[$i + 3] >= 'A' && $s[$i + 3] <= 'F'))) {
                             try {
                                 $buffer .= chr(intval(substr($s, $i, 4), 16));
                                 $i += 4;
@@ -1248,7 +1248,7 @@ class ClientPrintJob
      *
      * @var ?ClientPrinter
      */
-    public $clientPrinter = null;
+    public $clientPrinter;
     /**
      * Gets or sets the printer's commands in text plain format. Default is an empty string.
      *
@@ -1280,13 +1280,13 @@ class ClientPrintJob
      *
      * @var ?PrintFile
      */
-    public $printFile = null;
+    public $printFile;
     /**
      * Gets or sets an array of PrintFile objects to be printed at the client side. Default is NULL.
      *
      * @var ?array
      */
-    public $printFileGroup = null;
+    public $printFileGroup;
 
     /**
      * Sends this ClientPrintJob object to the client for further processing.
@@ -1380,7 +1380,7 @@ class ClientPrintJobGroup
      *
      * @var ?array
      */
-    public $clientPrintJobGroup = null;
+    public $clientPrintJobGroup;
 
     /**
      * Sends this ClientPrintJobGroup object to the client for further processing.

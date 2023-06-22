@@ -22,7 +22,6 @@ readonly class PerformanceProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Performance
     {
         if ($operation instanceof DeleteOperationInterface) {

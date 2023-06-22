@@ -22,7 +22,6 @@ readonly class RoleProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Role
     {
         if ($operation instanceof DeleteOperationInterface) {

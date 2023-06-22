@@ -9,7 +9,7 @@ interface VoucherSeriesRepositoryInterface
      *
      * @return array<string, mixed>
      */
-    public function getAll(?array $filter = null): array;
+    public function getAll(array $filter = null): array;
 
     public function insert(VoucherSeries $voucherSeries): void;
 
