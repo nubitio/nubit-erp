@@ -14,7 +14,6 @@ readonly class KardexRepository implements KardexRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(string $localId, ?string $warehouseId, ?string $categoryId, ?string $dateFrom, ?string $dateTo): array
     {
         if (empty($dateFrom) || empty($dateTo)) {
@@ -38,7 +37,6 @@ readonly class KardexRepository implements KardexRepositoryInterface
         return $this->dataGridLoader->load("($table) t", 'producto');
     }
 
-    /** {@inheritdoc} */
     public function getOne(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array
     {
         return $this->connection->fetchAllAssociative('call sp_kardex (?,?,?,?)', [

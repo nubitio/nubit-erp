@@ -20,7 +20,6 @@ readonly class PositionRepository implements PositionRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

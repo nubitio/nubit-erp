@@ -21,7 +21,6 @@ readonly class ConsultationSaleRepository implements ConsultationSaleRepositoryI
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

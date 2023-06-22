@@ -24,7 +24,6 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);
@@ -81,8 +80,6 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     public function getPricesByList(int $id): array

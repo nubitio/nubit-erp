@@ -22,7 +22,6 @@ readonly class WarehouseProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Warehouse
     {
         if ($operation instanceof DeleteOperationInterface) {

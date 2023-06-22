@@ -22,7 +22,6 @@ readonly class PriceListProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?PriceList
     {
         if ($operation instanceof DeleteOperationInterface) {

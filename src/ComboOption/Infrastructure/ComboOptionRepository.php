@@ -19,7 +19,6 @@ readonly class ComboOptionRepository implements ComboOptionRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

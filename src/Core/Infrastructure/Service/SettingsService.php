@@ -15,7 +15,7 @@ readonly class SettingsService
     ) {
     }
 
-    public function get(string $key, ?string $default = null): mixed
+    public function get(string $key, string $default = null): mixed
     {
         return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
             $item->expiresAfter(10);

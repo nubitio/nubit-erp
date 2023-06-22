@@ -34,7 +34,7 @@ class CashboxRepository implements CashboxRepositoryInterface
      *
      * @throws Exception
      */
-    public function getAll(?array $filter = null): array
+    public function getAll(array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_caja', 'apertura', 'desc', filter: $filter);
     }

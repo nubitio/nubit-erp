@@ -22,7 +22,6 @@ readonly class VoucherTypeProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?VoucherType
     {
         if ($operation instanceof DeleteOperationInterface) {
