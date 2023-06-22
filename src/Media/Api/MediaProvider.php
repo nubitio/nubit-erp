@@ -17,7 +17,6 @@ readonly class MediaProvider implements ApiProviderInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         return $this->getOneUseCase->__invoke(strval($uriVariables['id']));

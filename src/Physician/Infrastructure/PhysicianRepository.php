@@ -21,7 +21,6 @@ readonly class PhysicianRepository implements PhysicianRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

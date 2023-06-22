@@ -22,7 +22,6 @@ readonly class PositionProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Position
     {
         if ($operation instanceof DeleteOperationInterface) {

@@ -22,7 +22,6 @@ readonly class InvoiceProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Invoice
     {
         if ($operation instanceof DeleteOperationInterface) {

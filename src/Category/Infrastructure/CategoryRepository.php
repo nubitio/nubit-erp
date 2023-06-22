@@ -20,7 +20,6 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

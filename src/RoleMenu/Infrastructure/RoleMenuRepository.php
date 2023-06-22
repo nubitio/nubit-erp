@@ -20,8 +20,6 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     public function getAllByRole(int $roleId): array
@@ -30,8 +28,6 @@ class RoleMenuRepository implements RoleMenuRepositoryInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
     public function insertMultiple(int $roleId, array $roleMenuList): void

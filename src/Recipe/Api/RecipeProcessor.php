@@ -22,7 +22,6 @@ readonly class RecipeProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Recipe
     {
         if ($operation instanceof DeleteOperationInterface) {

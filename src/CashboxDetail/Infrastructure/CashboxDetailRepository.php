@@ -27,11 +27,9 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
     }
 
     /**
-     * {@inheritdoc}
-     *
      * @throws Exception
      */
-    public function getAll(?array $filter = null): array
+    public function getAll(array $filter = null): array
     {
         return $this->dataGridLoader->load('caja_detalle', 'descripcion', filter: $filter);
     }
