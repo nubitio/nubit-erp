@@ -14,7 +14,6 @@ readonly class PriceListDetailRepository implements PriceListDetailRepositoryInt
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

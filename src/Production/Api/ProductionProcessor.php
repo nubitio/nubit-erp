@@ -22,7 +22,6 @@ readonly class ProductionProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Production
     {
         if ($operation instanceof DeleteOperationInterface) {

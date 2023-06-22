@@ -19,7 +19,6 @@ readonly class SpecialtyRepository implements SpecialtyRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

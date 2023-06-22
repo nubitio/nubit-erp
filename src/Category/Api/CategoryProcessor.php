@@ -22,7 +22,6 @@ readonly class CategoryProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Category
     {
         if ($operation instanceof DeleteOperationInterface) {
