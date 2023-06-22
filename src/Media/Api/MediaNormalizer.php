@@ -23,7 +23,7 @@ final class MediaNormalizer implements NormalizerInterface, NormalizerAwareInter
      *
      * @throws ExceptionInterface
      */
-    public function normalize($object, string $format = null, array $context = []): array|float|\ArrayObject|bool|int|string|null
+    public function normalize($object, string $format = null, array $context = []): array|\ArrayObject|bool|float|int|string|null
     {
         $context[self::ALREADY_CALLED] = true;
 
