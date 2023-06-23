@@ -3,6 +3,7 @@
 namespace App\Receipt\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
@@ -36,7 +37,7 @@ class ReceiptController extends BaseController
         return new Response($content);
     }
 
-    #[Route('/receipt/{id}/xml', name: 'receipt_xml', methods: ['GET'])]
+    #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
     public function xml(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
         $voucher = $getOneById($id);
@@ -56,7 +57,7 @@ class ReceiptController extends BaseController
         return $response;
     }
 
-    #[Route('/receipt/{id}/cdr', name: 'receipt_cdr', methods: ['GET'])]
+    #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
     public function cdr(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
     {
         $voucher = $getOneById($id);
@@ -76,6 +77,9 @@ class ReceiptController extends BaseController
         return $response;
     }
 
+    /**
+     * @throws ServiceException
+     */
     #[Route('/receipt/{payload}/pdf', name: 'receipt_pdf', methods: ['GET'])]
     public function pdf(Request $request, ReceiptPdfUseCase $receiptPdfUseCase, string $payload): StreamedResponse
     {

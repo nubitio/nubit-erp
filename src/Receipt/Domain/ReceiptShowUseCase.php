@@ -2,10 +2,14 @@
 
 namespace App\Receipt\Domain;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 readonly class ReceiptShowUseCase
 {
@@ -17,11 +21,17 @@ readonly class ReceiptShowUseCase
     ) {
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws ServiceException
+     * @throws LoaderError
+     */
     public function __invoke(ReceiptRequest $request): string
     {
         $receipt = match ($request->type) {
-            ReceiptType::FACTURA, ReceiptType::BOLETA => $this->makeReceiptForInvoice($request->id),
-            ReceiptType::NOTA_CREDITO, ReceiptType::NOTA_DEBITO => $this->makeReceiptForNote($request->id),
+            ReceiptType::FACTURA, ReceiptType::BOLETA => $this->makeReceiptForInvoice($request),
+            ReceiptType::NOTA_CREDITO, ReceiptType::NOTA_DEBITO => $this->makeReceiptForNote($request),
         };
 
         return $this->twig->render('receipt/show.html.twig', [
@@ -37,9 +47,10 @@ readonly class ReceiptShowUseCase
         ]);
     }
 
-    private function makeReceiptForInvoice($id): Receipt
+    private function makeReceiptForInvoice($payload): Receipt
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($id);
+        $voucher = $this->getOneVoucherUseCase->__invoke($payload);
+
 
         return new Receipt(
             company: $voucher->company_name,
@@ -48,12 +59,16 @@ readonly class ReceiptShowUseCase
             number: $voucher->voucher_number,
             date: $voucher->voucher_date,
             total: $voucher->voucher_sale_amount,
-            pdf: $this->router->generate('receipt_pdf', ['id' => $voucher->sale_id], UrlGeneratorInterface::ABSOLUTE_URL),
-            xml: $this->router->generate('receipt_xml', ['id' => $voucher->sale_id], UrlGeneratorInterface::ABSOLUTE_URL),
-            cdr: $this->router->generate('receipt_cdr', ['id' => $voucher->sale_id], UrlGeneratorInterface::ABSOLUTE_URL),
+            pdf: $this->router->generate('receipt_pdf', ['payload' => $payload], UrlGeneratorInterface::ABSOLUTE_URL),
+            xml: '',
+            cdr: ''
         );
     }
 
+
+    /**
+     * @throws ServiceException
+     */
     private function makeReceiptForNote($id): Receipt
     {
         $note = $this->getOneNoteUseCase->__invoke($id);
@@ -63,11 +78,11 @@ readonly class ReceiptShowUseCase
             type: ($note->tipo_id) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
             series: $note->serie,
             number: $note->correlativo,
-            date: $note->fecha,
+            date: $note->fecha->format('Y-m-d'),
             total: 0,
-            pdf: '',
-            xml: '',
-            cdr: '',
+            pdf: $this->router->generate('receipt_pdf', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
+            xml: $this->router->generate('receipt_xml', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
+            cdr: $this->router->generate('receipt_cdr', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
         );
     }
 }
