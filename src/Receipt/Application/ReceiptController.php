@@ -8,6 +8,7 @@ use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Receipt\Domain\ReceiptPdfUseCase;
 use App\Receipt\Domain\ReceiptRequest;
 use App\Receipt\Domain\ReceiptShowUseCase;
 use App\Receipt\Domain\ReceiptType;
@@ -76,12 +77,15 @@ class ReceiptController extends BaseController
         return $response;
     }
 
-    #[Route('/receipt/{id}/pdf', name: 'receipt_pdf', methods: ['GET'])]
-    public function pdf(Request $request, BillPdfUseCase $billPdfUseCase, string $id): StreamedResponse
+    #[Route('/receipt/{payload}/pdf', name: 'receipt_pdf', methods: ['GET'])]
+    public function pdf(Request $request, ReceiptPdfUseCase $receiptPdfUseCase, string $payload): StreamedResponse
     {
         $preview = (bool) $request->query->get('preview', false);
 
-        $fileResponse = $billPdfUseCase($id);
+        $decoded = json_decode(base64_decode($payload), true);
+        $receiptRequest = new ReceiptRequest(type: ReceiptType::tryFrom($decoded['type']), id: $decoded['id']);
+
+        $fileResponse = $receiptPdfUseCase($receiptRequest);
 
         $response = new StreamedResponse();
         $response->setCallback(function () use ($fileResponse) {
