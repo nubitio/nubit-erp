@@ -12,8 +12,7 @@ readonly class ReceiptPdfUseCase
     public function __construct(
         private BillPdfUseCase $billPdfUseCase,
         private NotePdfUseCase $notePdfUseCase,
-    )
-    {
+    ) {
     }
 
     /**
