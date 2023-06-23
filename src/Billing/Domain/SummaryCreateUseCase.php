@@ -2,10 +2,10 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Response\DocumentResponse;
-use App\Billing\Model\Summary\Summary;
-use App\Billing\Model\Summary\SummaryDetail;
+use App\Billing\Model\Response\SummaryResponse;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use Greenter\Model\Summary\Summary;
+use Greenter\Model\Summary\SummaryDetail;
 
 readonly class SummaryCreateUseCase
 {
@@ -19,28 +19,30 @@ readonly class SummaryCreateUseCase
     /**
      * @throws \Exception
      */
-    public function __invoke(string $saleId): DocumentResponse
+    public function __invoke(string $saleId): SummaryResponse
     {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
-        $summaryDetail = new SummaryDetail();
-        $summaryDetail->tipoDoc = strval($voucher->voucher_type);
-        $summaryDetail->serieNro = $voucher->voucher_series.'-'.$voucher->voucher_number;
-        $summaryDetail->estado = '3';
-        $summaryDetail->clienteTipo = strval($voucher->customer_doc_type);
-        $summaryDetail->clienteNro = strval($voucher->customer_doc_number);
-        $summaryDetail->total = floatval($voucher->voucher_sale_amount);
-        $summaryDetail->mtoOperGravadas = floatval($voucher->voucher_taxed_amount);
-        $summaryDetail->mtoOperInafectas = 0;
-        $summaryDetail->mtoOperExoneradas = 0;
-        $summaryDetail->mtoOtrosCargos = 0;
-        $summaryDetail->mtoIgv = floatval($voucher->voucher_tax_amount);
-        $summary = new Summary();
+        $summaryDetail = (new SummaryDetail())
+        ->setTipoDoc(strval($voucher->voucher_type))
+        ->setSerieNro($voucher->voucher_series.'-'.$voucher->voucher_number)
+        ->setEstado('3')
+        ->setClienteTipo(strval($voucher->customer_doc_type))
+        ->setClienteNro(strval($voucher->customer_doc_number))
+        ->setTotal(floatval($voucher->voucher_sale_amount))
+        ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
+        ->setMtoOperInafectas(0)
+        ->setMtoOperExoneradas(0)
+        ->setMtoOtrosCargos(0)
+        ->setMtoIgv(floatval($voucher->voucher_tax_amount));
+
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
-        $summary->correlativo = (string) ($lastCorrelative + 1);
-        $summary->fecGeneracion = new \DateTime(strval($voucher->voucher_date));
-        $summary->fecResumen = new \DateTime(strval($voucher->voucher_date));
-        $summary->company = $this->invoiceUtils->getCompany();
-        $summary->details = [$summaryDetail];
+
+        $summary = (new Summary())
+        ->setCorrelativo((string) ($lastCorrelative + 1))
+        ->setFecGeneracion(new \DateTime(strval($voucher->voucher_date)))
+        ->setFecResumen(new \DateTime(strval($voucher->voucher_date)))
+        ->setCompany($this->invoiceUtils->getCompany())
+        ->setDetails([$summaryDetail]);
         $response = $this->summaryRepository->createSummary($summary);
         $response->name = $summary->getName();
 

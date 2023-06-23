@@ -84,10 +84,10 @@ class SendInvoiceCommand extends Command
         foreach ($pending as $item) {
             $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
 
-            if ($response->sunatResponse->success) {
-                $io->success($response->sunatResponse->cdrResponse->description);
+            if ($response->sunatResponse->isSuccess()) {
+                $io->success($response->sunatResponse->getCdrResponse()?->getDescription() ?? '');
             } else {
-                $io->warning($response->sunatResponse->error->message);
+                $io->warning($response->sunatResponse->getError()?->getMessage() ?? '');
             }
         }
     }
