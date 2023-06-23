@@ -101,7 +101,7 @@ class ReceiptController extends BaseController
 
         $receiptType = ReceiptType::tryFrom($decoded['type']);
 
-        if ($receiptType === null) {
+        if (null === $receiptType) {
             throw new ServiceException('Invalid receipt type');
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Billing\Domain;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Invoice\Domain\InvoiceCreatedEvent;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use League\Flysystem\FilesystemException;
@@ -19,6 +20,7 @@ readonly class InvoiceCreatedListener
     /**
      * @throws FilesystemException
      * @throws InvalidArgumentException
+     * @throws ServiceException
      */
     public function __invoke(InvoiceCreatedEvent $event): void
     {

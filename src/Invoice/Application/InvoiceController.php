@@ -24,10 +24,10 @@ class InvoiceController extends BaseController
     {
         $result = $invoiceSendUseCase($id);
 
-        if ($result->sunatResponse->success) {
-            return $this->json(new ApiResponse(true, $result->sunatResponse->cdrResponse->description ?: ''));
+        if ($result->sunatResponse->isSuccess()) {
+            return $this->json(new ApiResponse(true, $result->sunatResponse->getCdrResponse()?->getDescription() ?: ''));
         } else {
-            return $this->json(new ApiResponse(false, $result->sunatResponse->error->message ?: ''));
+            return $this->json(new ApiResponse(false, $result->sunatResponse->getError()?->getMessage() ?: ''));
         }
     }
 

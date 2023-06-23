@@ -5,11 +5,11 @@ namespace App\Billing\Model\Report;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
-class System
+readonly class System
 {
     public function __construct(
-        public readonly ?string $logo = null,
-        public readonly ?string $hash = null,
+        public ?string $logo = null,
+        public ?string $hash = null,
     ) {
     }
 }

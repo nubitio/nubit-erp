@@ -3,12 +3,12 @@
 namespace App\Billing\Infrastructure;
 
 use App\Billing\Domain\SummaryRepositoryInterface;
-use App\Billing\Model\Response\DocumentResponse;
-use App\Billing\Model\Response\StatusResponse;
-use App\Billing\Model\Summary\Summary;
+use App\Billing\Model\Response\SummaryResponse;
 use App\Core\Infrastructure\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Greenter\Model\Response\StatusCdrResult;
+use Greenter\Model\Summary\Summary;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -50,7 +50,7 @@ class SummaryRepository implements SummaryRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function createSummary(Summary $summary): DocumentResponse
+    public function createSummary(Summary $summary): SummaryResponse
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($summary, 'json');
@@ -61,8 +61,8 @@ class SummaryRepository implements SummaryRepositoryInterface
             'body' => $requestBody,
         ]);
         $responseBody = $response->getContent();
-        /** @var DocumentResponse $documentResponse */
-        $documentResponse = $this->serializer->deserialize($responseBody, DocumentResponse::class, 'json');
+        /** @var SummaryResponse $documentResponse */
+        $documentResponse = $this->serializer->deserialize($responseBody, SummaryResponse::class, 'json');
 
         return $documentResponse;
     }
@@ -73,13 +73,13 @@ class SummaryRepository implements SummaryRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function getStatus(string $ticket, string $ruc): StatusResponse
+    public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket='.$ticket.'&ruc='.$ruc);
         $responseBody = $response->getContent();
-        /** @var StatusResponse $statusResponse */
-        $statusResponse = $this->serializer->deserialize($responseBody, StatusResponse::class, 'json');
+        /** @var StatusCdrResult $statusResponse */
+        $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');
 
         return $statusResponse;
     }
