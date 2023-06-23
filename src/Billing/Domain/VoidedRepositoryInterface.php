@@ -2,15 +2,15 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Response\DocumentResponse;
-use App\Billing\Model\Response\StatusResponse;
-use App\Billing\Model\Voided\Voided;
+use App\Billing\Model\Response\SummaryResponse;
+use Greenter\Model\Response\StatusCdrResult;
+use Greenter\Model\Voided\Voided;
 
 interface VoidedRepositoryInterface
 {
     public function getLastCorrelativeByDate(string $date): int;
 
-    public function voidInvoice(Voided $voided): DocumentResponse;
+    public function voidInvoice(Voided $voided): SummaryResponse;
 
-    public function getStatus(string $ticket, string $ruc): StatusResponse;
+    public function getStatus(string $ticket, string $ruc): StatusCdrResult;
 }

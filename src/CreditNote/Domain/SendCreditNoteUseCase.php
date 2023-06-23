@@ -43,17 +43,17 @@ readonly class SendCreditNoteUseCase
         $response = $this->noteSendUseCase->__invoke($noteId);
         $note->digest = $response->hash;
         $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
-        if ($response->sunatResponse->success) {
-            $note->envio_sunat = $response->sunatResponse->cdrResponse->code;
-            $note->mensaje_sunat = $response->sunatResponse->cdrResponse->description;
-            $cdr = base64_decode($response->sunatResponse->cdrZip);
+        if ($response->sunatResponse->isSuccess()) {
+            $note->envio_sunat = $response->sunatResponse->getCdrResponse()?->getCode();
+            $note->mensaje_sunat = $response->sunatResponse->getCdrResponse()?->getDescription();
+            $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/R-'.$response->name.'.zip', $cdr);
             $this->creditNoteRepository->update($note);
         } else {
-            $note->envio_sunat = $response->sunatResponse->error->code;
-            $note->mensaje_sunat = $response->sunatResponse->error->message;
+            $note->envio_sunat = $response->sunatResponse->getError()?->getCode();
+            $note->mensaje_sunat = $response->sunatResponse->getError()?->getMessage();
             $this->creditNoteRepository->update($note);
-            throw new ServiceException($response->sunatResponse->error->message);
+            throw new ServiceException($response->sunatResponse->getError()?->getMessage() ?? '');
         }
 
         return $this->getOneVoucherUseCase->__invoke($saleId);

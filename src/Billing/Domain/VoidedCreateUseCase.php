@@ -2,10 +2,10 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Response\DocumentResponse;
-use App\Billing\Model\Voided\Voided;
-use App\Billing\Model\Voided\VoidedDetail;
+use App\Billing\Model\Response\SummaryResponse;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use Greenter\Model\Voided\Voided;
+use Greenter\Model\Voided\VoidedDetail;
 
 readonly class VoidedCreateUseCase
 {
@@ -16,22 +16,24 @@ readonly class VoidedCreateUseCase
     ) {
     }
 
-    public function __invoke(string $saleId, string $reason): DocumentResponse
+    public function __invoke(string $saleId, string $reason): SummaryResponse
     {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
 
-        $voidedDetail = new VoidedDetail();
-        $voidedDetail->tipoDoc = strval($voucher->voucher_type);
-        $voidedDetail->serie = strval($voucher->voucher_series);
-        $voidedDetail->correlativo = strval($voucher->voucher_number);
-        $voidedDetail->desMotivoBaja = $reason;
-        $voided = new Voided();
+        $voidedDetail = (new VoidedDetail())
+            ->setTipoDoc(strval($voucher->voucher_type))
+            ->setSerie(strval($voucher->voucher_series))
+            ->setCorrelativo(strval($voucher->voucher_number))
+            ->setDesMotivoBaja($reason);
+
         $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
-        $voided->correlativo = (string) ($lastCorrelative + 1);
-        $voided->fecGeneracion = new \DateTime(strval($voucher->voucher_date));
-        $voided->fecComunicacion = new \DateTime(strval($voucher->voucher_date));
-        $voided->company = $this->invoiceUtils->getCompany();
-        $voided->details = [$voidedDetail];
+
+        $voided = (new Voided())
+            ->setCorrelativo((string) ($lastCorrelative + 1))
+            ->setFecGeneracion(new \DateTime(strval($voucher->voucher_date)))
+            ->setFecComunicacion(new \DateTime(strval($voucher->voucher_date)))
+            ->setCompany($this->invoiceUtils->getCompany())
+            ->setDetails([$voidedDetail]);
         $response = $this->voidedRepository->voidInvoice($voided);
         $response->name = $voided->getName();
 

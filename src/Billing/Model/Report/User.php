@@ -5,12 +5,12 @@ namespace App\Billing\Model\Report;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
-class User
+readonly class User
 {
     public function __construct(
-        public readonly ?string $header = null,
+        public ?string $header = null,
         /** @var Extra[] */
-        public readonly ?array $extras = null,
+        public ?array $extras = null,
     ) {
     }
 }

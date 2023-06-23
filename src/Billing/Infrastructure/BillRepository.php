@@ -5,13 +5,13 @@ namespace App\Billing\Infrastructure;
 use App\Billing\Domain\BillConstants;
 use App\Billing\Domain\BillRepositoryInterface;
 use App\Billing\Domain\FileRequest;
-use App\Billing\Model\Bill\Bill;
 use App\Billing\Model\Report\Extra;
 use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Infrastructure\Service\SerializerService;
 use Greenter\Model\Response\StatusCdrResult;
+use Greenter\Model\Sale\Invoice;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -34,7 +34,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function sendBill(Bill $invoice): DocumentResponse
+    public function sendBill(Invoice $invoice): DocumentResponse
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
@@ -61,7 +61,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function getXml(Bill $invoice): string
+    public function getXml(Invoice $invoice): string
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
@@ -83,7 +83,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function getPdf(Bill $invoice): string
+    public function getPdf(Invoice $invoice): string
     {
         $httpClient = HttpClient::create();
 
@@ -91,7 +91,7 @@ class BillRepository implements BillRepositoryInterface
             user: new User(
                 extras: [
                     new Extra('FORMA DE PAGO', 'CONTADO'),
-                    new Extra('OBS', strval($invoice->obs)),
+                    new Extra('OBS', strval($invoice->getObservacion())),
                 ],
             )
         ));
@@ -115,15 +115,15 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
-    public function getStatus(Bill $invoice): StatusCdrResult
+    public function getStatus(Invoice $invoice): StatusCdrResult
     {
         $httpClient = HttpClient::create();
 
         $params = [
-            'ruc' => $invoice->company->getRuc(),
-            'tipo' => $invoice->tipoDoc,
-            'serie' => $invoice->serie,
-            'numero' => $invoice->correlativo,
+            'ruc' => $invoice->getCompany()?->getRuc(),
+            'tipo' => $invoice->getTipoDoc(),
+            'serie' => $invoice->getSerie(),
+            'numero' => $invoice->getCorrelativo(),
         ];
 
         $urlParams = http_build_query($params);
