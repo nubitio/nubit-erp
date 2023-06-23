@@ -4,14 +4,12 @@ namespace App\Receipt\Application;
 
 use App\Base\BaseController;
 use App\Core\Domain\Exception\ServiceException;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Receipt\Domain\ReceiptCdrUseCase;
 use App\Receipt\Domain\ReceiptPdfUseCase;
 use App\Receipt\Domain\ReceiptRequest;
 use App\Receipt\Domain\ReceiptShowUseCase;
 use App\Receipt\Domain\ReceiptType;
+use App\Receipt\Domain\ReceiptXmlUseCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -19,60 +17,50 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ReceiptController extends BaseController
 {
-    public function __construct(
-        private readonly TenantAwareSettingsService $settings,
-        private readonly FileManager $fileManager
-    ) {
-        parent::__construct();
-    }
-
     #[Route('/receipt/{payload}', name: 'receipt_show', methods: ['GET'])]
     public function show(ReceiptShowUseCase $receiptShowUseCase, string $payload): Response
     {
-        $decoded = json_decode(base64_decode($payload), true);
-        $receiptRequest = new ReceiptRequest(type: ReceiptType::tryFrom($decoded['type']), id: $decoded['id']);
+        $receipt = $receiptShowUseCase($this->getReceiptRequest($payload));
 
-        $content = $receiptShowUseCase($receiptRequest);
-
-        return new Response($content);
+        return $this->render('receipt/show.html.twig', [
+            'company_name' => $receipt->company,
+            'type' => $receipt->type,
+            'series' => $receipt->series,
+            'number' => $receipt->number,
+            'date' => date('d/m/Y', intval(strtotime($receipt->date))),
+            'total' => $receipt->total,
+            'pdf' => $this->generateUrl('receipt_pdf', ['payload' => $payload]),
+            'xml' => $this->generateUrl('receipt_xml', ['payload' => $payload]),
+            'cdr' => $this->generateUrl('receipt_cdr', ['payload' => $payload]),
+        ]);
     }
 
     #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
-    public function xml(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
+    public function xml(ReceiptXmlUseCase $receiptXmlUseCase, string $payload): StreamedResponse
     {
-        $voucher = $getOneById($id);
+        $fileResponse = $receiptXmlUseCase($this->getReceiptRequest($payload));
 
-        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
-        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
-
-        $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
-
-        $response = new StreamedResponse(function () use ($xmlPath) {
-            echo $this->fileManager->read($xmlPath);
+        $response = new StreamedResponse(function () use ($fileResponse) {
+            echo $fileResponse->file;
         });
 
         $response->headers->set('Content-Type', 'text/xml');
-        $response->headers->set('Content-Disposition', 'attachment; filename="'.$docFullName.'.xml"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileResponse->name.'"');
 
         return $response;
     }
 
     #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
-    public function cdr(GetOneVoucherUseCase $getOneById, string $id): StreamedResponse
+    public function cdr(ReceiptCdrUseCase $receiptCdrUseCase, string $payload): StreamedResponse
     {
-        $voucher = $getOneById($id);
+        $fileResponse = $receiptCdrUseCase($this->getReceiptRequest($payload));
 
-        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
-        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
-
-        $cdrPath = $this->settings->get(Constants::COMPANY_ID).'/R-'.$docFullName.'.zip';
-
-        $response = new StreamedResponse(function () use ($cdrPath) {
-            echo $this->fileManager->read($cdrPath);
+        $response = new StreamedResponse(function () use ($fileResponse) {
+            echo $fileResponse->file;
         });
 
         $response->headers->set('Content-Type', 'application/zip');
-        $response->headers->set('Content-Disposition', 'attachment; filename="R-'.$docFullName.'.zip"');
+        $response->headers->set('Content-Disposition', 'attachment; filename="'.$fileResponse->name.'"');
 
         return $response;
     }
@@ -85,10 +73,7 @@ class ReceiptController extends BaseController
     {
         $preview = (bool) $request->query->get('preview', false);
 
-        $decoded = json_decode(base64_decode($payload), true);
-        $receiptRequest = new ReceiptRequest(type: ReceiptType::tryFrom($decoded['type']), id: $decoded['id']);
-
-        $fileResponse = $receiptPdfUseCase($receiptRequest);
+        $fileResponse = $receiptPdfUseCase($this->getReceiptRequest($payload));
 
         $response = new StreamedResponse();
         $response->setCallback(function () use ($fileResponse) {
@@ -104,5 +89,22 @@ class ReceiptController extends BaseController
         }
 
         return $response;
+    }
+
+    /**
+     * @throws ServiceException
+     */
+    private function getReceiptRequest(string $payload): ReceiptRequest
+    {
+        /** @var array<string, string> $decoded */
+        $decoded = json_decode(base64_decode($payload), true);
+
+        $receiptType = ReceiptType::tryFrom($decoded['type']);
+
+        if ($receiptType === null) {
+            throw new ServiceException('Invalid receipt type');
+        }
+
+        return new ReceiptRequest(type: $receiptType, id: $decoded['id']);
     }
 }

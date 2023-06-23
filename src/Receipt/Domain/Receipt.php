@@ -10,10 +10,7 @@ class Receipt
         public string $series,
         public string $number,
         public string $date,
-        public string $total,
-        public string $pdf,
-        public string $xml,
-        public string $cdr,
+        public float $total
     ) {
     }
 }

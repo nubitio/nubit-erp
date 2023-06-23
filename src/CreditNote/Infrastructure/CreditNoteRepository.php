@@ -51,6 +51,8 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
         $entity->tipo_id = '07';
         $entity->serie = $this->creditNoteUtils->getCreditNoteSeries($creditNote->sale?->movimiento_id ?? '');
         $entity->correlativo = $this->creditNoteUtils->getCreditNoteNumber($entity->serie);
+        $entity->doc_afectado = $entity->sale?->invoice ?? '';
+        $entity->total = $entity->sale?->total ?? 0;
         $entity->created_at = new \DateTimeImmutable();
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
