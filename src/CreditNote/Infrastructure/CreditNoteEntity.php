@@ -35,12 +35,16 @@ class CreditNoteEntity
         public ?string $serie = null,
         #[ORM\Column(name: 'correlativo', type: 'integer')]
         public ?int $correlativo = null,
+        #[ORM\Column(name: 'doc_afectado', type: 'string')]
+        public ?string $doc_afectado = null,
         #[ORM\Column(name: 'digest', type: 'string')]
         public ?string $digest = null,
         #[ORM\Column(name: 'envio_sunat', type: 'string')]
         public ?string $envio_sunat = null,
         #[ORM\Column(name: 'mensaje_sunat', type: 'string')]
         public ?string $mensaje_sunat = null,
+        #[ORM\Column(name: 'total', type: 'decimal')]
+        public ?float $total = null,
         #[ORM\Column(name: 'created_by', type: 'integer')]
         public ?int $created_by = null,
         #[ORM\Column(name: 'updated_by', type: 'integer')]

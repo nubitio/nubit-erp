@@ -222,8 +222,6 @@ export default class CreditNote {
             type: selected['tipo_id'],
             id: selected['nota_id'],
         }
-        console.log('el payload es:',payload);
-        console.log('el selected es: ', selected)
         let payloadEncoded = btoa(JSON.stringify(payload));
         window.open('receipt/' + payloadEncoded);
     }

@@ -3,86 +3,67 @@
 namespace App\Receipt\Domain;
 
 use App\Core\Domain\Exception\ServiceException;
+use App\Core\Domain\Util\Constants;
+use App\Core\Infrastructure\Service\TenantAwareSettingsService;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Twig\Environment;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Psr\Cache\InvalidArgumentException;
 
 readonly class ReceiptShowUseCase
 {
     public function __construct(
-        private Environment $twig,
-        private UrlGeneratorInterface $router,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneNoteUseCase,
+        private TenantAwareSettingsService $settings
     ) {
     }
 
     /**
-     * @throws SyntaxError
-     * @throws RuntimeError
      * @throws ServiceException
-     * @throws LoaderError
+     * @throws InvalidArgumentException
      */
-    public function __invoke(ReceiptRequest $request): string
+    public function __invoke(ReceiptRequest $request): Receipt
     {
-        $receipt = match ($request->type) {
-            ReceiptType::FACTURA, ReceiptType::BOLETA => $this->makeReceiptForInvoice($request),
-            ReceiptType::NOTA_CREDITO, ReceiptType::NOTA_DEBITO => $this->makeReceiptForNote($request),
+        return match ($request->type) {
+            ReceiptType::FACTURA, ReceiptType::BOLETA => $this->makeReceiptForInvoice($request->id),
+            ReceiptType::NOTA_CREDITO, ReceiptType::NOTA_DEBITO => $this->makeReceiptForNote($request->id),
         };
-
-        return $this->twig->render('receipt/show.html.twig', [
-            'company_name' => $receipt->company,
-            'type' => $receipt->type,
-            'series' => $receipt->series,
-            'number' => $receipt->number,
-            'date' => date('d/m/Y', intval(strtotime($receipt->date))),
-            'total' => $receipt->total,
-            'pdf' => $receipt->pdf,
-            'xml' => $receipt->xml,
-            'cdr' => $receipt->cdr,
-        ]);
     }
 
-    private function makeReceiptForInvoice($payload): Receipt
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function makeReceiptForInvoice(string $id): Receipt
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($payload);
-
+        $voucher = $this->getOneVoucherUseCase->__invoke($id);
+        $companyName = $this->settings->get(Constants::COMPANY_NAME);
 
         return new Receipt(
-            company: $voucher->company_name,
+            company: strval($companyName),
             type: ($voucher->voucher_type) === '01' ? 'FACTURA' : 'BOLETA',
-            series: $voucher->voucher_series,
-            number: $voucher->voucher_number,
-            date: $voucher->voucher_date,
-            total: $voucher->voucher_sale_amount,
-            pdf: $this->router->generate('receipt_pdf', ['payload' => $payload], UrlGeneratorInterface::ABSOLUTE_URL),
-            xml: '',
-            cdr: ''
+            series: strval($voucher->voucher_series),
+            number: strval($voucher->voucher_number),
+            date: strval($voucher->voucher_date),
+            total: floatval($voucher->voucher_sale_amount)
         );
     }
 
-
     /**
      * @throws ServiceException
+     * @throws InvalidArgumentException
      */
-    private function makeReceiptForNote($id): Receipt
+    private function makeReceiptForNote(string $id): Receipt
     {
         $note = $this->getOneNoteUseCase->__invoke($id);
+        $companyName = $this->settings->get(Constants::COMPANY_NAME);
 
         return new Receipt(
-            company: '',
+            company: strval($companyName),
             type: ($note->tipo_id) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
-            series: $note->serie,
-            number: $note->correlativo,
-            date: $note->fecha->format('Y-m-d'),
-            total: 0,
-            pdf: $this->router->generate('receipt_pdf', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
-            xml: $this->router->generate('receipt_xml', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
-            cdr: $this->router->generate('receipt_cdr', ['id' => $note->nota_id], UrlGeneratorInterface::ABSOLUTE_URL),
+            series: strval($note->serie),
+            number: strval($note->correlativo),
+            date: strval($note->fecha?->format('Y-m-d')),
+            total: floatval($note->total)
         );
     }
 }

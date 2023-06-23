@@ -26,12 +26,16 @@ class CreditNote
         public ?string $serie = null,
         #[SerializedName('correlativo')]
         public ?int $correlativo = null,
+        #[SerializedName('doc_afectado')]
+        public ?string $doc_afectado = null,
         #[SerializedName('digest')]
         public ?string $digest = null,
         #[SerializedName('envio_sunat')]
         public ?string $envio_sunat = null,
         #[SerializedName('mensaje_sunat')]
         public ?string $mensaje_sunat = null,
+        #[SerializedName('total')]
+        public ?float $total = null,
         #[SerializedName('created_by')]
         public ?int $created_by = null,
         #[SerializedName('updated_by')]
