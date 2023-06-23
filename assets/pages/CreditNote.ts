@@ -218,6 +218,11 @@ export default class CreditNote {
             messenger.show('Información', 'Seleccione un registro');
             return;
         }
-        window.open('invoice/' + selected['nota_id']);
+        let payload = {
+            type: selected['tipo_id'],
+            id: selected['nota_id'],
+        }
+        let payloadEncoded = btoa(JSON.stringify(payload));
+        window.open('receipt/' + payloadEncoded);
     }
 }
