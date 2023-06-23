@@ -2,14 +2,14 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Address\Address;
-use App\Billing\Model\Bill\Bill;
-use App\Billing\Model\Bill\BillDetail;
-use App\Billing\Model\Bill\Charge;
-use App\Billing\Model\Bill\Legend;
-use App\Billing\Model\Bill\PagoContado;
-use App\Billing\Model\Client\Client;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use Greenter\Model\Client\Client;
+use Greenter\Model\Company\Address;
+use Greenter\Model\Sale\Charge;
+use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
+use Greenter\Model\Sale\Invoice;
+use Greenter\Model\Sale\Legend;
+use Greenter\Model\Sale\SaleDetail;
 
 readonly class BillCreateUseCase
 {
@@ -19,71 +19,71 @@ readonly class BillCreateUseCase
     ) {
     }
 
-    public function __invoke(string $saleId): Bill
+    public function __invoke(string $saleId): Invoice
     {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
-        $customerAddress = new Address();
-        $customerAddress->direccion = strval($voucher->customer_address);
+        $customerAddress = (new Address())
+            ->setDireccion(strval($voucher->customer_address));
 
-        $customer = new Client();
-        $customer->tipoDoc = strval($voucher->customer_doc_type);
-        $customer->numDoc = strval($voucher->customer_doc_number);
-        $customer->rznSocial = strval($voucher->customer_name);
-        $customer->address = $customerAddress;
+        $customer = (new Client())
+            ->setTipoDoc(strval($voucher->customer_doc_type))
+            ->setNumDoc(strval($voucher->customer_doc_number))
+            ->setRznSocial(strval($voucher->customer_name))
+            ->setAddress($customerAddress);
 
-        $bill = new Bill();
-        $bill->ublVersion = '2.1';
-        $bill->tipoOperacion = '0101';
-        $bill->tipoDoc = strval($voucher->voucher_type);
-        $bill->serie = strval($voucher->voucher_series);
-        $bill->correlativo = strval($voucher->voucher_number);
-        $bill->fechaEmision = new \DateTime(strval($voucher->voucher_date));
-        $bill->formaPago = new PagoContado();
-        $bill->tipoMoneda = strval($voucher->voucher_currency);
-        $bill->client = $customer;
-        $bill->mtoOperGravadas = floatval($voucher->voucher_taxed_amount);
-        $bill->mtoIGV = floatval($voucher->voucher_tax_amount);
-        $bill->totalImpuestos = floatval($voucher->voucher_total_taxes);
-        $bill->sumOtrosCargos = floatval($voucher->voucher_consumption_surcharge_amount ?? null);
-        $bill->valorVenta = floatval($voucher->voucher_sale_value - $voucher->voucher_discount_amount);
-        $bill->subTotal = floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount);
-        $bill->mtoImpVenta = floatval($voucher->voucher_sale_amount);
-        $bill->company = $this->billUtils->getCompany();
+        $bill = (new Invoice())
+            ->setUblVersion('2.1')
+            ->setTipoOperacion('0101')
+            ->setTipoDoc(strval($voucher->voucher_type))
+            ->setSerie(strval($voucher->voucher_series))
+            ->setCorrelativo(strval($voucher->voucher_number))
+            ->setFechaEmision(new \DateTime(strval($voucher->voucher_date)))
+            ->setFormaPago(new FormaPagoContado())
+            ->setTipoMoneda(strval($voucher->voucher_currency))
+            ->setClient($customer)
+            ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
+            ->setMtoIGV(floatval($voucher->voucher_tax_amount))
+            ->setTotalImpuestos(floatval($voucher->voucher_total_taxes))
+            ->setSumOtrosCargos(floatval($voucher->voucher_consumption_surcharge_amount ?? null))
+            ->setValorVenta(floatval($voucher->voucher_sale_value - $voucher->voucher_discount_amount))
+            ->setSubTotal(floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
+            ->setMtoImpVenta(floatval($voucher->voucher_sale_amount))
+            ->setCompany($this->billUtils->getCompany());
 
         if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
-            $charge = new Charge();
-            $charge->codTipo = '46';
-            $charge->montoBase = floatval($voucher->voucher_consumption_surcharge_amount);
-            $charge->factor = 1;
-            $charge->monto = floatval($voucher->voucher_consumption_surcharge_amount);
-            $bill->cargos = [$charge];
+            $charge = (new Charge())
+                ->setCodTipo('46')
+                ->setMontoBase(floatval($voucher->voucher_consumption_surcharge_amount))
+                ->setFactor(1)
+                ->setMonto(floatval($voucher->voucher_consumption_surcharge_amount));
+            $bill->setCargos([$charge]);
         }
 
         if (floatval($voucher->voucher_discount_amount) > 0) {
-            $charge = new Charge();
-            $charge->codTipo = '02';
-            $charge->montoBase = floatval($voucher->voucher_discount_amount);
-            $charge->factor = 1;
-            $charge->monto = floatval($voucher->voucher_discount_amount);
-            $bill->descuentos = [$charge];
+            $charge = (new Charge())
+                ->setCodTipo('02')
+                ->setMontoBase(floatval($voucher->voucher_discount_amount))
+                ->setFactor(1)
+                ->setMonto(floatval($voucher->voucher_discount_amount));
+            $bill->setDescuentos([$charge]);
         }
 
         $details = [];
 
         foreach ($voucher->voucher_items as $item) {
-            $detail = new BillDetail();
-            $detail->codProducto = strval($item->product_code);
-            $detail->unidad = 'NIU';
-            $detail->cantidad = floatval($item->quantity);
-            $detail->descripcion = strval($item->product_name);
-            $detail->mtoValorUnitario = floatval($item->unit_value);
-            $detail->mtoBaseIgv = floatval($item->taxed_amount);
-            $detail->porcentajeIgv = floatval($item->tax_percentage);
-            $detail->igv = floatval($item->tax_amount);
-            $detail->tipAfeIgv = strval($item->tax_type);
-            $detail->totalImpuestos = floatval($item->tax_amount);
-            $detail->mtoValorVenta = floatval($item->taxed_amount);
-            $detail->mtoPrecioUnitario = floatval($item->unit_price);
+            $detail = (new SaleDetail())
+                ->setCodProducto(strval($item->product_code))
+                ->setUnidad('NIU')
+                ->setCantidad(floatval($item->quantity))
+                ->setDescripcion(strval($item->product_name))
+                ->setMtoValorUnitario(floatval($item->unit_value))
+                ->setMtoBaseIgv(floatval($item->taxed_amount))
+                ->setPorcentajeIgv(floatval($item->tax_percentage))
+                ->setIgv(floatval($item->tax_amount))
+                ->setTipAfeIgv(strval($item->tax_type))
+                ->setTotalImpuestos(floatval($item->tax_amount))
+                ->setMtoValorVenta(floatval($item->taxed_amount))
+                ->setMtoPrecioUnitario(floatval($item->unit_price));
             $details[] = $detail;
         }
 
@@ -92,13 +92,12 @@ readonly class BillCreateUseCase
         $amount = $formatter->format((int) $parts[0]);
         $strTotal = mb_strtoupper('SON '.$amount.' CON '.$parts[1].' / 100 SOLES');
 
-        $legend = new Legend();
-        $legend->code = '1000';
-        $legend->value = $strTotal;
+        $legend = (new Legend())
+            ->setCode('1000')
+            ->setValue($strTotal);
 
-        $bill->details = $details;
-        $bill->legends = [$legend];
-        $bill->obs = strval($voucher->voucher_note ?? null);
+        $bill->setDetails($details);
+        $bill->setLegends([$legend]);
 
         return $bill;
     }

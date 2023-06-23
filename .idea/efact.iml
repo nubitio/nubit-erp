@@ -60,7 +60,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/console" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/config" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/asset" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/myclabs/php-enum" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/laravel/serializable-closure" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/egulias/email-validator" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/mike42/escpos-php" />
@@ -162,7 +161,6 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpdocumentor/reflection-common" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/phpdocumentor/type-resolver" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/friendsofphp/php-cs-fixer" />
-      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php81" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/psr/link" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/doctrine/doctrine-migrations-bundle" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/web-link" />
@@ -188,6 +186,10 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/predis/predis" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/league/flysystem-local" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/greenter/core" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/psr/clock" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/clock" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/polyfill-php83" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/security-bundle" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
