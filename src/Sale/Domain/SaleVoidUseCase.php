@@ -4,6 +4,8 @@ namespace App\Sale\Domain;
 
 use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
+use App\Billing\Model\Response\DocumentResponse;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
@@ -30,7 +32,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws InvalidArgumentException
      */
-    public function __invoke(string $saleId, string $reason, int $userId): void
+    public function __invoke(string $saleId, string $reason, int $userId): ApiResponse
     {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $sale = $this->saleRepository->getOne($saleId);
@@ -43,10 +45,12 @@ readonly class SaleVoidUseCase
             throw SaleException::tooOld();
         }
 
+        $response = null;
+
         if ($voucher->voucher_type === DocType::FACTURA->value) {
-            $this->voidInvoice($saleId, $reason);
+            $response = $this->voidInvoice($saleId, $reason);
         } elseif ($voucher->voucher_type === DocType::BOLETA->value) {
-            $this->voidReceipt($saleId);
+            $response = $this->voidReceipt($saleId);
         }
 
         $sale->glosa = $reason;
@@ -55,6 +59,19 @@ readonly class SaleVoidUseCase
         $sale->date_updated = new \DateTime();
 
         $this->saleRepository->update($sale);
+
+        if ($response) {
+            $sunatResponse = $response->sunatResponse;
+            $success = $sunatResponse->success;
+            $description = $success ? $sunatResponse->cdrResponse->description : $sunatResponse->error->message;
+
+            return new ApiResponse($success, $description);
+        }
+
+        return new ApiResponse(
+            true,
+            'Anulado correctamente'
+        );
     }
 
     /**
@@ -62,7 +79,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws InvalidArgumentException
      */
-    private function voidInvoice(string $saleId, string $reason): void
+    private function voidInvoice(string $saleId, string $reason): DocumentResponse
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
 
@@ -71,17 +88,19 @@ readonly class SaleVoidUseCase
         }
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
+        $invoice->correlativo_baja = explode('-', $response->name)[3];
+        $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->success) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->voided = 2;
-            $invoice->correlativo_baja = explode('-', $response->name)[3];
-            $invoice->updated_at = new \DateTime();
-            $this->invoiceRepository->update($invoice);
         } else {
+            $invoice->ticket_baja = $response->sunatResponse->ticket ?? $invoice->ticket_baja;
             $invoice->voided = 3;
-            throw new \Exception($response->sunatResponse->error->message);
         }
+        $this->invoiceRepository->update($invoice);
+
+        return $response;
     }
 
     /**
@@ -89,7 +108,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws InvalidArgumentException
      */
-    private function voidReceipt(string $saleId): void
+    private function voidReceipt(string $saleId): DocumentResponse
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
 
@@ -98,16 +117,18 @@ readonly class SaleVoidUseCase
         }
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
+        $invoice->correlativo_baja = explode('-', $response->name)[3];
+        $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->success) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
             $invoice->ticket_baja = $response->sunatResponse->ticket;
             $invoice->voided = 2;
-            $invoice->correlativo_baja = explode('-', $response->name)[3];
-            $invoice->updated_at = new \DateTime();
-            $this->invoiceRepository->update($invoice);
         } else {
+            $invoice->ticket_baja = $response->sunatResponse->ticket ?? $invoice->ticket_baja;
             $invoice->voided = 3;
-            throw new \Exception($response->sunatResponse->error->message);
         }
+        $this->invoiceRepository->update($invoice);
+
+        return $response;
     }
 }
