@@ -4,7 +4,7 @@ namespace App\Sale\Domain;
 
 use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
-use App\Billing\Model\Response\DocumentResponse;
+use App\Billing\Model\Response\SummaryResponse;
 use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
@@ -62,10 +62,10 @@ readonly class SaleVoidUseCase
 
         if ($response) {
             $sunatResponse = $response->sunatResponse;
-            $success = $sunatResponse->success;
-            $description = $success ? $sunatResponse->cdrResponse->description : $sunatResponse->error->message;
+            $success = $sunatResponse->isSuccess();
+            $description = $success ? 'Anulado correctamente' : $sunatResponse->getError()?->getMessage();
 
-            return new ApiResponse($success, $description);
+            return new ApiResponse($success ?? false, $description ?? 'Error al anular');
         }
 
         return new ApiResponse(
@@ -79,7 +79,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws InvalidArgumentException
      */
-    private function voidInvoice(string $saleId, string $reason): DocumentResponse
+    private function voidInvoice(string $saleId, string $reason): SummaryResponse
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
 
@@ -90,12 +90,12 @@ readonly class SaleVoidUseCase
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         $invoice->correlativo_baja = explode('-', $response->name)[3];
         $invoice->updated_at = new \DateTime();
-        if ($response->sunatResponse->success) {
+        if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
-            $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket();
             $invoice->voided = 2;
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->ticket ?? $invoice->ticket_baja;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket() ?? $invoice->ticket_baja;
             $invoice->voided = 3;
         }
         $this->invoiceRepository->update($invoice);
@@ -108,7 +108,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws InvalidArgumentException
      */
-    private function voidReceipt(string $saleId): DocumentResponse
+    private function voidReceipt(string $saleId): SummaryResponse
     {
         $invoice = $this->invoiceRepository->getOne($saleId);
 
@@ -119,12 +119,12 @@ readonly class SaleVoidUseCase
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         $invoice->correlativo_baja = explode('-', $response->name)[3];
         $invoice->updated_at = new \DateTime();
-        if ($response->sunatResponse->success) {
+        if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
-            $invoice->ticket_baja = $response->sunatResponse->ticket;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket();
             $invoice->voided = 2;
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->ticket ?? $invoice->ticket_baja;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket() ?? $invoice->ticket_baja;
             $invoice->voided = 3;
         }
         $this->invoiceRepository->update($invoice);
