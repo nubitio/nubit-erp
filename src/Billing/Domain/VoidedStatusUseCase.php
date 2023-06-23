@@ -2,7 +2,7 @@
 
 namespace App\Billing\Domain;
 
-use App\Billing\Model\Response\StatusResponse;
+use Greenter\Model\Response\StatusCdrResult;
 
 class VoidedStatusUseCase
 {
@@ -13,7 +13,7 @@ class VoidedStatusUseCase
         $this->voidedRepository = $voidedRepository;
     }
 
-    public function __invoke(string $ticket, string $ruc): StatusResponse
+    public function __invoke(string $ticket, string $ruc): StatusCdrResult
     {
         return $this->voidedRepository->getStatus($ticket, $ruc);
     }

@@ -5,11 +5,11 @@ namespace App\Billing\Model\Report;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
-class Extra
+readonly class Extra
 {
     public function __construct(
-        public readonly string $name,
-        public readonly string $value,
+        public string $name,
+        public string $value,
     ) {
     }
 }

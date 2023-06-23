@@ -141,9 +141,9 @@ class SaleController extends BaseController
         $userId = $request->getSession()->get('user_id');
         /** @var array<string, string> $requestBody */
         $requestBody = json_decode($request->getContent(), true);
-        $voidUseCase($id, $requestBody['reason'], intval($userId));
+        $response = $voidUseCase($id, $requestBody['reason'], intval($userId));
 
-        return $this->json(['success' => true, 'msg' => 'Venta anulada correctamente']);
+        return $this->json($response);
     }
 
     #[Route('/sale/invoice/{id}', name: 'sale_invoice', methods: ['POST'])]
