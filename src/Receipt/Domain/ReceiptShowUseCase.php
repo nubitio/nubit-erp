@@ -10,12 +10,11 @@ use Twig\Environment;
 readonly class ReceiptShowUseCase
 {
     public function __construct(
-        private Environment             $twig,
-        private UrlGeneratorInterface   $router,
-        private GetOneVoucherUseCase    $getOneVoucherUseCase,
+        private Environment $twig,
+        private UrlGeneratorInterface $router,
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneNoteUseCase,
-    )
-    {
+    ) {
     }
 
     public function __invoke(ReceiptRequest $request): string
@@ -27,14 +26,14 @@ readonly class ReceiptShowUseCase
 
         return $this->twig->render('receipt/show.html.twig', [
             'company_name' => $receipt->company,
-            'type'         => $receipt->type,
-            'series'       => $receipt->series,
-            'number'       => $receipt->number,
-            'date'         => date('d/m/Y', intval(strtotime($receipt->date))),
-            'total'        => $receipt->total,
-            'pdf'          => $receipt->pdf,
-            'xml'          => $receipt->xml,
-            'cdr'          => $receipt->cdr,
+            'type' => $receipt->type,
+            'series' => $receipt->series,
+            'number' => $receipt->number,
+            'date' => date('d/m/Y', intval(strtotime($receipt->date))),
+            'total' => $receipt->total,
+            'pdf' => $receipt->pdf,
+            'xml' => $receipt->xml,
+            'cdr' => $receipt->cdr,
         ]);
     }
 

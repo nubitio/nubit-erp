@@ -7,7 +7,7 @@ use App\Core\Domain\Exception\ServiceException;
 readonly class NotePdfUseCase
 {
     public function __construct(
-        private NoteCreateUseCase       $noteCreateUseCase,
+        private NoteCreateUseCase $noteCreateUseCase,
         private NoteRepositoryInterface $noteRepository,
     ) {
     }

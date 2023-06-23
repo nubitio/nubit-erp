@@ -3,7 +3,6 @@
 namespace App\Receipt\Application;
 
 use App\Base\BaseController;
-use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
