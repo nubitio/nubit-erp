@@ -45,7 +45,7 @@ security:
     - { path: ^/api/v1/branches, roles: PUBLIC_ACCESS }
     - { path: ^/login, roles: PUBLIC_ACCESS }
     - { path: ^/wcp, roles: PUBLIC_ACCESS }
-    - { path: ^/invoice/[\w-]+$, roles: PUBLIC_ACCESS }
+    - { path: ^/receipt/[\w-]+$, roles: PUBLIC_ACCESS }
     - { path: ^/admin, roles: ROLE_ADMIN }
     - { path: ^/, roles: ROLE_USER }
 

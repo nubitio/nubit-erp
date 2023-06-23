@@ -5,11 +5,11 @@ namespace App\Billing\Domain;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
-class FileResponse
+readonly class FileResponse
 {
     public function __construct(
-        public readonly string $file,
-        public readonly string $name
+        public string $file,
+        public string $name
     ) {
     }
 }
