@@ -98,6 +98,7 @@ readonly class BillCreateUseCase
 
         $bill->setDetails($details);
         $bill->setLegends([$legend]);
+        $bill->setObservacion(strval($voucher->voucher_note ?? null));
 
         return $bill;
     }
