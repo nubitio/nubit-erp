@@ -5,6 +5,7 @@ import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
 import {Constants} from "../core/common/Constants";
+import {SharedUtils} from "../core/utils/SharedUtils";
 
 export default class Config {
     private readonly container: string;
@@ -52,6 +53,7 @@ export default class Config {
             .name('value')
             .label('Value')
             .required(true)
+            .formatter(SharedUtils.configFormatter)
             .build())
     };
 

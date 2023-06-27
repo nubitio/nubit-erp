@@ -23,6 +23,18 @@ export class SharedUtils {
         }
     }
 
+    static configFormatter(val: string) {
+        if (val == 'true') {
+            return '<span class="badge rounded-pill bg-success">SI</span>';
+        } else if (val == 'false') {
+            return '<span class="badge rounded-pill bg-danger">NO</span>';
+        } else if (Number(val) === 0){
+            return '<span class="badge bg-warning text-dark">NO</span>';
+        } else {
+            return '<span class="badge rounded-pill bg-dark">'+val+'</span>';
+        }
+    }
+
     static dxBooleanFormatter(cell: ColumnCellTemplateData) {
         if (Number(cell.data.estado) === 1) {
             return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
