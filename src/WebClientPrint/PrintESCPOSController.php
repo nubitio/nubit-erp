@@ -48,8 +48,7 @@ class PrintESCPOSController extends BaseController
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $app_option_logo = $settingsService->get('app_option_printing_logo');
-        if ($app_option_logo == 'true')
-        {
+        if ('true' == $app_option_logo) {
             $printer->graphics($logo);
             $printer->feed();
         }
