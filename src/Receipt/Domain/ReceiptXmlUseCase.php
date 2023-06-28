@@ -48,7 +48,7 @@ readonly class ReceiptXmlUseCase
         $docFullName = $companyId.'-'.$voucher->voucher_type.'-'.$docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId.'/R-'.$docFullName.'.zip'),
+            $this->fileManager->read($companyId.'/'.$docFullName.'.xml'),
             $docFullName.'.xml'
         );
     }
@@ -67,7 +67,7 @@ readonly class ReceiptXmlUseCase
         $docFullName = $companyId.'-'.$note->tipo_id.'-'.$docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId.'/R-'.$docFullName.'.zip'),
+            $this->fileManager->read($companyId.'/'.$docFullName.'.xml'),
             $docFullName.'.xml'
         );
     }
