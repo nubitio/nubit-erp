@@ -22,6 +22,8 @@ import GridData from "../../components/common/GridData";
 import {lastValueFrom} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 import {bus} from "../event/EventBus";
+import {confirm} from "devextreme/ui/dialog";
+import notify from "devextreme/ui/notify";
 
 export const DxDataGrid = (props: any) => {
     const gridRef = useRef<DataGrid>(null);
@@ -68,8 +70,34 @@ export const DxDataGrid = (props: any) => {
     }, []);
 
     const onAddClick = useCallback(() => {
-        bus.emit(options.events.ADD, {route: options.routes.ADD});
-    }, []);
+        bus.emit(options.events.ADD);
+    }, [options.events.ADD]);
+
+    const onEditClick = useCallback(() => {
+        let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
+        console.log(selectedRowsData)
+        if (selectedRowsData && selectedRowsData.length > 0) {
+            bus.emit(options.events.EDIT, {row: selectedRowsData[0]});
+        } else {
+            notify('Debe seleccionar un registro', 'error', 2000);
+        }
+    }, [options.events.EDIT]);
+
+    const onDeleteClick = useCallback(() => {
+        let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
+        if (selectedRowsData && selectedRowsData.length > 0) {
+            let result = confirm('¿Está seguro de eliminar el registro?', 'Confirmar eliminación');
+            result.then((dialogResult) => {
+                if (dialogResult) {
+                    if (selectedRowsData) {
+                        bus.emit(options.events.DELETE, {row: selectedRowsData[0]});
+                    }
+                }
+            });
+        } else {
+            notify('Debe seleccionar un registro', 'error', 2000);
+        }
+    }, [options.events.DELETE]);
 
     return (
         <div className='view crm-contact-list'>
@@ -90,7 +118,7 @@ export const DxDataGrid = (props: any) => {
                     <Export enabled allowExportSelectedData formats={exportFormats}/>
                     <Selection
                         selectAllMode='allPages'
-                        showCheckBoxesMode='always'
+                        showCheckBoxesMode='onClick'
                         mode='multiple'
                     />
                     <Sorting mode='multiple'/>
@@ -99,31 +127,31 @@ export const DxDataGrid = (props: any) => {
                         <Item location='before'>
                             <div className='grid-header'>{options.title}</div>
                         </Item>
-                        <Item location='after' locateInMenu='auto'>
+                        <Item location='after' locateInMenu='auto' visible={options.allowAdd}>
                             <Button
                                 icon='plus'
-                                text='Add'
-                                type='default'
-                                stylingMode='contained'
+                                text='Nuevo'
+                                type='success'
+                                stylingMode='outlined'
                                 onClick={onAddClick}
                             />
                         </Item>
-                        <Item location='after' locateInMenu='auto'>
+                        <Item location='after' locateInMenu='auto' visible={options.allowEdit}>
                             <Button
                                 icon='edit'
-                                text='Edit'
+                                text='Editar'
                                 type='default'
-                                stylingMode='contained'
-                                onClick={onAddClick}
+                                stylingMode='outlined'
+                                onClick={onEditClick}
                             />
                         </Item>
-                        <Item location='after' locateInMenu='auto'>
+                        <Item location='after' locateInMenu='auto' visible={options.allowDelete}>
                             <Button
                                 icon='trash'
-                                text='Delete'
+                                text='Eliminar'
                                 type='danger'
-                                stylingMode='contained'
-                                onClick={onAddClick}
+                                stylingMode='outlined'
+                                onClick={onDeleteClick}
                             />
                         </Item>
                         <Item

@@ -14,6 +14,7 @@ export enum FieldType {
     CHECK = 'check',
     RADIO = 'radio',
     SWITCH = 'switch',
+    CHECKBOX = 'checkbox',
     FILE = 'file',
     SUBMIT = 'submit',
 }
