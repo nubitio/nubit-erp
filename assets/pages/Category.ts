@@ -1,11 +1,9 @@
 import DataGrid from "../core/datagrid/DataGrid";
 import Dialog from "../core/dialog/Dialog";
 import Form from "../core/form/Form";
-import {FieldType} from "../core/field/FieldType";
-import {SharedUtils} from "../core/utils/SharedUtils";
 import {Field} from "../core/field/Field";
-import {FieldBuilder} from "../core/field/FieldBuilder";
 import {Constants} from "../core/common/Constants";
+import {categoryFields} from "./Category/CategoryFields";
 
 export default class Category {
     private readonly container: string;
@@ -32,47 +30,7 @@ export default class Category {
     }
 
     init() {
-        this.fields.push(new FieldBuilder()
-            .isIdentity(true)
-            .visible(false)
-            .type(FieldType.NONE)
-            .name('categoria_id')
-            .label('Categoria id')
-            .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXT)
-            .name('descripcion')
-            .label('Descripcion')
-            .width(100)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.ENTITY)
-            .name('parent')
-            .label('Categoria padre')
-            .url(Constants.API_BASE_URL + 'categories')
-            .valueField('categoria_id')
-            .textField('descripcion')
-            .formatter((value: any, row: any) => {
-                return row.parent?.descripcion;
-            })
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.FILE)
-            .name('imagen')
-            .label('Imagen')
-            .formatter((val: any, row: any) => {
-                return SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/')
-            })
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.SWITCH)
-            .name('estado')
-            .label('Activo')
-            .formatter(SharedUtils.booleanFormatter)
-            .defaultValue(true)
-            .build());
-
+        this.fields = categoryFields();
     };
 
     render() {
