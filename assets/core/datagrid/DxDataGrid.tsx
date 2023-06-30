@@ -1,5 +1,4 @@
 import {Field} from "../field/Field";
-import {httpClient} from "../http/HttpClient";
 import {
     Column,
     ColumnChooser,
@@ -7,6 +6,7 @@ import {
     FilterRow,
     Item,
     LoadPanel,
+    Lookup,
     Pager,
     Paging,
     Scrolling,
@@ -15,30 +15,48 @@ import {
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
-import CustomStore from "devextreme/data/custom_store";
-import {productService} from "../../services/product.service";
 import {useCallback, useRef} from "react";
-import GridData from "../../components/common/GridData";
-import {lastValueFrom} from "rxjs";
-import ApiResponse from "../http/ApiResponse";
 import {bus} from "../event/EventBus";
 import {confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
+import {FieldType} from "../field/FieldType";
+import {dxUtils} from "../common/DxUtils";
 
 export const DxDataGrid = (props: any) => {
     const gridRef = useRef<DataGrid>(null);
     const exportFormats = ['xlsx', 'pdf'];
     const options = props.options;
     const columns = options.fields.map((field: Field, index) => {
+        let lookup;
+        if (field.type === FieldType.ENTITY) {
+            lookup = <Lookup
+                dataSource={{
+                    store: dxUtils.getDataStore(field.url, field.valueField),
+                    paginate: true,
+                    pageSize: 10
+                }}
+                valueExpr={field.valueField}
+                displayExpr={field.textField}
+            />
+        }
+        if (field.type === FieldType.SWITCH) {
+            lookup = <Lookup
+                dataSource={[{value: true, text: 'Si'}, {value: false, text: 'No'}]}
+                valueExpr="value"
+                displayExpr="text"
+            />
+        }
         return <Column
             key={index}
             dataField={field.name}
             caption={field.label}
-            //alignment={field.align}
-            //allowSorting={field.sortable}
-            //cellRender={field.formatter}
+            alignment={field.align}
+            allowSorting={field.sortable}
+            cellRender={field.formatter}
             visible={field.visible}
-        />
+        >
+            {lookup}
+        </Column>
     });
 
     const getIdField = () => {
@@ -47,23 +65,7 @@ export const DxDataGrid = (props: any) => {
         })?.name;
     }
 
-    const fetchData = (loadOptions: any): Promise<GridData<any>> => {
-        let subscription = httpClient.get<any[]>(options.url, {params: loadOptions});
-
-        return lastValueFrom(subscription)
-            .then((response: ApiResponse<any[]>) => {
-                return {
-                    data: response.data,
-                    totalCount: Number(response.headers['x-total-count'])
-                } as GridData<any>;
-            });
-    }
-
-    const data = new CustomStore({
-        key: getIdField(),
-        load: (loadOptions) => fetchData(loadOptions),
-        insert: (values) => productService.create(values)
-    });
+    const data = dxUtils.getDataStore(options.url, getIdField());
 
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
