@@ -1,6 +1,6 @@
 import Category from "../Category";
 import "./Category.scss";
-import {categoryFields} from "./CategoryFields";
+import {dxCategoryFields} from "./CategoryFields";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxForm} from "../../core/form/DxForm";
 import {FormPopup} from "../../components";
@@ -9,7 +9,7 @@ import {bus} from "../../core/event/EventBus";
 
 export const CategoryPage = () => {
     const container = "wrapper";
-    const fields = categoryFields();
+    const fields = dxCategoryFields();
     const [popupVisible, setPopupVisible] = useState(false);
     const changePopupVisibility = useCallback(() => {
         setPopupVisible(!popupVisible);
