@@ -15,12 +15,13 @@ import {
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
-import {useCallback, useRef} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {bus} from "../event/EventBus";
 import {confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
+import CustomStore from "devextreme/data/custom_store";
 
 export const DxDataGrid = (props: any) => {
     const gridRef = useRef<DataGrid>(null);
@@ -65,7 +66,15 @@ export const DxDataGrid = (props: any) => {
         })?.name;
     }
 
-    const data = dxUtils.getDataStore(options.url, getIdField());
+    const [data, setData] = useState<CustomStore | null>(null);
+    let alreadyLoaded = false;
+
+    useEffect(() => {
+        if (!alreadyLoaded) {
+            setData(dxUtils.getDataStore(options.url, getIdField()));
+            alreadyLoaded = true;
+        }
+    }, []);
 
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();

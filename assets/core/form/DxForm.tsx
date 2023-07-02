@@ -9,9 +9,8 @@ import {StorageUtils} from "../utils/StorageUtils";
 
 export const DxForm = (props: any) => {
     const formRef = useRef<Form>(null);
+    const uploadedFiles = useRef<any[]>([]);
     const options = props.options;
-
-    let files: any = [];
 
     const getEditorType = (field: Field) => {
         switch (field.type) {
@@ -65,7 +64,7 @@ export const DxForm = (props: any) => {
                 },
                 onUploaded: (e: any) => {
                     let response = JSON.parse(e.request.response);
-                    files.push({field: field.name, value: response.id});
+                    uploadedFiles.current.push({field: field.name, value: response.id});
                 }
             }
         }
@@ -90,17 +89,20 @@ export const DxForm = (props: any) => {
         });
 
         bus.on(options.events.EDIT, (payload: any) => {
-            formRef.current?.instance.option('formData', payload.row);
+            let row = {...payload.row};
+            options.fields.forEach((field: Field) => {
+                if (field.type === FieldType.FILE) {
+                    delete(row[field.name]);
+                }
+            });
+            formRef.current?.instance.option('formData', row);
         });
 
         bus.on(options.events.SAVE, () => {
             let result = formRef.current?.instance.validate()
             if (result?.isValid) {
                 let formData = formRef.current?.instance.option('formData');
-                console.log(files)
-                files.forEach((file: any) => {
-                    console.log(formData[file.field])
-                    console.log(file.value)
+                uploadedFiles.current.forEach((file: any) => {
                     formData[file.field] = {
                         id: file.value
                     }
