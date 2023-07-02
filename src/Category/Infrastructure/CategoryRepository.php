@@ -9,6 +9,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Media\Infrastructure\MediaEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
@@ -37,12 +38,19 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
         return DataMapper::map($entity, Category::class);
     }
 
+    /**
+     * @throws ORMException
+     */
     public function insert(Category $category): Category
     {
         $entity = DataMapper::map($category, CategoryEntity::class);
         if (null !== $category->parent) {
             $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
             $entity->parent = $parent;
+        }
+        if ($category->imagen?->id) {
+            $image = $this->entityManager->getReference(MediaEntity::class, $category->imagen->id);
+            $entity->imagen = $image;
         }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -68,6 +76,10 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
             $entity->parent = $parent;
         } else {
             $entity->parent = null;
+        }
+        if ($category->imagen?->id) {
+            $image = $this->entityManager->getReference(MediaEntity::class, $category->imagen->id);
+            $entity->imagen = $image;
         }
         $this->entityManager->flush();
 

@@ -1,13 +1,17 @@
 import Form, {SimpleItem} from "devextreme-react/form";
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
-import {useRef} from "react";
+import {useEffect, useRef} from "react";
 import {dxUtils} from "../common/DxUtils";
 import {bus} from "../event/EventBus";
+import {httpClient} from "../http/HttpClient";
+import {StorageUtils} from "../utils/StorageUtils";
 
 export const DxForm = (props: any) => {
     const formRef = useRef<Form>(null);
     const options = props.options;
+
+    let files: any = [];
 
     const getEditorType = (field: Field) => {
         switch (field.type) {
@@ -50,6 +54,21 @@ export const DxForm = (props: any) => {
                 displayExpr: field.textField
             }
         }
+        if (field.type === FieldType.FILE) {
+            editorOptions = {
+                accept: field.accept,
+                uploadUrl: field.url,
+                name: 'file',
+                onBeforeSend: (e: any) => {
+                    let token = StorageUtils.getItem('token');
+                    e.request.setRequestHeader('Authorization', `Bearer ${token}`)
+                },
+                onUploaded: (e: any) => {
+                    let response = JSON.parse(e.request.response);
+                    files.push({field: field.name, value: response.id});
+                }
+            }
+        }
         return <SimpleItem
             key={index}
             dataField={field.name}
@@ -60,18 +79,54 @@ export const DxForm = (props: any) => {
         />
     });
 
-    bus.on(options.events.ADD, (payload: any) => {
-        formRef.current?.instance.resetValues();
-        options.fields.forEach((field: Field) => {
-            if (field.defaultValue) {
-                formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
+    const setupObservers = () => {
+        bus.on(options.events.ADD, (payload: any) => {
+            formRef.current?.instance.resetValues();
+            options.fields.forEach((field: Field) => {
+                if (field.defaultValue) {
+                    formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
+                }
+            });
+        });
+
+        bus.on(options.events.EDIT, (payload: any) => {
+            formRef.current?.instance.option('formData', payload.row);
+        });
+
+        bus.on(options.events.SAVE, () => {
+            let result = formRef.current?.instance.validate()
+            if (result?.isValid) {
+                let formData = formRef.current?.instance.option('formData');
+                console.log(files)
+                files.forEach((file: any) => {
+                    console.log(formData[file.field])
+                    console.log(file.value)
+                    formData[file.field] = {
+                        id: file.value
+                    }
+                });
+                options.fields.forEach((field: Field) => {
+                    if (field.type === FieldType.ENTITY) {
+                        formData[field.name] = {
+                            [field.valueField]: formData[field.name]
+                        }
+                    }
+                });
+                httpClient.post(options.url, formData).subscribe((response: any) => {
+                    bus.emit(options.events.SUCCESS);
+                });
             }
         });
-    });
+    }
 
-    bus.on(options.events.EDIT, (payload: any) => {
-        formRef.current?.instance.option('formData', payload.row);
-    });
+    let alreadySetup = false;
+
+    useEffect(() => {
+        if (!alreadySetup) {
+            setupObservers();
+            alreadySetup = true;
+        }
+    }, []);
 
     return (
         <div>

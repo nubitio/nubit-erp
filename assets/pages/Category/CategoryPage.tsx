@@ -4,7 +4,7 @@ import {dxCategoryFields} from "./CategoryFields";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxForm} from "../../core/form/DxForm";
 import {FormPopup} from "../../components";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {bus} from "../../core/event/EventBus";
 
 export const CategoryPage = () => {
@@ -14,18 +14,32 @@ export const CategoryPage = () => {
     const changePopupVisibility = useCallback(() => {
         setPopupVisible(!popupVisible);
     }, [popupVisible]);
+    const onSave = useCallback(() => {
+        bus.emit(Category.EVENTS.SAVE, {});
+    }, []);
 
-    bus.on(Category.EVENTS.ADD, (payload: any) => {
-        setPopupVisible(true)
-    });
+    const setupObservers = () => {
+        bus.on(Category.EVENTS.ADD, (payload: any) => {
+            setPopupVisible(true)
+        });
 
-    bus.on(Category.EVENTS.EDIT, (payload: any) => {
-        setPopupVisible(true)
-    });
+        bus.on(Category.EVENTS.EDIT, (payload: any) => {
+            setPopupVisible(true)
+        });
 
-    bus.on(Category.EVENTS.DELETE, (payload: any) => {
-        alert('delete')
-    });
+        bus.on(Category.EVENTS.DELETE, (payload: any) => {
+            alert('delete')
+        });
+    }
+
+    let alreadySetup = false;
+
+    useEffect(() => {
+        if (!alreadySetup) {
+            setupObservers();
+            alreadySetup = true;
+        }
+    }, []);
 
     return (
         <div id={container}>
@@ -39,8 +53,9 @@ export const CategoryPage = () => {
                 fields: fields,
                 events: Category.EVENTS,
             }}/>
-            <FormPopup title='Categoria' visible={popupVisible} setVisible={changePopupVisibility}>
+            <FormPopup title='Categoria' visible={popupVisible} setVisible={changePopupVisibility} onSave={onSave}>
                 <DxForm options={{
+                    url: Category.API_URL,
                     fields: fields,
                     events: Category.EVENTS,
                 }}/>
