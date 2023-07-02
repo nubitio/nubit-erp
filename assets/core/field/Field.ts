@@ -29,4 +29,5 @@ export interface Field {
     hidden: boolean;
     required: boolean;
     precision: number;
+    accept: any;
 }

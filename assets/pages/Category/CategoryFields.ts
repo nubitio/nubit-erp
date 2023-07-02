@@ -82,6 +82,8 @@ export const dxCategoryFields = () => {
         .type(FieldType.FILE)
         .name('imagen')
         .label('Imagen')
+        .url(Constants.API_BASE_URL + 'media')
+        .accept('image/*')
         .formatter(SharedUtils.dxImageFormatter)
         .build());
     fields.push(new FieldBuilder()

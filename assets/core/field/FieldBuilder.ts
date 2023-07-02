@@ -33,7 +33,8 @@ export class FieldBuilder {
             disabled: false,
             hidden: false,
             required: false,
-            precision: 0
+            precision: 0,
+            accept: null
         };
     }
 
@@ -174,6 +175,11 @@ export class FieldBuilder {
 
     precision(value:number): FieldBuilder {
         this._field.precision = value;
+        return this;
+    }
+
+    accept(value:any): FieldBuilder {
+        this._field.accept = value;
         return this;
     }
 
