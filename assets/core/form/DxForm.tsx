@@ -19,10 +19,13 @@ export const DxForm = (props: any) => {
             case FieldType.TEXT:
                 return 'dxTextBox';
             case FieldType.NUMBER:
+            case FieldType.CURRENCY:
                 return 'dxNumberBox';
             case FieldType.DATE:
                 return 'dxDateBox';
             case FieldType.SELECT:
+            case FieldType.ENUM:
+            case FieldType.ENTITY:
                 return 'dxSelectBox';
             case FieldType.CHECKBOX:
                 return 'dxCheckBox';
@@ -36,8 +39,6 @@ export const DxForm = (props: any) => {
                 return 'dxFileUploader';
             case FieldType.SWITCH:
                 return 'dxSwitch';
-            case FieldType.ENTITY:
-                return 'dxSelectBox';
         }
     }
 
@@ -46,7 +47,7 @@ export const DxForm = (props: any) => {
     }
 
     const fields = options.fields.map((field: Field, index) => {
-        if (field.type === FieldType.NONE) return null;
+        if (field.type === FieldType.NONE || field.hidden) return null;
         let editorOptions: any = {};
         if (field.type === FieldType.ENTITY) {
             editorOptions = {
@@ -57,6 +58,13 @@ export const DxForm = (props: any) => {
                 },
                 valueExpr: field.valueField,
                 displayExpr: field.textField
+            }
+        }
+        if (field.type === FieldType.ENUM) {
+            editorOptions = {
+                dataSource: field.data,
+                valueExpr: 'value',
+                displayExpr: 'text'
             }
         }
         if (field.type === FieldType.FILE) {
@@ -130,6 +138,9 @@ export const DxForm = (props: any) => {
                     if (field.type === FieldType.ENTITY) {
                         if (formData[field.name] === null || formData[field.name] === undefined) {
                             delete formData[field.name];
+                            return;
+                        }
+                        if (typeof formData[field.name] === 'object' && formData[field.name] !== null) {
                             return;
                         }
                         formData[field.name] = {

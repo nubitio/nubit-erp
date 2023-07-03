@@ -83,7 +83,7 @@ export class FieldBuilder {
         return this;
     }
 
-    validators(validators: string[]): FieldBuilder {
+    validators(validators: any[]): FieldBuilder {
         this._field.validators = validators;
         return this;
     }

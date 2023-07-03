@@ -41,6 +41,13 @@ export const DxDataGrid = (props: any) => {
                 displayExpr={field.textField}
             />
         }
+        if (field.type === FieldType.ENUM) {
+            lookup = <Lookup
+                dataSource={field.data}
+                valueExpr="value"
+                displayExpr="text"
+            />
+        }
         if (field.type === FieldType.SWITCH) {
             lookup = <Lookup
                 dataSource={[{value: true, text: 'Si'}, {value: false, text: 'No'}]}

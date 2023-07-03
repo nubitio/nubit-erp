@@ -86,6 +86,7 @@ export const dxCategoryFields = () => {
         .url(Constants.API_BASE_URL + 'media')
         .accept('image/*')
         .formatter(SharedUtils.dxImageFormatter)
+        .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
@@ -93,6 +94,7 @@ export const dxCategoryFields = () => {
         .label('Activo')
         .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
+        .align('center')
         .build());
 
     return fields;

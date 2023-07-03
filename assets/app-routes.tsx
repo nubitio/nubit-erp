@@ -1,6 +1,6 @@
 import {withNavigationWatcher} from './contexts/navigation';
 import {DashboardPage} from "./pages/Dashboard/DashboardPage";
-import {ProductPage} from "./pages/product/ProductPage";
+import {ProductPage} from "./pages/Product/ProductPage";
 import {AuthPage} from "./pages/Auth/AuthPage";
 import {BranchPage} from "./pages/Branch/BranchPage";
 import {CashboxPage} from "./pages/Cashbox/CashboxPage";
@@ -40,6 +40,7 @@ import {VoucherTypePage} from "./pages/VoucherType/VoucherTypePage";
 import {WarehousePage} from "./pages/Warehouse/WarehousePage";
 import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
+import {SalePage} from "./pages/Sale/SalePage";
 
 const routes = [
     {
@@ -141,7 +142,7 @@ const routes = [
     {
         path: '/patient',
         element: PatientPage,
-    },{
+    }, {
         path: '/patient-type',
         element: PatientTypePage,
     },
@@ -168,6 +169,10 @@ const routes = [
     {
         path: '/role',
         element: RolePage,
+    },
+    {
+        path: '/sale',
+        element: SalePage,
     },
     {
         path: '/sale-consult',
