@@ -68,6 +68,7 @@ export const dxCategoryFields = () => {
         .name('descripcion')
         .label('Descripcion')
         .width(100)
+        .sortable(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
