@@ -6,10 +6,12 @@ import {dxUtils} from "../common/DxUtils";
 import {bus} from "../event/EventBus";
 import {httpClient} from "../http/HttpClient";
 import {StorageUtils} from "../utils/StorageUtils";
+import {confirm} from "devextreme/ui/dialog";
 
 export const DxForm = (props: any) => {
     const formRef = useRef<Form>(null);
     const uploadedFiles = useRef<any[]>([]);
+    const isEdit = useRef<boolean>(false);
     const options = props.options;
 
     const getEditorType = (field: Field) => {
@@ -37,6 +39,10 @@ export const DxForm = (props: any) => {
             case FieldType.ENTITY:
                 return 'dxSelectBox';
         }
+    }
+
+    const getIdField = () => {
+        return options.fields.find(field => field.isIdentity)?.name;
     }
 
     const fields = options.fields.map((field: Field, index) => {
@@ -86,16 +92,29 @@ export const DxForm = (props: any) => {
                     formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
                 }
             });
+            isEdit.current = false;
         });
 
         bus.on(options.events.EDIT, (payload: any) => {
             let row = {...payload.row};
             options.fields.forEach((field: Field) => {
                 if (field.type === FieldType.FILE) {
-                    delete(row[field.name]);
+                    delete (row[field.name]);
                 }
             });
             formRef.current?.instance.option('formData', row);
+            isEdit.current = true;
+        });
+
+        bus.on(options.events.DELETE, (payload: any) => {
+            let result = confirm('¿Está seguro de eliminar el registro?', 'Confirmar eliminación');
+            result.then((dialogResult) => {
+                if (dialogResult) {
+                    httpClient.delete(`${options.url}/${payload.row[getIdField()]}`).subscribe((response: any) => {
+                        bus.emit(options.events.SUCCESS, response);
+                    });
+                }
+            });
         });
 
         bus.on(options.events.SAVE, () => {
@@ -109,14 +128,31 @@ export const DxForm = (props: any) => {
                 });
                 options.fields.forEach((field: Field) => {
                     if (field.type === FieldType.ENTITY) {
+                        if (formData[field.name] === null || formData[field.name] === undefined) {
+                            delete formData[field.name];
+                            return;
+                        }
                         formData[field.name] = {
                             [field.valueField]: formData[field.name]
                         }
                     }
+                    if (field.type === FieldType.FILE) {
+                        if (Array.isArray(formData[field.name])) {
+                            delete formData[field.name];
+                            return;
+                        }
+                    }
                 });
-                httpClient.post(options.url, formData).subscribe((response: any) => {
-                    bus.emit(options.events.SUCCESS);
-                });
+
+                if (isEdit.current) {
+                    httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
+                        bus.emit(options.events.SUCCESS, response);
+                    });
+                } else {
+                    httpClient.post(options.url, formData).subscribe((response: any) => {
+                        bus.emit(options.events.SUCCESS, response);
+                    });
+                }
             }
         });
     }

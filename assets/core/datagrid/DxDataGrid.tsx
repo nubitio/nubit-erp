@@ -1,3 +1,4 @@
+import './DxDataGrid.scss';
 import {Field} from "../field/Field";
 import {
     Column,
@@ -17,7 +18,6 @@ import {
 import {Button, DataGrid} from "devextreme-react";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {bus} from "../event/EventBus";
-import {confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
@@ -25,6 +25,7 @@ import CustomStore from "devextreme/data/custom_store";
 
 export const DxDataGrid = (props: any) => {
     const gridRef = useRef<DataGrid>(null);
+    const [data, setData] = useState<CustomStore | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
     const options = props.options;
     const columns = options.fields.map((field: Field, index) => {
@@ -61,20 +62,8 @@ export const DxDataGrid = (props: any) => {
     });
 
     const getIdField = () => {
-        return options.fields.find((field: Field) => {
-            return field.isIdentity;
-        })?.name;
+        return options.fields.find((field: Field) => field.isIdentity)?.name;
     }
-
-    const [data, setData] = useState<CustomStore | null>(null);
-    let alreadyLoaded = false;
-
-    useEffect(() => {
-        if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField()));
-            alreadyLoaded = true;
-        }
-    }, []);
 
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
@@ -86,7 +75,6 @@ export const DxDataGrid = (props: any) => {
 
     const onEditClick = useCallback(() => {
         let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
-        console.log(selectedRowsData)
         if (selectedRowsData && selectedRowsData.length > 0) {
             bus.emit(options.events.EDIT, {row: selectedRowsData[0]});
         } else {
@@ -97,22 +85,33 @@ export const DxDataGrid = (props: any) => {
     const onDeleteClick = useCallback(() => {
         let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
         if (selectedRowsData && selectedRowsData.length > 0) {
-            let result = confirm('¿Está seguro de eliminar el registro?', 'Confirmar eliminación');
-            result.then((dialogResult) => {
-                if (dialogResult) {
-                    if (selectedRowsData) {
-                        bus.emit(options.events.DELETE, {row: selectedRowsData[0]});
-                    }
-                }
-            });
+            bus.emit(options.events.DELETE, {row: selectedRowsData[0]});
         } else {
             notify('Debe seleccionar un registro', 'error', 2000);
         }
     }, [options.events.DELETE]);
 
+    const setupObservers = () => {
+        bus.on(options.events.SUCCESS, refresh);
+    }
+
+    let alreadyLoaded = false;
+    let alreadySetup = false;
+
+    useEffect(() => {
+        if (!alreadyLoaded) {
+            setData(dxUtils.getDataStore(options.url, getIdField()));
+            alreadyLoaded = true;
+        }
+        if (!alreadySetup) {
+            setupObservers();
+            alreadySetup = true;
+        }
+    }, []);
+
     return (
-        <div className='view crm-contact-list'>
-            <div className='view-wrapper view-wrapper-contact-list'>
+        <div className='view datagrid-list'>
+            <div className='view-wrapper view-wrapper-datagrid-list'>
                 <DataGrid
                     className='grid'
                     noDataText=''
