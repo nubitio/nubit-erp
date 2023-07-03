@@ -1,5 +1,5 @@
 import Category from "../Category";
-import "./Category.scss";
+import "./CategoryPage.scss";
 import {dxCategoryFields} from "./CategoryFields";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxForm} from "../../core/form/DxForm";

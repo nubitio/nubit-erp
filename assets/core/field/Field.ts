@@ -10,7 +10,7 @@ export interface Field {
     height: number | null;
     align: string;
     sortable: boolean;
-    validators: string[];
+    validators: any[];
     mode: string;
     url: string;
     textField: string;
