@@ -8,6 +8,7 @@ import {
     Item,
     LoadPanel,
     Lookup,
+    MasterDetail,
     Pager,
     Paging,
     Scrolling,
@@ -23,11 +24,10 @@ import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 
-export const DxDataGrid = (props: any) => {
+export const DxDataGrid = ({options, children}: any) => {
     const gridRef = useRef<DataGrid>(null);
     const [data, setData] = useState<CustomStore | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
-    const options = props.options;
     const columns = options.fields.map((field: Field, index) => {
         let lookup;
         if (field.type === FieldType.ENTITY) {
@@ -144,7 +144,7 @@ export const DxDataGrid = (props: any) => {
                         <Item location='before'>
                             <div className='grid-header'>{options.title}</div>
                         </Item>
-                        <Item location='after' locateInMenu='auto' visible={options.allowAdd}>
+                        <Item location='after' locateInMenu='auto' visible={options.allowAdd ?? false}>
                             <Button
                                 icon='plus'
                                 text='Nuevo'
@@ -153,7 +153,7 @@ export const DxDataGrid = (props: any) => {
                                 onClick={onAddClick}
                             />
                         </Item>
-                        <Item location='after' locateInMenu='auto' visible={options.allowEdit}>
+                        <Item location='after' locateInMenu='auto' visible={options.allowEdit ?? false}>
                             <Button
                                 icon='edit'
                                 text='Editar'
@@ -162,7 +162,7 @@ export const DxDataGrid = (props: any) => {
                                 onClick={onEditClick}
                             />
                         </Item>
-                        <Item location='after' locateInMenu='auto' visible={options.allowDelete}>
+                        <Item location='after' locateInMenu='auto' visible={options.allowDelete ?? false}>
                             <Button
                                 icon='trash'
                                 text='Eliminar'
@@ -195,6 +195,9 @@ export const DxDataGrid = (props: any) => {
                     </Toolbar>
                     <FilterRow visible={true}/>
                     {columns}
+                    <MasterDetail enabled={children !== undefined}>
+                        {children}
+                    </MasterDetail>
                     <Paging defaultPageSize={20}/>
                     <Pager visible={true}/>
                 </DataGrid>
