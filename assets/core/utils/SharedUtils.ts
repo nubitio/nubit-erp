@@ -57,12 +57,12 @@ export class SharedUtils {
         }
     }
 
-    static dxImageFormatter(cell: ColumnCellTemplateData) {
-        if (cell.data.imagen) {
+    static dxImageFormatter(cell: ColumnCellTemplateData, column: any = 'imagen') {
+        if (cell.data[column]) {
             return React.createElement('a', {
-                href: cell.data.imagen.path,
+                href: cell.data[column].path,
                 target: '_blank',
-            }, React.createElement('img', {src: cell.data.imagen.path, style: {width: '30px', height: '30px'}}));
+            }, React.createElement('img', {src: cell.data[column].path, style: {width: '30px', height: '30px'}}));
         } else {
             return React.createElement('a', {
                 href: 'https://ui-avatars.com/api/?name=' + cell.data.descripcion,
