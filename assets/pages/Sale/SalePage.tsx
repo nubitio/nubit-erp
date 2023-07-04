@@ -27,11 +27,16 @@ export const SalePage = () => {
                 title: 'Ventas',
                 url: API_URL,
                 allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
                 fields: fields,
                 events: EVENTS,
-            }}/>
+            }}>
+                <DxDataGrid options={{
+                    title: 'Detalle',
+                    url: API_URL,
+                    fields: fields,
+                    events: EVENTS,
+                }}/>
+            </DxDataGrid>
             <DxDialog options={{
                 events: EVENTS,
             }}>

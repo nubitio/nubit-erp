@@ -142,11 +142,11 @@ export const SaleFields = () => {
         .label('Anulado')
         .formatter((cell: ColumnCellTemplateData) => {
             if (cell.value === 1) {
-                return 'No';
+                return <span className="badge rounded-pill bg-success">NO</span>;
             } else if (cell.value === 2) {
-                return 'Si';
+                return <span className="badge rounded-pill bg-danger">SI</span>;
             } else {
-                return '';
+                return null;
             }
         })
         .align('center')
