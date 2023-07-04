@@ -19,7 +19,6 @@ readonly class DepartmentRepository implements DepartmentRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

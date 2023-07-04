@@ -51,6 +51,7 @@ export default class Consultation {
             .name('patient')
             .label('Paciente')
             .url(Constants.API_BASE_URL + 'patients')
+            .mode('remote')
             .valueField('id')
             .textField('razon_social')
             .formatter((value: any) => value?.full_name)

@@ -24,7 +24,6 @@ readonly class OperationProvider implements ApiProviderInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function provide(ApiOperation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {

@@ -9,7 +9,7 @@ interface CashboxDetailRepositoryInterface
      *
      * @return array<string, mixed>
      */
-    public function getAll(?array $filter = null): array;
+    public function getAll(array $filter = null): array;
 
     public function insert(CashboxDetail $cashboxDetail): void;
 

@@ -22,7 +22,6 @@ readonly class EmployeeProcessor implements ApiProcessorInterface
     ) {
     }
 
-    /** {@inheritDoc} */
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Employee
     {
         if ($operation instanceof DeleteOperationInterface) {

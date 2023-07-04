@@ -16,7 +16,7 @@ class TransferGetAllUseCase
      *
      * @return array<string, mixed>
      */
-    public function __invoke(?array $filter = null): array
+    public function __invoke(array $filter = null): array
     {
         return $this->repository->getAll($filter);
     }

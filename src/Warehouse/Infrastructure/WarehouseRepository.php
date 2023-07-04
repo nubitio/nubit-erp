@@ -21,7 +21,6 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     ) {
     }
 
-    /** {@inheritdoc} */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -11,7 +11,7 @@ $danger: darken(#e06c75, 20%);
 @import "~@fortawesome/fontawesome-free/scss/brands";
 @import "~@fortawesome/fontawesome-free/scss/fontawesome";
 @import "~animate.css";
-@import "easyui.css";
+@import "easyui";
 
 html, body {
   min-height: 100%;
@@ -1128,4 +1128,13 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label {
 
 .row-bt {
   border-top: 1px solid #dee2e6;
+}
+
+.table > :not(caption) > * > * {
+  color: var(--text-color) !important;
+  background-color: var(--background-color) !important;
+}
+
+.fa-1x {
+  font-size: 1rem !important;
 }
