@@ -18,5 +18,5 @@ interface CustomerRepositoryInterface
 
     public function update(Customer $customer): Customer;
 
-    public function delete(string $id): void;
+    public function delete(int $id): void;
 }

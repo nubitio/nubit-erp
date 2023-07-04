@@ -40,7 +40,6 @@ export default class Employee {
             .name('id')
             .label('Id')
             .required(true)
-            .valueType('number')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.TEXT)

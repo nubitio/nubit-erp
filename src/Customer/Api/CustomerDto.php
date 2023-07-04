@@ -14,5 +14,5 @@ use App\Customer\Domain\Customer;
 class CustomerDto extends Customer
 {
     #[ApiProperty(identifier: true)]
-    public ?string $ruc;
+    public ?int $cliente_id;
 }

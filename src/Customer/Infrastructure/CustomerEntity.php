@@ -4,6 +4,7 @@ namespace App\Customer\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\PriceList\Infrastructure\PriceListEntity;
+use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\Id;
@@ -18,6 +19,9 @@ class CustomerEntity
 {
     public function __construct(
         #[Id]
+        #[ORM\GeneratedValue]
+        #[Column(name: 'cliente_id', type: 'integer')]
+        public ?int $cliente_id = null,
         #[Column(name: 'ruc', type: 'string')]
         public ?string $ruc = null,
         #[Column(name: 'razon_social', type: 'string')]

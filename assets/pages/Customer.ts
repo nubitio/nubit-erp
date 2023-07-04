@@ -36,6 +36,14 @@ export default class Customer {
     init() {
         this.fields.push(new FieldBuilder()
             .isIdentity(true)
+            .visible(false)
+            .type(FieldType.NONE)
+            .name('cliente_id')
+            .label('Id')
+            .required(true)
+            .valueType('number')
+            .build());
+        this.fields.push(new FieldBuilder()
             .name('ruc')
             .label('RUC/DNI')
             .validators(['validCustomerId'])

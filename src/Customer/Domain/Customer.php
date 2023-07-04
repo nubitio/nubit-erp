@@ -10,6 +10,8 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Customer
 {
     public function __construct(
+        #[SerializedName('cliente_id')]
+        public ?int $cliente_id = null,
         #[SerializedName('ruc')]
         public ?string $ruc = null,
         #[SerializedName('razon_social')]
