@@ -24,7 +24,7 @@ export const PositionPage = () => {
     return (
         <div id={container}>
             <DxDataGrid options={{
-                title: 'Usuarios',
+                title: 'Posiciones de trabajo',
                 url: API_URL,
                 allowAdd: true,
                 allowEdit: true,
