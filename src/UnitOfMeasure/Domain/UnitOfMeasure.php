@@ -13,6 +13,8 @@ class UnitOfMeasure
         public ?int $unidad_id = null,
         #[SerializedName('name')]
         public ?string $name = null,
+        #[SerializedName('code')]
+        public ?string $code = null,
         #[SerializedName('type_id')]
         public ?int $type_id = null,
         #[SerializedName('ratio')]
