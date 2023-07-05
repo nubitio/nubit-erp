@@ -1,4 +1,3 @@
-import {useEffect} from "react";
 import "./WarehousePage.scss";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
