@@ -6,7 +6,9 @@ use App\Invoice\Domain\GetOneVoucherUseCase;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Charge;
+use Greenter\Model\Sale\Cuota;
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
+use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
@@ -38,7 +40,7 @@ readonly class BillCreateUseCase
             ->setSerie(strval($voucher->voucher_series))
             ->setCorrelativo(strval($voucher->voucher_number))
             ->setFechaEmision(new \DateTime(strval($voucher->voucher_date)))
-            ->setFormaPago(new FormaPagoContado())
+            ->setFormaPago(2 == $voucher->voucher_payment_method ? new FormaPagoCredito($voucher->voucher_sale_amount) : new FormaPagoContado())
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setClient($customer)
             ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
@@ -49,6 +51,16 @@ readonly class BillCreateUseCase
             ->setSubTotal(floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
             ->setMtoImpVenta(floatval($voucher->voucher_sale_amount))
             ->setCompany($this->billUtils->getCompany());
+
+        if (2 == $voucher->voucher_payment_method) {
+            $paymentDate = (new \DateTime(strval($voucher->voucher_date)))->modify('+1 month');
+
+            $bill->setCuotas([
+                (new Cuota())
+                    ->setFechaPago($paymentDate)
+                    ->setMonto(floatval($voucher->voucher_sale_amount)),
+            ]);
+        }
 
         if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
             $charge = (new Charge())
@@ -73,7 +85,7 @@ readonly class BillCreateUseCase
         foreach ($voucher->voucher_items as $item) {
             $detail = (new SaleDetail())
                 ->setCodProducto(strval($item->product_code))
-                ->setUnidad('NIU')
+                ->setUnidad($item->product_uom ?? 'NIU')
                 ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
                 ->setMtoValorUnitario(floatval($item->unit_value))
