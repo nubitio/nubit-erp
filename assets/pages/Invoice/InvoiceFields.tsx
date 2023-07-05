@@ -1,6 +1,7 @@
 import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const InvoiceFields = () => {
     const fields: Field[] = [];
@@ -23,19 +24,19 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('cliente_id')
         .label('DNI/RUC')
-        /*.formatter((value: any, row: any) => row['cliente']?.['ruc'])*/
+        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.ruc)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('c.razon_social')
         .label('Cliente')
-        /*.formatter((value: any, row: any) => row['cliente']?.['razon_social'])*/
+        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.razon_social)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('tipo_comprobante_id')
         .label('Tipo')
-        /*.formatter((value: any) => value === '01' ? 'Factura' : 'Boleta')*/
+        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.tipo_comprobante_id === '01' ? 'Factura' : 'Boleta')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
