@@ -28,6 +28,8 @@ class Sale
         public ?\DateTimeInterface $fecha = null,
         #[SerializedName('proveedor_id')]
         public ?string $proveedor_id = null,
+        #[SerializedName('forma_pago')]
+        public ?int $forma_pago = null,
         #[SerializedName('tipo_pago')]
         public ?PaymentMethod $tipo_pago = null,
         #[SerializedName('tipo_tarjeta')]

@@ -11,6 +11,7 @@ use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Infrastructure\Service\SerializerService;
 use Greenter\Model\Response\StatusCdrResult;
+use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -90,7 +91,7 @@ class BillRepository implements BillRepositoryInterface
         $fileRequest = new FileRequest($invoice, new Parameters(
             user: new User(
                 extras: [
-                    new Extra('FORMA DE PAGO', 'CONTADO'),
+                    new Extra('FORMA DE PAGO', $invoice->getFormaPago() instanceof FormaPagoCredito ? 'CREDITO' : 'CONTADO'),
                     new Extra('OBS', strval($invoice->getObservacion())),
                 ],
             )
