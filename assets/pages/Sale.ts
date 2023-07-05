@@ -119,6 +119,19 @@ export default class Sale {
             })
             .build());
         this.fields.push(new FieldBuilder()
+            .type(FieldType.ENUM)
+            .name('forma_pago')
+            .label('Forma de pago')
+            .data([
+                {value: 1, text: 'CONTADO'},
+                {value: 2, text: 'CREDITO'},
+            ])
+            .valueType('number')
+            .defaultValue(1)
+            .required(true)
+            .formatter((value: any) => value === 2 ? 'CREDITO' : 'CONTADO')
+            .build());
+        this.fields.push(new FieldBuilder()
             .type(FieldType.ENTITY)
             .name('tipo_pago')
             .label('Método de pago')

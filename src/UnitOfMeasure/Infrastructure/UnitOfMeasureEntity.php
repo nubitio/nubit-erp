@@ -17,6 +17,8 @@ class UnitOfMeasureEntity
         public ?int $unidad_id = null,
         #[ORM\Column(name: 'name', type: 'string')]
         public ?string $name = null,
+        #[ORM\Column(name: 'code', type: 'string')]
+        public ?string $code = null,
         #[ORM\Column(name: 'type_id', type: 'integer')]
         public ?int $type_id = null,
         #[ORM\Column(name: 'ratio', type: 'decimal')]
