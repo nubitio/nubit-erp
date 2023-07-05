@@ -1,21 +1,46 @@
-import {useEffect} from "react";
-import Operation from "../Operation";
 import "./OperationPage.scss";
+import {Constants} from "../../core/common/Constants";
+import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../core/dialog/DxDialog";
+import {DxForm} from "../../core/form/DxForm";
+import {OperationFields} from "./OperationFields";
 
 export const OperationPage = () => {
-    const container = "wrapper"
-    const operation = new Operation(container)
-    let alreadyRender = false;
+    const container = "wrapper";
+    const fields = OperationFields();
 
-    useEffect(() => {
-        if (!alreadyRender) {
-            operation.render()
-            alreadyRender = true
-        }
-    }, [])
+    const API_URL = Constants.API_BASE_URL + 'operations';
+
+    const EVENTS = {
+        ADD: 'operation:add',
+        EDIT: 'operation:edit',
+        DELETE: 'operation:delete',
+        SAVE: 'operation:save',
+        CANCEL: 'operation:cancel',
+        SUCCESS: 'operation:success',
+        LOADING: 'operation:loading',
+    }
 
     return (
         <div id={container}>
-            </div>
+            <DxDataGrid options={{
+                title: 'Rendimiento',
+                url: API_URL,
+                allowAdd: true,
+                allowEdit: true,
+                allowDelete: true,
+                fields: fields,
+                events: EVENTS,
+            }}/>
+            <DxDialog options={{
+                events: EVENTS,
+            }}>
+                <DxForm options={{
+                    url: API_URL,
+                    fields: fields,
+                    events: EVENTS,
+                }}/>
+            </DxDialog>
+        </div>
     );
 };
