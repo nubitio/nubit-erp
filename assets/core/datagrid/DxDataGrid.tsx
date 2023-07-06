@@ -1,13 +1,10 @@
 import './DxDataGrid.scss';
-import {Field} from "../field/Field";
 import {
-    Column,
     ColumnChooser,
     Export,
     FilterRow,
     Item,
     LoadPanel,
-    Lookup,
     MasterDetail,
     Pager,
     Paging,
@@ -20,57 +17,15 @@ import {Button, DataGrid} from "devextreme-react";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {bus} from "../event/EventBus";
 import notify from "devextreme/ui/notify";
-import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
+import {buildColumns, buildToolbar, getIdField} from "./DxDataGridUtils";
+import {DxDetailDataGrid} from "./DxDetailDataGrid";
 
-export const DxDataGrid = ({options, children}: any) => {
+export const DxDataGrid = ({options}: any) => {
     const gridRef = useRef<DataGrid>(null);
     const [data, setData] = useState<CustomStore | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
-    const columns = options.fields.map((field: Field, index) => {
-        let lookup;
-        if (field.type === FieldType.ENTITY) {
-            lookup = <Lookup
-                dataSource={{
-                    store: dxUtils.getDataStore(field.url, field.valueField),
-                    paginate: true,
-                    pageSize: 10
-                }}
-                valueExpr={field.valueField}
-                displayExpr={field.textField}
-            />
-        }
-        if (field.type === FieldType.ENUM) {
-            lookup = <Lookup
-                dataSource={field.data}
-                valueExpr="value"
-                displayExpr="text"
-            />
-        }
-        if (field.type === FieldType.SWITCH) {
-            lookup = <Lookup
-                dataSource={[{value: true, text: 'Si'}, {value: false, text: 'No'}]}
-                valueExpr="value"
-                displayExpr="text"
-            />
-        }
-        return <Column
-            key={index}
-            dataField={field.name}
-            caption={field.label}
-            alignment={field.align}
-            allowSorting={field.sortable}
-            cellRender={field.formatter}
-            visible={field.visible}
-        >
-            {lookup}
-        </Column>
-    });
-
-    const getIdField = () => {
-        return options.fields.find((field: Field) => field.isIdentity)?.name;
-    }
 
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
@@ -107,13 +62,22 @@ export const DxDataGrid = ({options, children}: any) => {
 
     useEffect(() => {
         if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField()));
+            setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
             alreadyLoaded = true;
         }
         if (!alreadySetup) {
             setupObservers();
             alreadySetup = true;
         }
+    }, []);
+
+    const renderDetail = useCallback((e: any) => {
+        let detailUrl = options.detailUrl.replace('{id}', e.key);
+
+        return <DxDetailDataGrid options={{
+            url: detailUrl,
+            fields: options.detailFields,
+        }}/>
     }, []);
 
     return (
@@ -171,6 +135,7 @@ export const DxDataGrid = ({options, children}: any) => {
                                 onClick={onDeleteClick}
                             />
                         </Item>
+                        {buildToolbar(options.toolbar)}
                         <Item
                             location='after'
                             locateInMenu='auto'
@@ -194,10 +159,8 @@ export const DxDataGrid = ({options, children}: any) => {
                         <Item name='columnChooserButton' locateInMenu='auto'/>
                     </Toolbar>
                     <FilterRow visible={true}/>
-                    {columns}
-                    <MasterDetail enabled={children !== undefined}>
-                        {children}
-                    </MasterDetail>
+                    {buildColumns(options.fields)}
+                    <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
                     <Paging defaultPageSize={20}/>
                     <Pager visible={true}/>
                 </DataGrid>

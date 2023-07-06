@@ -62,12 +62,13 @@ export const DxDialog = ({options, children}: any) => {
             visible={visible}
             fullScreen={isXSmall}
             width={width}
+            height={options.height ?? 'auto'}
+            maxHeight={options.maxHeight ?? 600}
             wrapperAttr={{class: `form-popup`}}
-            height='auto'
         >
             <ToolbarItem
                 toolbar='bottom'
-                location='center'
+                location='after'
             >
                 <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
                     <Button

@@ -22,7 +22,7 @@ export const SaleFields = () => {
         .type(FieldType.DATE)
         .name('fecha')
         .label('Fecha')
-        .defaultValue('Today')
+        .defaultValue(new Date())
         .required(true)
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
@@ -33,6 +33,7 @@ export const SaleFields = () => {
         .name('almacen')
         .label('Almacen')
         .url(warehouseUrl)
+        .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
         .valueField('almacen_id')
         .textField('descripcion')
         .visible(false)
@@ -83,7 +84,7 @@ export const SaleFields = () => {
         .valueField('id')
         .textField('name')
         .valueType('number')
-        .defaultValue('1')
+        .defaultValue(1)
         .required(true)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .build());
@@ -157,6 +158,70 @@ export const SaleFields = () => {
         .defaultValue(session['user_id'])
         .visible(false)
         .hidden(true)
+        .build());
+
+    return fields;
+}
+
+export const SaleDetailFields = () => {
+    const fields: Field[] = [];
+
+    fields.push(new FieldBuilder()
+        .isIdentity(true)
+        .visible(false)
+        .type(FieldType.NONE)
+        .name('id')
+        .label('Id')
+        .required(true)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.ENTITY)
+        .name('producto')
+        .label('Producto')
+        .width(100)
+        .url(Constants.API_BASE_URL + 'products')
+        .mode('remote')
+        .valueField('producto_id')
+        .textField('descripcion')
+        //.onSelect((record: any, field: any) => this.onSelectProduct(record, field))
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .required(true)
+        .filterable(false)
+        .sortable(false)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.NUMBER)
+        .name('cantidad')
+        .label('Cantidad')
+        .align('center')
+        .precision(2)
+        //.onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
+        .required(true)
+        .filterable(false)
+        .sortable(false)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.CURRENCY)
+        .name('precio_unitario')
+        .label('Precio')
+        .align('right')
+        //.onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
+        .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+        .required(true)
+        .filterable(false)
+        .sortable(false)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.CURRENCY)
+        .name('precio_total')
+        .label('Total')
+        .align('right')
+        .readonly(true)
+        //.onChange(this.calculateGrandTotal.bind(this))
+        .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+        .required(true)
+        .filterable(false)
+        .sortable(false)
         .build());
 
     return fields;

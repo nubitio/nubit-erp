@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class SaleDetail
 {
     public function __construct(
+        public ?int $id = null,
         #[Ignore]
         #[SerializedName('movimiento')]
         public ?Sale $movimiento = null,
