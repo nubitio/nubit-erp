@@ -3,8 +3,6 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import FilterRule from "../../core/common/FilterRule";
 import {Constants} from "../../core/common/Constants";
-import NumberUtils from "../../core/utils/NumberUtils";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 
 export const CreditNoteFields = () => {
     const fields: Field[] = [];
