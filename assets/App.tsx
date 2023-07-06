@@ -13,7 +13,6 @@ import esMessages from 'devextreme/localization/messages/es.json';
 import {ThemeContext, useThemeContext} from './theme/theme';
 import {loadMessages, locale} from "devextreme/localization";
 
-import './styles/app.scss';
 import './styles/styles.scss';
 import './theme/theme';
 

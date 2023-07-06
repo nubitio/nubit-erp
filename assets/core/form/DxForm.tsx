@@ -1,4 +1,4 @@
-import Form, {SimpleItem} from "devextreme-react/form";
+import Form, {GroupItem, Item, SimpleItem} from "devextreme-react/form";
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
 import {useEffect, useRef} from "react";
@@ -7,6 +7,8 @@ import {bus} from "../event/EventBus";
 import {httpClient} from "../http/HttpClient";
 import {StorageUtils} from "../utils/StorageUtils";
 import {confirm} from "devextreme/ui/dialog";
+import DataGrid, {Editing} from "devextreme-react/data-grid";
+import {buildColumns} from "../datagrid/DxDataGridUtils";
 
 export const DxForm = (props: any) => {
     const formRef = useRef<Form>(null);
@@ -14,7 +16,7 @@ export const DxForm = (props: any) => {
     const isEdit = useRef<boolean>(false);
     const options = props.options;
 
-    const getEditorType = (field: Field) => {
+    const getEditorType = (field: Field): any => {
         switch (field.type) {
             case FieldType.TEXT:
                 return 'dxTextBox';
@@ -52,7 +54,7 @@ export const DxForm = (props: any) => {
         if (field.type === FieldType.ENTITY) {
             editorOptions = {
                 dataSource: {
-                    store: dxUtils.getDataStore(field.url, field.valueField),
+                    store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl),
                     paginate: true,
                     pageSize: 10
                 },
@@ -80,6 +82,13 @@ export const DxForm = (props: any) => {
                     let response = JSON.parse(e.request.response);
                     uploadedFiles.current.push({field: field.name, value: response.id});
                 }
+            }
+        }
+        if (field.type === FieldType.DATE) {
+            editorOptions = {
+                type: 'date',
+                displayFormat: 'dd/MM/yyyy',
+                defaultValue: new Date()
             }
         }
         return <SimpleItem
@@ -177,11 +186,54 @@ export const DxForm = (props: any) => {
         }
     }, []);
 
-    return (
-        <div>
-            <Form ref={formRef}>
+    const renderForm = () => {
+        if (options.detailFields) {
+            let store: any = {
+                type: 'array'
+            }
+            return <Form ref={formRef}>
+                <Item itemType="group" colCount={3}>
+                    <GroupItem>
+                        {fields}
+                    </GroupItem>
+                    <GroupItem colSpan={2}>
+                        <DataGrid
+                            dataSource={store}
+                            showBorders={true}
+                            showRowLines={true}
+                            showColumnLines={true}
+                            columnAutoWidth={true}
+                            onRowInserted={(e: any) => {
+                                e.component.saveEditData();
+                            }}
+                            onRowRemoved={(e: any) => {
+                                e.component.saveEditData();
+                            }}
+                            onRowUpdated={(e: any) => {
+                                e.component.saveEditData();
+                            }}
+                        >
+                            <Editing
+                                mode="cell"
+                                allowUpdating={true}
+                                allowDeleting={true}
+                                allowAdding={true}
+                            />
+                            {buildColumns(options.detailFields, true)}
+                        </DataGrid>
+                    </GroupItem>
+                </Item>
+            </Form>
+        } else {
+            return <Form ref={formRef}>
                 {fields}
             </Form>
+        }
+    }
+
+    return (
+        <div>
+            {renderForm()}
         </div>
     );
 }

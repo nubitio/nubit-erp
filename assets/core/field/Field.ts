@@ -8,11 +8,13 @@ export interface Field {
     label: string;
     width: number | null;
     height: number | null;
-    align: string;
+    align: any;
     sortable: boolean;
+    filterable: boolean;
     validators: any[];
     mode: string;
     url: string;
+    byKeyUrl: string | null;
     textField: string;
     valueField: string;
     valueType: string;

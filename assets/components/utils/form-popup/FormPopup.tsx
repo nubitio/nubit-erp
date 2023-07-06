@@ -60,12 +60,12 @@ export const FormPopup = ({
       >
         <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
           <Button
-            text='Cancelar'
+            text='Cancel'
             stylingMode='contained'
             onClick={onCancelClick}
           />
           <Button
-            text='Guardar'
+            text='Save'
             stylingMode='contained'
             type='default'
             disabled={isSaveDisabled}

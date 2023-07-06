@@ -26,11 +26,14 @@ class DxUtils {
             });
     }
 
-    getDataStore(url: string, idField: string): CustomStore {
+    getDataStore(url: string, idField: string, byKeyUrl: string | null = null): CustomStore {
         return new CustomStore({
             key: idField,
             load: (loadOptions) => this.fetchAll(url, loadOptions),
-            byKey: (key) => this.fetchById(url, key[idField]),
+            byKey: (key) => {
+                let id = typeof key === 'object' ? key[idField] : key;
+                return this.fetchById(byKeyUrl ?? url, id)
+            },
         });
     }
 }

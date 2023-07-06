@@ -1,11 +1,11 @@
-@use '../../../styles/variables.scss' as *;
+@use '../../../variables.scss' as *;
 @use 'sass:math';
 
 .view-wrapper-dashboard {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  padding: $content-padding;
+  padding: var(--content-padding);
   position: relative;
 
   @media only screen and (max-width: 900px) {

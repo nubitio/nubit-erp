@@ -1,4 +1,4 @@
-@use "../../../styles/variables.scss" as *;
+@use "../../../variables.scss" as *;
 
 .dx-texteditor-with-floating-label .status-editor-field .status-indicator {
   align-self: flex-end;
@@ -14,7 +14,7 @@
   .status-indicator {
     display: flex;
     align-self: center;
-    padding-left: $list-padding-left;
+    padding-left: var(--list-padding-left);
   }
 
   .status {

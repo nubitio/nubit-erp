@@ -14,10 +14,12 @@ export class FieldBuilder {
             width: null,
             height: null,
             align: 'left',
-            sortable: false,
+            sortable: true,
+            filterable: true,
             validators: [],
             mode: 'local',
             url: '',
+            byKeyUrl: null,
             textField: '',
             valueField: '',
             valueType: 'string',
@@ -83,6 +85,11 @@ export class FieldBuilder {
         return this;
     }
 
+    filterable(filterable: boolean): FieldBuilder {
+        this._field.filterable = filterable;
+        return this;
+    }
+
     validators(validators: any[]): FieldBuilder {
         this._field.validators = validators;
         return this;
@@ -95,6 +102,11 @@ export class FieldBuilder {
 
     url(url: string): FieldBuilder {
         this._field.url = url;
+        return this;
+    }
+
+    byKeyUrl(byKeyUrl: string): FieldBuilder {
+        this._field.byKeyUrl = byKeyUrl;
         return this;
     }
 
