@@ -9,12 +9,20 @@ import {StorageUtils} from "../utils/StorageUtils";
 import {confirm} from "devextreme/ui/dialog";
 import DataGrid, {Editing} from "devextreme-react/data-grid";
 import {buildColumns} from "../datagrid/DxDataGridUtils";
+import ArrayStore from "devextreme/data/array_store";
+import DataSource from "devextreme/data/data_source";
 
-export const DxForm = (props: any) => {
+export const DxForm = ({options}: any) => {
     const formRef = useRef<Form>(null);
+    const gridRef = useRef<DataGrid>(null);
     const uploadedFiles = useRef<any[]>([]);
     const isEdit = useRef<boolean>(false);
-    const options = props.options;
+    const data = useRef<DataSource>(new DataSource({
+        store: new ArrayStore({
+            data: [],
+        }),
+    }));
+
 
     const getEditorType = (field: Field): any => {
         switch (field.type) {
@@ -59,7 +67,9 @@ export const DxForm = (props: any) => {
                     pageSize: 10
                 },
                 valueExpr: field.valueField,
-                displayExpr: field.textField
+                displayExpr: field.textField,
+                searchEnabled: field.mode === 'remote',
+                wrapItemText: true,
             }
         }
         if (field.type === FieldType.ENUM) {
@@ -91,6 +101,14 @@ export const DxForm = (props: any) => {
                 defaultValue: new Date()
             }
         }
+        editorOptions = {
+            ...editorOptions,
+            readOnly: field.readonly,
+            disabled: field.disabled,
+            onFocusIn: field.onClick,
+            onValueChanged: field.onChange
+        };
+
         return <SimpleItem
             key={index}
             dataField={field.name}
@@ -104,6 +122,9 @@ export const DxForm = (props: any) => {
     const setupObservers = () => {
         bus.on(options.events.ADD, (payload: any) => {
             formRef.current?.instance.resetValues();
+            let store = data.current?.store() as ArrayStore;
+            store.clear();
+            data.current?.reload();
             options.fields.forEach((field: Field) => {
                 if (field.defaultValue) {
                     formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
@@ -162,7 +183,14 @@ export const DxForm = (props: any) => {
                             return;
                         }
                     }
+                    if (field.type === FieldType.DATE) {
+                        formData[field.name] = formData[field.name]?.toISOString();
+                    }
                 });
+
+                if (options.detailFields) {
+                    formData['details'] = gridRef.current?.instance.getDataSource().items();
+                }
 
                 if (isEdit.current) {
                     httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
@@ -188,9 +216,6 @@ export const DxForm = (props: any) => {
 
     const renderForm = () => {
         if (options.detailFields) {
-            let store: any = {
-                type: 'array'
-            }
             return <Form ref={formRef}>
                 <Item itemType="group" colCount={3}>
                     <GroupItem>
@@ -198,11 +223,11 @@ export const DxForm = (props: any) => {
                     </GroupItem>
                     <GroupItem colSpan={2}>
                         <DataGrid
-                            dataSource={store}
+                            ref={gridRef}
+                            dataSource={data.current}
                             showBorders={true}
                             showRowLines={true}
                             showColumnLines={true}
-                            columnAutoWidth={true}
                             onRowInserted={(e: any) => {
                                 e.component.saveEditData();
                             }}
@@ -218,6 +243,7 @@ export const DxForm = (props: any) => {
                                 allowUpdating={true}
                                 allowDeleting={true}
                                 allowAdding={true}
+                                confirmDelete={false}
                             />
                             {buildColumns(options.detailFields, true)}
                         </DataGrid>

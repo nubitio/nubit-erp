@@ -8,6 +8,8 @@ export interface Field {
     label: string;
     width: number | null;
     height: number | null;
+    minWidth: number | undefined;
+    minHeight: number | undefined;
     align: any;
     sortable: boolean;
     filterable: boolean;

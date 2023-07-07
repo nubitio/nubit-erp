@@ -11,9 +11,19 @@ class OptionUtils
      */
     public static function addSort(array $context, SortRule $sort): array
     {
-        $context['filters']['sort'] = $context['filters']['sort'] ?? $sort->field;
-        $context['filters']['order'] = $context['filters']['order'] ?? $sort->order;
+        /** @var array<int, string> $sortRules */
+        $sortRules = $context['filters']['sort'] ?? [];
 
+        $sortRule = [
+            'selector' => $sort->field,
+            'desc' => 'desc' === $sort->order,
+        ];
+
+        $sortRules[] = json_encode($sortRule);
+
+        $context['filters']['sort'] = array_unique($sortRules);
+
+        /* @phpstan-ignore-next-line */
         return $context;
     }
 

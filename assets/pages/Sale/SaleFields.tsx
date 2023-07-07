@@ -6,8 +6,9 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {StorageUtils} from "../../core/utils/StorageUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
-import {dxUtils} from "../../core/common/DxUtils";
 import {ProductDto} from "../../dto/product.dto";
+import {productService} from "../../services/product.service";
+import {SalePage} from "./SalePage";
 
 export const SaleFields = () => {
     const fields: Field[] = [];
@@ -123,6 +124,7 @@ export const SaleFields = () => {
         .defaultValue(0)
         .readonly(true)
         .onClick((e: any) => {
+            console.log('click', e);
             /*let total = this.getTotal();
             let discountPercent = this.form.getField('descuento').numberbox('getValue');
             discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
@@ -180,7 +182,7 @@ export const SaleDetailFields = () => {
         .type(FieldType.ENTITY)
         .name('producto')
         .label('Producto')
-        .width(100)
+        .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
         .mode('remote')
         .valueField('producto_id')
@@ -232,7 +234,7 @@ export const SaleDetailFields = () => {
 
 async function setCellValue(this: any, rowData: any, value: any, currentRowData: any) {
     rowData.cantidad = 1;
-    let product: ProductDto = await dxUtils.getDataStore(Constants.API_BASE_URL + 'products', 'producto_id').byKey(value);
+    let product = await productService.getOne(value, true) as ProductDto;
     rowData.producto = product;
     rowData.precio_unitario = product.precio;
     rowData.precio_total = product.precio;

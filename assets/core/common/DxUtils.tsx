@@ -3,6 +3,8 @@ import {httpClient} from "../http/HttpClient";
 import {lastValueFrom} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 import CustomStore from "devextreme/data/custom_store";
+import DevExpress from "devextreme";
+import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
     private fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
@@ -26,14 +28,18 @@ class DxUtils {
             });
     }
 
-    getDataStore(url: string, idField: string, byKeyUrl: string | null = null): CustomStore {
+    getDataStore(url: string, idField: string, byKeyUrl: string | null = null, defaultSort: SortDescriptor<any>[] = []): CustomStore {
         return new CustomStore({
             key: idField,
-            load: (loadOptions) => this.fetchAll(url, loadOptions),
+            load: (loadOptions) => {
+                let userSort = (loadOptions.sort ?? []) as SortDescriptor<any>[];
+                loadOptions.sort = [...defaultSort, ...userSort];
+                return this.fetchAll(url, loadOptions)
+            },
             byKey: (key) => {
                 let id = typeof key === 'object' ? key[idField] : key;
                 return this.fetchById(byKeyUrl ?? url, id)
-            },
+            }
         });
     }
 }

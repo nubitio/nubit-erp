@@ -31,6 +31,7 @@ export const ProductPage = () => {
                 allowDelete: true,
                 fields: fields,
                 events: EVENTS,
+                sort: [{selector: 'descripcion', desc: false}],
             }}/>
             <DxDialog options={{
                 events: EVENTS,

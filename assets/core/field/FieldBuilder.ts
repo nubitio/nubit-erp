@@ -13,6 +13,8 @@ export class FieldBuilder {
             label: '',
             width: null,
             height: null,
+            minWidth: undefined,
+            minHeight: undefined,
             align: 'left',
             sortable: true,
             filterable: true,
@@ -72,6 +74,16 @@ export class FieldBuilder {
 
     height(height: number): FieldBuilder {
         this._field.height = height;
+        return this;
+    }
+
+    minWidth(minWidth: number): FieldBuilder {
+        this._field.minWidth = minWidth;
+        return this;
+    }
+
+    minHeight(minHeight: number): FieldBuilder {
+        this._field.minHeight = minHeight;
         return this;
     }
 
@@ -185,12 +197,12 @@ export class FieldBuilder {
         return this;
     }
 
-    precision(value:number): FieldBuilder {
+    precision(value: number): FieldBuilder {
         this._field.precision = value;
         return this;
     }
 
-    accept(value:any): FieldBuilder {
+    accept(value: any): FieldBuilder {
         this._field.accept = value;
         return this;
     }

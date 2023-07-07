@@ -18,7 +18,7 @@ export const buildToolbar = (items: any[]) => {
     });
 }
 
-export const buildLookup = (field: Field) => {
+const buildLookup = (field: Field) => {
     if (!field.filterable) return;
     let lookup;
     if (field.type === FieldType.ENTITY) {
@@ -49,11 +49,25 @@ export const buildLookup = (field: Field) => {
     return lookup;
 }
 
+const buildEditorOptions = (field: Field) => {
+    let editorOptions: any = {};
+    if (field.type === FieldType.ENTITY) {
+        editorOptions = {
+            dropDownOptions: {
+                minWidth: 200
+            },
+            wrapItemText: true,
+        }
+    }
+    return editorOptions;
+}
+
 export const buildColumns = (fields: Field[], forceLookup = false) => {
     return fields.map((field: Field, index) => {
         let clone = {...field};
         if (!field.visible) return null;
         if (forceLookup) clone.filterable = true;
+        let editorOptions = buildEditorOptions(clone);
         return <Column
             key={index}
             dataField={field.name}
@@ -63,6 +77,8 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             allowFiltering={field.filterable}
             cellRender={field.formatter}
             setCellValue={field.onChange}
+            minWidth={field.minWidth}
+            editorOptions={editorOptions}
         >
             {buildLookup(clone)}
         </Column>

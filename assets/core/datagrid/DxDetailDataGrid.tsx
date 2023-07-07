@@ -3,6 +3,7 @@ import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {useEffect, useState} from "react";
 import {buildColumns, getIdField} from "./DxDataGridUtils";
+import DataSource from "devextreme/data/data_source";
 
 export const DxDetailDataGrid = ({options}: any) => {
     const [data, setData] = useState<CustomStore | null>(null);
