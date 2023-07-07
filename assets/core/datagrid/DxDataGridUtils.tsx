@@ -62,6 +62,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             allowSorting={field.sortable}
             allowFiltering={field.filterable}
             cellRender={field.formatter}
+            setCellValue={field.onChange}
         >
             {buildLookup(clone)}
         </Column>

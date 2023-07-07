@@ -6,6 +6,8 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {StorageUtils} from "../../core/utils/StorageUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
+import {dxUtils} from "../../core/common/DxUtils";
+import {ProductDto} from "../../dto/product.dto";
 
 export const SaleFields = () => {
     const fields: Field[] = [];
@@ -184,6 +186,7 @@ export const SaleDetailFields = () => {
         .valueField('producto_id')
         .textField('descripcion')
         //.onSelect((record: any, field: any) => this.onSelectProduct(record, field))
+        .onChange(setCellValue)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
         .required(true)
         .filterable(false)
@@ -225,4 +228,13 @@ export const SaleDetailFields = () => {
         .build());
 
     return fields;
+}
+
+async function setCellValue(this: any, rowData: any, value: any, currentRowData: any) {
+    rowData.cantidad = 1;
+    let product: ProductDto = await dxUtils.getDataStore(Constants.API_BASE_URL + 'products', 'producto_id').byKey(value);
+    rowData.producto = product;
+    rowData.precio_unitario = product.precio;
+    rowData.precio_total = product.precio;
+    this.defaultSetCellValue(rowData, product, currentRowData);
 }
