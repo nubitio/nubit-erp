@@ -64,10 +64,13 @@ export const SalePage = () => {
                 detailUrl: API_URL + '/{id}/details',
                 detailFields: detailFields,
                 events: EVENTS,
+                sort: [
+                    {selector: 'date_created', desc: true}
+                ]
             }}/>
             <DxDialog options={{
-                width: 800,
-                height: 600,
+                width: 900,
+                height: 700,
                 events: EVENTS
             }}>
                 <DxForm options={{

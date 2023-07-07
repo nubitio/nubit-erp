@@ -21,6 +21,7 @@ import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
+import DataSource from "devextreme/data/data_source";
 
 export const DxDataGrid = ({options}: any) => {
     const gridRef = useRef<DataGrid>(null);
@@ -62,7 +63,7 @@ export const DxDataGrid = ({options}: any) => {
 
     useEffect(() => {
         if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
+            setData(dxUtils.getDataStore(options.url, getIdField(options.fields), null, options.sort ?? []));
             alreadyLoaded = true;
         }
         if (!alreadySetup) {
@@ -78,7 +79,7 @@ export const DxDataGrid = ({options}: any) => {
             url: detailUrl,
             fields: options.detailFields,
         }}/>
-    }, []);
+    }, [options.detailUrl, options.detailFields]);
 
     return (
         <div className='view datagrid-list'>

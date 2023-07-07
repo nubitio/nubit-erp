@@ -19,11 +19,14 @@ class ProductService {
             });
     }
 
-    getOne(id: string): Promise<ProductDto> {
-        return lastValueFrom(httpClient.get<ProductDto>(`${Constants.API_BASE_URL}products/${id}`))
-            .then((response: ApiResponse<ProductDto>) => {
-                return response.data;
-            });
+    getOne(id: string, asPromise = false) {
+        if (asPromise) {
+            return lastValueFrom(httpClient.get<ProductDto>(`${Constants.API_BASE_URL}products/${id}`))
+                .then((response: ApiResponse<ProductDto>) => {
+                    return response.data;
+                });
+        }
+        return httpClient.get<ProductDto>(`${Constants.API_BASE_URL}products/${id}`);
     }
 
     getProducts(warehouseId: String) {

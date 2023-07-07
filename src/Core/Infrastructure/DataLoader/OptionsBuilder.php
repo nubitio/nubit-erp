@@ -22,16 +22,21 @@ class OptionsBuilder
         /** @var string|array<int, string>|null $sortFields */
         $sortFields = $context['filters']['sort'] ?? null;
         $strSortFields = '';
+        $strOrderFields = '';
         if (is_array($sortFields)) {
             foreach ($sortFields as $sortField) {
                 /** @var array<string, string> $sortRule */
                 $sortRule = json_decode($sortField, true);
                 $strSortFields .= $sortRule['selector'].',';
+                $strOrderFields .= $sortRule['desc'] ? 'desc,' : 'asc,';
             }
             $sortFields = $strSortFields ? substr($strSortFields, 0, -1) : null;
         }
         /** @var string|null $orderFields */
         $orderFields = $context['filters']['order'] ?? null;
+        if (!empty($strOrderFields)) {
+            $orderFields = substr($strOrderFields, 0, -1);
+        }
         $sortArray = $sortFields ? explode(',', $sortFields) : [];
         $orderArray = $orderFields ? explode(',', strval($orderFields)) : [];
         $sortRules = array_map(null, $sortArray, $orderArray);
@@ -60,6 +65,18 @@ class OptionsBuilder
                 'field' => $filters[0],
                 'op' => $filters[1],
                 'value' => $filters[2],
+            ];
+        }
+
+        $searchOperation = $context['filters']['searchOperation'] ?? null;
+        $searchExpression = $context['filters']['searchExpr'] ?? null;
+        $searchValue = $context['filters']['searchValue'] ?? null;
+
+        if ($searchOperation && $searchExpression && $searchValue) {
+            $filterRules[] = [
+                'field' => $searchExpression,
+                'op' => $searchOperation,
+                'value' => $searchValue,
             ];
         }
 
