@@ -4,45 +4,60 @@ namespace App\VoucherSeries\Infrastructure;
 
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
-use App\VoucherSeries\Domain\VoucherSeries;
+use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
-use Doctrine\DBAL\Connection;
+use App\VoucherSeries\Domain\VoucherSeries;
 use Doctrine\ORM\EntityManagerInterface;
 
-class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
+readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
 {
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+    )
     {
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    public function getAll(array $filter = null): array
+    /** @inheritdoc */
+    public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('vw_local_comprobante', 'local', filter: $filter);
+        return $this->dataLoader->load($options);
     }
 
-    public function insert(VoucherSeries $voucherSeries): void
+    public function getOne(int $id): ?VoucherSeries
+    {
+        $entity = $this->entityManager->find(VoucherSeriesEntity::class, $id);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, VoucherSeries::class);
+    }
+
+    public function insert(VoucherSeries $voucherSeries): VoucherSeries
     {
         $entity = DataMapper::map($voucherSeries, VoucherSeriesEntity::class);
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, VoucherSeries::class);
     }
 
-    public function update(VoucherSeries $voucherSeries): void
+    public function update(VoucherSeries $voucherSeries): VoucherSeries
     {
         $entity = $this->entityManager->find(VoucherSeriesEntity::class, $voucherSeries->id);
 
         if (!$entity) {
-            throw new ServiceException('La serie de comprobante no existe');
+            throw new ServiceException('Entity not found');
         }
 
-        DataMapper::map($voucherSeries, $entity);
+        $entity = DataMapper::map($voucherSeries, $entity);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, VoucherSeries::class);
     }
 
     public function delete(int $id): void

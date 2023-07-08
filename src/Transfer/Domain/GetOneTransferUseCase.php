@@ -2,7 +2,7 @@
 
 namespace App\Transfer\Domain;
 
-class TransferUpdateUseCase
+class GetOneTransferUseCase
 {
     private TransferRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class TransferUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(Transfer $transfer): void
+    public function __invoke(string $id): ?Transfer
     {
-        $this->repository->update($transfer);
+        return $this->repository->getOne($id);
     }
 }

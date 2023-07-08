@@ -2,7 +2,7 @@
 
 namespace App\VoucherSeries\Domain;
 
-class VoucherSeriesCreateUseCase
+class GetOneVoucherSeriesUseCase
 {
     private VoucherSeriesRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class VoucherSeriesCreateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherSeries $voucherSeries): void
+    public function __invoke(int $id): ?VoucherSeries
     {
-        $this->repository->insert($voucherSeries);
+        return $this->repository->getOne($id);
     }
 }
