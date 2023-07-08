@@ -14,16 +14,34 @@ import {
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {bus} from "../event/EventBus";
 import notify from "devextreme/ui/notify";
 import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
-import DataSource from "devextreme/data/data_source";
 
-export const DxDataGrid = ({options}: any) => {
+export interface DxDataGridOptions {
+    title: string;
+    url: string;
+    detailUrl?: string;
+    columns?: any[];
+    toolbar?: any[];
+    events?: any;
+    fields?: any;
+    detailFields?: any;
+    allowAdd?: boolean;
+    allowEdit?: boolean;
+    allowDelete?: boolean;
+    sort?: any[];
+}
+
+export interface DxDataGridEvents {
+    sayHi: () => void;
+}
+
+export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
     const gridRef = useRef<DataGrid>(null);
     const [data, setData] = useState<CustomStore | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
@@ -73,13 +91,21 @@ export const DxDataGrid = ({options}: any) => {
     }, []);
 
     const renderDetail = useCallback((e: any) => {
-        let detailUrl = options.detailUrl.replace('{id}', e.key);
+        let detailUrl = options.detailUrl?.replace('{id}', e.key);
 
         return <DxDetailDataGrid options={{
             url: detailUrl,
             fields: options.detailFields,
         }}/>
     }, [options.detailUrl, options.detailFields]);
+
+    const sayHi = () => {
+        console.log('Hi');
+    }
+
+    useImperativeHandle(ref, () => ({
+        sayHi
+    }));
 
     return (
         <div className='view datagrid-list'>
@@ -168,4 +194,4 @@ export const DxDataGrid = ({options}: any) => {
             </div>
         </div>
     );
-}
+});

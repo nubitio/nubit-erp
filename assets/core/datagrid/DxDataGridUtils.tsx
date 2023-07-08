@@ -4,7 +4,7 @@ import {Column, Item, Lookup} from "devextreme-react/data-grid";
 import {dxUtils} from "../common/DxUtils";
 import {Button} from "devextreme-react";
 
-export const buildToolbar = (items: any[]) => {
+export const buildToolbar = (items: any[] = []) => {
     return items?.map((item: any, index) => {
         return <Item location='after' locateInMenu='auto' key={index}>
             <Button

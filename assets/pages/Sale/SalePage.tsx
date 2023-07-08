@@ -1,14 +1,16 @@
 import "./SalePage.scss";
-import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
 import {DxForm} from "../../core/form/DxForm";
 import {DxDialog} from "../../core/dialog/DxDialog";
 import {Constants} from "../../core/common/Constants";
 import {SaleDetailFields, SaleFields} from "./SaleFields";
+import {useRef} from "react";
 
 export const SalePage = () => {
     const container = "wrapper";
     const fields = SaleFields();
     const detailFields = SaleDetailFields();
+    const gridRef = useRef<DxDataGridEvents>(null);
 
     const API_URL = Constants.API_BASE_URL + 'sales';
 
@@ -49,25 +51,27 @@ export const SalePage = () => {
             icon: 'fas fa-file-invoice fa-1x text-info',
             onClick: () => {
                 console.log('Generar comprobante');
+                gridRef.current?.sayHi();
             }
         }
     ]
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Ventas',
-                url: API_URL,
-                fields: fields,
-                allowAdd: true,
-                toolbar: toolbar,
-                detailUrl: API_URL + '/{id}/details',
-                detailFields: detailFields,
-                events: EVENTS,
-                sort: [
+            <DxDataGrid
+                ref={gridRef}
+                title={'Ventas'}
+                url={API_URL}
+                fields={fields}
+                allowAdd={true}
+                toolbar={toolbar}
+                detailUrl={API_URL + '/{id}/details'}
+                detailFields={detailFields}
+                events={EVENTS}
+                sort={[
                     {selector: 'date_created', desc: true}
-                ]
-            }}/>
+                ]}
+            />
             <DxDialog options={{
                 width: 900,
                 height: 700,
