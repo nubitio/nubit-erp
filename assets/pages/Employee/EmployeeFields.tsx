@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {Constants} from "../../core/common/Constants";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const EmployeeFields = () => {
     const fields: Field[] = [];
@@ -58,7 +59,7 @@ export const EmployeeFields = () => {
         .type(FieldType.DATE)
         .name('birthdate')
         .label('Fecha de nacimiento')
-        /*.formatter(SharedUtils.dateFormatter)*/
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
@@ -74,7 +75,7 @@ export const EmployeeFields = () => {
         .type(FieldType.DATE)
         .name('hire_date')
         .label('Fecha de contratación')
-        /*.formatter(SharedUtils.dateFormatter)*/
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)

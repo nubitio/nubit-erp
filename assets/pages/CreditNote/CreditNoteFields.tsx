@@ -3,6 +3,8 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import FilterRule from "../../core/common/FilterRule";
 import {Constants} from "../../core/common/Constants";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import {SharedUtils} from "../../core/utils/SharedUtils";
 
 export const CreditNoteFields = () => {
     const fields: Field[] = [];
@@ -36,7 +38,7 @@ export const CreditNoteFields = () => {
         .type(FieldType.DATE)
         .name('fecha')
         .label('Fecha')
-        /*.formatter(SharedUtils.dateFormatter)*/
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .required(true)
         .build());
     fields.push(new FieldBuilder()

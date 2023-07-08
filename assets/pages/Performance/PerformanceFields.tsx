@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const PerformanceFields = () => {
     const fields: Field[] = [];
@@ -82,7 +83,7 @@ export const PerformanceFields = () => {
         .name('date')
         .label('Fecha')
         .defaultValue('Today')
-        .formatter(SharedUtils.dateFormatter)
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TIME_SPINNER)

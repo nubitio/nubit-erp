@@ -1,0 +1,41 @@
+<?php
+
+namespace App\VoucherSeries\Api;
+
+use ApiPlatform\Metadata\CollectionOperationInterface;
+use ApiPlatform\Metadata\Operation;
+use App\Core\Domain\Api\ApiProviderInterface;
+use App\Core\Infrastructure\DataLoader\OptionsBuilder;
+use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\SortRule;
+use App\VoucherSeries\Domain\VoucherSeries;
+use App\VoucherSeries\Domain\GetAllVoucherSeriesUseCase;
+use App\VoucherSeries\Domain\GetOneVoucherSeriesUseCase;
+use App\VoucherSeries\Infrastructure\VoucherSeriesEntity;
+
+/**
+ * @implements ApiProviderInterface<VoucherSeries>
+ */
+readonly class VoucherSeriesProvider implements ApiProviderInterface
+{
+    public function __construct(
+        private GetAllVoucherSeriesUseCase $getAllUseCase,
+        private GetOneVoucherSeriesUseCase $getOneUseCase,
+    )
+    {
+    }
+
+    /** inheritdoc */
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    {
+        if ($operation instanceof CollectionOperationInterface) {
+            $context = OptionUtils::addSort($context, new SortRule('id', 'asc'));
+            $options = OptionsBuilder::build($context, VoucherSeriesEntity::class, VoucherSeries::class);
+
+            return $this->getAllUseCase->__invoke($options);
+        }
+
+        return $this->getOneUseCase->__invoke(intval($uriVariables['id']));
+    }
+}

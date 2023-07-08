@@ -2,18 +2,22 @@
 
 namespace App\Transfer\Domain;
 
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Infrastructure\DataLoader\Options;
+
 interface TransferRepositoryInterface
 {
     /**
-     * @param array<int, array<string, mixed>>|null $filter
-     *
-     * @return array<string, mixed>
+     * @param Options $options
+     * @return PaginatorInterface<Transfer>
      */
-    public function getAll(array $filter = null): array;
+    public function getAll(Options $options): PaginatorInterface;
 
-    public function insert(Transfer $transfer): void;
+    public function getOne(string $id): ?Transfer;
 
-    public function update(Transfer $transfer): void;
+    public function insert(Transfer $transfer): Transfer;
+
+    public function update(Transfer $transfer): Transfer;
 
     public function delete(string $id): void;
 }

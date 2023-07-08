@@ -2,6 +2,8 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import NumberUtils from "../../core/utils/NumberUtils";
+import {SharedUtils} from "../../core/utils/SharedUtils";
 
 export const InvoiceFields = () => {
     const fields: Field[] = [];
@@ -18,7 +20,7 @@ export const InvoiceFields = () => {
         .type(FieldType.DATE)
         .name('fecha')
         .label('Fecha')
-        /*.formatter(SharedUtils.dateFormatter)*/
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
@@ -53,7 +55,7 @@ export const InvoiceFields = () => {
         .name('total')
         .label('Total')
         .align('right')
-        /*.formatter((value: number) => NumberUtils.formatCurrency(value))*/
+        .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
@@ -65,7 +67,7 @@ export const InvoiceFields = () => {
         .type(FieldType.SWITCH)
         .name('voided')
         .label('Anulado')
-        /*.formatter(SharedUtils.voidedFormatter)*/
+        .formatter(SharedUtils.dxVoidedFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()
@@ -77,7 +79,7 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('envio_sunat')
         .label('Envio sunat')
-        /*.formatter(SharedUtils.billStatusFormatter)*/
+        .formatter(SharedUtils.dxBillStatusFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()

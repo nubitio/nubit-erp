@@ -2,7 +2,7 @@
 
 namespace App\Transfer\Domain;
 
-class TransferDeleteUseCase
+class DeleteTransferUseCase
 {
     private TransferRepositoryInterface $repository;
 

@@ -124,6 +124,25 @@ export class SharedUtils {
         }
     }
 
+    static dxBillStatusFormatter(cell: ColumnCellTemplateData) {
+        if (cell.data.envio_sunat === null) {
+            cell.data.envio_sunat = -1
+        } else {
+            cell.data.envio_sunat = Number(cell.data.envio_sunat);
+        }
+        if (cell.data.envio_sunat === -1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'PENDIENTE');
+        } else if (cell.data.envio_sunat === 0) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-succes'}, 'ENVIADO');
+        } else if (cell.data.envio_sunat < 2000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-warning'}, 'ERRONEO');
+        } else if (cell.data.envio_sunat >= 2000 && cell.data.envio_sunat < 4000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'RECHAZADO');
+        } else if (cell.data.envio_sunat >= 4000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-info'}, 'OBSERVADO');
+        }
+    }
+
     static voidedFormatter(value: number) {
         if (value === 1) {
             return '<span class="badge rounded-pill bg-success">NO</span>';
@@ -131,6 +150,16 @@ export class SharedUtils {
             return '<span class="badge rounded-pill bg-danger">SI</span>';
         } else {
             return '<span class="badge rounded-pill bg-warning">CON ERROR</span>';
+        }
+    }
+
+    static dxVoidedFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.data.voided) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'NO');
+        }if (Number(cell.data.voided) === 2) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'SI');
+        } else {
+            return React.createElement('span', {className: 'badge rounded-pill bg-warning'}, 'CON ERROR');
         }
     }
 

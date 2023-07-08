@@ -2,7 +2,7 @@
 
 namespace App\VoucherSeries\Domain;
 
-class VoucherSeriesUpdateUseCase
+class DeleteVoucherSeriesUseCase
 {
     private VoucherSeriesRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class VoucherSeriesUpdateUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(VoucherSeries $voucherSeries): void
+    public function __invoke(int $id): void
     {
-        $this->repository->update($voucherSeries);
+        $this->repository->delete($id);
     }
 }
