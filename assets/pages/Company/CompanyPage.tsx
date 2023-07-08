@@ -23,15 +23,15 @@ export const CompanyPage = () => {
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Empresas',
-                url: API_URL,
-                allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
-                fields: fields,
-                events: EVENTS,
-            }}/>
+            <DxDataGrid
+                title={'Empresas'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
             <DxDialog options={{
                 events: EVENTS,
             }}>

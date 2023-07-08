@@ -11,15 +11,15 @@ export const CategoryPage = () => {
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Categorias',
-                url: Category.API_URL,
-                allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
-                fields: fields,
-                events: Category.EVENTS,
-            }}/>
+            <DxDataGrid
+                title={'Categorias'}
+                url={Category.API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={Category.EVENTS}
+            />
             <DxDialog options={{
                 events: Category.EVENTS,
             }}>
