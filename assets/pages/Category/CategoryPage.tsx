@@ -20,14 +20,14 @@ export const CategoryPage = () => {
                 fields={fields}
                 events={Category.EVENTS}
             />
-            <DxDialog options={{
-                events: Category.EVENTS,
-            }}>
-                <DxForm options={{
-                    url: Category.API_URL,
-                    fields: fields,
-                    events: Category.EVENTS,
-                }}/>
+            <DxDialog
+                events={Category.EVENTS}
+            >
+                <DxForm
+                    url={Category.API_URL}
+                    fields={fields}
+                    events={Category.EVENTS}
+                />
             </DxDialog>
         </div>
     );

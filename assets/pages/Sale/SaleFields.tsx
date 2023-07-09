@@ -8,9 +8,18 @@ import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {ProductDto} from "../../dto/product.dto";
 import {productService} from "../../services/product.service";
-import {SalePage} from "./SalePage";
+import {GetStockUseCase} from "../../common/GetStockUseCase";
+import notify from "devextreme/ui/notify";
+import {DxFormEvents} from "../../core/form/DxForm";
+import {httpClient} from "../../core/http/HttpClient";
+import {PriceListItemDto} from "../../dto/PriceListItemDto";
+import {lastValueFrom} from "rxjs";
+import {DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
+import {bus} from "../../core/event/EventBus";
 
-export const SaleFields = () => {
+let priceList: PriceListItemDto[] = [];
+
+export const SaleFields = (form: DxFormEvents | null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -55,9 +64,9 @@ export const SaleFields = () => {
         .defaultValue('00000000')
         .required(true)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.razon_social)
-        .onSelect((record: any) => {
-            if (record['price_list']) {
-                //this.form.getField('tarifa').combobox('setValue', record['price_list']['id']);
+        .onSelect((event: any) => {
+            if (event.itemData.price_list) {
+                form?.setFieldValue('tarifa', event.itemData.price_list.id);
             }
         })
         .build());
@@ -69,14 +78,20 @@ export const SaleFields = () => {
         .valueField('id')
         .textField('name')
         .visible(false)
-        .onSelect((record: any) => {
-            /*bus.emit(Sale.EVENTS.LOADING, true);
-            httpClient.get<PriceListItemDto[]>(`price-list/${record.id}/get`)
-                .subscribe((response) => {
-                    this.priceList = response.data;
-                    this.updatePricesByPriceList();
-                })
-                .add(() => bus.emit(Sale.EVENTS.LOADING, false));*/
+        .onChange(async (event: any) => {
+            priceList = await lastValueFrom(
+                httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`)
+            ).then((response) => response.data);
+            let detailData = form?.getDetailData() ?? [];
+            detailData.forEach((item: any) => {
+                let actualPrice = item.precio_unitario;
+                let priceItem = priceList.find((p) => p.id === item.producto.producto_id);
+                if (priceItem && priceItem.price !== actualPrice) {
+                    item.precio_unitario = Number(priceItem.price);
+                    item.precio_total = item.cantidad * priceItem.price;
+                    form?.reloadDetailData();
+                }
+            });
         })
         .build());
     fields.push(new FieldBuilder()
@@ -124,13 +139,14 @@ export const SaleFields = () => {
         .defaultValue(0)
         .readonly(true)
         .onClick((e: any) => {
-            console.log('click', e);
-            /*let total = this.getTotal();
-            let discountPercent = this.form.getField('descuento').numberbox('getValue');
+            let total = form?.getFieldValue('total');
+            let discountPercent = form?.getFieldValue('descuento');
             discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
-            bus.emit(DiscountDialogEvent.OPEN, {total, discountPercent});*/
+            bus.emit(DiscountDialogEvent.OPEN, {total, discountPercent});
         })
-        //.onChange(this.calculateGrandTotal.bind(this))
+        .onChange((e: any) => {
+            setTotal(form);
+        })
         .visible(false)
         .build());
     fields.push(new FieldBuilder()
@@ -167,7 +183,7 @@ export const SaleFields = () => {
     return fields;
 }
 
-export const SaleDetailFields = () => {
+export const SaleDetailFields = (form: DxFormEvents | null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -187,8 +203,21 @@ export const SaleDetailFields = () => {
         .mode('remote')
         .valueField('producto_id')
         .textField('descripcion')
-        //.onSelect((record: any, field: any) => this.onSelectProduct(record, field))
-        .onChange(setCellValue)
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            let product = await productService.getOne(value, true) as ProductDto;
+            let price = product.precio;
+            if (priceList) {
+                let priceItem = priceList.find((item) => item.id === value);
+                if (priceItem) {
+                    price = priceItem.price;
+                }
+            }
+            row.cantidad = 1;
+            row.producto = product;
+            row.precio_unitario = price;
+            row.precio_total = price;
+            this.defaultSetCellValue(row, product, currentRow);
+        })
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
         .required(true)
         .filterable(false)
@@ -200,7 +229,29 @@ export const SaleDetailFields = () => {
         .label('Cantidad')
         .align('center')
         .precision(2)
-        //.onChange((newValue: number, oldValue: number, field: any) => this.onQuantityChange(newValue, oldValue, field))
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            if (value === '') return;
+            row.precio_total = currentRow.precio_unitario * value;
+            if (value > 0) {
+                let stockData = await GetStockUseCase(currentRow.producto.producto_id);
+                notify({
+                    message: 'Stock actual: ' + stockData.stock,
+                    type: 'info',
+                    duration: 2000
+                }, {position: 'top right'});
+                if (value > stockData.stock) {
+                    notify({
+                        message: 'No hay stock suficiente',
+                        type: 'error',
+                        duration: 2000
+                    }, {position: 'top right'});
+                    value = '';
+                    row.cantidad = '';
+                    row.precio_total = '';
+                }
+            }
+            this.defaultSetCellValue(row, value, currentRow);
+        })
         .required(true)
         .filterable(false)
         .sortable(false)
@@ -210,7 +261,11 @@ export const SaleDetailFields = () => {
         .name('precio_unitario')
         .label('Precio')
         .align('right')
-        //.onChange((newValue: number, oldValue: number, field: Field) => this.onPriceChange(newValue, oldValue, field))
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            if (value === '') return;
+            row.precio_total = currentRow.cantidad * value;
+            this.defaultSetCellValue(row, value, currentRow);
+        })
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .required(true)
         .filterable(false)
@@ -222,7 +277,11 @@ export const SaleDetailFields = () => {
         .label('Total')
         .align('right')
         .readonly(true)
-        //.onChange(this.calculateGrandTotal.bind(this))
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            if (value === '') return;
+            this.defaultSetCellValue(row, value, currentRow);
+            setTotal(form);
+        })
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .required(true)
         .filterable(false)
@@ -232,11 +291,20 @@ export const SaleDetailFields = () => {
     return fields;
 }
 
-async function setCellValue(this: any, rowData: any, value: any, currentRowData: any) {
-    rowData.cantidad = 1;
-    let product = await productService.getOne(value, true) as ProductDto;
-    rowData.producto = product;
-    rowData.precio_unitario = product.precio;
-    rowData.precio_total = product.precio;
-    this.defaultSetCellValue(rowData, product, currentRowData);
+const getSubTotal = (form: DxFormEvents | null) => {
+    let rows = form?.getDetailData() ?? [];
+    let total = 0;
+    rows.forEach((row) => {
+        total += row.precio_total;
+    });
+    return total;
+}
+
+const setTotal = (form: DxFormEvents | null) => {
+    let subTotal = getSubTotal(form);
+    let discountPercent = Number(form?.getFieldValue('descuento') ?? 0);
+    let discount = subTotal * (discountPercent / 100);
+    let total = subTotal - discount;
+
+    form?.setFieldValue('total', total);
 }

@@ -32,14 +32,14 @@ export const CompanyPage = () => {
                 fields={fields}
                 events={EVENTS}
             />
-            <DxDialog options={{
-                events: EVENTS,
-            }}>
-                <DxForm options={{
-                    url: API_URL,
-                    fields: fields,
-                    events: EVENTS,
-                }}/>
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
             </DxDialog>
         </div>
     );

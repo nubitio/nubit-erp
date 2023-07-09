@@ -1,7 +1,7 @@
 import Form, {GroupItem, Item, SimpleItem} from "devextreme-react/form";
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
-import {useEffect, useRef} from "react";
+import {forwardRef, useEffect, useImperativeHandle, useRef} from "react";
 import {dxUtils} from "../common/DxUtils";
 import {bus} from "../event/EventBus";
 import {httpClient} from "../http/HttpClient";
@@ -12,7 +12,22 @@ import {buildColumns} from "../datagrid/DxDataGridUtils";
 import ArrayStore from "devextreme/data/array_store";
 import DataSource from "devextreme/data/data_source";
 
-export const DxForm = ({options}: any) => {
+export interface DxFormOptions {
+    url: string;
+    fields: Field[];
+    detailFields?: Field[];
+    events?: any;
+}
+
+export interface DxFormEvents {
+    getFormData: () => any;
+    getFieldValue: (name: string) => any;
+    setFieldValue: (name: string, value: any) => void;
+    getDetailData: () => any;
+    reloadDetailData: () => void;
+}
+
+export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => {
     const formRef = useRef<Form>(null);
     const gridRef = useRef<DataGrid>(null);
     const uploadedFiles = useRef<any[]>([]);
@@ -53,74 +68,85 @@ export const DxForm = ({options}: any) => {
     }
 
     const getIdField = () => {
-        return options.fields.find(field => field.isIdentity)?.name;
+        return options.fields.find(field => field.isIdentity)?.name ?? '';
     }
 
-    const fields = options.fields.map((field: Field, index) => {
-        if (field.type === FieldType.NONE || field.hidden) return null;
-        let editorOptions: any = {};
-        if (field.type === FieldType.ENTITY) {
-            editorOptions = {
-                dataSource: {
-                    store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl),
-                    paginate: true,
-                    pageSize: 10
-                },
-                valueExpr: field.valueField,
-                displayExpr: field.textField,
-                searchEnabled: field.mode === 'remote',
-                wrapItemText: true,
-            }
-        }
-        if (field.type === FieldType.ENUM) {
-            editorOptions = {
-                dataSource: field.data,
-                valueExpr: 'value',
-                displayExpr: 'text'
-            }
-        }
-        if (field.type === FieldType.FILE) {
-            editorOptions = {
-                accept: field.accept,
-                uploadUrl: field.url,
-                name: 'file',
-                onBeforeSend: (e: any) => {
-                    let token = StorageUtils.getItem('token');
-                    e.request.setRequestHeader('Authorization', `Bearer ${token}`)
-                },
-                onUploaded: (e: any) => {
-                    let response = JSON.parse(e.request.response);
-                    uploadedFiles.current.push({field: field.name, value: response.id});
+    const buildFields = (fields: Field[]) => {
+        return fields.map((field: Field, index) => {
+            if (field.type === FieldType.NONE || field.hidden) return null;
+            let editorOptions: any = {};
+            if (field.type === FieldType.ENTITY) {
+                editorOptions = {
+                    dataSource: {
+                        store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl),
+                        paginate: true,
+                        pageSize: 10
+                    },
+                    valueExpr: field.valueField,
+                    displayExpr: field.textField,
+                    searchEnabled: field.mode === 'remote',
+                    wrapItemText: true,
                 }
             }
-        }
-        if (field.type === FieldType.DATE) {
-            editorOptions = {
-                type: 'date',
-                displayFormat: 'dd/MM/yyyy',
-                defaultValue: new Date()
+            if (field.type === FieldType.ENUM) {
+                editorOptions = {
+                    dataSource: field.data,
+                    valueExpr: 'value',
+                    displayExpr: 'text'
+                }
             }
-        }
-        editorOptions = {
-            ...editorOptions,
-            readOnly: field.readonly,
-            disabled: field.disabled,
-            onFocusIn: field.onClick,
-            onValueChanged: field.onChange
-        };
+            if (field.type === FieldType.FILE) {
+                editorOptions = {
+                    accept: field.accept,
+                    uploadUrl: field.url,
+                    name: 'file',
+                    onBeforeSend: (e: any) => {
+                        let token = StorageUtils.getItem('token');
+                        e.request.setRequestHeader('Authorization', `Bearer ${token}`)
+                    },
+                    onUploaded: (e: any) => {
+                        let response = JSON.parse(e.request.response);
+                        uploadedFiles.current.push({field: field.name, value: response.id});
+                    }
+                }
+            }
+            if (field.type === FieldType.DATE) {
+                editorOptions = {
+                    type: 'date',
+                    displayFormat: 'dd/MM/yyyy',
+                    defaultValue: new Date(),
+                }
+            }
+            if (field.type === FieldType.CURRENCY) {
+                editorOptions = {
+                    format: {
+                        style: 'currency',
+                        currency: 'PEN'
+                    }
+                }
+            }
+            editorOptions = {
+                ...editorOptions,
+                readOnly: field.readonly,
+                disabled: field.disabled,
+                onFocusIn: field.onClick,
+                onValueChanged: field.onChange,
+                onItemClick: field.onSelect
+            };
 
-        return <SimpleItem
-            key={index}
-            dataField={field.name}
-            editorType={getEditorType(field)}
-            label={{text: field.label}}
-            isRequired={field.required}
-            editorOptions={editorOptions}
-        />
-    });
+            return <SimpleItem
+                key={index}
+                dataField={field.name}
+                editorType={getEditorType(field)}
+                label={{text: field.label}}
+                isRequired={field.required}
+                editorOptions={editorOptions}
+            />
+        });
+    }
 
     const setupObservers = () => {
-        bus.on(options.events.ADD, (payload: any) => {
+        bus.on(options.events.ADD, () => {
             formRef.current?.instance.resetValues();
             let store = data.current?.store() as ArrayStore;
             store.clear();
@@ -214,12 +240,40 @@ export const DxForm = ({options}: any) => {
         }
     }, []);
 
+    const getFormData = () => {
+        return formRef.current?.instance.option('formData');
+    }
+
+    const getFieldValue = (field: string) => {
+        return formRef.current?.instance.getEditor(field)?.option('value');
+    }
+
+    const setFieldValue = (field: string, value: any) => {
+        formRef.current?.instance.getEditor(field)?.option('value', value);
+    }
+
+    const getDetailData = () => {
+        return gridRef.current?.instance.getDataSource().items();
+    }
+
+    const reloadDetailData = () => {
+        gridRef.current?.instance.getDataSource().reload();
+    }
+
+    useImperativeHandle(ref, () => ({
+        getFormData,
+        getFieldValue,
+        setFieldValue,
+        getDetailData,
+        reloadDetailData
+    }));
+
     const renderForm = () => {
         if (options.detailFields) {
             return <Form ref={formRef}>
                 <Item itemType="group" colCount={3}>
                     <GroupItem>
-                        {fields}
+                        {buildFields(options.fields)}
                     </GroupItem>
                     <GroupItem colSpan={2}>
                         <DataGrid
@@ -252,7 +306,7 @@ export const DxForm = ({options}: any) => {
             </Form>
         } else {
             return <Form ref={formRef}>
-                {fields}
+                {buildFields(options.fields)}
             </Form>
         }
     }
@@ -262,4 +316,4 @@ export const DxForm = ({options}: any) => {
             {renderForm()}
         </div>
     );
-}
+});
