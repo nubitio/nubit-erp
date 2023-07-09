@@ -15,6 +15,7 @@ import {loadMessages, locale} from "devextreme/localization";
 
 import './styles/styles.scss';
 import './theme/theme';
+import config from "devextreme/core/config";
 
 function RootApp() {
     const {user, loading} = useAuth();
@@ -44,7 +45,10 @@ export const App = () => {
 
     useEffect(() => {
         loadMessages(esMessages);
-        locale('es')
+        locale('es-PE')
+        config({
+            defaultCurrency: 'PEN'
+        })
     }, []);
 
     return (

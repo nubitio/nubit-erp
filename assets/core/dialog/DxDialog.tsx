@@ -1,5 +1,5 @@
 import './DxDialog.scss';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 
 import {Popup, ToolbarItem} from 'devextreme-react/popup';
 import ValidationGroup from 'devextreme-react/validation-group';
@@ -7,7 +7,21 @@ import {useScreenSize} from '../../utils/media-query';
 import {Button} from 'devextreme-react';
 import {bus} from "../event/EventBus";
 
-export const DxDialog = ({options, children}: any) => {
+export interface DxDialogOptions {
+    title?: string;
+    width?: number;
+    height?: number;
+    maxHeight?: number;
+    visible?: boolean;
+    events?: any;
+    children?: any;
+}
+
+export interface DxDialogEvents {
+
+}
+
+export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
     const [title, setTitle] = useState<string>(options.title ?? 'Nuevo');
     const width = options.width ?? 480;
     const [visible, setVisible] = useState<boolean>(options.visible ?? false);
@@ -29,13 +43,13 @@ export const DxDialog = ({options, children}: any) => {
 
     const onCancelClick = useCallback(() => {
         close();
-    }, [close, validationGroup]);
+    }, []);
 
     const onSaveClick = useCallback(() => {
         if (!validationGroup.current?.instance.validate().isValid) return;
         bus.emit(options.events?.SAVE);
         close();
-    }, [validationGroup]);
+    }, [options.events.SAVE]);
 
     const setupObservers = () => {
         bus.on<any>(options.events?.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
@@ -55,6 +69,8 @@ export const DxDialog = ({options, children}: any) => {
             alreadySetup = true;
         }
     }, []);
+
+    useImperativeHandle(ref, () => ({}));
 
     return (
         <Popup
@@ -88,8 +104,8 @@ export const DxDialog = ({options, children}: any) => {
             </ToolbarItem>
 
             <ValidationGroup ref={validationGroup}>
-                {children}
+                {options.children}
             </ValidationGroup>
         </Popup>
     );
-};
+});
