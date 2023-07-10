@@ -13,11 +13,15 @@ export class FieldBuilder {
             label: '',
             width: null,
             height: null,
+            minWidth: undefined,
+            minHeight: undefined,
             align: 'left',
-            sortable: false,
+            sortable: true,
+            filterable: true,
             validators: [],
             mode: 'local',
             url: '',
+            byKeyUrl: null,
             textField: '',
             valueField: '',
             valueType: 'string',
@@ -26,14 +30,15 @@ export class FieldBuilder {
             fieldFormatter: null,
             visible: true,
             defaultValue: null,
-            onChange: null,
-            onSelect: null,
-            onClick: null,
+            onChange: undefined,
+            onSelect: undefined,
+            onClick: undefined,
             readonly: false,
             disabled: false,
             hidden: false,
             required: false,
-            precision: 0
+            precision: 0,
+            accept: null
         };
     }
 
@@ -72,6 +77,16 @@ export class FieldBuilder {
         return this;
     }
 
+    minWidth(minWidth: number): FieldBuilder {
+        this._field.minWidth = minWidth;
+        return this;
+    }
+
+    minHeight(minHeight: number): FieldBuilder {
+        this._field.minHeight = minHeight;
+        return this;
+    }
+
     align(align: string): FieldBuilder {
         this._field.align = align;
         return this;
@@ -82,7 +97,12 @@ export class FieldBuilder {
         return this;
     }
 
-    validators(validators: string[]): FieldBuilder {
+    filterable(filterable: boolean): FieldBuilder {
+        this._field.filterable = filterable;
+        return this;
+    }
+
+    validators(validators: any[]): FieldBuilder {
         this._field.validators = validators;
         return this;
     }
@@ -94,6 +114,11 @@ export class FieldBuilder {
 
     url(url: string): FieldBuilder {
         this._field.url = url;
+        return this;
+    }
+
+    byKeyUrl(byKeyUrl: string): FieldBuilder {
+        this._field.byKeyUrl = byKeyUrl;
         return this;
     }
 
@@ -172,8 +197,13 @@ export class FieldBuilder {
         return this;
     }
 
-    precision(value:number): FieldBuilder {
+    precision(value: number): FieldBuilder {
         this._field.precision = value;
+        return this;
+    }
+
+    accept(value: any): FieldBuilder {
+        this._field.accept = value;
         return this;
     }
 

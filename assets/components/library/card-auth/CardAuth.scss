@@ -1,4 +1,4 @@
-@use "../../../styles/variables.scss" as *;
+@use "../../../variables.scss" as *;
 
 .auth-card {
   display: flex;
@@ -8,11 +8,12 @@
     text-transform: none;
   }
 
-  .dx-card {
+  .dx-card.content {
     margin: auto auto;
     padding: 24px;
     flex-grow: 0;
     max-width: 360px;
+    width: auto;
     border-radius: 8px;
 
     &.content {
@@ -35,7 +36,7 @@
       margin-top: 24px;
 
       .title {
-        color: $base-text-color;
+        color: var(--base-text-color);
         text-align: center;
         line-height: 24px;
         font-weight: 500;
@@ -43,7 +44,7 @@
       }
 
       .description {
-        color: $base-text-color-alpha;
+        color: var(--base-text-color-alpha);
         line-height: 16px;
         font-size: 12px;
         margin-top: 32px;

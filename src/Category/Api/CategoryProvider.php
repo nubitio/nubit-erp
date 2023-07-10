@@ -30,6 +30,7 @@ readonly class CategoryProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.parent', 'p', JoinType::LEFT));
+            $context = OptionUtils::addJoin($context, new JoinRule('e.imagen', 'i', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('descripcion', 'asc'));
             $options = OptionsBuilder::build($context, CategoryEntity::class, Category::class);
 

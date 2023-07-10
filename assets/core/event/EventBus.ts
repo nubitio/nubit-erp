@@ -15,7 +15,6 @@ class EventBus {
                 filter((event: EventObject) => event.name === eventName),
                 tap((event: EventObject) => handler(event.data))
             ).subscribe()
-
     }
 
     emit<T>(eventName: string, payload?: T): void {

@@ -4,6 +4,7 @@ namespace App\Category\Domain;
 
 use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Media\Domain\Media;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -17,7 +18,7 @@ class Category
         #[SerializedName('parent')]
         public ?Category $parent = null,
         #[SerializedName('imagen')]
-        public ?string $imagen = null,
+        public ?Media $imagen = null,
         #[SerializedName('estado')]
         public ?bool $estado = false,
         /** @var ?Category[] $children */
