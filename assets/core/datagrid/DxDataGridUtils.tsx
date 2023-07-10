@@ -1,6 +1,6 @@
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
-import {Column, Item, Lookup} from "devextreme-react/data-grid";
+import {Column, Item, Lookup, RequiredRule} from "devextreme-react/data-grid";
 import {dxUtils} from "../common/DxUtils";
 import {Button} from "devextreme-react";
 
@@ -59,7 +59,31 @@ const buildEditorOptions = (field: Field) => {
             wrapItemText: true,
         }
     }
+    editorOptions = {
+        ...editorOptions,
+        readOnly: field.readonly,
+        disabled: field.disabled,
+    };
     return editorOptions;
+}
+
+const buildValidationRules = (field: Field) => {
+    let validationRules: any[] = [];
+    if (field.required) {
+        validationRules.push({
+            type: 'required',
+            message: `${field.label} es requerido`
+        });
+    }
+    validationRules = validationRules.concat(field.validators ?? []);
+    return validationRules.map((rule, index) => {
+        switch (rule.type) {
+            case 'required':
+                return <RequiredRule key={index} />
+            default:
+                return null;
+        }
+    });
 }
 
 export const buildColumns = (fields: Field[], forceLookup = false) => {
@@ -81,6 +105,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             editorOptions={editorOptions}
         >
             {buildLookup(clone)}
+            {buildValidationRules(clone)}
         </Column>
     });
 }

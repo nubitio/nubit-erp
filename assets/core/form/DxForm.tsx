@@ -27,6 +27,12 @@ export interface DxFormEvents {
     reloadDetailData: () => void;
 }
 
+export const FORM_EVENTS = {
+    ROW_ADDED: 'on:row:added',
+    ROW_REMOVED: 'on:row:removed',
+    ROW_UPDATED: 'on:row:updated',
+}
+
 export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => {
     const formRef = useRef<Form>(null);
     const gridRef = useRef<DataGrid>(null);
@@ -131,7 +137,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 disabled: field.disabled,
                 onFocusIn: field.onClick,
                 onValueChanged: field.onChange,
-                onItemClick: field.onSelect
+                onItemClick: field.onSelect,
+                stylingMode: 'outlined',
             };
 
             return <SimpleItem
@@ -141,8 +148,21 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 label={{text: field.label}}
                 isRequired={field.required}
                 editorOptions={editorOptions}
+                colSpan={field.col ?? 12}
             />
         });
+    }
+
+    const buildEmptyRow = (fields: Field[]) => {
+        let row: any = {};
+        fields.forEach((field: Field) => {
+            if (field.defaultValue) {
+                row[field.name] = field.defaultValue;
+            } else {
+                row[field.name] = null;
+            }
+        });
+        return row;
     }
 
     const setupObservers = () => {
@@ -270,44 +290,62 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
     const renderForm = () => {
         if (options.detailFields) {
-            return <Form ref={formRef}>
-                <Item itemType="group" colCount={3}>
-                    <GroupItem>
-                        {buildFields(options.fields)}
-                    </GroupItem>
-                    <GroupItem colSpan={2}>
-                        <DataGrid
-                            ref={gridRef}
-                            dataSource={data.current}
-                            showBorders={true}
-                            showRowLines={true}
-                            showColumnLines={true}
-                            onRowInserted={(e: any) => {
-                                e.component.saveEditData();
-                            }}
-                            onRowRemoved={(e: any) => {
-                                e.component.saveEditData();
-                            }}
-                            onRowUpdated={(e: any) => {
-                                e.component.saveEditData();
-                            }}
-                        >
-                            <Editing
-                                mode="cell"
-                                allowUpdating={true}
-                                allowDeleting={true}
-                                allowAdding={true}
-                                confirmDelete={false}
-                            />
-                            {buildColumns(options.detailFields, true)}
-                        </DataGrid>
-                    </GroupItem>
-                </Item>
-            </Form>
+            return (
+                <Form
+                    ref={formRef}
+                    labelMode={'floating'}
+                >
+                    <Item itemType="group" colCount={3}>
+                        <GroupItem colCount={12}>
+                            {buildFields(options.fields)}
+                        </GroupItem>
+                        <GroupItem colSpan={2}>
+                            <DataGrid
+                                ref={gridRef}
+                                dataSource={data.current}
+                                showBorders={true}
+                                showRowLines={true}
+                                showColumnLines={true}
+                                onInitNewRow={(e: any) => {
+                                    e.data = buildEmptyRow(options.detailFields ?? []);
+                                    e.component.saveEditData();
+                                }}
+                                onRowInserted={(e: any) => {
+                                    e.component.saveEditData();
+                                    bus.emit(FORM_EVENTS.ROW_ADDED, e.data);
+                                }}
+                                onRowRemoved={(e: any) => {
+                                    e.component.saveEditData();
+                                    bus.emit(FORM_EVENTS.ROW_REMOVED, e.data);
+                                }}
+                                onRowUpdated={(e: any) => {
+                                    e.component.saveEditData();
+                                    bus.emit(FORM_EVENTS.ROW_UPDATED, e.data);
+                                }}
+                            >
+                                <Editing
+                                    mode="cell"
+                                    allowUpdating={true}
+                                    allowDeleting={true}
+                                    allowAdding={true}
+                                    confirmDelete={false}
+                                />
+                                {buildColumns(options.detailFields, true)}
+                            </DataGrid>
+                        </GroupItem>
+                    </Item>
+                </Form>
+            );
         } else {
-            return <Form ref={formRef}>
-                {buildFields(options.fields)}
-            </Form>
+            return (
+                <Form
+                    ref={formRef}
+                    labelMode={'floating'}
+                    colCount={12}
+                >
+                    {buildFields(options.fields)}
+                </Form>
+            );
         }
     }
 
