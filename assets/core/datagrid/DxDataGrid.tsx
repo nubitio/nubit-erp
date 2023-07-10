@@ -38,7 +38,10 @@ export interface DxDataGridOptions {
 }
 
 export interface DxDataGridEvents {
-    sayHi: () => void;
+    showLoading: (message?: string) => void;
+    hideLoading: () => void;
+    refresh: () => void;
+    getSelectedRowKey: () => any;
 }
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
@@ -99,12 +102,23 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         }}/>
     }, [options.detailUrl, options.detailFields]);
 
-    const sayHi = () => {
-        console.log('Hi');
+    const showLoading = (message: string = 'Cargando...') => {
+        gridRef.current?.instance.beginCustomLoading(message);
+    }
+
+    const hideLoading = () => {
+        gridRef.current?.instance.endCustomLoading();
+    }
+
+    const getSelectedRowKey = () => {
+        return gridRef.current?.instance.getSelectedRowKeys()[0];
     }
 
     useImperativeHandle(ref, () => ({
-        sayHi
+        showLoading,
+        hideLoading,
+        refresh,
+        getSelectedRowKey
     }));
 
     return (

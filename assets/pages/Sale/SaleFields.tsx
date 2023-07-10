@@ -229,6 +229,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .label('Cantidad')
         .align('center')
         .precision(2)
+        .defaultValue(1)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
             row.precio_total = currentRow.precio_unitario * value;
@@ -300,11 +301,11 @@ const getSubTotal = (form: DxFormEvents | null) => {
     return total;
 }
 
-const setTotal = (form: DxFormEvents | null) => {
+export const setTotal = (form: DxFormEvents | null) => {
     let subTotal = getSubTotal(form);
     let discountPercent = Number(form?.getFieldValue('descuento') ?? 0);
     let discount = subTotal * (discountPercent / 100);
-    let total = subTotal - discount;
+    let total = Number(subTotal - discount).toFixed(2);
 
-    form?.setFieldValue('total', total);
+    form?.setFieldValue('total', Number(total));
 }

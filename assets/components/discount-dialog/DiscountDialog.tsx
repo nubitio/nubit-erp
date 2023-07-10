@@ -3,7 +3,6 @@ import {ToolbarItem} from "devextreme-react/popup";
 import {useCallback, useEffect, useState} from "react";
 import {bus} from "../../core/event/EventBus";
 import NumberUtils from "../../core/utils/NumberUtils";
-import "../../styles/app.scss";
 
 export enum DiscountDialogEvent {
     OPEN = 'discount:dialog:open',
@@ -50,7 +49,7 @@ export const DiscountDialog = () => {
                 showTitle={true}
                 title="Descuento"
                 width={420}
-                height={300}
+                height={320}
             >
                 <ToolbarItem
                     key="apply-button"
@@ -87,7 +86,7 @@ export const DiscountDialog = () => {
                     <div className="mb-4">
                         <NumberBox
                             label={'Discount Amount'}
-                            format="S/ #,##0.00"
+                            format='currency'
                             value={discountAmount}
                             min={0}
                             max={total}

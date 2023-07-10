@@ -79,7 +79,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
             fullScreen={isXSmall}
             width={width}
             height={options.height ?? 'auto'}
-            maxHeight={options.maxHeight ?? 600}
+            maxHeight={options.maxHeight ?? 640}
             wrapperAttr={{class: `form-popup`}}
         >
             <ToolbarItem
