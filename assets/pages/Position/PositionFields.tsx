@@ -2,6 +2,7 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const PositionFields = () => {
     const fields: Field[] = [];
@@ -22,7 +23,7 @@ export const PositionFields = () => {
         .url(Constants.API_BASE_URL + 'departments')
         .valueField('id')
         .textField('name')
-        /*.formatter((value: any) => value?.name)*/
+        .formatter((cell: ColumnCellTemplateData) => cell.data.department.name)
         .required(true)
         .valueType('number')
         .build());

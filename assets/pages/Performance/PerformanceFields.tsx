@@ -31,12 +31,7 @@ export const PerformanceFields = () => {
         .valueType('number')
         .textField('_value')
         .valueField('id')
-        .formatter((value: any) => {
-            if (value)
-            {
-                return value['_value']
-            }
-        })
+        .formatter((cell: ColumnCellTemplateData) => console.log(cell))
         .required(true)
         .build());
     fields.push(new FieldBuilder()

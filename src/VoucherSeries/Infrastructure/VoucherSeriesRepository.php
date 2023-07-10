@@ -7,8 +7,8 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
-use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
 use App\VoucherSeries\Domain\VoucherSeries;
+use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 
 readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterface
@@ -16,11 +16,9 @@ readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterfa
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-    )
-    {
+    ) {
     }
 
-    /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
         return $this->dataLoader->load($options);

@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const BranchFields = () =>{
     const fields:Field[] = [];
@@ -23,7 +24,7 @@ export const BranchFields = () =>{
         .valueField('empresa_id')
         .textField('razon_social')
         .required(true)
-        .formatter((value: any, row: any) => value.razon_social)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.empresa.razon_social)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)

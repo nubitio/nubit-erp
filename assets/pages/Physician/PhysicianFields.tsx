@@ -2,6 +2,7 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const PhysicianFields = () => {
     const fields: Field[] = [];
@@ -25,6 +26,7 @@ export const PhysicianFields = () => {
         .textField('full_name')
         .formatter((value: any) => value?.first_name + ' ' + value?.last_name)
         .valueType('number')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.full_name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -34,7 +36,7 @@ export const PhysicianFields = () => {
         .url(Constants.API_BASE_URL + 'specialties')
         .valueField('id')
         .textField('name')
-        .formatter((value: any) => value?.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.specialty.name)
         .valueType('number')
         .required(true)
         .build());

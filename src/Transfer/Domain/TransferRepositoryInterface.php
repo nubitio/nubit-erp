@@ -2,13 +2,12 @@
 
 namespace App\Transfer\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface TransferRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<Transfer>
      */
     public function getAll(Options $options): PaginatorInterface;

@@ -15,5 +15,4 @@ class VoucherSeriesDto extends VoucherSeries
 {
     #[ApiProperty(identifier: true)]
     public ?int $id;
-
 }
