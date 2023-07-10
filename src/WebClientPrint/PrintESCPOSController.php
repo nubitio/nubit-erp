@@ -112,7 +112,8 @@ class PrintESCPOSController extends BaseController
         }
         $printer->text('DIRECCION: '.$voucher->customer_address."\n");
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $printer->text("FORMA DE PAGO: CONTADO\n");
+            $paymentMethod = 2 == $voucher->voucher_payment_method ? 'CREDITO' : 'CONTADO';
+            $printer->text("FORMA DE PAGO: $paymentMethod\n");
         }
         $printer->text($divider);
         $printer->setEmphasis();

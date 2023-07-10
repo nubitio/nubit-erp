@@ -108,7 +108,13 @@ export class SharedUtils {
 
     static invoiceFormatter(value: any | null | undefined, row: any) {
         if (value !== null && value !== undefined) {
-            return '<a href="/invoice/' + row['movimiento_id'] + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + value + '</a>';
+            console.log(row)
+            let payload = {
+                type: row['cliente'].ruc.length === 11 ? '01' : '03',
+                id: row['movimiento_id'],
+            }
+            let payloadEncoded = btoa(JSON.stringify(payload));
+            return '<a href="/receipt/' + payloadEncoded + '/pdf?preview=true" class="text-reset" target="_blank"><i class="fas fa-file-invoice fa-lg"></i> ' + value + '</a>';
         } else {
             return '';
         }

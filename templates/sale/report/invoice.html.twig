@@ -82,7 +82,7 @@
                     {% endif %}
                     DIRECCION: {{ voucher.customer_address }}<br>
                     {% block extra %}
-                        FORMA DE PAGO: CONTADO<br>
+                        FORMA DE PAGO: {% if voucher.voucher_payment_method == 2 %}CREDITO{% else %}CONTADO{% endif %}<br>
                     {% endblock %}
                 </td>
             </tr>

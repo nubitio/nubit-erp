@@ -45,6 +45,8 @@ class SaleEntity
         public ?\DateTimeInterface $fecha = null,
         #[Column(name: 'proveedor_id', type: 'string')]
         public ?string $proveedor_id = null,
+        #[Column(name: 'forma_pago', type: 'integer')]
+        public ?int $forma_pago = null,
         #[ManyToOne(targetEntity: PaymentMethodEntity::class)]
         #[JoinColumn(name: 'tipo_pago', referencedColumnName: 'id')]
         public ?PaymentMethodEntity $tipo_pago = null,
