@@ -23,23 +23,23 @@ export const PositionPage = () => {
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Posiciones de trabajo',
-                url: API_URL,
-                allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
-                fields: fields,
-                events: EVENTS,
-            }}/>
-            <DxDialog options={{
-                events: EVENTS,
-            }}>
-                <DxForm options={{
-                    url: API_URL,
-                    fields: fields,
-                    events: EVENTS,
-                }}/>
+            <DxDataGrid
+                title={'Posiciones de trabajo'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
             </DxDialog>
         </div>
     );

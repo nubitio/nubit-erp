@@ -8,29 +8,29 @@ export const CashboxConsultPage = () => {
     const container = "wrapper";
     const fields = CashboxConsultFields();
 
-    const API_URL = {};
+    const API_URL = "";
 
     const EVENTS = {}
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Consulta Caja',
-                url: API_URL,
-                allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
-                fields: fields,
-                events: EVENTS,
-            }}/>
-            <DxDialog options={{
-                events: EVENTS,
-            }}>
-                <DxForm options={{
-                    url: API_URL,
-                    fields: fields,
-                    events: EVENTS,
-                }}/>
+            <DxDataGrid
+                title={'Consulta Caja'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
             </DxDialog>
         </div>
     );

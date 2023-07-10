@@ -2,7 +2,9 @@
 
 namespace App\VoucherSeries\Infrastructure;
 
+use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\VoucherType\Infrastructure\VoucherTypeEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -15,10 +17,12 @@ class VoucherSeriesEntity
         #[ORM\GeneratedValue]
         #[ORM\Column(name: 'id', type: 'integer')]
         public ?int $id = null,
-        #[ORM\Column(name: 'local_id', type: 'string')]
-        public ?string $local_id = null,
-        #[ORM\Column(name: 'tipo_comprobante_id', type: 'string')]
-        public ?string $tipo_comprobante_id = null,
+        #[ORM\ManyToOne(targetEntity: BranchEntity::class)]
+        #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
+        public ?BranchEntity $local = null,
+        #[ORM\ManyToOne(targetEntity: VoucherTypeEntity::class)]
+        #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'id')]
+        public ?VoucherTypeEntity $tipo_comprobante = null,
         #[ORM\Column(name: 'serie', type: 'string')]
         public ?string $serie = null,
         #[ORM\Column(name: 'serie_asociada', type: 'string')]

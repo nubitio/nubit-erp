@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const VoucherSeriesFields = () => {
     const fields: Field[] = [];
@@ -17,34 +18,22 @@ export const VoucherSeriesFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('local_id')
+        .name('local')
         .label('Local')
         .url(Constants.API_BASE_URL + 'branches')
         .valueField('local_id')
         .textField('descripcion')
-        .visible(false)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.local.descripcion)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
-        .name('local')
-        .label('Local')
-        .build());
-    fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('tipo_comprobante_id')
+        .name('tipo_comprobante')
         .label('Tipo comprobante')
         .url(Constants.API_BASE_URL + 'voucher-types')
         .valueField('codigo')
         .textField('descripcion')
-        .visible(false)
-        .required(true)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
-        .name('tipo_comprobante')
-        .label('Tipo comprobante')
-        .width(100)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_comprobante.descripcion)
         .required(true)
         .build());
     fields.push(new FieldBuilder()

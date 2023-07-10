@@ -23,23 +23,23 @@ export const InvoicePage = () => {
 
     return (
         <div id={container}>
-            <DxDataGrid options={{
-                title: 'Comprobantes de pago',
-                url: API_URL,
-                allowAdd: true,
-                allowEdit: true,
-                allowDelete: true,
-                fields: fields,
-                events: EVENTS,
-            }}/>
-            <DxDialog options={{
-                events: EVENTS,
-            }}>
-                <DxForm options={{
-                    url: API_URL,
-                    fields: fields,
-                    events: EVENTS,
-                }}/>
+            <DxDataGrid
+                title={'Comprobantes de pago'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
             </DxDialog>
         </div>
     );
