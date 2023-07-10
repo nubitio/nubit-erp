@@ -61,7 +61,7 @@ export const ProductFields = () => {
         .valueField('unidad_id')
         .textField('name')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_id)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()

@@ -15,5 +15,4 @@ class TransferDto extends Transfer
 {
     #[ApiProperty(identifier: true)]
     public ?string $transfer_id;
-
 }

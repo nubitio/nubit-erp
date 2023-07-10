@@ -41,6 +41,7 @@ export const TransferFields = () => {
         .type(FieldType.NONE)
         .name('origen')
         .label('Almacen origen')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.almacen_origen)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -56,6 +57,7 @@ export const TransferFields = () => {
         .type(FieldType.NONE)
         .name('destino')
         .label('Almacen destino')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.almacen_destino)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)

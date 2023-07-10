@@ -1,7 +1,4 @@
-import {useEffect} from "react";
-import PriceList from "../PriceList";
 import "./PriceListPage.scss";
-import {SupplierFields} from "../Supplier/SupplierFields";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";

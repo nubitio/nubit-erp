@@ -2,13 +2,12 @@
 
 namespace App\VoucherSeries\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
 interface VoucherSeriesRepositoryInterface
 {
     /**
-     * @param Options $options
      * @return PaginatorInterface<VoucherSeries>
      */
     public function getAll(Options $options): PaginatorInterface;

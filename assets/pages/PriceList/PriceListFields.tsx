@@ -28,6 +28,7 @@ export const PriceListFields = () => {
         .name('active')
         .label('Activo')
         .defaultValue(true)
+        .formatter(SharedUtils.dxBooleanFormatter)
         .build())
     return fields;
 }

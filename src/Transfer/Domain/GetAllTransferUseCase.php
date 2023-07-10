@@ -9,12 +9,10 @@ readonly class GetAllTransferUseCase
 {
     public function __construct(
         private TransferRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<Transfer>
      */
     public function __invoke(Options $options): PaginatorInterface

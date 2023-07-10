@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
-#[ORM\Table(name: "transfer")]
+#[ORM\Table(name: 'transfer')]
 class TransferEntity
 {
     public function __construct(
@@ -35,7 +35,6 @@ class TransferEntity
         public ?\DateTimeInterface $created_at = null,
         #[ORM\Column(name: 'updated_at', type: 'datetime')]
         public ?\DateTimeInterface $updated_at = null
-    )
-    {
+    ) {
     }
 }

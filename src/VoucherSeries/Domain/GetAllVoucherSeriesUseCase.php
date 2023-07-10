@@ -9,12 +9,10 @@ readonly class GetAllVoucherSeriesUseCase
 {
     public function __construct(
         private VoucherSeriesRepositoryInterface $repository
-    )
-    {
+    ) {
     }
 
     /**
-     * @param Options $options
      * @return PaginatorInterface<VoucherSeries>
      */
     public function __invoke(Options $options): PaginatorInterface

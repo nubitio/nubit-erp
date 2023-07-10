@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const WarehouseFields = () => {
     const fields: Field[] = [];
@@ -23,7 +24,7 @@ export const WarehouseFields = () => {
         .valueField('local_id')
         .textField('descripcion')
         .required(true)
-        .formatter((value: any, row: any) => value.descripcion)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.local.descripcion)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)

@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const RecipeFields = () => {
     const fields: Field[] = [];
@@ -25,7 +26,7 @@ export const RecipeFields = () => {
         .mode('remote')
         .valueField('producto_id')
         .textField('descripcion')
-        .formatter((value: any) => value?.descripcion)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()

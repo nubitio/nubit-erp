@@ -3,6 +3,7 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const UserFields = () => {
     const fields: Field[] = [];
@@ -43,7 +44,7 @@ export const UserFields = () => {
         .valueField('rol_id')
         .valueType('number')
         .required(true)
-        .formatter((value: any) => value.descripcion)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.rol?.descripcion)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)

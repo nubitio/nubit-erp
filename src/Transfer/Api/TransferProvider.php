@@ -7,11 +7,10 @@ use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\SortRule;
-use App\Transfer\Domain\Transfer;
 use App\Transfer\Domain\GetAllTransferUseCase;
 use App\Transfer\Domain\GetOneTransferUseCase;
+use App\Transfer\Domain\Transfer;
 use App\Transfer\Infrastructure\TransferEntity;
 
 /**
@@ -22,8 +21,7 @@ readonly class TransferProvider implements ApiProviderInterface
     public function __construct(
         private GetAllTransferUseCase $getAllUseCase,
         private GetOneTransferUseCase $getOneUseCase,
-    )
-    {
+    ) {
     }
 
     /** inheritdoc */
