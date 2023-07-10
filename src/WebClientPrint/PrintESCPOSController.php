@@ -3,6 +3,7 @@
 namespace App\WebClientPrint;
 
 use App\Base\BaseController;
+use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Extension\RemoteEscposImage;
 use App\Core\Infrastructure\Service\LogoProvider;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
@@ -19,35 +20,62 @@ use Symfony\Component\Routing\Annotation\Route;
 class PrintESCPOSController extends BaseController
 {
     public function __construct(
-        private readonly LogoProvider $logoProvider
+        private readonly LogoProvider $logoProvider,
+        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private TenantAwareSettingsService $settingsService
     ) {
         parent::__construct();
     }
 
-    /**
-     * @throws InvalidArgumentException|Exception
-     * @throws \Exception
-     */
     #[Route('/wcp/print', name: 'wcp_print', methods: ['GET'])]
-    public function printCommands(Request $request, GetOneVoucherUseCase $getOneById, TenantAwareSettingsService $settingsService): Response
+    public function print(Request $request): Response
     {
         if (!$request->query->has(WebClientPrint::CLIENT_PRINT_JOB)) {
             return new Response('No print job sent!', Response::HTTP_BAD_REQUEST);
         }
+
         $useDefaultPrinter = $request->query->get('useDefaultPrinter');
         $printerName = $request->query->get('printerName');
         $saleId = $request->query->get('saleId');
 
+        $cpj = new ClientPrintJob();
+        $cpj->printerCommands = $this->printCommands($saleId);
+        $cpj->formatHexValues = true;
+
+        if ($useDefaultPrinter || 'null' === $printerName) {
+            $cpj->clientPrinter = new DefaultPrinter();
+        } else {
+            $cpj->clientPrinter = new InstalledPrinter($printerName);
+        }
+
+        return new Response($cpj->sendToClient(), Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
+    }
+
+    #[Route('/qz/print/{saleId}', name: 'qz_raw_print', methods: ['GET'])]
+    public function rawPrint(string $saleId): Response
+    {
+        $commands = $this->printCommands($saleId);
+
+        return new Response($commands, Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function printCommands($saleId): string
+    {
         $divider = str_pad('', $_ENV['PRINTER_LINE_WIDTH'], '-', STR_PAD_BOTH)."\n";
 
-        $voucher = $getOneById($saleId);
+        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->getLogo());
 
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
-        $app_option_logo = $settingsService->get('app_option_printing_logo');
+        $app_option_logo = $this->settingsService->get('app_option_printing_logo');
         if ('true' == $app_option_logo) {
             $printer->graphics($logo);
             $printer->feed();
@@ -104,8 +132,8 @@ class PrintESCPOSController extends BaseController
             $printer->text(new SaleItem('DTO.:', '-'.$voucher->voucher_discount_amount));
         }
 
-        $app_option_rc_get = (int) $settingsService->get('app_option_rc');
-        $app_option_igv_get = (int) $settingsService->get('app_option_igv');
+        $app_option_rc_get = (int) $this->settingsService->get(Constants::CONSUMPTION_TAX);
+        $app_option_igv_get = (int) $this->settingsService->get(Constants::TAX);
 
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $printer->text(new SaleItem('OP. GRAVADA:', $voucher->voucher_taxed_amount));
@@ -139,17 +167,9 @@ class PrintESCPOSController extends BaseController
         $printer->feed();
         $printer->cut();
         $printer->pulse();
-        $cpj = new ClientPrintJob();
-        $cpj->printerCommands = $connector->getData();
+        $commands = $connector->getData();
         $printer->close();
-        $cpj->formatHexValues = true;
 
-        if ($useDefaultPrinter || 'null' === $printerName) {
-            $cpj->clientPrinter = new DefaultPrinter();
-        } else {
-            $cpj->clientPrinter = new InstalledPrinter($printerName);
-        }
-
-        return new Response($cpj->sendToClient(), Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
+        return $commands;
     }
 }

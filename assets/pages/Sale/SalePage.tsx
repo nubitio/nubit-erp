@@ -4,16 +4,20 @@ import {DxForm, DxFormEvents, FORM_EVENTS} from "../../core/form/DxForm";
 import {DxDialog} from "../../core/dialog/DxDialog";
 import {Constants} from "../../core/common/Constants";
 import {SaleDetailFields, SaleFields, setTotal} from "./SaleFields";
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
 import {bus} from "../../core/event/EventBus";
 import {saleService} from "../../services/sale.service";
 import notify from "devextreme/ui/notify";
 import {Popup} from "devextreme-react";
+import * as qz from 'qz-tray';
+import {httpClient} from "../../core/http/HttpClient";
 
 export const SalePage = () => {
     const gridRef = useRef<DxDataGridEvents>(null);
     const formRef = useRef<DxFormEvents>(null);
+    const [printerName, setPrinterName] = useState<string | undefined>(undefined);
+
     const container = "wrapper";
     const fields = SaleFields(formRef.current);
     const detailFields = SaleDetailFields(formRef.current);
@@ -49,11 +53,23 @@ export const SalePage = () => {
         })
     }
 
+    const setupPrinter = () => {
+        qz.websocket.connect().then(() => {
+            qz.printers.getDefault().then((data: string) => {
+                setPrinterName(data);
+                console.log('Impresora: ' + data);
+            })
+        }).catch((err: any) => {
+            console.error(err);
+        })
+    }
+
     let alreadySetup = false;
 
     useEffect(() => {
         if (!alreadySetup) {
             setupObservers();
+            setupPrinter();
             alreadySetup = true;
         }
     }, []);
@@ -94,32 +110,17 @@ export const SalePage = () => {
     }
 
     const print = (saleId: string) => {
-        jsWebClientPrint.print(`useDefaultPrinter=checked&saleId=${saleId}`);
+        let config = qz.configs.create(printerName);
+        httpClient.get<any>('/qz/print/' + saleId).subscribe((response) => {
+            qz.print(config, [response.data]).catch((err: any) => {
+                console.error(err);
+            })
+        })
     }
 
     const printPreview = (saleId: string) => {
         let url = 'sale/print/' + saleId;
-        return (
-            <Popup
-                visible={true}
-                title={'Vista previa'}
-                width={350}
-                height={500}
-                showCloseButton={true}
-                dragEnabled={true}
-                contentRender={() => {
-                    return (
-                        <iframe
-                            src={url + '?preview=true'}
-                            width={'100%'}
-                            height={'100%'}
-                            frameBorder={'0'}
-                            title={'Vista previa'}
-                        />
-                    )
-                }}
-            />
-        )
+        window.open(url + '?preview=true', '_blank');
     }
 
     const toolbar = [

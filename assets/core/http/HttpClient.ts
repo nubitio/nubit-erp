@@ -1,10 +1,11 @@
 import axios, {Axios, AxiosRequestConfig} from "axios";
 import {map, Observable} from "rxjs";
-import {messenger} from "../utils/Messenger";
 import {StorageUtils} from "../utils/StorageUtils";
 import ApiResponse from "./ApiResponse";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
 import {HttpCode} from "./HttpCode";
+import notify from "devextreme/ui/notify";
+import {confirm} from "devextreme/ui/dialog";
 
 class HttpClient {
     private axiosClient: Axios;
@@ -42,19 +43,27 @@ class HttpClient {
                         const message = error.response?.data?.message ?? DEFAULT_UNAUTHORIZED_MESSAGE;
                         let token = StorageUtils.getItem('token');
                         if (token) {
-                            messenger.confirm('Error', message, () => {
+                            confirm(message, 'Error').then(() => {
                                 StorageUtils.removeItem('token');
                                 window.location.href = '/auth/logout';
                             });
                         } else {
-                            messenger.show('Error', message);
+                            notify({
+                                message: message,
+                                type: 'error',
+                                displayTime: 3000,
+                            }, {position: 'top right'})
                         }
                         break;
                     case HttpCode.INTERNAL_SERVER_ERROR:
                         throw new Error(DEFAULT_ERROR_MESSAGE);
                     default:
                         const errorMessage = error.response?.data?.message ?? DEFAULT_ERROR_MESSAGE;
-                        messenger.show('Error', errorMessage);
+                        notify({
+                            message: errorMessage,
+                            type: 'error',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                 }
                 return Promise.reject(error);
             });
