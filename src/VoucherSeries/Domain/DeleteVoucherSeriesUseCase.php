@@ -2,7 +2,7 @@
 
 namespace App\VoucherSeries\Domain;
 
-class VoucherSeriesDeleteUseCase
+class DeleteVoucherSeriesUseCase
 {
     private VoucherSeriesRepositoryInterface $repository;
 

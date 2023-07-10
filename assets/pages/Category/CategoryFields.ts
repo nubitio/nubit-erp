@@ -29,23 +29,21 @@ export const categoryFields = () => {
         .url(Constants.API_BASE_URL + 'categories')
         .valueField('categoria_id')
         .textField('descripcion')
-        .formatter((value: any, row: any) => {
-            return row.parent?.descripcion;
+        .formatter((cell : ColumnCellTemplateData) => {
+            cell.data.parent?.descripcion;
         })
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.FILE)
         .name('imagen')
         .label('Imagen')
-        .formatter((val: any, row: any) => {
-            return SharedUtils.imageFormatter(val, row['descripcion'], 'uploads/images/')
-        })
+        .formatter(SharedUtils.dxImageFormatter)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.booleanFormatter)
+        .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());
 

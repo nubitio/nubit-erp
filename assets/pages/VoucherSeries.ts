@@ -4,7 +4,6 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
-import {SharedUtils} from "../core/utils/SharedUtils";
 import {Constants} from "../core/common/Constants";
 
 export default class VoucherSeries {
@@ -14,11 +13,7 @@ export default class VoucherSeries {
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'voucher-series/add',
-        EDIT: 'voucher-series/edit/',
-        DELETE: 'voucher-series/delete/',
-    }
+    static readonly API_URL = Constants.API_BASE_URL + 'voucher-seriess';
 
     static readonly EVENTS = {
         ADD: 'voucher-series:add',
@@ -45,35 +40,15 @@ export default class VoucherSeries {
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.ENTITY)
+            .type(FieldType.TEXT)
             .name('local_id')
-            .label('Local')
-            .url(Constants.API_BASE_URL + 'branches')
-            .valueField('local_id')
-            .textField('descripcion')
-            .visible(false)
+            .label('Local id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NONE)
-            .name('local')
-            .label('Local')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.ENTITY)
+            .type(FieldType.TEXT)
             .name('tipo_comprobante_id')
-            .label('Tipo comprobante')
-            .url(Constants.API_BASE_URL + 'voucher-types')
-            .valueField('codigo')
-            .textField('descripcion')
-            .visible(false)
-            .required(true)
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.NONE)
-            .name('tipo_comprobante')
-            .label('Tipo comprobante')
-            .width(100)
+            .label('Tipo comprobante id')
             .required(true)
             .build());
         this.fields.push(new FieldBuilder()
@@ -90,10 +65,8 @@ export default class VoucherSeries {
         this.fields.push(new FieldBuilder()
             .type(FieldType.SWITCH)
             .name('active')
-            .label('Activo')
-            .formatter(SharedUtils.booleanFormatter)
-            .defaultValue(true)
-            .build());
+            .label('Active')
+            .build())
     };
 
     render() {
@@ -104,8 +77,11 @@ export default class VoucherSeries {
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'VoucherSeries',
-            url: 'voucher-series/get',
-            routes: VoucherSeries.ROUTES,
+            url: VoucherSeries.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: VoucherSeries.EVENTS,
         });
     }
@@ -115,8 +91,8 @@ export default class VoucherSeries {
             events: VoucherSeries.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: VoucherSeries.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: VoucherSeries.API_URL,
             events: VoucherSeries.EVENTS,
         });
     }
