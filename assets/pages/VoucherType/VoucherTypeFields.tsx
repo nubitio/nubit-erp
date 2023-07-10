@@ -31,7 +31,7 @@ export const VoucherTypeFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxStatusFormatter)
         .defaultValue(true)
         .build());
 

@@ -42,7 +42,7 @@ export const SupplierFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxStatusFormatter)
         .defaultValue(true)
         .build());
 
