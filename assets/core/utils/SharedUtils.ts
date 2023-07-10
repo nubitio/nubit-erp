@@ -36,12 +36,36 @@ export class SharedUtils {
     }
 
     static dxBooleanFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.estado) === 1) {
+        if (Number(cell.data.active) === 1) {
             return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
-        } else if (Number(cell.data.estado) === 0) {
+        } else if (Number(cell.data.active) === 0) {
             return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
         } else {
-            return '';
+            return 'No boolean value';
+        }
+    }
+
+    static dxStatusFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.data.estado) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'ON');
+        } else if (Number(cell.data.estado) === 2) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-secondary'}, 'OFF');
+        } else if (Number(cell.data.estado) === 3) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-warning text-dark'}, 'Warning');
+        } else if (Number(cell.data.estado) === 4) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-info text-dark'}, 'Observado');
+        } else {
+            return React.createElement('span', {className: 'badge rounded-pill bg-dark'}, 'Status no tracked');
+        }
+    }
+
+    static dxVoidedFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.data.estado) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Anulado');
+        } else if (Number(cell.data.estado) === 2) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Procesado');
+        } else {
+            return 'No boolean value';
         }
     }
 
@@ -121,6 +145,25 @@ export class SharedUtils {
             return '<span class="badge rounded-pill bg-danger">RECHAZADO</span>';
         } else if (value >= 4000) {
             return '<span class="badge rounded-pill bg-info">OBSERVADO</span>';
+        }
+    }
+
+    static dxBillStatusFormatter(cell: ColumnCellTemplateData) {
+        if (cell.data.envio_sunat === null) {
+            cell.data.envio_sunat = -1
+        } else {
+            cell.data.envio_sunat = Number(cell.data.envio_sunat);
+        }
+        if (cell.data.envio_sunat === -1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'PENDIENTE');
+        } else if (cell.data.envio_sunat === 0) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-succes'}, 'ENVIADO');
+        } else if (cell.data.envio_sunat < 2000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-warning'}, 'ERRONEO');
+        } else if (cell.data.envio_sunat >= 2000 && cell.data.envio_sunat < 4000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'RECHAZADO');
+        } else if (cell.data.envio_sunat >= 4000) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-info'}, 'OBSERVADO');
         }
     }
 

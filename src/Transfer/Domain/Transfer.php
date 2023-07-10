@@ -3,41 +3,34 @@
 namespace App\Transfer\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\SaleDetail\Domain\SaleDetail;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
 class Transfer
 {
-    /**
-     * @param SaleDetail[] $items
-     */
     public function __construct(
         #[SerializedName('transfer_id')]
-        public ?string $transfer_id,
+        public ?string $transfer_id = null,
         #[SerializedName('fecha')]
-        public ?\DateTime $fecha,
+        public ?\DateTimeInterface $fecha = null,
         #[SerializedName('almacen_origen')]
-        public ?string $almacen_origen,
+        public ?string $almacen_origen = null,
         #[SerializedName('almacen_destino')]
-        public ?string $almacen_destino,
+        public ?string $almacen_destino = null,
         #[SerializedName('nota')]
-        public ?string $nota,
+        public ?string $nota = null,
         #[SerializedName('salida_id')]
-        public ?string $salida_id,
+        public ?string $salida_id = null,
         #[SerializedName('ingreso_id')]
-        public ?string $ingreso_id,
+        public ?string $ingreso_id = null,
         #[SerializedName('created_by')]
-        public ?int $created_by,
+        public ?int $created_by = null,
         #[SerializedName('updated_by')]
-        public ?int $updated_by,
+        public ?int $updated_by = null,
         #[SerializedName('created_at')]
-        public ?\DateTime $created_at,
+        public ?\DateTimeInterface $created_at = null,
         #[SerializedName('updated_at')]
-        public ?\DateTime $updated_at,
-        #[SerializedName('detail')]
-        /** @var SaleDetail[] */
-        public ?array $items = [],
+        public ?\DateTimeInterface $updated_at = null
     ) {
     }
 }

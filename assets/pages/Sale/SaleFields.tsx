@@ -161,15 +161,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.NONE)
         .name('estado')
         .label('Anulado')
-        .formatter((cell: ColumnCellTemplateData) => {
-            if (cell.value === 1) {
-                return <span className="badge rounded-pill bg-success">NO</span>;
-            } else if (cell.value === 2) {
-                return <span className="badge rounded-pill bg-danger">SI</span>;
-            } else {
-                return null;
-            }
-        })
+        .formatter(SharedUtils.dxVoidedFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()

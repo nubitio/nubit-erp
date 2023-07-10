@@ -1,21 +1,37 @@
-import {useEffect} from "react";
-import CashboxConsult from "../CashboxConsult";
 import "./CashboxConsult.scss";
+import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../core/dialog/DxDialog";
+import {DxForm} from "../../core/form/DxForm";
+import {CashboxConsultFields} from "./CashboxFields";
 
 export const CashboxConsultPage = () => {
-    const container = "wrapper"
-    const cashboxConsult = new CashboxConsult(container)
-    let alreadyRender = false;
+    const container = "wrapper";
+    const fields = CashboxConsultFields();
 
-    useEffect(() => {
-        if (!alreadyRender) {
-            cashboxConsult.render()
-            alreadyRender = true
-        }
-    }, [])
+    const API_URL = {};
+
+    const EVENTS = {}
 
     return (
         <div id={container}>
+            <DxDataGrid options={{
+                title: 'Consulta Caja',
+                url: API_URL,
+                allowAdd: true,
+                allowEdit: true,
+                allowDelete: true,
+                fields: fields,
+                events: EVENTS,
+            }}/>
+            <DxDialog options={{
+                events: EVENTS,
+            }}>
+                <DxForm options={{
+                    url: API_URL,
+                    fields: fields,
+                    events: EVENTS,
+                }}/>
+            </DxDialog>
         </div>
     );
 };
