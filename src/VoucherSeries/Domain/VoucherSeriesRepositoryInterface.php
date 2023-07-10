@@ -2,18 +2,21 @@
 
 namespace App\VoucherSeries\Domain;
 
+use App\Core\Infrastructure\DataLoader\Options;
+use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+
 interface VoucherSeriesRepositoryInterface
 {
     /**
-     * @param array<int, array<string, mixed>> $filter
-     *
-     * @return array<string, mixed>
+     * @return PaginatorInterface<VoucherSeries>
      */
-    public function getAll(array $filter = null): array;
+    public function getAll(Options $options): PaginatorInterface;
 
-    public function insert(VoucherSeries $voucherSeries): void;
+    public function getOne(int $id): ?VoucherSeries;
 
-    public function update(VoucherSeries $voucherSeries): void;
+    public function insert(VoucherSeries $voucherSeries): VoucherSeries;
+
+    public function update(VoucherSeries $voucherSeries): VoucherSeries;
 
     public function delete(int $id): void;
 }

@@ -1,21 +1,46 @@
-import {useEffect} from "react";
-import Invoice from "../Invoice";
 import "./InvoicePage.scss";
+import {Constants} from "../../core/common/Constants";
+import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../core/dialog/DxDialog";
+import {DxForm} from "../../core/form/DxForm";
+import {InvoiceFields} from "./InvoiceFields";
 
 export const InvoicePage = () => {
-    const container = "wrapper"
-    const invoice = new Invoice(container)
-    let alreadyRender = false;
+    const container = "wrapper";
+    const fields = InvoiceFields();
 
-    useEffect(() => {
-        if (!alreadyRender) {
-            invoice.render()
-            alreadyRender = true
-        }
-    }, [])
+    const API_URL = Constants.API_BASE_URL + 'invoices';
+
+    const EVENTS = {
+        ADD: 'invoice:add',
+        EDIT: 'invoice:edit',
+        DELETE: 'invoice:delete',
+        SAVE: 'invoice:save',
+        CANCEL: 'invoice:cancel',
+        SUCCESS: 'invoice:success',
+        LOADING: 'invoice:loading',
+    }
 
     return (
         <div id={container}>
+            <DxDataGrid
+                title={'Comprobantes de pago'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
+            </DxDialog>
         </div>
     );
 };

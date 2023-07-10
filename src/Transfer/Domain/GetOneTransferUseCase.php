@@ -2,7 +2,7 @@
 
 namespace App\Transfer\Domain;
 
-class TransferDeleteUseCase
+class GetOneTransferUseCase
 {
     private TransferRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class TransferDeleteUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): void
+    public function __invoke(string $id): ?Transfer
     {
-        $this->repository->delete($id);
+        return $this->repository->getOne($id);
     }
 }

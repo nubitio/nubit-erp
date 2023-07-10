@@ -23,7 +23,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
     class: 'user-info-list'
   };
 
-  const onItemClick = useCallback(({ itemData }) => itemData.onClick(), []);
+  const onItemClick = useCallback(({ itemData } : any) => itemData.onClick(), []);
 
   return (
     <>
@@ -40,7 +40,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
         )}
         <div className='user-name'>{user?.name}</div>
       </div>
-      <List ref={listRef} elementAttr={listElementAttr} items={menuItems} />
+      <List ref={listRef} elementAttr={listElementAttr} onItemClick={onItemClick} items={menuItems} />
     </>
   );
 };

@@ -8,11 +8,15 @@ export interface Field {
     label: string;
     width: number | null;
     height: number | null;
-    align: string;
+    minWidth: number | undefined;
+    minHeight: number | undefined;
+    align: any;
     sortable: boolean;
-    validators: string[];
+    filterable: boolean;
+    validators: any[];
     mode: string;
     url: string;
+    byKeyUrl: string | null;
     textField: string;
     valueField: string;
     valueType: string;
@@ -29,4 +33,5 @@ export interface Field {
     hidden: boolean;
     required: boolean;
     precision: number;
+    accept: any;
 }

@@ -1,21 +1,49 @@
 import {useEffect} from "react";
 import Employee from "../Employee";
 import "./EmployeePage.scss";
+import {PositionFields} from "../Position/PositionFields";
+import {Constants} from "../../core/common/Constants";
+import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../core/dialog/DxDialog";
+import {DxForm} from "../../core/form/DxForm";
+import {EmployeeFields} from "./EmployeeFields";
 
 export const EmployeePage = () => {
-    const container = "wrapper"
-    const employee = new Employee(container)
-    let alreadyRender = false;
+    const container = "wrapper";
+    const fields = EmployeeFields();
 
-    useEffect(() => {
-        if (!alreadyRender) {
-            employee.render()
-            alreadyRender = true
-        }
-    }, [])
+    const API_URL = Constants.API_BASE_URL + 'employees';
+
+    const EVENTS = {
+        ADD: 'employee:add',
+        EDIT: 'employee:edit',
+        DELETE: 'employee:delete',
+        SAVE: 'employee:save',
+        CANCEL: 'employee:cancel',
+        SUCCESS: 'employee:success',
+        LOADING: 'employee:loading',
+    }
 
     return (
         <div id={container}>
+            <DxDataGrid
+                title={'Empleados'}
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
+            />
+            <DxDialog
+                events={EVENTS}
+            >
+                <DxForm
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
+                />
+            </DxDialog>
         </div>
     );
 };

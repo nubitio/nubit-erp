@@ -4,23 +4,16 @@ import Form from "../core/form/Form";
 import {FieldType} from "../core/field/FieldType";
 import {Field} from "../core/field/Field";
 import {FieldBuilder} from "../core/field/FieldBuilder";
-import {StorageUtils} from "../core/utils/StorageUtils";
-import { productService } from "../services/product.service";
 import {Constants} from "../core/common/Constants";
 
 export default class Transfer {
     private readonly container: string;
     private fields: Field[] = [];
-    private detailFields: Field[] = [];
     private dataGrid: DataGrid;
     private dialog: Dialog;
     private form: Form;
 
-    static readonly ROUTES = {
-        ADD: 'transfer/add',
-        EDIT: 'transfer/edit/',
-        DELETE: 'transfer/delete/',
-    }
+    static readonly API_URL = Constants.API_BASE_URL + 'transfers';
 
     static readonly EVENTS = {
         ADD: 'transfer:add',
@@ -50,96 +43,59 @@ export default class Transfer {
             .type(FieldType.DATE)
             .name('fecha')
             .label('Fecha')
-            .defaultValue('Today')
-            .required(true)
             .build());
-        let session = StorageUtils.getItem('session');
-        let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
         this.fields.push(new FieldBuilder()
-            .type(FieldType.ENTITY)
+            .type(FieldType.TEXT)
             .name('almacen_origen')
             .label('Almacen origen')
-            .url(warehouseUrl)
-            .valueField('almacen_id')
-            .textField('descripcion')
-            .visible(false)
-            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NONE)
-            .name('origen')
-            .label('Almacen origen')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.ENTITY)
+            .type(FieldType.TEXT)
             .name('almacen_destino')
             .label('Almacen destino')
-            .url(warehouseUrl)
-            .valueField('almacen_id')
-            .textField('descripcion')
-            .visible(false)
-            .required(true)
             .build());
         this.fields.push(new FieldBuilder()
-            .type(FieldType.NONE)
-            .name('destino')
-            .label('Almacen destino')
-            .build());
-        this.fields.push(new FieldBuilder()
-            .type(FieldType.TEXTAREA)
-            .width(100)
+            .type(FieldType.TEXT)
             .name('nota')
             .label('Nota')
             .build());
-
-        this.detailFields.push(new FieldBuilder()
-            .type(FieldType.SELECT)
-            .valueField('producto_id')
-            .textField('descripcion')
-            .name('producto_id')
-            .label('Producto')
-            .required(true)
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('salida_id')
+            .label('Salida id')
             .build());
-        this.detailFields.push(new FieldBuilder()
-            .type(FieldType.NUMBER)
-            .name('cantidad')
-            .label('Cantidad')
-            .required(true)
-            .build());
+        this.fields.push(new FieldBuilder()
+            .type(FieldType.TEXT)
+            .name('ingreso_id')
+            .label('Ingreso id')
+            .build())
     };
 
     render() {
-        productService.getProducts('1').subscribe((response) => {
-            this.detailFields.forEach((field) => {
-                if (field.name === 'producto_id') {
-                    field.data = response.data;
-                }
-            });
-            this.renderDataGrid();
-            this.renderDialog();
-        });
+        this.renderDataGrid();
+        this.renderDialog();
     }
 
     renderDataGrid() {
         this.dataGrid = new DataGrid(this.container, this.fields, {
             title: 'Transfer',
-            url: 'transfer/get',
-            routes: Transfer.ROUTES,
+            url: Transfer.API_URL,
+            method: 'get',
+            allowAdd: true,
+            allowEdit: true,
+            allowDelete: true,
             events: Transfer.EVENTS,
         });
     }
 
     renderDialog() {
         this.dialog = new Dialog(this.container, {
-            width: 750,
-            height: 450,
             events: Transfer.EVENTS,
         });
 
-        this.form = new Form(this.dialog.id ?? '', this.fields, {
-            routes: Transfer.ROUTES,
+        this.form = new Form(this.dialog.id, this.fields, {
+            url: Transfer.API_URL,
             events: Transfer.EVENTS,
-            detailFields: this.detailFields,
         });
     }
 }
