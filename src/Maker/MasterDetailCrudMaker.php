@@ -83,7 +83,6 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->makeProvider();
         $this->makeProcessor();
         $this->makeView();
-        $this->makeTemplate();
 
         $this->io->newLine();
         $this->io->text('Generating detail');
@@ -617,7 +616,7 @@ class MasterDetailCrudMaker implements CrudMakerInterface
 
     private function makeView(): void
     {
-        $jsPath = dirname(__DIR__, 2).'/assets/pages/';
+        $jsPath = dirname(__DIR__, 2).'/assets/pages/'.$this->moduleName.'/';
         if ($this->isInteractive) {
             $confirm = $this->io->confirm('Do you want to generate the view?');
             if (!$confirm) {
@@ -628,7 +627,9 @@ class MasterDetailCrudMaker implements CrudMakerInterface
             mkdir($jsPath, 0777, true);
         }
         $this->io->text('Generating view');
-        $viewFile = $jsPath.StringUtils::toPascalCase($this->moduleName).'.ts';
+        $viewFile = $jsPath.StringUtils::toPascalCase($this->moduleName).'Page.tsx';
+        $fieldsFile = $jsPath.StringUtils::toPascalCase($this->moduleName).'Fields.tsx';
+        $scssFile = $jsPath.StringUtils::toPascalCase($this->moduleName).'Page.scss';
         if (!$this->overwrite) {
             if (file_exists($viewFile)) {
                 $confirm = $this->io->confirm('View already exists, do you want to overwrite it?');
@@ -636,51 +637,52 @@ class MasterDetailCrudMaker implements CrudMakerInterface
                     return;
                 }
             }
-        }
-        $viewTemplate = dirname(__FILE__).'/skeleton/crud/view-detail.tpl';
-        $viewContent = file_get_contents($viewTemplate);
-        if (false === $viewContent) {
-            throw new \RuntimeException('Could not read view template');
-        }
-        $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
-        $viewContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $viewContent);
-        $fields = Util::getViewFields($this->masterEntity);
-        $detailFields = Util::getViewFields($this->detailEntity, 'detailFields');
-        $viewContent = str_replace('{{fields}}', substr($fields, 0, -2), $viewContent);
-        $viewContent = str_replace('{{detailFields}}', substr($detailFields, 0, -2), $viewContent);
-
-        file_put_contents($viewFile, $viewContent);
-    }
-
-    private function makeTemplate(): void
-    {
-        $templatePath = dirname(__DIR__, 2).'/templates/'.StringUtils::toKebabCase($this->moduleName);
-        if ($this->isInteractive) {
-            $confirm = $this->io->confirm('Do you want to generate the template?');
-            if (!$confirm) {
-                return;
+            if (file_exists($fieldsFile)) {
+                $confirm = $this->io->confirm('Fields already exist, do you want to overwrite them?');
+                if (!$confirm) {
+                    return;
+                }
             }
-        }
-        if (!is_dir($templatePath)) {
-            mkdir($templatePath, 0777, true);
-        }
-        $this->io->text('Generating template');
-        $templateFile = $templatePath.'/index.html.twig';
-        if (!$this->overwrite) {
-            if (file_exists($templateFile)) {
-                $confirm = $this->io->confirm('Template already exists, do you want to overwrite it?');
+            if (file_exists($scssFile)) {
+                $confirm = $this->io->confirm('CSS file already exists, do you want to overwrite it?');
                 if (!$confirm) {
                     return;
                 }
             }
         }
-        $twigTemplate = dirname(__FILE__).'/skeleton/crud/index.tpl';
-        $twigContent = file_get_contents($twigTemplate);
-        if (false === $twigContent) {
-            throw new \RuntimeException('Could not read twig template');
+        $viewTemplate = dirname(__FILE__).'/skeleton/crud/detail/view.txt';
+        $fieldsTemplate = dirname(__FILE__).'/skeleton/crud/detail/fields.txt';
+        $scssTemplate = dirname(__FILE__).'/skeleton/crud/scss.txt';
+
+        $viewContent = file_get_contents($viewTemplate);
+        $fieldsContent = file_get_contents($fieldsTemplate);
+        $scssContent = file_get_contents($scssTemplate);
+
+        if (false === $viewContent) {
+            throw new \RuntimeException('Could not read view template');
         }
-        $twigContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $twigContent);
-        $twigContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $twigContent);
-        file_put_contents($templateFile, $twigContent);
+
+        if (false === $fieldsContent) {
+            throw new \RuntimeException('Could not read fields template');
+        }
+
+        if (false === $scssContent) {
+            throw new \RuntimeException('Could not read scss template');
+        }
+
+        $viewContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $viewContent);
+        $viewContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $viewContent);
+
+        $fields = Util::getViewFields($this->masterEntity);
+        $detailFields = Util::getViewFields($this->detailEntity);
+
+        $fieldsContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $fieldsContent);
+        $fieldsContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $fieldsContent);
+        $fieldsContent = str_replace('{{fields}}', substr($fields, 0, -1), $fieldsContent);
+        $fieldsContent = str_replace('{{detailFields}}', substr($detailFields, 0, -1), $fieldsContent);
+
+        file_put_contents($viewFile, $viewContent);
+        file_put_contents($fieldsFile, $fieldsContent);
+        file_put_contents($scssFile, $scssContent);
     }
 }
