@@ -25,24 +25,27 @@ export const SupplierFields = () => {
         .type(FieldType.TEXTAREA)
         .name('razon_social')
         .label('Razón Social')
+        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('domicilio_fiscal')
         .label('Dirección')
-        .width(100)
+        .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('telefono')
         .label('Teléfono')
+        .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxStatusFormatter)
+        .formatter(SharedUtils.dxBooleanFormatter)
+        .align('center')
         .defaultValue(true)
         .build());
 

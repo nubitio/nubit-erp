@@ -203,50 +203,50 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
         bus.on(options.events.SAVE, () => {
             let result = formRef.current?.instance.validate()
-            if (result?.isValid) {
-                let formData = formRef.current?.instance.option('formData');
-                uploadedFiles.current.forEach((file: any) => {
-                    formData[file.field] = {
-                        id: file.value
-                    }
-                });
-                options.fields.forEach((field: Field) => {
-                    if (field.type === FieldType.ENTITY) {
-                        if (formData[field.name] === null || formData[field.name] === undefined) {
-                            delete formData[field.name];
-                            return;
-                        }
-                        if (typeof formData[field.name] === 'object' && formData[field.name] !== null) {
-                            return;
-                        }
-                        formData[field.name] = {
-                            [field.valueField]: formData[field.name]
-                        }
-                    }
-                    if (field.type === FieldType.FILE) {
-                        if (Array.isArray(formData[field.name])) {
-                            delete formData[field.name];
-                            return;
-                        }
-                    }
-                    if (field.type === FieldType.DATE) {
-                        formData[field.name] = formData[field.name]?.toISOString();
-                    }
-                });
-
-                if (options.detailFields) {
-                    formData['details'] = gridRef.current?.instance.getDataSource().items();
+            console.log(result);
+            if (!result?.isValid) return;
+            let formData = formRef.current?.instance.option('formData');
+            uploadedFiles.current.forEach((file: any) => {
+                formData[file.field] = {
+                    id: file.value
                 }
-
-                if (isEdit.current) {
-                    httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
-                        bus.emit(options.events.SUCCESS, response);
-                    });
-                } else {
-                    httpClient.post(options.url, formData).subscribe((response: any) => {
-                        bus.emit(options.events.SUCCESS, response);
-                    });
+            });
+            options.fields.forEach((field: Field) => {
+                if (field.type === FieldType.ENTITY) {
+                    if (formData[field.name] === null || formData[field.name] === undefined) {
+                        delete formData[field.name];
+                        return;
+                    }
+                    if (typeof formData[field.name] === 'object' && formData[field.name] !== null) {
+                        return;
+                    }
+                    formData[field.name] = {
+                        [field.valueField]: formData[field.name]
+                    }
                 }
+                if (field.type === FieldType.FILE) {
+                    if (Array.isArray(formData[field.name])) {
+                        delete formData[field.name];
+                        return;
+                    }
+                }
+                if (field.type === FieldType.DATE) {
+                    formData[field.name] = formData[field.name]?.toISOString();
+                }
+            });
+
+            if (options.detailFields) {
+                formData['details'] = gridRef.current?.instance.getDataSource().items();
+            }
+
+            if (isEdit.current) {
+                httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
+                    bus.emit(options.events.SUCCESS, response);
+                });
+            } else {
+                httpClient.post(options.url, formData).subscribe((response: any) => {
+                    bus.emit(options.events.SUCCESS, response);
+                });
             }
         });
     }

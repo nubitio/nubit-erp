@@ -79,7 +79,7 @@ const buildValidationRules = (field: Field) => {
     return validationRules.map((rule, index) => {
         switch (rule.type) {
             case 'required':
-                return <RequiredRule key={index} />
+                return <RequiredRule key={index}/>
             default:
                 return null;
         }
@@ -101,6 +101,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             allowFiltering={field.filterable}
             cellRender={field.formatter}
             setCellValue={field.onChange}
+            //width={field.width}
             minWidth={field.minWidth}
             editorOptions={editorOptions}
         >

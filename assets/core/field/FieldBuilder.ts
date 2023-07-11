@@ -11,7 +11,7 @@ export class FieldBuilder {
             col: 12,
             name: '',
             label: '',
-            width: null,
+            width: 'auto',
             height: null,
             minWidth: undefined,
             minHeight: undefined,
@@ -67,7 +67,7 @@ export class FieldBuilder {
         return this;
     }
 
-    width(width: number): FieldBuilder {
+    width(width: number | string): FieldBuilder {
         this._field.width = width;
         return this;
     }

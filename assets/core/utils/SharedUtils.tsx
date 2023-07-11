@@ -1,4 +1,4 @@
-import { ColumnCellTemplateData } from "devextreme/ui/data_grid";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import React from "react";
 
 export class SharedUtils {
@@ -28,18 +28,18 @@ export class SharedUtils {
             return '<span class="badge rounded-pill bg-success">SI</span>';
         } else if (val == 'false') {
             return '<span class="badge rounded-pill bg-danger">NO</span>';
-        } else if (Number(val) === 0){
+        } else if (Number(val) === 0) {
             return '<span class="badge bg-warning text-dark">NO</span>';
         } else {
-            return '<span class="badge rounded-pill bg-dark">'+val+'</span>';
+            return '<span class="badge rounded-pill bg-dark">' + val + '</span>';
         }
     }
 
     static dxBooleanFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.active) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
-        } else if (Number(cell.data.active) === 0) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-success">SI</span>;
+        } else if (Number(cell.value) === 0) {
+            return <span className="badge rounded-pill bg-danger">NO</span>;
         } else {
             return 'No boolean value';
         }
@@ -60,12 +60,12 @@ export class SharedUtils {
     }
 
     static dxVoidedFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.estado) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Anulado');
-        } else if (Number(cell.data.estado) === 2) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Procesado');
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-success">NO</span>;
+        } else if (Number(cell.value) === 2) {
+            return <span className="badge rounded-pill bg-danger">SI</span>;
         } else {
-            return 'No boolean value';
+            return null;
         }
     }
 
@@ -176,7 +176,8 @@ export class SharedUtils {
     static voidedFormatter(value: number) {
         if (value === 1) {
             return '<span class="badge rounded-pill bg-success">NO</span>';
-        }if (value === 2) {
+        }
+        if (value === 2) {
             return '<span class="badge rounded-pill bg-danger">SI</span>';
         } else {
             return '<span class="badge rounded-pill bg-warning">CON ERROR</span>';

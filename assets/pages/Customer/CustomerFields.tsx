@@ -21,6 +21,7 @@ export const CustomerFields = () => {
         .type(FieldType.TEXTAREA)
         .name('razon_social')
         .label('Cliente')
+        .width('100%')
         .required(true)
         .sortable(true)
         .build());
@@ -28,7 +29,7 @@ export const CustomerFields = () => {
         .type(FieldType.TEXTAREA)
         .name('domicilio_fiscal')
         .label('Domicilio')
-        .width(100)
+        .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .name('telefono')
@@ -45,7 +46,7 @@ export const CustomerFields = () => {
         .url(Constants.API_BASE_URL + 'price-lists')
         .valueField('id')
         .textField('name')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.price_list.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.price_list?.name)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
