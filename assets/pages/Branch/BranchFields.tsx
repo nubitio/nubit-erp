@@ -30,13 +30,14 @@ export const BranchFields = () =>{
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
+        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('direccion')
         .label('Direccion')
-        .width(100)
+        .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
@@ -47,6 +48,7 @@ export const BranchFields = () =>{
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
+        .align('center')
         .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());

@@ -39,7 +39,7 @@ export const ProductFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripción')
-        .width(100)
+        .width('100%')
         .sortable(true)
         .required(true)
         .build());
@@ -61,7 +61,7 @@ export const ProductFields = () => {
         .valueField('unidad_id')
         .textField('name')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_id)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.unidad?.name)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
@@ -84,7 +84,7 @@ export const ProductFields = () => {
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxStatusFormatter)
+        .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());
 

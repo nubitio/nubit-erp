@@ -18,13 +18,14 @@ export const OperationFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width(100)
+        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENUM)
         .name('tipo_id')
         .label('Tipo')
+        .align('center')
         .data([
             {value: 1, text: 'Entrada'},
             {value: 2, text: 'Salida'},
@@ -36,6 +37,7 @@ export const OperationFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
+        .align('center')
         .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());

@@ -1,8 +1,7 @@
 import './DxDialog.scss';
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from 'react';
 
 import {Popup, ToolbarItem} from 'devextreme-react/popup';
-import ValidationGroup from 'devextreme-react/validation-group';
 import {useScreenSize} from '../../utils/media-query';
 import {Button} from 'devextreme-react';
 import {bus} from "../event/EventBus";
@@ -27,28 +26,23 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
     const [visible, setVisible] = useState<boolean>(options.visible ?? false);
     const [loading, setLoading] = useState<boolean>(false);
     const {isXSmall} = useScreenSize();
-    const validationGroup = useRef<ValidationGroup>(null);
 
     const open = (title: string) => {
-        validationGroup.current?.instance.reset();
         setVisible(true);
         setTitle(title);
     }
 
     const close = () => {
-        validationGroup.current?.instance.reset();
         setVisible(false);
-        bus.emit(options.events?.CANCEL);
     };
 
     const onCancelClick = useCallback(() => {
         close();
+        bus.emit(options.events?.CANCEL);
     }, []);
 
     const onSaveClick = useCallback(() => {
-        if (!validationGroup.current?.instance.validate().isValid) return;
         bus.emit(options.events?.SAVE);
-        close();
     }, [options.events.SAVE]);
 
     const setupObservers = () => {
@@ -102,10 +96,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
                     />
                 </div>
             </ToolbarItem>
-
-            <ValidationGroup ref={validationGroup}>
-                {options.children}
-            </ValidationGroup>
+            {options.children}
         </Popup>
     );
 });

@@ -6,7 +6,7 @@ export interface Field {
     col: number;
     name: string;
     label: string;
-    width: number | null;
+    width: string | number | undefined;
     height: number | null;
     minWidth: number | undefined;
     minHeight: number | undefined;

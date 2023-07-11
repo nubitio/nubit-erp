@@ -8,6 +8,7 @@ export const VoucherTypeFields = () => {
 
     fields.push(new FieldBuilder()
         .isIdentity(true)
+        .visible(false)
         .type(FieldType.NONE)
         .name('id')
         .label('Id')
@@ -24,14 +25,14 @@ export const VoucherTypeFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width(100)
+        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxStatusFormatter)
+        .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());
 
