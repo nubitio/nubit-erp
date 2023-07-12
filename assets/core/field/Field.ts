@@ -19,7 +19,7 @@ export interface Field {
     byKeyUrl: string | null;
     textField: string;
     valueField: string;
-    valueType: string;
+    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime";
     data: any[];
     formatter: any;
     fieldFormatter: any;

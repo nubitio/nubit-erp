@@ -24,6 +24,7 @@ export interface DxFormEvents {
     getFieldValue: (name: string) => any;
     setFieldValue: (name: string, value: any) => void;
     getDetailData: () => any;
+    setDetailData: (data: any[]) => void;
     reloadDetailData: () => void;
 }
 
@@ -203,7 +204,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
         bus.on(options.events.SAVE, () => {
             let result = formRef.current?.instance.validate()
-            console.log(result);
             if (!result?.isValid) return;
             let formData = formRef.current?.instance.option('formData');
             uploadedFiles.current.forEach((file: any) => {
@@ -276,6 +276,16 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         return gridRef.current?.instance.getDataSource().items();
     }
 
+    const setDetailData = (data: any[]) => {
+        let store = gridRef.current?.instance.getDataSource().store() as ArrayStore;
+        store.clear();
+        data.forEach((row: any) => {
+            store.insert(row);
+        });
+        console.log(gridRef.current?.instance.getDataSource().items());
+        reloadDetailData();
+    }
+
     const reloadDetailData = () => {
         gridRef.current?.instance.getDataSource().reload();
     }
@@ -285,6 +295,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         getFieldValue,
         setFieldValue,
         getDetailData,
+        setDetailData,
         reloadDetailData
     }));
 

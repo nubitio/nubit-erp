@@ -104,6 +104,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             //width={field.width}
             minWidth={field.minWidth}
             editorOptions={editorOptions}
+            dataType={field.valueType}
         >
             {buildLookup(clone)}
             {buildValidationRules(clone)}
