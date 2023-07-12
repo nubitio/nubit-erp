@@ -19,7 +19,7 @@ class OptionUtils
             'desc' => 'desc' === $sort->order,
         ];
 
-        $sortRules[] = json_encode($sortRule);
+        $sortRules = [json_encode($sortRule), ...$sortRules];
 
         $context['filters']['sort'] = array_unique($sortRules);
 

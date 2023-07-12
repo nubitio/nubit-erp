@@ -132,7 +132,7 @@ export class FieldBuilder {
         return this;
     }
 
-    valueType(valueType: string): FieldBuilder {
+    valueType(valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime"): FieldBuilder {
         this._field.valueType = valueType;
         return this;
     }

@@ -99,7 +99,7 @@ export const PerformanceFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
-        .valueType('float')
+        .valueType('number')
         .precision(3)
         .name('quantity')
         .label('Nro de prod')
@@ -107,14 +107,14 @@ export const PerformanceFields = () => {
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
         .name('nominal')
-        .valueType('float')
+        .valueType('number')
         .precision(3)
         .label('P.nominal')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
         .name('real')
-        .valueType('float')
+        .valueType('number')
         .label('P.real')
         .build());
     fields.push(new FieldBuilder()

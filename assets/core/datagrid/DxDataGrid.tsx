@@ -42,6 +42,7 @@ export interface DxDataGridEvents {
     hideLoading: () => void;
     refresh: () => void;
     getSelectedRowKey: () => any;
+    getSelectedRow: () => any;
 }
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
@@ -114,11 +115,16 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         return gridRef.current?.instance.getSelectedRowKeys()[0];
     }
 
+    const getSelectedRow = () => {
+        return gridRef.current?.instance.getSelectedRowsData()[0];
+    }
+
     useImperativeHandle(ref, () => ({
         showLoading,
         hideLoading,
         refresh,
-        getSelectedRowKey
+        getSelectedRowKey,
+        getSelectedRow
     }));
 
     return (
