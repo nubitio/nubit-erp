@@ -132,6 +132,24 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     }
                 }
             }
+            if (field.type === FieldType.PASSWORD) {
+                editorOptions = {
+                    mode: 'password',
+                    buttons: [{
+                        name: 'password',
+                        location: 'after',
+                        options: {
+                            icon: 'fas fa-eye ',
+                            type: 'default',
+                            onClick: (e: any) => {
+                                const editor = formRef.current?.instance.getEditor(field.name);
+                                editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
+                                e.component.option('icon', editor?.option('mode') === 'text' ? 'fas fa-eye-slash' : 'fas fa-eye');
+                            }
+                        }
+                    }]
+                }
+            }
             editorOptions = {
                 ...editorOptions,
                 readOnly: field.readonly,
@@ -185,6 +203,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             options.fields.forEach((field: Field) => {
                 if (field.type === FieldType.FILE) {
                     delete (row[field.name]);
+                }
+                if (field.type === FieldType.PASSWORD) {
+                    row[field.name] = '';
                 }
             });
             formRef.current?.instance.option('formData', row);
@@ -282,7 +303,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         data.forEach((row: any) => {
             store.insert(row);
         });
-        console.log(gridRef.current?.instance.getDataSource().items());
         reloadDetailData();
     }
 

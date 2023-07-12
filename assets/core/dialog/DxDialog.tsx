@@ -39,7 +39,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
     const onCancelClick = useCallback(() => {
         close();
         bus.emit(options.events?.CANCEL);
-    }, []);
+    }, [options.events.CANCEL]);
 
     const onSaveClick = useCallback(() => {
         bus.emit(options.events?.SAVE);
