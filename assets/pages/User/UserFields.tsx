@@ -50,6 +50,7 @@ export const UserFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
+        .align('center')
         .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
         .build());

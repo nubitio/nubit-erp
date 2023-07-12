@@ -14,8 +14,10 @@ class RoleMenuGetAllByRoleUseCase
     /**
      * @return array<int, mixed>
      */
-    public function __invoke(int $roleId): array
+    public function __invoke(int $roleId, bool $isDx): array
     {
+        $itemsName = $isDx ? 'items' : 'children';
+        $selectedName = $isDx ? 'selected' : 'checked';
         /** @var array<int, array<string, string>> $result */
         $result = $this->repository->getAllByRole($roleId);
         $data = [];
@@ -26,11 +28,11 @@ class RoleMenuGetAllByRoleUseCase
                 $j = 0;
                 foreach ($result as $option) {
                     if ($menu['menu_id'] == $option['parent_id']) {
-                        $submenu[$j] = ['id' => $option['menu_id'], 'text' => $option['descripcion'], 'checked' => (bool) $option['checked']];
+                        $submenu[$j] = ['id' => $option['menu_id'], 'text' => $option['descripcion'], $selectedName => (bool) $option['checked']];
                         ++$j;
                     }
                 }
-                $data[$i] = ['id' => $menu['menu_id'], 'text' => $menu['descripcion'], 'children' => $submenu];
+                $data[$i] = ['id' => $menu['menu_id'], 'text' => $menu['descripcion'], $itemsName => $submenu];
                 ++$i;
             }
         }

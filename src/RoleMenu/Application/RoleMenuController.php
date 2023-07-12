@@ -16,8 +16,9 @@ class RoleMenuController extends BaseController
     public function getAllByRole(Request $request, RoleMenuGetAllByRoleUseCase $getAllUseCase): Response
     {
         $roleId = $request->query->getInt('roleId');
+        $format = $request->query->get('format');
 
-        return $this->json($getAllUseCase($roleId));
+        return $this->json($getAllUseCase($roleId, 'dx' == $format));
     }
 
     #[Route('/role-menu/add', name: 'role-menu_create', methods: ['POST'])]
