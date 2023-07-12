@@ -99,7 +99,7 @@ class Util
             if (in_array($column->getName(), Util::getIgnoredColumns())) {
                 continue;
             }
-            $field = '        this.'.$varName.".push(new FieldBuilder()\n";
+            $field = '    '.$varName.".push(new FieldBuilder()\n";
             $formType = match ($column->getType()->getName()) {
                 'integer' => 'FieldType.NUMBER',
                 'boolean' => 'FieldType.SWITCH',
@@ -111,16 +111,16 @@ class Util
             }
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $formType = 'FieldType.NONE';
-                $field .= "            .isIdentity(true)\n";
-                $field .= "            .visible(false)\n";
+                $field .= "        .isIdentity(true)\n";
+                $field .= "        .visible(false)\n";
             }
-            $field .= '            .type('.$formType.")\n";
-            $field .= "            .name('".$column->getName()."')\n";
-            $field .= "            .label('".ucfirst(str_replace('_', ' ', $column->getName()))."')\n";
+            $field .= '        .type('.$formType.")\n";
+            $field .= "        .name('".$column->getName()."')\n";
+            $field .= "        .label('".ucfirst(str_replace('_', ' ', $column->getName()))."')\n";
             if ($column->getNotnull()) {
-                $field .= "            .required(true)\n";
+                $field .= "        .required(true)\n";
             }
-            $field .= "            .build());\n";
+            $field .= "        .build());\n";
             $fields .= $field;
         }
 
