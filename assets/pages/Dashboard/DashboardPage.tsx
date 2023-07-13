@@ -9,7 +9,7 @@ export const DashboardPage = () => {
 
     useEffect(() => {
         if (!alreadyRender) {
-            dashboard.render()
+            //dashboard.render()
             alreadyRender = true
         }
     }, [])

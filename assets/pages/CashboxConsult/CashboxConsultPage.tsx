@@ -1,37 +1,66 @@
 import "./CashboxConsult.scss";
-import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
-import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
-import {CashboxConsultFields} from "./CashboxFields";
+import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
+import {CashboxDetailFields, CashboxFields} from "../Cashbox/CashboxFields";
+import {Constants} from "../../core/common/Constants";
+import {useRef} from "react";
+import notify from "devextreme/ui/notify";
 
 export const CashboxConsultPage = () => {
     const container = "wrapper";
-    const fields = CashboxConsultFields();
+    const fields = CashboxFields();
+    const detailFields = CashboxDetailFields();
+    const gridRef = useRef<DxDataGridEvents>(null);
 
-    const API_URL = "";
+    const API_URL = Constants.API_BASE_URL + 'cashboxes';
 
-    const EVENTS = {}
+    const toolbar = [
+        {
+            text: 'Reporte Simple',
+            icon: Constants.ICON_PDF,
+            onClick: () => {
+                let selectedRow = gridRef.current?.getSelectedRow();
+
+                if (!selectedRow) {
+                    notify({
+                        message: 'Seleccione un registro',
+                        type: 'info',
+                        displayTime: 3000,
+                    }, {position: 'top right'});
+                }
+
+                window.open('cashbox/export/' + selectedRow.caja_id);
+            }
+        },
+        {
+            text: 'Reporte Detallado',
+            icon: Constants.ICON_PDF,
+            onClick: () => {
+                let selectedRow = gridRef.current?.getSelectedRow();
+
+                if (!selectedRow) {
+                    notify({
+                        message: 'Seleccione un registro',
+                        type: 'info',
+                        displayTime: 3000,
+                    }, {position: 'top right'});
+                }
+
+                window.open('cashbox/report/' + selectedRow.caja_id);
+            }
+        },
+    ]
 
     return (
         <div id={container}>
             <DxDataGrid
-                title={'Consulta Caja'}
+                ref={gridRef}
+                title={'Reportes de caja'}
+                toolbar={toolbar}
                 url={API_URL}
-                allowAdd={true}
-                allowEdit={true}
-                allowDelete={true}
+                detailUrl={API_URL + '/{id}/details'}
                 fields={fields}
-                events={EVENTS}
+                detailFields={detailFields}
             />
-            <DxDialog
-                events={EVENTS}
-            >
-                <DxForm
-                    url={API_URL}
-                    fields={fields}
-                    events={EVENTS}
-                />
-            </DxDialog>
         </div>
     );
 };
