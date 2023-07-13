@@ -5,6 +5,7 @@ import FilterRule from "../../core/common/FilterRule";
 import {Constants} from "../../core/common/Constants";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import NumberUtils from "../../core/utils/NumberUtils";
 
 export const CreditNoteFields = () => {
     const fields: Field[] = [];
@@ -31,7 +32,14 @@ export const CreditNoteFields = () => {
         .url(Constants.API_BASE_URL + 'sales?filterRules=[' + JSON.stringify(saleFilter) + ']')
         .textField('invoice')
         .valueField('movimiento_id')
-        /*.formatter((row: any) => `<b>C.P:</b> ${row.invoice ?? ''}<br><b>Total:</b> ${NumberUtils.formatCurrency(row.total)}`)*/
+        .itemFormatter((data: any) => {
+            return (
+                <div>
+                    <b>C.P:</b> {data.invoice ?? ''}<br/>
+                    <b>Total:</b> {NumberUtils.formatCurrency(data.total)}
+                </div>
+            )
+        })
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -106,14 +114,14 @@ export const CreditNoteFields = () => {
         .name('sale')
         .label('Doc. afectado')
         .align('center')
-        /*.formatter((value: any) => value?.invoice)*/
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.invoice)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
         .name('envio_sunat')
         .label('Envio sunat')
         .align('center')
-        /*.formatter(SharedUtils.billStatusFormatter)*/
+        .formatter(SharedUtils.dxBillStatusFormatter)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)

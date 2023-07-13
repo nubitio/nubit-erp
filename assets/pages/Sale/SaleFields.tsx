@@ -56,7 +56,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('cliente')
         .label('Cliente')
-        .width(100)
+        .width('100%')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')

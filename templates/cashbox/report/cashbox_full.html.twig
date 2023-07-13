@@ -22,7 +22,7 @@
                 <td class="text-right">
                     <h4>{{ title }}</h4>
                     <p>Local: {{ cashbox.local.descripcion|default('') }}</p>
-                    Cajero(a): <span class="text-uppercase">{{ cashbox.user.username|default('') }}</span>
+                    Cajero(a): <span class="text-uppercase">{{ cashbox.usuario.username|default('') }}</span>
                 </td>
             </tr>
         </table>
@@ -46,7 +46,7 @@
                     {% endif %}
                 </td>
                 <td>Total egresos:</td>
-                <td class="text-right">{{ cashbox.outcome }}</td>
+                <td class="text-right">{{ cashbox.expense }}</td>
             </tr>
         </table>
         <div class="mb-4">

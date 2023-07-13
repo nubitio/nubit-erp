@@ -24,7 +24,7 @@ export const VoucherTypePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
-                title={'Tipos comprobantes'}
+                title={'Tipos de comprobante'}
                 url={API_URL}
                 allowAdd={true}
                 allowEdit={true}

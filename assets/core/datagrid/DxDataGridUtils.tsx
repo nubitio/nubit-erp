@@ -79,7 +79,7 @@ const buildValidationRules = (field: Field) => {
     return validationRules.map((rule, index) => {
         switch (rule.type) {
             case 'required':
-                return <RequiredRule key={index} />
+                return <RequiredRule key={index}/>
             default:
                 return null;
         }
@@ -90,6 +90,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
     return fields.map((field: Field, index) => {
         let clone = {...field};
         if (!field.visible) return null;
+        if (forceLookup && field.type === FieldType.NONE) return null;
         if (forceLookup) clone.filterable = true;
         let editorOptions = buildEditorOptions(clone);
         return <Column
@@ -101,8 +102,10 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             allowFiltering={field.filterable}
             cellRender={field.formatter}
             setCellValue={field.onChange}
+            //width={field.width}
             minWidth={field.minWidth}
             editorOptions={editorOptions}
+            dataType={field.valueType}
         >
             {buildLookup(clone)}
             {buildValidationRules(clone)}
