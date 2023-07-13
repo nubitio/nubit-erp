@@ -95,7 +95,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     wrapItemText: true,
                 }
             }
-            if (field.type === FieldType.ENUM) {
+            if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
                 editorOptions = {
                     dataSource: field.data,
                     valueExpr: 'value',
@@ -157,6 +157,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 onFocusIn: field.onClick,
                 onValueChanged: field.onChange,
                 onItemClick: field.onSelect,
+                itemRender: field.itemFormatter,
                 stylingMode: 'outlined',
             };
 

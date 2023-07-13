@@ -55,29 +55,32 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     }, []);
 
     const onAddClick = useCallback(() => {
-        bus.emit(options.events.ADD);
-    }, [options.events.ADD]);
+        options.events?.ADD &&
+        bus.emit(options.events?.ADD);
+    }, []);
 
     const onEditClick = useCallback(() => {
         let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
         if (selectedRowsData && selectedRowsData.length > 0) {
-            bus.emit(options.events.EDIT, {row: selectedRowsData[0]});
+            options.events?.EDIT &&
+            bus.emit(options.events?.EDIT, {row: selectedRowsData[0]});
         } else {
             notify('Debe seleccionar un registro', 'error', 2000);
         }
-    }, [options.events.EDIT]);
+    }, [options.events?.EDIT]);
 
     const onDeleteClick = useCallback(() => {
         let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
         if (selectedRowsData && selectedRowsData.length > 0) {
-            bus.emit(options.events.DELETE, {row: selectedRowsData[0]});
+            options.events?.DELETE &&
+            bus.emit(options.events?.DELETE, {row: selectedRowsData[0]});
         } else {
             notify('Debe seleccionar un registro', 'error', 2000);
         }
-    }, [options.events.DELETE]);
+    }, [options.events?.DELETE]);
 
     const setupObservers = () => {
-        bus.on(options.events.SUCCESS, refresh);
+        if (options.events?.SUCCESS) bus.on(options.events?.SUCCESS, refresh);
     }
 
     let alreadyLoaded = false;

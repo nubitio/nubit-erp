@@ -46,6 +46,13 @@ class DataMapper
                 if (is_object($value) && !($value instanceof \DateTimeInterface)) {
                     if ($value instanceof Collection) {
                         $output->$key = [];
+                        try {
+                            if ($value->isEmpty()) {
+                                continue;
+                            }
+                        } catch (\Exception $e) {
+                            continue;
+                        }
                         /** @var object $item */
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType($output, strval($key));

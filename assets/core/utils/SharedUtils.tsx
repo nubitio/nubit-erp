@@ -161,15 +161,15 @@ export class SharedUtils {
             cell.data.envio_sunat = Number(cell.data.envio_sunat);
         }
         if (cell.data.envio_sunat === -1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'PENDIENTE');
+            return <span className="badge rounded-pill bg-primary">PENDIENTE</span>
         } else if (cell.data.envio_sunat === 0) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-succes'}, 'ENVIADO');
+            return <span className="badge rounded-pill bg-success">ENVIADO</span>
         } else if (cell.data.envio_sunat < 2000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-warning'}, 'ERRONEO');
+            return <span className="badge rounded-pill bg-warning">ERRONEO</span>
         } else if (cell.data.envio_sunat >= 2000 && cell.data.envio_sunat < 4000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'RECHAZADO');
+            return <span className="badge rounded-pill bg-danger">RECHAZADO</span>
         } else if (cell.data.envio_sunat >= 4000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-info'}, 'OBSERVADO');
+            return <span className="badge rounded-pill bg-info">OBSERVADO</span>
         }
     }
 
@@ -192,5 +192,20 @@ export class SharedUtils {
     static timeFormatter(value: string) {
         const time = new Date(value);
         return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
+    }
+
+    static dateTimeFormatter(value: string) {
+        if (value === null || value === undefined || value === '') {
+            return '';
+        }
+        const dateTime = new Date(value);
+        const config: Intl.DateTimeFormatOptions = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Intl.DateTimeFormat('es-PE', config).format(dateTime);
     }
 }

@@ -14,3 +14,5 @@ export class InvoiceService {
         return httpClient.post<any>(`/invoice/${saleId}/email`);
     }
 }
+
+export const invoiceService = new InvoiceService();
