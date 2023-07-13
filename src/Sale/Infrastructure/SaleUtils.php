@@ -2,7 +2,7 @@
 
 namespace App\Sale\Infrastructure;
 
-use App\Cashbox\Domain\CashboxGetLastUseCase;
+use App\CashboxNew\Domain\CashboxGetLastUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\TenantAwareSettingsService;
