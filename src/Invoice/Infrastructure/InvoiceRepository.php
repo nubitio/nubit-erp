@@ -60,13 +60,14 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
             $sale->recargo_consumo ?? 0.0
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
-        $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?)', [
+        $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?,?)', [
             $sale->movimiento_id,
             $localId,
             $invoiceAmounts->getSubtotal(),
             $invoiceAmounts->getTaxedAmount(),
             $invoiceAmounts->getDiscountAmount(),
             $invoiceAmounts->getTax(),
+            $invoiceAmounts->getChargesAmount(),
             $invoiceAmounts->getTotal(),
         ]);
     }

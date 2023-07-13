@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Cashbox\Api;
+namespace App\CashboxNew\Api;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use App\Cashbox\Domain\Cashbox;
+use App\CashboxNew\Domain\Cashbox;
 
 #[ApiResource(
     shortName: 'Cashbox',

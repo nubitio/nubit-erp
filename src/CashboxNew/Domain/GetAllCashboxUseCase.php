@@ -1,19 +1,19 @@
 <?php
 
-namespace App\CashboxDetail\Domain;
+namespace App\CashboxNew\Domain;
 
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 
-readonly class GetAllCashboxDetailUseCase
+readonly class GetAllCashboxUseCase
 {
     public function __construct(
-        private CashboxDetailRepositoryInterface $repository
+        private CashboxRepositoryInterface $repository
     ) {
     }
 
     /**
-     * @return PaginatorInterface<CashboxDetail>
+     * @return PaginatorInterface<Cashbox>
      */
     public function __invoke(Options $options): PaginatorInterface
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Cashbox\Domain;
+namespace App\CashboxNew\Domain;
 
 class UpdateCashboxUseCase
 {
