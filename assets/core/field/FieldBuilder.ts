@@ -11,7 +11,7 @@ export class FieldBuilder {
             col: 12,
             name: '',
             label: '',
-            width: null,
+            width: 'auto',
             height: null,
             minWidth: undefined,
             minHeight: undefined,
@@ -27,7 +27,7 @@ export class FieldBuilder {
             valueType: 'string',
             data: [],
             formatter: null,
-            fieldFormatter: null,
+            itemFormatter: null,
             visible: true,
             defaultValue: null,
             onChange: undefined,
@@ -52,7 +52,7 @@ export class FieldBuilder {
         return this;
     }
 
-    col(col: number): FieldBuilder {
+    col(col: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12): FieldBuilder {
         this._field.col = col;
         return this;
     }
@@ -67,7 +67,7 @@ export class FieldBuilder {
         return this;
     }
 
-    width(width: number): FieldBuilder {
+    width(width: number | string): FieldBuilder {
         this._field.width = width;
         return this;
     }
@@ -87,7 +87,7 @@ export class FieldBuilder {
         return this;
     }
 
-    align(align: string): FieldBuilder {
+    align(align: "left" | "center" | "right"): FieldBuilder {
         this._field.align = align;
         return this;
     }
@@ -107,7 +107,7 @@ export class FieldBuilder {
         return this;
     }
 
-    mode(mode: string): FieldBuilder {
+    mode(mode: "remote" | "local" | "none"): FieldBuilder {
         this._field.mode = mode;
         return this;
     }
@@ -132,7 +132,7 @@ export class FieldBuilder {
         return this;
     }
 
-    valueType(valueType: string): FieldBuilder {
+    valueType(valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime"): FieldBuilder {
         this._field.valueType = valueType;
         return this;
     }
@@ -147,8 +147,8 @@ export class FieldBuilder {
         return this;
     }
 
-    fieldFormatter(fieldFormatter: any): FieldBuilder {
-        this._field.fieldFormatter = fieldFormatter;
+    itemFormatter(itemFormatter: any): FieldBuilder {
+        this._field.itemFormatter = itemFormatter;
         return this;
     }
 

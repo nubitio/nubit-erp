@@ -4,6 +4,8 @@ import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import {productService} from "../../services/product.service";
+import {ProductDto} from "../../dto/product.dto";
 
 export const RecipeFields = () => {
     const fields: Field[] = [];
@@ -37,9 +39,7 @@ export const RecipeFields = () => {
             {value: 1, text: 'Receta'},
             {value: 2, text: 'Kit'},
         ])
-        .formatter((value) => {
-            return value === 1 ? 'Receta' : 'Kit';
-        })
+        .formatter((cell: ColumnCellTemplateData) => cell.value === 1 ? 'Receta' : 'Kit')
         .defaultValue(1)
         .required(true)
         .build());
@@ -62,6 +62,41 @@ export const RecipeFields = () => {
         .label('Activo')
         .formatter(SharedUtils.dxBooleanFormatter)
         .defaultValue(true)
+        .build())
+
+    return fields;
+}
+
+export const RecipeDetailFields = () => {
+    const fields: Field[] = [];
+
+    fields.push(new FieldBuilder()
+        .type(FieldType.ENTITY)
+        .name('material')
+        .label('Material')
+        .width(100)
+        .url(Constants.API_BASE_URL + 'products')
+        .textField('descripcion')
+        .valueField('producto_id')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            let product = await productService.getOne(value, true) as ProductDto;
+            row.material = product;
+            this.defaultSetCellValue(row, product, currentRow);
+        })
+        .filterable(false)
+        .sortable(false)
+        .required(true)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.NUMBER)
+        .name('quantity')
+        .label('Cantidad')
+        .valueType('number')
+        .precision(2)
+        .filterable(false)
+        .sortable(false)
+        .required(true)
         .build())
 
     return fields;

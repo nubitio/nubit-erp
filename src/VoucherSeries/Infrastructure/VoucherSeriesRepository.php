@@ -42,7 +42,7 @@ readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterfa
         $entity = DataMapper::map($voucherSeries, VoucherSeriesEntity::class);
 
         $entity->local = $this->entityManager->getReference(BranchEntity::class, $voucherSeries->local?->local_id);
-        $entity->tipo_comprobante = $this->entityManager->getReference(VoucherTypeEntity::class, $voucherSeries->tipo_comprobante?->id);
+        $entity->tipo_comprobante = $this->entityManager->getRepository(VoucherTypeEntity::class)->findOneBy(['codigo' => $voucherSeries->tipo_comprobante?->codigo]);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();

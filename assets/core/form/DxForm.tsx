@@ -24,6 +24,7 @@ export interface DxFormEvents {
     getFieldValue: (name: string) => any;
     setFieldValue: (name: string, value: any) => void;
     getDetailData: () => any;
+    setDetailData: (data: any[]) => void;
     reloadDetailData: () => void;
 }
 
@@ -94,7 +95,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     wrapItemText: true,
                 }
             }
-            if (field.type === FieldType.ENUM) {
+            if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
                 editorOptions = {
                     dataSource: field.data,
                     valueExpr: 'value',
@@ -131,6 +132,24 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     }
                 }
             }
+            if (field.type === FieldType.PASSWORD) {
+                editorOptions = {
+                    mode: 'password',
+                    buttons: [{
+                        name: 'password',
+                        location: 'after',
+                        options: {
+                            icon: 'fas fa-eye ',
+                            type: 'default',
+                            onClick: (e: any) => {
+                                const editor = formRef.current?.instance.getEditor(field.name);
+                                editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
+                                e.component.option('icon', editor?.option('mode') === 'text' ? 'fas fa-eye-slash' : 'fas fa-eye');
+                            }
+                        }
+                    }]
+                }
+            }
             editorOptions = {
                 ...editorOptions,
                 readOnly: field.readonly,
@@ -138,6 +157,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 onFocusIn: field.onClick,
                 onValueChanged: field.onChange,
                 onItemClick: field.onSelect,
+                itemRender: field.itemFormatter,
                 stylingMode: 'outlined',
             };
 
@@ -185,6 +205,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 if (field.type === FieldType.FILE) {
                     delete (row[field.name]);
                 }
+                if (field.type === FieldType.PASSWORD) {
+                    row[field.name] = '';
+                }
             });
             formRef.current?.instance.option('formData', row);
             isEdit.current = true;
@@ -203,50 +226,49 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
         bus.on(options.events.SAVE, () => {
             let result = formRef.current?.instance.validate()
-            if (result?.isValid) {
-                let formData = formRef.current?.instance.option('formData');
-                uploadedFiles.current.forEach((file: any) => {
-                    formData[file.field] = {
-                        id: file.value
-                    }
-                });
-                options.fields.forEach((field: Field) => {
-                    if (field.type === FieldType.ENTITY) {
-                        if (formData[field.name] === null || formData[field.name] === undefined) {
-                            delete formData[field.name];
-                            return;
-                        }
-                        if (typeof formData[field.name] === 'object' && formData[field.name] !== null) {
-                            return;
-                        }
-                        formData[field.name] = {
-                            [field.valueField]: formData[field.name]
-                        }
-                    }
-                    if (field.type === FieldType.FILE) {
-                        if (Array.isArray(formData[field.name])) {
-                            delete formData[field.name];
-                            return;
-                        }
-                    }
-                    if (field.type === FieldType.DATE) {
-                        formData[field.name] = formData[field.name]?.toISOString();
-                    }
-                });
-
-                if (options.detailFields) {
-                    formData['details'] = gridRef.current?.instance.getDataSource().items();
+            if (!result?.isValid) return;
+            let formData = formRef.current?.instance.option('formData');
+            uploadedFiles.current.forEach((file: any) => {
+                formData[file.field] = {
+                    id: file.value
                 }
-
-                if (isEdit.current) {
-                    httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
-                        bus.emit(options.events.SUCCESS, response);
-                    });
-                } else {
-                    httpClient.post(options.url, formData).subscribe((response: any) => {
-                        bus.emit(options.events.SUCCESS, response);
-                    });
+            });
+            options.fields.forEach((field: Field) => {
+                if (field.type === FieldType.ENTITY) {
+                    if (formData[field.name] === null || formData[field.name] === undefined) {
+                        delete formData[field.name];
+                        return;
+                    }
+                    if (typeof formData[field.name] === 'object' && formData[field.name] !== null) {
+                        return;
+                    }
+                    formData[field.name] = {
+                        [field.valueField]: formData[field.name]
+                    }
                 }
+                if (field.type === FieldType.FILE) {
+                    if (Array.isArray(formData[field.name])) {
+                        delete formData[field.name];
+                        return;
+                    }
+                }
+                if (field.type === FieldType.DATE) {
+                    formData[field.name] = formData[field.name]?.toISOString();
+                }
+            });
+
+            if (options.detailFields) {
+                formData['details'] = gridRef.current?.instance.getDataSource().items();
+            }
+
+            if (isEdit.current) {
+                httpClient.put(`${options.url}/${formData[getIdField()]}`, formData).subscribe((response: any) => {
+                    bus.emit(options.events.SUCCESS, response);
+                });
+            } else {
+                httpClient.post(options.url, formData).subscribe((response: any) => {
+                    bus.emit(options.events.SUCCESS, response);
+                });
             }
         });
     }
@@ -276,6 +298,15 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         return gridRef.current?.instance.getDataSource().items();
     }
 
+    const setDetailData = (data: any[]) => {
+        let store = gridRef.current?.instance.getDataSource().store() as ArrayStore;
+        store.clear();
+        data.forEach((row: any) => {
+            store.insert(row);
+        });
+        reloadDetailData();
+    }
+
     const reloadDetailData = () => {
         gridRef.current?.instance.getDataSource().reload();
     }
@@ -285,6 +316,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         getFieldValue,
         setFieldValue,
         getDetailData,
+        setDetailData,
         reloadDetailData
     }));
 

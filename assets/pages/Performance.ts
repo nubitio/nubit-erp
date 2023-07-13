@@ -128,7 +128,7 @@ export default class Performance {
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NUMBER)
-            .valueType('float')
+            .valueType('number')
             .precision(3)
             .name('quantity')
             .label('Nro de prod')
@@ -136,14 +136,14 @@ export default class Performance {
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('nominal')
-            .valueType('float')
+            .valueType('number')
             .precision(3)
             .label('P.nominal')
             .build());
         this.fields.push(new FieldBuilder()
             .type(FieldType.NONE)
             .name('real')
-            .valueType('float')
+            .valueType('number')
             .label('P.real')
             .build());
         this.fields.push(new FieldBuilder()

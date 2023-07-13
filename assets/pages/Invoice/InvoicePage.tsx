@@ -1,46 +1,147 @@
 import "./InvoicePage.scss";
 import {Constants} from "../../core/common/Constants";
-import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
+import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
 import {DxForm} from "../../core/form/DxForm";
 import {InvoiceFields} from "./InvoiceFields";
+import {useRef} from "react";
+import {invoiceService} from "../../services/invoice.service";
+import notify from "devextreme/ui/notify";
+import {messenger} from "../../core/utils/Messenger";
 
 export const InvoicePage = () => {
-    const container = "wrapper";
-    const fields = InvoiceFields();
+        const container = "wrapper";
+        const fields = InvoiceFields();
+        const gridRef = useRef<DxDataGridEvents>(null)
 
-    const API_URL = Constants.API_BASE_URL + 'invoices';
+        const API_URL = Constants.API_BASE_URL + 'invoices';
 
-    const EVENTS = {
-        ADD: 'invoice:add',
-        EDIT: 'invoice:edit',
-        DELETE: 'invoice:delete',
-        SAVE: 'invoice:save',
-        CANCEL: 'invoice:cancel',
-        SUCCESS: 'invoice:success',
-        LOADING: 'invoice:loading',
-    }
+        const EVENTS = {
+            ADD: 'invoice:add',
+            EDIT: 'invoice:edit',
+            DELETE: 'invoice:delete',
+            SAVE: 'invoice:save',
+            CANCEL: 'invoice:cancel',
+            SUCCESS: 'invoice:success',
+            LOADING: 'invoice:loading',
+        }
 
-    return (
-        <div id={container}>
-            <DxDataGrid
-                title={'Comprobantes de pago'}
-                url={API_URL}
-                allowAdd={true}
-                allowEdit={true}
-                allowDelete={true}
-                fields={fields}
-                events={EVENTS}
-            />
-            <DxDialog
-                events={EVENTS}
-            >
-                <DxForm
+        const toolbar = [
+            {
+                text: 'Enviar a SUNAT',
+                icon: 'fas fa-cloud-upload fa-1x text-info',
+                onClick: () => {
+                    let selectedRow = gridRef.current?.getSelectedRow();
+                    if (!selectedRow) {
+                        notify({
+                            message: 'Seleccione un comprobante',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+
+                    if (selectedRow.estado_sunat === '0') {
+                        notify({
+                            message: 'El comprobante ya fue enviado a SUNAT',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+
+                    gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
+                    invoiceService.sendInvoice(selectedRow.movimiento_id).subscribe((response) => {
+                        notify({
+                            message: response.data.message,
+                            type: 'success',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        gridRef.current?.refresh();
+                    }).add(() => gridRef.current?.hideLoading());
+                }
+            }, {
+                text: 'Enviar por correo',
+                icon: 'fas fa-envelope fa-1x text-success',
+                onClick: () => {
+                    let selectedRow = gridRef.current?.getSelectedRow();
+                    if (!selectedRow) {
+                        notify({
+                            message: 'Seleccione un comprobante',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+
+                    gridRef.current?.showLoading('Enviando comprobante por correo...');
+                    invoiceService.sendEmail(selectedRow.movimiento_id).subscribe((data) => {
+                        messenger.show('Información', 'Comprobante enviado por correo');
+                        gridRef.current?.refresh();
+                    }).add(() => gridRef.current?.hideLoading());
+                }
+            }, {
+                text: 'Ver',
+                icon: 'fas fa-eye fa-1x text-primary',
+                onClick: () => {
+                    let selectedRow = gridRef.current?.getSelectedRow();
+                    if (!selectedRow) {
+                        notify({
+                            message: 'Seleccione un comprobante',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+                    let payload = {
+                        type: selectedRow?.tipo_comprobante_id,
+                        id: selectedRow?.movimiento_id,
+                    }
+                    let payloadEncoded = btoa(JSON.stringify(payload));
+                    window.open('receipt/' + payloadEncoded, '_blank');
+                }
+            }, {
+                text: 'Consultar CDR',
+                icon: 'fas fa-search fa-1x text-warning',
+                onClick: () => {
+                    let selectedRow = gridRef.current?.getSelectedRow();
+                    if (!selectedRow) {
+                        notify({
+                            message: 'Seleccione un comprobante',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+                    gridRef.current?.showLoading('Consultando CDR...');
+                    invoiceService.consultInvoice(selectedRow.movimiento_id).subscribe((response) => {
+                        messenger.show('Información', response.data.message);
+                        gridRef.current?.refresh();
+                    }).add(() => gridRef.current?.hideLoading());
+                }
+            }
+        ];
+
+        return (
+            <div id={container}>
+                <DxDataGrid
+                    ref={gridRef}
+                    title={'Comprobantes de pago'}
+                    toolbar={toolbar}
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}
                 />
-            </DxDialog>
-        </div>
-    );
-};
+                <DxDialog
+                    events={EVENTS}
+                >
+                    <DxForm
+                        url={API_URL}
+                        fields={fields}
+                        events={EVENTS}
+                    />
+                </DxDialog>
+            </div>
+        );
+    }
+;

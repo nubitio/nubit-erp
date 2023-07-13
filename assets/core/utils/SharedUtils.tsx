@@ -1,4 +1,4 @@
-import { ColumnCellTemplateData } from "devextreme/ui/data_grid";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import React from "react";
 
 export class SharedUtils {
@@ -28,18 +28,18 @@ export class SharedUtils {
             return '<span class="badge rounded-pill bg-success">SI</span>';
         } else if (val == 'false') {
             return '<span class="badge rounded-pill bg-danger">NO</span>';
-        } else if (Number(val) === 0){
+        } else if (Number(val) === 0) {
             return '<span class="badge bg-warning text-dark">NO</span>';
         } else {
-            return '<span class="badge rounded-pill bg-dark">'+val+'</span>';
+            return '<span class="badge rounded-pill bg-dark">' + val + '</span>';
         }
     }
 
     static dxBooleanFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.active) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
-        } else if (Number(cell.data.active) === 0) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-success">SI</span>;
+        } else if (Number(cell.value) === 0) {
+            return <span className="badge rounded-pill bg-danger">NO</span>;
         } else {
             return 'No boolean value';
         }
@@ -60,12 +60,12 @@ export class SharedUtils {
     }
 
     static dxVoidedFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.estado) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Anulado');
-        } else if (Number(cell.data.estado) === 2) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Procesado');
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-success">NO</span>;
+        } else if (Number(cell.value) === 2) {
+            return <span className="badge rounded-pill bg-danger">SI</span>;
         } else {
-            return 'No boolean value';
+            return null;
         }
     }
 
@@ -161,22 +161,23 @@ export class SharedUtils {
             cell.data.envio_sunat = Number(cell.data.envio_sunat);
         }
         if (cell.data.envio_sunat === -1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'PENDIENTE');
+            return <span className="badge rounded-pill bg-primary">PENDIENTE</span>
         } else if (cell.data.envio_sunat === 0) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-succes'}, 'ENVIADO');
+            return <span className="badge rounded-pill bg-success">ENVIADO</span>
         } else if (cell.data.envio_sunat < 2000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-warning'}, 'ERRONEO');
+            return <span className="badge rounded-pill bg-warning">ERRONEO</span>
         } else if (cell.data.envio_sunat >= 2000 && cell.data.envio_sunat < 4000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'RECHAZADO');
+            return <span className="badge rounded-pill bg-danger">RECHAZADO</span>
         } else if (cell.data.envio_sunat >= 4000) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-info'}, 'OBSERVADO');
+            return <span className="badge rounded-pill bg-info">OBSERVADO</span>
         }
     }
 
     static voidedFormatter(value: number) {
         if (value === 1) {
             return '<span class="badge rounded-pill bg-success">NO</span>';
-        }if (value === 2) {
+        }
+        if (value === 2) {
             return '<span class="badge rounded-pill bg-danger">SI</span>';
         } else {
             return '<span class="badge rounded-pill bg-warning">CON ERROR</span>';
@@ -191,5 +192,20 @@ export class SharedUtils {
     static timeFormatter(value: string) {
         const time = new Date(value);
         return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
+    }
+
+    static dateTimeFormatter(value: string) {
+        if (value === null || value === undefined || value === '') {
+            return '';
+        }
+        const dateTime = new Date(value);
+        const config: Intl.DateTimeFormatOptions = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Intl.DateTimeFormat('es-PE', config).format(dateTime);
     }
 }
