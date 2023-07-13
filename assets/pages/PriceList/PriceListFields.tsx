@@ -28,7 +28,7 @@ export const PriceListFields = () => {
         .name('active')
         .label('Activo')
         .defaultValue(true)
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .build())
     return fields;
 }

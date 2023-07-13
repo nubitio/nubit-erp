@@ -37,14 +37,14 @@ export const WarehouseFields = () => {
         .type(FieldType.SWITCH)
         .name('is_default')
         .label('Default')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .align('center')
         .defaultValue(true)
         .build());

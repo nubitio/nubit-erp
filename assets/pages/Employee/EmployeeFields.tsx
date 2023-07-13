@@ -98,7 +98,7 @@ export const EmployeeFields = () => {
         .type(FieldType.SWITCH)
         .name('active')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .defaultValue(true)
         .build())
 

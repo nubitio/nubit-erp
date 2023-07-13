@@ -35,37 +35,37 @@ export class SharedUtils {
         }
     }
 
-    static dxBooleanFormatter(cell: ColumnCellTemplateData) {
+    static dxActiveFormatter(cell: ColumnCellTemplateData) {
         if (Number(cell.data.active) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Activado');
         } else if (Number(cell.data.active) === 0) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'NO');
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Desactivado');
         } else {
             return 'No boolean value';
         }
     }
 
     static dxStatusFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.estado) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-primary'}, 'ON');
+        if (Number(cell.data.estado) === 0) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-secondary'}, 'NO');
+        } else if (Number(cell.data.estado) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'SI');
         } else if (Number(cell.data.estado) === 2) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-secondary'}, 'OFF');
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'OFF');
         } else if (Number(cell.data.estado) === 3) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-warning text-dark'}, 'Warning');
-        } else if (Number(cell.data.estado) === 4) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-info text-dark'}, 'Observado');
+            return React.createElement('span', {className: 'badge rounded-pill bg-warning text-dark'}, 'Alert!');
         } else {
             return React.createElement('span', {className: 'badge rounded-pill bg-dark'}, 'Status no tracked');
         }
     }
 
     static dxVoidedFormatter(cell: ColumnCellTemplateData) {
-        if (Number(cell.data.estado) === 1) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Anulado');
-        } else if (Number(cell.data.estado) === 2) {
-            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Procesado');
+        if (Number(cell.data.voided) === 1) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-success'}, 'Procesado');
+        } else if (Number(cell.data.voided) === 2) {
+            return React.createElement('span', {className: 'badge rounded-pill bg-danger'}, 'Anulado');
         } else {
-            return 'No boolean value';
+            return 'No voided value';
         }
     }
 

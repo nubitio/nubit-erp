@@ -58,7 +58,7 @@ export const CompanyFields = () => {
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .defaultValue(true)
         .build());
 

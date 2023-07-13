@@ -160,8 +160,8 @@ export const SaleFields = (form: DxFormEvents | null) => {
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
         .name('estado')
-        .label('Anulado')
-        .formatter(SharedUtils.dxVoidedFormatter)
+        .label('Procesado')
+        .formatter(SharedUtils.dxStatusFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()

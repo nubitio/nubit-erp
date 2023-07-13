@@ -53,7 +53,7 @@ export const CustomerFields = () => {
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxStatusFormatter)
         .defaultValue(true)
         .build());
 

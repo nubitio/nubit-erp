@@ -47,7 +47,7 @@ export const BranchFields = () =>{
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .defaultValue(true)
         .build());
 

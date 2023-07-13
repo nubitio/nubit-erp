@@ -43,7 +43,7 @@ export const categoryFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .defaultValue(true)
         .build());
 
@@ -90,7 +90,7 @@ export const dxCategoryFields = () => {
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.dxActiveFormatter)
         .defaultValue(true)
         .align('center')
         .build());
