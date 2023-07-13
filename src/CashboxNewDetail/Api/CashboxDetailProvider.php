@@ -1,12 +1,12 @@
 <?php
 
-namespace App\CashboxDetail\Api;
+namespace App\CashboxNewDetail\Api;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use App\CashboxDetail\Domain\CashboxDetail;
-use App\CashboxDetail\Domain\GetAllCashboxDetailUseCase;
-use App\CashboxDetail\Infrastructure\CashboxDetailEntity;
+use App\CashboxNewDetail\Domain\CashboxDetail;
+use App\CashboxNewDetail\Domain\GetAllCashboxDetailUseCase;
+use App\CashboxNewDetail\Infrastructure\CashboxDetailEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\FilterOperation;
 use App\Core\Infrastructure\DataLoader\FilterRule;

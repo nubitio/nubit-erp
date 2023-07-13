@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Cashbox\Api;
+namespace App\CashboxNew\Api;
 
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use App\Cashbox\Domain\Cashbox;
-use App\Cashbox\Domain\CreateCashboxUseCase;
-use App\Cashbox\Domain\DeleteCashboxUseCase;
-use App\Cashbox\Domain\UpdateCashboxUseCase;
+use App\CashboxNew\Domain\Cashbox;
+use App\CashboxNew\Domain\CreateCashboxUseCase;
+use App\CashboxNew\Domain\DeleteCashboxUseCase;
+use App\CashboxNew\Domain\UpdateCashboxUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**

@@ -14,27 +14,30 @@ class Cashbox
     public function __construct(
         #[SerializedName('caja_id')]
         public ?string $caja_id = null,
-        #[SerializedName('local')]
-        public ?Branch $local = null,
+        #[SerializedName('local_id')]
+        public ?string $local_id = null,
         #[SerializedName('apertura')]
-        public ?\DateTimeInterface $apertura = null,
+        public ?\DateTime $apertura = null,
         #[SerializedName('cierre')]
-        public ?\DateTimeInterface $cierre = null,
-        #[SerializedName('usuario')]
-        public ?User $usuario = null,
+        public ?\DateTime $cierre = null,
+        #[SerializedName('usuario_id')]
+        public ?int $usuario_id = null,
         #[SerializedName('estado')]
         public ?int $estado = null,
-        /** @var CashboxDetail[] $details */
-        #[SerializedName('details')]
-        public array $details = []
+        public ?Branch $local = null,
+        public ?User $user = null,
+        /**
+         * @var CashboxDetail[] $details
+         */
+        public array $details = [],
     ) {
     }
 
     public function getIncome(): float
     {
-        $income = 0.0;
+        $income = 0;
         foreach ($this->details as $detail) {
-            if (1 === $detail->tipo_id) {
+            if (1 == $detail->tipo_id) {
                 $income += $detail->monto;
             }
         }
@@ -42,29 +45,20 @@ class Cashbox
         return $income;
     }
 
-    public function getExpense(): float
+    public function getOutcome(): float
     {
-        $expense = 0.0;
+        $outcome = 0;
         foreach ($this->details as $detail) {
-            if (2 === $detail->tipo_id) {
-                $expense += $detail->monto;
+            if (2 == $detail->tipo_id) {
+                $outcome += $detail->monto;
             }
         }
 
-        return $expense;
+        return $outcome;
     }
 
     public function getBalance(): float
     {
-        $balance = 0.0;
-        foreach ($this->details as $detail) {
-            if (1 === $detail->tipo_id) {
-                $balance += $detail->monto;
-            } else {
-                $balance -= $detail->monto;
-            }
-        }
-
-        return $balance;
+        return $this->getIncome() - $this->getOutcome();
     }
 }

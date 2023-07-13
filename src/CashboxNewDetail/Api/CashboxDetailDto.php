@@ -1,12 +1,12 @@
 <?php
 
-namespace App\CashboxDetail\Api;
+namespace App\CashboxNewDetail\Api;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use App\Cashbox\Api\CashboxDto;
-use App\CashboxDetail\Domain\CashboxDetail;
+use App\CashboxNew\Api\CashboxDto;
+use App\CashboxNewDetail\Domain\CashboxDetail;
 
 #[ApiResource(
     uriTemplate: '/cashboxes/{caja_id}/details',

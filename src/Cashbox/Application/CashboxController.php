@@ -3,17 +3,17 @@
 namespace App\Cashbox\Application;
 
 use App\Base\BaseController;
-use App\Branch\Domain\Branch;
 use App\Cashbox\Domain\Cashbox;
 use App\Cashbox\Domain\CashboxCreateUseCase;
+use App\Cashbox\Domain\CashboxDeleteUseCase;
+use App\Cashbox\Domain\CashboxGetAllUseCase;
 use App\Cashbox\Domain\CashboxGetInfoReceiptUseCase;
 use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Cashbox\Domain\CashboxGetOneUseCase;
-use App\Cashbox\Domain\GetOneCashboxUseCase;
-use App\Cashbox\Domain\UpdateCashboxUseCase;
+use App\Cashbox\Domain\CashboxUpdateUseCase;
 use App\CashboxDetail\Domain\CashboxDetail;
+use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\PdfExporter;
-use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -33,17 +33,57 @@ class CashboxController extends BaseController
         return $this->render('cashbox/consult.html.twig');
     }
 
-    #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET'])]
+    #[Route('/cashbox/get', name: 'cashbox_list', methods: ['POST'])]
+    public function getAll(Request $request, CashboxGetAllUseCase $getAllUseCase): Response
+    {
+        return $this->json($getAllUseCase([
+            [
+                'field' => 'local_id',
+                'op' => 'equal',
+                'value' => $request->getSession()->get('branch_id'),
+            ],
+        ]));
+    }
+
+    #[Route('/cashbox/last', name: 'cashbox_last', methods: ['GET', 'POST'])]
     public function getLast(Request $request, CashboxGetLastUseCase $getLastUseCase): Response
     {
         /** @var string $localId */
         $localId = $request->getSession()->get('branch_id');
         /** @var int $userId */
         $userId = $request->getSession()->get('user_id');
-
         $cashBox = $getLastUseCase($localId, $userId);
 
-        return $this->json($cashBox);
+        if (!$cashBox) {
+            return $this->json([
+                'header' => [], 'rows' => [], 'footer' => [],
+            ]);
+        }
+
+        $data = [];
+
+        $data['header'] = [
+            'caja_id' => $cashBox->caja_id,
+            'fecha' => $cashBox->apertura?->format('Y-m-d'),
+            'apertura' => $cashBox->apertura?->format('H:i:s'),
+        ];
+        $data['rows'] = $cashBox->details;
+        $data['footer'] = [
+            [
+                'descripcion' => 'Ingresos',
+                'monto' => $cashBox->getIncome(),
+            ],
+            [
+                'descripcion' => 'Egresos',
+                'monto' => $cashBox->getOutcome(),
+            ],
+            [
+                'descripcion' => 'Saldo',
+                'monto' => $cashBox->getBalance(),
+            ],
+        ];
+
+        return $this->json($data);
     }
 
     #[Route('/cashbox/open', name: 'cashbox_open', methods: ['POST'])]
@@ -53,41 +93,65 @@ class CashboxController extends BaseController
         $localId = $request->getSession()->get('branch_id');
         /** @var int $userId */
         $userId = $request->getSession()->get('user_id');
-
-        /** @var array<string, string> $requestBody */
-        $requestBody = json_decode($request->getContent(), true);
-
         $cashBoxDetail = new CashboxDetail(
             uid: 1,
             tipo_id: 1,
             descripcion: 'FONDO DE CAJA',
-            monto: floatval($requestBody['amount']),
+            monto: (float) $request->request->get('monto_inicial'),
         );
 
         $cashBox = new Cashbox(
-            local: new Branch($localId),
+            local_id: $localId,
             apertura: new \DateTime(),
-            usuario: new User($userId),
+            usuario_id: $userId,
             estado: 1,
             details: [$cashBoxDetail],
         );
 
         $createUseCase($cashBox);
 
-        return $this->json($cashBox, Response::HTTP_CREATED);
+        return $this->json(['success' => true]);
     }
 
-    #[Route('/cashbox/close/{id}', name: 'cashbox_close', methods: ['POST'])]
-    public function close(string $id, GetOneCashboxUseCase $getOneCashboxUseCase, UpdateCashboxUseCase $updateCashboxUseCase): Response
+    #[Route('/cashbox/add', name: 'cashbox_create', methods: ['POST'])]
+    public function add(Request $request, CashboxCreateUseCase $createUseCase): Response
     {
-        $cashbox = $getOneCashboxUseCase($id);
+        /**
+         * @var Cashbox $cashbox
+         */
+        $cashbox = $this->serializer->deserialize(json_encode($request->request->all()), Cashbox::class, 'json');
+        $createUseCase($cashbox);
 
-        $cashbox->cierre = new \DateTime();
-        $cashbox->estado = 2;
+        return $this->json(['success' => true, 'msg' => Constants::CREATED_TEXT]);
+    }
 
-        $updateCashboxUseCase($cashbox);
+    #[Route('/cashbox/edit/{id}', name: 'cashbox_update', methods: ['PUT', 'POST'])]
+    public function edit(Request $request, CashboxUpdateUseCase $updateUseCase, string $id): Response
+    {
+        $request->request->add(['caja_id' => $id]);
+        /**
+         * @var Cashbox $cashbox
+         */
+        $cashbox = $this->serializer->deserialize(json_encode($request->request->all()), Cashbox::class, 'json');
+        $updateUseCase($cashbox);
 
-        return $this->json($cashbox);
+        return $this->json(['success' => true, 'msg' => Constants::UPDATED_TEXT]);
+    }
+
+    #[Route('/cashbox/delete/{id}', name: 'cashbox_delete', methods: ['DELETE', 'POST'])]
+    public function delete(CashboxDeleteUseCase $deleteUseCase, string $id): Response
+    {
+        $deleteUseCase($id);
+
+        return $this->json(['success' => true, 'msg' => Constants::DELETED_TEXT]);
+    }
+
+    #[Route('/cashbox/{id}/details', name: 'cashbox_get', methods: ['GET'])]
+    public function getOne(CashboxGetOneUseCase $getOneUseCase, string $id): Response
+    {
+        $cashBox = $getOneUseCase($id);
+
+        return $this->json($cashBox->details);
     }
 
     #[Route('/cashbox/export/{id}', name: 'cashbox_export', methods: ['GET'])]

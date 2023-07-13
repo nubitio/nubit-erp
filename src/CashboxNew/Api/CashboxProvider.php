@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Cashbox\Api;
+namespace App\CashboxNew\Api;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use App\Cashbox\Domain\Cashbox;
-use App\Cashbox\Domain\GetAllCashboxUseCase;
-use App\Cashbox\Domain\GetOneCashboxUseCase;
-use App\Cashbox\Infrastructure\CashboxEntity;
+use App\CashboxNew\Domain\Cashbox;
+use App\CashboxNew\Domain\GetAllCashboxUseCase;
+use App\CashboxNew\Domain\GetOneCashboxUseCase;
+use App\CashboxNew\Infrastructure\CashboxEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;

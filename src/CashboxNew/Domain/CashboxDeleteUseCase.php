@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Cashbox\Domain;
+namespace App\CashboxNew\Domain;
 
-class GetOneCashboxUseCase
+class CashboxDeleteUseCase
 {
     private CashboxRepositoryInterface $repository;
 
@@ -11,8 +11,8 @@ class GetOneCashboxUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $id): Cashbox
+    public function __invoke(string $id): void
     {
-        return $this->repository->getOne($id);
+        $this->repository->delete($id);
     }
 }
