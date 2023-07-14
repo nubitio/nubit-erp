@@ -5,8 +5,10 @@ namespace App\Sale\Domain;
 use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
+use App\Operation\Domain\Operation;
 use App\PaymentMethod\Domain\PaymentMethod;
 use App\SaleDetail\Domain\SaleDetail;
+use App\Supplier\Domain\Supplier;
 use App\Warehouse\Domain\Warehouse;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -16,8 +18,8 @@ class Sale
     public function __construct(
         #[SerializedName('movimiento_id')]
         public ?string $movimiento_id = null,
-        #[SerializedName('operacion_id')]
-        public ?string $operacion_id = null,
+        #[SerializedName('operacion')]
+        public ?Operation $operacion = null,
         #[SerializedName('almacen')]
         public ?Warehouse $almacen = null,
         #[SerializedName('cliente')]
@@ -26,8 +28,8 @@ class Sale
         public ?int $tipo_id = null,
         #[SerializedName('fecha')]
         public ?\DateTimeInterface $fecha = null,
-        #[SerializedName('proveedor_id')]
-        public ?string $proveedor_id = null,
+        #[SerializedName('proveedor')]
+        public ?Supplier $proveedor = null,
         #[SerializedName('forma_pago')]
         public ?int $forma_pago = null,
         #[SerializedName('tipo_pago')]
@@ -51,9 +53,9 @@ class Sale
         #[SerializedName('caja_id')]
         public ?string $caja_id = null,
         #[SerializedName('estado')]
-        public ?int $estado = null,
+        public ?int $estado = 1,
         #[SerializedName('date_created')]
-        public ?\DateTimeInterface $date_created = null,
+        public ?\DateTimeInterface $date_created = new \DateTime(),
         #[SerializedName('date_updated')]
         public ?\DateTimeInterface $date_updated = null,
         #[SerializedName('created_by')]

@@ -6,7 +6,7 @@ use App\Billing\Domain\NoteSendUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\Voucher;
 use League\Flysystem\FilesystemException;
@@ -20,7 +20,7 @@ readonly class SendCreditNoteUseCase
         private NoteSendUseCase $noteSendUseCase,
         private CreditNoteRepositoryInterface $creditNoteRepository,
         private FileManager $fileManager,
-        private TenantAwareSettingsService $settings
+        private SettingsService $settings
     ) {
     }
 

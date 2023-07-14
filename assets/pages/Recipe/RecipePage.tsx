@@ -12,7 +12,6 @@ export const RecipePage = () => {
     const container = "wrapper";
     const fields = RecipeFields();
     const detailFields = RecipeDetailFields();
-
     const formRef = useRef<DxFormEvents>(null)
 
     const API_URL = Constants.API_BASE_URL + 'recipes';

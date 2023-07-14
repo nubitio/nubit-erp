@@ -5,7 +5,7 @@ namespace App\Invoice\Domain;
 use App\Billing\Domain\BillConsultUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
 use Psr\Cache\InvalidArgumentException;
@@ -16,7 +16,7 @@ readonly class InvoiceConsultUseCase
         private InvoiceRepositoryInterface $invoiceRepository,
         private BillConsultUseCase $billConsultUseCase,
         private FileManager $fileManager,
-        private TenantAwareSettingsService $settings
+        private SettingsService $settings
     ) {
     }
 

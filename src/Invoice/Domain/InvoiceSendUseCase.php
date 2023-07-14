@@ -7,7 +7,7 @@ use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use League\Flysystem\FilesystemException;
 use Psr\Cache\InvalidArgumentException;
 
@@ -18,7 +18,7 @@ readonly class InvoiceSendUseCase
         private BillSendUseCase $billSendUseCase,
         private UpdateInvoiceUseCase $updateInvoiceUseCase,
         private FileManager $fileManager,
-        private TenantAwareSettingsService $settings,
+        private SettingsService $settings,
     ) {
     }
 

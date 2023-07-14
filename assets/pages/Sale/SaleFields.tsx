@@ -37,6 +37,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .defaultValue(new Date())
         .required(true)
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+        .valueType('date')
         .build());
     let session = StorageUtils.getItem('session');
     let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;

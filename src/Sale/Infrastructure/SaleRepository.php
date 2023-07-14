@@ -8,11 +8,13 @@ use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
+use App\Operation\Infrastructure\OperationEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
+use App\Supplier\Infrastructure\SupplierEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -46,14 +48,28 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function insert(Sale $sale): Sale
     {
-        $sale = $this->saleUtils->fillSaleValues($sale);
+        if ($sale->tipo_pago) {
+            $sale = $this->saleUtils->fillSaleValues($sale);
+        }
         $entity = DataMapper::map($sale, SaleEntity::class);
         $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
-        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente?->ruc);
-        $entity->cliente = $customer;
-        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
-        $entity->tipo_pago = $paymentMethod;
+        if ($sale->operacion) {
+            $operation = $this->entityManager->getReference(OperationEntity::class, $sale->operacion->operacion_id);
+            $entity->operacion = $operation;
+        }
+        if ($sale->proveedor) {
+            $supplier = $this->entityManager->getReference(SupplierEntity::class, $sale->proveedor->proveedor_id);
+            $entity->proveedor = $supplier;
+        }
+        if ($sale->cliente) {
+            $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+            $entity->cliente = $customer;
+        }
+        if ($sale->tipo_pago) {
+            $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+            $entity->tipo_pago = $paymentMethod;
+        }
         $subtotal = 0;
         /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
@@ -78,10 +94,22 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity->details = $details;
         $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
-        $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente?->ruc);
-        $entity->cliente = $customer;
-        $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago?->id);
-        $entity->tipo_pago = $paymentMethod;
+        if ($sale->operacion) {
+            $operation = $this->entityManager->getReference(OperationEntity::class, $sale->operacion->operacion_id);
+            $entity->operacion = $operation;
+        }
+        if ($sale->proveedor) {
+            $supplier = $this->entityManager->getReference(SupplierEntity::class, $sale->proveedor->proveedor_id);
+            $entity->proveedor = $supplier;
+        }
+        if ($sale->cliente) {
+            $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
+            $entity->cliente = $customer;
+        }
+        if ($sale->tipo_pago) {
+            $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
+            $entity->tipo_pago = $paymentMethod;
+        }
         $subtotal = 0;
         /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
@@ -89,6 +117,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
             $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
             $subtotal += $detail->precio_total;
         }
+        dump($entity);
         $entity->subtotal = $subtotal;
         $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();

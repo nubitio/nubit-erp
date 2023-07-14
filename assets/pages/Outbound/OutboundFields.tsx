@@ -1,6 +1,12 @@
 import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
+import {SharedUtils} from "../../core/utils/SharedUtils";
+import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import {Constants} from "../../core/common/Constants";
+import {userInformation} from "../../core/common/UserInformation";
+import {productService} from "../../services/product.service";
+import {ProductDto} from "../../dto/product.dto";
 
 export const OutboundFields = () => {
     const fields: Field[] = [];
@@ -14,119 +20,55 @@ export const OutboundFields = () => {
         .required(true)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('operacion_id')
-        .label('Operacion id')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('almacen_id')
-        .label('Almacen id')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('cliente_id')
-        .label('Cliente id')
-        .build());
-    fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
         .name('tipo_id')
         .label('Tipo id')
+        .defaultValue(2)
+        .hidden(true)
+        .visible(false)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.DATE)
         .name('fecha')
         .label('Fecha')
+        .defaultValue(new Date())
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('proveedor_id')
-        .label('Proveedor id')
+        .type(FieldType.ENTITY)
+        .name('operacion')
+        .label('Operacion')
+        .url(Constants.API_BASE_URL + 'operations')
+        .filters([{
+            field: 'tipo_id',
+            operator: '=',
+            value: 2
+        }])
+        .valueField('operacion_id')
+        .textField('descripcion')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .required(true)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('forma_pago')
-        .label('Forma pago')
+        .type(FieldType.ENTITY)
+        .name('almacen')
+        .label('Almacen')
+        .url(Constants.API_BASE_URL + 'branches/' + userInformation().currentBranchId + '/warehouses')
+        .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
+        .valueField('almacen_id')
+        .textField('descripcion')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .defaultValue(userInformation().currentWarehouseId)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('tipo_pago')
-        .label('Tipo pago')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('tipo_tarjeta')
-        .label('Tipo tarjeta')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('serie')
-        .label('Serie')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('numero')
-        .label('Numero')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('descuento')
-        .label('Descuento')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
+        .type(FieldType.TEXTAREA)
         .name('glosa')
         .label('Glosa')
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('orden_id')
-        .label('Orden id')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('has_invoice')
-        .label('Has invoice')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('is_consume')
-        .label('Is consume')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('caja_id')
-        .label('Caja id')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
+        .type(FieldType.NONE)
         .name('estado')
         .label('Estado')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('igv')
-        .label('Igv')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NUMBER)
-        .name('recargo_consumo')
-        .label('Recargo consumo')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('invoice')
-        .label('Invoice')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('subtotal')
-        .label('Subtotal')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('total')
-        .label('Total')
         .build());
 
     return fields;
@@ -136,45 +78,32 @@ export const OutboundDetailFields = () => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
-        .isIdentity(true)
-        .visible(false)
-        .type(FieldType.NONE)
-        .name('id')
-        .label('Id')
+        .type(FieldType.ENTITY)
+        .name('producto')
+        .label('Producto')
+        .minWidth(250)
+        .url(Constants.API_BASE_URL + 'products')
+        .valueField('producto_id')
+        .textField('descripcion')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .onChange(async function (this: any, row: any, value: any, currentRow: any) {
+            let product = await productService.getOne(value, true) as ProductDto;
+            row.producto = product;
+            this.defaultSetCellValue(row, product, currentRow);
+        })
+        .sortable(false)
+        .filterable(false)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('movimiento_id')
-        .label('Movimiento id')
-        .required(true)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('producto_id')
-        .label('Producto id')
-        .required(true)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
+        .type(FieldType.NUMBER)
         .name('cantidad')
         .label('Cantidad')
+        .align('center')
+        .sortable(false)
+        .filterable(false)
         .required(true)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('precio_unitario')
-        .label('Precio unitario')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('descuento')
-        .label('Descuento')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('precio_total')
-        .label('Precio total')
+        .valueType('number')
         .build());
 
     return fields;
