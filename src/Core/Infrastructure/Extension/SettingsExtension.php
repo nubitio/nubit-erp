@@ -2,14 +2,14 @@
 
 namespace App\Core\Infrastructure\Extension;
 
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
 class SettingsExtension extends AbstractExtension
 {
     public function __construct(
-        private readonly TenantAwareSettingsService $settingsService
+        private readonly SettingsService $settingsService
     ) {
     }
 

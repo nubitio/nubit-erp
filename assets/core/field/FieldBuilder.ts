@@ -1,5 +1,6 @@
 import {FieldType} from "./FieldType";
 import {Field} from "./Field";
+import {DxFilterRule} from "../common/FilterRule";
 
 export class FieldBuilder {
     private readonly _field: Field;
@@ -21,6 +22,7 @@ export class FieldBuilder {
             validators: [],
             mode: 'local',
             url: '',
+            filters: [],
             byKeyUrl: null,
             textField: '',
             valueField: '',
@@ -114,6 +116,11 @@ export class FieldBuilder {
 
     url(url: string): FieldBuilder {
         this._field.url = url;
+        return this;
+    }
+
+    filters(filters: DxFilterRule[]): FieldBuilder {
+        this._field.filters = filters;
         return this;
     }
 

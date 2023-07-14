@@ -3,15 +3,15 @@
 namespace App\Billing\Infrastructure;
 
 use App\Billing\Domain\BillUtilsInterface;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
 
 class BillUtils implements BillUtilsInterface
 {
-    private TenantAwareSettingsService $settingsService;
+    private SettingsService $settingsService;
 
-    public function __construct(TenantAwareSettingsService $settingsService)
+    public function __construct(SettingsService $settingsService)
     {
         $this->settingsService = $settingsService;
     }

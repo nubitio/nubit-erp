@@ -15,9 +15,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class XlsExporter
 {
-    private TenantAwareSettingsService $settingsService;
+    private SettingsService $settingsService;
 
-    public function __construct(TenantAwareSettingsService $settingsService)
+    public function __construct(SettingsService $settingsService)
     {
         $this->settingsService = $settingsService;
     }

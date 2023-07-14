@@ -1,4 +1,5 @@
 import {FieldType} from "./FieldType";
+import {DxFilterRule} from "../common/FilterRule";
 
 export interface Field {
     isIdentity: boolean;
@@ -16,6 +17,7 @@ export interface Field {
     validators: any[];
     mode: "remote" | "local" | "none";
     url: string;
+    filters: DxFilterRule[];
     byKeyUrl: string | null;
     textField: string;
     valueField: string;

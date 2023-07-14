@@ -4,8 +4,10 @@ namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Infrastructure\CustomerEntity;
+use App\Operation\Infrastructure\OperationEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
+use App\Supplier\Infrastructure\SupplierEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,8 +33,9 @@ class SaleEntity
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'movimiento_id', type: 'string')]
         public ?string $movimiento_id = null,
-        #[Column(name: 'operacion_id', type: 'string')]
-        public ?string $operacion_id = null,
+        #[ManyToOne(targetEntity: OperationEntity::class)]
+        #[JoinColumn(name: 'operacion_id', referencedColumnName: 'operacion_id')]
+        public ?OperationEntity $operacion = null,
         #[ManyToOne(targetEntity: WarehouseEntity::class)]
         #[JoinColumn(name: 'almacen_id', referencedColumnName: 'almacen_id')]
         public ?WarehouseEntity $almacen = null,
@@ -43,8 +46,9 @@ class SaleEntity
         public ?int $tipo_id = null,
         #[Column(name: 'fecha', type: 'date')]
         public ?\DateTimeInterface $fecha = null,
-        #[Column(name: 'proveedor_id', type: 'string')]
-        public ?string $proveedor_id = null,
+        #[ManyToOne(targetEntity: SupplierEntity::class)]
+        #[JoinColumn(name: 'proveedor_id', referencedColumnName: 'proveedor_id')]
+        public ?SupplierEntity $proveedor = null,
         #[Column(name: 'forma_pago', type: 'integer')]
         public ?int $forma_pago = null,
         #[ManyToOne(targetEntity: PaymentMethodEntity::class)]

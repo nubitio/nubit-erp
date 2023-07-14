@@ -9,7 +9,6 @@ import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dia
 import {bus} from "../../core/event/EventBus";
 import {saleService} from "../../services/sale.service";
 import notify from "devextreme/ui/notify";
-import {Popup} from "devextreme-react";
 import * as qz from 'qz-tray';
 import {httpClient} from "../../core/http/HttpClient";
 

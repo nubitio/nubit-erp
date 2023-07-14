@@ -4,6 +4,7 @@ import {lastValueFrom} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 import CustomStore from "devextreme/data/custom_store";
 import DevExpress from "devextreme";
+import {FilterDescriptor} from "devextreme/data";
 import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
@@ -28,12 +29,20 @@ class DxUtils {
             });
     }
 
-    getDataStore(url: string, idField: string, byKeyUrl: string | null = null, defaultSort: SortDescriptor<any>[] = []): CustomStore {
+    getDataStore(
+        url: string,
+        idField: string,
+        byKeyUrl: string | null = null,
+        defaultFilterRules: FilterDescriptor[] = [],
+        defaultSortRules: SortDescriptor<any>[] = []
+    ): CustomStore {
         return new CustomStore({
             key: idField,
             load: (loadOptions) => {
+                let userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
+                loadOptions.filter = [...defaultFilterRules, ...userFilter];
                 let userSort = (loadOptions.sort ?? []) as SortDescriptor<any>[];
-                loadOptions.sort = [...defaultSort, ...userSort];
+                loadOptions.sort = [...defaultSortRules, ...userSort];
                 return this.fetchAll(url, loadOptions)
             },
             byKey: (key) => {
