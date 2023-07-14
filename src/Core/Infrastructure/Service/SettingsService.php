@@ -4,29 +4,27 @@ namespace App\Core\Infrastructure\Service;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
 
 readonly class SettingsService
 {
     public function __construct(
-        private Connection $db,
-        private CacheInterface $cache
+        private Connection $db
     ) {
     }
 
-    public function get(string $key, string $default = null): mixed
+    /**
+     * @throws Exception
+     */
+    public function get(string $key, string $default = null): bool|float|int|string|null
     {
-        return $this->cache->get($key, function (ItemInterface $item) use ($key, $default) {
-            $item->expiresAfter(10);
-            $value = $this->db->fetchOne('SELECT value FROM options WHERE name = ?', [$key]);
+        /** @var bool|float|int|string|null $value */
+        $value = $this->db->fetchOne('SELECT value FROM options WHERE name = ?', [$key]);
 
-            if (false === $value) {
-                return $default;
-            }
+        if (false === $value) {
+            return $default;
+        }
 
-            return $value;
-        });
+        return $value;
     }
 
     /**

@@ -80,12 +80,12 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
     const buildFields = (fields: Field[]) => {
         return fields.map((field: Field, index) => {
-            if (field.type === FieldType.NONE || field.hidden) return null;
+            if (field.type === FieldType.NONE) return null;
             let editorOptions: any = {};
             if (field.type === FieldType.ENTITY) {
                 editorOptions = {
                     dataSource: {
-                        store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl),
+                        store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl, field.filters),
                         paginate: true,
                         pageSize: 10
                     },
@@ -161,15 +161,19 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 stylingMode: 'outlined',
             };
 
-            return <SimpleItem
-                key={index}
-                dataField={field.name}
-                editorType={getEditorType(field)}
-                label={{text: field.label}}
-                isRequired={field.required}
-                editorOptions={editorOptions}
-                colSpan={field.col ?? 12}
-            />
+            let className = field.hidden ? 'dx-hidden' : '';
+            return (
+                <SimpleItem
+                    key={index}
+                    dataField={field.name}
+                    editorType={getEditorType(field)}
+                    label={{text: field.label}}
+                    isRequired={field.required}
+                    editorOptions={editorOptions}
+                    colSpan={field.col ?? 12}
+                    cssClass={className}
+                />
+            )
         });
     }
 
@@ -253,7 +257,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     }
                 }
                 if (field.type === FieldType.DATE) {
-                    formData[field.name] = formData[field.name]?.toISOString();
+                    let date = new Date(formData[field.name]);
+                    formData[field.name] = date.toISOString();
                 }
             });
 

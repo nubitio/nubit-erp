@@ -1,14 +1,18 @@
 import "./OutboundPage.scss";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
-import {OutboundFields, OutboundDetailFields} from "./OutboundFields";
+import {OutboundDetailFields, OutboundFields} from "./OutboundFields";
+import {useEffect, useRef} from "react";
+import {bus} from "../../core/event/EventBus";
+import {httpClient} from "../../core/http/HttpClient";
 
 export const OutboundPage = () => {
     const container = "wrapper";
     const fields = OutboundFields();
     const detailFields = OutboundDetailFields();
+    const formRef = useRef<DxFormEvents>(null)
 
     const API_URL = Constants.API_BASE_URL + 'sales';
 
@@ -22,29 +26,47 @@ export const OutboundPage = () => {
         LOADING: 'outbound:loading',
     }
 
+    let alreadySetup = false;
+
+    const setupObservers = () => {
+        bus.on(EVENTS.EDIT, (payload: any) => {
+            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
+                formRef.current?.setDetailData(response.data);
+            })
+        })
+    }
+
+    useEffect(() => {
+        if (!alreadySetup) {
+            setupObservers();
+            alreadySetup = true;
+        }
+    }, []);
+
     return (
         <div id={container}>
             <DxDataGrid
-                    title={'Outbound'}
+                title={'Salidas'}
+                url={API_URL + '?type=outbound'}
+                detailUrl={API_URL + '/{id}/details'}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                detailFields={detailFields}
+                events={EVENTS}
+            />
+            <DxDialog
+                width={800}
+                height={450}
+                events={EVENTS}
+            >
+                <DxForm
+                    ref={formRef}
                     url={API_URL}
-                    detailUrl={API_URL + '/{id}/details'}
-                    allowAdd={true}
-                    allowEdit={true}
-                    allowDelete={true}
                     fields={fields}
                     detailFields={detailFields}
                     events={EVENTS}
-            />
-            <DxDialog
-                    width={900}
-                    height={620}
-                    events={EVENTS}
-            >
-                <DxForm
-                        url={API_URL}
-                        fields={fields}
-                        detailFields={detailFields}
-                        events={EVENTS}
                 />
             </DxDialog>
         </div>

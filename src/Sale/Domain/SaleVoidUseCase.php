@@ -8,7 +8,7 @@ use App\Billing\Model\Response\SummaryResponse;
 use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use League\Flysystem\FilesystemException;
@@ -23,7 +23,7 @@ readonly class SaleVoidUseCase
         private VoidedCreateUseCase $voidedCreateUseCase,
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
-        private TenantAwareSettingsService $settings
+        private SettingsService $settings
     ) {
     }
 

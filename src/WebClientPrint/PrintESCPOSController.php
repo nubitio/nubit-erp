@@ -6,7 +6,7 @@ use App\Base\BaseController;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Extension\RemoteEscposImage;
 use App\Core\Infrastructure\Service\LogoProvider;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
@@ -22,7 +22,7 @@ class PrintESCPOSController extends BaseController
     public function __construct(
         private readonly LogoProvider $logoProvider,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private TenantAwareSettingsService $settingsService
+        private SettingsService $settingsService
     ) {
         parent::__construct();
     }
