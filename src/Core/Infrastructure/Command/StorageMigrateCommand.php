@@ -4,7 +4,7 @@ namespace App\Core\Infrastructure\Command;
 
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ class StorageMigrateCommand extends Command
 {
     public function __construct(
         private readonly FileManager $fileManager,
-        private readonly TenantAwareSettingsService $settingsService
+        private readonly SettingsService $settingsService
     ) {
         parent::__construct();
     }

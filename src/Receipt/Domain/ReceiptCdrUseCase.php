@@ -6,7 +6,7 @@ use App\Billing\Domain\FileResponse;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use League\Flysystem\FilesystemException;
@@ -17,7 +17,7 @@ readonly class ReceiptCdrUseCase
     public function __construct(
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
-        private TenantAwareSettingsService $settings,
+        private SettingsService $settings,
         private FileManager $fileManager
     ) {
     }

@@ -4,7 +4,7 @@ namespace App\Receipt\Domain;
 
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\TenantAwareSettingsService;
+use App\Core\Infrastructure\Service\SettingsService;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use Psr\Cache\InvalidArgumentException;
@@ -14,7 +14,7 @@ readonly class ReceiptShowUseCase
     public function __construct(
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneNoteUseCase,
-        private TenantAwareSettingsService $settings
+        private SettingsService $settings
     ) {
     }
 

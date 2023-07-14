@@ -55,9 +55,9 @@ class OptionsBuilder
                 continue;
             }
             $filterRules[] = [
-                'field' => $filterRule[0],
-                'op' => $filterRule[1],
-                'value' => $filterRule[2] ?? '',
+                'field' => $filterRule[0] ?? $filterRule['field'] ?? '',
+                'op' => $filterRule[1] ?? $filterRule['operator'] ?? '',
+                'value' => $filterRule[2] ?? $filterRule['value'] ?? '',
             ];
         }
         if (3 === count($filters) && !is_array(json_decode($filters[0], true))) {
@@ -135,6 +135,9 @@ class OptionsBuilder
     {
         $filters = [];
         foreach ($filterRules as $filter) {
+            if ('' === $filter['field'] || '' === $filter['op']) {
+                continue;
+            }
             $op = FilterOperation::tryFrom(strval($filter['op'])) ?? FilterOperation::fromString(strval($filter['op']));
             if ('true' === $filter['value']) {
                 $filter['value'] = true;
