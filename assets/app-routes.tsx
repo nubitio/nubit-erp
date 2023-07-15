@@ -41,6 +41,8 @@ import {WarehousePage} from "./pages/Warehouse/WarehousePage";
 import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
+import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
+import {ProductionPage} from "./pages/Production/ProductionPage";
 
 const routes = [
     {
@@ -210,6 +212,14 @@ const routes = [
         path: '/supplier',
         element: SupplierPage,
     },
+    {
+        path: '/unit-of-measure',
+        element: UnitOfMeasurePage,
+    },
+    {
+        path: '/production',
+        element: ProductionPage,
+    }
 ];
 
 export const appRoutes = routes.map((route) => {

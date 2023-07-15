@@ -45,6 +45,13 @@ body {
   height: 100%;
 }
 
+#wrapper {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .app {
   background-color: var(--side-panel-background);
   display: flex;
