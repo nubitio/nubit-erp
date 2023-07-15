@@ -26,11 +26,11 @@ export interface DxDataGridOptions {
     title: string;
     url: string;
     detailUrl?: string;
+    fields: any;
+    detailFields?: any;
     columns?: any[];
     toolbar?: any[];
     events?: any;
-    fields?: any;
-    detailFields?: any;
     allowAdd?: boolean;
     allowEdit?: boolean;
     allowDelete?: boolean;
