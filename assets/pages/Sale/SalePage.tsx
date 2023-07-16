@@ -205,9 +205,6 @@ export const SalePage = () => {
                 detailUrl={API_URL + '/{id}/details'}
                 detailFields={detailFields}
                 events={EVENTS}
-                sort={[
-                    {selector: 'date_created', desc: true}
-                ]}
             />
             <DxDialog
                 width={900}
