@@ -115,7 +115,11 @@ export const InvoicePage = () => {
                     }
                     gridRef.current?.showLoading('Consultando CDR...');
                     invoiceService.consultInvoice(selectedRow.movimiento_id).subscribe((response) => {
-                        messenger.show('Información', response.data.message);
+                        notify({
+                            message: response.data.message,
+                            type: 'success',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                         gridRef.current?.refresh();
                     }).add(() => gridRef.current?.hideLoading());
                 }

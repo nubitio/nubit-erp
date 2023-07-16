@@ -6,9 +6,9 @@ use App\Billing\Domain\BillConsultUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use Doctrine\DBAL\Exception;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
-use Psr\Cache\InvalidArgumentException;
 
 readonly class InvoiceConsultUseCase
 {
@@ -21,8 +21,8 @@ readonly class InvoiceConsultUseCase
     }
 
     /**
-     * @throws InvalidArgumentException
      * @throws FilesystemException
+     * @throws Exception
      */
     public function __invoke(string $saleId): StatusCdrResult
     {
