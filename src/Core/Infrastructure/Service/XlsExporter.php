@@ -10,7 +10,6 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class XlsExporter
@@ -26,9 +25,44 @@ class XlsExporter
      * @param array<int, array<string, mixed>> $data
      *
      * @throws Exception
-     * @throws InvalidArgumentException
+     * @throws \Doctrine\DBAL\Exception
      */
     public function export(array $data, string $filename): StreamedResponse
+    {
+        $spreadsheet = $this->makeSpreadsheet($data);
+
+        $writer = new Xlsx($spreadsheet);
+        $response = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', sprintf('attachment; filename="%s.xlsx"', $filename));
+
+        return $response;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $data
+     *
+     * @throws Exception
+     * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function save(array $data, string $filename): void
+    {
+        $spreadsheet = $this->makeSpreadsheet($data);
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($filename.'.xlsx');
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $data
+     *
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function makeSpreadsheet(array $data): Spreadsheet
     {
         $accentColor = $this->settingsService->get('app_theme_accent_color');
         $arr = explode(' ', strval($accentColor));
@@ -116,13 +150,6 @@ class XlsExporter
         $spreadsheet->getActiveSheet()->getStyle('A2:'.$lastColumn.count($data))
             ->applyFromArray($borderStyle);
 
-        $writer = new Xlsx($spreadsheet);
-        $response = new StreamedResponse(function () use ($writer) {
-            $writer->save('php://output');
-        });
-        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $response->headers->set('Content-Disposition', sprintf('attachment; filename="%s.xlsx"', $filename));
-
-        return $response;
+        return $spreadsheet;
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Core\Infrastructure\Service;
 
+use League\Flysystem\DirectoryListing;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use League\Flysystem\StorageAttributes;
 
 final readonly class FileManager
 {
@@ -34,5 +36,15 @@ final readonly class FileManager
     public function exists(string $fileName): bool
     {
         return $this->uploadsFilesystem->fileExists($fileName);
+    }
+
+    /**
+     * @return DirectoryListing<StorageAttributes>
+     *
+     * @throws FilesystemException
+     */
+    public function listContents(string $directory = ''): DirectoryListing
+    {
+        return $this->uploadsFilesystem->listContents($directory);
     }
 }
