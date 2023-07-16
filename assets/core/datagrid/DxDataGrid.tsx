@@ -88,7 +88,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
 
     useEffect(() => {
         if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField(options.fields), null, options.sort ?? []));
+            setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
             alreadyLoaded = true;
         }
         if (!alreadySetup) {
