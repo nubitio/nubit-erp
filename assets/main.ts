@@ -53,6 +53,7 @@ import {settings} from "./Settings";
 import Production from "./pages/Production";
 import UnitOfMeasure from "./pages/UnitOfMeasure";
 
+
 window.observer = bus;
 window.DataGrid = DataGrid;
 window.Dialog = Dialog;

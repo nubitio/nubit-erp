@@ -41,6 +41,9 @@ import {WarehousePage} from "./pages/Warehouse/WarehousePage";
 import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
+import {OrdenPage} from "./pages/Orden/OrdenPage";
+import {AmbientePage} from "./pages/Ambiente/AmbientePage";
+import {MesaPage} from "./pages/Mesa/MesaPage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
 
@@ -211,6 +214,18 @@ const routes = [
     {
         path: '/supplier',
         element: SupplierPage,
+    },
+    {
+        path: '/orden',
+        element: OrdenPage,
+    },
+    {
+        path: '/ambiente',
+        element: AmbientePage,
+    },
+    {
+        path: '/mesa',
+        element: MesaPage,
     },
     {
         path: '/unit-of-measure',
