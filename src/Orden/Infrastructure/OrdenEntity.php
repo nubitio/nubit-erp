@@ -50,8 +50,12 @@ class OrdenEntity
         public ?int $user_create = null,
         #[ORM\Column(name: 'user_update', type: 'integer')]
         public ?int $user_update = null,
-        /** @var OrdenDetailEntity[] $details */
-        #[ORM\OneToMany(mappedBy: 'orden', targetEntity: OrdenDetailEntity::class, cascade: ['persist', 'remove'])]
+        /**
+         * @var OrdenDetailEntity[] $details
+         *
+         * @phpstan-var ArrayCollection<int , OrdenDetailEntity>|array<int , OrdenDetailEntity>
+         */
+        #[ORM\OneToMany(mappedBy: 'orden', targetEntity: OrdenDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
         public Collection|array $details = new ArrayCollection(),
     ) {
     }
