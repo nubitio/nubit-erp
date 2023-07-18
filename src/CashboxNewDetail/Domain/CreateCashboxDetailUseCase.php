@@ -11,8 +11,8 @@ class CreateCashboxDetailUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(CashboxDetail $cashboxNewDetail): CashboxDetail
+    public function __invoke(CashboxDetail $cashboxDetail): CashboxDetail
     {
-        return $this->repository->insert($cashboxNewDetail);
+        return $this->repository->insert($cashboxDetail);
     }
 }

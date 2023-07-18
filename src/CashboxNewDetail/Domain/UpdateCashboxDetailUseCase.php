@@ -11,8 +11,8 @@ class UpdateCashboxDetailUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(CashboxDetail $cashboxNewDetail): CashboxDetail
+    public function __invoke(CashboxDetail $cashboxDetail): CashboxDetail
     {
-        return $this->repository->update($cashboxNewDetail);
+        return $this->repository->update($cashboxDetail);
     }
 }
