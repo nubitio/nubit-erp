@@ -40,7 +40,8 @@ export class FieldBuilder {
             hidden: false,
             required: false,
             precision: 0,
-            accept: null
+            accept: null,
+            buttons: []
         };
     }
 
@@ -211,6 +212,11 @@ export class FieldBuilder {
 
     accept(value: any): FieldBuilder {
         this._field.accept = value;
+        return this;
+    }
+
+    buttons(value: any[]): FieldBuilder {
+        this._field.buttons = value;
         return this;
     }
 

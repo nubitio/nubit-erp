@@ -8,15 +8,16 @@ import {useEffect, useRef, useState} from "react";
 import {httpClient} from "../../core/http/HttpClient";
 import {confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
+import {Field} from "../../core/field/Field";
 
 export const CashboxPage = () => {
     const container = "wrapper";
-    const fields = CashboxDetailFields();
     const gridRef = useRef<DxDataGridEvents>(null);
     const [url, setUrl] = useState<string | undefined>(undefined);
     const [cashboxId, setCashboxId] = useState<string | undefined>(undefined);
+    const fieldsRef = useRef<Field[]>()
 
-    const API_URL = Constants.API_BASE_URL + 'cashboxes';
+    const API_URL = Constants.API_BASE_URL + 'cashbox-details';
 
     const EVENTS = {
         ADD: 'cashbox:add',
@@ -32,6 +33,7 @@ export const CashboxPage = () => {
         {
             text: 'Cerrar Caja',
             icon: 'close',
+            type: 'warning',
             onClick: () => {
                 confirm('¿Está seguro que desea cerrar la caja?', 'Cerrar Caja').then((result) => {
                     if (result) {
@@ -53,7 +55,8 @@ export const CashboxPage = () => {
         httpClient.get<any>('cashbox/last').subscribe((response) => {
             console.log(response.data);
             if (response.data) {
-                setUrl(API_URL + '/' + response.data.caja_id + '/details');
+                setUrl(Constants.API_BASE_URL + 'cashboxes/' + response.data.header.caja_id + '/details');
+                setCashboxId(response.data.header.caja_id)
                 gridRef.current?.refresh();
             } else {
                 let amount = prompt("Ingrese el monto inicial de la caja");
@@ -65,7 +68,7 @@ export const CashboxPage = () => {
                     });
                 }
             }
-        })
+        }).add(() => fieldsRef.current = CashboxDetailFields(cashboxId!));
     }
 
     let alreadyChecked = false;
@@ -77,7 +80,8 @@ export const CashboxPage = () => {
         }
     }, []);
 
-    const render = () => {
+    const render = (fields) => {
+        console.log(fields)
         return (
             <div>
                 <DxDataGrid
@@ -106,7 +110,7 @@ export const CashboxPage = () => {
 
     return (
         <div id={container}>
-            {url ? render() : null}
+            {url ? render(fieldsRef.current) : null}
         </div>
     );
 };
