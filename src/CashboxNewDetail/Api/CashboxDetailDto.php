@@ -2,24 +2,17 @@
 
 namespace App\CashboxNewDetail\Api;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Link;
-use App\CashboxNew\Api\CashboxDto;
 use App\CashboxNewDetail\Domain\CashboxDetail;
 
 #[ApiResource(
-    uriTemplate: '/cashboxes/{caja_id}/details',
     shortName: 'CashboxDetail',
-    operations: [new GetCollection()],
-    uriVariables: [
-        'caja_id' => new Link(
-            fromProperty: 'caja_id',
-            fromClass: CashboxDto::class,
-        ),
-    ],
-    provider: CashboxDetailProvider::class
+    provider: CashboxDetailProvider::class,
+    processor: CashboxDetailProcessor::class,
 )]
 class CashboxDetailDto extends CashboxDetail
 {
+    #[ApiProperty(identifier: true)]
+    public ?int $id;
 }

@@ -125,7 +125,8 @@ export const SalePage = () => {
     const toolbar = [
         {
             text: 'Vista previa',
-            icon: 'fas fa-eye fa-1x text-info',
+            icon: 'fas fa-eye fa-1x',
+            type: 'info',
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 if (saleId) {
@@ -142,7 +143,8 @@ export const SalePage = () => {
         },
         {
             text: 'Imprimir',
-            icon: 'fas fa-print fa-1x text-primary',
+            icon: 'fas fa-print fa-1x',
+            type: 'primary',
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 if (saleId) {
@@ -159,7 +161,8 @@ export const SalePage = () => {
         },
         {
             text: 'Anular',
-            icon: 'fas fa-ban fa-1x text-danger',
+            icon: 'fas fa-ban fa-1x',
+            type: 'danger',
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 if (saleId) {
@@ -176,7 +179,8 @@ export const SalePage = () => {
         },
         {
             text: 'Generar comprobante',
-            icon: 'fas fa-file-invoice fa-1x text-info',
+            icon: 'fas fa-file-invoice fa-1x',
+            type: 'warning',
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 if (saleId) {

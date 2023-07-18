@@ -41,22 +41,25 @@ export const PriceListPage = () => {
         LOADING: 'price:loading',
     }
 
-    const toolbar = [{
-        icon: 'fas fa-tags fa-1x text-primary',
-        text: 'Precios',
-        onClick: () => {
-            let selectedRow = gridRef.current?.getSelectedRow();
-            if (!selectedRow) {
-                notify({
-                    message: 'Debe seleccionar una tarifa',
-                    type: 'warning',
-                    displayTime: 3000,
-                }, {position: 'top right'});
-                return;
+    const toolbar = [
+        {
+            icon: 'fas fa-tags fa-1x',
+            text: 'Precios',
+            type: 'info',
+            onClick: () => {
+                let selectedRow = gridRef.current?.getSelectedRow();
+                if (!selectedRow) {
+                    notify({
+                        message: 'Debe seleccionar una tarifa',
+                        type: 'warning',
+                        displayTime: 3000,
+                    }, {position: 'top right'});
+                    return;
+                }
+                bus.emit(PRICES_EVENT.ADD, {title: 'Precios de ' + selectedRow.name});
             }
-            bus.emit(PRICES_EVENT.ADD, {title: 'Precios de ' + selectedRow.name});
         }
-    }]
+    ]
 
     let alreadySetup = false;
 

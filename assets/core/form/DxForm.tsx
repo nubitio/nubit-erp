@@ -140,7 +140,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                         location: 'after',
                         options: {
                             icon: 'fas fa-eye ',
-                            type: 'default',
                             onClick: (e: any) => {
                                 const editor = formRef.current?.instance.getEditor(field.name);
                                 editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
@@ -159,6 +158,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 onItemClick: field.onSelect,
                 itemRender: field.itemFormatter,
                 stylingMode: 'outlined',
+                buttons: [...editorOptions.buttons ?? [], ...field.buttons ?? []],
             };
 
             let className = field.hidden ? 'dx-hidden' : '';
