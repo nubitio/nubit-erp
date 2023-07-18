@@ -1,5 +1,5 @@
 import "./CashboxPage.scss";
-import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
+import {DATAGRID_EVENTS, DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
 import {DxForm} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
@@ -9,6 +9,7 @@ import {httpClient} from "../../core/http/HttpClient";
 import {confirm} from "devextreme/ui/dialog";
 import notify from "devextreme/ui/notify";
 import {Field} from "../../core/field/Field";
+import {bus} from "../../core/event/EventBus";
 
 export const CashboxPage = () => {
     const container = "wrapper";
@@ -37,7 +38,7 @@ export const CashboxPage = () => {
             onClick: () => {
                 confirm('¿Está seguro que desea cerrar la caja?', 'Cerrar Caja').then((result) => {
                     if (result) {
-                        httpClient.post<any>(`cashbox/close/${cashboxId}`, {}).subscribe((response) => {
+                        httpClient.post<any>(`cashbox-new/close/${cashboxId}`, {}).subscribe((response) => {
                             notify({
                                 message: response.data.message,
                                 type: 'success',
@@ -52,36 +53,58 @@ export const CashboxPage = () => {
     ]
 
     const checkCashbox = () => {
-        httpClient.get<any>('cashbox/last').subscribe((response) => {
-            console.log(response.data);
+        httpClient.get<any>('cashbox-new/last').subscribe((response) => {
             if (response.data) {
-                setUrl(Constants.API_BASE_URL + 'cashboxes/' + response.data.header.caja_id + '/details');
-                setCashboxId(response.data.header.caja_id)
-                gridRef.current?.refresh();
+                setupCashbox(response.data.caja_id);
             } else {
                 let amount = prompt("Ingrese el monto inicial de la caja");
                 if (amount) {
-                    httpClient.post<any>('cashbox/open', {amount: amount}).subscribe((response) => {
-                        setUrl(API_URL + '/' + response.data.caja_id + '/details');
-                        setCashboxId(response.data.caja_id);
-                        gridRef.current?.refresh();
-                    });
+                    httpClient.post<any>('cashbox-new/open', {amount: amount})
+                        .subscribe((response) => setupCashbox(response.data.caja_id));
                 }
             }
-        }).add(() => fieldsRef.current = CashboxDetailFields(cashboxId!));
+        });
+    }
+
+    const setupCashbox = (cashboxId: string) => {
+        setUrl(Constants.API_BASE_URL + 'cashboxes/' + cashboxId + '/details');
+        fieldsRef.current = CashboxDetailFields(cashboxId);
+        setCashboxId(cashboxId);
+        gridRef.current?.refresh();
+    }
+
+    const setupObservers = () => {
+        bus.on(DATAGRID_EVENTS.SUMMARY, (payload: any) => {
+            if (payload.summaryProcess === 'start') {
+                payload.totalValue = 0;
+            }
+            if (payload.summaryProcess === 'calculate') {
+                let value = payload.value.tipo_id === 1 ? payload.value.monto : payload.value.monto * -1;
+                console.log(value)
+                payload.totalValue += Number(value);
+                console.log(payload.totalValue)
+            }
+            if (payload.summaryProcess === 'finalize') {
+                payload.totalValue = payload.totalValue.toFixed(2);
+            }
+        })
     }
 
     let alreadyChecked = false;
+    let alreadySetup = false;
 
     useEffect(() => {
         if (!alreadyChecked) {
             alreadyChecked = true;
             checkCashbox();
         }
+        if (!alreadySetup) {
+            alreadySetup = true;
+            setupObservers();
+        }
     }, []);
 
     const render = (fields) => {
-        console.log(fields)
         return (
             <div>
                 <DxDataGrid
@@ -94,6 +117,12 @@ export const CashboxPage = () => {
                     allowDelete={true}
                     fields={fields}
                     events={EVENTS}
+                    summaryFields={[{
+                        showInColumn: 'monto',
+                        summaryType: 'custom',
+                        valueFormat: 'currency',
+                        displayFormat: 'Balance: {0}'
+                    }]}
                 />
                 <DxDialog
                     events={EVENTS}
@@ -110,7 +139,7 @@ export const CashboxPage = () => {
 
     return (
         <div id={container}>
-            {url ? render(fieldsRef.current) : null}
+            {cashboxId ? render(fieldsRef.current) : null}
         </div>
     );
 };

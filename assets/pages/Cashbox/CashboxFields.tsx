@@ -69,7 +69,7 @@ export const CashboxFields = () => {
     return fields;
 }
 
-export const CashboxDetailFields = (cashboxId: string) => {
+export const CashboxDetailFields = (cashboxId: string | null = null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -86,7 +86,7 @@ export const CashboxDetailFields = (cashboxId: string) => {
         .label('Caja id')
         .visible(false)
         .hidden(true)
-        .defaultValue(cashboxId)
+        .defaultValue(cashboxId ?? '')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
