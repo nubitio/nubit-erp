@@ -35,7 +35,22 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * @throws \Exception
      */
-    public function getOne(string $saleId): Invoice
+    public function getOne(string $invoiceId): Invoice
+    {
+        /** @var ?InvoiceEntity $invoiceEntity */
+        $invoiceEntity = $this->entityManager->find(InvoiceEntity::class, $invoiceId);
+
+        if (!$invoiceEntity) {
+            throw new \Exception('Invoice not found');
+        }
+
+        return DataMapper::map($invoiceEntity, Invoice::class);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getOneBySaleId(string $saleId): Invoice
     {
         /** @var ?InvoiceEntity $invoiceEntity */
         $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $saleId]);

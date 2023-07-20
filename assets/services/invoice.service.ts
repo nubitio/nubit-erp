@@ -10,6 +10,10 @@ export class InvoiceService {
         return httpClient.get<AppResponse>(`/invoice/${saleId}/consult`);
     }
 
+    validateInvoice(saleId: string) {
+        return httpClient.get<AppResponse>(`/invoice/${saleId}/validate`);
+    }
+
     sendEmail(saleId: string) {
         return httpClient.post<any>(`/invoice/${saleId}/email`);
     }
