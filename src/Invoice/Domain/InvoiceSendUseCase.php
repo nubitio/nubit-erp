@@ -14,7 +14,7 @@ use League\Flysystem\FilesystemException;
 readonly class InvoiceSendUseCase
 {
     public function __construct(
-        private GetOneInvoiceUseCase $getOneInvoiceUseCase,
+        private GetOneInvoiceBySaleIdUseCase $getOneInvoiceUseCase,
         private BillSendUseCase $billSendUseCase,
         private UpdateInvoiceUseCase $updateInvoiceUseCase,
         private FileManager $fileManager,
