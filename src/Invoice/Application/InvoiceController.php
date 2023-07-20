@@ -7,6 +7,7 @@ use App\Core\Domain\Common\ApiResponse;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use App\Invoice\Domain\InvoiceEmailUseCase;
 use App\Invoice\Domain\InvoiceSendUseCase;
+use App\Invoice\Domain\ValidateInvoiceUseCase;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,6 +41,18 @@ class InvoiceController extends BaseController
             return $this->json(new ApiResponse(true, $result->getCdrResponse()?->getDescription() ?: ''));
         } else {
             return $this->json(new ApiResponse(false, $result->getError()?->getMessage() ?: ''));
+        }
+    }
+
+    #[Route('/invoice/{id}/validate', name: 'invoice_validate', methods: ['GET'])]
+    public function validate(string $id, ValidateInvoiceUseCase $validateInvoiceUseCase): Response
+    {
+        $result = $validateInvoiceUseCase($id);
+
+        if ($result->getSuccess()) {
+            return $this->json(new ApiResponse(true, $result->getMessage() ?? '', $result));
+        } else {
+            return $this->json(new ApiResponse(false, $result->getMessage() ?? '', $result));
         }
     }
 
