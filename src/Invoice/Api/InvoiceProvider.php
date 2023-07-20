@@ -10,7 +10,7 @@ use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
 use App\Invoice\Domain\GetAllInvoiceUseCase;
-use App\Invoice\Domain\GetOneInvoiceUseCase;
+use App\Invoice\Domain\GetOneInvoiceBySaleIdUseCase;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Infrastructure\InvoiceEntity;
 
@@ -21,7 +21,7 @@ readonly class InvoiceProvider implements ApiProviderInterface
 {
     public function __construct(
         private GetAllInvoiceUseCase $getAllUseCase,
-        private GetOneInvoiceUseCase $getOneUseCase,
+        private GetOneInvoiceBySaleIdUseCase $getOneUseCase,
     ) {
     }
 

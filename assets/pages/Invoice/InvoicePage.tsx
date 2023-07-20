@@ -101,7 +101,7 @@ export const InvoicePage = () => {
                     window.open('receipt/' + payloadEncoded, '_blank');
                 }
             }, {
-                text: 'Consultar CDR',
+                text: 'Consulta CDR',
                 icon: 'fas fa-search fa-1x text-warning',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
@@ -118,6 +118,29 @@ export const InvoicePage = () => {
                         messenger.show('Información', response.data.message);
                         gridRef.current?.refresh();
                     }).add(() => gridRef.current?.hideLoading());
+                }
+            }, {
+                text: 'Consulta CPE',
+                icon: 'fas fa-check fa-1x text-success',
+                onClick: () => {
+                    let selectedRows = gridRef.current?.getSelectedRowKeys();
+                    if (!selectedRows || selectedRows.length === 0) {
+                        notify({
+                            message: 'Seleccione uno o más comprobantes',
+                            type: 'warning',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
+                        return
+                    }
+                    gridRef.current?.showLoading('Consultando CPE...');
+                    selectedRows.forEach((id: any) => {
+                        invoiceService.validateInvoice(id).subscribe((response) => {
+                            console.log(response.data);
+                        }).add(() => {
+                            gridRef.current?.hideLoading()
+                            gridRef.current?.refresh();
+                        });
+                    })
                 }
             }
         ];

@@ -27,7 +27,7 @@ readonly class SaleInvoiceUseCase
             $this->invoiceRepository->create($sale);
         }
 
-        $invoice = $this->invoiceRepository->getOne($saleId);
+        $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
         $sale->has_invoice = true;
         $sale->invoice = $invoice->serie.'-'.$invoice->numero;
