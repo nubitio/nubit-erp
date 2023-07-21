@@ -22,6 +22,7 @@ class HttpClient {
     private setupInterceptors = () => {
         const AUTH_HEADER = 'Authorization';
         const BEARER_PREFIX = 'Bearer ';
+        const NOT_FOUND_MESSAGE = 'Not found';
         const DEFAULT_ERROR_MESSAGE = 'Something went wrong';
         const DEFAULT_UNAUTHORIZED_MESSAGE = 'Session expired';
 
@@ -54,6 +55,14 @@ class HttpClient {
                                 displayTime: 3000,
                             }, {position: 'top right'})
                         }
+                        break;
+                    case HttpCode.NOT_FOUND:
+                        const notFoundMessage = error.response?.data?.message ?? NOT_FOUND_MESSAGE;
+                        notify({
+                            message: notFoundMessage,
+                            type: 'error',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                         break;
                     case HttpCode.INTERNAL_SERVER_ERROR:
                         throw new Error(DEFAULT_ERROR_MESSAGE);
