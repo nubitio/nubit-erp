@@ -2,7 +2,6 @@
 
 namespace App\Sale\Domain;
 
-use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
 use App\Operation\Domain\Operation;
@@ -73,7 +72,6 @@ class Sale
         #[SerializedName('total')]
         public ?float $total = null,
         /** @var SaleDetail[] $details */
-        #[Ignore]
         #[SerializedName('details')]
         public array $details = []
     ) {
