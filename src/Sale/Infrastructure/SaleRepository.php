@@ -5,6 +5,9 @@ namespace App\Sale\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
+use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
@@ -17,6 +20,7 @@ use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use App\Supplier\Infrastructure\SupplierEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 
 readonly class SaleRepository implements SaleRepositoryInterface
 {
@@ -29,12 +33,28 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
+    /**
+     * @throws NonUniqueResultException
+     * @throws ServiceException
+     */
     public function getOne(string $id): Sale
     {
-        $entity = $this->entityManager->getRepository(SaleEntity::class)->find($id);
+        $entity = $this->dataLoader->loadOne(new Options(
+            entity: SaleEntity::class,
+            mapping: Sale::class,
+            joins: [
+                new JoinRule('e.cliente', 'c'),
+                new JoinRule('e.almacen', 'a'),
+                new JoinRule('e.tipo_pago', 'pm'),
+                new JoinRule('e.details', 'sd'),
+            ],
+            filters: [
+                new FilterRule('movimiento_id', FilterOperation::Equals, $id),
+            ],
+        ));
 
         if (!$entity) {
             throw new ServiceException('No se encontro el movimiento de venta');
@@ -117,7 +137,6 @@ readonly class SaleRepository implements SaleRepositoryInterface
             $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
             $subtotal += $detail->precio_total;
         }
-        dump($entity);
         $entity->subtotal = $subtotal;
         $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();

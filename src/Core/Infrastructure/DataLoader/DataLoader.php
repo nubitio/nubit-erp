@@ -8,6 +8,7 @@ use App\Core\Domain\Util\ReflectionUtil;
 use App\Core\Infrastructure\DataLoader\Paginator\Paginator;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 
@@ -26,7 +27,7 @@ readonly class DataLoader implements DataLoaderInterface
      *
      * @throws \Exception
      */
-    public function load(LoadOptionsInterface $options): PaginatorInterface
+    public function loadCollection(LoadOptionsInterface $options): PaginatorInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -62,6 +63,37 @@ readonly class DataLoader implements DataLoaderInterface
         }
 
         return new Paginator($data, new ApiPlatformPaginator($paginator));
+    }
+
+    /**
+     * @param Options $options
+     *
+     * @throws NonUniqueResultException
+     */
+    public function loadOne(LoadOptionsInterface $options): ?object
+    {
+        $queryBuilder = $this->entityManager->createQueryBuilder();
+
+        $queryBuilder->select('e')
+            ->from($options->entity, 'e');
+
+        $this->fillFilterAlias($options->mapping, $options);
+
+        $this->addJoins($queryBuilder, $options->joins);
+        $this->addFilters($queryBuilder, $options->filters);
+
+        $query = $queryBuilder->getQuery();
+
+        $item = $query->getOneOrNullResult();
+
+        if (!$item) {
+            throw new \RuntimeException('Item not found');
+        }
+
+        $mappedItem = DataMapper::map($item, $options->mapping);
+        $this->mapParent($options->mapping, $mappedItem);
+
+        return $mappedItem;
     }
 
     private function mapParent(string $mapping, object $mappedItem): void

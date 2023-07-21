@@ -14,6 +14,10 @@ export class SaleService {
     makeNote(noteId: string) {
         return httpClient.post<any>(`/credit-note/send/${noteId}`);
     }
+
+    cloneSale(saleId: string) {
+        return httpClient.post<AppResponse>(`/sale/clone/${saleId}`);
+    }
 }
 
 export const saleService = new SaleService();
