@@ -21,7 +21,7 @@ readonly class OperationRepository implements OperationRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne(string $id): ?Operation

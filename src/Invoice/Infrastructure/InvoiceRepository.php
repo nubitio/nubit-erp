@@ -29,7 +29,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     /**

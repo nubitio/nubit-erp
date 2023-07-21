@@ -10,5 +10,10 @@ interface DataLoaderInterface
     /**
      * @return T
      */
-    public function load(LoadOptionsInterface $options): object;
+    public function loadCollection(LoadOptionsInterface $options): object;
+
+    /**
+     * @return T|null
+     */
+    public function loadOne(LoadOptionsInterface $options): ?object;
 }
