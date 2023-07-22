@@ -93,13 +93,15 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     displayExpr: field.textField,
                     searchEnabled: field.mode === 'remote',
                     wrapItemText: true,
+                    buttons: ['dropDown'],
                 }
             }
             if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
                 editorOptions = {
                     dataSource: field.data,
                     valueExpr: 'value',
-                    displayExpr: 'text'
+                    displayExpr: 'text',
+                    buttons: ['dropDown'],
                 }
             }
             if (field.type === FieldType.FILE) {

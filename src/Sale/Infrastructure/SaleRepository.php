@@ -117,7 +117,6 @@ readonly class SaleRepository implements SaleRepositoryInterface
             $detail->producto = $this->entityManager->getReference(ProductEntity::class, $detail->producto?->producto_id);
             $subtotal += $detail->precio_total;
         }
-        dump($entity);
         $entity->subtotal = $subtotal;
         $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();
