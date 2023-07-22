@@ -94,7 +94,6 @@ export const CashboxPage = () => {
 
     useEffect(() => {
         checkCashbox();
-        console.log('cashboxId', cashboxId)
     }, [cashboxId]);
 
     const render = (fields) => {

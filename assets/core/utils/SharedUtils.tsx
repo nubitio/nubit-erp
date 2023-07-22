@@ -108,7 +108,6 @@ export class SharedUtils {
 
     static invoiceFormatter(value: any | null | undefined, row: any) {
         if (value !== null && value !== undefined) {
-            console.log(row)
             let payload = {
                 type: row['cliente'].ruc.length === 11 ? '01' : '03',
                 id: row['movimiento_id'],

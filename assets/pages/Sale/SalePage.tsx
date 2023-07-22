@@ -68,7 +68,6 @@ export const SalePage = () => {
         qz.websocket.connect().then(() => {
             qz.printers.getDefault().then((data: string) => {
                 setPrinterName(data);
-                console.log('Impresora: ' + data);
             })
         }).catch((err: any) => {
             console.error(err);
