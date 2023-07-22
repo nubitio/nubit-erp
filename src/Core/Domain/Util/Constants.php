@@ -15,4 +15,6 @@ abstract class Constants
     public const COMPANY_NAME = 'invoice_razon_social';
     public const TAX = 'app_option_igv';
     public const CONSUMPTION_TAX = 'app_option_rc';
+    public const CPE_CLIENT_ID = 'cpe_client_id';
+    public const CPE_CLIENT_SECRET = 'cpe_client_secret';
 }

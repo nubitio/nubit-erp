@@ -23,7 +23,7 @@ readonly class CompanyRepository implements CompanyRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne(string $id): ?Company

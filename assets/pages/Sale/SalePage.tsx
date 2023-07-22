@@ -1,5 +1,5 @@
 import "./SalePage.scss";
-import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
+import {DATA_GRID_EVENTS, DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
 import {DxForm, DxFormEvents, FORM_EVENTS} from "../../core/form/DxForm";
 import {DxDialog} from "../../core/dialog/DxDialog";
 import {Constants} from "../../core/common/Constants";
@@ -16,6 +16,8 @@ export const SalePage = () => {
     const gridRef = useRef<DxDataGridEvents>(null);
     const formRef = useRef<DxFormEvents>(null);
     const [printerName, setPrinterName] = useState<string | undefined>(undefined);
+    const [printEnabled, setPrintEnabled] = useState<boolean>(false);
+    const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
 
     const container = "wrapper";
     const fields = SaleFields(formRef.current);
@@ -49,6 +51,16 @@ export const SalePage = () => {
 
         bus.on(FORM_EVENTS.ROW_REMOVED, () => {
             setTotal(formRef.current);
+        })
+
+        bus.on(DATA_GRID_EVENTS.SELECTION_CHANGED, (e: any) => {
+            if (e.selectedRowKeys.length === 1) {
+                setPrintEnabled(true);
+                setCloneEnabled(true);
+            } else {
+                setPrintEnabled(false);
+                setCloneEnabled(false);
+            }
         })
     }
 
@@ -122,6 +134,21 @@ export const SalePage = () => {
         window.open(url + '?preview=true', '_blank');
     }
 
+    const cloneSale = (saleId: string) => {
+        gridRef.current?.showLoading('Clonando venta...')
+        saleService.cloneSale(saleId).subscribe((response) => {
+            notify({
+                    message: response.data.message,
+                    type: 'success',
+                    displayTime: 3000,
+                }, {position: 'top right'}
+            );
+            gridRef.current?.refresh();
+        }).add(() => {
+            gridRef.current?.hideLoading();
+        });
+    }
+
     const toolbar = [
         {
             text: 'Vista previa',
@@ -157,7 +184,8 @@ export const SalePage = () => {
                         }, {position: 'top right'}
                     );
                 }
-            }
+            },
+            disabled: !printEnabled
         },
         {
             text: 'Anular',
@@ -194,6 +222,14 @@ export const SalePage = () => {
                     );
                 }
             }
+        },
+        {
+            text: 'Duplicar',
+            icon: 'fas fa-copy fa-1x text-info',
+            onClick: () => {
+                cloneSale(gridRef.current?.getSelectedRowKey() || '');
+            },
+            disabled: !cloneEnabled
         }
     ]
 

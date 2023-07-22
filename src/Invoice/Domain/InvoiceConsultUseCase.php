@@ -29,7 +29,7 @@ readonly class InvoiceConsultUseCase
         $consultResponse = $this->billConsultUseCase->__invoke($saleId);
 
         if ($consultResponse->isSuccess()) {
-            $invoice = $this->invoiceRepository->getOne($saleId);
+            $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
             if ($consultResponse->getCdrResponse()?->isAccepted()) {
                 $invoice->envio_sunat = $consultResponse->getCdrResponse()->getCode();

@@ -14,10 +14,10 @@ readonly class Options implements LoadOptionsInterface
     public function __construct(
         public string $entity,
         public string $mapping,
-        public int $page,
-        public int $rows,
+        public int $page = 1,
+        public int $rows = 10,
         public int $skip = 0,
-        public int $take = 0,
+        public int $take = 10,
         /** @var JoinRule[] $joins */
         public array $joins = [],
         /** @var SortRule[] $sort */

@@ -23,6 +23,7 @@ import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
+import DevExpress from "devextreme";
 
 export interface DxDataGridOptions {
     title: string;
@@ -46,6 +47,12 @@ export interface DxDataGridEvents {
     refresh: () => void;
     getSelectedRowKey: () => any;
     getSelectedRow: () => any;
+    getSelectedRowKeys: () => any;
+    getSelectedRows: () => any;
+}
+
+export const DATA_GRID_EVENTS = {
+    SELECTION_CHANGED: 'datagrid:selection.changed',
 }
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
@@ -125,12 +132,26 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         return gridRef.current?.instance.getSelectedRowsData()[0];
     }
 
+    const getSelectedRowKeys = () => {
+        return gridRef.current?.instance.getSelectedRowKeys();
+    }
+
+    const getSelectedRows = () => {
+        return gridRef.current?.instance.getSelectedRowsData();
+    }
+
+    const onSelectionChanged = (e: any) => {
+        bus.emit(DATA_GRID_EVENTS.SELECTION_CHANGED, e);
+    }
+
     useImperativeHandle(ref, () => ({
         showLoading,
         hideLoading,
         refresh,
         getSelectedRowKey,
-        getSelectedRow
+        getSelectedRow,
+        getSelectedRowKeys,
+        getSelectedRows,
     }));
 
     return (
@@ -145,6 +166,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     allowColumnReordering
                     remoteOperations={true}
                     syncLookupFilterValues={false}
+                    onSelectionChanged={onSelectionChanged}
                     ref={gridRef}
                 >
                     <LoadPanel showPane={false}/>
