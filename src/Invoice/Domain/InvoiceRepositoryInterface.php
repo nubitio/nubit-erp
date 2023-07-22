@@ -13,7 +13,9 @@ interface InvoiceRepositoryInterface
      */
     public function getAll(Options $options): PaginatorInterface;
 
-    public function getOne(string $saleId): Invoice;
+    public function getOne(string $invoiceId): Invoice;
+
+    public function getOneBySaleId(string $saleId): Invoice;
 
     public function create(Sale $sale): void;
 

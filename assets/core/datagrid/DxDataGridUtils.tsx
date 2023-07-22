@@ -13,6 +13,7 @@ export const buildToolbar = (items: any[] = []) => {
                 type={item.type}
                 stylingMode='outlined'
                 onClick={item.onClick}
+                disabled={item.disabled}
             />
         </Item>
     });

@@ -155,7 +155,7 @@ export class SharedUtils {
     }
 
     static dxBillStatusFormatter(cell: ColumnCellTemplateData) {
-        if (cell.data.envio_sunat === null) {
+        if (cell.data.envio_sunat === null || cell.data.envio_sunat === undefined || cell.data.envio_sunat === '') {
             cell.data.envio_sunat = -1
         } else {
             cell.data.envio_sunat = Number(cell.data.envio_sunat);
