@@ -115,7 +115,6 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
 
 export const buildSummary = (fields: ITotalItemProps[] | undefined) => {
     return fields?.map((field: ITotalItemProps, index) => {
-        console.log(field)
         return <TotalItem
             key={index}
             column={field.column}

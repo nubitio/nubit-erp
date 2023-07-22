@@ -2,6 +2,7 @@
 
 namespace App\CashboxNew\Infrastructure;
 
+use App\Branch\Infrastructure\BranchEntity;
 use App\CashboxNew\Domain\Cashbox;
 use App\CashboxNew\Domain\CashboxRepositoryInterface;
 use App\CashboxNewDetail\Infrastructure\CashboxDetailEntity;
@@ -10,6 +11,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -46,6 +48,14 @@ readonly class CashboxRepository implements CashboxRepositoryInterface
     public function insert(Cashbox $cashbox): Cashbox
     {
         $entity = DataMapper::map($cashbox, CashboxEntity::class);
+
+        $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local?->local_id);
+        $entity->usuario = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario?->usuario_id);
+
+        foreach ($entity->details as $detail) {
+            $detail->cashbox = $entity;
+        }
+
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -54,13 +64,21 @@ readonly class CashboxRepository implements CashboxRepositoryInterface
 
     public function update(Cashbox $cashbox): Cashbox
     {
+        /** @var ?CashboxEntity $entity */
         $entity = $this->entityManager->find(CashboxEntity::class, $cashbox->caja_id);
 
         if (!$entity) {
             throw new ServiceException('Entity not found');
         }
 
+        $details = $entity->details;
+
         $entity = DataMapper::map($cashbox, $entity);
+
+        $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local?->local_id);
+        $entity->usuario = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario?->usuario_id);
+        $entity->details = $details;
+
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Cashbox::class);

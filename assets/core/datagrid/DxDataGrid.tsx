@@ -48,10 +48,6 @@ export interface DxDataGridEvents {
     getSelectedRow: () => any;
 }
 
-export const DATAGRID_EVENTS = {
-    SUMMARY: 'on:datagrid:summary'
-}
-
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
     const gridRef = useRef<DataGrid>(null);
     const [data, setData] = useState<CustomStore | null>(null);
@@ -137,10 +133,6 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         getSelectedRow
     }));
 
-    const calculateCustomSummary = (options) => {
-        bus.emit(DATAGRID_EVENTS.SUMMARY, options);
-    }
-
     return (
         <div className='view datagrid-list'>
             <div className='view-wrapper view-wrapper-datagrid-list'>
@@ -151,7 +143,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     height='100%'
                     dataSource={data}
                     allowColumnReordering
-                    remoteOperations={{filtering: true, sorting: true, paging: true, summary: false}}
+                    remoteOperations={true}
                     syncLookupFilterValues={false}
                     ref={gridRef}
                 >
@@ -221,7 +213,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     </Toolbar>
                     <FilterRow visible={true}/>
                     {buildColumns(options.fields)}
-                    <Summary calculateCustomSummary={calculateCustomSummary}>
+                    <Summary>
                         {buildSummary(options.summaryFields)}
                     </Summary>
                     <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
