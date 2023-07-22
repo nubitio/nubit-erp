@@ -117,7 +117,23 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.NONE)
         .name('invoice')
         .label('Comprobante')
-        //.formatter(SharedUtils.invoiceFormatter)
+        .formatter((cell: ColumnCellTemplateData) => {
+            if (cell.value) {
+                let payload = {
+                    type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
+                    id: cell.data.movimiento_id,
+                }
+                let payloadEncoded = btoa(JSON.stringify(payload));
+                let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
+                return (
+                    <a href={url} className='text-reset' target='_blank'>
+                        <i className='fas fa-file-invoice fa-lg'></i> {cell.value}
+                    </a>
+                );
+            }
+            return '';
+        })
+        .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
@@ -222,7 +238,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .label('Cantidad')
         .align('center')
         .precision(2)
-        .defaultValue(1)
+        .defaultValue(0)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
             row.precio_total = currentRow.precio_unitario * value;
