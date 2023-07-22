@@ -26,7 +26,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne(string $id): ?PriceList
@@ -89,7 +89,7 @@ readonly class PriceListRepository implements PriceListRepositoryInterface
                 p.producto_id as id,
                 p.descripcion as name,
                 ifnull(pld.price, p.precio) as price
-            from producto p 
+            from producto p
             left join price_list_detail pld on p.producto_id = pld.product_id
             and pld.price_list_id = :id
             where p.estado = 1

@@ -8,6 +8,7 @@ use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\MilitaryPatient\Domain\GetInvoiceExtraDataByCustomerIdUseCase;
+use App\Sale\Domain\CloneSaleUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
@@ -152,5 +153,13 @@ class SaleController extends BaseController
         $saleInvoiceUseCase($id);
 
         return $this->json(new ApiResponse(true, 'Comprobante generado correctamente'));
+    }
+
+    #[Route('/sale/clone/{id}', name: 'sale_clone', methods: ['POST'])]
+    public function clone(string $id, CloneSaleUseCase $cloneSaleUseCase): Response
+    {
+        $cloneSaleUseCase($id);
+
+        return $this->json(new ApiResponse(true, 'Registro clonado correctamente'));
     }
 }

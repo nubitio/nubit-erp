@@ -81,7 +81,7 @@ readonly class SaleVoidUseCase
      */
     private function voidInvoice(string $saleId, string $reason): SummaryResponse
     {
-        $invoice = $this->invoiceRepository->getOne($saleId);
+        $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
         if ('0' !== $invoice->envio_sunat) {
             throw SaleException::notIssued();
@@ -110,7 +110,7 @@ readonly class SaleVoidUseCase
      */
     private function voidReceipt(string $saleId): SummaryResponse
     {
-        $invoice = $this->invoiceRepository->getOne($saleId);
+        $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
         if ('0' !== $invoice->envio_sunat) {
             throw SaleException::notIssued();

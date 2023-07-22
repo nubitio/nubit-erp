@@ -21,7 +21,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
 
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne(int $id): ?Config
