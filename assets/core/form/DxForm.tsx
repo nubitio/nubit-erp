@@ -191,6 +191,17 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         return row;
     }
 
+    const isValid = () => {
+        let formValid = formRef.current?.instance.validate().isValid ?? true;
+        let gridValid = gridRef.current?.instance.hasEditData() ?? true;
+
+        if (options.detailFields) {
+            gridValid = (gridRef.current?.instance.totalCount() ?? 0) > 0;
+        }
+
+        return formValid && gridValid;
+    }
+
     const setupObservers = () => {
         bus.on(options.events.ADD, () => {
             formRef.current?.instance.resetValues();
@@ -231,8 +242,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         });
 
         bus.on(options.events.SAVE, () => {
-            let result = formRef.current?.instance.validate()
-            if (!result?.isValid) return;
+            if (!isValid()) return;
             let formData = formRef.current?.instance.option('formData');
             uploadedFiles.current.forEach((file: any) => {
                 formData[file.field] = {

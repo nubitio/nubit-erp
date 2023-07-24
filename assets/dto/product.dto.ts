@@ -1,4 +1,5 @@
 import { MediaDto } from "./media.dto";
+import {UnitOfMeasureDto} from "./UnitOfMeasureDto";
 
 export interface ProductDto {
     producto_id: string;
@@ -9,5 +10,6 @@ export interface ProductDto {
     precio: number;
     categoria_id: string;
     categoria: string;
+    unidad: UnitOfMeasureDto;
     estado: string;
 }

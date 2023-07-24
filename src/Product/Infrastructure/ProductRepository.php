@@ -7,6 +7,10 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Exception\ValidationException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
+use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Media\Infrastructure\MediaEntity;
@@ -37,8 +41,18 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
     public function getOne(string $id): ?Product
     {
-        /** @var ?ProductEntity $entity */
-        $entity = $this->entityManager->find(ProductEntity::class, $id);
+        $entity = $this->dataLoader->loadOne(new Options(
+            entity: ProductEntity::class,
+            mapping: Product::class,
+            joins: [
+                new JoinRule('e.categoria', 'c'),
+                new JoinRule('e.unidad', 'u', JoinType::LEFT),
+                new JoinRule('e.imagen', 'i', JoinType::LEFT),
+            ],
+            filters: [
+                new FilterRule('producto_id', FilterOperation::Equals, $id),
+            ],
+        ));
 
         if (!$entity) {
             return null;

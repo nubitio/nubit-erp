@@ -122,7 +122,7 @@ readonly class CashboxRepository implements CashboxRepositoryInterface
                 c.serie,
                 min( c.numero ) AS desde,
                 max( c.numero ) AS hasta,
-                sum( c.total - c.discount_amount ) AS total
+                sum( c.total ) AS total
             FROM
                 comprobante c
                 INNER JOIN tipo_comprobante tc ON tc.codigo = c.tipo_comprobante_id
