@@ -54,7 +54,7 @@ export const InvoicePage = () => {
                     invoiceService.sendInvoice(selectedRow.movimiento_id).subscribe((response) => {
                         notify({
                             message: response.data.message,
-                            type: 'success',
+                            type: response.data.success ? 'success' : 'error',
                             displayTime: 3000,
                         }, {position: 'top right'})
                         gridRef.current?.refresh();
