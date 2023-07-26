@@ -36,7 +36,6 @@ readonly class SendCreditNoteUseCase
         }
 
         $response = $this->noteSendUseCase->__invoke($noteId);
-        dump($response);
         $note->digest = $response->hash;
         $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
         if ($response->sunatResponse->isSuccess()) {
