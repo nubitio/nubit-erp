@@ -3,20 +3,18 @@
 namespace App\CreditNote\Domain;
 
 use App\Billing\Domain\NoteSendUseCase;
+use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
-use App\Invoice\Domain\GetOneVoucherUseCase;
-use App\Invoice\Domain\Voucher;
+use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
-use Psr\Cache\InvalidArgumentException;
 
 readonly class SendCreditNoteUseCase
 {
     public function __construct(
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
         private NoteSendUseCase $noteSendUseCase,
         private CreditNoteRepositoryInterface $creditNoteRepository,
         private FileManager $fileManager,
@@ -26,21 +24,19 @@ readonly class SendCreditNoteUseCase
 
     /**
      * @throws FilesystemException
-     * @throws ServiceException|InvalidArgumentException
+     * @throws ServiceException
+     * @throws Exception
      */
-    public function __invoke(string $noteId): ?Voucher
+    public function __invoke(string $noteId): DocumentResponse
     {
         $note = $this->getOneCreditNoteUseCase->__invoke($noteId);
-        $saleId = $note->sale?->movimiento_id;
-
-        if (null === $saleId) {
-            throw new ServiceException('$saleId no puede ser nulo.');
-        }
 
         if (null !== $note->envio_sunat) {
-            return $this->getOneVoucherUseCase->__invoke($saleId);
+            throw new ServiceException('La nota de crédito ya fue enviada.');
         }
+
         $response = $this->noteSendUseCase->__invoke($noteId);
+        dump($response);
         $note->digest = $response->hash;
         $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
         if ($response->sunatResponse->isSuccess()) {
@@ -53,9 +49,8 @@ readonly class SendCreditNoteUseCase
             $note->envio_sunat = $response->sunatResponse->getError()?->getCode();
             $note->mensaje_sunat = $response->sunatResponse->getError()?->getMessage();
             $this->creditNoteRepository->update($note);
-            throw new ServiceException($response->sunatResponse->getError()?->getMessage() ?? '');
         }
 
-        return $this->getOneVoucherUseCase->__invoke($saleId);
+        return $response;
     }
 }
