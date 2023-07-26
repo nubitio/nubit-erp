@@ -47,6 +47,7 @@ export const CreditNoteFields = () => {
         .name('fecha')
         .label('Fecha')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+        .defaultValue(new Date())
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -111,10 +112,10 @@ export const CreditNoteFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
-        .name('sale')
+        .name('doc_afectado')
         .label('Doc. afectado')
         .align('center')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.invoice)
+        .formatter((cell: ColumnCellTemplateData) => cell.value ?? cell.data.sale?.invoice ?? '')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)

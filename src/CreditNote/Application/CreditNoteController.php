@@ -3,6 +3,7 @@
 namespace App\CreditNote\Application;
 
 use App\Base\BaseController;
+use App\Core\Domain\Common\ApiResponse;
 use App\CreditNote\Domain\SendCreditNoteUseCase;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,8 +19,12 @@ class CreditNoteController extends BaseController
     #[Route('/credit-note/send/{id}', name: 'credit-note_send', methods: ['POST'])]
     public function send(SendCreditNoteUseCase $sendCreditNoteUseCase, string $id): Response
     {
-        $sendCreditNoteUseCase($id);
+        $result = $sendCreditNoteUseCase($id);
 
-        return $this->json(['success' => true, 'msg' => 'Comprobante enviado correctamente']);
+        if ($result->sunatResponse->isSuccess()) {
+            return $this->json(new ApiResponse(true, $result->sunatResponse->getCdrResponse()?->getDescription() ?: ''));
+        } else {
+            return $this->json(new ApiResponse(false, $result->sunatResponse->getError()?->getMessage() ?: ''));
+        }
     }
 }

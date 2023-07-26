@@ -87,7 +87,7 @@ readonly class DataLoader implements DataLoaderInterface
         $item = $query->getOneOrNullResult();
 
         if (!$item) {
-            throw new \RuntimeException('Item not found');
+            return null;
         }
 
         $mappedItem = DataMapper::map($item, $options->mapping);

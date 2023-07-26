@@ -42,10 +42,10 @@ export const CreditNotePage = () => {
                     }
 
                     gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-                    saleService.makeNote(selectedRow.nota_id).subscribe((data) => {
+                    saleService.makeNote(selectedRow.nota_id).subscribe((response) => {
                         notify({
-                            message: 'Comprobante enviado a SUNAT',
-                            type: 'success',
+                            message: response.data.message,
+                            type: response.data.success ? 'success' : 'error',
                             displayTime: 3000,
                         }, {position: 'top right'})
                         gridRef.current?.refresh();

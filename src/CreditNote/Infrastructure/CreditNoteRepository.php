@@ -73,7 +73,9 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
         }
 
         $entity = DataMapper::map($creditNote, $entity);
-        $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale?->movimiento_id);
+        if ($creditNote->sale) {
+            $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale->movimiento_id);
+        }
         $this->entityManager->flush();
 
         return DataMapper::map($entity, CreditNote::class);
