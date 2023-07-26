@@ -19,7 +19,6 @@ readonly class NoteSendUseCase
     public function __invoke(string $noteId): DocumentResponse
     {
         $note = $this->noteCreateUseCase->__invoke($noteId);
-        dump($note);
         $response = $this->noteRepository->send($note);
         $response->name = $note->getName();
 
