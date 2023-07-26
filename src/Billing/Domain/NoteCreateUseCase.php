@@ -3,8 +3,10 @@
 namespace App\Billing\Domain;
 
 use App\Core\Domain\Exception\ServiceException;
+use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\Voucher;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
@@ -27,6 +29,12 @@ readonly class NoteCreateUseCase
     {
         $creditNote = $this->getOneCreditNoteUseCase->__invoke($noteId);
         $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale?->movimiento_id ?? '');
+
+        return $this->getNote($creditNote, $voucher);
+    }
+
+    private function getNote(CreditNote $creditNote, Voucher $voucher): Note
+    {
         $customerAddress = new Address();
         $customerAddress->setDireccion(strval($voucher->customer_address));
 
