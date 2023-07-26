@@ -3,10 +3,10 @@
 namespace App\Core\Infrastructure\Command;
 
 use App\Billing\Domain\BillConsultUseCase;
-use App\Billing\Domain\NoteSendUseCase;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
 use App\Core\Infrastructure\Service\TenantManager;
+use App\CreditNote\Domain\SendCreditNoteUseCase;
 use App\CreditNote\Infrastructure\CreditNoteUtils;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceSendUseCase;
@@ -36,7 +36,7 @@ class InvoiceFixerCommand extends Command
         private readonly CloneSaleUseCase $cloneSaleUseCase,
         private readonly SaleInvoiceUseCase $saleInvoiceUseCase,
         private readonly GetOneVoucherUseCase $getOneVoucherUseCase,
-        private readonly NoteSendUseCase $noteSendUseCase,
+        private readonly SendCreditNoteUseCase $sendCreditNoteUseCase,
     ) {
         parent::__construct();
     }
@@ -184,7 +184,8 @@ class InvoiceFixerCommand extends Command
             'created_at' => date('Y-m-d H:i:s'),
         ];
         $this->connection->insert('nota', $creditNote);
-        $creditNoteResponse = $this->noteSendUseCase->__invoke($creditNote['nota_id']);
+        $creditNoteResponse = $this->sendCreditNoteUseCase->__invoke($creditNote['nota_id']);
+
         if ($creditNoteResponse->sunatResponse->isSuccess()) {
             $io->success('Nota de crédito enviada');
             $io->table(['estado', 'mensaje'], [
