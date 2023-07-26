@@ -23,6 +23,8 @@ class CreditNoteEntity
         #[ORM\ManyToOne(targetEntity: SaleEntity::class)]
         #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
         public ?SaleEntity $sale = null,
+        #[ORM\Column(name: 'raw_document_id', type: 'integer')]
+        public ?int $raw_document_id = null,
         #[ORM\Column(name: 'fecha', type: 'date')]
         public ?\DateTimeInterface $fecha = null,
         #[ORM\Column(name: 'tipo_id', type: 'string')]

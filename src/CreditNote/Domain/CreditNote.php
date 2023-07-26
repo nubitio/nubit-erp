@@ -14,6 +14,8 @@ class CreditNote
         public ?string $nota_id = null,
         #[SerializedName('sale')]
         public ?Sale $sale = null,
+        #[SerializedName('raw_document_id')]
+        public ?int $raw_document_id = null,
         #[SerializedName('fecha')]
         public ?\DateTimeInterface $fecha = null,
         #[SerializedName('tipo_id')]
