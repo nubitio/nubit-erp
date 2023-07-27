@@ -18,6 +18,8 @@ class InvoiceEntity
         public ?string $comprobante_id = null,
         #[ORM\Column(name: 'movimiento_id', type: 'string')]
         public ?string $movimiento_id = null,
+        #[ORM\Column(name: 'raw_document_id', type: 'integer')]
+        public ?int $raw_document_id = null,
         #[ORM\ManyToOne(targetEntity: CustomerEntity::class)]
         #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
         public ?CustomerEntity $cliente = null,

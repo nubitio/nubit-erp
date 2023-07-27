@@ -14,6 +14,8 @@ class Invoice
         public ?string $comprobante_id = null,
         #[SerializedName('movimiento_id')]
         public ?string $movimiento_id = null,
+        #[SerializedName('raw_document_id')]
+        public ?int $raw_document_id = null,
         #[SerializedName('cliente')]
         public ?Customer $cliente = null,
         #[SerializedName('tipo_comprobante_id')]
