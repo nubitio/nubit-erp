@@ -78,7 +78,11 @@ export const InvoicePage = () => {
 
                     gridRef.current?.showLoading('Enviando comprobante por correo...');
                     invoiceService.sendEmail(selectedRow.movimiento_id).subscribe((data) => {
-                        messenger.show('Información', 'Comprobante enviado por correo');
+                        notify({
+                            message: 'El comprobante fue enviado por correo',
+                            type: 'success',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                         gridRef.current?.refresh();
                     }).add(() => gridRef.current?.hideLoading());
                 }
