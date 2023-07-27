@@ -16,7 +16,7 @@ readonly class LogoProvider
     /**
      * @throws Exception
      */
-    public function getLogo(): string
+    public function __invoke(): string
     {
         $company = $this->connection->fetchAssociative('SELECT logo FROM empresa LIMIT 1');
 

@@ -9,10 +9,10 @@ import {bus} from "../../core/event/EventBus";
 import {httpClient} from "../../core/http/HttpClient";
 
 export const RecipePage = () => {
-    const container = "wrapper";
-    const fields = RecipeFields();
-    const detailFields = RecipeDetailFields();
     const formRef = useRef<DxFormEvents>(null)
+    const container = "wrapper";
+    const fields = RecipeFields(formRef.current);
+    const detailFields = RecipeDetailFields();
 
     const API_URL = Constants.API_BASE_URL + 'recipes';
 

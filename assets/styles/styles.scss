@@ -1,5 +1,4 @@
 @use "../variables" as *;
-@import "~bootstrap/scss/bootstrap";
 @import "~@fortawesome/fontawesome-free/scss/regular";
 @import "~@fortawesome/fontawesome-free/scss/solid";
 @import "~@fortawesome/fontawesome-free/scss/brands";
@@ -270,4 +269,191 @@ body {
   padding: 20px;
   border-top: 1px solid var(--border-color);
   background-color: var(--side-panel-background);
+}
+
+$primary: lighten(#0d6efd, 10%);
+$secondary: lighten(#6c757d, 10%);
+$success: lighten(#198754, 10%);
+$info: lighten(#0dcaf0, 10%);
+$warning: lighten(#ffc107, 10%);
+$danger: lighten(#dc3545, 10%);
+
+.text-primary {
+  color: $primary !important;
+}
+
+.text-secondary {
+  color: $secondary !important;
+}
+
+.text-success {
+  color: $success !important;
+}
+
+.text-danger {
+  color: $danger !important;
+}
+
+.text-warning {
+  color: $warning !important;
+}
+
+.text-info {
+  color: $info !important;
+}
+
+.bg-primary {
+  background-color: $primary !important;
+}
+
+.bg-secondary {
+  background-color: $secondary !important;
+}
+
+.bg-success {
+  background-color: $success !important;
+}
+
+.bg-danger {
+  background-color: $danger !important;
+}
+
+.bg-warning {
+  background-color: $warning !important;
+}
+
+.bg-info {
+  background-color: $info !important;
+}
+
+.dx-button {
+  &.dx-button-mode-contained {
+    &.dx-button-primary {
+      background-color: $primary !important;
+    }
+
+    &.dx-button-secondary {
+      background-color: $secondary !important;
+    }
+
+    &.dx-button-success {
+      background-color: $success !important;
+    }
+
+    &.dx-button-danger {
+      background-color: $danger !important;
+    }
+
+    &.dx-button-warning {
+      background-color: $warning !important;
+    }
+
+    &.dx-button-info {
+      background-color: $info !important;
+    }
+  }
+
+  &.dx-button-mode-outlined {
+    &.dx-button-primary,
+    &.dx-button-secondary,
+    &.dx-button-success,
+    &.dx-button-danger,
+    &.dx-button-warning,
+    &.dx-button-info {
+      border-color: currentColor !important;
+      color: currentColor !important;
+
+      .dx-icon {
+        color: currentColor !important;
+      }
+    }
+
+    &.dx-button-primary {
+      color: $primary !important;
+    }
+
+    &.dx-button-secondary {
+      color: $secondary !important;
+    }
+
+    &.dx-button-success {
+      color: $success !important;
+    }
+
+    &.dx-button-danger {
+      color: $danger !important;
+    }
+
+    &.dx-button-warning {
+      color: $warning !important;
+    }
+
+    &.dx-button-info {
+      color: $info !important;
+    }
+
+    &:hover,
+    &:focus{
+      &.dx-button-primary {
+        background-color: rgba($primary, 0.08) !important;
+      }
+
+      &.dx-button-secondary {
+        background-color: rgba($secondary, 0.08) !important;
+      }
+
+      &.dx-button-success {
+        background-color: rgba($success, 0.08) !important;
+      }
+
+      &.dx-button-danger {
+        background-color: rgba($danger, 0.08) !important;
+      }
+
+      &.dx-button-warning {
+        background-color: rgba($warning, 0.08) !important;
+      }
+
+      &.dx-button-info {
+        background-color: rgba($info, 0.08) !important;
+      }
+    }
+
+    &:active{
+      &.dx-button-primary {
+        background-color: rgba($primary, 0.36) !important;
+      }
+
+      &.dx-button-secondary {
+        background-color: rgba($secondary, 0.36) !important;
+      }
+
+      &.dx-button-success {
+        background-color: rgba($success, 0.36) !important;
+      }
+
+      &.dx-button-danger {
+        background-color: rgba($danger, 0.36) !important;
+      }
+
+      &.dx-button-warning {
+        background-color: rgba($warning, 0.36) !important;
+      }
+
+      &.dx-button-info {
+        background-color: rgba($info, 0.36) !important;
+      }
+    }
+  }
+}
+
+.badge {
+  border-radius: 0.375rem !important;
+  padding: 0.35em 0.65em !important;
+  font-size: 0.75em !important;
+  font-weight: 700 !important;
+
+  &.rounded-pill {
+    border-radius: 50rem !important;
+  }
 }

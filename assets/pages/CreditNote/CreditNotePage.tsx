@@ -28,7 +28,8 @@ export const CreditNotePage = () => {
     const toolbar = [
         {
             text: 'Enviar a SUNAT',
-            icon: 'fas fa-file-invoice fa-1x text-info',
+            icon: 'fas fa-file-invoice fa-1x',
+            type: 'info',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
                 if (selectedRow) {
@@ -63,7 +64,8 @@ export const CreditNotePage = () => {
         },
         {
             text: 'Enviar por correo',
-            icon: 'fas fa-envelope fa-1x text-success',
+            icon: 'fas fa-envelope fa-1x',
+            type: 'success',
             onClick: () => {
                 notify({
                     message: 'Funcionalidad no implementada',
@@ -74,7 +76,8 @@ export const CreditNotePage = () => {
         },
         {
             text: 'Ver',
-            icon: 'fas fa-eye fa-1x text-primary',
+            icon: 'fas fa-eye fa-1x',
+            type: 'primary',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
                 let payload = {

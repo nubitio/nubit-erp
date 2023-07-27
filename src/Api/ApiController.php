@@ -367,7 +367,7 @@ class ApiController extends BaseController
     }
 
     // Customer
-    #[Route('/api/image/customer/{ruc}', name: 'api_getImageCustomer', methods: ['GET'])]
+    #[Route('/api/image/customer/{id}', name: 'api_getImageCustomer', methods: ['GET'])]
     public function getImageCustomer(string $id): Response
     {
         $data = $this->apiRepository->getImageCustomer($id);
