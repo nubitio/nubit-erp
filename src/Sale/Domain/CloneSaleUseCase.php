@@ -10,7 +10,7 @@ readonly class CloneSaleUseCase
     ) {
     }
 
-    public function __invoke(string $saleId): void
+    public function __invoke(string $saleId): Sale
     {
         $sale = $this->getOneSaleUseCase->__invoke($saleId);
         $sale->movimiento_id = null;
@@ -27,6 +27,6 @@ readonly class CloneSaleUseCase
             $detail->movimiento = null;
         }
 
-        $this->createSaleUseCase->__invoke($sale);
+        return $this->createSaleUseCase->__invoke($sale);
     }
 }
