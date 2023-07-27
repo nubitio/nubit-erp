@@ -40,7 +40,7 @@ class InvoiceController extends BaseController
         if ($result->isSuccess()) {
             return $this->json(new ApiResponse(true, $result->getCdrResponse()?->getDescription() ?: ''));
         } else {
-            return $this->json(new ApiResponse(false, $result->getError()?->getMessage() ?: ''));
+            return $this->json(new ApiResponse(false, $result->getError()?->getMessage() ?: '', $result));
         }
     }
 

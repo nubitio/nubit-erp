@@ -6,6 +6,7 @@ use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -35,6 +36,7 @@ readonly class InvoiceEmailUseCase
      * @throws RuntimeError
      * @throws FilesystemException
      * @throws LoaderError
+     * @throws Exception
      */
     public function __invoke(string $saleId): void
     {
@@ -46,7 +48,14 @@ readonly class InvoiceEmailUseCase
             default => '',
         };
 
-        $invoiceUrl = $this->urlGenerator->generate('invoice_show', ['id' => $saleId], UrlGeneratorInterface::ABSOLUTE_URL);
+        $payload = [
+            'type' => $voucher->voucher_type,
+            'id' => $saleId,
+        ];
+
+        $payload = base64_encode(strval(json_encode($payload)));
+
+        $invoiceUrl = $this->urlGenerator->generate('receipt_show', ['payload' => $payload], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
         $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;

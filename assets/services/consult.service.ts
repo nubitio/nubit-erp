@@ -12,3 +12,5 @@ export class ConsultService {
         return httpClient.get<ConsultInfoDto>(`${Constants.API_BASE_URL}consults/dni/${dni}`);
     }
 }
+
+export const consultService = new ConsultService();

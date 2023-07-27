@@ -36,4 +36,5 @@ export interface Field {
     required: boolean;
     precision: number;
     accept: any;
+    buttons: any[];
 }

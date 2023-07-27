@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Home\Application;
+
+use App\Base\BaseController;
+use App\Core\Infrastructure\Service\LogoProvider;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
+
+class HomeController extends BaseController
+{
+    #[Route('/logo', name: 'logo', methods: ['GET'])]
+    public function logo(LogoProvider $logoProvider): Response
+    {
+        $logoUrl = $logoProvider();
+
+        return $this->redirect($logoUrl);
+    }
+}

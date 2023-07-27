@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
@@ -30,6 +31,7 @@ readonly class RecipeProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.product', 'p'));
+            $context = OptionUtils::addJoin($context, new JoinRule('p.unidad', 'u', JoinType::LEFT));
             $context = OptionUtils::addSort($context, new SortRule('id', 'asc'));
             $options = OptionsBuilder::build($context, RecipeEntity::class, Recipe::class);
 

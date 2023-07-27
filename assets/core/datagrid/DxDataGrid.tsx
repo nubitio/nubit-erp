@@ -4,6 +4,7 @@ import {
     Export,
     FilterRow,
     Item,
+    ITotalItemProps,
     LoadPanel,
     MasterDetail,
     Pager,
@@ -11,6 +12,7 @@ import {
     Scrolling,
     Selection,
     Sorting,
+    Summary,
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
@@ -19,7 +21,7 @@ import {bus} from "../event/EventBus";
 import notify from "devextreme/ui/notify";
 import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
-import {buildColumns, buildToolbar, getIdField} from "./DxDataGridUtils";
+import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
 import DevExpress from "devextreme";
 
@@ -35,6 +37,7 @@ export interface DxDataGridOptions {
     allowAdd?: boolean;
     allowEdit?: boolean;
     allowDelete?: boolean;
+    summaryFields?: ITotalItemProps[];
     sort?: any[];
 }
 
@@ -64,7 +67,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     const onAddClick = useCallback(() => {
         options.events?.ADD &&
         bus.emit(options.events?.ADD);
-    }, []);
+    }, [options.events?.ADD]);
 
     const onEditClick = useCallback(() => {
         let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
@@ -232,6 +235,9 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     </Toolbar>
                     <FilterRow visible={true}/>
                     {buildColumns(options.fields)}
+                    <Summary>
+                        {buildSummary(options.summaryFields)}
+                    </Summary>
                     <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
                     <Paging defaultPageSize={20}/>
                     <Pager visible={true}/>

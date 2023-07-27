@@ -4,8 +4,11 @@ import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
+import {DxFormEvents} from "../../core/form/DxForm";
+import {consultService} from "../../services/consult.service";
+import notify from "devextreme/ui/notify";
 
-export const CustomerFields = () => {
+export const CustomerFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -15,6 +18,34 @@ export const CustomerFields = () => {
         .validators(['validCustomerId'])
         .required(true)
         .sortable(true)
+        .buttons([{
+            name: 'search',
+            location: 'after',
+            options: {
+                icon: 'search',
+                onClick: (e: any) => {
+                    const doc = formRef?.getFieldValue('ruc');
+                    if (doc.length === 8) {
+                        consultService.consultDni(doc).subscribe((response) => {
+                            formRef?.setFieldValue('razon_social', response.data.name);
+                        });
+                    } else if (doc.length === 11) {
+                        consultService.consultRuc(doc).subscribe((response) => {
+                            if (!response.data.active) {
+                                notify({
+                                    message: 'El RUC ingresado no se encuentra activo',
+                                    type: 'error',
+                                    displayTime: 3000,
+                                }, {position: 'top right'})
+                                return;
+                            }
+                            formRef?.setFieldValue('razon_social', response.data.name);
+                            formRef?.setFieldValue('domicilio_fiscal', response.data.address);
+                        });
+                    }
+                }
+            }
+        }])
         .valueType('string')
         .build());
     fields.push(new FieldBuilder()
