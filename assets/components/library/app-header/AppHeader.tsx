@@ -10,6 +10,7 @@ import {ThemeSwitcher} from '../theme-switcher/ThemeSwitcher';
 import type {AppHeaderProps} from '../../../types';
 
 import './AppHeader.scss';
+import {Link} from "react-router-dom";
 
 export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: AppHeaderProps) => {
     return (
@@ -17,6 +18,11 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
             <Toolbar className='header-toolbar'>
                 <Item visible={menuToggleEnabled} location='before' widget='dxButton' cssClass='menu-button'>
                     <Button icon='menu' stylingMode='text' onClick={toggleMenu}/>
+                </Item>
+                <Item location='before' cssClass='header-logo'>
+                    <Link to="/dashboard">
+                        <img className="header-logo" src="/logo" alt="logo"/>
+                    </Link>
                 </Item>
                 <Item location='before' cssClass='header-title' text={title} visible={!!title}/>
                 <Item location='after' locateInMenu='never'>

@@ -26,6 +26,6 @@ class LogoExtension extends AbstractExtension
      */
     public function getLogo(): string
     {
-        return $this->logoProvider->getLogo();
+        return $this->logoProvider->__invoke();
     }
 }

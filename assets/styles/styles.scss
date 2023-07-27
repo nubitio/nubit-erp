@@ -391,6 +391,59 @@ $danger: lighten(#dc3545, 10%);
     &.dx-button-info {
       color: $info !important;
     }
+
+    &:hover,
+    &:focus{
+      &.dx-button-primary {
+        background-color: rgba($primary, 0.08) !important;
+      }
+
+      &.dx-button-secondary {
+        background-color: rgba($secondary, 0.08) !important;
+      }
+
+      &.dx-button-success {
+        background-color: rgba($success, 0.08) !important;
+      }
+
+      &.dx-button-danger {
+        background-color: rgba($danger, 0.08) !important;
+      }
+
+      &.dx-button-warning {
+        background-color: rgba($warning, 0.08) !important;
+      }
+
+      &.dx-button-info {
+        background-color: rgba($info, 0.08) !important;
+      }
+    }
+
+    &:active{
+      &.dx-button-primary {
+        background-color: rgba($primary, 0.36) !important;
+      }
+
+      &.dx-button-secondary {
+        background-color: rgba($secondary, 0.36) !important;
+      }
+
+      &.dx-button-success {
+        background-color: rgba($success, 0.36) !important;
+      }
+
+      &.dx-button-danger {
+        background-color: rgba($danger, 0.36) !important;
+      }
+
+      &.dx-button-warning {
+        background-color: rgba($warning, 0.36) !important;
+      }
+
+      &.dx-button-info {
+        background-color: rgba($info, 0.36) !important;
+      }
+    }
   }
 }
 
