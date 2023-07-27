@@ -39,7 +39,12 @@ export const DashboardPage = () => {
 
     useEffect(() => {
         Promise.all([
-
+            fetch('/bi/venta-semana')
+                .then((response) => response.json())
+                .then((data) => {
+                    setSales(data);
+                    setSalesTotal(calculateTotal(data));
+                }),
         ])
             .then(() => setIsLoading(false))
             .catch((error) => console.log(error));

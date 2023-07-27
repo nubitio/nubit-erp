@@ -224,7 +224,8 @@ export const SalePage = () => {
         },
         {
             text: 'Duplicar',
-            icon: 'fas fa-copy fa-1x text-info',
+            icon: 'fas fa-copy fa-1x',
+            type: 'info',
             onClick: () => {
                 cloneSale(gridRef.current?.getSelectedRowKey() || '');
             },
