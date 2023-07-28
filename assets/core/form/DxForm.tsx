@@ -93,13 +93,15 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     displayExpr: field.textField,
                     searchEnabled: field.mode === 'remote',
                     wrapItemText: true,
+                    buttons: ['dropDown'],
                 }
             }
             if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
                 editorOptions = {
                     dataSource: field.data,
                     valueExpr: 'value',
-                    displayExpr: 'text'
+                    displayExpr: 'text',
+                    buttons: ['dropDown'],
                 }
             }
             if (field.type === FieldType.FILE) {
@@ -140,7 +142,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                         location: 'after',
                         options: {
                             icon: 'fas fa-eye ',
-                            type: 'default',
                             onClick: (e: any) => {
                                 const editor = formRef.current?.instance.getEditor(field.name);
                                 editor?.option('mode', editor.option('mode') === 'text' ? 'password' : 'text');
@@ -159,6 +160,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 onItemClick: field.onSelect,
                 itemRender: field.itemFormatter,
                 stylingMode: 'outlined',
+                buttons: [...editorOptions.buttons ?? [], ...field.buttons ?? []],
             };
 
             let className = field.hidden ? 'dx-hidden' : '';
@@ -187,6 +189,17 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             }
         });
         return row;
+    }
+
+    const isValid = () => {
+        let formValid = formRef.current?.instance.validate().isValid ?? true;
+        let gridValid = gridRef.current?.instance.hasEditData() ?? true;
+
+        if (options.detailFields) {
+            gridValid = (gridRef.current?.instance.totalCount() ?? 0) > 0;
+        }
+
+        return formValid && gridValid;
     }
 
     const setupObservers = () => {
@@ -229,8 +242,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         });
 
         bus.on(options.events.SAVE, () => {
-            let result = formRef.current?.instance.validate()
-            if (!result?.isValid) return;
+            if (!isValid()) return;
             let formData = formRef.current?.instance.option('formData');
             uploadedFiles.current.forEach((file: any) => {
                 formData[file.field] = {

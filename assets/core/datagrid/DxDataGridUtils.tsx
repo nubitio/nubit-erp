@@ -1,6 +1,6 @@
 import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
-import {Column, Item, Lookup, RequiredRule} from "devextreme-react/data-grid";
+import {Column, Item, ITotalItemProps, Lookup, RequiredRule, TotalItem} from "devextreme-react/data-grid";
 import {dxUtils} from "../common/DxUtils";
 import {Button} from "devextreme-react";
 
@@ -111,6 +111,19 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             {buildLookup(clone)}
             {buildValidationRules(clone)}
         </Column>
+    });
+}
+
+export const buildSummary = (fields: ITotalItemProps[] | undefined) => {
+    return fields?.map((field: ITotalItemProps, index) => {
+        return <TotalItem
+            key={index}
+            column={field.column}
+            summaryType={field.summaryType}
+            displayFormat={field.displayFormat}
+            valueFormat={field.valueFormat}
+            customizeText={field.customizeText}
+        />
     });
 }
 

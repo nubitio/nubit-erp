@@ -28,7 +28,8 @@ export const CreditNotePage = () => {
     const toolbar = [
         {
             text: 'Enviar a SUNAT',
-            icon: 'fas fa-file-invoice fa-1x text-info',
+            icon: 'fas fa-file-invoice fa-1x',
+            type: 'info',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
                 if (selectedRow) {
@@ -42,10 +43,10 @@ export const CreditNotePage = () => {
                     }
 
                     gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-                    saleService.makeNote(selectedRow.nota_id).subscribe((data) => {
+                    saleService.makeNote(selectedRow.nota_id).subscribe((response) => {
                         notify({
-                            message: 'Comprobante enviado a SUNAT',
-                            type: 'success',
+                            message: response.data.message,
+                            type: response.data.success ? 'success' : 'error',
                             displayTime: 3000,
                         }, {position: 'top right'})
                         gridRef.current?.refresh();
@@ -63,7 +64,8 @@ export const CreditNotePage = () => {
         },
         {
             text: 'Enviar por correo',
-            icon: 'fas fa-envelope fa-1x text-success',
+            icon: 'fas fa-envelope fa-1x',
+            type: 'success',
             onClick: () => {
                 notify({
                     message: 'Funcionalidad no implementada',
@@ -74,7 +76,8 @@ export const CreditNotePage = () => {
         },
         {
             text: 'Ver',
-            icon: 'fas fa-eye fa-1x text-primary',
+            icon: 'fas fa-eye fa-1x',
+            type: 'primary',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
                 let payload = {

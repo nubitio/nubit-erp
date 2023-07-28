@@ -2,12 +2,14 @@ import "./CustomerPage.scss";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {CustomerFields} from "./CustomerFields";
+import {useRef} from "react";
 
 export const CustomerPage = () => {
+    const formRef = useRef<DxFormEvents>(null);
     const container = "wrapper";
-    const fields = CustomerFields();
+    const fields = CustomerFields(formRef.current);
 
     const API_URL = Constants.API_BASE_URL + 'customers';
 
@@ -36,6 +38,7 @@ export const CustomerPage = () => {
                 events={EVENTS}
             >
                 <DxForm
+                    ref={formRef}
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}

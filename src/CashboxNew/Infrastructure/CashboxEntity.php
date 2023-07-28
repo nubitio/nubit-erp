@@ -9,6 +9,9 @@ use App\User\Infrastructure\UserEntity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\CustomIdGenerator;
+use Doctrine\ORM\Mapping\GeneratedValue;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
@@ -17,7 +20,8 @@ class CashboxEntity
 {
     public function __construct(
         #[ORM\Id]
-        #[ORM\GeneratedValue]
+        #[GeneratedValue(strategy: 'CUSTOM')]
+        #[CustomIdGenerator(class: UuidGenerator::class)]
         #[ORM\Column(name: 'caja_id', type: 'string')]
         public ?string $caja_id = null,
         #[ORM\ManyToOne(targetEntity: BranchEntity::class)]

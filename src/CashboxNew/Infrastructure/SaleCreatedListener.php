@@ -20,6 +20,9 @@ readonly class SaleCreatedListener
 
     public function __invoke(SaleEntity $entity): void
     {
+        if ('cli' === php_sapi_name()) {
+            return;
+        }
         $session = $this->requestStack->getSession();
         /** @var ?string $branchId */
         $branchId = $session->get('branch_id');

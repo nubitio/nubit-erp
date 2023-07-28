@@ -8,6 +8,7 @@ use App\Core\Domain\Api\ApiProviderInterface;
 use App\Core\Infrastructure\DataLoader\FilterOperation;
 use App\Core\Infrastructure\DataLoader\FilterRule;
 use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\OptionsBuilder;
 use App\Core\Infrastructure\DataLoader\OptionUtils;
 use App\Core\Infrastructure\DataLoader\SortRule;
@@ -30,6 +31,7 @@ readonly class RecipeDetailProvider implements ApiProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.material', 'm'));
+            $context = OptionUtils::addJoin($context, new JoinRule('m.unidad', 'u', JoinType::LEFT));
             $context = OptionUtils::addFilter($context, new FilterRule('recipe_id', FilterOperation::Equals, $uriVariables['id']));
             $context = OptionUtils::addSort($context, new SortRule('id', 'asc'));
             $options = OptionsBuilder::build($context, RecipeDetailEntity::class, RecipeDetail::class);

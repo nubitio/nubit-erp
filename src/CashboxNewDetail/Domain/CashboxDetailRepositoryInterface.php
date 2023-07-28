@@ -11,4 +11,12 @@ interface CashboxDetailRepositoryInterface
      * @return PaginatorInterface<CashboxDetail>
      */
     public function getAll(Options $options): PaginatorInterface;
+
+    public function getOne(int $id): ?CashboxDetail;
+
+    public function insert(CashboxDetail $cashboxDetail): CashboxDetail;
+
+    public function update(CashboxDetail $cashboxDetail): CashboxDetail;
+
+    public function delete(int $id): void;
 }

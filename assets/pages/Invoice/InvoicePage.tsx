@@ -29,7 +29,8 @@ export const InvoicePage = () => {
         const toolbar = [
             {
                 text: 'Enviar a SUNAT',
-                icon: 'fas fa-cloud-upload fa-1x text-info',
+                icon: 'fas fa-cloud-upload fa-1x',
+                type: 'info',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
                     if (!selectedRow) {
@@ -54,7 +55,7 @@ export const InvoicePage = () => {
                     invoiceService.sendInvoice(selectedRow.movimiento_id).subscribe((response) => {
                         notify({
                             message: response.data.message,
-                            type: 'success',
+                            type: response.data.success ? 'success' : 'error',
                             displayTime: 3000,
                         }, {position: 'top right'})
                         gridRef.current?.refresh();
@@ -62,7 +63,8 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Enviar por correo',
-                icon: 'fas fa-envelope fa-1x text-success',
+                icon: 'fas fa-envelope fa-1x',
+                type: 'success',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
                     if (!selectedRow) {
@@ -76,13 +78,18 @@ export const InvoicePage = () => {
 
                     gridRef.current?.showLoading('Enviando comprobante por correo...');
                     invoiceService.sendEmail(selectedRow.movimiento_id).subscribe((data) => {
-                        messenger.show('Información', 'Comprobante enviado por correo');
+                        notify({
+                            message: 'El comprobante fue enviado por correo',
+                            type: 'success',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                         gridRef.current?.refresh();
                     }).add(() => gridRef.current?.hideLoading());
                 }
             }, {
                 text: 'Ver',
-                icon: 'fas fa-eye fa-1x text-primary',
+                icon: 'fas fa-eye fa-1x',
+                type: 'primary',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
                     if (!selectedRow) {
@@ -102,7 +109,8 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Consulta CDR',
-                icon: 'fas fa-search fa-1x text-warning',
+                icon: 'fas fa-search fa-1x',
+                type: 'warning',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
                     if (!selectedRow) {
@@ -115,13 +123,18 @@ export const InvoicePage = () => {
                     }
                     gridRef.current?.showLoading('Consultando CDR...');
                     invoiceService.consultInvoice(selectedRow.movimiento_id).subscribe((response) => {
-                        messenger.show('Información', response.data.message);
+                        notify({
+                            message: response.data.message,
+                            type: 'success',
+                            displayTime: 3000,
+                        }, {position: 'top right'})
                         gridRef.current?.refresh();
                     }).add(() => gridRef.current?.hideLoading());
                 }
             }, {
                 text: 'Consulta CPE',
-                icon: 'fas fa-check fa-1x text-success',
+                icon: 'fas fa-check fa-1x',
+                type: 'success',
                 onClick: () => {
                     let selectedRows = gridRef.current?.getSelectedRowKeys();
                     if (!selectedRows || selectedRows.length === 0) {

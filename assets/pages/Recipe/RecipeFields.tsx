@@ -6,8 +6,9 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import {productService} from "../../services/product.service";
 import {ProductDto} from "../../dto/product.dto";
+import {DxFormEvents} from "../../core/form/DxForm";
 
-export const RecipeFields = () => {
+export const RecipeFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -29,6 +30,7 @@ export const RecipeFields = () => {
         .valueField('producto_id')
         .textField('descripcion')
         .formatter((cell: ColumnCellTemplateData) => cell.data.name)
+        .onSelect((e: any) => formRef?.setFieldValue('unit_name', e.itemData.unidad?.name ?? ''))
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -52,9 +54,21 @@ export const RecipeFields = () => {
         .type(FieldType.NUMBER)
         .name('quantity')
         .label('Cantidad')
+        .align('right')
+        .col(6)
         .precision(2)
         .defaultValue(1)
         .required(true)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.TEXT)
+        .name('unit_name')
+        .label('Unidad')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.product.unidad?.name ?? '')
+        .col(6)
+        .filterable(false)
+        .sortable(false)
+        .readonly(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
@@ -82,6 +96,7 @@ export const RecipeDetailFields = () => {
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             let product = await productService.getOne(value, true) as ProductDto;
             row.material = product;
+            row.unidad = product.unidad?.name ?? '';
             this.defaultSetCellValue(row, product, currentRow);
         })
         .filterable(false)
@@ -92,12 +107,14 @@ export const RecipeDetailFields = () => {
         .type(FieldType.NUMBER)
         .name('quantity')
         .label('Cantidad')
+        .align('right')
         .valueType('number')
         .precision(2)
+        .formatter((cell: ColumnCellTemplateData) => `${cell.value}  ${cell.data.material?.unidad?.name ?? ''}`)
         .filterable(false)
         .sortable(false)
         .required(true)
-        .build())
+        .build());
 
     return fields;
 }
