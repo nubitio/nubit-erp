@@ -22,6 +22,7 @@ export default class LocalPicker {
         this.dialog = new Dialog(this.container, {
             title: 'Seleccione un local',
             height: 250,
+            inline: false,
             positiveText: 'Continuar',
             negativeText: 'Cancelar',
         });
