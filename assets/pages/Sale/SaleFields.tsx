@@ -236,6 +236,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .name('cantidad')
         .label('Cantidad')
         .align('center')
+        .valueType('number')
         .precision(2)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
