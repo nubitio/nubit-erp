@@ -11,7 +11,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
   const menuItems = useMemo(
     () => [
       {
-        text: 'Logout',
+        text: 'Cerrar sesión',
         icon: 'runner',
         onClick: signOut,
       },

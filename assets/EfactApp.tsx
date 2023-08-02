@@ -39,7 +39,7 @@ function RootApp() {
     </div>
 }
 
-export const App = () => {
+export const EfactApp = () => {
     const screenSizeClass = useScreenSizeClass();
     const themeContext = useThemeContext();
 
