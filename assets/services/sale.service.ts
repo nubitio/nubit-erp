@@ -1,7 +1,11 @@
 import {httpClient} from "../core/http/HttpClient";
 import AppResponse from "../core/http/AppResponse";
+import {Constants} from "../core/common/Constants";
 
 export class SaleService {
+    getOne(saleId: string) {
+        return httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`);
+    }
 
     voidSale(saleId: string, reason: string) {
         return httpClient.post<AppResponse>(`/sale/void/${saleId}`, {reason});

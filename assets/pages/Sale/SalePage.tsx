@@ -227,7 +227,12 @@ export const SalePage = () => {
             icon: 'fas fa-copy fa-1x',
             type: 'info',
             onClick: () => {
-                cloneSale(gridRef.current?.getSelectedRowKey() || '');
+                let saleId = gridRef.current?.getSelectedRowKey();
+                saleService.getOne(saleId).subscribe((response) => {
+                    console.log(response.data)
+                    bus.emit(EVENTS.ADD, response.data);
+                });
+                //cloneSale(gridRef.current?.getSelectedRowKey() || '');
             },
             disabled: !cloneEnabled
         }

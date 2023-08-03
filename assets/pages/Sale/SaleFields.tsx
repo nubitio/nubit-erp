@@ -67,17 +67,18 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .formatter((cell: ColumnCellTemplateData) => cell.value?.razon_social)
         .onSelect((event: any) => {
             if (event.itemData.price_list) {
-                form?.setFieldValue('tarifa', event.itemData.price_list.id);
+                form?.setFieldValue('price_list', event.itemData.price_list.id);
             }
         })
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('tarifa')
+        .name('price_list')
         .label('Tarifa')
         .url(Constants.API_BASE_URL + 'price-lists')
         .valueField('id')
         .textField('name')
+        .valueType('number')
         .visible(false)
         .onChange(async (event: any) => {
             priceList = await lastValueFrom(
