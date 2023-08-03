@@ -203,16 +203,26 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     }
 
     const setupObservers = () => {
-        bus.on(options.events.ADD, () => {
+        bus.on(options.events.ADD, (payload: any) => {
             formRef.current?.instance.resetValues();
             let store = data.current?.store() as ArrayStore;
             store.clear();
             data.current?.reload();
-            options.fields.forEach((field: Field) => {
-                if (field.defaultValue) {
-                    formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
+            if (payload) {
+                options.fields.forEach((field: Field) => {
+                    if (payload[field.name] === undefined) return;
+                    formRef.current?.instance.getEditor(field.name)?.option('value', payload[field.name]);
+                });
+                if (payload['details']) {
+                    setDetailData(payload['details'])
                 }
-            });
+            } else {
+                options.fields.forEach((field: Field) => {
+                    if (field.defaultValue) {
+                        formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
+                    }
+                });
+            }
             isEdit.current = false;
         });
 

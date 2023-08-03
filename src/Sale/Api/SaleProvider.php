@@ -88,6 +88,7 @@ readonly class SaleProvider implements ApiProviderInterface
     private function buildContextForSale(array $context): array
     {
         $context = OptionUtils::addJoin($context, new JoinRule('e.cliente', 'c'));
+        $context = OptionUtils::addJoin($context, new JoinRule('e.price_list', 'pl', JoinType::LEFT));
         $context = OptionUtils::addJoin($context, new JoinRule('e.almacen', 'a'));
         $context = OptionUtils::addJoin($context, new JoinRule('e.tipo_pago', 'pm'));
         $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
