@@ -279,6 +279,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .required(true)
         .filterable(false)
         .sortable(false)
+        .valueType('number')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.CURRENCY)

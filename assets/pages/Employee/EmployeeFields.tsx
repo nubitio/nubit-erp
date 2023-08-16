@@ -85,6 +85,7 @@ export const EmployeeFields = () => {
         .valueField('id')
         .textField('name')
         /*.formatter((value: any) => value?.name)*/
+        .formatter((cell: ColumnCellTemplateData) => console.log(cell))
         .required(true)
         .valueType('number')
         .build());
