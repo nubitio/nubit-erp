@@ -1,16 +1,15 @@
-import {useEffect} from "react";
-import MilitaryPatient from "../MilitaryPatient";
+import {useEffect, useRef} from "react";
 import "./MilitaryPatientPage.scss";
-import {ConsultationFields} from "../Consultation/ConsultationFields";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {MilitaryPatientFields} from "./MilitaryPatientFields";
 
 export const MilitaryPatientPage = () => {
+    const formRef = useRef<DxFormEvents|null>(null)
     const container = "wrapper";
-    const fields = MilitaryPatientFields();
+    const fields = MilitaryPatientFields(formRef.current);
 
     const API_URL = Constants.API_BASE_URL + 'military-patients';
 
@@ -39,6 +38,7 @@ export const MilitaryPatientPage = () => {
                 events={EVENTS}
             >
                 <DxForm
+                    ref={formRef}
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}
