@@ -7,7 +7,7 @@ import {CustomerFields} from "./CustomerFields";
 import {useRef} from "react";
 
 export const CustomerPage = () => {
-    const formRef = useRef<DxFormEvents>(null);
+    const formRef = useRef<DxFormEvents|null>(null);
     const container = "wrapper";
     const fields = CustomerFields(formRef.current);
 

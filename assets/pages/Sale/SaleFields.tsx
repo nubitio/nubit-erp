@@ -16,6 +16,7 @@ import {PriceListItemDto} from "../../dto/PriceListItemDto";
 import {lastValueFrom} from "rxjs";
 import {DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
 import {bus} from "../../core/event/EventBus";
+import {Setting, settings} from "../../Settings";
 
 let priceList: PriceListItemDto[] = [];
 
@@ -240,8 +241,13 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .precision(2)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
+
+
+            const checkStock = await settings.get(Setting.CHECK_STOCK)
+            console.log(checkStock?.value, checkStock);
+
             row.precio_total = currentRow.precio_unitario * value;
-            if (value > 0) {
+            if (value > 0 && checkStock?.value == 'true') {
                 let stockData = await GetStockUseCase(currentRow.producto.producto_id);
                 notify({
                     message: 'Stock actual: ' + stockData.stock,
