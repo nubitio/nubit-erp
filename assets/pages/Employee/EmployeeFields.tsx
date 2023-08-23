@@ -45,14 +45,8 @@ export const EmployeeFields = () => {
             {value: 1, text: "Masculino"},
             {value: 2, text: "Femenino"}
         ])
-        .formatter((value: number) => {
-            if (value === 1) {
-                return 'Masculino';
-            } else if (value === 2) {
-                return 'Femenino';
-            } else {
-                return '';
-            }
+        .formatter((cell: ColumnCellTemplateData) => {
+            return cell.value === 1 ? 'Masculino' : 'Femenino';
         })
         .build());
     fields.push(new FieldBuilder()
@@ -60,6 +54,7 @@ export const EmployeeFields = () => {
         .name('birthdate')
         .label('Fecha de nacimiento')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+        .defaultValue(new Date())
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
@@ -76,6 +71,7 @@ export const EmployeeFields = () => {
         .name('hire_date')
         .label('Fecha de contratación')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+        .defaultValue(new Date())
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -84,7 +80,7 @@ export const EmployeeFields = () => {
         .url(Constants.API_BASE_URL + 'positions')
         .valueField('id')
         .textField('name')
-        /*.formatter((value: any) => value?.name)*/
+        .formatter((cell: ColumnCellTemplateData) => cell.data.position.name)
         .required(true)
         .valueType('number')
         .build());
