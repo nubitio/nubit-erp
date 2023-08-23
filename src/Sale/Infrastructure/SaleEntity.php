@@ -6,6 +6,7 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Operation\Infrastructure\OperationEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
+use App\PriceList\Infrastructure\PriceListEntity;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
 use App\Supplier\Infrastructure\SupplierEntity;
 use App\Warehouse\Infrastructure\WarehouseEntity;
@@ -42,6 +43,9 @@ class SaleEntity
         #[ManyToOne(targetEntity: CustomerEntity::class)]
         #[JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
         public ?CustomerEntity $cliente = null,
+        #[ManyToOne(targetEntity: PriceListEntity::class)]
+        #[JoinColumn(name: 'price_list_id', referencedColumnName: 'id')]
+        public ?PriceListEntity $price_list = null,
         #[Column(name: 'tipo_id', type: 'integer')]
         public ?int $tipo_id = null,
         #[Column(name: 'fecha', type: 'date')]

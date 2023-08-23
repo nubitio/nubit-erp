@@ -2,17 +2,24 @@
 
 namespace App\Sale\Domain;
 
-class CreateSaleUseCase
-{
-    private SaleRepositoryInterface $repository;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
-    public function __construct(SaleRepositoryInterface $repository)
-    {
-        $this->repository = $repository;
+readonly class CreateSaleUseCase
+{
+    public function __construct(
+        private SaleRepositoryInterface $repository,
+        private EventDispatcherInterface $eventDispatcher
+    ) {
     }
 
     public function __invoke(Sale $sale): Sale
     {
-        return $this->repository->insert($sale);
+        $createdSale = $this->repository->insert($sale);
+
+        $saleCreatedEvent = new SaleCreatedEvent($createdSale);
+
+        $this->eventDispatcher->dispatch($saleCreatedEvent, SaleCreatedEvent::NAME);
+
+        return $createdSale;
     }
 }

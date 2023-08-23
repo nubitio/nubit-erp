@@ -27,7 +27,6 @@
     "doctrine/doctrine-bundle": "^2.7",
     "doctrine/doctrine-migrations-bundle": "^3.2",
     "doctrine/orm": "^2.15.1",
-    "easycorp/easyadmin-bundle": "^4.3",
     "firebase/php-jwt": "^6.4",
     "greenter/consulta-cpe": "^1.1",
     "greenter/core": "^5.0",

@@ -25,26 +25,26 @@ export const {{module}}Page = () => {
     return (
         <div id={container}>
             <DxDataGrid
-                    title={'{{module}}'}
+                title={'{{module}}'}
+                url={API_URL}
+                detailUrl={API_URL + '/{id}/details'}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                detailFields={detailFields}
+                events={EVENTS}
+            />
+            <DxDialog
+                width={900}
+                height={620}
+                events={EVENTS}
+            >
+                <DxForm
                     url={API_URL}
-                    detailUrl={API_URL + '/{id}/details'}
-                    allowAdd={true}
-                    allowEdit={true}
-                    allowDelete={true}
                     fields={fields}
                     detailFields={detailFields}
                     events={EVENTS}
-            />
-            <DxDialog
-                    width={900}
-                    height={620}
-                    events={EVENTS}
-            >
-                <DxForm
-                        url={API_URL}
-                        fields={fields}
-                        detailFields={detailFields}
-                        events={EVENTS}
                 />
             </DxDialog>
         </div>

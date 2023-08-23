@@ -13,6 +13,7 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Operation\Infrastructure\OperationEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
+use App\PriceList\Infrastructure\PriceListEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
@@ -50,6 +51,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
                 new JoinRule('e.almacen', 'a'),
                 new JoinRule('e.tipo_pago', 'pm'),
                 new JoinRule('e.details', 'sd'),
+                new JoinRule('sd.producto', 'p'),
             ],
             filters: [
                 new FilterRule('movimiento_id', FilterOperation::Equals, $id),
@@ -85,6 +87,10 @@ readonly class SaleRepository implements SaleRepositoryInterface
         if ($sale->cliente) {
             $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
             $entity->cliente = $customer;
+        }
+        if ($sale->price_list) {
+            $priceList = $this->entityManager->getReference(PriceListEntity::class, $sale->price_list->id);
+            $entity->price_list = $priceList;
         }
         if ($sale->tipo_pago) {
             $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
@@ -125,6 +131,10 @@ readonly class SaleRepository implements SaleRepositoryInterface
         if ($sale->cliente) {
             $customer = $this->entityManager->getReference(CustomerEntity::class, $sale->cliente->ruc);
             $entity->cliente = $customer;
+        }
+        if ($sale->price_list) {
+            $priceList = $this->entityManager->getReference(PriceListEntity::class, $sale->price_list->id);
+            $entity->price_list = $priceList;
         }
         if ($sale->tipo_pago) {
             $paymentMethod = $this->entityManager->getReference(PaymentMethodEntity::class, $sale->tipo_pago->id);
