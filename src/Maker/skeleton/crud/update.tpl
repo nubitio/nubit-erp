@@ -2,13 +2,12 @@
 
 namespace App\{{module}}\Domain;
 
-class Update{{module}}UseCase
+readonly class Update{{module}}UseCase
 {
-    private {{module}}RepositoryInterface $repository;
-
-    public function __construct({{module}}RepositoryInterface $repository)
+    public function __construct(
+        private {{module}}RepositoryInterface $repository
+    )
     {
-        $this->repository = $repository;
     }
 
     public function __invoke({{module}} ${{camelModule}}): {{module}}

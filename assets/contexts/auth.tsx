@@ -27,6 +27,7 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     }, []);
 
     const signOut = useCallback(() => {
+        window.location.href = '/auth/logout';
         setUser(undefined);
     }, []);
 

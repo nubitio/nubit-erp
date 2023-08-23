@@ -3,13 +3,11 @@
 namespace App\CashboxNew\Infrastructure;
 
 use App\CashboxNew\Domain\CashboxUpdateValuesUseCase;
-use App\Sale\Infrastructure\SaleEntity;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
-use Doctrine\ORM\Events;
+use App\Sale\Domain\SaleCreatedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-#[AsEntityListener(Events::postPersist, entity: SaleEntity::class)]
-#[AsEntityListener(Events::postUpdate, entity: SaleEntity::class)]
+#[AsEventListener]
 readonly class SaleCreatedListener
 {
     public function __construct(
@@ -18,7 +16,7 @@ readonly class SaleCreatedListener
     ) {
     }
 
-    public function __invoke(SaleEntity $entity): void
+    public function __invoke(SaleCreatedEvent $event): void
     {
         if ('cli' === php_sapi_name()) {
             return;

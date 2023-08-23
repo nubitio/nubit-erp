@@ -69,7 +69,7 @@ class PrintESCPOSController extends BaseController
         $divider = str_pad('', $_ENV['PRINTER_LINE_WIDTH'], '-', STR_PAD_BOTH)."\n";
 
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
-        $logo = RemoteEscposImage::loadImage($this->logoProvider->getLogo());
+        $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
 
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);

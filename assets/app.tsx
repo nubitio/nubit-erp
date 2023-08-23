@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {App} from "./App";
+import {EfactApp} from "./EfactApp";
 
-import './spa.scss';
+import './app.scss';
 
 window.addEventListener('load', () => {
     const root = ReactDOM.createRoot(
@@ -10,7 +10,7 @@ window.addEventListener('load', () => {
     );
     root.render(
         <React.StrictMode>
-            <App/>
+            <EfactApp/>
         </React.StrictMode>
     );
 });

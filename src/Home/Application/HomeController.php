@@ -9,6 +9,12 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends BaseController
 {
+    #[Route('/', name: 'home_index', methods: ['GET'])]
+    public function index(): Response
+    {
+        return $this->render('home/index.html.twig');
+    }
+
     #[Route('/logo', name: 'logo', methods: ['GET'])]
     public function logo(LogoProvider $logoProvider): Response
     {

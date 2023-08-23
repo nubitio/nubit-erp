@@ -6,6 +6,7 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\Customer\Domain\Customer;
 use App\Operation\Domain\Operation;
 use App\PaymentMethod\Domain\PaymentMethod;
+use App\PriceList\Domain\PriceList;
 use App\SaleDetail\Domain\SaleDetail;
 use App\Supplier\Domain\Supplier;
 use App\Warehouse\Domain\Warehouse;
@@ -23,6 +24,8 @@ class Sale
         public ?Warehouse $almacen = null,
         #[SerializedName('cliente')]
         public ?Customer $cliente = null,
+        #[SerializedName('price_list')]
+        public ?PriceList $price_list = null,
         #[SerializedName('tipo_id')]
         public ?int $tipo_id = null,
         #[SerializedName('fecha')]

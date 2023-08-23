@@ -20,42 +20,6 @@ export const ToolbarAnalytics = ({
           <span className='toolbar-header'>{title}</span>
         </Item>
         {additionalToolbarContent}
-        <Item location='after' locateInMenu='auto'>
-          <Button
-            className='add-card'
-            icon='plus'
-            text='Add Card'
-            type='default'
-            stylingMode='contained'
-          />
-        </Item>
-        <Item
-          location='after'
-          locateInMenu='auto'
-          widget='dxButton'
-          showText='inMenu'
-        >
-          <Button
-            text='Refresh'
-            icon='refresh'
-            stylingMode='text'
-          />
-        </Item>
-        <Item location='after' locateInMenu='auto'>
-          <div className='separator' />
-        </Item>
-        <Item
-          location='after'
-          locateInMenu='auto'
-          widget='dxButton'
-          showText='inMenu'
-        >
-          <Button
-            icon='export'
-            text='Export'
-            stylingMode='text'
-          />
-        </Item>
       </Toolbar>
       {children}
     </div>
