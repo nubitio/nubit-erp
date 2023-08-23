@@ -1,7 +1,7 @@
 import "./InboundPage.scss";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm, DxFormEvents} from "../../core/form/DxForm";
+import {DxForm, DxFormEvents, FORM_EVENTS} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
 import {InboundDetailFields, InboundFields} from "./InboundFields";
 import {useEffect, useRef} from "react";
@@ -9,10 +9,10 @@ import {bus} from "../../core/event/EventBus";
 import {httpClient} from "../../core/http/HttpClient";
 
 export const InboundPage = () => {
+    const formRef = useRef<DxFormEvents>(null)
     const container = "wrapper";
     const fields = InboundFields();
     const detailFields = InboundDetailFields();
-    const formRef = useRef<DxFormEvents>(null)
 
     const API_URL = Constants.API_BASE_URL + 'sales';
 
@@ -28,11 +28,33 @@ export const InboundPage = () => {
 
     let alreadySetup = false;
 
+    const setTotal = () => {
+        let rows = formRef.current?.getDetailData() ?? [];
+        let total = 0;
+        rows.forEach((row: any) => {
+            total += row.precio_total;
+        });
+
+        formRef.current?.setFieldValue('total', Number(total));
+    }
+
     const setupObservers = () => {
         bus.on(EVENTS.EDIT, (payload: any) => {
             httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
+        })
+
+        bus.on(FORM_EVENTS.ROW_ADDED, () => {
+            setTotal();
+        })
+
+        bus.on(FORM_EVENTS.ROW_UPDATED, () => {
+            setTotal();
+        })
+
+        bus.on(FORM_EVENTS.ROW_REMOVED, () => {
+            setTotal();
         })
     }
 

@@ -12,10 +12,10 @@ import {Content} from './Content';
 import esMessages from 'devextreme/localization/messages/es.json';
 import {ThemeContext, useThemeContext} from './theme/theme';
 import {loadMessages, locale} from "devextreme/localization";
+import config from "devextreme/core/config";
 
 import './styles/styles.scss';
 import './theme/theme';
-import config from "devextreme/core/config";
 
 function RootApp() {
     const {user, loading} = useAuth();

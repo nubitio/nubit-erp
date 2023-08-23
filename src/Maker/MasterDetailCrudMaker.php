@@ -69,7 +69,6 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->modulePath = $this->masterModulePath;
         $this->entity = $this->masterEntity;
 
-        $this->makeController();
         $this->makeRepositoryInterface();
         $this->makeCreateUseCase();
         $this->makeUpdateUseCase();
@@ -98,40 +97,6 @@ class MasterDetailCrudMaker implements CrudMakerInterface
         $this->makeRepository();
         $this->makeDto();
         $this->makeProvider();
-    }
-
-    private function makeController(): void
-    {
-        $applicationPath = $this->modulePath.'/Application/';
-        if ($this->isInteractive) {
-            $confirm = $this->io->confirm('Do you want to generate the controller?');
-            if (!$confirm) {
-                return;
-            }
-        }
-        if (!is_dir($applicationPath)) {
-            mkdir($applicationPath, 0777, true);
-        }
-        $this->io->text('Generating controller');
-        $controllerPath = $applicationPath.StringUtils::toPascalCase($this->moduleName).'Controller.php';
-        if (!$this->overwrite) {
-            if (file_exists($controllerPath)) {
-                $confirm = $this->io->confirm('Controller already exists, do you want to overwrite it?');
-                if (!$confirm) {
-                    return;
-                }
-            }
-        }
-        $controllerTemplate = dirname(__FILE__).'/skeleton/crud/controller.tpl';
-        $controllerContent = file_get_contents($controllerTemplate);
-        if (false === $controllerContent) {
-            throw new \RuntimeException('Could not read controller template');
-        }
-        $controllerContent = str_replace('{{module}}', StringUtils::toPascalCase($this->moduleName), $controllerContent);
-        $controllerContent = str_replace('{{camelModule}}', StringUtils::toCamelCase($this->moduleName), $controllerContent);
-        $controllerContent = str_replace('{{kebabModule}}', StringUtils::toKebabCase($this->moduleName), $controllerContent);
-
-        file_put_contents($controllerPath, $controllerContent);
     }
 
     private function makeRepositoryInterface(): void

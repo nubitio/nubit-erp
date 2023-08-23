@@ -8,6 +8,7 @@ import NumberUtils from "../../core/utils/NumberUtils";
 import {userInformation} from "../../core/common/UserInformation";
 import {productService} from "../../services/product.service";
 import {ProductDto} from "../../dto/product.dto";
+import {DxFormEvents} from "../../core/form/DxForm";
 
 export const InboundFields = () => {
     const fields: Field[] = [];
@@ -81,6 +82,7 @@ export const InboundFields = () => {
         .label('Total')
         .align('right')
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+        .readonly(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
@@ -117,6 +119,11 @@ export const InboundDetailFields = () => {
         .name('cantidad')
         .label('Cantidad')
         .align('center')
+        .onChange(function (this: any, row: any, value: any, currentRow: any) {
+            if (value === '') return;
+            row.precio_total = currentRow.precio_unitario * value;
+            this.defaultSetCellValue(row, value, currentRow);
+        })
         .required(true)
         .sortable(false)
         .filterable(false)
@@ -127,7 +134,13 @@ export const InboundDetailFields = () => {
         .name('precio_unitario')
         .label('Precio unitario')
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+        .onChange(function (this: any, row: any, value: any, currentRow: any) {
+            if (value === '') return;
+            row.precio_total = currentRow.cantidad * value;
+            this.defaultSetCellValue(row, value, currentRow);
+        })
         .align('right')
+        .valueType('number')
         .sortable(false)
         .filterable(false)
         .valueType('number')

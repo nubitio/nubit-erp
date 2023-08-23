@@ -8,7 +8,6 @@ import {{{module}}Fields} from "./{{module}}Fields";
 export const {{module}}Page = () => {
     const container = "wrapper";
     const fields = {{module}}Fields();
-    const detailFields = SaleDetailFields(formRef.current);
 
     const API_URL = Constants.API_BASE_URL + '{{kebabModule}}s';
 
@@ -25,21 +24,21 @@ export const {{module}}Page = () => {
     return (
         <div id={container}>
             <DxDataGrid
-                    title={'{{module}}'}
-                    url={API_URL}
-                    allowAdd={true}
-                    allowEdit={true}
-                    allowDelete={true}
-                    fields={fields}
-                    events={EVENTS}
+                title='{{module}}'
+                url={API_URL}
+                allowAdd={true}
+                allowEdit={true}
+                allowDelete={true}
+                fields={fields}
+                events={EVENTS}
             />
             <DxDialog
-                    events={EVENTS}
+                events={EVENTS}
             >
                 <DxForm
-                        url={API_URL}
-                        fields={fields}
-                        events={EVENTS}
+                    url={API_URL}
+                    fields={fields}
+                    events={EVENTS}
                 />
             </DxDialog>
         </div>
