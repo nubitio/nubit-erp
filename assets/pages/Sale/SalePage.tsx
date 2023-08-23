@@ -133,21 +133,6 @@ export const SalePage = () => {
         window.open(url + '?preview=true', '_blank');
     }
 
-    const cloneSale = (saleId: string) => {
-        gridRef.current?.showLoading('Clonando venta...')
-        saleService.cloneSale(saleId).subscribe((response) => {
-            notify({
-                    message: response.data.message,
-                    type: 'success',
-                    displayTime: 3000,
-                }, {position: 'top right'}
-            );
-            gridRef.current?.refresh();
-        }).add(() => {
-            gridRef.current?.hideLoading();
-        });
-    }
-
     const toolbar = [
         {
             text: 'Vista previa',
@@ -229,10 +214,10 @@ export const SalePage = () => {
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 saleService.getOne(saleId).subscribe((response) => {
-                    console.log(response.data)
+                    delete response.data.movimiento_id;
+                    console.log(response.data);
                     bus.emit(EVENTS.ADD, response.data);
                 });
-                //cloneSale(gridRef.current?.getSelectedRowKey() || '');
             },
             disabled: !cloneEnabled
         }

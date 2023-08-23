@@ -286,6 +286,13 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
             if (options.detailFields) {
                 formData['details'] = gridRef.current?.instance.getDataSource().items();
+                options.detailFields.forEach((field: Field) => {
+                    if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
+                        formData['details'].forEach((detail: any) => {
+                            detail[field.name] = Number(detail[field.name]);
+                        });
+                    }
+                })
             }
 
             if (isEdit.current) {

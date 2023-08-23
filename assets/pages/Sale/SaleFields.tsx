@@ -277,6 +277,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .name('precio_unitario')
         .label('Precio')
         .align('right')
+        .valueType('number')
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
             row.precio_total = currentRow.cantidad * value;
@@ -293,6 +294,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .name('precio_total')
         .label('Total')
         .align('right')
+        .valueType('number')
         .readonly(true)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;

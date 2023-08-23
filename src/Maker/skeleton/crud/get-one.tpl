@@ -2,13 +2,12 @@
 
 namespace App\{{module}}\Domain;
 
-class GetOne{{module}}UseCase
+readonly class GetOne{{module}}UseCase
 {
-    private {{module}}RepositoryInterface $repository;
-
-    public function __construct({{module}}RepositoryInterface $repository)
+    public function __construct(
+        private {{module}}RepositoryInterface $repository
+    )
     {
-        $this->repository = $repository;
     }
 
     public function __invoke({{entityIdParam}}): ?{{module}}

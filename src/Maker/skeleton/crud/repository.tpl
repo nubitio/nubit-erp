@@ -23,7 +23,7 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
     /** @inheritdoc */
     public function getAll(Options $options): PaginatorInterface
     {
-        return $this->dataLoader->load($options);
+        return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne({{entityIdParam}}): ?{{module}}
