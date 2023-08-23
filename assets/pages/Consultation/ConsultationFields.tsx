@@ -25,7 +25,7 @@ export const ConsultationFields = () => {
         .mode('remote')
         .valueField('id')
         .textField('razon_social')
-        .formatter((value: any) => value?.full_name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.patient.full_name)
         .required(true)
         .valueType('number')
         .build());
@@ -36,7 +36,7 @@ export const ConsultationFields = () => {
         .url(Constants.API_BASE_URL + 'physicians')
         .valueField('id')
         .textField('full_name')
-        .formatter((value: any) => value?.full_name+'<br>'+value?.specialty?.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.physician.full_name + " " + cell.data.physician.specialty.name)
         .required(true)
         .valueType('number')
         .build());
@@ -45,6 +45,7 @@ export const ConsultationFields = () => {
         .name('date')
         .label('Fecha')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
+        .defaultValue(new Date())
         .required(true)
         .build());
     fields.push(new FieldBuilder()
