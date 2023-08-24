@@ -21,12 +21,13 @@ export interface Field {
     byKeyUrl: string | null;
     textField: string;
     valueField: string;
-    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime";
+    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime" | undefined;
+    filterValue: any;
     data: any[];
     formatter: any;
     itemFormatter: any;
     visible: boolean;
-    defaultValue: string | number | boolean | null;
+    defaultValue: string | number | boolean | Date | null | undefined;
     onChange: any;
     onSelect: any;
     onClick: any;

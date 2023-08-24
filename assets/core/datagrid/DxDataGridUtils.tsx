@@ -25,7 +25,7 @@ const buildLookup = (field: Field) => {
     if (field.type === FieldType.ENTITY) {
         lookup = <Lookup
             dataSource={{
-                store: dxUtils.getDataStore(field.url, field.valueField),
+                store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl, field.filters),
                 paginate: true,
                 pageSize: 10
             }}
@@ -107,6 +107,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             minWidth={field.minWidth}
             editorOptions={editorOptions}
             dataType={field.valueType}
+            filterValue={field.filterValue}
         >
             {buildLookup(clone)}
             {buildValidationRules(clone)}

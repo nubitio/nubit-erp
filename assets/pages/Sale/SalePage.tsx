@@ -11,6 +11,7 @@ import {saleService} from "../../services/sale.service";
 import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
 import {httpClient} from "../../core/http/HttpClient";
+import {userInformation} from "../../core/common/UserInformation";
 
 export const SalePage = () => {
     const gridRef = useRef<DxDataGridEvents>(null);
@@ -235,6 +236,13 @@ export const SalePage = () => {
                 detailUrl={API_URL + '/{id}/details'}
                 detailFields={detailFields}
                 events={EVENTS}
+                filter={[
+                    {
+                        field: 'a.local',
+                        operator: '=',
+                        value: userInformation().currentBranchId
+                    }
+                ]}
             />
             <DxDialog
                 width={900}

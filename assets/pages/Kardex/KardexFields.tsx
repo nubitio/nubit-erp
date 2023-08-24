@@ -11,24 +11,20 @@ export const KardexFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('id')
+        .name('product_id')
         .label('Id')
         .required(true)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('codigo')
+        .name('product_code')
         .label('Codigo')
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.ENTITY)
-        .name('producto')
+        .type(FieldType.TEXT)
+        .name('product_name')
         .label('Producto')
-        .url(Constants.API_BASE_URL + '/products')
-        .valueField('producto_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.value.descripcion)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
@@ -37,18 +33,21 @@ export const KardexFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
-        .name('entradas')
+        .name('income')
         .label('Entradas')
+        .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
-        .name('salidas')
+        .name('outcome')
         .label('Salidas')
+        .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
         .name('stock')
         .label('Stock')
+        .align('center')
         .build());
 
     return fields;
