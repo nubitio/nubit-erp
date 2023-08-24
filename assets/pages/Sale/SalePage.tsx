@@ -12,10 +12,14 @@ import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
 import {httpClient} from "../../core/http/HttpClient";
 import {userInformation} from "../../core/common/UserInformation";
+import {CustomerPage} from "../Customer/CustomerPage";
+import {CustomerFields} from "../Customer/CustomerFields";
+import {Setting, settings} from "../../Settings";
 
 export const SalePage = () => {
     const gridRef = useRef<DxDataGridEvents>(null);
     const formRef = useRef<DxFormEvents>(null);
+    const customerFormRef = useRef<DxFormEvents>(null);
     const [printerName, setPrinterName] = useState<string | undefined>(undefined);
     const [printEnabled, setPrintEnabled] = useState<boolean>(false);
     const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
@@ -62,6 +66,19 @@ export const SalePage = () => {
                 setPrintEnabled(false);
                 setCloneEnabled(false);
             }
+        })
+
+        bus.on(EVENTS.SUCCESS, (payload: any) => {
+            settings.get(Setting.AUTO_INVOICE).then((setting) => {
+                console.log(setting)
+                if (setting?.value === 'true') {
+                    makeInvoice(payload.data.movimiento_id);
+                }
+            })
+        })
+
+        bus.on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
+            formRef.current?.setFieldValue('cliente', payload.data);
         })
     }
 
@@ -258,6 +275,16 @@ export const SalePage = () => {
                 />
             </DxDialog>
             <DiscountDialog/>
+            <DxDialog
+                events={CustomerPage.EVENTS}
+            >
+                <DxForm
+                    ref={customerFormRef}
+                    url={CustomerPage.API_URL}
+                    fields={CustomerFields(customerFormRef.current)}
+                    events={CustomerPage.EVENTS}
+                />
+            </DxDialog>
         </div>
     );
 };
