@@ -17,6 +17,7 @@ import {lastValueFrom} from "rxjs";
 import {DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
 import {bus} from "../../core/event/EventBus";
 import {Setting, settings} from "../../Settings";
+import {CustomerPage} from "../Customer/CustomerPage";
 
 let priceList: PriceListItemDto[] = [];
 
@@ -71,6 +72,18 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 form?.setFieldValue('price_list', event.itemData.price_list.id);
             }
         })
+        .buttons([
+            {
+                name: 'add',
+                location: 'after',
+                options: {
+                    icon: 'add',
+                    onClick: (e: any) => {
+                        bus.emit(CustomerPage.EVENTS.ADD)
+                    }
+                }
+            }
+        ])
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
