@@ -1,6 +1,7 @@
 import './DxDataGrid.scss';
 import {
     ColumnChooser,
+    DataGridTypes,
     Export,
     FilterRow,
     Item,
@@ -17,6 +18,11 @@ import {
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
 import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {jsPDF as JsPdf} from 'jspdf';
+import {saveAs} from 'file-saver-es';
+import {Workbook} from 'exceljs';
+import {exportDataGrid as exportDataGridToPdf} from 'devextreme/pdf_exporter';
+import {exportDataGrid as exportDataGridToXLSX} from 'devextreme/excel_exporter';
 import {bus} from "../event/EventBus";
 import notify from "devextreme/ui/notify";
 import {dxUtils} from "../common/DxUtils";
@@ -65,6 +71,32 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     const refresh = useCallback(() => {
         gridRef.current?.instance.refresh();
     }, []);
+
+    const onExporting = (e: DataGridTypes.ExportingEvent) => {
+        if (e.format === 'pdf') {
+            const doc = new JsPdf();
+            exportDataGridToPdf({
+                jsPDFDocument: doc,
+                component: e.component,
+            }).then(() => {
+                doc.save(options.title + '.pdf');
+            });
+        } else {
+            const workbook = new Workbook();
+            const worksheet = workbook.addWorksheet(options.title);
+
+            exportDataGridToXLSX({
+                component: e.component,
+                worksheet,
+                autoFilterEnabled: true,
+            }).then(() => {
+                workbook.xlsx.writeBuffer().then((buffer) => {
+                    saveAs(new Blob([buffer], {type: 'application/octet-stream'}), options.title + '.xlsx');
+                });
+            });
+            e.cancel = true;
+        }
+    };
 
     const onAddClick = useCallback(() => {
         options.events?.ADD &&
@@ -166,8 +198,9 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         <div className='view datagrid-list'>
             <div className={'view-wrapper ' + ('full' === options.mode ?? 'full' ? 'view-wrapper-datagrid-list' : '')}>
                 <DataGrid
+                    ref={gridRef}
                     className='grid'
-                    noDataText=''
+                    noDataText='No hay datos'
                     focusedRowEnabled
                     height='100%'
                     dataSource={data}
@@ -175,7 +208,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     remoteOperations={true}
                     syncLookupFilterValues={false}
                     onSelectionChanged={onSelectionChanged}
-                    ref={gridRef}
+                    onExporting={onExporting}
                 >
                     <LoadPanel showPane={false}/>
                     <ColumnChooser enabled/>
@@ -248,7 +281,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     </Summary>
                     <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
                     <Paging defaultPageSize={20}/>
-                    <Pager visible={true}/>
+                    <Pager visible={true} showPageSizeSelector allowedPageSizes={[20, 50, 100]}/>
                 </DataGrid>
             </div>
         </div>
