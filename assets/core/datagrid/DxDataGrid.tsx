@@ -23,7 +23,7 @@ import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
-import DevExpress from "devextreme";
+import {DxFilterRule} from "../common/FilterRule";
 
 export interface DxDataGridOptions {
     title: string;
@@ -38,7 +38,9 @@ export interface DxDataGridOptions {
     allowEdit?: boolean;
     allowDelete?: boolean;
     summaryFields?: ITotalItemProps[];
+    filter?: DxFilterRule[];
     sort?: any[];
+    mode?: 'simple' | 'full';
 }
 
 export interface DxDataGridEvents {
@@ -98,7 +100,13 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
 
     useEffect(() => {
         if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
+            setData(dxUtils.getDataStore(
+                options.url,
+                getIdField(options.fields),
+                options.url,
+                options.filter,
+                options.sort
+            ));
             alreadyLoaded = true;
         }
         if (!alreadySetup) {
@@ -156,7 +164,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
 
     return (
         <div className='view datagrid-list'>
-            <div className='view-wrapper view-wrapper-datagrid-list'>
+            <div className={'view-wrapper ' + ('full' === options.mode ?? 'full' ? 'view-wrapper-datagrid-list' : '')}>
                 <DataGrid
                     className='grid'
                     noDataText=''
@@ -179,7 +187,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     />
                     <Sorting mode='multiple'/>
                     <Scrolling mode='virtual'/>
-                    <Toolbar>
+                    <Toolbar visible={'full' === options.mode ?? 'full'}>
                         <Item location='before'>
                             <div className='grid-header'>{options.title}</div>
                         </Item>
@@ -246,3 +254,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         </div>
     );
 });
+
+DxDataGrid.defaultProps = {
+    mode: 'full',
+}

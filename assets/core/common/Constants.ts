@@ -18,4 +18,6 @@ export const Constants = {
     ICON_SEARCH: 'fas fa-search fa-1x text-info',
     ICON_INVOICE: 'fas fa-file-invoice fa-1x text-info',
     ICON_CLEAR: 'fas fa-times fa-1x text-danger',
+
+    MAX_ROW_COUNT: 2147483647
 } as const;

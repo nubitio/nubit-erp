@@ -43,20 +43,23 @@ readonly class SaleRepository implements SaleRepositoryInterface
      */
     public function getOne(string $id): Sale
     {
-        $entity = $this->dataLoader->loadOne(new Options(
-            entity: SaleEntity::class,
-            mapping: Sale::class,
-            joins: [
-                new JoinRule('e.cliente', 'c'),
-                new JoinRule('e.almacen', 'a'),
-                new JoinRule('e.tipo_pago', 'pm'),
-                new JoinRule('e.details', 'sd'),
-                new JoinRule('sd.producto', 'p'),
-            ],
-            filters: [
-                new FilterRule('movimiento_id', FilterOperation::Equals, $id),
-            ],
-        ));
+        $entity = $this->entityManager->find(SaleEntity::class, $id);
+        if ($entity?->numero > 0) {
+            $entity = $this->dataLoader->loadOne(new Options(
+                entity: SaleEntity::class,
+                mapping: Sale::class,
+                joins: [
+                    new JoinRule('e.cliente', 'c'),
+                    new JoinRule('e.almacen', 'a'),
+                    new JoinRule('e.tipo_pago', 'pm'),
+                    new JoinRule('e.details', 'sd'),
+                    new JoinRule('sd.producto', 'p'),
+                ],
+                filters: [
+                    new FilterRule('movimiento_id', FilterOperation::Equals, $id),
+                ],
+            ));
+        }
 
         if (!$entity) {
             throw new ServiceException('No se encontro el movimiento de venta');
@@ -117,7 +120,9 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity = $this->entityManager->find(SaleEntity::class, $sale->movimiento_id);
         $details = $entity->details;
         $entity = DataMapper::map($sale, $entity);
-        $entity->details = $details;
+        if ($entity->numero > 0) {
+            $entity->details = $details;
+        }
         $warehouse = $this->entityManager->getReference(WarehouseEntity::class, $sale->almacen?->almacen_id);
         $entity->almacen = $warehouse;
         if ($sale->operacion) {

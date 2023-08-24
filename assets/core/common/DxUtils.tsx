@@ -1,10 +1,11 @@
-import GridData from "../../components/common/GridData";
 import {httpClient} from "../http/HttpClient";
 import {lastValueFrom} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 import CustomStore from "devextreme/data/custom_store";
 import DevExpress from "devextreme";
 import {FilterDescriptor} from "devextreme/data";
+import GridData from "../../types/GridData";
+import {DxFilterRule} from "./FilterRule";
 import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
@@ -15,7 +16,7 @@ class DxUtils {
             .then((response: ApiResponse<any[]>) => {
                 return {
                     data: response.data,
-                    totalCount: Number(response.headers['x-total-count'])
+                    totalCount: Number(response.headers['x-total-count'] ?? response.data.length)
                 } as GridData<any>;
             });
     }
@@ -29,6 +30,21 @@ class DxUtils {
             });
     }
 
+    private normalizeFilterRules(filterRules: FilterDescriptor[], defaultFilterRules: FilterDescriptor[]): FilterDescriptor[] {
+        let filters: FilterDescriptor[] = [];
+        defaultFilterRules.forEach((rule: DxFilterRule) => {
+            filters.push([rule.field, rule.operator, rule.value]);
+        })
+        if (filterRules.length === 3 && !(typeof filterRules[0] === 'object')) {
+            filters.push([filterRules[0], filterRules[1], filterRules[2]]);
+        } else {
+            filterRules.forEach((rule) => {
+                filters.push(rule);
+            })
+        }
+        return filters;
+    }
+
     getDataStore(
         url: string,
         idField: string,
@@ -40,7 +56,7 @@ class DxUtils {
             key: idField,
             load: (loadOptions) => {
                 let userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
-                loadOptions.filter = [...defaultFilterRules, ...userFilter];
+                loadOptions.filter = this.normalizeFilterRules(userFilter, defaultFilterRules);
                 let userSort = (loadOptions.sort ?? []) as SortDescriptor<any>[];
                 loadOptions.sort = [...defaultSortRules, ...userSort];
                 return this.fetchAll(url, loadOptions)

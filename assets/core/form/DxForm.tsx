@@ -17,6 +17,7 @@ export interface DxFormOptions {
     fields: Field[];
     detailFields?: Field[];
     events?: any;
+    editable?: boolean;
 }
 
 export interface DxFormEvents {
@@ -26,6 +27,9 @@ export interface DxFormEvents {
     getDetailData: () => any;
     setDetailData: (data: any[]) => void;
     reloadDetailData: () => void;
+    getValues: () => any;
+
+    setValues(data: any): void;
 }
 
 export const FORM_EVENTS = {
@@ -123,7 +127,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 editorOptions = {
                     type: 'date',
                     displayFormat: 'dd/MM/yyyy',
-                    defaultValue: new Date(),
+                    defaultValue: new Date()
                 }
             }
             if (field.type === FieldType.CURRENCY) {
@@ -153,15 +157,18 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             }
             editorOptions = {
                 ...editorOptions,
-                readOnly: field.readonly,
+                readOnly: !options.editable ?? field.readonly,
                 disabled: field.disabled,
                 onFocusIn: field.onClick,
                 onValueChanged: field.onChange,
                 onItemClick: field.onSelect,
                 itemRender: field.itemFormatter,
-                stylingMode: 'outlined',
-                buttons: [...editorOptions.buttons ?? [], ...field.buttons ?? []],
+                stylingMode: 'outlined'
             };
+
+            if (field.buttons && field.buttons.length > 0) {
+                editorOptions.buttons = [...editorOptions.buttons ?? [], ...field.buttons ?? []]
+            }
 
             let className = field.hidden ? 'dx-hidden' : '';
             return (
@@ -182,7 +189,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const buildEmptyRow = (fields: Field[]) => {
         let row: any = {};
         fields.forEach((field: Field) => {
-            if (field.defaultValue) {
+            if (field.defaultValue !== undefined) {
                 row[field.name] = field.defaultValue;
             } else {
                 row[field.name] = null;
@@ -204,7 +211,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
     const setupObservers = () => {
         bus.on(options.events.ADD, (payload: any) => {
-            formRef.current?.instance.resetValues();
+            formRef.current?.instance.option('formData', null);
             let store = data.current?.store() as ArrayStore;
             store.clear();
             data.current?.reload();
@@ -218,7 +225,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 }
             } else {
                 options.fields.forEach((field: Field) => {
-                    if (field.defaultValue) {
+                    if (field.defaultValue !== undefined) {
                         formRef.current?.instance.getEditor(field.name)?.option('value', field.defaultValue);
                     }
                 });
@@ -278,6 +285,13 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                         return;
                     }
                 }
+                if (field.type === FieldType.NONE) {
+                    if (!field.isIdentity) {
+                        delete formData[field.name];
+                        return;
+                    }
+
+                }
                 if (field.type === FieldType.DATE) {
                     let date = new Date(formData[field.name]);
                     formData[field.name] = date.toISOString();
@@ -332,6 +346,14 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         return gridRef.current?.instance.getDataSource().items();
     }
 
+    const getValues = () => {
+        return formRef.current?.instance.option('formData');
+    }
+
+    const setValues = (data: any) => {
+        formRef.current?.instance.option('formData', data);
+    }
+
     const setDetailData = (data: any[]) => {
         let store = gridRef.current?.instance.getDataSource().store() as ArrayStore;
         store.clear();
@@ -351,7 +373,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         setFieldValue,
         getDetailData,
         setDetailData,
-        reloadDetailData
+        reloadDetailData,
+        getValues,
+        setValues
     }));
 
     const renderForm = () => {
@@ -421,3 +445,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         </div>
     );
 });
+
+DxForm.defaultProps = {
+    editable: true
+}
