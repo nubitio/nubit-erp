@@ -44,8 +44,9 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
     {
         /** @var CustomerEntity $entity */
         $entity = DataMapper::map($customer, CustomerEntity::class);
-        $priceList = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
-        $entity->price_list = $priceList;
+        if ($customer->price_list) {
+            $entity->price_list = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list->id);
+        }
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
@@ -65,8 +66,9 @@ readonly class CustomerRepository implements CustomerRepositoryInterface
         }
 
         $entity = DataMapper::map($customer, $entity);
-        $priceList = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list?->id);
-        $entity->price_list = $priceList;
+        if ($customer->price_list) {
+            $entity->price_list = $this->entityManager->getReference(PriceListEntity::class, $customer->price_list->id);
+        }
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Customer::class);

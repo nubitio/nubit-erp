@@ -2,7 +2,7 @@
 
 namespace App\Sale\Domain;
 
-use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 readonly class CreateSaleUseCase
 {

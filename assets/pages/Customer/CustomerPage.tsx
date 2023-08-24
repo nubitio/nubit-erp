@@ -11,39 +11,39 @@ export const CustomerPage = () => {
     const container = "wrapper";
     const fields = CustomerFields(formRef.current);
 
-    const API_URL = Constants.API_BASE_URL + 'customers';
-
-    const EVENTS = {
-        ADD: 'customer:add',
-        EDIT: 'customer:edit',
-        DELETE: 'customer:delete',
-        SAVE: 'customer:save',
-        CANCEL: 'customer:cancel',
-        SUCCESS: 'customer:success',
-        LOADING: 'customer:loading',
-    }
-
     return (
         <div id={container}>
             <DxDataGrid
                 title={'Clientes'}
-                url={API_URL}
+                url={CustomerPage.API_URL}
                 allowAdd={true}
                 allowEdit={true}
                 allowDelete={true}
                 fields={fields}
-                events={EVENTS}
+                events={CustomerPage.EVENTS}
             />
             <DxDialog
-                events={EVENTS}
+                events={CustomerPage.EVENTS}
             >
                 <DxForm
                     ref={formRef}
-                    url={API_URL}
+                    url={CustomerPage.API_URL}
                     fields={fields}
-                    events={EVENTS}
+                    events={CustomerPage.EVENTS}
                 />
             </DxDialog>
         </div>
     );
 };
+
+CustomerPage.EVENTS = {
+    ADD: 'customer:add',
+    EDIT: 'customer:edit',
+    DELETE: 'customer:delete',
+    SAVE: 'customer:save',
+    CANCEL: 'customer:cancel',
+    SUCCESS: 'customer:success',
+    LOADING: 'customer:loading',
+}
+
+CustomerPage.API_URL = Constants.API_BASE_URL + 'customers';

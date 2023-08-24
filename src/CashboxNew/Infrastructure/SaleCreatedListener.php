@@ -7,8 +7,11 @@ use App\Sale\Domain\SaleCreatedEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-#[AsEventListener]
-readonly class SaleCreatedListener
+#[AsEventListener(
+    event: SaleCreatedEvent::NAME,
+    method: '__invoke'
+)]
+final readonly class SaleCreatedListener
 {
     public function __construct(
         private RequestStack $requestStack,

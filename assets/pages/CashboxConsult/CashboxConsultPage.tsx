@@ -4,6 +4,7 @@ import {CashboxDetailFields, CashboxFields} from "../Cashbox/CashboxFields";
 import {Constants} from "../../core/common/Constants";
 import {useRef} from "react";
 import notify from "devextreme/ui/notify";
+import {userInformation} from "../../core/common/UserInformation";
 
 export const CashboxConsultPage = () => {
     const container = "wrapper";
@@ -29,7 +30,7 @@ export const CashboxConsultPage = () => {
                     }, {position: 'top right'});
                 }
 
-                window.open('cashbox/export/' + selectedRow.caja_id);
+                window.open('cashbox/export-new/' + selectedRow.caja_id);
             }
         },
         {
@@ -47,7 +48,7 @@ export const CashboxConsultPage = () => {
                     }, {position: 'top right'});
                 }
 
-                window.open('cashbox/report/' + selectedRow.caja_id);
+                window.open('cashbox-new/report/' + selectedRow.caja_id);
             }
         },
     ]
@@ -62,6 +63,13 @@ export const CashboxConsultPage = () => {
                 detailUrl={API_URL + '/{id}/details'}
                 fields={fields}
                 detailFields={detailFields}
+                filter={[
+                    {
+                        field: 'local',
+                        operator: '=',
+                        value: userInformation().currentBranchId
+                    }
+                ]}
             />
         </div>
     );
