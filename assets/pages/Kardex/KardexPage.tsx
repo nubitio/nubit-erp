@@ -7,11 +7,15 @@ export const KardexPage = () => {
     const container = "wrapper"
     const fields = KardexFields();
 
-    const API_URL = Constants.API_BASE_URL + "/kardex";
+    const API_URL = Constants.API_BASE_URL + "kardex";
 
     return (
         <div id={container}>
-            <DxDataGrid title={"Kardex"} url={API_URL} fields={fields}/>
+            <DxDataGrid
+                title={"Kardex"}
+                url={API_URL}
+                fields={fields}
+            />
         </div>
     );
 };

@@ -3,6 +3,7 @@ import {EventType} from "../event/EventType";
 import {bus} from "../event/EventBus";
 import FilterRule from "../common/FilterRule";
 import {Constants} from "../common/Constants";
+import {log} from "util";
 
 class ThemeManager {
     private accentColor: string;
@@ -65,7 +66,7 @@ class ThemeManager {
                 localStorage.setItem('accentColor', this.accentColor);
                 this.setupAppColors();
             })
-            .catch(error => SharedUtils.showMessage('Error', error))
+            .catch(error => console.log('error', error))
     }
 
     setupAppColors() {
