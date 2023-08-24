@@ -18,6 +18,7 @@ class Settings {
         try {
             const response = await lastValueFrom(settingsService.getAll());
             localStorage.setItem('settings', JSON.stringify(response.data));
+            localStorage.setItem('settings_updated_at', new Date().toISOString());
             const settings = localStorage.getItem('settings');
             if (settings) {
                 this.settings = JSON.parse(settings);
@@ -28,7 +29,9 @@ class Settings {
     }
 
     async get(key: string): Promise<SettingDto | undefined> {
-        if (this.settings.length === 0) {
+        const settingsUpdatedAt = localStorage.getItem('settings_updated_at');
+        if (!settingsUpdatedAt || new Date(settingsUpdatedAt).getTime() < new Date().getTime() - 5 * 60 * 1000) {
+            console.log('Updating settings cache...');
             await this.init();
         }
         return this.settings.find(s => s.name === key);
