@@ -26,12 +26,13 @@ export class FieldBuilder {
             byKeyUrl: null,
             textField: '',
             valueField: '',
-            valueType: 'string',
+            valueType: undefined,
+            filterValue: undefined,
             data: [],
             formatter: null,
             itemFormatter: null,
             visible: true,
-            defaultValue: null,
+            defaultValue: undefined,
             onChange: undefined,
             onSelect: undefined,
             onClick: undefined,
@@ -142,6 +143,11 @@ export class FieldBuilder {
 
     valueType(valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime"): FieldBuilder {
         this._field.valueType = valueType;
+        return this;
+    }
+
+    filterValue(filterValue: any): FieldBuilder {
+        this._field.filterValue = filterValue;
         return this;
     }
 

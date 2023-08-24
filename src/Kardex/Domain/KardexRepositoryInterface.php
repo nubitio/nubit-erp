@@ -13,4 +13,9 @@ interface KardexRepositoryInterface
      * @return array<int, mixed>
      */
     public function getOne(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array;
+
+    /**
+     * @return array<Kardex>
+     */
+    public function getKardex(): array;
 }
