@@ -94,7 +94,7 @@ const routes = [
         element: ConsultationPage,
     },
     {
-        path: '/consultation-sale',
+        path: '/consultation-sale/:id',
         element: ConsultationSalePage,
     },
     {

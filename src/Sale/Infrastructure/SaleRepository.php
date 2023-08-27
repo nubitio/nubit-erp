@@ -185,4 +185,22 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $entity->date_updated = new \DateTime();
         $this->entityManager->flush();
     }
+
+    public function getSaleByCustomerId(string $id): PaginatorInterface
+    {
+        return $this->dataLoader->loadCollection(new Options(
+            entity: SaleEntity::class,
+            mapping: Sale::class,
+            joins: [
+                new JoinRule('e.cliente', 'c'),
+                new JoinRule('e.almacen', 'a'),
+                new JoinRule('e.tipo_pago', 'pm'),
+                new JoinRule('e.details', 'sd'),
+                new JoinRule('sd.producto', 'p'),
+            ],
+            filters: [
+                new FilterRule('cliente', FilterOperation::Equals, $id),
+            ],
+        ));
+    }
 }
