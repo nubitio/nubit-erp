@@ -40,12 +40,12 @@ class KardexController extends BaseController
         return $this->json($kardex);
     }
 
-    #[Route('/kardex/detail/{productId}', name: 'kardex_detail', methods: ['GET'])]
+    #[Route('/kardex/{productId}/detail', name: 'kardex_detail', methods: ['GET'])]
     public function getWarehouse(Request $request, KardexGetOneUseCase $kardexGetOneUseCase, string $productId): Response
     {
         $warehouseId = strval($request->request->get('warehouse_id'));
-        $dateFrom = strval($request->request->get('date_from'));
-        $dateTo = strval($request->request->get('date_to'));
+        $dateFrom = strval($request->request->get('date_from') ?? date('Y-m-1'));
+        $dateTo = strval($request->request->get('date_to') ?? date('Y-m-d'));
 
         $kardex = $kardexGetOneUseCase->__invoke($warehouseId, $productId, $dateFrom, $dateTo);
 

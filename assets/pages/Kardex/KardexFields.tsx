@@ -52,3 +52,41 @@ export const KardexFields = () => {
 
     return fields;
 }
+
+export const KardexDetailFields = () => {
+    const fields: Field[] = [];
+
+    fields.push(new FieldBuilder()
+        .isIdentity(true)
+        .visible(false)
+        .type(FieldType.NONE)
+        .name('id')
+        .label('Id')
+        .required(true)
+        .valueType('number')
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.DATE)
+        .name('fecha')
+        .label('Fecha')
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.TEXT)
+        .name('tipo')
+        .label('Tipo')
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.NUMBER)
+        .name('operacion')
+        .label('Operacion')
+        .align('center')
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.NUMBER)
+        .name('cantidad')
+        .label('Cantidad')
+        .align('center')
+        .build());
+
+    return fields;
+}
