@@ -10,7 +10,7 @@ readonly class KardexGetOneUseCase
     }
 
     /**
-     * @return array<int, mixed>
+     * @return array<int, array<string, mixed>>
      */
     public function __invoke(?string $warehouseId, ?string $productId, ?string $dateFrom, ?string $dateTo): array
     {
