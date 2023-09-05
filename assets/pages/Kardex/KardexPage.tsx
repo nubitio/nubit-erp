@@ -21,7 +21,13 @@ export const KardexPage = () => {
             console.log(response.data)
             setData(response.data)
         })
-    }, []);
+    }, [dateFrom, dateTo]);
+
+    const renderDetail = useCallback(({data}) => {
+        return (
+            <KardexDetailPage data={data} dateFrom={dateFrom} dateTo={dateTo}/>
+        );
+    }, [dateFrom, dateTo]);
 
     const refresh = useCallback(() => {
         loadData();
@@ -121,7 +127,7 @@ export const KardexPage = () => {
 
                     <FilterRow visible={true}/>
 
-                    <MasterDetail enabled={true} component={KardexDetailPage}/>
+                    <MasterDetail enabled={true} render={renderDetail}/>
                 </DataGrid>
             </div>
         </ScrollView>
