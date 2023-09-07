@@ -393,7 +393,7 @@ $danger: lighten(#dc3545, 10%);
     }
 
     &:hover,
-    &:focus{
+    &:focus {
       &.dx-button-primary {
         background-color: rgba($primary, 0.08) !important;
       }
@@ -419,7 +419,7 @@ $danger: lighten(#dc3545, 10%);
       }
     }
 
-    &:active{
+    &:active {
       &.dx-button-primary {
         background-color: rgba($primary, 0.36) !important;
       }
@@ -456,4 +456,9 @@ $danger: lighten(#dc3545, 10%);
   &.rounded-pill {
     border-radius: 50rem !important;
   }
+}
+
+.text-muted {
+  color: var(--accent-color-contrast) !important;
+  filter: opacity(0.6);
 }

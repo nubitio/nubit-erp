@@ -18,6 +18,8 @@ declare global {
         detailview: any;
         app: any;
         userRoleId: any;
+        app_logo: any;
+        app_version: any;
     }
 
     interface JQuery {

@@ -1,62 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ title }}</title>
-    <!-- Icons -->
-    <link rel="shortcut icon" href="{{ logo() }}">
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu&display=swap" rel="stylesheet">
-    {{ encore_entry_link_tags('main') }}
-    <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/js/jquery.easyui.min.js') }}"></script>
-    <script src="{{ asset('assets/js/easyui-lang-es.js') }}"></script>
-    <script src="{{ asset('assets/js/main.js') }}"></script>
-    {{ encore_entry_script_tags('main') }}
+    <meta charset="utf-8"/>
+    <link rel="icon" href="{{ logo() }}"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#000000"/>
+    <meta name="description" content="Efact"/>
+    <link rel="apple-touch-icon" href="{{ logo() }}"/>
+    <link rel="manifest" href="{{ asset('assets/manifest.json') }}"/>
+    <title>Efact</title>
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('login') }}
+    {% endblock %}
 </head>
-<body class="login wrapper" id="main-content">
-<div class="container-fluid login-container h-100" id="wrapper">
-    <div class="row h-100 justify-content-center align-items-center">
-        <div class="col-5 h-100 d-none d-sm-block login-art">
-            <div class="row h-auto justify-content-center">
-                <div class="col-md-8">
-                    <div class="mt-4" style="max-width:200px; height:50px; overflow:hidden">
-                        <img src="{{ logo() }}" class="rounded" style="height: 50px;" alt="">
-                    </div>
-                </div>
-            </div>
-            <div class="row h-75 justify-content-center align-items-center">
-                <div class="col-md-8">
-                    <img src="{{ asset('assets/images/illustration.svg') }}" alt="">
-                    <div class="mt-5">
-                        <h1>Sistema de ventas Efact</h1>
-                    </div>
-                    <div class="mt-4 lead text-muted">
-                        Gestiona tus ventas en un solo lugar
-                    </div>
-                    <div class="mt-4 text-muted">{{ setting('version') }}</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-sm-7">
-            <div class="row justify-content-center">
-                <div class="col-12 col-sm-6">
-                    <h1>Iniciar sesión</h1>
-                    <p>Por favor ingresa tus datos para iniciar sesión</p>
-                    <div id="fm"></div>
-                </div>
-                <div class="col-2 d-none d-sm-block"></div>
-            </div>
-        </div>
-    </div>
-</div>
+<body class="dx-viewport">
+<noscript>You need to enable JavaScript to run this app.</noscript>
+<div id="root"></div>
+<div id="main-content"></div>
+{% block javascripts %}
+    {{ encore_entry_script_tags('login') }}
+{% endblock %}
 <script>
-    window.addEventListener('load', function () {
-        const auth = new window.app.auth('wrapper');
-        auth.render();
-        $('.wrapper').animate({"opacity": 1});
-    });
+    window.app_logo = '{{ logo() }}';
+    window.app_version = '{{ setting('version') }}';
 </script>
 </body>
 </html>
