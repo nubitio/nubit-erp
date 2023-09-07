@@ -242,6 +242,11 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             this.defaultSetCellValue(row, product, currentRow);
         })
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .filters([{
+            field: 'estado',
+            operator: '=',
+            value: 1
+        }])
         .required(true)
         .filterable(false)
         .sortable(false)
