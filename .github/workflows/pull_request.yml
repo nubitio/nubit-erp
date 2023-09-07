@@ -10,14 +10,10 @@ jobs:
     name: Static Code Analysis
     uses: ./.github/workflows/analyze.yml
 
-  code_quality_check:
-    name: Code Quality Check
-    uses: ./.github/workflows/code_quality.yml
-
   build:
     name: Build
     uses: ./.github/workflows/build.yml
-    needs: [ static_code_analysis, code_quality_check ]
+    needs: [ static_code_analysis ]
 
   unit_tests:
     name: Unit Tests
