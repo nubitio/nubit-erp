@@ -7,6 +7,9 @@ use App\Consultation\Domain\ConsultationRepositoryInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
+use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Patient\Infrastructure\PatientEntity;
@@ -29,7 +32,20 @@ readonly class ConsultationRepository implements ConsultationRepositoryInterface
 
     public function getOne(int $id): ?Consultation
     {
-        $entity = $this->entityManager->find(ConsultationEntity::class, $id);
+        $entity = $this->dataLoader->loadOne(new Options(
+            entity: ConsultationEntity::class,
+            mapping: Consultation::class,
+            joins: [
+                new JoinRule('e.patient', 'p'),
+                new JoinRule('p.customer', 'c'),
+                new JoinRule('e.physician', 'd'),
+                new JoinRule('d.specialty', 's'),
+                new JoinRule('d.employee', 'y'),
+            ],
+            filters: [
+                new FilterRule('id', FilterOperation::Equals, $id),
+            ],
+        ));
 
         if (!$entity) {
             return null;
