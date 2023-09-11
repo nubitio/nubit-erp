@@ -5,6 +5,10 @@ namespace App\Patient\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
+use App\Core\Infrastructure\DataLoader\JoinRule;
+use App\Core\Infrastructure\DataLoader\JoinType;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
@@ -29,7 +33,18 @@ readonly class PatientRepository implements PatientRepositoryInterface
 
     public function getOne(int $id): ?Patient
     {
-        $entity = $this->entityManager->find(PatientEntity::class, $id);
+        $entity = $this->dataLoader->loadOne(new Options(
+            entity: PatientEntity::class,
+            mapping: Patient::class,
+            joins: [
+                new JoinRule('e.customer', 'c'),
+                new JoinRule('e.type', 't'),
+                new JoinRule('c.price_list', 'p', JoinType::LEFT),
+            ],
+            filters: [
+                new FilterRule('id', FilterOperation::Equals, $id),
+            ],
+        ));
 
         if (!$entity) {
             return null;

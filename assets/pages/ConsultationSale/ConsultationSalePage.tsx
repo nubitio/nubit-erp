@@ -72,7 +72,7 @@ export const ConsultationSalePage = () => {
 
     useEffect(()=>{
         consultationService.getOneById(Number(id)).subscribe((response)=>{
-            //console.log(response.data);
+            console.log(response.data);
             formRef.current?.setValues(response.data);
         })
     });
@@ -163,7 +163,7 @@ export const ConsultationSalePage = () => {
                             fields={detailFields}
                             filter={[
                                 {
-                                    field: 'Sale',
+                                    field: 'sale',
                                     operator: '=',
                                     value: Number(id)
                                 }

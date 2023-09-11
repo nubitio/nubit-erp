@@ -24,7 +24,7 @@ export const ConsultationFields = () => {
         .url(Constants.API_BASE_URL + 'patients')
         .mode('remote')
         .valueField('id')
-        .textField('razon_social')
+        .textField('full_name')
         .formatter((cell: ColumnCellTemplateData) => cell.data.patient.full_name)
         .required(true)
         .valueType('number')
