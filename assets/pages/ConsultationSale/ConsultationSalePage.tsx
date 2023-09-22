@@ -12,21 +12,18 @@ import {Constants} from "../../core/common/Constants";
 import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {ConsultationFields} from "../Consultation/ConsultationFields";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {SalePage} from "../Sale/SalePage";
-import {SaleFields} from "../Sale/SaleFields";
 import {ConsultationSaleFields} from "./ConsultationSaleFields";
 
 export const ConsultationSalePage = () => {
     const container = "wrapper"
     const {id} = useParams<{ id: string }>();
     const [consultationData, setConsultationData] = useState<string>('');
-    const gridRef = useRef<DxDataGridEvents|any>(null);
-    const formRef = useRef<DxFormEvents|any>(null);
+    const gridRef = useRef<DxDataGridEvents | any>(null);
+    const formRef = useRef<DxFormEvents | any>(null);
     const [editing, setEditing] = useState<boolean>(false);
     const fields = ConsultationFields();
-    const detailFieldsRef = useRef<Field[]|any>();
-    detailFieldsRef.current = ConsultationSaleFields(Number(id));
-
+    const detailFieldsRef = useRef<Field[] | any>();
+    const [isReady, setIsReady] = useState<boolean>(false);
 
     const API_URL = Constants.API_BASE_URL + 'consultation';
     const API_DETAIL_URL = Constants.API_BASE_URL + 'consultation-sales';
@@ -70,10 +67,12 @@ export const ConsultationSalePage = () => {
     }
 
 
-    useEffect(()=>{
-        consultationService.getOneById(Number(id)).subscribe((response)=>{
-            console.log(response.data);
+    useEffect(() => {
+        consultationService.getOneById(Number(id)).subscribe((response) => {
             formRef.current?.setValues(response.data);
+            let customerId = response.data.patient.customer.ruc;
+            detailFieldsRef.current = ConsultationSaleFields(Number(id), customerId);
+            setIsReady(true);
         })
     });
 
@@ -163,7 +162,7 @@ export const ConsultationSalePage = () => {
                             fields={detailFields}
                             filter={[
                                 {
-                                    field: 'sale',
+                                    field: 'consultation',
                                     operator: '=',
                                     value: Number(id)
                                 }
@@ -188,7 +187,7 @@ export const ConsultationSalePage = () => {
 
     return (
         <div id={container} className='panels-wrapper'>
-            {Number(id) ? render(detailFieldsRef.current) : null}
+            {isReady ? render(detailFieldsRef.current) : null}
         </div>
     );
 };
