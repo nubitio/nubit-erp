@@ -43,6 +43,7 @@ import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
+import {ReportingPage} from "./pages/Reporting/ReportingPage";
 
 const routes = [
     {
@@ -219,6 +220,10 @@ const routes = [
     {
         path: '/production',
         element: ProductionPage,
+    },
+    {
+        path: '/Reporting',
+        element: ReportingPage,
     }
 ];
 
