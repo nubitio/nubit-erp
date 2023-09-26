@@ -148,7 +148,7 @@ export const SalePage = () => {
 
     const printPreview = (saleId: string) => {
         let url = 'sale/print/' + saleId;
-        window.open(url + '', '_blank');
+        window.open(url + '_blank');
     }
 
     const toolbar = [
