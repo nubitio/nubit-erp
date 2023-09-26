@@ -24,7 +24,7 @@ export const ConsultationFields = () => {
         .url(Constants.API_BASE_URL + 'patients')
         .mode('remote')
         .valueField('id')
-        .textField('full_name')
+        .textField('razon_social')
         /*.itemFormatter((data:any)=>{
             return (<div>data.full_name</div>)
         })*/
