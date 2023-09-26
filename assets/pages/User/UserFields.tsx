@@ -21,7 +21,6 @@ export const UserFields = () => {
         .type(FieldType.TEXT)
         .name('username')
         .label('Username')
-        .width(100)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
