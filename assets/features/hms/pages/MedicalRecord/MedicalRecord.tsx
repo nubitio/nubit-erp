@@ -1,9 +1,9 @@
-import {consultationService} from "../../services/consultation.service";
-import {useService} from "../../core/common/UseService";
-import {patientService} from "../../services/patient.service";
-import {ConsultationDto} from "../../dto/consultation.dto";
-import {DateUtils} from "../../core/utils/DateUtils";
-import {PatientDto} from "../../dto/patient.dto";
+import {consultationService} from "../../../../services/consultation.service";
+import {useService} from "../../../../core/common/UseService";
+import {patientService} from "../../../../services/patient.service";
+import {ConsultationDto} from "../../../../dto/consultation.dto";
+import {DateUtils} from "../../../../core/utils/DateUtils";
+import {PatientDto} from "../../../../dto/patient.dto";
 import "./MedicalRecord.scss";
 
 export const MedicalRecord = (props: any) => {
