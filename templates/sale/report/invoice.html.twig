@@ -11,11 +11,10 @@
 
     <title>{{ voucher.voucher_series }} - {{ voucher.voucher_number }}</title>
     <style>
-        body {
+        .receipt {
             width: 80mm;
-            max-width: 80mm;
             margin: 0 auto;
-            background: #333;
+            padding: 10px;
         }
 
         .table {
@@ -37,7 +36,7 @@
 </head>
 <body>
 <div class="container-fluid p-0">
-    <div style="background: #fff">
+    <div class="receipt" style="background: #fff">
         <table class="table table-sm table-borderless table-nm">
             <tr>
                 <td class="text-center" style="width: 50%">
@@ -82,7 +81,8 @@
                     {% endif %}
                     DIRECCION: {{ voucher.customer_address }}<br>
                     {% block extra %}
-                        FORMA DE PAGO: {% if voucher.voucher_payment_method == 2 %}CREDITO{% else %}CONTADO{% endif %}<br>
+                        FORMA DE PAGO: {% if voucher.voucher_payment_method == 2 %}CREDITO{% else %}CONTADO{% endif %}
+                        <br>
                     {% endblock %}
                 </td>
             </tr>

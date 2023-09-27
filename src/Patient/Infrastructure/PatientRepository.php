@@ -91,4 +91,15 @@ readonly class PatientRepository implements PatientRepositoryInterface
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    public function getOneByCustomerId(string $customerId): ?Patient
+    {
+        $entity = $this->entityManager->getRepository(PatientEntity::class)->findOneBy(['customer' => $customerId]);
+
+        if (!$entity) {
+            return null;
+        }
+
+        return DataMapper::map($entity, Patient::class);
+    }
 }

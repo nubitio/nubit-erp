@@ -1,11 +1,8 @@
-import {useEffect} from "react";
-import Consultation from "../Consultation";
 import "./ConsultationPage.scss";
-import {PhysicianFields} from "../Physician/PhysicianFields";
-import {Constants} from "../../core/common/Constants";
-import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
-import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {Constants} from "../../../../core/common/Constants";
+import {DxDataGrid} from "../../../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../../../core/dialog/DxDialog";
+import {DxForm} from "../../../../core/form/DxForm";
 import {ConsultationFields} from "./ConsultationFields";
 
 export const ConsultationPage = () => {

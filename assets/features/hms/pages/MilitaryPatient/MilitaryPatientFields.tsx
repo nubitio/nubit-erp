@@ -1,9 +1,9 @@
-import {Field} from "../../core/field/Field";
-import {FieldBuilder} from "../../core/field/FieldBuilder";
-import {FieldType} from "../../core/field/FieldType";
-import {PatientFields} from "../Patient/PatientFields";
-import {CustomerFields} from "../Customer/CustomerFields";
-import {DxFormEvents} from "../../core/form/DxForm";
+import {Field} from "../../../../core/field/Field";
+import {FieldBuilder} from "../../../../core/field/FieldBuilder";
+import {FieldType} from "../../../../core/field/FieldType";
+import {PatientFields} from "../Patient/PatientFields"
+import {CustomerFields} from "../../../../pages/Customer/CustomerFields";
+import {DxFormEvents} from "../../../../core/form/DxForm";
 
 export const MilitaryPatientFields = (formRef: DxFormEvents|null) => {
     const fields: Field[] = [...CustomerFields(formRef),  ...PatientFields()];
