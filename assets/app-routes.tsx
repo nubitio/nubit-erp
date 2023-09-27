@@ -10,8 +10,7 @@ import {ChangePasswordPage} from "./pages/ChangePassword/ChangePasswordPage";
 import {ComboOptionPage} from "./pages/ComboOption/ComboOptionPage";
 import {CompanyPage} from "./pages/Company/CompanyPage";
 import {ConfigPage} from "./pages/Config/ConfigPage";
-import {ConsultationPage} from "./pages/Consultation/ConsultationPage";
-import {ConsultationSalePage} from "./pages/ConsultationSale/ConsultationSalePage";
+import {ConsultationPage} from "./features/hms/pages/Consultation/ConsultationPage";
 import {CreditNotePage} from "./pages/CreditNote/CreditNotePage";
 import {CustomerPage} from "./pages/Customer/CustomerPage";
 import {DepartmentPage} from "./pages/Department/DepartmentPage";
@@ -19,20 +18,19 @@ import {EmployeePage} from "./pages/Employee/EmployeePage";
 import {InboundPage} from "./pages/Inbound/InboundPage";
 import {InvoicePage} from "./pages/Invoice/InvoicePage";
 import {KardexPage} from "./pages/Kardex/KardexPage";
-import MedicalRecord from "./pages/MedicalRecord/MedicalRecord";
-import {MilitaryPatientPage} from "./pages/MilitaryPatient/MilitaryPatientPage";
+import MedicalRecord from "./features/hms/pages/MedicalRecord/MedicalRecord";
+import {MilitaryPatientPage} from "./features/hms/pages/MilitaryPatient/MilitaryPatientPage";
 import {OperationPage} from "./pages/Operation/OperationPage";
 import {OutboundPage} from "./pages/Outbound/OutboundPage";
-import {PatientPage} from "./pages/Patient/PatientPage";
-import {PatientTypePage} from "./pages/PatientType/PatientTypePage";
+import {PatientPage} from "./features/hms/pages/Patient/PatientPage";
 import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
 import {PerformancePage} from "./pages/Performance/PerformancePage";
-import {PhysicianPage} from "./pages/Physician/PhysicianPage";
+import {PhysicianPage} from "./features/hms/pages/Physician/PhysicianPage";
 import {PositionPage} from "./pages/Position/PositionPage";
 import {RecipePage} from "./pages/Recipe/RecipePage";
 import {RolePage} from "./pages/Role/RolePage";
 import {SaleConsultPage} from "./pages/SaleConsult/SaleConsultPage";
-import {SpecialtyPage} from "./pages/Specialty/SpecialtyPage";
+import {SpecialtyPage} from "./features/hms/pages/Specialty/SpecialtyPage";
 import {TransferPage} from "./pages/Transfer/TransferPage";
 import {UserPage} from "./pages/User/UserPage";
 import {VoucherSeriesPage} from "./pages/VoucherSeries/VoucherSeriesPage";
@@ -41,6 +39,7 @@ import {WarehousePage} from "./pages/Warehouse/WarehousePage";
 import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
+import {SalePage as HmsSalePage} from "./features/hms/pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
 
@@ -94,10 +93,6 @@ const routes = [
         element: ConsultationPage,
     },
     {
-        path: '/consultation-sale',
-        element: ConsultationSalePage,
-    },
-    {
         path: '/credit-note',
         element: CreditNotePage,
     },
@@ -144,9 +139,6 @@ const routes = [
     {
         path: '/patient',
         element: PatientPage,
-    }, {
-        path: '/patient-type',
-        element: PatientTypePage,
     },
     {
         path: '/payment-method',
@@ -219,6 +211,10 @@ const routes = [
     {
         path: '/production',
         element: ProductionPage,
+    },
+    {
+        path: '/sale-hms',
+        element: HmsSalePage,
     }
 ];
 

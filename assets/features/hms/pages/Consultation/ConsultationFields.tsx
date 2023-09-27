@@ -1,9 +1,9 @@
-import {Field} from "../../core/field/Field";
-import {FieldBuilder} from "../../core/field/FieldBuilder";
-import {FieldType} from "../../core/field/FieldType";
-import {Constants} from "../../core/common/Constants";
+import {Field} from "../../../../core/field/Field";
+import {FieldBuilder} from "../../../../core/field/FieldBuilder";
+import {FieldType} from "../../../../core/field/FieldType";
+import {Constants} from "../../../../core/common/Constants";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
-import {SharedUtils} from "../../core/utils/SharedUtils";
+import {SharedUtils} from "../../../../core/utils/SharedUtils";
 
 export const ConsultationFields = () => {
     const fields: Field[] = [];

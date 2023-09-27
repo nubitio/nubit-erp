@@ -19,4 +19,6 @@ interface PatientRepositoryInterface
     public function update(Patient $patient): Patient;
 
     public function delete(int $id): void;
+
+    public function getOneByCustomerId(string $customerId): ?Patient;
 }

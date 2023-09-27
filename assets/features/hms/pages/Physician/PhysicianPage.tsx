@@ -1,8 +1,8 @@
 import "./PhysicianPage.scss";
-import {Constants} from "../../core/common/Constants";
-import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
-import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {Constants} from "../../../../core/common/Constants";
+import {DxDataGrid} from "../../../../core/datagrid/DxDataGrid";
+import {DxDialog} from "../../../../core/dialog/DxDialog";
+import {DxForm} from "../../../../core/form/DxForm";
 import {PhysicianFields} from "./PhysicianFields";
 
 export const PhysicianPage = () => {

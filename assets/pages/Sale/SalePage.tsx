@@ -15,6 +15,7 @@ import {userInformation} from "../../core/common/UserInformation";
 import {CustomerPage} from "../Customer/CustomerPage";
 import {CustomerFields} from "../Customer/CustomerFields";
 import {Setting, settings} from "../../Settings";
+import {SalePrintPreviewPopup} from "./SalePrintPreviewPopup";
 
 export const SalePage = () => {
     const gridRef = useRef<DxDataGridEvents>(null);
@@ -23,6 +24,8 @@ export const SalePage = () => {
     const [printerName, setPrinterName] = useState<string | undefined>(undefined);
     const [printEnabled, setPrintEnabled] = useState<boolean>(false);
     const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
+    const [isPreviewVisible, setIsPreviewVisible] = useState<boolean>(false);
+    const selectedSaleId = useRef<string | undefined>(undefined);
 
     const container = "wrapper";
     const fields = SaleFields(formRef.current);
@@ -146,11 +149,6 @@ export const SalePage = () => {
         })
     }
 
-    const printPreview = (saleId: string) => {
-        let url = 'sale/print/' + saleId;
-        window.open(url + '?preview=true', '_blank');
-    }
-
     const toolbar = [
         {
             text: 'Vista previa',
@@ -159,7 +157,8 @@ export const SalePage = () => {
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 if (saleId) {
-                    printPreview(saleId);
+                    selectedSaleId.current = saleId;
+                    setIsPreviewVisible(true);
                 } else {
                     notify({
                             message: 'Debe seleccionar una venta',
@@ -285,6 +284,17 @@ export const SalePage = () => {
                     events={CustomerPage.EVENTS}
                 />
             </DxDialog>
+            <SalePrintPreviewPopup
+                saleId={selectedSaleId.current}
+                visible={isPreviewVisible}
+                onPositive={() => {
+                    setIsPreviewVisible(false);
+                    window.open(`/sale/print/${selectedSaleId.current}`, '_blank');
+                }}
+                onNegative={() => {
+                    setIsPreviewVisible(false);
+                }}
+            />
         </div>
     );
 };
