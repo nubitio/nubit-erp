@@ -128,10 +128,12 @@ class SaleController extends BaseController
 
         return $pdfExporter->export($content, 'invoice', [
             'no-outline',
-            'page-width' => '80mm',
+            'page-width' => '62mm',
             'page-height' => $pageHeight.'mm',
+            'margin-top' => 0,
             'margin-left' => 0,
             'margin-right' => 0,
+            'margin-bottom' => 0,
         ]);
     }
 

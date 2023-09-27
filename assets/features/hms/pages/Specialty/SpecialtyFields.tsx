@@ -1,6 +1,6 @@
-import {Field} from "../../core/field/Field";
-import {FieldBuilder} from "../../core/field/FieldBuilder";
-import {FieldType} from "../../core/field/FieldType";
+import {Field} from "../../../../core/field/Field";
+import {FieldBuilder} from "../../../../core/field/FieldBuilder";
+import {FieldType} from "../../../../core/field/FieldType";
 
 export const SpecialtyFields = () => {
     const fields: Field[] = [];
