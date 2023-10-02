@@ -40,7 +40,7 @@ readonly class SaleProcessor implements ApiProcessorInterface
             return $this->updateUseCase->__invoke($data);
         }
 
-        if ($data instanceof SaleHmsDto) {
+        if ($data instanceof SaleHmsDto and !empty($data->physician)) {
             return $this->createHmsUseCase->__invoke($data);
         }
 
