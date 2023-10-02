@@ -94,7 +94,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 }
             }
         ])
-
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -184,6 +183,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('glosa')
         .label('Nota')
+        .defaultValue('Sin observaciones')
         .visible(false)
         .build());
     fields.push(new FieldBuilder()

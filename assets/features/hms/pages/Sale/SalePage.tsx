@@ -83,6 +83,7 @@ export const SalePage = () => {
 
         bus.on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
             formRef.current?.setFieldValue('cliente', payload.data);
+            console.log('El payload es: ', payload.data);
         })
     }
 
@@ -233,7 +234,6 @@ export const SalePage = () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 saleService.getOne(saleId).subscribe((response) => {
                     delete response.data.movimiento_id;
-                    console.log(response.data);
                     bus.emit(EVENTS.ADD, response.data);
                 });
             },
@@ -282,7 +282,7 @@ export const SalePage = () => {
                     ref={patientFormRef}
                     url={MilitaryPatientPage.API_URL}
                     fields={MilitaryPatientFields(patientFormRef.current)}
-                    events={CustomerPage.EVENTS}
+                    events={MilitaryPatientPage.EVENTS}
                 />
             </DxDialog>
             <SalePrintPreviewPopup
