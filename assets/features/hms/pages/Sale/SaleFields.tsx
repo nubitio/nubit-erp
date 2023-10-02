@@ -104,7 +104,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .mode('remote')
         .valueField('id')
         .textField('full_name')
-        .required(true)
+        .required(false)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.full_name)
         .build());
     fields.push(new FieldBuilder()
