@@ -41,6 +41,13 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .valueType('date')
         .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.DATE)
+        .name('date_created')
+        .label('Hora')
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.timeFormatter(cell.value))
+        .valueField('datetime')
+        .build());
     let session = StorageUtils.getItem('session');
     let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
     fields.push(new FieldBuilder()
@@ -105,6 +112,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .valueField('id')
         .textField('full_name')
         .required(false)
+        .visible(false)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.full_name)
         .build());
     fields.push(new FieldBuilder()
@@ -142,6 +150,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .valueType('number')
         .defaultValue(1)
         .required(true)
+        .align('center')
         .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .build());
     fields.push(new FieldBuilder()
@@ -149,27 +158,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .name('numero')
         .label('Voucher')
         //.formatter(SharedUtils.voucherFormatter)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
-        .name('invoice')
-        .label('Comprobante')
-        .formatter((cell: ColumnCellTemplateData) => {
-            if (cell.value) {
-                let payload = {
-                    type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
-                    id: cell.data.movimiento_id,
-                }
-                let payloadEncoded = btoa(JSON.stringify(payload));
-                let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
-                return (
-                    <a href={url} className='text-reset' target='_blank'>
-                        <i className='fas fa-file-invoice fa-lg'></i> {cell.value}
-                    </a>
-                );
-            }
-            return '';
-        })
         .align('center')
         .build());
     fields.push(new FieldBuilder()
