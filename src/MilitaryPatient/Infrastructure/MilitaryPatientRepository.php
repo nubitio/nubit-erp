@@ -11,8 +11,10 @@ use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\MilitaryPatientRepositoryInterface;
+use App\Patient\Domain\Patient;
 use App\Patient\Infrastructure\PatientEntity;
 use App\PatientType\Infrastructure\PatientTypeEntity;
+use App\PriceList\Domain\PriceList;
 use App\PriceList\Infrastructure\PriceListEntity;
 use App\Sale\Domain\InvoiceExtraData;
 use Doctrine\ORM\EntityManagerInterface;
@@ -137,5 +139,39 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
             queue: $consultationSale?->consultation?->queue,
             physicianSpecialty: $consultationSale?->consultation?->physician?->specialty?->name
         );
+    }
+
+    public function findOneByPatientId(int $patientId): ?MilitaryPatient
+    {
+        $query = $this->entityManager->createQueryBuilder()
+            ->select('m')
+            ->from(MilitaryPatientEntity::class, 'm')
+            ->join('m.patient', 'p')
+            ->join('p.customer', 'c')
+            ->where('p.id = :id')
+            ->setParameter('id', $patientId)
+            ->getQuery();
+
+        /** @var ?MilitaryPatientEntity $militaryPatient */
+        $militaryPatient = $query->getOneOrNullResult();
+
+        if (!$militaryPatient) {
+            return null;
+        }
+
+        $militaryPatient = DataMapper::map($militaryPatient, MilitaryPatient::class);
+
+        $patient = $this->entityManager->find(PatientEntity::class, $patientId);
+        $customer = $this->entityManager->find(CustomerEntity::class, $patient?->customer?->ruc ?? '');
+        $priceList = $this->entityManager->find(PriceListEntity::class, $customer?->price_list?->id ?? 0);
+
+        $data = new MilitaryPatient();
+        $data->ruc = $customer?->ruc;
+        $data->razon_social = $customer?->razon_social;
+        $data->patient = DataMapper::map($patient, Patient::class);
+        $data->price_list = DataMapper::map($priceList, PriceList::class);
+        $data->cip_code = $militaryPatient->cip_code;
+
+        return $data;
     }
 }
