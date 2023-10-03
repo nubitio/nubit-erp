@@ -283,7 +283,7 @@ export const SalePage = () => {
                     ref={patientFormRef}
                     url={MilitaryPatientPage.API_URL}
                     fields={MilitaryPatientFields(patientFormRef.current)}
-                    events={CustomerPage.EVENTS}
+                    events={MilitaryPatientPage.EVENTS}
                 />
             </DxDialog>
         </div>

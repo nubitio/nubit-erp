@@ -22,4 +22,6 @@ interface MilitaryPatientRepositoryInterface
     public function delete(int $id): void;
 
     public function getInvoiceExtraDataByCustomerId(string $customerId, string $saleId): ?InvoiceExtraData;
+
+    public function findOneByPatientId(int $patientId): ?MilitaryPatient;
 }
