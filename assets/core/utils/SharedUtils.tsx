@@ -69,6 +69,18 @@ export class SharedUtils {
         }
     }
 
+    static dxStatusPatientHmsFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-dark">EN COLA</span>;
+        } else if (Number(cell.value) === 2) {
+            return <span className="badge rounded-pill bg-danger">EN CONSULTA</span>;
+        } else if (Number(cell.value) === 3) {
+            return <span className="badge rounded-pill bg-danger">ATENTIDO</span>;
+        } else {
+            return null;
+        }
+    }
+
     static imageFormatter(image: string, name: string, path = '') {
         if (image) {
             return `<a href="${path}${image}" target="_blank">
