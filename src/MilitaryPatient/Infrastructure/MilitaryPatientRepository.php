@@ -169,11 +169,10 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
 
         $data = new MilitaryPatient();
         $data->type = DataMapper::map($patientType, PatientType::class);
-
         $data->patient = DataMapper::map($patient, Patient::class);
         $data->price_list = DataMapper::map($priceList, PriceList::class);
-        // customer properties
 
+        // customer properties
         $data->ruc = $customer?->ruc;
         $data->razon_social = $customer?->razon_social;
         $data->domicilio_fiscal = $customer?->domicilio_fiscal;
@@ -183,7 +182,6 @@ readonly class MilitaryPatientRepository implements MilitaryPatientRepositoryInt
         // patient properties
         $data->medical_record_number = $patient?->medical_record_number;
         $data->insurance_provider = $patient?->insurance_provider;
-        // $data->type = $patient?->type;
         // military_patient properties
         $data->id = $militaryPatient->id;
         $data->cip_code = $militaryPatient->cip_code;
