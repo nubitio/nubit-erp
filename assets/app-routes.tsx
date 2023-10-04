@@ -42,6 +42,7 @@ import {SalePage} from "./pages/Sale/SalePage";
 import {SalePage as HmsSalePage} from "./features/hms/pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
+import PatientType from "./pages/PatientType";
 
 const routes = [
     {
