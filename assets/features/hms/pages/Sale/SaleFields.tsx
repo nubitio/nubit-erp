@@ -89,7 +89,15 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'edit',
                     onClick: (e: any) => {
-                        bus.emit(MilitaryPatientPage.EVENTS.EDIT)
+                        // 1: obtener id del cliente
+                        const customerId = form?.getFieldValue('cliente');
+                        // 2: obtener paciente militar con ese id
+                        httpClient.get(`military-patient/by-customer/${customerId}`).subscribe((response) => {
+                            console.log(response.data)
+                            const militaryPatient = response.data;
+                            // 3: emitir evento para abrir dialogo
+                            bus.emit(MilitaryPatientPage.EVENTS.EDIT, {row: militaryPatient})
+                        })
                     }
                 }
             }
