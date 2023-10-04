@@ -10,6 +10,7 @@ export const MilitaryPatientFields = (formRef: DxFormEvents|null) => {
 
     fields.forEach((field: Field) => {
         if (field.isIdentity) {  field.isIdentity = false;       }
+        if (field.name == 'id') {  field.name = 'id_2';       }
     });
 
     fields.push(new FieldBuilder()
@@ -20,16 +21,6 @@ export const MilitaryPatientFields = (formRef: DxFormEvents|null) => {
         .label('Id')
         .required(true)
         .valueType('number')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.ENTITY)
-        .name('patient')
-        .label('Patient')
-        .textField('id')
-        .valueField('id')
-        .valueType('number')
-        .visible(false)
-        .hidden(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)

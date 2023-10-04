@@ -24,6 +24,7 @@ let priceList: PriceListItemDto[] = [];
 export const SaleFields = (form: DxFormEvents | null) => {
     const fields: Field[] = [];
 
+
     fields.push(new FieldBuilder()
         .isIdentity(true)
         .visible(false)
@@ -41,19 +42,13 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .valueType('date')
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.DATE)
-        .name('date_created')
-        .label('Hora')
-        .formatter((cell: ColumnCellTemplateData) => SharedUtils.timeFormatter(cell.value))
-        .valueField('datetime')
-        .build());
     let session = StorageUtils.getItem('session');
     let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('almacen')
         .label('Almacen')
+        .hidden(true)
         .url(warehouseUrl)
         .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
         .valueField('almacen_id')
@@ -66,7 +61,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('cliente')
         .label('Cliente')
-        .width('100%')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')
@@ -96,7 +90,8 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'edit',
                     onClick: (e: any) => {
-                        bus.emit(MilitaryPatientPage.EVENTS.EDIT)
+                        const ruc_id = form?.getFieldValue('ruc');
+                        bus.emit(MilitaryPatientPage.EVENTS.EDIT, {row:{}})
                     }
                 }
             }
@@ -106,7 +101,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('physician')
         .label('Medico')
-        .width('100%')
         .url(Constants.API_BASE_URL + 'physicians')
         .mode('remote')
         .valueField('id')
@@ -175,6 +169,13 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .visible(false)
         .build());
     fields.push(new FieldBuilder()
+        .type(FieldType.DATE)
+        .name('date_created')
+        .label('Hora')
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.timeFormatter(cell.value))
+        .valueField('datetime')
+        .build());
+    fields.push(new FieldBuilder()
         .type(FieldType.CURRENCY)
         .col(6)
         .name('descuento')
@@ -233,7 +234,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('producto')
         .label('Producto')
-        .minWidth(200)
+        .minWidth(250)
         .url(Constants.API_BASE_URL + 'products')
         .mode('remote')
         .valueField('producto_id')
