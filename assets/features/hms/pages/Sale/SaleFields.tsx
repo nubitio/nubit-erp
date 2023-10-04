@@ -24,7 +24,6 @@ let priceList: PriceListItemDto[] = [];
 export const SaleFields = (form: DxFormEvents | null) => {
     const fields: Field[] = [];
 
-
     fields.push(new FieldBuilder()
         .isIdentity(true)
         .visible(false)
@@ -48,7 +47,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('almacen')
         .label('Almacen')
-        .hidden(true)
         .url(warehouseUrl)
         .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
         .valueField('almacen_id')
@@ -61,6 +59,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('cliente')
         .label('Cliente')
+        .width('100%')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')
@@ -90,23 +89,23 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'edit',
                     onClick: (e: any) => {
-                        const ruc_id = form?.getFieldValue('ruc');
-                        bus.emit(MilitaryPatientPage.EVENTS.EDIT, {row:{}})
+                        bus.emit(MilitaryPatientPage.EVENTS.EDIT)
                     }
                 }
             }
         ])
+
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('physician')
         .label('Medico')
+        .width('100%')
         .url(Constants.API_BASE_URL + 'physicians')
         .mode('remote')
         .valueField('id')
         .textField('full_name')
-        .required(false)
-        .visible(false)
+        .required(true)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.full_name)
         .build());
     fields.push(new FieldBuilder()
@@ -144,7 +143,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .valueType('number')
         .defaultValue(1)
         .required(true)
-        .align('center')
         .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .build());
     fields.push(new FieldBuilder()
@@ -152,6 +150,27 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .name('numero')
         .label('Voucher')
         //.formatter(SharedUtils.voucherFormatter)
+        .build());
+    fields.push(new FieldBuilder()
+        .type(FieldType.NONE)
+        .name('invoice')
+        .label('Comprobante')
+        .formatter((cell: ColumnCellTemplateData) => {
+            if (cell.value) {
+                let payload = {
+                    type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
+                    id: cell.data.movimiento_id,
+                }
+                let payloadEncoded = btoa(JSON.stringify(payload));
+                let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
+                return (
+                    <a href={url} className='text-reset' target='_blank'>
+                        <i className='fas fa-file-invoice fa-lg'></i> {cell.value}
+                    </a>
+                );
+            }
+            return '';
+        })
         .align('center')
         .build());
     fields.push(new FieldBuilder()
@@ -165,15 +184,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('glosa')
         .label('Nota')
-        .defaultValue('Sin observaciones')
         .visible(false)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.DATE)
-        .name('date_created')
-        .label('Hora')
-        .formatter((cell: ColumnCellTemplateData) => SharedUtils.timeFormatter(cell.value))
-        .valueField('datetime')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.CURRENCY)
@@ -234,7 +245,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('producto')
         .label('Producto')
-        .minWidth(250)
+        .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
         .mode('remote')
         .valueField('producto_id')
