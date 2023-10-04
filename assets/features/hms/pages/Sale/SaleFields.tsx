@@ -52,13 +52,14 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .valueField('almacen_id')
         .textField('descripcion')
         .visible(false)
+        .hidden(true)
         .required(true)
         .defaultValue(session['warehouse_id'])
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('cliente')
-        .label('Cliente')
+        .label('Paciente')
         .width('100%')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
@@ -113,7 +114,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .mode('remote')
         .valueField('id')
         .textField('full_name')
-        .required(true)
+        .required(false)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.full_name)
         .build());
     fields.push(new FieldBuilder()
@@ -192,6 +193,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('glosa')
         .label('Nota')
+        .defaultValue('Sin observaciones')
         .visible(false)
         .build());
     fields.push(new FieldBuilder()
