@@ -35,6 +35,8 @@ class ConsultationEntity
         public ?string $notes = null,
         #[ORM\Column(name: 'queue', type: 'integer')]
         public ?int $queue = null,
+        #[ORM\Column(name: 'status', type: 'text')]
+        public ?int $status = null,
         #[ORM\Column(name: 'created_at', type: 'datetime')]
         public ?\DateTimeInterface $created_at = null,
         #[ORM\Column(name: 'updated_at', type: 'datetime')]

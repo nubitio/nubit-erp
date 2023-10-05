@@ -17,6 +17,17 @@ export const ConsultationFields = () => {
         .required(true)
         .valueType('number')
         .build());
+    fields.push(new  FieldBuilder()
+        .type(FieldType.ENUM)
+        .data([
+            {value: 1, text: 'EN COLA'},
+            {value: 2, text: 'EN CONSULTA'},
+            {value: 3, text: 'FINALIZADO'},
+        ])
+        .name('status')
+        .label('Estado')
+        .formatter(SharedUtils.dxConsultationFormatter)
+        .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('patient')
@@ -75,7 +86,6 @@ export const ConsultationFields = () => {
         .readonly(true)
         .name('queue')
         .label('Turno')
-        .build())
-
+        .build());
     return fields
 }
