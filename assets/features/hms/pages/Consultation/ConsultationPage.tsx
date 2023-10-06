@@ -2,14 +2,16 @@ import "./ConsultationPage.scss";
 import {Constants} from "../../../../core/common/Constants";
 import {DxDataGrid} from "../../../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../../../core/dialog/DxDialog";
-import {DxForm} from "../../../../core/form/DxForm";
+import {DxForm, DxFormEvents} from "../../../../core/form/DxForm";
 import {ConsultationFields} from "./ConsultationFields";
-import {useEffect} from "react";
+import {useEffect, useRef} from "react";
 import {consultationService} from "../../../../services/consultation.service";
 
 export const ConsultationPage = () => {
     const container = "wrapper";
     const fields = ConsultationFields();
+    const formRef = useRef<DxFormEvents | any>(null);
+
 
     const API_URL = Constants.API_BASE_URL + 'consultations';
 
@@ -23,11 +25,11 @@ export const ConsultationPage = () => {
         LOADING: 'consultation:loading',
     }
 
-    /*useEffect(() => {
-        consultationService.getOneById(Number(id)).subscribe((response) => {
+    useEffect(() => {
+        consultationService.getOneById(Number("id")).subscribe((response) => {
           formRef.current?.setValues(response.data);
         })
-    });*/
+    });
 
     return (
         <div id={container}>
