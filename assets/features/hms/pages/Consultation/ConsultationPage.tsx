@@ -4,6 +4,8 @@ import {DxDataGrid} from "../../../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../../../core/dialog/DxDialog";
 import {DxForm} from "../../../../core/form/DxForm";
 import {ConsultationFields} from "./ConsultationFields";
+import {useEffect} from "react";
+import {consultationService} from "../../../../services/consultation.service";
 
 export const ConsultationPage = () => {
     const container = "wrapper";
@@ -20,6 +22,12 @@ export const ConsultationPage = () => {
         SUCCESS: 'consultation:success',
         LOADING: 'consultation:loading',
     }
+
+    /*useEffect(() => {
+        consultationService.getOneById(Number(id)).subscribe((response) => {
+          formRef.current?.setValues(response.data);
+        })
+    });*/
 
     return (
         <div id={container}>
