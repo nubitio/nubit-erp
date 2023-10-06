@@ -12,6 +12,14 @@ class ConsultationService {
         }
         return httpClient.get<ConsultationDto[]>(`${Constants.API_BASE_URL}consultations?filterRules=[${JSON.stringify(patientFilter)}]`);
     }
+
+    getOneById(id: number) {
+        return httpClient.get<any>(Constants.API_BASE_URL+'consultations/'+id)
+    }
+
+    getPatientSales(id: number) {
+        return httpClient.get<any>(Constants.API_BASE_URL+'customers/'+id+'/sales')
+    }
 }
 
 export const consultationService = new ConsultationService();
