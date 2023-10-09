@@ -20,7 +20,6 @@ export const PhysicianFields = () => {
         .type(FieldType.ENTITY)
         .name('employee')
         .label('Empleado')
-        .width(100)
         .url(Constants.API_BASE_URL + 'employees')
         .valueField('id')
         .textField('full_name')

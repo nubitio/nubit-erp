@@ -52,7 +52,6 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('razon_social')
         .label('Cliente')
-        .width('100%')
         .required(true)
         .sortable(true)
         .build());
@@ -60,7 +59,6 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('domicilio_fiscal')
         .label('Domicilio')
-        .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .name('telefono')

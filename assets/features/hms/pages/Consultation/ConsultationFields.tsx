@@ -36,9 +36,13 @@ export const ConsultationFields = () => {
         .mode('remote')
         .valueField('id')
         .textField('razon_social')
+        /*.itemFormatter((data:any)=>{
+            return (<div>data.full_name</div>)
+        })*/
         .formatter((cell: ColumnCellTemplateData) => cell.data.patient.full_name)
         .required(true)
         .valueType('number')
+        .width(300)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -47,9 +51,13 @@ export const ConsultationFields = () => {
         .url(Constants.API_BASE_URL + 'physicians')
         .valueField('id')
         .textField('full_name')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.physician.full_name + " " + cell.data.physician.specialty.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.physician.full_name + " ("+ cell.data.physician.specialty.name+")")
+        /*.itemFormatter((data:any)=> {
+            return (<div>hola</div>)
+        })*/
         .required(true)
         .valueType('number')
+        .width(450)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.DATE)
@@ -58,12 +66,13 @@ export const ConsultationFields = () => {
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .defaultValue(new Date())
         .required(true)
+        .width(100)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('reason')
         .label('Motivo')
-        .width(100)
+        .width(250)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
