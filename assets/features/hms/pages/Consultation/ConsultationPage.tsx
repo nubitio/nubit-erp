@@ -1,14 +1,11 @@
 import "./ConsultationPage.scss";
 import {Constants} from "../../../../core/common/Constants";
-import {DxDataGrid} from "../../../../core/datagrid/DxDataGrid";
+import {DxDataGrid, DxDataGridEvents} from "../../../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../../../core/dialog/DxDialog";
 import {DxForm, DxFormEvents} from "../../../../core/form/DxForm";
 import {ConsultationFields} from "./ConsultationFields";
 import {useEffect, useRef} from "react";
-import {consultationService} from "../../../../services/consultation.service";
 import notify from "devextreme/ui/notify";
-import {saleService} from "../../services/sale.service";
-import {bus} from "../../core/event/EventBus";
 import {useNavigate} from "react-router";
 
 export const ConsultationPage = () => {

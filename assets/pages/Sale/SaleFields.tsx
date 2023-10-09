@@ -18,7 +18,6 @@ import {DiscountDialogEvent} from "../../components/discount-dialog/DiscountDial
 import {bus} from "../../core/event/EventBus";
 import {Setting, settings} from "../../Settings";
 import {CustomerPage} from "../Customer/CustomerPage";
-import {MilitaryPatientPage} from "../MilitaryPatient/MilitaryPatientPage";
 
 let priceList: PriceListItemDto[] = [];
 
@@ -90,7 +89,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'edit',
                     onClick: (e: any) => {
-                        bus.emit(MilitaryPatientPage.EVENTS.EDIT)
+                        bus.emit(CustomerPage.EVENTS.EDIT)
                     }
                 }
             }

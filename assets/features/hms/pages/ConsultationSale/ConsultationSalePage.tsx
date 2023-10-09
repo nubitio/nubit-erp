@@ -1,17 +1,17 @@
 import {useEffect, useRef, useState} from "react";
 import "./ConsultationSalePage.scss";
 import {useParams} from "react-router-dom";
-import {consultationService} from "../../services/consultation.service";
+import {consultationService} from "../../../../services/consultation.service";
 import {Item as ToolbarItem, Toolbar} from "devextreme-react/toolbar";
 import {Item} from "devextreme-react/data-grid";
 import Button from "devextreme-react/button";
-import {bus} from "../../core/event/EventBus";
-import {Field} from "../../core/field/Field";
-import {DxDataGrid, DxDataGridEvents} from "../../core/datagrid/DxDataGrid";
-import {Constants} from "../../core/common/Constants";
-import {DxForm, DxFormEvents} from "../../core/form/DxForm";
+import {bus} from "../../../../core/event/EventBus";
+import {Field} from "../../../../core/field/Field";
+import {DxDataGrid, DxDataGridEvents} from "../../../../core/datagrid/DxDataGrid";
+import {Constants} from "../../../../core/common/Constants";
+import {DxForm, DxFormEvents} from "../../../../core/form/DxForm";
 import {ConsultationFields} from "../Consultation/ConsultationFields";
-import {DxDialog} from "../../core/dialog/DxDialog";
+import {DxDialog} from "../../../../core/dialog/DxDialog";
 import {ConsultationSaleFields} from "./ConsultationSaleFields";
 
 export const ConsultationSalePage = () => {
