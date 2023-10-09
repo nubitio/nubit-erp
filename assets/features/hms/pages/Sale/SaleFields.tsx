@@ -257,6 +257,13 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .label('Producto')
         .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
+        .filters([
+            {
+                field:'estado',
+                operator:'=',
+                value: 1
+            }
+        ])
         .mode('remote')
         .valueField('producto_id')
         .textField('descripcion')
