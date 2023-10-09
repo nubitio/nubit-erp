@@ -25,12 +25,6 @@ export const ConsultationPage = () => {
         LOADING: 'consultation:loading',
     }
 
-    useEffect(() => {
-        consultationService.getOneById(Number("id")).subscribe((response) => {
-          formRef.current?.setValues(response.data);
-        })
-    });
-
     return (
         <div id={container}>
             <DxDataGrid
