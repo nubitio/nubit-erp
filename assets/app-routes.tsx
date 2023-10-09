@@ -44,7 +44,7 @@ import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
 import PatientType from "./pages/PatientType";
 import {PatientTypePage} from "./features/hms/pages/PatientType/PatientTypePage";
-import {ReportingPage} from "./pages/Reporting/ReportingPage";
+import {ConsultationSalePage} from "./features/hms/pages/ConsultationSale/ConsultationSalePage";
 
 const routes = [
     {
@@ -177,6 +177,10 @@ const routes = [
     {
         path: '/sale',
         element: SalePage,
+    },
+    {
+        path: '/sale-hms',
+        element: HmsSalePage,
     },
     {
         path: '/sale-consult',

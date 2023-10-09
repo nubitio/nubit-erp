@@ -1,8 +1,8 @@
-import {FieldBuilder} from "../../core/field/FieldBuilder";
-import {FieldType} from "../../core/field/FieldType";
-import {Constants} from "../../core/common/Constants";
-import NumberUtils from "../../core/utils/NumberUtils";
-import {Field} from "../../core/field/Field";
+import {FieldBuilder} from "../../../../core/field/FieldBuilder";
+import {FieldType} from "../../../../core/field/FieldType";
+import {Constants} from "../../../../core/common/Constants";
+import NumberUtils from "../../../../core/utils/NumberUtils";
+import {Field} from "../../../../core/field/Field";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const ConsultationSaleFields = (id: number, customerId: String) => {

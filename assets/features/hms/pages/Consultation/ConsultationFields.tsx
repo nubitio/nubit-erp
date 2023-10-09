@@ -20,12 +20,13 @@ export const ConsultationFields = () => {
     fields.push(new  FieldBuilder()
         .type(FieldType.ENUM)
         .data([
-            {value: 1, text: 'EN COLA'},
+            {value: 1, text: 'FINALIZADO'},
             {value: 2, text: 'EN CONSULTA'},
-            {value: 3, text: 'FINALIZADO'},
+            {value: 3, text: 'EN COLA'},
         ])
         .name('status')
         .label('Estado')
+        .defaultValue(2)
         .formatter(SharedUtils.dxConsultationFormatter)
         .build());
     fields.push(new FieldBuilder()
