@@ -1,0 +1,16 @@
+.textbox {
+  width: 300px;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none; /* Quita el borde de enfoque al hacer clic */
+  transition: border-color 0.3s; /* Transición suave del color del borde */
+  background: #56318c;
+}
+
+/* Estilo cuando el cuadro de texto está enfocado */
+.textbox:focus {
+  border-color: dodgerblue; /* Cambia el color del borde al enfocarse */
+  box-shadow: 0 0 5px dodgerblue; /* Agrega una sombra suave al enfocarse */
+}

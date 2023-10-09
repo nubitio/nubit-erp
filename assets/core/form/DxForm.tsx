@@ -98,6 +98,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     searchEnabled: field.mode === 'remote',
                     wrapItemText: true,
                     buttons: ['dropDown'],
+                    itemRender: field.itemFormatter,
+                    fieldRender: field.itemFormatter,
                 }
             }
             if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
@@ -163,6 +165,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 onValueChanged: field.onChange,
                 onItemClick: field.onSelect,
                 itemRender: field.itemFormatter,
+                fieldRender: field.itemFormatter,
                 stylingMode: 'outlined'
             };
 

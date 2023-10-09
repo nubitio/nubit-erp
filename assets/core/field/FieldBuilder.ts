@@ -12,7 +12,7 @@ export class FieldBuilder {
             col: 12,
             name: '',
             label: '',
-            width: 'auto',
+            width: undefined,
             height: null,
             minWidth: undefined,
             minHeight: undefined,

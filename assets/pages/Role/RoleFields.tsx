@@ -18,7 +18,6 @@ export const RoleFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width(100)
         .required(true)
         .build());
 

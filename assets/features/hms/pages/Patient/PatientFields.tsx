@@ -8,6 +8,11 @@ export const PatientFields = () => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
+        .type(FieldType.TEXT)
+        .name('medical_record_number')
+        .label('Nro. Historia Clínica')
+        .build());
+    fields.push(new FieldBuilder()
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
@@ -39,11 +44,6 @@ export const PatientFields = () => {
         .name('insurance_provider')
         .label('Aseguradora')
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('medical_record_number')
-        .label('Nro. Historia Clínica')
-        .build())
 
     return fields;
 }
