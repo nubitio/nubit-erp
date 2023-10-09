@@ -82,16 +82,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
                         bus.emit(CustomerPage.EVENTS.ADD)
                     }
                 }
-            },
-            {
-                name: 'edit',
-                location: 'after',
-                options: {
-                    icon: 'edit',
-                    onClick: (e: any) => {
-                        bus.emit(CustomerPage.EVENTS.EDIT)
-                    }
-                }
             }
         ])
         .build());
