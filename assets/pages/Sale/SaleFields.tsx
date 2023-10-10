@@ -59,7 +59,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('cliente')
         .label('Cliente')
-        .width('100%')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')
@@ -75,10 +74,11 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .buttons([
             {
                 name: 'add',
-                location: 'after',
+                location: 'first',
                 options: {
                     icon: 'add',
                     onClick: (e: any) => {
+                        //if (app_option_mode == 'RETAIL')
                         bus.emit(CustomerPage.EVENTS.ADD)
                     }
                 }
@@ -242,6 +242,11 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             this.defaultSetCellValue(row, product, currentRow);
         })
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .filters([{
+            field: 'estado',
+            operator: '=',
+            value: 1
+        }])
         .required(true)
         .filterable(false)
         .sortable(false)

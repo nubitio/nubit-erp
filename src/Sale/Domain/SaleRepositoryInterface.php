@@ -21,4 +21,6 @@ interface SaleRepositoryInterface
     public function delete(string $id): void;
 
     public function void(Sale $sale): void;
+
+    public function getSaleByCustomerId(string $id): PaginatorInterface;
 }

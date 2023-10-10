@@ -22,7 +22,6 @@ export const ConfigFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .width(100)
         .name('value')
         .label('Value')
         .required(true)
