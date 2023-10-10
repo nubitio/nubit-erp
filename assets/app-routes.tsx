@@ -45,6 +45,7 @@ import {ProductionPage} from "./pages/Production/ProductionPage";
 import PatientType from "./pages/PatientType";
 import {PatientTypePage} from "./features/hms/pages/PatientType/PatientTypePage";
 import {ConsultationSalePage} from "./features/hms/pages/ConsultationSale/ConsultationSalePage";
+import {ReportingPage} from "./pages/Reporting/ReportingPage";
 
 const routes = [
     {
@@ -225,6 +226,10 @@ const routes = [
     {
         path: '/production',
         element: ProductionPage,
+    },
+    {
+        path: '/reporting',
+        element: ReportingPage,
     }
 ];
 
