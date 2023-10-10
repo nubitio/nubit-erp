@@ -42,6 +42,10 @@ import {SalePage} from "./pages/Sale/SalePage";
 import {SalePage as HmsSalePage} from "./features/hms/pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
 import {ProductionPage} from "./pages/Production/ProductionPage";
+import PatientType from "./pages/PatientType";
+import {PatientTypePage} from "./features/hms/pages/PatientType/PatientTypePage";
+import {ConsultationSalePage} from "./features/hms/pages/ConsultationSale/ConsultationSalePage";
+import {ReportingPage} from "./pages/Reporting/ReportingPage";
 
 const routes = [
     {
@@ -93,6 +97,10 @@ const routes = [
         element: ConsultationPage,
     },
     {
+        path: '/consultation-sale',
+        element: ConsultationSalePage,
+    },
+    {
         path: '/credit-note',
         element: CreditNotePage,
     },
@@ -139,6 +147,9 @@ const routes = [
     {
         path: '/patient',
         element: PatientPage,
+    }, {
+        path: '/patient-type',
+        element: PatientTypePage,
     },
     {
         path: '/payment-method',
@@ -167,6 +178,10 @@ const routes = [
     {
         path: '/sale',
         element: SalePage,
+    },
+    {
+        path: '/sale-hms',
+        element: HmsSalePage,
     },
     {
         path: '/sale-consult',
@@ -213,8 +228,8 @@ const routes = [
         element: ProductionPage,
     },
     {
-        path: '/sale-hms',
-        element: HmsSalePage,
+        path: '/reporting',
+        element: ReportingPage,
     }
 ];
 

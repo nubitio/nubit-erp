@@ -29,6 +29,8 @@ class Consultation
         public ?string $notes = null,
         #[SerializedName('queue')]
         public ?int $queue = null,
+        #[SerializedName('status')]
+        public ?int $status = null,
         #[SerializedName('created_at')]
         public ?\DateTimeInterface $created_at = null,
         #[SerializedName('updated_at')]

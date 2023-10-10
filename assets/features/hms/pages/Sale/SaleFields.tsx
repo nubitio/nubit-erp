@@ -52,14 +52,14 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .valueField('almacen_id')
         .textField('descripcion')
         .visible(false)
+        .hidden(true)
         .required(true)
         .defaultValue(session['warehouse_id'])
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('cliente')
-        .label('Cliente')
-        .width('100%')
+        .label('Paciente')
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')
@@ -89,7 +89,15 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'edit',
                     onClick: (e: any) => {
-                        bus.emit(MilitaryPatientPage.EVENTS.EDIT)
+                        // 1: obtener id del cliente
+                        const customerId = form?.getFieldValue('cliente');
+                        // 2: obtener paciente militar con ese id
+                        httpClient.get(`military-patient/by-customer/${customerId}`).subscribe((response) => {
+                            console.log(response.data)
+                            const militaryPatient = response.data;
+                            // 3: emitir evento para abrir dialogo
+                            bus.emit(MilitaryPatientPage.EVENTS.EDIT, {row: militaryPatient})
+                        })
                     }
                 }
             }
@@ -100,12 +108,11 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('physician')
         .label('Medico')
-        .width('100%')
         .url(Constants.API_BASE_URL + 'physicians')
         .mode('remote')
         .valueField('id')
         .textField('full_name')
-        .required(true)
+        .required(false)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.full_name)
         .build());
     fields.push(new FieldBuilder()
@@ -184,6 +191,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.TEXTAREA)
         .name('glosa')
         .label('Nota')
+        .defaultValue('Sin observaciones')
         .visible(false)
         .build());
     fields.push(new FieldBuilder()
@@ -247,6 +255,13 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .label('Producto')
         .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
+        .filters([
+            {
+                field:'estado',
+                operator:'=',
+                value: 1
+            }
+        ])
         .mode('remote')
         .valueField('producto_id')
         .textField('descripcion')

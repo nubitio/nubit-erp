@@ -103,7 +103,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             allowFiltering={field.filterable}
             cellRender={field.formatter}
             setCellValue={field.onChange}
-            //width={field.width}
+            width={field.width}
             minWidth={field.minWidth}
             editorOptions={editorOptions}
             dataType={field.valueType}

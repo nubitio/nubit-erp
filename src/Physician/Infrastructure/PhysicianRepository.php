@@ -5,6 +5,9 @@ namespace App\Physician\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Core\Infrastructure\DataLoader\FilterOperation;
+use App\Core\Infrastructure\DataLoader\FilterRule;
+use App\Core\Infrastructure\DataLoader\JoinRule;
 use App\Core\Infrastructure\DataLoader\Options;
 use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Employee\Infrastructure\EmployeeEntity;
@@ -28,7 +31,17 @@ readonly class PhysicianRepository implements PhysicianRepositoryInterface
 
     public function getOne(int $id): ?Physician
     {
-        $entity = $this->entityManager->find(PhysicianEntity::class, $id);
+        $entity = $this->dataLoader->loadOne(new Options(
+            entity: PhysicianEntity::class,
+            mapping: Physician::class,
+            joins: [
+                new JoinRule('e.employee', 'y'),
+                new JoinRule('e.specialty', 's'),
+            ],
+            filters: [
+                new FilterRule('id', FilterOperation::Equals, $id),
+            ],
+        ));
 
         if (!$entity) {
             return null;

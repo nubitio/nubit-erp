@@ -39,7 +39,6 @@ export const ProductFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripción')
-        .width('100%')
         .sortable(true)
         .required(true)
         .build());

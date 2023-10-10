@@ -59,11 +59,31 @@ export class SharedUtils {
         }
     }
 
-    static dxVoidedFormatter(cell: ColumnCellTemplateData) {
+    static dxConsultationFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-secondary">FINALIZADO</span>;
+        } else if (Number(cell.value) === 2) {
+            return <span className="badge rounded-pill bg-success">EN CONSULTA</span>;
+        } else {
+            return <span className="badge rounded-pill bg-warning text-dark">EN COLA</span>;
+        }
+    }static dxVoidedFormatter(cell: ColumnCellTemplateData) {
         if (Number(cell.value) === 1) {
             return <span className="badge rounded-pill bg-success">NO</span>;
         } else if (Number(cell.value) === 2) {
             return <span className="badge rounded-pill bg-danger">SI</span>;
+        } else {
+            return null;
+        }
+    }
+
+    static dxStatusPatientHmsFormatter(cell: ColumnCellTemplateData) {
+        if (Number(cell.value) === 1) {
+            return <span className="badge rounded-pill bg-dark">EN COLA</span>;
+        } else if (Number(cell.value) === 2) {
+            return <span className="badge rounded-pill bg-danger">EN CONSULTA</span>;
+        } else if (Number(cell.value) === 3) {
+            return <span className="badge rounded-pill bg-danger">ATENTIDO</span>;
         } else {
             return null;
         }
