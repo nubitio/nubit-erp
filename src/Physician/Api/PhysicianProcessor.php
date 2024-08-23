@@ -11,7 +11,7 @@ use App\Physician\Domain\Physician;
 use App\Physician\Domain\UpdatePhysicianUseCase;
 
 /**
- * @implements ApiProcessorInterface<Physician>
+ * @implements ApiProcessorInterface<Physician, Physician>
  */
 readonly class PhysicianProcessor implements ApiProcessorInterface
 {

@@ -11,7 +11,7 @@ use App\Employee\Domain\Employee;
 use App\Employee\Domain\UpdateEmployeeUseCase;
 
 /**
- * @implements ApiProcessorInterface<Employee>
+ * @implements ApiProcessorInterface<Employee, Employee>
  */
 readonly class EmployeeProcessor implements ApiProcessorInterface
 {

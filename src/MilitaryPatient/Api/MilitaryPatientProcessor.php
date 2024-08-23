@@ -11,7 +11,7 @@ use App\MilitaryPatient\Domain\MilitaryPatient;
 use App\MilitaryPatient\Domain\UpdateMilitaryPatientUseCase;
 
 /**
- * @implements ApiProcessorInterface<MilitaryPatient>
+ * @implements ApiProcessorInterface<MilitaryPatient, MilitaryPatient>
  */
 readonly class MilitaryPatientProcessor implements ApiProcessorInterface
 {

@@ -27,7 +27,7 @@ class OutboundRepository implements OutboundRepositoryInterface
         $this->dataGridLoader = new DataGridLoader($connection);
     }
 
-    public function getAll(array $filter = null): array
+    public function getAll(?array $filter = null): array
     {
         return $this->dataGridLoader->load('vw_movimiento', 'date_created', 'DESC', filter: $filter);
     }

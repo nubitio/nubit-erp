@@ -11,7 +11,7 @@ use App\CreditNote\Domain\DeleteCreditNoteUseCase;
 use App\CreditNote\Domain\UpdateCreditNoteUseCase;
 
 /**
- * @implements ApiProcessorInterface<CreditNote>
+ * @implements ApiProcessorInterface<CreditNote, CreditNote>
  */
 readonly class CreditNoteProcessor implements ApiProcessorInterface
 {

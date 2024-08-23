@@ -29,7 +29,7 @@ readonly class CacheManager
     /**
      * @throws InvalidArgumentException
      */
-    public function set(string $key, mixed $value, int $ttl = null): void
+    public function set(string $key, mixed $value, ?int $ttl = null): void
     {
         $item = $this->cache->getItem($key);
         $item->set($value);

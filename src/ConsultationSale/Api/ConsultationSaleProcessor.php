@@ -11,7 +11,7 @@ use App\ConsultationSale\Domain\UpdateConsultationSaleUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<ConsultationSale>
+ * @implements ApiProcessorInterface<ConsultationSale, ConsultationSale>
  */
 readonly class ConsultationSaleProcessor implements ApiProcessorInterface
 {

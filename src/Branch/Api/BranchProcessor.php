@@ -11,7 +11,7 @@ use App\Branch\Domain\BranchUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<Branch>
+ * @implements ApiProcessorInterface<Branch, Branch>
  */
 readonly class BranchProcessor implements ApiProcessorInterface
 {

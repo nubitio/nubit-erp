@@ -21,7 +21,7 @@ class DataGridLoader
      *
      * @throws Exception
      */
-    public function load(string $table, string $sort, string $order = 'ASC', array $filter = null): array
+    public function load(string $table, string $sort, string $order = 'ASC', ?array $filter = null): array
     {
         $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
         $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;

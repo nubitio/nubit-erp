@@ -12,7 +12,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 /**
- * @implements ApiProcessorInterface<User>
+ * @implements ApiProcessorInterface<User, Token>
  */
 readonly class AuthProcessor implements ApiProcessorInterface
 {

@@ -67,7 +67,7 @@ class ApiAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         return new JsonResponse([
             'message' => 'Authentication Required',

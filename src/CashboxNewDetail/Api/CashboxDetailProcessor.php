@@ -11,7 +11,7 @@ use App\CashboxNewDetail\Domain\UpdateCashboxDetailUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<CashboxDetail>
+ * @implements ApiProcessorInterface<CashboxDetail, CashboxDetail>
  */
 readonly class CashboxDetailProcessor implements ApiProcessorInterface
 {

@@ -6,28 +6,34 @@ MAINTAINER Johan Guerreros (johangm90@gmail.com)
 ARG DEBIAN_FRONTEND=noninteractive
 
 # update package list
-RUN apt-get update -y
-RUN apt update
+RUN apt-get update
 
 # install prerequisites
-RUN apt install -y software-properties-common
+RUN apt-get install -y software-properties-common
 
 # install curl and git
-RUN apt install -y curl git zip unzip wget
+RUN apt-get install -y curl git zip unzip wget
 
 # install apache
-RUN apt install -y apache2
+RUN apt-get install -y apache2
 
 # php ppa
 RUN add-apt-repository ppa:ondrej/php -y
-RUN apt update
+RUN apt-get update
 
 # install php
-RUN apt -y install php8.2 mcrypt php8.2-xdebug php8.2-mbstring php8.2-xml php8.2-mysql php8.2-curl php8.2-zip php8.2-soap php8.2-gd php8.2-intl
-RUN apt install -y libapache2-mod-php8.2
+RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl
+RUN apt-get install -y libapache2-mod-php8.3
 
-# configure php
-RUN sed -i -e '$a xdebug.mode=debug,coverage' /etc/php/8.2/mods-available/xdebug.ini
+# configure xdebug
+RUN sed -i -e '$a xdebug.mode=debug,coverage' /etc/php/8.3/mods-available/xdebug.ini
+RUN sed -i -e '$a xdebug.client_host=host.docker.internal' /etc/php/8.3/mods-available/xdebug.ini
+RUN sed -i -e '$a xdebug.client_port=9003' /etc/php/8.3/mods-available/xdebug.ini
+
+# install weasyprint
+RUN apt-get update
+RUN apt-get -y install libpango1.0-dev python3-pip
+RUN pip3 install WeasyPrint
 
 # install wkhtmltopdf
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

@@ -11,7 +11,7 @@ use App\UnitOfMeasure\Domain\UnitOfMeasure;
 use App\UnitOfMeasure\Domain\UpdateUnitOfMeasureUseCase;
 
 /**
- * @implements ApiProcessorInterface<UnitOfMeasure>
+ * @implements ApiProcessorInterface<UnitOfMeasure, UnitOfMeasure>
  */
 readonly class UnitOfMeasureProcessor implements ApiProcessorInterface
 {

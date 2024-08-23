@@ -11,7 +11,7 @@ use App\Transfer\Domain\Transfer;
 use App\Transfer\Domain\UpdateTransferUseCase;
 
 /**
- * @implements ApiProcessorInterface<Transfer>
+ * @implements ApiProcessorInterface<Transfer, Transfer>
  */
 readonly class TransferProcessor implements ApiProcessorInterface
 {

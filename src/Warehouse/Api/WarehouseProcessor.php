@@ -11,7 +11,7 @@ use App\Warehouse\Domain\WarehouseDeleteUseCase;
 use App\Warehouse\Domain\WarehouseUpdateUseCase;
 
 /**
- * @implements ApiProcessorInterface<Warehouse>
+ * @implements ApiProcessorInterface<Warehouse, Warehouse>
  */
 readonly class WarehouseProcessor implements ApiProcessorInterface
 {

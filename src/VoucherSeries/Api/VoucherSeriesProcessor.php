@@ -11,7 +11,7 @@ use App\VoucherSeries\Domain\UpdateVoucherSeriesUseCase;
 use App\VoucherSeries\Domain\VoucherSeries;
 
 /**
- * @implements ApiProcessorInterface<VoucherSeries>
+ * @implements ApiProcessorInterface<VoucherSeries, VoucherSeries>
  */
 readonly class VoucherSeriesProcessor implements ApiProcessorInterface
 {

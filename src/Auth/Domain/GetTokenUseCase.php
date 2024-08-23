@@ -7,7 +7,7 @@ use Firebase\JWT\JWT;
 
 readonly class GetTokenUseCase
 {
-    public function __invoke(User $user, string $branchId = null): Token
+    public function __invoke(User $user, ?string $branchId = null): Token
     {
         $key = $_ENV['APP_SECRET'];
 
