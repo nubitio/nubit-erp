@@ -56,3 +56,10 @@ yarn-error.log
 /src/WebClientPrint/wcpcache/
 .maintenance
 .version
+<<<<<<< ours
+=======
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+>>>>>>> theirs
