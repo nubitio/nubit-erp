@@ -20,4 +20,5 @@ jobs:
       SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_BASE_PATH: ${{ secrets.SSH_BASE_PATH }}
     needs: [ build ]
