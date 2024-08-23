@@ -22,7 +22,7 @@ RUN add-apt-repository ppa:ondrej/php -y
 RUN apt-get update
 
 # install php
-RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl
+RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl php8.3-redis
 RUN apt-get install -y libapache2-mod-php8.3
 
 # configure xdebug
