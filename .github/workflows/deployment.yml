@@ -16,31 +16,41 @@ on:
         required: true
       SSH_PRIVATE_KEY:
         required: true
+      SSH_BASE_PATH:
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.2
+          php-version: 8.3
           extensions: curl, intl, json, pdo, soap, zip
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v2
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
         with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Install Composer dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
+        run: composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+      - name: Dump autoload
+        run: composer dump-autoload --no-dev --classmap-authoritative
 
       - name: Download build artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: build
           path: public/build
@@ -55,23 +65,47 @@ jobs:
         run: echo "${{ secrets.SSH_HOST_KEY }}" > ~/.ssh/known_hosts
 
       - name: Enable maintenance mode
-        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && touch .maintenance"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "cd ${{ secrets.SSH_BASE_PATH }} && touch .maintenance"
 
       - name: Delete old files
-        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "rm -rf /web/vendor && rm -rf /web/public/build && rm -rf /web/public/assets"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf ${{ secrets.SSH_BASE_PATH }}vendor
+            rm -rf ${{ secrets.SSH_BASE_PATH }}public/build
+            rm -rf ${{ secrets.SSH_BASE_PATH }}public/assets
 
       - name: Deploy with rsync
-        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p 22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/web/
+        run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p 22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_BASE_PATH }}
 
       - name: Clear cache
-        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && php8.2 bin/console cache:clear"
-
-      - name: Get latest tag
-        id: latest_tag
-        run: echo ::set-output name=tag::$(git describe --tags --always)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "cd ${{ secrets.SSH_BASE_PATH }} && php8.3 bin/console cache:clear --env=prod"
 
       - name: Update version
-        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && echo ${{ steps.latest_tag.outputs.tag }} > .version"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "cd ${{ secrets.SSH_BASE_PATH }} && echo ${{ github.ref_name }} > .version"
 
       - name: Disable maintenance mode
-        run: ssh -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /web && rm .maintenance"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: "cd ${{ secrets.SSH_BASE_PATH }} && rm .maintenance"
