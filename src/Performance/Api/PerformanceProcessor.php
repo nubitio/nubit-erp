@@ -11,7 +11,7 @@ use App\Performance\Domain\Performance;
 use App\Performance\Domain\UpdatePerformanceUseCase;
 
 /**
- * @implements ApiProcessorInterface<Performance>
+ * @implements ApiProcessorInterface<Performance, Performance>
  */
 readonly class PerformanceProcessor implements ApiProcessorInterface
 {

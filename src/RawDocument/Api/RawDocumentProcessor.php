@@ -11,7 +11,7 @@ use App\RawDocument\Domain\RawDocument;
 use App\RawDocument\Domain\UpdateRawDocumentUseCase;
 
 /**
- * @implements ApiProcessorInterface<RawDocument>
+ * @implements ApiProcessorInterface<RawDocument, RawDocument>
  */
 readonly class RawDocumentProcessor implements ApiProcessorInterface
 {

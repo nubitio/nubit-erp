@@ -11,7 +11,7 @@ use App\Position\Domain\Position;
 use App\Position\Domain\UpdatePositionUseCase;
 
 /**
- * @implements ApiProcessorInterface<Position>
+ * @implements ApiProcessorInterface<Position, Position>
  */
 readonly class PositionProcessor implements ApiProcessorInterface
 {

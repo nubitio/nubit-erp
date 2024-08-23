@@ -11,7 +11,7 @@ use App\User\Domain\UpdateUserUseCase;
 use App\User\Domain\User;
 
 /**
- * @implements ApiProcessorInterface<User>
+ * @implements ApiProcessorInterface<User, User>
  */
 readonly class UserProcessor implements ApiProcessorInterface
 {

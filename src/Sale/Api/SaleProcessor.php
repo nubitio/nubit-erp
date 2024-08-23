@@ -13,7 +13,7 @@ use App\Sale\Domain\Sale;
 use App\Sale\Domain\UpdateSaleUseCase;
 
 /**
- * @implements ApiProcessorInterface<Sale>
+ * @implements ApiProcessorInterface<Sale, Sale>
  */
 readonly class SaleProcessor implements ApiProcessorInterface
 {

@@ -11,7 +11,7 @@ use App\Operation\Domain\Operation;
 use App\Operation\Domain\UpdateOperationUseCase;
 
 /**
- * @implements ApiProcessorInterface<Operation>
+ * @implements ApiProcessorInterface<Operation, Operation>
  */
 readonly class OperationProcessor implements ApiProcessorInterface
 {

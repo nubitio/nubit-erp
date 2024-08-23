@@ -11,7 +11,7 @@ use App\VoucherType\Domain\UpdateVoucherTypeUseCase;
 use App\VoucherType\Domain\VoucherType;
 
 /**
- * @implements ApiProcessorInterface<VoucherType>
+ * @implements ApiProcessorInterface<VoucherType, VoucherType>
  */
 readonly class VoucherTypeProcessor implements ApiProcessorInterface
 {

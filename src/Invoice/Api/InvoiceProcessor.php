@@ -11,7 +11,7 @@ use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\UpdateInvoiceUseCase;
 
 /**
- * @implements ApiProcessorInterface<Invoice>
+ * @implements ApiProcessorInterface<Invoice, Invoice>
  */
 readonly class InvoiceProcessor implements ApiProcessorInterface
 {

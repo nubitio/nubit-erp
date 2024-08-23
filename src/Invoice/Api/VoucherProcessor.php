@@ -8,7 +8,7 @@ use App\Invoice\Domain\Voucher;
 use App\Sale\Domain\SaleInvoiceUseCase;
 
 /**
- * @implements ApiProcessorInterface<Voucher>
+ * @implements ApiProcessorInterface<Voucher, Voucher>
  */
 readonly class VoucherProcessor implements ApiProcessorInterface
 {

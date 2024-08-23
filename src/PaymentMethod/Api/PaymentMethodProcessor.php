@@ -11,7 +11,7 @@ use App\PaymentMethod\Domain\PaymentMethod;
 use App\PaymentMethod\Domain\UpdatePaymentMethodUseCase;
 
 /**
- * @implements ApiProcessorInterface<PaymentMethod>
+ * @implements ApiProcessorInterface<PaymentMethod, PaymentMethod>
  */
 readonly class PaymentMethodProcessor implements ApiProcessorInterface
 {

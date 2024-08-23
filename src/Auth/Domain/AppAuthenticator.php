@@ -69,7 +69,7 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return new JsonResponse(new ApiResponse(false, $exception->getMessage()), Response::HTTP_UNAUTHORIZED);
     }
 
-    public function start(Request $request, AuthenticationException $authException = null): Response
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
     }

@@ -11,7 +11,7 @@ use App\PatientType\Domain\PatientType;
 use App\PatientType\Domain\UpdatePatientTypeUseCase;
 
 /**
- * @implements ApiProcessorInterface<PatientType>
+ * @implements ApiProcessorInterface<PatientType, PatientType>
  */
 readonly class PatientTypeProcessor implements ApiProcessorInterface
 {

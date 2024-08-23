@@ -11,7 +11,7 @@ use App\ComboOption\Domain\UpdateComboOptionUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<ComboOption>
+ * @implements ApiProcessorInterface<ComboOption, ComboOption>
  */
 readonly class ComboOptionProcessor implements ApiProcessorInterface
 {

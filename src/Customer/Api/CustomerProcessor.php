@@ -12,7 +12,7 @@ use App\Customer\Domain\CustomerGetOneUseCase;
 use App\Customer\Domain\CustomerUpdateUseCase;
 
 /**
- * @implements ApiProcessorInterface<Customer>
+ * @implements ApiProcessorInterface<Customer, Customer>
  */
 readonly class CustomerProcessor implements ApiProcessorInterface
 {

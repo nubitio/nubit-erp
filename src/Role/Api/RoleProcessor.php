@@ -11,7 +11,7 @@ use App\Role\Domain\Role;
 use App\Role\Domain\UpdateRoleUseCase;
 
 /**
- * @implements ApiProcessorInterface<Role>
+ * @implements ApiProcessorInterface<Role, Role>
  */
 readonly class RoleProcessor implements ApiProcessorInterface
 {

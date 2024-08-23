@@ -11,7 +11,7 @@ use App\Production\Domain\Production;
 use App\Production\Domain\UpdateProductionUseCase;
 
 /**
- * @implements ApiProcessorInterface<Production>
+ * @implements ApiProcessorInterface<Production, Production>
  */
 readonly class ProductionProcessor implements ApiProcessorInterface
 {

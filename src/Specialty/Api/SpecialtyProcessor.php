@@ -11,7 +11,7 @@ use App\Specialty\Domain\Specialty;
 use App\Specialty\Domain\UpdateSpecialtyUseCase;
 
 /**
- * @implements ApiProcessorInterface<Specialty>
+ * @implements ApiProcessorInterface<Specialty, Specialty>
  */
 readonly class SpecialtyProcessor implements ApiProcessorInterface
 {

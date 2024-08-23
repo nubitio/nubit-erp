@@ -11,7 +11,7 @@ use App\Config\Domain\ConfigUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<Config>
+ * @implements ApiProcessorInterface<Config, Config>
  */
 readonly class ConfigProcessor implements ApiProcessorInterface
 {

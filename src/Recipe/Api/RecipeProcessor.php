@@ -11,7 +11,7 @@ use App\Recipe\Domain\Recipe;
 use App\Recipe\Domain\UpdateRecipeUseCase;
 
 /**
- * @implements ApiProcessorInterface<Recipe>
+ * @implements ApiProcessorInterface<Recipe, Recipe>
  */
 readonly class RecipeProcessor implements ApiProcessorInterface
 {

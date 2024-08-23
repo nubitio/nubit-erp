@@ -11,7 +11,7 @@ use App\Department\Domain\Department;
 use App\Department\Domain\UpdateDepartmentUseCase;
 
 /**
- * @implements ApiProcessorInterface<Department>
+ * @implements ApiProcessorInterface<Department, Department>
  */
 readonly class DepartmentProcessor implements ApiProcessorInterface
 {

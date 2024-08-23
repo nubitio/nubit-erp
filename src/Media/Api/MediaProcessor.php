@@ -11,7 +11,7 @@ use App\Media\Domain\Media;
 use App\Media\Domain\UpdateMediaUseCase;
 
 /**
- * @implements ApiProcessorInterface<Media>
+ * @implements ApiProcessorInterface<Media, Media>
  */
 readonly class MediaProcessor implements ApiProcessorInterface
 {

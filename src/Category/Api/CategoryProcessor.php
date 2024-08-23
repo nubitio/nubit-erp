@@ -11,7 +11,7 @@ use App\Category\Domain\CategoryUpdateUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<Category>
+ * @implements ApiProcessorInterface<Category, Category>
  */
 readonly class CategoryProcessor implements ApiProcessorInterface
 {

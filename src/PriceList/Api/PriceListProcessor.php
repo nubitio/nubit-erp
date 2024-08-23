@@ -11,7 +11,7 @@ use App\PriceList\Domain\PriceList;
 use App\PriceList\Domain\UpdatePriceListUseCase;
 
 /**
- * @implements ApiProcessorInterface<PriceList>
+ * @implements ApiProcessorInterface<PriceList, PriceList>
  */
 readonly class PriceListProcessor implements ApiProcessorInterface
 {

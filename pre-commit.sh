@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Web container name
-WEB_CONTAINER="efact-web"
+WEB_CONTAINER="web"
 
 # Path to the directory where the composer.json file is located inside the container
 COMPOSER_PATH="/var/www/html/"

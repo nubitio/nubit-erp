@@ -11,7 +11,7 @@ use App\Company\Domain\UpdateCompanyUseCase;
 use App\Core\Domain\Api\ApiProcessorInterface;
 
 /**
- * @implements ApiProcessorInterface<Company>
+ * @implements ApiProcessorInterface<Company, Company>
  */
 readonly class CompanyProcessor implements ApiProcessorInterface
 {
