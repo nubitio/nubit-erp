@@ -30,7 +30,7 @@ class CashboxDetailEntity
         public ?float $monto = null,
         #[ORM\ManyToOne(targetEntity: CashboxEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'caja_id', referencedColumnName: 'caja_id')]
-        public ?CashboxEntity $cashbox = null
+        public ?CashboxEntity $cashbox = null,
     ) {
     }
 }

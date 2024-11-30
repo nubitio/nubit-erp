@@ -5,11 +5,11 @@ namespace App\SaleDetail\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\FilterOperation;
-use App\Core\Infrastructure\DataLoader\FilterRule;
-use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\FilterOperation;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
 use App\SaleDetail\Domain\GetAllSaleDetailUseCase;
 use App\SaleDetail\Domain\SaleDetail;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
@@ -20,7 +20,7 @@ use App\SaleDetail\Infrastructure\SaleDetailEntity;
 readonly class SaleDetailProvider implements ApiProviderInterface
 {
     public function __construct(
-        private GetAllSaleDetailUseCase $getAllUseCase
+        private GetAllSaleDetailUseCase $getAllUseCase,
     ) {
     }
 

@@ -2,20 +2,20 @@
 
 namespace App\Production\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 readonly class GetAllProductionUseCase
 {
     public function __construct(
-        private ProductionRepositoryInterface $repository
+        private ProductionRepositoryInterface $repository,
     ) {
     }
 
     /**
      * @return PaginatorInterface<Production>
      */
-    public function __invoke(Options $options): PaginatorInterface
+    public function __invoke(LoadOptions $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }

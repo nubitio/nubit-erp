@@ -3,9 +3,13 @@ import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {useEffect, useState} from "react";
 import {buildColumns, getIdField} from "./DxDataGridUtils";
-import DataSource from "devextreme/data/data_source";
+import {Paging} from "devextreme-react/data-grid";
 
-export const DxDetailDataGrid = ({options}: any) => {
+type DxDetailDataGridProps = {
+    options: any;
+}
+
+export const DxDetailDataGrid = ({options}: DxDetailDataGridProps) => {
     const [data, setData] = useState<CustomStore | null>(null);
 
     let alreadyLoaded = false;
@@ -25,6 +29,7 @@ export const DxDetailDataGrid = ({options}: any) => {
                 noDataText=''
             >
                 {buildColumns(options.fields)}
+                <Paging enabled={false}/>
             </DataGrid>
         </div>
     );

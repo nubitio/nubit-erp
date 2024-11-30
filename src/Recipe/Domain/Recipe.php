@@ -25,7 +25,7 @@ class Recipe
         public ?bool $active = false,
         /** @var RecipeDetail[] $details */
         #[SerializedName('details')]
-        public array $details = []
+        public array $details = [],
     ) {
     }
 

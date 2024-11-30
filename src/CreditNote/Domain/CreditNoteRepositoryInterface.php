@@ -2,15 +2,15 @@
 
 namespace App\CreditNote\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 interface CreditNoteRepositoryInterface
 {
     /**
      * @return PaginatorInterface<CreditNote>
      */
-    public function getAll(Options $options): PaginatorInterface;
+    public function getAll(LoadOptions $options): PaginatorInterface;
 
     public function getOne(string $id): ?CreditNote;
 

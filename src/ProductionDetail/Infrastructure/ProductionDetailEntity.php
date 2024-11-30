@@ -26,7 +26,7 @@ class ProductionDetailEntity
         public ?float $quantity = null,
         #[ORM\ManyToOne(targetEntity: ProductionEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'production_id', referencedColumnName: 'id')]
-        public ?ProductionEntity $production = null
+        public ?ProductionEntity $production = null,
     ) {
     }
 }

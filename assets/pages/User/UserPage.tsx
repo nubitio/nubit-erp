@@ -24,6 +24,7 @@ export const UserPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'user'}
                 title={'Usuarios'}
                 url={API_URL}
                 allowAdd={true}

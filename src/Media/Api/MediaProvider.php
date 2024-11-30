@@ -13,7 +13,7 @@ use App\Media\Domain\Media;
 readonly class MediaProvider implements ApiProviderInterface
 {
     public function __construct(
-        private GetOneMediaUseCase $getOneUseCase
+        private GetOneMediaUseCase $getOneUseCase,
     ) {
     }
 

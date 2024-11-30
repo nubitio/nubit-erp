@@ -100,6 +100,7 @@ export const CashboxPage = () => {
         return (
             <div>
                 <DxDataGrid
+                    id={'cashbox'}
                     ref={gridRef}
                     title={'Cashbox'}
                     toolbar={toolbar}

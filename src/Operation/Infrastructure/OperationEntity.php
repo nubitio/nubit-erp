@@ -20,7 +20,7 @@ class OperationEntity
         #[ORM\Column(name: 'tipo_id', type: 'integer')]
         public ?int $tipo_id = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

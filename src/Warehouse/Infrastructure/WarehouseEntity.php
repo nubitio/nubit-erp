@@ -32,7 +32,7 @@ class WarehouseEntity
         #[Column(name: 'is_default', type: 'boolean')]
         public ?bool $is_default = null,
         #[Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

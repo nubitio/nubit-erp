@@ -18,7 +18,7 @@ class VoucherItem
         public ?float $tax_amount = null,
         public ?float $tax_percentage = null,
         public ?string $tax_type = null,
-        public ?float $total = null
+        public ?float $total = null,
     ) {
     }
 }

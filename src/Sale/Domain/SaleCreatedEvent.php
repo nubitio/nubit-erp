@@ -9,7 +9,7 @@ class SaleCreatedEvent extends Event
     public const NAME = 'sale.created';
 
     public function __construct(
-        public readonly Sale $sale
+        public readonly Sale $sale,
     ) {
     }
 }

@@ -5,9 +5,8 @@ import {DxDialog} from "../../core/dialog/DxDialog";
 import {DxForm} from "../../core/form/DxForm";
 import {InvoiceFields} from "./InvoiceFields";
 import {useRef} from "react";
-import {invoiceService} from "../../services/invoice.service";
+import {invoiceService} from "../../service/invoice.service";
 import notify from "devextreme/ui/notify";
-import {messenger} from "../../core/utils/Messenger";
 
 export const InvoicePage = () => {
         const container = "wrapper";
@@ -161,6 +160,7 @@ export const InvoicePage = () => {
         return (
             <div id={container}>
                 <DxDataGrid
+                    id={'invoice'}
                     ref={gridRef}
                     title={'Comprobantes de pago'}
                     toolbar={toolbar}

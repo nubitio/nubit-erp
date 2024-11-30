@@ -3,16 +3,16 @@
 namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
+use App\Core\Domain\DataLoader\FilterOperation;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\JoinType;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Exception\ValidationException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\FilterOperation;
-use App\Core\Infrastructure\DataLoader\FilterRule;
-use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\JoinType;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Media\Infrastructure\MediaEntity;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
@@ -34,14 +34,14 @@ readonly class ProductRepository implements ProductRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }
 
     public function getOne(string $id): ?Product
     {
-        $entity = $this->dataLoader->loadOne(new Options(
+        $entity = $this->dataLoader->loadOne(new LoadOptions(
             entity: ProductEntity::class,
             mapping: Product::class,
             joins: [

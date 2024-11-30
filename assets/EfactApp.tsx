@@ -14,8 +14,10 @@ import {ThemeContext, useThemeContext} from './theme/theme';
 import {loadMessages, locale} from "devextreme/localization";
 import config from "devextreme/core/config";
 
-import './styles/styles.scss';
+import './styles.scss';
 import './theme/theme';
+import './styles/custom.scss';
+import {UnauthenticatedContent} from "./UnauthenticatedContent";
 
 function RootApp() {
     const {user, loading} = useAuth();
@@ -34,9 +36,7 @@ function RootApp() {
         return <Content/>;
     }
 
-    return <div>
-        <h1>No estas autenticado</h1>
-    </div>
+    return <UnauthenticatedContent/>;
 }
 
 export const EfactApp = () => {

@@ -1,7 +1,4 @@
-import {useEffect} from "react";
-import Employee from "../Employee";
 import "./EmployeePage.scss";
-import {PositionFields} from "../Position/PositionFields";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
@@ -27,6 +24,7 @@ export const EmployeePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'employee'}
                 title={'Empleados'}
                 url={API_URL}
                 allowAdd={true}

@@ -26,7 +26,7 @@ class UnitOfMeasureEntity
         #[ORM\Column(name: 'is_reference', type: 'boolean')]
         public ?bool $is_reference = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 }

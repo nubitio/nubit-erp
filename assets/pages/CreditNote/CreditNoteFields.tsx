@@ -122,7 +122,7 @@ export const CreditNoteFields = () => {
         .name('envio_sunat')
         .label('Envio sunat')
         .align('center')
-        .formatter(SharedUtils.dxBillStatusFormatter)
+        //.formatter(SharedUtils.dxBillStatusFormatter)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)

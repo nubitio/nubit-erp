@@ -34,7 +34,7 @@ class CustomerEntity
         #[JoinColumn(name: 'price_list_id', referencedColumnName: 'id')]
         public ?PriceListEntity $price_list = null,
         #[Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

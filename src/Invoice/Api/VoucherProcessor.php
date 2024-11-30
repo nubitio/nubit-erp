@@ -13,7 +13,7 @@ use App\Sale\Domain\SaleInvoiceUseCase;
 readonly class VoucherProcessor implements ApiProcessorInterface
 {
     public function __construct(
-        public SaleInvoiceUseCase $saleInvoiceUseCase
+        public SaleInvoiceUseCase $saleInvoiceUseCase,
     ) {
     }
 

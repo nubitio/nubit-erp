@@ -8,7 +8,7 @@ use Doctrine\DBAL\Exception;
 readonly class MenuBuilder
 {
     public function __construct(
-        private Connection $connection
+        private Connection $connection,
     ) {
     }
 

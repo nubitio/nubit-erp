@@ -26,7 +26,7 @@ class SupplierEntity
         #[ORM\Column(name: 'telefono', type: 'string')]
         public ?string $telefono = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

@@ -10,7 +10,7 @@ use League\Flysystem\StorageAttributes;
 final readonly class FileManager
 {
     public function __construct(
-        private FilesystemOperator $uploadsFilesystem
+        private FilesystemOperator $uploadsFilesystem,
     ) {
     }
 

@@ -17,7 +17,7 @@ class RecipeDetail
         #[SerializedName('material')]
         public ?Product $material = null,
         #[SerializedName('quantity')]
-        public ?float $quantity = null
+        public ?float $quantity = null,
     ) {
     }
 }

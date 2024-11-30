@@ -9,7 +9,7 @@ readonly class FileResponse
 {
     public function __construct(
         public string $file,
-        public string $name
+        public string $name,
     ) {
     }
 }

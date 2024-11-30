@@ -10,7 +10,7 @@ class Receipt
         public string $series,
         public string $number,
         public string $date,
-        public float $total
+        public float $total,
     ) {
     }
 }

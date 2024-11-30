@@ -5,10 +5,8 @@ namespace App\Auth\Domain;
 use App\Core\Domain\Common\ApiResponse;
 use App\User\Domain\User;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
@@ -20,11 +18,8 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 
 class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
-    public const LOGIN_ROUTE = 'login_index';
-
     public function __construct(
-        private readonly UrlGeneratorInterface $urlGenerator,
-        private readonly GetTokenUseCase $getTokenUseCase
+        private readonly GetTokenUseCase $getTokenUseCase,
     ) {
     }
 
@@ -52,12 +47,8 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $session = $request->getSession();
         /** @var User $user */
         $user = $token->getUser();
-        $session->set('user_id', $user->usuario_id);
-        $session->set('username', $user->username);
-        $session->set('role_id', $user->rol?->rol_id ?? 0);
 
         $token = $this->getTokenUseCase->__invoke($user);
 
@@ -66,11 +57,23 @@ class AppAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        return new JsonResponse(new ApiResponse(false, $exception->getMessage()), Response::HTTP_UNAUTHORIZED);
+        return new JsonResponse(
+            new ApiResponse(
+                false,
+                $exception->getMessage()
+            ),
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
-        return new RedirectResponse($this->urlGenerator->generate(self::LOGIN_ROUTE));
+        return new JsonResponse(
+            new ApiResponse(
+                false,
+                $authException ? $authException->getMessage() : 'Authentication Required'
+            ),
+            Response::HTTP_UNAUTHORIZED
+        );
     }
 }

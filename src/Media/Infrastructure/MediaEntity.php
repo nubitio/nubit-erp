@@ -18,7 +18,7 @@ class MediaEntity
         #[ORM\Column(name: 'id', type: 'string')]
         public ?string $id = null,
         #[ORM\Column(name: 'path', type: 'string')]
-        public ?string $path = null
+        public ?string $path = null,
     ) {
     }
 }

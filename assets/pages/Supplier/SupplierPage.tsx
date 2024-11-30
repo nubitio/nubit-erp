@@ -24,6 +24,7 @@ export const SupplierPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'supplier'}
                 title={'Proveedores'}
                 url={API_URL}
                 allowAdd={true}

@@ -14,7 +14,7 @@ class PaymentMethod
         #[SerializedName('name')]
         public ?string $name = null,
         #[SerializedName('active')]
-        public ?bool $active = false
+        public ?bool $active = false,
     ) {
     }
 }

@@ -3,7 +3,6 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {Constants} from "../../core/common/Constants";
-import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const CompanyFields = () => {
     const fields: Field[] = [];
@@ -51,14 +50,14 @@ export const CompanyFields = () => {
         .align('center')
         .url(Constants.API_BASE_URL + 'media')
         .accept('image/*')
-        .formatter((cell: ColumnCellTemplateData) => SharedUtils.dxImageFormatter(cell, 'logo'))
+        //.formatter((cell: ColumnCellTemplateData) => SharedUtils.dxImageFormatter(cell, 'logo'))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .defaultValue(true)
         .build());
 

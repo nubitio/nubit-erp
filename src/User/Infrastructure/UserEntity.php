@@ -30,7 +30,7 @@ class UserEntity
         #[ORM\Column(name: 'pin', type: 'string')]
         public ?string $pin = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

@@ -5,10 +5,11 @@ import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
 import {OutboundDetailFields, OutboundFields} from "./OutboundFields";
 import {useEffect, useRef} from "react";
-import {bus} from "../../core/event/EventBus";
 import {httpClient} from "../../core/http/HttpClient";
+import {useEvents} from "../../core/event/EventHook";
 
 export const OutboundPage = () => {
+    const [on, emit] = useEvents();
     const container = "wrapper";
     const fields = OutboundFields();
     const detailFields = OutboundDetailFields();
@@ -29,7 +30,7 @@ export const OutboundPage = () => {
     let alreadySetup = false;
 
     const setupObservers = () => {
-        bus.on(EVENTS.EDIT, (payload: any) => {
+        on(EVENTS.EDIT, (payload: any) => {
             httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
@@ -46,6 +47,7 @@ export const OutboundPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'outbound'}
                 title={'Salidas'}
                 url={API_URL + '?type=outbound'}
                 detailUrl={API_URL + '/{id}/details'}

@@ -26,7 +26,7 @@ readonly class InvoiceEmailUseCase
         private UrlGeneratorInterface $urlGenerator,
         private BillPdfUseCase $billPdfUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings
+        private SettingsService $settings,
     ) {
     }
 

@@ -2,12 +2,12 @@
 
 namespace App\Invoice\Infrastructure;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
@@ -27,7 +27,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

@@ -15,7 +15,7 @@ final readonly class SaleCreatedListener
 {
     public function __construct(
         private RequestStack $requestStack,
-        private CashboxUpdateValuesUseCase $cashboxUpdateValuesUseCase
+        private CashboxUpdateValuesUseCase $cashboxUpdateValuesUseCase,
     ) {
     }
 

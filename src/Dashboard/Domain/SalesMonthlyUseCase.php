@@ -5,7 +5,7 @@ namespace App\Dashboard\Domain;
 readonly class SalesMonthlyUseCase
 {
     public function __construct(
-        private DashboardRepositoryInterface $repository
+        private DashboardRepositoryInterface $repository,
     ) {
     }
 

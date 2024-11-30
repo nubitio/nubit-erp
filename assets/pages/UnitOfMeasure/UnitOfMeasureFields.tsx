@@ -134,13 +134,13 @@ export const UnitOfMeasureFields = () => {
         .type(FieldType.SWITCH)
         .name('is_reference')
         .label('Es referencia')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('active')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .defaultValue(true)
         .build());
 

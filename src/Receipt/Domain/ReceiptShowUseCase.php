@@ -14,7 +14,7 @@ readonly class ReceiptShowUseCase
     public function __construct(
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneNoteUseCase,
-        private SettingsService $settings
+        private SettingsService $settings,
     ) {
     }
 

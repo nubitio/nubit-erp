@@ -45,7 +45,7 @@ class CreditNote
         #[SerializedName('created_at')]
         public ?\DateTimeInterface $created_at = null,
         #[SerializedName('updated_at')]
-        public ?\DateTimeInterface $updated_at = null
+        public ?\DateTimeInterface $updated_at = null,
     ) {
     }
 }

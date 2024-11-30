@@ -8,7 +8,7 @@ readonly class CreateSaleUseCase
 {
     public function __construct(
         private SaleRepositoryInterface $repository,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

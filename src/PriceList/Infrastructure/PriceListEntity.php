@@ -18,7 +18,7 @@ class PriceListEntity
         #[ORM\Column(name: 'name', type: 'string')]
         public ?string $name = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 }

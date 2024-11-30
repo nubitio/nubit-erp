@@ -9,7 +9,7 @@ use Twig\TwigFunction;
 class SettingsExtension extends AbstractExtension
 {
     public function __construct(
-        private readonly SettingsService $settingsService
+        private readonly SettingsService $settingsService,
     ) {
     }
 

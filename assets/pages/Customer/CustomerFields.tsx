@@ -5,7 +5,7 @@ import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import {DxFormEvents} from "../../core/form/DxForm";
-import {consultService} from "../../services/consult.service";
+import {consultService} from "../../service/consult.service";
 import notify from "devextreme/ui/notify";
 
 export const CustomerFields = (formRef: DxFormEvents | null) => {
@@ -83,7 +83,7 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .defaultValue(true)
         .build());
 

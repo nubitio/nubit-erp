@@ -9,7 +9,7 @@ class InvoiceCreatedEvent extends Event
     public const NAME = 'invoice.created';
 
     public function __construct(
-        public readonly Invoice $invoice
+        public readonly Invoice $invoice,
     ) {
     }
 }

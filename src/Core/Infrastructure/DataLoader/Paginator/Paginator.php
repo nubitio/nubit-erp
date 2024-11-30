@@ -3,6 +3,7 @@
 namespace App\Core\Infrastructure\DataLoader\Paginator;
 
 use ApiPlatform\State\Pagination\PaginatorInterface as ApiPlatformPaginatorInterface;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 /**
  * @template T of object
@@ -15,7 +16,7 @@ readonly class Paginator implements PaginatorInterface
      */
     public function __construct(
         public array $items,
-        public ApiPlatformPaginatorInterface $paginator
+        public ApiPlatformPaginatorInterface $paginator,
     ) {
     }
 

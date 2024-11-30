@@ -24,6 +24,7 @@ export const VoucherSeriesPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'voucherSeries'}
                 title={'Serie comprobantes'}
                 url={API_URL}
                 allowAdd={true}

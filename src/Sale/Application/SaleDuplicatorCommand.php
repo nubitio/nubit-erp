@@ -25,7 +25,7 @@ class SaleDuplicatorCommand extends Command
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
         private readonly Connection $connection,
         private readonly GetOneSaleUseCase $getOneSaleUseCase,
-        private readonly CreateSaleUseCase $createSaleUseCase
+        private readonly CreateSaleUseCase $createSaleUseCase,
     ) {
         parent::__construct();
     }

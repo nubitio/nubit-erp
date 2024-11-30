@@ -20,6 +20,21 @@
 {% block javascripts %}
     {{ encore_entry_script_tags('app') }}
 {% endblock %}
+<script>
+    window.app_version = '{{ setting('version') }}';
+    const worker = setInterval(hideUnwantedElements, 100);
+
+    function hideUnwantedElements() {
+        const element = document.querySelectorAll('dx-license');
+        element.forEach(element => {
+            const divs = element.querySelectorAll('div');
+            if (divs.length > 1) {
+                divs[1].click();
+            }
+            clearInterval(worker);
+        });
+    }
+</script>
 </body>
 </html>
 

@@ -6,28 +6,14 @@ use App\Base\BaseController;
 use App\Branch\Domain\BranchGetOneUseCase;
 use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\ArrayUtils;
-use App\User\Domain\User;
 use App\Warehouse\Domain\GetAllByBranchUseCase;
 use App\Warehouse\Domain\Warehouse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class AuthController extends BaseController
 {
-    #[Route('/login', name: 'login_index', methods: ['GET'])]
-    public function index(Request $request, #[CurrentUser] ?User $user): Response
-    {
-        if ($request->getSession()->get('branch_id') && $user) {
-            return $this->redirectToRoute('dashboard_index');
-        }
-
-        return $this->render('auth/index.html.twig', [
-            'title' => 'Login',
-        ]);
-    }
-
     #[Route('/auth/login', name: 'login', methods: ['POST'])]
     public function login(): Response
     {

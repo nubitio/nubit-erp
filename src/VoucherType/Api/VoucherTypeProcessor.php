@@ -18,7 +18,7 @@ readonly class VoucherTypeProcessor implements ApiProcessorInterface
     public function __construct(
         public CreateVoucherTypeUseCase $createUseCase,
         public UpdateVoucherTypeUseCase $updateUseCase,
-        public DeleteVoucherTypeUseCase $deleteUseCase
+        public DeleteVoucherTypeUseCase $deleteUseCase,
     ) {
     }
 

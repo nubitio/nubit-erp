@@ -9,8 +9,8 @@ window.addEventListener('load', () => {
         document.getElementById('root') as HTMLElement
     );
     root.render(
-        <React.StrictMode>
+        //<React.StrictMode>
             <EfactApp/>
-        </React.StrictMode>
+        //</React.StrictMode>
     );
 });

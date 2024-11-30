@@ -20,7 +20,7 @@ class VoucherTypeEntity
         #[ORM\Column(name: 'descripcion', type: 'string')]
         public ?string $descripcion = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

@@ -1,32 +1,43 @@
-import Category from "../Category";
 import "./CategoryPage.scss";
-import {dxCategoryFields} from "./CategoryFields";
+import {CategoryFields} from "./CategoryFields";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxForm} from "../../core/form/DxForm";
 import {DxDialog} from "../../core/dialog/DxDialog";
+import {Constants} from "../../core/common/Constants";
 
 export const CategoryPage = () => {
     const container = "wrapper";
-    const fields = dxCategoryFields();
+    const API_URL = Constants.API_BASE_URL + 'categories';
+    const fields = CategoryFields();
+    const EVENTS = {
+        ADD: 'category:add',
+        EDIT: 'category:edit',
+        DELETE: 'category:delete',
+        SAVE: 'category:save',
+        CANCEL: 'category:cancel',
+        SUCCESS: 'category:success',
+        LOADING: 'category:loading',
+    }
 
     return (
         <div id={container}>
             <DxDataGrid
+                id={'category'}
                 title={'Categorias'}
-                url={Category.API_URL}
+                url={API_URL}
                 allowAdd={true}
                 allowEdit={true}
                 allowDelete={true}
                 fields={fields}
-                events={Category.EVENTS}
+                events={EVENTS}
             />
             <DxDialog
-                events={Category.EVENTS}
+                events={EVENTS}
             >
                 <DxForm
-                    url={Category.API_URL}
+                    url={API_URL}
                     fields={fields}
-                    events={Category.EVENTS}
+                    events={EVENTS}
                 />
             </DxDialog>
         </div>

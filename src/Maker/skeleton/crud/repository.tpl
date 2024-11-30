@@ -5,8 +5,8 @@ namespace App\{{module}}\Infrastructure;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\{{module}}\Domain\{{module}}RepositoryInterface;
 use App\{{module}}\Domain\{{module}};
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +21,7 @@ readonly class {{module}}Repository implements {{module}}RepositoryInterface
     }
 
     /** @inheritdoc */
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

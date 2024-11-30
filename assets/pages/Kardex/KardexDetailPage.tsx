@@ -1,7 +1,7 @@
 import "./KardexPage.scss";
 import React, {useCallback, useEffect, useState} from 'react';
 import ScrollView from 'devextreme-react/scroll-view';
-import {kardexService} from "../../services/kardex.service";
+import {kardexService} from "../../service/kardex.service";
 import DataGrid, {Column} from "devextreme-react/data-grid";
 import {DateUtils} from "../../core/utils/DateUtils";
 

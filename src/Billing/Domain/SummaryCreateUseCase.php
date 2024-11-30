@@ -12,7 +12,7 @@ readonly class SummaryCreateUseCase
     public function __construct(
         private SummaryRepositoryInterface $summaryRepository,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private BillUtilsInterface $invoiceUtils
+        private BillUtilsInterface $invoiceUtils,
     ) {
     }
 

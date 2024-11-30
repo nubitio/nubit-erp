@@ -5,7 +5,7 @@ import {DxDialog} from "../../core/dialog/DxDialog";
 import {DxForm} from "../../core/form/DxForm";
 import {CreditNoteFields} from "./CreditNoteFields";
 import {useRef} from "react";
-import {saleService} from "../../services/sale.service";
+import {saleService} from "../../service/sale.service";
 import notify from "devextreme/ui/notify";
 
 export const CreditNotePage = () => {
@@ -101,6 +101,7 @@ export const CreditNotePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'creditNote'}
                 ref={gridRef}
                 title={'Notas de crédito'}
                 toolbar={toolbar}

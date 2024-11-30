@@ -10,7 +10,7 @@ class ProductStock
     public function __construct(
         public ?string $id = null,
         public ?string $name = null,
-        public ?float $stock = null
+        public ?float $stock = null,
     ) {
     }
 }

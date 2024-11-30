@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class TenantController extends AbstractController
 {
     public function __construct(
-        private readonly TenantManager $tenantManager
+        private readonly TenantManager $tenantManager,
     ) {
     }
 

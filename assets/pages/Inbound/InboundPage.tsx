@@ -5,10 +5,11 @@ import {DxForm, DxFormEvents, FORM_EVENTS} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
 import {InboundDetailFields, InboundFields} from "./InboundFields";
 import {useEffect, useRef} from "react";
-import {bus} from "../../core/event/EventBus";
 import {httpClient} from "../../core/http/HttpClient";
+import {useEvents} from "../../core/event/EventHook";
 
 export const InboundPage = () => {
+    const [on, emit] = useEvents();
     const formRef = useRef<DxFormEvents>(null)
     const container = "wrapper";
     const fields = InboundFields();
@@ -39,21 +40,21 @@ export const InboundPage = () => {
     }
 
     const setupObservers = () => {
-        bus.on(EVENTS.EDIT, (payload: any) => {
+        on(EVENTS.EDIT, (payload: any) => {
             httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
         })
 
-        bus.on(FORM_EVENTS.ROW_ADDED, () => {
+        on(FORM_EVENTS.ROW_ADDED, () => {
             setTotal();
         })
 
-        bus.on(FORM_EVENTS.ROW_UPDATED, () => {
+        on(FORM_EVENTS.ROW_UPDATED, () => {
             setTotal();
         })
 
-        bus.on(FORM_EVENTS.ROW_REMOVED, () => {
+        on(FORM_EVENTS.ROW_REMOVED, () => {
             setTotal();
         })
     }
@@ -68,6 +69,7 @@ export const InboundPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'inbound'}
                 title={'Ingresos'}
                 url={API_URL + '?type=inbound'}
                 detailUrl={API_URL + '/{id}/details'}

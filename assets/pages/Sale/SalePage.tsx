@@ -6,8 +6,7 @@ import {Constants} from "../../core/common/Constants";
 import {SaleDetailFields, SaleFields, setTotal} from "./SaleFields";
 import {useEffect, useRef, useState} from "react";
 import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
-import {bus} from "../../core/event/EventBus";
-import {saleService} from "../../services/sale.service";
+import {saleService} from "../../service/sale.service";
 import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
 import {httpClient} from "../../core/http/HttpClient";
@@ -16,8 +15,10 @@ import {CustomerPage} from "../Customer/CustomerPage";
 import {CustomerFields} from "../Customer/CustomerFields";
 import {Setting, settings} from "../../Settings";
 import {SalePrintPreviewPopup} from "./SalePrintPreviewPopup";
+import {useEvents} from "../../core/event/EventHook";
 
 export const SalePage = () => {
+    const [on, emit] = useEvents();
     const gridRef = useRef<DxDataGridEvents>(null);
     const formRef = useRef<DxFormEvents>(null);
     const customerFormRef = useRef<DxFormEvents>(null);
@@ -44,24 +45,24 @@ export const SalePage = () => {
     }
 
     const setupObservers = () => {
-        bus.on<number>(DiscountDialogEvent.APPLY, (discountPercent: number) => {
+        on<number>(DiscountDialogEvent.APPLY, (discountPercent: number) => {
             let discount = Number(discountPercent * 100).toFixed(2);
             formRef.current?.setFieldValue('descuento', Number(discount));
         })
 
-        bus.on(FORM_EVENTS.ROW_ADDED, () => {
+        on(FORM_EVENTS.ROW_ADDED, () => {
             setTotal(formRef.current);
         })
 
-        bus.on(FORM_EVENTS.ROW_UPDATED, () => {
+        on(FORM_EVENTS.ROW_UPDATED, () => {
             setTotal(formRef.current);
         })
 
-        bus.on(FORM_EVENTS.ROW_REMOVED, () => {
+        on(FORM_EVENTS.ROW_REMOVED, () => {
             setTotal(formRef.current);
         })
 
-        bus.on(DATA_GRID_EVENTS.SELECTION_CHANGED, (e: any) => {
+        on(DATA_GRID_EVENTS.SELECTION_CHANGED, (e: any) => {
             if (e.selectedRowKeys.length === 1) {
                 setPrintEnabled(true);
                 setCloneEnabled(true);
@@ -71,7 +72,7 @@ export const SalePage = () => {
             }
         })
 
-        bus.on(EVENTS.SUCCESS, (payload: any) => {
+        on(EVENTS.SUCCESS, (payload: any) => {
             settings.get(Setting.AUTO_INVOICE).then((setting) => {
                 console.log(setting)
                 if (setting?.value === 'true') {
@@ -80,7 +81,7 @@ export const SalePage = () => {
             })
         })
 
-        bus.on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
+        on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
             formRef.current?.setFieldValue('cliente', payload.data);
         })
     }
@@ -233,7 +234,7 @@ export const SalePage = () => {
                 saleService.getOne(saleId).subscribe((response) => {
                     delete response.data.movimiento_id;
                     console.log(response.data);
-                    bus.emit(EVENTS.ADD, response.data);
+                    emit(EVENTS.ADD, response.data);
                 });
             },
             disabled: !cloneEnabled
@@ -243,6 +244,7 @@ export const SalePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'sales'}
                 ref={gridRef}
                 title={'Ventas'}
                 url={API_URL}

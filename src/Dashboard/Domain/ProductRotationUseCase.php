@@ -5,7 +5,7 @@ namespace App\Dashboard\Domain;
 readonly class ProductRotationUseCase
 {
     public function __construct(
-        private DashboardRepositoryInterface $repository
+        private DashboardRepositoryInterface $repository,
     ) {
     }
 

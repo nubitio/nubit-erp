@@ -1,6 +1,8 @@
 import './DxDataGrid.scss';
 import {
     ColumnChooser,
+    ColumnFixing,
+    DataGridRef,
     DataGridTypes,
     Export,
     FilterRow,
@@ -13,25 +15,29 @@ import {
     Scrolling,
     Selection,
     Sorting,
+    StateStoring,
     Summary,
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
 import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {jsPDF as JsPdf} from 'jspdf';
-import {saveAs} from 'file-saver-es';
+import {saveAs} from 'file-saver';
 import {Workbook} from 'exceljs';
 import {exportDataGrid as exportDataGridToPdf} from 'devextreme/pdf_exporter';
 import {exportDataGrid as exportDataGridToXLSX} from 'devextreme/excel_exporter';
-import {bus} from "../event/EventBus";
-import notify from "devextreme/ui/notify";
 import {dxUtils} from "../common/DxUtils";
 import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
 import {DxFilterRule} from "../common/FilterRule";
+import {useEvents} from "../event/EventHook";
+import DevExpress from "devextreme";
+import toast from "../utils/SharedUtils";
+import SelectionChangedEvent = DevExpress.ui.dxDataGrid.SelectionChangedEvent;
 
 export interface DxDataGridOptions {
+    id: string;
     title: string;
     url: string;
     detailUrl?: string;
@@ -46,7 +52,13 @@ export interface DxDataGridOptions {
     summaryFields?: ITotalItemProps[];
     filter?: DxFilterRule[];
     sort?: any[];
-    mode?: 'simple' | 'full';
+    mode?: 'minimal' | 'normal' | 'full';
+    paging?: boolean;
+    hasBackButton?: boolean;
+    columnsHidingEnabled?: boolean;
+    stateStoringEnabled?: boolean;
+    toolbarVisible?: boolean;
+    selectionMode?: 'single' | 'multiple';
 }
 
 export interface DxDataGridEvents {
@@ -57,6 +69,7 @@ export interface DxDataGridEvents {
     getSelectedRow: () => any;
     getSelectedRowKeys: () => any;
     getSelectedRows: () => any;
+    getDataSource: () => CustomStore | null;
 }
 
 export const DATA_GRID_EVENTS = {
@@ -64,13 +77,15 @@ export const DATA_GRID_EVENTS = {
 }
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
-    const gridRef = useRef<DataGrid>(null);
+    const gridRef = useRef<DataGridRef | null>(null);
     const [data, setData] = useState<CustomStore | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
+    const viewMode = options.mode ?? 'full';
+    const [on, emit] = useEvents()
 
-    const refresh = useCallback(() => {
-        gridRef.current?.instance.refresh();
-    }, []);
+    const refresh = () => {
+        gridRef.current?.instance().refresh();
+    }
 
     const onExporting = (e: DataGridTypes.ExportingEvent) => {
         if (e.format === 'pdf') {
@@ -98,53 +113,46 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         }
     };
 
-    const onAddClick = useCallback(() => {
+    const onAddClick = () => {
         options.events?.ADD &&
-        bus.emit(options.events?.ADD);
-    }, [options.events?.ADD]);
-
-    const onEditClick = useCallback(() => {
-        let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
-        if (selectedRowsData && selectedRowsData.length > 0) {
-            options.events?.EDIT &&
-            bus.emit(options.events?.EDIT, {row: selectedRowsData[0]});
-        } else {
-            notify('Debe seleccionar un registro', 'error', 2000);
-        }
-    }, [options.events?.EDIT]);
-
-    const onDeleteClick = useCallback(() => {
-        let selectedRowsData = gridRef.current?.instance.getSelectedRowsData();
-        if (selectedRowsData && selectedRowsData.length > 0) {
-            options.events?.DELETE &&
-            bus.emit(options.events?.DELETE, {row: selectedRowsData[0]});
-        } else {
-            notify('Debe seleccionar un registro', 'error', 2000);
-        }
-    }, [options.events?.DELETE]);
-
-    const setupObservers = () => {
-        if (options.events?.SUCCESS) bus.on(options.events?.SUCCESS, refresh);
+        emit(options.events?.ADD);
     }
 
-    let alreadyLoaded = false;
-    let alreadySetup = false;
+    const onEditClick = () => {
+        let selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
+        if (selectedRowsData && selectedRowsData.length > 0) {
+            options.events?.EDIT &&
+            emit(options.events?.EDIT, {row: selectedRowsData[0]});
+        } else {
+            toast('Debe seleccionar un registro', 'warning', 2000)
+        }
+    }
+
+    const onDeleteClick = () => {
+        let selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
+        if (selectedRowsData && selectedRowsData.length > 0) {
+            options.events?.DELETE &&
+            emit(options.events?.DELETE, {row: selectedRowsData[0]});
+        } else {
+            toast('Debe seleccionar un registro', 'warning', 2000)
+        }
+    }
+
+    const setupObservers = () => {
+        if (options.events?.SUCCESS) {
+            on(options.events?.SUCCESS, refresh);
+        }
+    }
 
     useEffect(() => {
-        if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(
-                options.url,
-                getIdField(options.fields),
-                options.url,
-                options.filter,
-                options.sort
-            ));
-            alreadyLoaded = true;
-        }
-        if (!alreadySetup) {
-            setupObservers();
-            alreadySetup = true;
-        }
+        setData(dxUtils.getDataStore(
+            options.url,
+            getIdField(options.fields),
+            options.url,
+            options.filter,
+            options.sort
+        ));
+        setupObservers();
     }, []);
 
     const renderDetail = useCallback((e: any) => {
@@ -157,31 +165,35 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     }, [options.detailUrl, options.detailFields]);
 
     const showLoading = (message: string = 'Cargando...') => {
-        gridRef.current?.instance.beginCustomLoading(message);
+        gridRef.current?.instance().beginCustomLoading(message);
     }
 
     const hideLoading = () => {
-        gridRef.current?.instance.endCustomLoading();
+        gridRef.current?.instance().endCustomLoading();
     }
 
     const getSelectedRowKey = () => {
-        return gridRef.current?.instance.getSelectedRowKeys()[0];
+        return gridRef.current?.instance().getSelectedRowKeys()[0];
     }
 
     const getSelectedRow = () => {
-        return gridRef.current?.instance.getSelectedRowsData()[0];
+        return gridRef.current?.instance().getSelectedRowsData()[0];
     }
 
     const getSelectedRowKeys = () => {
-        return gridRef.current?.instance.getSelectedRowKeys();
+        return gridRef.current?.instance().getSelectedRowKeys();
     }
 
     const getSelectedRows = () => {
-        return gridRef.current?.instance.getSelectedRowsData();
+        return gridRef.current?.instance().getSelectedRowsData();
     }
 
-    const onSelectionChanged = (e: any) => {
-        bus.emit(DATA_GRID_EVENTS.SELECTION_CHANGED, e);
+    const getDataSource = () => {
+        return data;
+    }
+
+    const onSelectionChanged = (e: SelectionChangedEvent) => {
+        emit(DATA_GRID_EVENTS.SELECTION_CHANGED, e.selectedRowsData);
     }
 
     useImperativeHandle(ref, () => ({
@@ -192,59 +204,72 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         getSelectedRow,
         getSelectedRowKeys,
         getSelectedRows,
+        getDataSource,
     }));
 
     return (
         <div className='view datagrid-list'>
-            <div className={'view-wrapper ' + ('full' === options.mode ?? 'full' ? 'view-wrapper-datagrid-list' : '')}>
+            <div
+                className={'view-wrapper ' + ('full' === viewMode ? 'view-wrapper-datagrid-list list-page' : '')}>
                 <DataGrid
                     ref={gridRef}
-                    className='grid'
-                    noDataText='No hay datos'
+                    className='grid theme-dependent'
+                    noDataText=''
                     focusedRowEnabled
                     height='100%'
+                    width='100%'
                     dataSource={data}
                     allowColumnReordering
+                    showBorders={true}
                     remoteOperations={true}
                     syncLookupFilterValues={false}
                     onSelectionChanged={onSelectionChanged}
+                    columnHidingEnabled={options.columnsHidingEnabled ?? false}
+                    allowColumnResizing={true}
+                    columnResizingMode={'widget'}
+                    columnMinWidth={50}
+                    columnAutoWidth={true}
                     onExporting={onExporting}
                 >
                     <LoadPanel showPane={false}/>
-                    <ColumnChooser enabled/>
+                    <ColumnChooser enabled mode="select"/>
+                    <ColumnFixing enabled={true}/>
                     <Export enabled allowExportSelectedData formats={exportFormats}/>
                     <Selection
-                        selectAllMode='allPages'
+                        mode={options.selectionMode ?? 'single'}
+                        selectAllMode='page'
                         showCheckBoxesMode='onClick'
-                        mode='multiple'
                     />
                     <Sorting mode='multiple'/>
-                    <Scrolling mode='virtual'/>
-                    <Toolbar visible={'full' === options.mode ?? 'full'}>
-                        <Item location='before'>
+                    <Scrolling mode='standard'/>
+                    <Toolbar visible={(options.toolbarVisible ?? true) && 'minimal' !== viewMode}>
+                        <Item location='before' visible={options.hasBackButton ?? false}>
+                            <Button icon='arrowleft' onClick={() => {
+                                window.history.back();
+                            }}/>
+                        </Item>
+                        <Item location='before' visible={'full' === viewMode}>
                             <div className='grid-header'>{options.title}</div>
                         </Item>
                         <Item location='after' locateInMenu='auto' visible={options.allowAdd ?? false}>
                             <Button
-                                icon='plus'
                                 text='Nuevo'
-                                type='success'
+                                type='default'
                                 stylingMode='outlined'
                                 onClick={onAddClick}
                             />
                         </Item>
                         <Item location='after' locateInMenu='auto' visible={options.allowEdit ?? false}>
                             <Button
-                                icon='edit'
                                 text='Editar'
-                                type='default'
+                                type='normal'
+                                className='dx-button-warning'
                                 stylingMode='outlined'
                                 onClick={onEditClick}
                             />
                         </Item>
                         <Item location='after' locateInMenu='auto' visible={options.allowDelete ?? false}>
                             <Button
-                                icon='trash'
                                 text='Eliminar'
                                 type='danger'
                                 stylingMode='outlined'
@@ -273,21 +298,45 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                             <div className='separator'/>
                         </Item>
                         <Item name='columnChooserButton' locateInMenu='auto'/>
+                        <Item location='after' locateInMenu='auto'>
+                            <div className='separator'/>
+                        </Item>
+                        <Item
+                            location='after'
+                            locateInMenu='auto'
+                            showText='inMenu'
+                            widget='dxButton'
+                        >
+                            <Button
+                                icon='ph ph-circle-notch'
+                                text='Restablecer'
+                                stylingMode='text'
+                                onClick={() => gridRef.current?.instance().state(null)}
+                            />
+                        </Item>
                     </Toolbar>
                     <FilterRow visible={true}/>
+                    <StateStoring
+                        enabled={options.stateStoringEnabled ?? true}
+                        type="localStorage"
+                        storageKey={"datagrid-" + options.id}
+                    />
                     {buildColumns(options.fields)}
                     <Summary>
                         {buildSummary(options.summaryFields)}
                     </Summary>
                     <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
-                    <Paging defaultPageSize={20}/>
-                    <Pager visible={true} showPageSizeSelector allowedPageSizes={[20, 50, 100]}/>
+                    <Paging enabled={options.paging ?? true} defaultPageSize={20}/>
+                    <Pager
+                        visible={options.paging ?? true}
+                        allowedPageSizes={[10, 20, 50, 100]}
+                        displayMode={'compact'}
+                        showPageSizeSelector={true}
+                        showInfo={true}
+                        showNavigationButtons={true}
+                    />
                 </DataGrid>
             </div>
         </div>
     );
 });
-
-DxDataGrid.defaultProps = {
-    mode: 'full',
-}

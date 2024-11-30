@@ -1,47 +1,60 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
-import TreeView from 'devextreme-react/tree-view';
+import {TreeView, TreeViewRef} from 'devextreme-react/tree-view';
 
 import {AppFooter} from '../..';
 import {useNavigation} from '../../../contexts/navigation';
 import {useScreenSize} from '../../../utils/media-query';
 
 import type {SideNavigationMenuProps} from '../../../types';
+import {menuService} from "../../../service/menu.service";
 
 import './SideNavigationMenu.scss';
 
 import * as events from 'devextreme/events';
-import {StorageUtils} from "../../../core/utils/StorageUtils";
-import {menuService} from "../../../services/menu.service";
+import {userInformation} from "../../../core/common/UserInformation";
+
+export type SideNavigationItem = {
+    expanded: boolean;
+    path: string;
+    text: string;
+    icon: string;
+    items: Array<{
+        text: string;
+        path: string;
+    }>;
+};
 
 export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigationMenuProps>) => {
     const {children, selectedItemChanged, openMenu, compactMode, onMenuReady} = props;
-    const [navigation, setNavigation] = useState<any[]>([]);
-
+    const [items, setItems] = useState<SideNavigationItem[]>([]);
     const {isLarge} = useScreenSize();
+
     useEffect(() => {
-        let session = StorageUtils.getItem('session');
-        let userId = session['role_id'];
-        menuService.getMenuByRoleId(userId).subscribe((response) => {
-            setNavigation(response.data);
+        let roleId = userInformation().currentUserRoleId;
+        menuService.getMenuByRoleId(roleId).subscribe((response) => {
+            const items = normalizePath(response.data);
+            setItems(items);
         });
     }, []);
 
-    function normalizePath() {
-        return navigation.map((item) => ({
+    function normalizePath(items: SideNavigationItem[]) {
+        return items.map((item) => ({
             ...item,
             expanded: isLarge,
-            path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path
+            path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path,
+            items: item.items?.map((subItem) => ({
+                ...subItem,
+                path: subItem.path && !/^\//.test(subItem.path) ? `/${subItem.path}` : subItem.path,
+            })),
         }));
     }
-
-    const items = useMemo(normalizePath, [navigation]);
 
     const {
         navigationData: {currentPath},
     } = useNavigation();
 
-    const treeViewRef = useRef<TreeView>(null);
+    const treeViewRef = useRef<TreeViewRef>(null);
     const wrapperRef = useRef();
     const getWrapperRef = useCallback(
         (element) => {
@@ -59,7 +72,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
     );
 
     useEffect(() => {
-        const treeView = treeViewRef.current && treeViewRef.current.instance;
+        const treeView = treeViewRef.current && treeViewRef.current.instance();
         if (!treeView) {
             return;
         }
@@ -77,7 +90,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
     return (
         <div className='dx-swatch-additional side-navigation-menu' ref={getWrapperRef}>
             {children}
-            <div className='menu-container'>
+            <div className='menu-container theme-dependent'>
                 <TreeView
                     ref={treeViewRef}
                     items={items}

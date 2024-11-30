@@ -12,8 +12,6 @@ use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
-use Psr\Cache\InvalidArgumentException;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -22,33 +20,9 @@ class PrintESCPOSController extends BaseController
     public function __construct(
         private readonly LogoProvider $logoProvider,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private SettingsService $settingsService
+        private SettingsService $settingsService,
     ) {
         parent::__construct();
-    }
-
-    #[Route('/wcp/print', name: 'wcp_print', methods: ['GET'])]
-    public function print(Request $request): Response
-    {
-        if (!$request->query->has(WebClientPrint::CLIENT_PRINT_JOB)) {
-            return new Response('No print job sent!', Response::HTTP_BAD_REQUEST);
-        }
-
-        $useDefaultPrinter = $request->query->get('useDefaultPrinter');
-        $printerName = $request->query->get('printerName');
-        $saleId = $request->query->get('saleId');
-
-        $cpj = new ClientPrintJob();
-        $cpj->printerCommands = $this->printCommands($saleId);
-        $cpj->formatHexValues = true;
-
-        if ($useDefaultPrinter || 'null' === $printerName) {
-            $cpj->clientPrinter = new DefaultPrinter();
-        } else {
-            $cpj->clientPrinter = new InstalledPrinter($printerName);
-        }
-
-        return new Response($cpj->sendToClient(), Response::HTTP_OK, ['Content-Type' => 'application/octet-stream']);
     }
 
     #[Route('/qz/print/{saleId}', name: 'qz_raw_print', methods: ['GET'])]
@@ -60,11 +34,10 @@ class PrintESCPOSController extends BaseController
     }
 
     /**
-     * @throws InvalidArgumentException
      * @throws Exception
      * @throws \Exception
      */
-    public function printCommands($saleId): string
+    public function printCommands(string $saleId): string
     {
         $divider = str_pad('', $_ENV['PRINTER_LINE_WIDTH'], '-', STR_PAD_BOTH)."\n";
 

@@ -24,6 +24,7 @@ export const ConfigPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'config'}
                 title={'Configuraciones'}
                 url={API_URL}
                 allowAdd={true}

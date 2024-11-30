@@ -7,17 +7,18 @@ import {PriceListFields} from "./PriceListFields";
 import {useEffect, useRef} from "react";
 import notify from "devextreme/ui/notify";
 import {DataGrid} from "devextreme-react";
-import {Column, Editing, Scrolling} from "devextreme-react/data-grid";
-import {bus} from "../../core/event/EventBus";
+import {Column, DataGridRef, Editing, Scrolling} from "devextreme-react/data-grid";
 import {httpClient} from "../../core/http/HttpClient";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
+import {useEvents} from "../../core/event/EventHook";
 
 export const PriceListPage = () => {
+    const [on, emit] = useEvents();
     const container = "wrapper";
     const fields = PriceListFields();
     const gridRef = useRef<DxDataGridEvents>(null);
-    const pricesRef = useRef<DataGrid>(null);
+    const pricesRef = useRef<DataGridRef>(null);
 
     const API_URL = Constants.API_BASE_URL + 'price-lists';
 
@@ -56,7 +57,7 @@ export const PriceListPage = () => {
                     }, {position: 'top right'});
                     return;
                 }
-                bus.emit(PRICES_EVENT.ADD, {title: 'Precios de ' + selectedRow.name});
+                emit(PRICES_EVENT.ADD, {title: 'Precios de ' + selectedRow.name});
             }
         }
     ]
@@ -64,20 +65,20 @@ export const PriceListPage = () => {
     let alreadySetup = false;
 
     const setupObservers = () => {
-        bus.on(PRICES_EVENT.ADD, () => {
+        on(PRICES_EVENT.ADD, () => {
             let selectedRow = gridRef.current?.getSelectedRow();
             httpClient.get<any>('price-list/' + selectedRow.id + '/get')
                 .subscribe(response => {
-                    pricesRef.current?.instance.beginCustomLoading('Cargando precios...');
-                    pricesRef.current?.instance.option('dataSource', response.data);
-                    pricesRef.current?.instance.endCustomLoading();
+                    pricesRef.current?.instance().beginCustomLoading('Cargando precios...');
+                    pricesRef.current?.instance().option('dataSource', response.data);
+                    pricesRef.current?.instance().endCustomLoading();
                 })
         })
 
-        bus.on(PRICES_EVENT.SAVE, () => {
+        on(PRICES_EVENT.SAVE, () => {
             let selectedRow = gridRef.current?.getSelectedRow();
             let pricesData: any[] = [];
-            let updatedPrices = pricesRef.current?.instance.getDataSource().items();
+            let updatedPrices = pricesRef.current?.instance().getDataSource().items();
             updatedPrices?.forEach((price: any) => {
                 if (!price.updated) return;
                 pricesData.push({
@@ -93,7 +94,7 @@ export const PriceListPage = () => {
                         type: 'success',
                         displayTime: 3000,
                     }, {position: 'top right'});
-                    bus.emit(PRICES_EVENT.SUCCESS);
+                    emit(PRICES_EVENT.SUCCESS);
                 })
         })
     }
@@ -108,6 +109,7 @@ export const PriceListPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'price-list'}
                 ref={gridRef}
                 title={'Tarifas'}
                 toolbar={toolbar}

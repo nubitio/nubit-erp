@@ -3,10 +3,16 @@
 namespace App\Core\Infrastructure\DataLoader;
 
 use ApiPlatform\Doctrine\Orm\Paginator as ApiPlatformPaginator;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\JoinType;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\SortRule;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Domain\Util\ReflectionUtil;
 use App\Core\Infrastructure\DataLoader\Paginator\Paginator;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Infrastructure\Entity\AuditableEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -23,11 +29,9 @@ readonly class DataLoader implements DataLoaderInterface
     }
 
     /**
-     * @param Options $options
-     *
      * @throws \Exception
      */
-    public function loadCollection(LoadOptionsInterface $options): PaginatorInterface
+    public function loadCollection(LoadOptions $options): PaginatorInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -40,19 +44,17 @@ readonly class DataLoader implements DataLoaderInterface
         $this->addFilters($queryBuilder, $options->filters);
         $this->addSort($queryBuilder, $options->sort);
 
+        if (is_subclass_of($options->entity, AuditableEntity::class)) {
+            $queryBuilder->andWhere('e.deleted = false');
+        }
+
         $query = $queryBuilder->getQuery();
 
         $paginator = new DoctrinePaginator($query);
 
-        if ($options->skip >= 0 && $options->take > 0) {
-            $paginator->getQuery()
-                ->setFirstResult($options->skip)
-                ->setMaxResults($options->take);
-        } else {
-            $paginator->getQuery()
-                ->setFirstResult($options->rows * ($options->page - 1))
-                ->setMaxResults($options->rows);
-        }
+        $paginator->getQuery()
+            ->setFirstResult($options->skip ?? 0)
+            ->setMaxResults($options->take ?? PHP_INT_MAX);
 
         $data = [];
 
@@ -66,11 +68,9 @@ readonly class DataLoader implements DataLoaderInterface
     }
 
     /**
-     * @param Options $options
-     *
      * @throws NonUniqueResultException
      */
-    public function loadOne(LoadOptionsInterface $options): ?object
+    public function loadOne(LoadOptions $options): ?object
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
 
@@ -100,7 +100,7 @@ readonly class DataLoader implements DataLoaderInterface
     {
         $parent = get_parent_class($mapping);
         if ($parent) {
-            foreach (get_object_vars($mappedItem) as $key => $value) {
+            foreach (array_keys(get_object_vars($mappedItem)) as $key) {
                 $type = ReflectionUtil::getPropertyType($mappedItem, $key);
                 if ($parent === $type) {
                     DataMapper::map($mappedItem->$key, $mappedItem, ['id']);
@@ -110,13 +110,13 @@ readonly class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function fillFilterAlias(string $mapping, Options $options): void
+    private function fillFilterAlias(string $mapping, LoadOptions $options): void
     {
         $parent = get_parent_class($mapping);
         $alias = null;
         if ($parent) {
             $obj = new $mapping();
-            foreach (get_object_vars($obj) as $key => $value) {
+            foreach (array_keys(get_object_vars($obj)) as $key) {
                 $type = ReflectionUtil::getPropertyType($obj, $key);
                 if ($parent === $type) {
                     foreach ($options->joins as $join) {
@@ -126,7 +126,6 @@ readonly class DataLoader implements DataLoaderInterface
                             break;
                         }
                     }
-                    /** @var FilterRule $filter */
                     foreach ($options->filters as $filter) {
                         $parentObj = new $parent();
                         if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
@@ -158,7 +157,7 @@ readonly class DataLoader implements DataLoaderInterface
     }
 
     /**
-     * @param FilterInterface[] $filters
+     * @param FilterRule[] $filters
      */
     private function addFilters(QueryBuilder $queryBuilder, array $filters): void
     {

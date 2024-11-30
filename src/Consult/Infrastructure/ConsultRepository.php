@@ -25,7 +25,7 @@ class ConsultRepository implements ConsultRepositoryInterface
 
         return match ($docType) {
             DocType::DNI => $this->mapDni($data),
-            DocType::RUC => $this->mapRuc($data)
+            DocType::RUC => $this->mapRuc($data),
         };
     }
 

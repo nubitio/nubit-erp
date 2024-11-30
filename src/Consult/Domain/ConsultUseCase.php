@@ -5,7 +5,7 @@ namespace App\Consult\Domain;
 readonly class ConsultUseCase
 {
     public function __construct(
-        private ConsultRepositoryInterface $consultRepository
+        private ConsultRepositoryInterface $consultRepository,
     ) {
     }
 

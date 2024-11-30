@@ -26,7 +26,7 @@ class Cashbox
         public ?int $estado = null,
         /** @var CashboxDetail[] $details */
         #[SerializedName('details')]
-        public array $details = []
+        public array $details = [],
     ) {
     }
 

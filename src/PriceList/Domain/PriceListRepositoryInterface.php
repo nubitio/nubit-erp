@@ -2,8 +2,8 @@
 
 namespace App\PriceList\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\PriceListDetail\Domain\PriceListDetail;
 
 interface PriceListRepositoryInterface
@@ -11,7 +11,7 @@ interface PriceListRepositoryInterface
     /**
      * @return PaginatorInterface<PriceList>
      */
-    public function getAll(Options $options): PaginatorInterface;
+    public function getAll(LoadOptions $options): PaginatorInterface;
 
     public function getOne(string $id): ?PriceList;
 

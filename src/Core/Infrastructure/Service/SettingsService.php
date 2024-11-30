@@ -8,7 +8,7 @@ use Doctrine\DBAL\Exception;
 readonly class SettingsService
 {
     public function __construct(
-        private Connection $db
+        private Connection $db,
     ) {
     }
 

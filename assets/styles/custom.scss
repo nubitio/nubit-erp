@@ -1,0 +1,252 @@
+@import "@phosphor-icons/web/regular";
+
+$primary: #007bff;
+$secondary: #6c757d;
+$success: #28a745;
+$danger: #dc3545;
+$warning: #ffc107;
+$info: #17a2b8;
+$light: #f8f9fa;
+$dark: #343a40;
+$black: #000;
+$white: #fff;
+
+.text-primary {
+    color: $primary !important;
+}
+
+.text-secondary {
+    color: $secondary !important;
+}
+
+.text-success {
+    color: $success !important;
+}
+
+.text-danger {
+    color: $danger !important;
+}
+
+.text-warning {
+    color: $warning !important;
+}
+
+.text-info {
+    color: $info !important;
+}
+
+.text-light {
+    color: $light !important;
+}
+
+.text-dark {
+    color: $dark !important;
+}
+
+.bg-primary {
+    background-color: $primary !important;
+}
+
+.bg-secondary {
+    background-color: $secondary !important;
+}
+
+.bg-success {
+    background-color: $success !important;
+}
+
+.bg-danger {
+    background-color: $danger !important;
+}
+
+.bg-warning {
+    background-color: $warning !important;
+}
+
+.bg-info {
+    background-color: $info !important;
+}
+
+.bg-light {
+    background-color: $light !important;
+}
+
+.bg-dark {
+    background-color: $dark !important;
+}
+
+@mixin badge() {
+    padding: 0.35em 0.65em;
+    font-size: 0.65em;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.375rem;
+}
+
+@mixin solid-badge-variant($bg-color, $text-color) {
+    background-color: $bg-color;
+    color: $text-color;
+    border: 1px solid $bg-color;
+}
+
+@mixin outlined-badge-variant($color, $bg-color: transparent) {
+    background-color: $bg-color;
+    color: $color;
+    border: 1px solid $color;
+}
+
+.badge {
+    @include badge;
+
+    &.rounded-pill {
+        border-radius: 50rem;
+    }
+
+    $colors: (
+            primary: $primary,
+            secondary: $secondary,
+            success: $success,
+            danger: $danger,
+            warning: $warning,
+            info: $info,
+            light: $light,
+            dark: $dark
+    );
+    @each $name, $color in $colors {
+        &.text-bg-#{$name} {
+            @include solid-badge-variant($color, if($name == light or $name == warning, $black, $white));
+        }
+    }
+
+    &.badge-outlined {
+        @each $name, $color in $colors {
+            &.text-bg-#{$name} {
+                @include outlined-badge-variant($color, rgba($color, 0.1));
+            }
+        }
+    }
+}
+
+
+.dx-button {
+    &.dx-button-mode-contained {
+        &.dx-button-primary {
+            background-color: $primary !important;
+        }
+
+        &.dx-button-secondary {
+            background-color: $secondary !important;
+        }
+
+        &.dx-button-success {
+            background-color: $success !important;
+        }
+
+        &.dx-button-danger {
+            background-color: $danger !important;
+        }
+
+        &.dx-button-warning {
+            background-color: $warning !important;
+        }
+
+        &.dx-button-info {
+            background-color: $info !important;
+        }
+    }
+
+    &.dx-button-mode-outlined {
+        &.dx-button-primary,
+        &.dx-button-secondary,
+        &.dx-button-success,
+        &.dx-button-danger,
+        &.dx-button-warning,
+        &.dx-button-info {
+            border-color: currentColor !important;
+            color: currentColor !important;
+
+            .dx-icon {
+                color: currentColor !important;
+            }
+        }
+
+        &.dx-button-primary {
+            color: $primary !important;
+        }
+
+        &.dx-button-secondary {
+            color: $secondary !important;
+        }
+
+        &.dx-button-success {
+            color: $success !important;
+        }
+
+        &.dx-button-danger {
+            color: $danger !important;
+        }
+
+        &.dx-button-warning {
+            color: $warning !important;
+        }
+
+        &.dx-button-info {
+            color: $info !important;
+        }
+
+        &:hover,
+        &:focus {
+            &.dx-button-primary {
+                background-color: rgba($primary, 0.08) !important;
+            }
+
+            &.dx-button-secondary {
+                background-color: rgba($secondary, 0.08) !important;
+            }
+
+            &.dx-button-success {
+                background-color: rgba($success, 0.08) !important;
+            }
+
+            &.dx-button-danger {
+                background-color: rgba($danger, 0.08) !important;
+            }
+
+            &.dx-button-warning {
+                background-color: rgba($warning, 0.08) !important;
+            }
+
+            &.dx-button-info {
+                background-color: rgba($info, 0.08) !important;
+            }
+        }
+
+        &:active {
+            &.dx-button-primary {
+                background-color: rgba($primary, 0.36) !important;
+            }
+
+            &.dx-button-secondary {
+                background-color: rgba($secondary, 0.36) !important;
+            }
+
+            &.dx-button-success {
+                background-color: rgba($success, 0.36) !important;
+            }
+
+            &.dx-button-danger {
+                background-color: rgba($danger, 0.36) !important;
+            }
+
+            &.dx-button-warning {
+                background-color: rgba($warning, 0.36) !important;
+            }
+
+            &.dx-button-info {
+                background-color: rgba($info, 0.36) !important;
+            }
+        }
+    }
+}

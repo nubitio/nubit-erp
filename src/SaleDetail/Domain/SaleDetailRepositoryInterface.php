@@ -2,13 +2,13 @@
 
 namespace App\SaleDetail\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 interface SaleDetailRepositoryInterface
 {
     /**
      * @return PaginatorInterface<SaleDetail>
      */
-    public function getAll(Options $options): PaginatorInterface;
+    public function getAll(LoadOptions $options): PaginatorInterface;
 }

@@ -24,6 +24,7 @@ export const BranchPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'branch'}
                 title={'Locales'}
                 url={API_URL}
                 allowAdd={true}

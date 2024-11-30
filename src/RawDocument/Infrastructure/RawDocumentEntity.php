@@ -20,7 +20,7 @@ class RawDocumentEntity
         #[ORM\Column(name: 'document', type: 'text')]
         public ?string $document = null,
         #[ORM\Column(name: 'created_at', type: 'datetime')]
-        public ?\DateTimeInterface $created_at = null
+        public ?\DateTimeInterface $created_at = null,
     ) {
     }
 }

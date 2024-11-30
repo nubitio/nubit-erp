@@ -9,9 +9,9 @@ use App\Config\Domain\ConfigGetAllUseCase;
 use App\Config\Domain\ConfigGetOneUseCase;
 use App\Config\Infrastructure\ConfigEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\SortRule;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<Config>

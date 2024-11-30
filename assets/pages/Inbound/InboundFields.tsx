@@ -6,9 +6,8 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {Constants} from "../../core/common/Constants";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {userInformation} from "../../core/common/UserInformation";
-import {productService} from "../../services/product.service";
+import {productService} from "../../service/product.service";
 import {ProductDto} from "../../dto/product.dto";
-import {DxFormEvents} from "../../core/form/DxForm";
 
 export const InboundFields = () => {
     const fields: Field[] = [];
@@ -59,7 +58,7 @@ export const InboundFields = () => {
         .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
         .valueField('almacen_id')
         .textField('descripcion')
-        .defaultValue(userInformation().currentWarehouseId)
+        //.defaultValue(userInformation().currentWarehouseId)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
         .build());
     fields.push(new FieldBuilder()

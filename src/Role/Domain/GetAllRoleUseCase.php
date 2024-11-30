@@ -2,8 +2,8 @@
 
 namespace App\Role\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 class GetAllRoleUseCase
 {
@@ -17,7 +17,7 @@ class GetAllRoleUseCase
     /**
      * @return PaginatorInterface<Role>
      */
-    public function __invoke(Options $options): PaginatorInterface
+    public function __invoke(LoadOptions $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }

@@ -25,7 +25,7 @@ readonly class ValidateInvoiceUseCase
         private CacheInterface $cache,
         private SettingsService $settings,
         private GetOneInvoiceUseCase $getOneInvoiceUseCase,
-        private UpdateInvoiceUseCase $updateInvoiceUseCase
+        private UpdateInvoiceUseCase $updateInvoiceUseCase,
     ) {
     }
 

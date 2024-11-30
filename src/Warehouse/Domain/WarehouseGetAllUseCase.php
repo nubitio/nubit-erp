@@ -2,8 +2,8 @@
 
 namespace App\Warehouse\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 class WarehouseGetAllUseCase
 {
@@ -17,7 +17,7 @@ class WarehouseGetAllUseCase
     /**
      * @return PaginatorInterface<Warehouse>
      */
-    public function __invoke(Options $options): PaginatorInterface
+    public function __invoke(LoadOptions $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }

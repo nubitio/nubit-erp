@@ -5,7 +5,7 @@ namespace App\Auth\Domain;
 class Token
 {
     public function __construct(
-        public string $token
+        public string $token,
     ) {
     }
 }

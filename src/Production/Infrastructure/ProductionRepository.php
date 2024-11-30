@@ -3,11 +3,11 @@
 namespace App\Production\Infrastructure;
 
 use App\ComboOption\Infrastructure\ComboOptionEntity;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Employee\Infrastructure\EmployeeEntity;
 use App\Product\Infrastructure\ProductEntity;
 use App\Production\Domain\Production;
@@ -24,11 +24,11 @@ readonly class ProductionRepository implements ProductionRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private DataLoader $dataLoader,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

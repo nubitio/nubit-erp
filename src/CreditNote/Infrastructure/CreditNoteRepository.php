@@ -2,11 +2,11 @@
 
 namespace App\CreditNote\Infrastructure;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\CreditNoteRepositoryInterface;
 use App\Sale\Infrastructure\SaleEntity;
@@ -23,7 +23,7 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }
