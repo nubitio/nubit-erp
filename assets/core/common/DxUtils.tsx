@@ -6,6 +6,7 @@ import DevExpress from "devextreme";
 import {FilterDescriptor} from "devextreme/data";
 import GridData from "../../types/GridData";
 import {DxFilterRule} from "./FilterRule";
+import {LoadOption} from "../field/Field";
 import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
@@ -14,8 +15,15 @@ class DxUtils {
 
         return lastValueFrom(subscription)
             .then((response: ApiResponse<any[]>) => {
+                let data = response.data;
+                if (loadOptions.appendData) {
+                    data = [...data, ...loadOptions.appendData];
+                }
+                if (loadOptions.prependData) {
+                    data = [...loadOptions.prependData, ...data];
+                }
                 return {
-                    data: response.data,
+                    data: data,
                     totalCount: Number(response.headers['x-total-count'])
                 } as GridData<any>;
             });
@@ -54,19 +62,32 @@ class DxUtils {
         idField: string,
         byKeyUrl: string | null = null,
         defaultFilterRules: FilterDescriptor[] = [],
-        defaultSortRules: SortDescriptor<any>[] = []
+        defaultSortRules: SortDescriptor<any>[] = [],
+        options: LoadOption[] = []
     ): CustomStore {
         return new CustomStore({
             key: idField,
             load: (loadOptions) => {
                 let userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
                 loadOptions.filter = this.normalizeFilterRules(userFilter, defaultFilterRules);
-                let userSort = (loadOptions.sort ?? []) as SortDescriptor<any>[];
-                loadOptions.sort = [...defaultSortRules, ...userSort];
+                let userSort = (loadOptions.sort ?? []) as any[];
+                if (userSort.length === 1 && userSort[0].selector === 'id') {
+                    loadOptions.sort = [...defaultSortRules, ...userSort];
+                } else {
+                    loadOptions.sort = userSort;
+                }
+                options.forEach((option) => {
+                    for (const key in option) {
+                        if (option.hasOwnProperty(key)) {
+                            loadOptions[key] = option[key];
+                        }
+                    }
+                });
                 return this.fetchAll(url, loadOptions)
             },
             byKey: (key) => {
                 let id = typeof key === 'object' ? key[idField] : key;
+                if (id === undefined) return Promise.resolve(null);
                 return this.fetchById(byKeyUrl ?? url, id)
             }
         });

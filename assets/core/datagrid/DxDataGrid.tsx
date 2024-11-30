@@ -34,6 +34,7 @@ import {DxFilterRule} from "../common/FilterRule";
 import {useEvents} from "../event/EventHook";
 import DevExpress from "devextreme";
 import toast from "../utils/SharedUtils";
+import {RowPreparedEvent} from "devextreme/ui/data_grid";
 import SelectionChangedEvent = DevExpress.ui.dxDataGrid.SelectionChangedEvent;
 
 export interface DxDataGridOptions {
@@ -59,6 +60,8 @@ export interface DxDataGridOptions {
     stateStoringEnabled?: boolean;
     toolbarVisible?: boolean;
     selectionMode?: 'single' | 'multiple';
+    onSelectionChanged?: (e: SelectionChangedEvent) => void;
+    onRowPrepared?: (e: RowPreparedEvent) => void;
 }
 
 export interface DxDataGridEvents {
@@ -221,15 +224,20 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     dataSource={data}
                     allowColumnReordering
                     showBorders={true}
-                    remoteOperations={true}
+                    remoteOperations={options.paging ?? true}
                     syncLookupFilterValues={false}
-                    onSelectionChanged={onSelectionChanged}
+                    onSelectionChanged={
+                        options.onSelectionChanged ??
+                        onSelectionChanged
+                    }
+                    onRowPrepared={options.onRowPrepared}
                     columnHidingEnabled={options.columnsHidingEnabled ?? false}
                     allowColumnResizing={true}
                     columnResizingMode={'widget'}
                     columnMinWidth={50}
                     columnAutoWidth={true}
                     onExporting={onExporting}
+                    dateSerializationFormat={'yyyy-MM-dd'}
                 >
                     <LoadPanel showPane={false}/>
                     <ColumnChooser enabled mode="select"/>
@@ -317,7 +325,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     </Toolbar>
                     <FilterRow visible={true}/>
                     <StateStoring
-                        enabled={options.stateStoringEnabled ?? true}
+                        enabled={options.stateStoringEnabled ?? false}
                         type="localStorage"
                         storageKey={"datagrid-" + options.id}
                     />

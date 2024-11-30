@@ -2,8 +2,11 @@ import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
 import {StorageUtils} from "../utils/StorageUtils";
-import {FormRef, SimpleItem} from "devextreme-react/form";
+import {CompareRule, EmailRule, FormRef, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
 import {MutableRefObject} from "react";
+import {dispatch} from "../event/EventHook";
+import {FORM_EVENTS} from "./DxForm";
+import {ValidationRule} from "../field/ValidationRule";
 
 export const buildField = (field: Field, key: any, isEditable: Boolean = true, uploadedFiles: MutableRefObject<any[]> = {current: []}, formRef: MutableRefObject<FormRef | null> = {current: null}) => {
     if (field.type === FieldType.NONE) return null;
@@ -11,7 +14,7 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
     if (field.type === FieldType.ENTITY) {
         editorOptions = {
             dataSource: {
-                store: dxUtils.getDataStore(field.url ?? '', field.valueField, field.byKeyUrl, field.filters),
+                store: dxUtils.getDataStore(field.url ?? '', field.valueField, field.byKeyUrl, field.filters, [], field.loadOptions),
                 paginate: true,
                 pageSize: 10
             },
@@ -20,7 +23,8 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
             searchEnabled: field.searchEnabled,
             searchExpr: field.searchExpr,
             wrapItemText: true,
-            buttons: ['dropDown'],
+            showClearButton: true,
+            buttons: ['clear', 'dropDown'],
         }
     }
     if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
@@ -105,7 +109,11 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
         readOnly: isEditable ? field.readonly : true,
         disabled: field.disabled,
         onFocusIn: field.onClick,
-        onValueChanged: field.onChange,
+        onValueChanged: (e: any) => {
+            dispatch(FORM_EVENTS.FIELD_CHANGED, {field: field.name, value: e.value})
+            field.onChange?.(e.value)
+        },
+        onKeyPress: field.onKeyPress,
         onItemClick: field.onSelect,
         itemRender: field.itemFormatter,
         stylingMode: 'outlined'
@@ -116,6 +124,7 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
     }
 
     let className = field.hidden ? 'dx-hidden' : '';
+
     return (
         <SimpleItem
             key={key}
@@ -126,9 +135,45 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
             editorOptions={editorOptions}
             helpText={field.helpText}
             colSpan={field.col ?? 12}
+            visible={field.visibleOnForm}
             cssClass={className}
-        />
+        >
+            {buildValidationRules(field)}
+        </SimpleItem>
     )
+}
+
+const buildValidationRules = (field: Field) => {
+    let validationRules: ValidationRule[] = [];
+    if (field.required) {
+        validationRules.push({
+            type: 'required',
+            options: {
+                message: `${field.label} es requerido`
+            }
+        });
+    }
+    validationRules = validationRules.concat(field.validators ?? []);
+    return validationRules.map((rule, index) => {
+        switch (rule.type) {
+            case 'required':
+                return <RequiredRule key={index}/>
+            case 'pattern':
+                return <PatternRule key={index} pattern={rule.options.pattern} message={rule.options.message}/>
+            case 'email':
+                return <EmailRule key={index} message={rule.options.message}/>
+            case 'compare':
+                return <CompareRule
+                    key={index}
+                    comparisonTarget={rule.options.comparisonTarget}
+                    comparisonType={rule.options.comparisonType}
+                    message={rule.options.message}
+                />
+            default:
+                return null;
+        }
+    });
+
 }
 
 const getEditorType = (field: Field): any => {

@@ -76,7 +76,9 @@ export const ProductFields = () => {
         .name('imagen')
         .label('Imagen')
         .align('center')
-        //.formatter(SharedUtils.dxImageFormatter)
+        .formatter((e: ColumnCellTemplateData) => {
+            return SharedUtils.imageFormatter(e.data?.imagen?.path, e.data?.descripcion);
+        })
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)

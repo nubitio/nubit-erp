@@ -28,7 +28,6 @@ export const InvoicePage = () => {
         const toolbar = [
             {
                 text: 'Enviar a SUNAT',
-                icon: 'fas fa-cloud-upload fa-1x',
                 type: 'info',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
@@ -62,7 +61,6 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Enviar por correo',
-                icon: 'fas fa-envelope fa-1x',
                 type: 'success',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
@@ -87,7 +85,6 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Ver',
-                icon: 'fas fa-eye fa-1x',
                 type: 'primary',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
@@ -108,7 +105,6 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Consulta CDR',
-                icon: 'fas fa-search fa-1x',
                 type: 'warning',
                 onClick: () => {
                     let selectedRow = gridRef.current?.getSelectedRow();
@@ -132,7 +128,6 @@ export const InvoicePage = () => {
                 }
             }, {
                 text: 'Consulta CPE',
-                icon: 'fas fa-check fa-1x',
                 type: 'success',
                 onClick: () => {
                     let selectedRows = gridRef.current?.getSelectedRowKeys();

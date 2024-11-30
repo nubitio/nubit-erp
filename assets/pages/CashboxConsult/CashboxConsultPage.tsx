@@ -17,7 +17,6 @@ export const CashboxConsultPage = () => {
     const toolbar = [
         {
             text: 'Reporte Simple',
-            icon: Constants.ICON_PDF,
             type: 'default',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
@@ -35,7 +34,6 @@ export const CashboxConsultPage = () => {
         },
         {
             text: 'Reporte Detallado',
-            icon: Constants.ICON_PDF,
             type: 'default',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
