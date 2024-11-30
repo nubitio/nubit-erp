@@ -12,6 +12,20 @@ export class SharedUtils {
         }
     }
 
+    static imageFormatter(imageUrl?: string, alt?: string) {
+        if (imageUrl) {
+            return (
+                <a href={imageUrl} target="_blank" rel="noreferrer">
+                    <img src={imageUrl} style={{width: '30px', height: '30px'}} alt={alt}/>
+                </a>
+            )
+        } else {
+            const name = alt ? alt : 'No image';
+            const url = `https://ui-avatars.com/api/?name=${name}`;
+            return <img src={url} style={{width: '30px', height: '30px'}} alt={alt ?? 'No image'}/>
+        }
+    }
+
     static dateFormatter(value: string) {
         const date = new Date(value);
         let timeOffset = date.getTimezoneOffset() * 60000;

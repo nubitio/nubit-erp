@@ -13,8 +13,11 @@ use App\Media\Domain\Media;
 #[ApiResource(
     shortName: 'Media',
     operations: [
-        new Get(),
+        new Get(
+            uriTemplate: '/media/{id}',
+        ),
         new Post(
+            uriTemplate: '/media',
             controller: MediaController::class,
             openapiContext: [
                 'requestBody' => [
@@ -36,7 +39,9 @@ use App\Media\Domain\Media;
             ],
             deserialize: false,
         ),
-        new Delete(),
+        new Delete(
+            uriTemplate: '/media/{id}',
+        ),
     ],
     provider: MediaProvider::class,
     processor: MediaProcessor::class

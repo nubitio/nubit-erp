@@ -36,7 +36,6 @@ export const CashboxPage = () => {
     const toolbar = [
         {
             text: 'Cerrar Caja',
-            icon: 'close',
             type: 'warning',
             onClick: () => {
                 confirm('¿Está seguro que desea cerrar la caja?', 'Cerrar Caja').then((result) => {

@@ -259,7 +259,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             if (value === '') return;
 
-
             const checkStock = await settings.get(Setting.CHECK_STOCK)
             console.log(checkStock?.value, checkStock);
 

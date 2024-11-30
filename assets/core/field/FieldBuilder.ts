@@ -1,5 +1,5 @@
 import {FieldType} from "./FieldType";
-import {Field} from "./Field";
+import {Field, LoadOption} from "./Field";
 import {DxFilterRule} from "../common/FilterRule";
 
 export class FieldBuilder {
@@ -23,6 +23,7 @@ export class FieldBuilder {
             validators: [],
             mode: 'local',
             url: undefined,
+            loadOptions: [],
             filters: [],
             byKeyUrl: null,
             textField: '',
@@ -30,6 +31,7 @@ export class FieldBuilder {
             valueType: 'string',
             filterValue: undefined,
             data: [],
+            format: '',
             formatter: null,
             itemFormatter: null,
             visible: true,
@@ -37,6 +39,7 @@ export class FieldBuilder {
             onChange: undefined,
             onSelect: undefined,
             onClick: undefined,
+            onKeyPress: undefined,
             readonly: false,
             disabled: false,
             hidden: false,
@@ -49,7 +52,9 @@ export class FieldBuilder {
             searchExpr: null,
             fixed: false,
             fixedPosition: undefined,
-            helpText: undefined
+            helpText: undefined,
+            contentRender: null,
+            visibleOnForm: true
         };
     }
 
@@ -133,6 +138,11 @@ export class FieldBuilder {
         return this;
     }
 
+    loadOptions(param: LoadOption[]): FieldBuilder {
+        this._field.loadOptions = param;
+        return this;
+    }
+
     filters(filters: DxFilterRule[]): FieldBuilder {
         this._field.filters = filters;
         return this;
@@ -165,6 +175,11 @@ export class FieldBuilder {
 
     data(data: any[]): FieldBuilder {
         this._field.data = data;
+        return this;
+    }
+
+    format(format: string): FieldBuilder {
+        this._field.format = format;
         return this;
     }
 
@@ -265,6 +280,21 @@ export class FieldBuilder {
 
     helpText(value: string) {
         this._field.helpText = value;
+        return this;
+    }
+
+    contentRender(value: string | Function | null) {
+        this._field.contentRender = value;
+        return this;
+    }
+
+    visibleOnForm(value: boolean) {
+        this._field.visibleOnForm = value;
+        return this;
+    }
+
+    onKeyPress(param: (e) => void) {
+        this._field.onKeyPress = param;
         return this;
     }
 

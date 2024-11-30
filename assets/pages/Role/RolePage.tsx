@@ -50,7 +50,6 @@ export const RolePage = () => {
     const toolbar = [
         {
             text: 'Permisos',
-            icon: 'fas fa-user-shield fa-1x',
             type: 'info',
             onClick: () => {
                 let row = gridRef.current?.getSelectedRow();

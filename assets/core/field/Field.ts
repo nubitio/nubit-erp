@@ -1,5 +1,8 @@
 import {FieldType} from "./FieldType";
 import {DxFilterRule} from "../common/FilterRule";
+import {ValidationRule} from "./ValidationRule";
+
+export type LoadOption = Record<string, any>
 
 export interface Field {
     isIdentity: boolean;
@@ -15,23 +18,26 @@ export interface Field {
     sortable: boolean;
     filterable: boolean;
     hideable: boolean;
-    validators: any[];
+    validators: ValidationRule[];
     mode: "remote" | "local" | "none";
     url: string | undefined;
+    loadOptions: LoadOption[];
     filters: DxFilterRule[];
     byKeyUrl: string | null;
     textField: string;
     valueField: string;
     valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime";
+    format: string;
     filterValue: any;
     data: any[];
     formatter: any;
     itemFormatter: any;
     visible: boolean;
-    defaultValue: string | number | boolean | Date | null | undefined;
+    defaultValue: string | number | boolean | Date | null | undefined | Function;
     onChange: any;
     onSelect: any;
     onClick: any;
+    onKeyPress: ((e) => void) | undefined;
     readonly: boolean;
     disabled: boolean;
     hidden: boolean;
@@ -45,4 +51,6 @@ export interface Field {
     fixed: boolean;
     fixedPosition: "left" | "right" | undefined;
     helpText: string | undefined;
+    contentRender: any;
+    visibleOnForm: boolean;
 }

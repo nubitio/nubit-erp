@@ -44,7 +44,6 @@ export const PriceListPage = () => {
 
     const toolbar = [
         {
-            icon: 'fas fa-tags fa-1x',
             text: 'Precios',
             type: 'info',
             onClick: () => {
