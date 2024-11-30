@@ -2,23 +2,26 @@
 
 namespace App\Core\Infrastructure\Service;
 
-use mikehaertl\wkhtmlto\Pdf;
+use Pontedilana\PhpWeasyPrint\Pdf;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PdfExporter
 {
+    public const int TIMEOUT = 30;
+
     /**
      * @param array<int|string, mixed> $options
      */
     public function export(string $content, string $filename, array $options = []): StreamedResponse
     {
-        $pdf = new Pdf($content);
+        $pdf = new Pdf($_ENV['WEASYPRINT_BINARY']);
         $pdf->setOptions($options);
+        $pdf->setTimeout(self::TIMEOUT);
 
-        // Output the results
-        $response = new StreamedResponse(function () use ($pdf) {
-            echo $pdf->toString();
+        $response = new StreamedResponse(function () use ($pdf, $content) {
+            echo $pdf->getOutputFromHtml($content);
         });
+
         $response->headers->set('Content-Type', 'application/pdf');
         $response->headers->set('Content-Disposition', sprintf('inline; filename="%s.pdf"', $filename));
 

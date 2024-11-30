@@ -15,7 +15,7 @@ class Kardex
         public ?string $productName = null,
         public ?int $income = null,
         public ?int $outcome = null,
-        public ?int $stock = null
+        public ?int $stock = null,
     ) {
     }
 }

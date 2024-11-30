@@ -7,7 +7,7 @@ use App\Core\Domain\Exception\ServiceException;
 readonly class ChangePasswordUseCase
 {
     public function __construct(
-        private UserRepositoryInterface $repository
+        private UserRepositoryInterface $repository,
     ) {
     }
 

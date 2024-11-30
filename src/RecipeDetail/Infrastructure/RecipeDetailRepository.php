@@ -2,9 +2,9 @@
 
 namespace App\RecipeDetail\Infrastructure;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\RecipeDetail\Domain\RecipeDetailRepositoryInterface;
 
 readonly class RecipeDetailRepository implements RecipeDetailRepositoryInterface
@@ -14,7 +14,7 @@ readonly class RecipeDetailRepository implements RecipeDetailRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

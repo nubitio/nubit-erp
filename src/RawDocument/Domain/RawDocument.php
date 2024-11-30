@@ -16,7 +16,7 @@ class RawDocument
         #[SerializedName('document')]
         public ?string $document = null,
         #[SerializedName('created_at')]
-        public ?\DateTimeInterface $created_at = null
+        public ?\DateTimeInterface $created_at = null,
     ) {
     }
 }

@@ -19,7 +19,7 @@ class StorageMigrateCommand extends Command
 {
     public function __construct(
         private readonly FileManager $fileManager,
-        private readonly SettingsService $settingsService
+        private readonly SettingsService $settingsService,
     ) {
         parent::__construct();
     }

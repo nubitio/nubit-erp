@@ -5,7 +5,7 @@ namespace App\Kardex\Domain;
 readonly class KardexGetAllUseCase
 {
     public function __construct(
-        private KardexRepositoryInterface $kardexRepository
+        private KardexRepositoryInterface $kardexRepository,
     ) {
     }
 

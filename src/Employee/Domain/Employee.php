@@ -33,7 +33,7 @@ class Employee
         #[SerializedName('salary')]
         public ?float $salary = null,
         #[SerializedName('active')]
-        public ?bool $active = false
+        public ?bool $active = false,
     ) {
     }
 

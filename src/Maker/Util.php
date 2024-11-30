@@ -104,7 +104,7 @@ class Util
                 'integer' => 'FieldType.NUMBER',
                 'boolean' => 'FieldType.SWITCH',
                 'date' => 'FieldType.DATE',
-                default => 'FieldType.TEXT'
+                default => 'FieldType.TEXT',
             };
             if (in_array($column, $foreignKeys)) {
                 $formType = 'FieldType.SELECT';

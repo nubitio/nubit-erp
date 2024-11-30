@@ -16,7 +16,7 @@ readonly class InvoiceConsultUseCase
         private InvoiceRepositoryInterface $invoiceRepository,
         private BillConsultUseCase $billConsultUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings
+        private SettingsService $settings,
     ) {
     }
 

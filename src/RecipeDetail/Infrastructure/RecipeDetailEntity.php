@@ -26,7 +26,7 @@ class RecipeDetailEntity
         public ?float $quantity = null,
         #[ORM\ManyToOne(targetEntity: RecipeEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'recipe_id', referencedColumnName: 'id')]
-        public ?RecipeEntity $recipe = null
+        public ?RecipeEntity $recipe = null,
     ) {
     }
 }

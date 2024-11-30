@@ -9,19 +9,19 @@ import {DxFilterRule} from "./FilterRule";
 import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
-    private fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
+    private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
         let subscription = httpClient.get<any[]>(url, {params: loadOptions});
 
         return lastValueFrom(subscription)
             .then((response: ApiResponse<any[]>) => {
                 return {
                     data: response.data,
-                    totalCount: Number(response.headers['x-total-count'] ?? response.data.length)
+                    totalCount: Number(response.headers['x-total-count'])
                 } as GridData<any>;
             });
     }
 
-    private fetchById(url: string, id: any): Promise<any> {
+    private async fetchById(url: string, id: any): Promise<any> {
         let subscription = httpClient.get<any>(`${url}/${id}`);
 
         return lastValueFrom(subscription)
@@ -43,6 +43,10 @@ class DxUtils {
             })
         }
         return filters;
+    }
+
+    makeFilterRules(filterRules: DxFilterRule[]): string {
+        return filterRules.map(filter => `filter[]=["${filter.field}","${filter.operator}","${filter.value}"]`).join('&');
     }
 
     getDataStore(

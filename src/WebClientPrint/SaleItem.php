@@ -6,8 +6,8 @@ class SaleItem
 {
     public function __construct(
         private string $name = '',
-        private ?string $price = '',
-        private readonly ?bool $dollarSign = false
+        private float|string|null $price = '',
+        private readonly ?bool $dollarSign = false,
     ) {
     }
 
@@ -23,7 +23,7 @@ class SaleItem
         $left = str_pad($this->name, $leftCols);
         $sign = ($this->dollarSign ? 'S/ ' : '');
         if (is_numeric($this->price)) {
-            $this->price = number_format($this->price, 2, '.', '');
+            $this->price = number_format(floatval($this->price), 2, '.', '');
         }
         $right = str_pad($sign.$this->price, $rightCols, ' ', STR_PAD_LEFT);
 

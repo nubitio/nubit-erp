@@ -23,7 +23,7 @@ readonly class SaleVoidUseCase
         private VoidedCreateUseCase $voidedCreateUseCase,
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings
+        private SettingsService $settings,
     ) {
     }
 

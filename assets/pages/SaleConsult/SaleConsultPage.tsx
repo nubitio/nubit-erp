@@ -2,7 +2,7 @@ import "./SaleConsultPage.scss";
 import DateBox from "devextreme-react/date-box";
 import {Button} from "devextreme-react";
 import {useRef, useState} from "react";
-import Form, {SimpleItem} from "devextreme-react/form";
+import Form, {FormRef, SimpleItem} from "devextreme-react/form";
 import {CardAuth} from "../../components";
 import SelectBox from "devextreme-react/select-box";
 
@@ -20,12 +20,12 @@ export const SaleConsultPage = () => {
     const [selectedReport, setSelectedReport] = useState<string>();
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
-    const formRef = useRef<Form>(null);
+    const formRef = useRef<FormRef>(null);
 
     const handleGenerateReport = () => {
         let data = `report=${selectedReport}&date-from=${startDate?.toISOString()}&date-to=${endDate?.toISOString()}`;
         window.open(`/sale/consult?${data}`);
-        formRef.current?.instance.resetValues();
+        formRef.current?.instance().clear();
     };
     return (
         <div id={container}>

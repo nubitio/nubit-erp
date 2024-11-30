@@ -5,24 +5,28 @@ import Form, {ButtonItem, ButtonOptions, Item, Label, RequiredRule} from 'devext
 import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
-import {authService} from "../../services/auth.service";
+import {authService} from "../../service/auth.service";
 import {StorageUtils} from "../../core/utils/StorageUtils";
-import {LocalPicker} from "../../components/library/local-picker/LocalPicker";
+import {LocalPicker} from "../../components/utils/local-picker/LocalPicker";
 
 export const LoginForm = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const formData = useRef({username: '', password: ''});
     const [showLocalPicker, setShowLocalPicker] = useState(false);
+    const [user, setUser] = useState('');
+    const [password, setPassword] = useState('');
 
     const onSubmit = useCallback(async (e) => {
         e.preventDefault();
         const {username, password} = formData.current;
+        setUser(username);
+        setPassword(password);
         setLoading(true);
 
         authService.login(username, password).subscribe({
             next: (response) => {
-                StorageUtils.setItem('token', response.data.data.token);
+                StorageUtils.setItem('token', response.data.token);
                 setShowLocalPicker(true);
             },
             complete: () => {
@@ -54,7 +58,7 @@ export const LoginForm = () => {
                     </ButtonOptions>
                 </ButtonItem>
             </Form>
-            <LocalPicker visible={showLocalPicker} setVisible={setShowLocalPicker}/>
+            <LocalPicker visible={showLocalPicker} setVisible={setShowLocalPicker} username={user} password={password}/>
         </form>
     );
 };

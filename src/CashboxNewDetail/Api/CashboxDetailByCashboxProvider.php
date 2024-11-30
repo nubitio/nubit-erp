@@ -8,11 +8,11 @@ use App\CashboxNewDetail\Domain\CashboxDetail;
 use App\CashboxNewDetail\Domain\GetAllCashboxDetailUseCase;
 use App\CashboxNewDetail\Infrastructure\CashboxDetailEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\FilterOperation;
-use App\Core\Infrastructure\DataLoader\FilterRule;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\SortRule;
+use App\Core\Domain\DataLoader\FilterOperation;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<CashboxDetail>

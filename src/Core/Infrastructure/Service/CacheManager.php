@@ -8,7 +8,7 @@ use Psr\Cache\InvalidArgumentException;
 readonly class CacheManager
 {
     public function __construct(
-        private CacheItemPoolInterface $cache
+        private CacheItemPoolInterface $cache,
     ) {
     }
 

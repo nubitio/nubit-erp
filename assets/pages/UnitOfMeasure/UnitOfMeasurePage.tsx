@@ -24,6 +24,7 @@ export const UnitOfMeasurePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'unitOfMeasure'}
                 title={'Unidades de medida'}
                 url={API_URL}
                 allowAdd={true}

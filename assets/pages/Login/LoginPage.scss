@@ -21,7 +21,7 @@ body {
     grid-template-areas: "main sidebar";
   }
 
-  body::before {
+  #login-body::before {
     content: "";
     position: absolute;
     top: 0;
@@ -36,7 +36,7 @@ body {
     background-color: rgba(#03a9f4, 0.2);
   }
 
-  body::after {
+  #login-body::after {
     content: "";
     position: absolute;
     top: 0;

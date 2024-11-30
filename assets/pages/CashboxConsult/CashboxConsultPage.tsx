@@ -56,6 +56,7 @@ export const CashboxConsultPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'cashbox-consult'}
                 ref={gridRef}
                 title={'Reportes de caja'}
                 toolbar={toolbar}

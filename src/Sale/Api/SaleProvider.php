@@ -5,13 +5,13 @@ namespace App\Sale\Api;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\FilterOperation;
-use App\Core\Infrastructure\DataLoader\FilterRule;
-use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\JoinType;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\SortRule;
+use App\Core\Domain\DataLoader\FilterOperation;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\JoinType;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\SortRule;
 use App\Sale\Domain\GetAllSaleUseCase;
 use App\Sale\Domain\GetOneSaleUseCase;
 use App\Sale\Domain\Sale;
@@ -35,7 +35,7 @@ readonly class SaleProvider implements ApiProviderInterface
             match ($type) {
                 'inbound' => $context = $this->buildContextForInbound($context),
                 'outbound' => $context = $this->buildContextForOutbound($context),
-                default => $context = $this->buildContextForSale($context)
+                default => $context = $this->buildContextForSale($context),
             };
             $options = OptionsBuilder::build($context, SaleEntity::class, Sale::class);
 

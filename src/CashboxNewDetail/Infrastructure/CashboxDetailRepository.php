@@ -5,11 +5,11 @@ namespace App\CashboxNewDetail\Infrastructure;
 use App\CashboxNew\Infrastructure\CashboxEntity;
 use App\CashboxNewDetail\Domain\CashboxDetail;
 use App\CashboxNewDetail\Domain\CashboxDetailRepositoryInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +24,7 @@ readonly class CashboxDetailRepository implements CashboxDetailRepositoryInterfa
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

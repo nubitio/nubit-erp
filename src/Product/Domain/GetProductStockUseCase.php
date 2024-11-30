@@ -5,7 +5,7 @@ namespace App\Product\Domain;
 readonly class GetProductStockUseCase
 {
     public function __construct(
-        private ProductRepositoryInterface $productRepository
+        private ProductRepositoryInterface $productRepository,
     ) {
     }
 

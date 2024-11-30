@@ -30,7 +30,7 @@ export const PriceListFields = () => {
         .width('auto')
         .align('center')
         .defaultValue(true)
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .build())
     return fields;
 }

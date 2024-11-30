@@ -6,6 +6,22 @@ import {Button} from "devextreme-react";
 
 export const buildToolbar = (items: any[] = []) => {
     return items?.map((item: any, index) => {
+        // object or array
+        if (item instanceof Array) {
+            return <Item location='after' locateInMenu='auto' key={index}>
+                {item.map((subItem: any, subIndex: number) => {
+                    return <Button
+                        key={subIndex}
+                        icon={subItem.icon}
+                        text={subItem.text}
+                        type={subItem.type}
+                        stylingMode='outlined'
+                        onClick={subItem.onClick}
+                        disabled={subItem.disabled}
+                    />
+                })}
+            </Item>
+        }
         return <Item location='after' locateInMenu='auto' key={index}>
             <Button
                 icon={item.icon}
@@ -25,7 +41,7 @@ const buildLookup = (field: Field) => {
     if (field.type === FieldType.ENTITY) {
         lookup = <Lookup
             dataSource={{
-                store: dxUtils.getDataStore(field.url, field.valueField, field.byKeyUrl, field.filters),
+                store: dxUtils.getDataStore(field.url ?? '', field.valueField, field.byKeyUrl, field.filters),
                 paginate: true,
                 pageSize: 10
             }}
@@ -90,6 +106,7 @@ const buildValidationRules = (field: Field) => {
 export const buildColumns = (fields: Field[], forceLookup = false) => {
     return fields.map((field: Field, index) => {
         let clone = {...field};
+        clone.readonly = !field.filterable;
         if (!field.visible) return null;
         if (forceLookup && field.type === FieldType.NONE) return null;
         if (forceLookup) clone.filterable = true;
@@ -101,6 +118,7 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             alignment={field.align}
             allowSorting={field.sortable}
             allowFiltering={field.filterable}
+            allowHiding={field.hideable}
             cellRender={field.formatter}
             setCellValue={field.onChange}
             width={field.width}
@@ -108,6 +126,8 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             editorOptions={editorOptions}
             dataType={field.valueType}
             filterValue={field.filterValue}
+            hidingPriority={field.hidingPriority}
+            fixed={field.fixed}
         >
             {buildLookup(clone)}
             {buildValidationRules(clone)}

@@ -21,7 +21,7 @@ class Branch
         #[SerializedName('telefono')]
         public ?string $telefono = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool $estado = false,
     ) {
     }
 }

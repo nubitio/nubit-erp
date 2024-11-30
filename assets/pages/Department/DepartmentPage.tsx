@@ -1,7 +1,4 @@
-import {useEffect} from "react";
-import Department from "../Department";
 import "./DepartmentPage.scss";
-import {InvoiceFields} from "../Invoice/InvoiceFields";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
@@ -27,6 +24,7 @@ export const DepartmentPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'department'}
                 title={'Departamentos laborales'}
                 url={API_URL}
                 allowAdd={true}

@@ -7,7 +7,7 @@ use App\PriceListDetail\Domain\PriceListDetail;
 readonly class SavePriceList
 {
     public function __construct(
-        private PriceListRepositoryInterface $repository
+        private PriceListRepositoryInterface $repository,
     ) {
     }
 

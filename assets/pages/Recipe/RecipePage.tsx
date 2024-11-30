@@ -5,10 +5,11 @@ import {DxDialog} from "../../core/dialog/DxDialog";
 import {DxForm, DxFormEvents} from "../../core/form/DxForm";
 import {RecipeDetailFields, RecipeFields} from "./RecipeFields";
 import {useEffect, useRef} from "react";
-import {bus} from "../../core/event/EventBus";
 import {httpClient} from "../../core/http/HttpClient";
+import {useEvents} from "../../core/event/EventHook";
 
 export const RecipePage = () => {
+    const [on, emit] = useEvents();
     const formRef = useRef<DxFormEvents>(null)
     const container = "wrapper";
     const fields = RecipeFields(formRef.current);
@@ -29,7 +30,7 @@ export const RecipePage = () => {
     let alreadySetup = false;
 
     const setupObservers = () => {
-        bus.on(EVENTS.EDIT, (payload: any) => {
+        on(EVENTS.EDIT, (payload: any) => {
             httpClient.get<any>(`${API_URL}/${payload.row.id}/details`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
@@ -46,6 +47,7 @@ export const RecipePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'recipe'}
                 title={'Recetas'}
                 url={API_URL}
                 detailUrl={API_URL + '/{id}/details'}

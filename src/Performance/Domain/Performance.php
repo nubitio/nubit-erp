@@ -28,7 +28,7 @@ class Performance
         #[SerializedName('quantity')]
         public ?float $quantity = null,
         #[SerializedName('obs')]
-        public ?string $obs = null
+        public ?string $obs = null,
     ) {
     }
 

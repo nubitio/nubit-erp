@@ -27,7 +27,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         #[SerializedName('pin')]
         public ?string $pin = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool $estado = false,
     ) {
     }
 

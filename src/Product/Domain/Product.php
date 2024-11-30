@@ -35,7 +35,7 @@ class Product
         #[SerializedName('imagen')]
         public ?Media $imagen = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool $estado = false,
     ) {
     }
 }

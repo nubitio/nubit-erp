@@ -7,13 +7,14 @@ import {CustomerFields} from "./CustomerFields";
 import {useRef} from "react";
 
 export const CustomerPage = () => {
-    const formRef = useRef<DxFormEvents|null>(null);
+    const formRef = useRef<DxFormEvents | null>(null);
     const container = "wrapper";
     const fields = CustomerFields(formRef.current);
 
     return (
         <div id={container}>
             <DxDataGrid
+                id={'customer'}
                 title={'Clientes'}
                 url={CustomerPage.API_URL}
                 allowAdd={true}

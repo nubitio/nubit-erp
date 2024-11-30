@@ -8,7 +8,7 @@ use Doctrine\Persistence\ConnectionRegistry;
 readonly class TenantConnectionSwitcher
 {
     public function __construct(
-        private ConnectionRegistry $connectionRegistry
+        private ConnectionRegistry $connectionRegistry,
     ) {
     }
 

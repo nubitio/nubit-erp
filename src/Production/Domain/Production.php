@@ -32,7 +32,7 @@ class Production
         public ?int $status = null,
         /** @var ProductionDetail[] $details */
         #[SerializedName('details')]
-        public array $details = []
+        public array $details = [],
     ) {
     }
 }

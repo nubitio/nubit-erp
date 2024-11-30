@@ -2,12 +2,12 @@
 
 namespace App\Sale\Domain;
 
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 readonly class GetSalesByCustomerIdUseCase
 {
     public function __construct(
-        private SaleRepositoryInterface $repository
+        private SaleRepositoryInterface $repository,
     ) {
     }
 

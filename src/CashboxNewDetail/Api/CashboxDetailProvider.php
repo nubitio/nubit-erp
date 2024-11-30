@@ -9,9 +9,9 @@ use App\CashboxNewDetail\Domain\GetAllCashboxDetailUseCase;
 use App\CashboxNewDetail\Domain\GetOneCashboxDetailUseCase;
 use App\CashboxNewDetail\Infrastructure\CashboxDetailEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\SortRule;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<CashboxDetail>

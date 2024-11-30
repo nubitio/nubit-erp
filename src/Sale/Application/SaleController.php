@@ -7,31 +7,25 @@ use App\Core\Domain\Common\ApiResponse;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;
-use App\MilitaryPatient\Domain\GetInvoiceExtraDataByCustomerIdUseCase;
 use App\Sale\Domain\CloneSaleUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use App\Sale\Domain\SaleVoidUseCase;
-use App\WebClientPrint\WebClientPrint;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class SaleController extends BaseController
 {
     #[Route('/sale', name: 'sale_index', methods: ['GET'])]
     public function index(): Response
     {
-        $printDetectionScript = WebClientPrint::createWcppDetectionScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), strval(session_id()));
-        $printScript = WebClientPrint::createScript($this->generateUrl('wcp', [], UrlGeneratorInterface::ABSOLUTE_URL), $this->generateUrl('wcp_print', [], UrlGeneratorInterface::ABSOLUTE_URL), session_id());
-
         return $this->render('sale/index.html.twig', [
-            'printDetectionScript' => $printDetectionScript,
-            'printScript' => $printScript,
+            'printDetectionScript' => '',
+            'printScript' => '',
         ]);
     }
 
@@ -90,7 +84,7 @@ class SaleController extends BaseController
     }
 
     #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById, GetInvoiceExtraDataByCustomerIdUseCase $getInvoiceExtraDataByCustomerIdUseCase): Response
+    public function print(Request $request, string $id, GetOneVoucherUseCase $getOneById): Response
     {
         $voucher = $getOneById($id);
         $qr = '';
@@ -99,14 +93,10 @@ class SaleController extends BaseController
         }
 
         $template = 'sale/report/invoice.html.twig';
-        if ('20369393546' == $voucher->company_id) {
-            $template = 'sale/report/hmr_invoice.html.twig';
-            $extraData = $getInvoiceExtraDataByCustomerIdUseCase(strval($voucher->customer_doc_number), $id);
-        }
         $content = $this->renderView($template, [
             'qr' => $qr,
             'voucher' => $voucher,
-            'extraData' => $extraData ?? null,
+            'extraData' => null,
         ]);
 
         $preview = $request->get('preview');

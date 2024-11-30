@@ -26,7 +26,7 @@ class SaleDetail
         #[SerializedName('descuento')]
         public ?float $descuento = null,
         #[SerializedName('precio_total')]
-        public ?float $precio_total = null
+        public ?float $precio_total = null,
     ) {
     }
 }

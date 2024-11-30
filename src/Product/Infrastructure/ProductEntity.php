@@ -51,7 +51,7 @@ class ProductEntity
         #[JoinColumn(name: 'imagen', referencedColumnName: 'id')]
         public ?MediaEntity $imagen = null,
         #[Column(name: 'estado', type: 'integer')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

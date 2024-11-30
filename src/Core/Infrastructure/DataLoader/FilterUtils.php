@@ -2,6 +2,7 @@
 
 namespace App\Core\Infrastructure\DataLoader;
 
+use App\Core\Domain\DataLoader\FilterOperation;
 use Doctrine\ORM\QueryBuilder;
 
 class FilterUtils
@@ -20,6 +21,7 @@ class FilterUtils
             FilterOperation::NotIn => 'NOT IN',
             FilterOperation::IsNull => 'IS NULL',
             FilterOperation::IsNotNull => 'IS NOT NULL',
+            FilterOperation::And => 'AND',
         };
     }
 

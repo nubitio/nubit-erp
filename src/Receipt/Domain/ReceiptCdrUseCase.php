@@ -18,7 +18,7 @@ readonly class ReceiptCdrUseCase
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
         private SettingsService $settings,
-        private FileManager $fileManager
+        private FileManager $fileManager,
     ) {
     }
 

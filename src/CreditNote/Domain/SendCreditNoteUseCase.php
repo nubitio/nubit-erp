@@ -18,7 +18,7 @@ readonly class SendCreditNoteUseCase
         private NoteSendUseCase $noteSendUseCase,
         private CreditNoteRepositoryInterface $creditNoteRepository,
         private FileManager $fileManager,
-        private SettingsService $settings
+        private SettingsService $settings,
     ) {
     }
 

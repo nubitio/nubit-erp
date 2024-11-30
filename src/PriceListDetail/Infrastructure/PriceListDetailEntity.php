@@ -20,7 +20,7 @@ class PriceListDetailEntity
         #[ORM\Column(name: 'product_id', type: 'string')]
         public ?string $product_id = null,
         #[ORM\Column(name: 'price', type: 'decimal')]
-        public ?float $price = null
+        public ?float $price = null,
     ) {
     }
 }

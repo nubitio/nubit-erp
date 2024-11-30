@@ -5,13 +5,13 @@ import {Item as ToolbarItem, Toolbar} from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from "devextreme-react/date-box";
-import {kardexService} from "../../services/kardex.service";
-import DataGrid, {Column, FilterRow, MasterDetail, Selection} from "devextreme-react/data-grid";
+import {kardexService} from "../../service/kardex.service";
+import DataGrid, {Column, DataGridRef, FilterRow, MasterDetail, Selection} from "devextreme-react/data-grid";
 import {DateUtils} from "../../core/utils/DateUtils";
 import {KardexDetailPage} from "./KardexDetailPage";
 
 export const KardexPage = () => {
-    const gridRef = useRef<DataGrid>(null)
+    const gridRef = useRef<DataGridRef>(null)
     const [dateFrom, setDateFrom] = useState<Date>(new Date());
     const [dateTo, setDateTo] = useState<Date>(new Date());
     const [data, setData] = useState<any[]>([]);
@@ -87,7 +87,7 @@ export const KardexPage = () => {
                             stylingMode='outlined'
                             type={'success'}
                             onClick={() => {
-                                const productId = gridRef.current?.instance.getSelectedRowKeys()[0];
+                                const productId = gridRef.current?.instance().getSelectedRowKeys()[0];
                                 if (!productId) {
                                     return;
                                 }

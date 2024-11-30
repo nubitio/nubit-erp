@@ -18,7 +18,7 @@ readonly class AuthProcessor implements ApiProcessorInterface
 {
     public function __construct(
         private GetOneUserByUsernameUseCase $getOneUserByUsernameUseCase,
-        private GetTokenUseCase $getTokenUseCase
+        private GetTokenUseCase $getTokenUseCase,
     ) {
     }
 

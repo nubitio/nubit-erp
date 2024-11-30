@@ -22,7 +22,7 @@ class PaymentMethodEntity
         #[Column(name: 'name', type: 'string')]
         public ?string $name = null,
         #[Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 }

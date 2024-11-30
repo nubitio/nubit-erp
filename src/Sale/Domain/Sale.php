@@ -76,7 +76,7 @@ class Sale
         public ?float $total = null,
         /** @var SaleDetail[] $details */
         #[SerializedName('details')]
-        public array $details = []
+        public array $details = [],
     ) {
     }
 }

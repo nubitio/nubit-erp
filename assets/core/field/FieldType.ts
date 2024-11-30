@@ -4,6 +4,7 @@ export enum FieldType {
     PASSWORD = 'password',
     TEXTAREA = 'textarea',
     DATE = 'date',
+    DATETIME = 'datetime',
     TIME = 'time',
     TIME_SPINNER = 'time_spinner',
     NUMBER = 'number',
@@ -17,4 +18,5 @@ export enum FieldType {
     CHECKBOX = 'checkbox',
     FILE = 'file',
     SUBMIT = 'submit',
+    LOOKUP = 'lookup',
 }

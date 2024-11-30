@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 readonly class TenantListener
 {
     public function __construct(
-        private TenantConnectionSwitcher $tenantConnectionSwitcher
+        private TenantConnectionSwitcher $tenantConnectionSwitcher,
     ) {
     }
 

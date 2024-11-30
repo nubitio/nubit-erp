@@ -22,7 +22,7 @@ class UnitOfMeasure
         #[SerializedName('is_reference')]
         public ?bool $is_reference = false,
         #[SerializedName('active')]
-        public ?bool $active = false
+        public ?bool $active = false,
     ) {
     }
 }

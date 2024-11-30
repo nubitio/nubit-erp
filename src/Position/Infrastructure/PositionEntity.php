@@ -22,7 +22,7 @@ class PositionEntity
         #[ORM\Column(name: 'name', type: 'string')]
         public ?string $name = null,
         #[ORM\Column(name: 'description', type: 'string')]
-        public ?string $description = null
+        public ?string $description = null,
     ) {
     }
 }

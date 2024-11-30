@@ -15,7 +15,7 @@ readonly class SaleInvoiceUseCase
         private GetOneSaleUseCase $getOneSaleUseCase,
         private UpdateSaleUseCase $updateSaleUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
-        private EventDispatcherInterface $eventDispatcher
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 

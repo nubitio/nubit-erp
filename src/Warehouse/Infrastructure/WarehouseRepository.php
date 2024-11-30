@@ -3,11 +3,11 @@
 namespace App\Warehouse\Infrastructure;
 
 use App\Branch\Infrastructure\BranchEntity;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,7 +21,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

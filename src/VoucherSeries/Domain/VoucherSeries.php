@@ -22,7 +22,7 @@ class VoucherSeries
         #[SerializedName('serie_asociada')]
         public ?string $serie_asociada = null,
         #[SerializedName('active')]
-        public ?bool $active = false
+        public ?bool $active = false,
     ) {
     }
 }

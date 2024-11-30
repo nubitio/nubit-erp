@@ -19,14 +19,15 @@ export class FieldBuilder {
             align: 'left',
             sortable: true,
             filterable: true,
+            hideable: true,
             validators: [],
             mode: 'local',
-            url: '',
+            url: undefined,
             filters: [],
             byKeyUrl: null,
             textField: '',
             valueField: '',
-            valueType: undefined,
+            valueType: 'string',
             filterValue: undefined,
             data: [],
             formatter: null,
@@ -42,7 +43,13 @@ export class FieldBuilder {
             required: false,
             precision: 0,
             accept: null,
-            buttons: []
+            buttons: [],
+            hidingPriority: undefined,
+            searchEnabled: true,
+            searchExpr: null,
+            fixed: false,
+            fixedPosition: undefined,
+            helpText: undefined
         };
     }
 
@@ -103,6 +110,11 @@ export class FieldBuilder {
 
     filterable(filterable: boolean): FieldBuilder {
         this._field.filterable = filterable;
+        return this;
+    }
+
+    hideable(hideable: boolean): FieldBuilder {
+        this._field.hideable = hideable;
         return this;
     }
 
@@ -223,6 +235,36 @@ export class FieldBuilder {
 
     buttons(value: any[]): FieldBuilder {
         this._field.buttons = value;
+        return this;
+    }
+
+    hidingPriority(value: number): FieldBuilder {
+        this._field.hidingPriority = value;
+        return this;
+    }
+
+    searchEnabled(value: boolean): FieldBuilder {
+        this._field.searchEnabled = value;
+        return this;
+    }
+
+    searchExpr(value: string[]): FieldBuilder {
+        this._field.searchExpr = value;
+        return this;
+    }
+
+    fixed(value: boolean): FieldBuilder {
+        this._field.fixed = value;
+        return this;
+    }
+
+    fixedPosition(value: "left" | "right"): FieldBuilder {
+        this._field.fixedPosition = value;
+        return this;
+    }
+
+    helpText(value: string) {
+        this._field.helpText = value;
         return this;
     }
 

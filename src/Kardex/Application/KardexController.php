@@ -61,7 +61,7 @@ class KardexController extends BaseController
     public function export(
         Request $request,
         KardexGetAllUseCase $kardexGetAllUseCase,
-        XlsExporter $xlsExporter
+        XlsExporter $xlsExporter,
     ): Response {
         /** @var string $branchId */
         $branchId = $request->getSession()->get('branch_id');
@@ -88,7 +88,7 @@ class KardexController extends BaseController
         Request $request,
         KardexGetOneUseCase $kardexGetOneUseCase,
         XlsExporter $xlsExporter,
-        string $productId
+        string $productId,
     ): Response {
         $warehouseId = strval($request->request->get('warehouse_id'));
         $dateFrom = strval($request->query->get('dateFrom') ?? date('Y-m-1'));

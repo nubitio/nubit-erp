@@ -40,7 +40,7 @@ class CompanyEntity
         #[ORM\Column(name: 'sunat_password', type: 'string')]
         public ?string $sunat_password = null,
         #[ORM\Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

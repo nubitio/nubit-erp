@@ -1,50 +1,53 @@
 @use "../../../variables.scss" as *;
 
 .header-component {
-  flex: 0 0 auto;
-  z-index: 1;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
-  padding: 10px 0;
-  background-color: var(--base-bg);
+    flex: 0 0 auto;
+    z-index: 1;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05), 0 0 4px rgba(0, 0, 0, 0.15);
+    padding: 10px 0;
+    background-color: var(--base-bg);
 
-  .header-logo {
-    height: 38px;
-  }
+    .dx-toolbar.header-toolbar {
+        padding-right: var(--content-padding);
 
-  .header-title {
-    color: var(--accent-color);
-  }
+        .global-search-box {
+            padding-right: 11px;
 
-  .dx-toolbar.header-toolbar {
-    padding-right: var(--content-padding);
+            input {
+                padding: 10px 14px;
+                padding-inline-start: 38px;
+            }
 
-    .global-search-box {
-      padding-right: 11px;
+            .dx-texteditor.dx-editor-outlined {
+                border-radius: 999px;
+            }
+
+            .dx-placeholder {
+                line-height: 12px;
+            }
+        }
+
+        .messages {
+            position: relative;
+
+            .dx-badge {
+                position: absolute;
+                background-color: red;
+                color: white;
+                right: -10%;
+                top: -10%;
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                border-radius: 10px;
+                justify-content: center;
+            }
+        }
+
+        .dx-toolbar-item.menu-button {
+            width: var(--side-panel-min-width);
+            text-align: center;
+            padding: 0;
+        }
     }
-
-    .messages {
-      position: relative;
-
-      .dx-badge {
-        display: block;
-        position: absolute;
-        background-color: red;
-        color: white;
-        right: -10%;
-        top: -10%;
-        font-size: 12px;
-        padding: 0 4px;
-      }
-    }
-
-    .dx-toolbar-item.menu-button {
-      width: var(--side-panel-min-width);
-      text-align: center;
-      padding: 0;
-
-      .dx-icon {
-        color: var(--accent-color);
-      }
-    }
-  }
 }

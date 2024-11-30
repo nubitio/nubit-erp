@@ -76,14 +76,14 @@ export const ProductFields = () => {
         .name('imagen')
         .label('Imagen')
         .align('center')
-        .formatter(SharedUtils.dxImageFormatter)
+        //.formatter(SharedUtils.dxImageFormatter)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
         .name('estado')
         .label('Activo')
         .align('center')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .defaultValue(true)
         .build());
 

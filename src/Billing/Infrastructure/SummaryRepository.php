@@ -22,7 +22,7 @@ class SummaryRepository implements SummaryRepositoryInterface
 
     public function __construct(
         Connection $connection,
-        SerializerService $serializer
+        SerializerService $serializer,
     ) {
         $this->connection = $connection;
         $this->serializer = $serializer;

@@ -24,6 +24,7 @@ export const OperationPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'operation'}
                 title={'Operaciones'}
                 url={API_URL}
                 allowAdd={true}

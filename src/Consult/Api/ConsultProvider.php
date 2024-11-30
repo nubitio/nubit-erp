@@ -14,7 +14,7 @@ use App\Core\Domain\Api\ApiProviderInterface;
 readonly class ConsultProvider implements ApiProviderInterface
 {
     public function __construct(
-        private ConsultUseCase $consultUseCase
+        private ConsultUseCase $consultUseCase,
     ) {
     }
 

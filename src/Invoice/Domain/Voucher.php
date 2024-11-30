@@ -40,7 +40,7 @@ class Voucher
         public ?string $voucher_qr_data = null,
         public ?int $voucher_status = null,
         /** @var VoucherItem[] */
-        public array $voucher_items = []
+        public array $voucher_items = [],
     ) {
     }
 

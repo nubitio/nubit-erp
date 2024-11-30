@@ -2,11 +2,11 @@
 
 namespace App\Operation\Infrastructure;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Operation\Domain\Operation;
 use App\Operation\Domain\OperationRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,7 +19,7 @@ readonly class OperationRepository implements OperationRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

@@ -38,7 +38,7 @@ class EmployeeEntity
         #[ORM\Column(name: 'salary', type: 'decimal')]
         public ?float $salary = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 

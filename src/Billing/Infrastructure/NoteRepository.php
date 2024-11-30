@@ -18,7 +18,7 @@ class NoteRepository implements NoteRepositoryInterface
     private SerializerService $serializer;
 
     public function __construct(
-        SerializerService $serializer
+        SerializerService $serializer,
     ) {
         $this->serializer = $serializer;
     }

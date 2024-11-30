@@ -14,14 +14,15 @@ export interface Field {
     align: "left" | "center" | "right" | undefined;
     sortable: boolean;
     filterable: boolean;
+    hideable: boolean;
     validators: any[];
     mode: "remote" | "local" | "none";
-    url: string;
+    url: string | undefined;
     filters: DxFilterRule[];
     byKeyUrl: string | null;
     textField: string;
     valueField: string;
-    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime" | undefined;
+    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime";
     filterValue: any;
     data: any[];
     formatter: any;
@@ -38,4 +39,10 @@ export interface Field {
     precision: number;
     accept: any;
     buttons: any[];
+    hidingPriority: number | undefined;
+    searchEnabled: boolean;
+    searchExpr: string[] | null;
+    fixed: boolean;
+    fixedPosition: "left" | "right" | undefined;
+    helpText: string | undefined;
 }

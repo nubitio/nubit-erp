@@ -21,7 +21,6 @@ export class DateUtils {
 
     static format(dateString: string, formatOptions?: Intl.DateTimeFormatOptions) {
         const date = new Date(dateString);
-        date.setHours(date.getHours() + 5);
         if (!formatOptions) {
             formatOptions = {day: 'numeric', month: 'short', year: 'numeric'};
         }

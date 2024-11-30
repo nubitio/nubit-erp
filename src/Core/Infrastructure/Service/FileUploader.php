@@ -11,7 +11,7 @@ final readonly class FileUploader
 {
     public function __construct(
         private FilesystemOperator $uploadsFilesystem,
-        private SluggerInterface $slugger
+        private SluggerInterface $slugger,
     ) {
     }
 

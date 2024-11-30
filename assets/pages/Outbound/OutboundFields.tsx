@@ -5,7 +5,7 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import {Constants} from "../../core/common/Constants";
 import {userInformation} from "../../core/common/UserInformation";
-import {productService} from "../../services/product.service";
+import {productService} from "../../service/product.service";
 import {ProductDto} from "../../dto/product.dto";
 
 export const OutboundFields = () => {
@@ -58,7 +58,7 @@ export const OutboundFields = () => {
         .valueField('almacen_id')
         .textField('descripcion')
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
-        .defaultValue(userInformation().currentWarehouseId)
+        //.defaultValue(userInformation().currentWarehouseId)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)

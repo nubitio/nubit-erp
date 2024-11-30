@@ -24,6 +24,7 @@ export const WarehousePage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'warehouse'}
                 title={'Almacen'}
                 url={API_URL}
                 allowAdd={true}

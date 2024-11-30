@@ -32,7 +32,7 @@ class BranchEntity
         #[Column(name: 'telefono', type: 'string')]
         public ?string $telefono = null,
         #[Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = null
+        public ?bool $estado = null,
     ) {
     }
 }

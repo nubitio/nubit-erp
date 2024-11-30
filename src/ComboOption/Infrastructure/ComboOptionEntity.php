@@ -20,7 +20,7 @@ class ComboOptionEntity
         #[ORM\Column(name: '_value', type: 'string')]
         public ?string $_value = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 }

@@ -1,11 +1,20 @@
-import {defaultUser} from '../mock/default-user';
-import {lastValueFrom} from "rxjs";
-import {httpClient} from "../core/http/HttpClient";
 import {User} from "../types";
-import {Constants} from "../core/common/Constants";
+import {StorageUtils} from "../core/utils/StorageUtils";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export async function signIn(email: string, password: string) {
+    const defaultUser = {
+        id: 1,
+        username: 'admin',
+        email: 'demo@demo.com',
+        name: 'Admin',
+        role: 0,
+        roles: ['admin'],
+        branchId: 1,
+        branch: 'Main Branch',
+        warehouseId: 1,
+        avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/01.png',
+    }
     try {
         // Send request
         return {
@@ -21,9 +30,7 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function getUser() {
-    let session = JSON.parse(localStorage.getItem('session') ?? '{}')
-    let userId = session.user_id
-    return lastValueFrom(httpClient.get<User>(`${Constants.API_BASE_URL}users/${userId}`))
+    return StorageUtils.getItem('user') as User;
 }
 
 export async function createAccount(email: string, password: string) {

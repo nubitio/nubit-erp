@@ -35,7 +35,7 @@ class PerformanceEntity
         #[ORM\Column(name: 'quantity', type: 'decimal')]
         public ?float $quantity = null,
         #[ORM\Column(name: 'obs', type: 'string')]
-        public ?string $obs = null
+        public ?string $obs = null,
     ) {
     }
 }

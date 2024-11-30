@@ -17,7 +17,7 @@ readonly class MediaRepository implements MediaRepositoryInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private FilesystemOperator $uploadsFilesystem,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 

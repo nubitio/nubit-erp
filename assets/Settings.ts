@@ -1,4 +1,4 @@
-import {settingsService} from "./services/settings.service";
+import {settingsService} from "./service/settings.service";
 import {SettingDto} from "./dto/setting.dto";
 import {lastValueFrom} from "rxjs";
 

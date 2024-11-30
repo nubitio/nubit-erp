@@ -12,7 +12,7 @@ readonly class VoidedCreateUseCase
     public function __construct(
         private VoidedRepositoryInterface $voidedRepository,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private BillUtilsInterface $invoiceUtils
+        private BillUtilsInterface $invoiceUtils,
     ) {
     }
 

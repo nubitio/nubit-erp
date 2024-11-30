@@ -14,7 +14,7 @@ class Specialty
         #[SerializedName('name')]
         public ?string $name = null,
         #[SerializedName('description')]
-        public ?string $description = null
+        public ?string $description = null,
     ) {
     }
 }

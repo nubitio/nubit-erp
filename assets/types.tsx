@@ -1,7 +1,7 @@
-import dxTreeView, { ItemClickEvent } from 'devextreme/ui/tree_view';
-import { ClickEvent } from 'devextreme/ui/button';
-import { EventInfo } from 'devextreme/events';
-import List from 'devextreme-react/list';
+import dxTreeView from 'devextreme/ui/tree_view';
+import {ClickEvent} from 'devextreme/ui/button';
+import {EventInfo} from 'devextreme/events';
+import {ListRef} from 'devextreme-react/list';
 import React from 'react';
 
 export interface AppHeaderProps {
@@ -24,13 +24,19 @@ export interface UserPanelProps {
 
 export interface UserMenuSectionProps {
     showAvatar?: boolean;
-    listRef?: React.RefObject<List>;
+    listRef?: React.RefObject<ListRef>;
 }
 
 export interface User {
+    id: number;
     username: string;
-    name: string;
     email: string;
+    name: string;
+    role: number;
+    roles: string[];
+    branchId: number;
+    branch: string;
+    warehouseId: number;
     avatarUrl: string;
 }
 
@@ -57,6 +63,6 @@ interface NavigationData {
 }
 
 export type NavigationContextType = {
-    setNavigationData?: ({ currentPath }: NavigationData) => void;
+    setNavigationData?: ({currentPath}: NavigationData) => void;
     navigationData: NavigationData;
 };

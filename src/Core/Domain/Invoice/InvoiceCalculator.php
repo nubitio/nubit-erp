@@ -16,7 +16,7 @@ class InvoiceCalculator
         float $total,
         float $discountPercentage,
         float $taxPercentage,
-        float $chargesPercentage
+        float $chargesPercentage,
     ) {
         $this->total = $total;
         $this->discountPercentage = $discountPercentage;

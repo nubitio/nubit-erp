@@ -30,7 +30,7 @@ class SaleDetailEntity
         #[ORM\Column(name: 'descuento', type: 'decimal')]
         public ?float $descuento = null,
         #[ORM\Column(name: 'precio_total', type: 'decimal')]
-        public ?float $precio_total = null
+        public ?float $precio_total = null,
     ) {
     }
 }

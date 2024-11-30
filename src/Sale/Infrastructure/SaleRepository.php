@@ -2,14 +2,14 @@
 
 namespace App\Sale\Infrastructure;
 
+use App\Core\Domain\DataLoader\FilterOperation;
+use App\Core\Domain\DataLoader\FilterRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\FilterOperation;
-use App\Core\Infrastructure\DataLoader\FilterRule;
-use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Customer\Infrastructure\CustomerEntity;
 use App\Operation\Infrastructure\OperationEntity;
 use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
@@ -32,7 +32,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }
@@ -45,7 +45,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     {
         $entity = $this->entityManager->find(SaleEntity::class, $id);
         if ($entity?->numero > 0) {
-            $entity = $this->dataLoader->loadOne(new Options(
+            $entity = $this->dataLoader->loadOne(new LoadOptions(
                 entity: SaleEntity::class,
                 mapping: Sale::class,
                 joins: [
@@ -188,7 +188,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
 
     public function getSaleByCustomerId(string $id): PaginatorInterface
     {
-        return $this->dataLoader->loadCollection(new Options(
+        return $this->dataLoader->loadCollection(new LoadOptions(
             entity: SaleEntity::class,
             mapping: Sale::class,
             joins: [

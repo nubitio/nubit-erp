@@ -2,11 +2,11 @@
 
 namespace App\Employee\Infrastructure;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
 use App\Employee\Domain\Employee;
 use App\Employee\Domain\EmployeeRepositoryInterface;
 use App\Position\Infrastructure\PositionEntity;
@@ -20,7 +20,7 @@ readonly class EmployeeRepository implements EmployeeRepositoryInterface
     ) {
     }
 
-    public function getAll(Options $options): PaginatorInterface
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }

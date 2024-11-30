@@ -4,7 +4,7 @@ import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
-import {productService} from "../../services/product.service";
+import {productService} from "../../service/product.service";
 import {ProductDto} from "../../dto/product.dto";
 import {DxFormEvents} from "../../core/form/DxForm";
 
@@ -74,7 +74,7 @@ export const RecipeFields = (formRef: DxFormEvents | null) => {
         .type(FieldType.SWITCH)
         .name('active')
         .label('Activo')
-        .formatter(SharedUtils.dxBooleanFormatter)
+        .formatter(SharedUtils.booleanFormatter)
         .defaultValue(true)
         .build())
 

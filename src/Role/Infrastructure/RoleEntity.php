@@ -16,7 +16,7 @@ class RoleEntity
         #[ORM\Column(name: 'rol_id', type: 'integer')]
         public ?int $rol_id = null,
         #[ORM\Column(name: 'descripcion', type: 'string')]
-        public ?string $descripcion = null
+        public ?string $descripcion = null,
     ) {
     }
 }

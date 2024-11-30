@@ -22,7 +22,7 @@ class ConfigEntity
         #[Column(name: 'name', type: 'string')]
         public ?string $name = null,
         #[Column(name: 'value', type: 'string')]
-        public ?string $value = null
+        public ?string $value = null,
     ) {
     }
 }

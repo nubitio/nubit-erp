@@ -28,7 +28,7 @@ class VoucherSeriesEntity
         #[ORM\Column(name: 'serie_asociada', type: 'string')]
         public ?string $serie_asociada = null,
         #[ORM\Column(name: 'active', type: 'boolean')]
-        public ?bool $active = null
+        public ?bool $active = null,
     ) {
     }
 }

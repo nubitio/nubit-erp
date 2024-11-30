@@ -5,7 +5,7 @@ namespace App\Menu\Application;
 use App\Base\BaseController;
 use App\Core\Infrastructure\Service\MenuBuilder;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class MenuController extends BaseController
 {

@@ -1,7 +1,4 @@
-import {useEffect} from "react";
-import Transfer from "../Transfer";
 import "./TransferPage.scss";
-import {SupplierFields} from "../Supplier/SupplierFields";
 import {Constants} from "../../core/common/Constants";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
@@ -27,6 +24,7 @@ export const TransferPage = () => {
     return (
         <div id={container}>
             <DxDataGrid
+                id={'transfer'}
                 title={'Transferencias'}
                 url={API_URL}
                 allowAdd={true}

@@ -16,7 +16,7 @@ class PriceListDetail
         #[SerializedName('product_id')]
         public ?string $product_id = null,
         #[SerializedName('price')]
-        public ?float $price = null
+        public ?float $price = null,
     ) {
     }
 }

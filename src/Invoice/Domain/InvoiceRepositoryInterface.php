@@ -2,8 +2,8 @@
 
 namespace App\Invoice\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Sale\Domain\Sale;
 
 interface InvoiceRepositoryInterface
@@ -11,7 +11,7 @@ interface InvoiceRepositoryInterface
     /**
      * @return PaginatorInterface<Invoice>
      */
-    public function getAll(Options $options): PaginatorInterface;
+    public function getAll(LoadOptions $options): PaginatorInterface;
 
     public function getOne(string $invoiceId): Invoice;
 

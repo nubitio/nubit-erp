@@ -67,7 +67,7 @@ export const InvoiceFields = () => {
         .type(FieldType.SWITCH)
         .name('voided')
         .label('Anulado')
-        .formatter(SharedUtils.dxVoidedFormatter)
+        //.formatter(SharedUtils.dxVoidedFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()
@@ -79,7 +79,7 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('envio_sunat')
         .label('Envio sunat')
-        .formatter(SharedUtils.dxBillStatusFormatter)
+        //.formatter(SharedUtils.dxBillStatusFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()

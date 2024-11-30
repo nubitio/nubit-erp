@@ -7,7 +7,7 @@ import {StorageUtils} from "../../core/utils/StorageUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {ProductDto} from "../../dto/product.dto";
-import {productService} from "../../services/product.service";
+import {productService} from "../../service/product.service";
 import {GetStockUseCase} from "../../common/GetStockUseCase";
 import notify from "devextreme/ui/notify";
 import {DxFormEvents} from "../../core/form/DxForm";
@@ -15,9 +15,10 @@ import {httpClient} from "../../core/http/HttpClient";
 import {PriceListItemDto} from "../../dto/PriceListItemDto";
 import {lastValueFrom} from "rxjs";
 import {DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
-import {bus} from "../../core/event/EventBus";
 import {Setting, settings} from "../../Settings";
 import {CustomerPage} from "../Customer/CustomerPage";
+import {dispatch} from "../../core/event/EventHook";
+import {userInformation} from "../../core/common/UserInformation";
 
 let priceList: PriceListItemDto[] = [];
 
@@ -41,8 +42,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .valueType('date')
         .build());
-    let session = StorageUtils.getItem('session');
-    let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
+    let warehouseUrl = `${Constants.API_BASE_URL}branches/${userInformation().currentBranchId}/warehouses`;
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('almacen')
@@ -53,7 +53,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .textField('descripcion')
         .visible(false)
         .required(true)
-        .defaultValue(session['warehouse_id'])
+        //.defaultValue(session['warehouse_id'])
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -78,8 +78,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 options: {
                     icon: 'add',
                     onClick: (e: any) => {
-                        //if (app_option_mode == 'RETAIL')
-                        bus.emit(CustomerPage.EVENTS.ADD)
+                        dispatch(CustomerPage.EVENTS.ADD)
                     }
                 }
             }
@@ -174,7 +173,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
             let total = form?.getFieldValue('total');
             let discountPercent = form?.getFieldValue('descuento');
             discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
-            bus.emit(DiscountDialogEvent.OPEN, {total, discountPercent});
+            dispatch(DiscountDialogEvent.OPEN, {total, discountPercent});
         })
         .onChange((e: any) => {
             setTotal(form);
@@ -193,13 +192,12 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .type(FieldType.NONE)
         .name('estado')
         .label('Anulado')
-        .formatter(SharedUtils.dxVoidedFormatter)
         .align('center')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
         .name('created_by')
-        .defaultValue(session['user_id'])
+        .defaultValue(userInformation().currentUserId)
         .visible(false)
         .hidden(true)
         .build());

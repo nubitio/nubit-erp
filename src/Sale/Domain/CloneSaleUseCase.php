@@ -6,7 +6,7 @@ readonly class CloneSaleUseCase
 {
     public function __construct(
         private GetOneSaleUseCase $getOneSaleUseCase,
-        private CreateSaleUseCase $createSaleUseCase
+        private CreateSaleUseCase $createSaleUseCase,
     ) {
     }
 

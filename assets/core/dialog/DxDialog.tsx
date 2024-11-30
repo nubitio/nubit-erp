@@ -1,10 +1,13 @@
 import './DxDialog.scss';
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
 
 import {Popup, ToolbarItem} from 'devextreme-react/popup';
 import {useScreenSize} from '../../utils/media-query';
 import {Button} from 'devextreme-react';
-import {bus} from "../event/EventBus";
+import {useEvents} from "../event/EventHook";
+import LoadIndicator from "devextreme-react/load-indicator";
+import LoadPanel from "devextreme-react/load-panel";
+import {SharedUtils} from "../utils/SharedUtils";
 
 export interface DxDialogOptions {
     title?: string;
@@ -14,21 +17,34 @@ export interface DxDialogOptions {
     visible?: boolean;
     events?: any;
     children?: any;
+    positiveText?: string;
+    negativeText?: string;
+    footerVisible?: boolean;
+    fitContent?: boolean;
 }
 
 export interface DxDialogEvents {
+    open: (title?: string) => void;
+    close: () => void;
+}
 
+export const DIALOG_EVENTS = {
+    SHOW: 'show',
+    HIDE: 'hide'
 }
 
 export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
+    const dialogId = SharedUtils.generateId('dialog');
     const [title, setTitle] = useState<string>(options.title ?? 'Nuevo');
     const width = options.width ?? 480;
     const [visible, setVisible] = useState<boolean>(options.visible ?? false);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [isProcessing, setIsProcessing] = useState<boolean>(false);
     const {isXSmall} = useScreenSize();
+    const [on, emit] = useEvents();
 
-    const open = (title: string) => {
+    const open = (title?: string) => {
         setVisible(true);
+        if (!title) return;
         setTitle(title);
     }
 
@@ -36,67 +52,84 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
         setVisible(false);
     };
 
-    const onCancelClick = useCallback(() => {
+    const onCancelClick = () => {
         close();
-        bus.emit(options.events?.CANCEL);
-    }, [options.events.CANCEL]);
+        options.events?.CANCEL &&
+        emit(options.events.CANCEL);
+    };
 
-    const onSaveClick = useCallback(() => {
-        bus.emit(options.events?.SAVE);
-    }, [options.events.SAVE]);
+    const onSaveClick = () => {
+        options.events?.SAVE &&
+        emit(options.events.SAVE);
+    };
 
     const setupObservers = () => {
-        bus.on<any>(options.events?.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
+        on<any>(options.events?.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
 
-        bus.on(options.events?.EDIT, () => open('Editar'));
+        on(options.events?.EDIT, () => open('Editar'));
 
-        bus.on<boolean>(options.events?.LOADING, (isLoading) => setLoading(isLoading));
+        on<boolean>(options.events?.LOADING, (isLoading) => setIsProcessing(isLoading));
 
-        bus.on(options.events?.SUCCESS, () => close());
+        on(options.events?.SUCCESS, () => close());
     }
 
-    let alreadySetup = false;
-
     useEffect(() => {
-        if (!alreadySetup) {
-            setupObservers();
-            alreadySetup = true;
-        }
+        setupObservers();
     }, []);
 
-    useImperativeHandle(ref, () => ({}));
+    useImperativeHandle(ref, () => ({
+        open,
+        close
+    }));
 
     return (
-        <Popup
-            title={title}
-            visible={visible}
-            fullScreen={isXSmall}
-            width={width}
-            height={options.height ?? 'auto'}
-            maxHeight={options.maxHeight ?? 640}
-            wrapperAttr={{class: `form-popup`}}
-        >
-            <ToolbarItem
-                toolbar='bottom'
-                location='after'
+        <React.Fragment>
+            <Popup
+                title={title}
+                visible={visible}
+                fullScreen={isXSmall}
+                width={width}
+                height={options.height ?? 'auto'}
+                maxHeight={options.maxHeight ?? 640}
+                wrapperAttr={{id: dialogId, class: options.fitContent ? 'fit-content' : 'form-popup'}}
             >
-                <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
-                    <Button
-                        text='Cancelar'
-                        stylingMode='outlined'
-                        onClick={onCancelClick}
-                        disabled={loading}
-                    />
-                    <Button
-                        text={loading ? 'Guardando...' : 'Guardar'}
-                        stylingMode='outlined'
-                        type='default'
-                        onClick={onSaveClick}
-                        disabled={loading}
-                    />
-                </div>
-            </ToolbarItem>
-            {options.children}
-        </Popup>
+                {(options.footerVisible ?? true) &&
+                    <ToolbarItem
+                        toolbar='bottom'
+                        location='after'
+                    >
+                        <div className={`form-popup-buttons-container ${width <= 360 ? 'flex-buttons' : ''}`}>
+                            <Button
+                                text={options.negativeText ?? 'Cancelar'}
+                                stylingMode='outlined'
+                                onClick={onCancelClick}
+                                disabled={isProcessing}
+                            />
+                            <Button
+                                stylingMode='outlined'
+                                type='default'
+                                onClick={onSaveClick}
+                                disabled={isProcessing}
+                            >
+                                <LoadIndicator className="button-indicator" visible={isProcessing}/>
+                                <span className="dx-button-text">
+                            {options.positiveText ?? 'Guardar'}
+                        </span>
+                            </Button>
+                        </div>
+                    </ToolbarItem>
+                }
+                {options.children}
+                <LoadPanel
+                    shadingColor="rgba(0,0,0,0.4)"
+                    position={{of: `#${dialogId}`}}
+                    visible={isProcessing}
+                    showIndicator={true}
+                    shading={true}
+                    showPane={true}
+                    hideOnOutsideClick={false}
+                />
+            </Popup>
+        </React.Fragment>
     );
 });

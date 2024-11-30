@@ -9,11 +9,11 @@ use App\Category\Domain\CategoryGetAllUseCase;
 use App\Category\Domain\CategoryGetOneUseCase;
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Core\Infrastructure\DataLoader\JoinRule;
-use App\Core\Infrastructure\DataLoader\JoinType;
-use App\Core\Infrastructure\DataLoader\OptionsBuilder;
-use App\Core\Infrastructure\DataLoader\OptionUtils;
-use App\Core\Infrastructure\DataLoader\SortRule;
+use App\Core\Domain\DataLoader\JoinRule;
+use App\Core\Domain\DataLoader\JoinType;
+use App\Core\Domain\DataLoader\OptionsBuilder;
+use App\Core\Domain\DataLoader\OptionUtils;
+use App\Core\Domain\DataLoader\SortRule;
 
 /**
  * @implements ApiProviderInterface<Category>

@@ -25,7 +25,7 @@ class Customer
         #[SerializedName('price_list')]
         public ?PriceList $price_list = null,
         #[SerializedName('estado')]
-        public ?bool $estado = false
+        public ?bool $estado = false,
     ) {
     }
 }

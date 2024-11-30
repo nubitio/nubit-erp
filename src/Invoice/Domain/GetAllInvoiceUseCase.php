@@ -2,20 +2,20 @@
 
 namespace App\Invoice\Domain;
 
-use App\Core\Infrastructure\DataLoader\Options;
-use App\Core\Infrastructure\DataLoader\Paginator\PaginatorInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 readonly class GetAllInvoiceUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $repository
+        private InvoiceRepositoryInterface $repository,
     ) {
     }
 
     /**
      * @return PaginatorInterface<Invoice>
      */
-    public function __invoke(Options $options): PaginatorInterface
+    public function __invoke(LoadOptions $options): PaginatorInterface
     {
         return $this->repository->getAll($options);
     }
