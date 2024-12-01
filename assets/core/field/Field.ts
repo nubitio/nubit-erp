@@ -53,4 +53,5 @@ export interface Field {
     helpText: string | undefined;
     contentRender: any;
     visibleOnForm: boolean;
+    maxLength: number | undefined;
 }

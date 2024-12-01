@@ -2,7 +2,16 @@ import {Field} from "../field/Field";
 import {FieldType} from "../field/FieldType";
 import {dxUtils} from "../common/DxUtils";
 import {StorageUtils} from "../utils/StorageUtils";
-import {CompareRule, EmailRule, FormRef, PatternRule, RequiredRule, SimpleItem} from "devextreme-react/form";
+import {
+    CompareRule,
+    CustomRule,
+    EmailRule,
+    FormRef,
+    PatternRule,
+    RequiredRule,
+    SimpleItem,
+    StringLengthRule
+} from "devextreme-react/form";
 import {MutableRefObject} from "react";
 import {dispatch} from "../event/EventHook";
 import {FORM_EVENTS} from "./DxForm";
@@ -106,6 +115,7 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
     }
     editorOptions = {
         ...editorOptions,
+        maxLength: field.maxLength,
         readOnly: isEditable ? field.readonly : true,
         disabled: field.disabled,
         onFocusIn: field.onClick,
@@ -167,6 +177,19 @@ const buildValidationRules = (field: Field) => {
                     key={index}
                     comparisonTarget={rule.options.comparisonTarget}
                     comparisonType={rule.options.comparisonType}
+                    message={rule.options.message}
+                />
+            case 'stringLength':
+                return <StringLengthRule
+                    key={index}
+                    min={rule.options.min}
+                    max={rule.options.max}
+                    message={rule.options.message}
+                />
+            case 'custom':
+                return <CustomRule
+                    key={index}
+                    validationCallback={rule.options.validationCallback}
                     message={rule.options.message}
                 />
             default:

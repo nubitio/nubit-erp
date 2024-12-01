@@ -7,15 +7,40 @@ import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import {DxFormEvents} from "../../core/form/DxForm";
 import {consultService} from "../../service/consult.service";
 import notify from "devextreme/ui/notify";
+import {textField} from "../../core/field/TextFieldBuilder";
 
 export const CustomerFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
-    fields.push(new FieldBuilder()
+    fields.push(textField()
         .isIdentity(true)
         .name('ruc')
         .label('RUC/DNI')
-        .validators(['validCustomerId'])
+        .maxLength(11)
+        .validators([
+            {
+                type: 'stringLength',
+                options: {min: 8, max: 11, message: 'El RUC/DNI debe tener entre 8 y 11 dígitos'}
+            },
+            {
+                type: 'pattern',
+                options: {pattern: '^[0-9]+$', message: 'El RUC/DNI solo debe contener números'}
+            },
+            {
+                type: 'custom',
+                options: {
+                    validationCallback: (e: any) => {
+                        let doc = formRef?.getFieldValue('ruc');
+                        if (doc.length === 8) {
+                            return true;
+                        } else {
+                            return SharedUtils.validateRUC(doc);
+                        }
+                    },
+                    message: 'El RUC ingresado no es válido'
+                }
+            }
+        ])
         .required(true)
         .sortable(true)
         .buttons([{
