@@ -56,6 +56,26 @@ export class SharedUtils {
     static generateId(dialog: string) {
         return `${dialog}-${Math.random().toString(36).substring(2, 9)}`;
     }
+
+    static validateRUC(ruc): boolean {
+        let rucCopy = ruc;
+        let validStartWith = [10, 15, 16, 17, 20];
+        let rucPart = ruc.toString().substring(0, 2);
+        if (ruc.length !== 11 || (!validStartWith.includes(parseInt(rucPart))))
+            return false;
+
+        let sum = 0;
+        for (let i = 0; i < 11; i++) {
+            if (i !== 0) {
+                let factor = (i % 7 + (i / 7 | 0) + 1);
+                sum += (ruc % 10) * factor;
+            }
+            ruc = ruc / 10 | 0
+        }
+        let mod = sum % 11;
+        let res = 11 - mod;
+        return (rucCopy % 10 === res % 10);
+    }
 }
 
 export default function toast(

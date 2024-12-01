@@ -2,8 +2,10 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {textField} from "../../core/field/TextFieldBuilder";
+import {DxFormEvents} from "../../core/form/DxForm";
 
-export const SupplierFields = () => {
+export const SupplierFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
@@ -14,11 +16,34 @@ export const SupplierFields = () => {
         .label('Proveedor id')
         .required(true)
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
+    fields.push(textField()
         .name('ruc')
-        .label('R.U.C.')
-        .validators(['length[11, 11]'])
+        .label('RUC')
+        .maxLength(11)
+        .validators([
+            {
+                type: 'stringLength',
+                options: {min: 11, max: 11, message: 'El RUC debe tener 11 dígitos'}
+            },
+            {
+                type: 'pattern',
+                options: {pattern: '^[0-9]+$', message: 'El RUC solo debe contener números'}
+            },
+            {
+                type: 'custom',
+                options: {
+                    validationCallback: (e: any) => {
+                        let doc = formRef?.getFieldValue('ruc');
+                        if (doc.length === 8) {
+                            return true;
+                        } else {
+                            return SharedUtils.validateRUC(doc);
+                        }
+                    },
+                    message: 'El RUC/DNI ingresado no es válido'
+                }
+            }
+        ])
         .required(true)
         .build());
     fields.push(new FieldBuilder()

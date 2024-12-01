@@ -1,6 +1,7 @@
 import {FieldType} from "./FieldType";
 import {Field, LoadOption} from "./Field";
 import {DxFilterRule} from "../common/FilterRule";
+import {ValidationRule} from "./ValidationRule";
 
 export class FieldBuilder {
     private readonly _field: Field;
@@ -54,7 +55,8 @@ export class FieldBuilder {
             fixedPosition: undefined,
             helpText: undefined,
             contentRender: null,
-            visibleOnForm: true
+            visibleOnForm: true,
+            maxLength: undefined
         };
     }
 
@@ -123,7 +125,7 @@ export class FieldBuilder {
         return this;
     }
 
-    validators(validators: any[]): FieldBuilder {
+    validators(validators: ValidationRule[]): FieldBuilder {
         this._field.validators = validators;
         return this;
     }
