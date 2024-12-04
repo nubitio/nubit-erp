@@ -22,8 +22,8 @@ export const DashboardPage = () => {
                     setSales(data);
                 }),
         ])
-            .then(() => setIsLoading(false))
-            .catch((error) => console.log(error));
+            .catch((error) => console.log(error))
+            .finally(() => setIsLoading(false));
     }, [dateRange]);
 
     return (

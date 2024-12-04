@@ -39,6 +39,9 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
                              onEnterKey={handleSearch}/>
                 </Item>
                 <Item location='after' locateInMenu='never'>
+                    <Button icon='ph ph-basket' onClick={() => navigate('/pos')}/>
+                </Item>
+                <Item location='after' locateInMenu='never'>
                     <ThemeSwitcher/>
                 </Item>
                 <Item location='after'>

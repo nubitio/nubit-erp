@@ -18,6 +18,7 @@ import './styles.scss';
 import './theme/theme';
 import './styles/custom.scss';
 import {UnauthenticatedContent} from "./UnauthenticatedContent";
+import {FullScreenContent} from "./FullScreenContent";
 
 function RootApp() {
     const {user, loading} = useAuth();
@@ -27,13 +28,21 @@ function RootApp() {
         'create-account',
     ].includes(useLocation().pathname.substring(1));
 
+    const isFullScreen = [
+        'pos',
+    ].includes(useLocation().pathname.substring(1));
+
     if (loading) {
         return <LoadPanel visible/>;
     }
 
 
-    if (user && !isLoginForm) {
+    if (user && !isLoginForm && !isFullScreen) {
         return <Content/>;
+    }
+
+    if (isFullScreen) {
+        return <FullScreenContent/>;
     }
 
     return <UnauthenticatedContent/>;
