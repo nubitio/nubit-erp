@@ -5,12 +5,14 @@ namespace App\Warehouse\Infrastructure;
 use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
+use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;
 use Doctrine\ORM\Mapping\Id;
 use Doctrine\ORM\Mapping\JoinColumn;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\Table;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 
 #[IgnoreAutowire]
 #[Entity]
@@ -19,7 +21,8 @@ class WarehouseEntity
 {
     public function __construct(
         #[Id]
-        #[GeneratedValue]
+        #[GeneratedValue(strategy: 'CUSTOM')]
+        #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'almacen_id', type: 'string')]
         public ?string $almacen_id = null,
         #[ManyToOne(targetEntity: BranchEntity::class)]

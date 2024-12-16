@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\VoucherSeries\Domain\VoucherSeries;
 
 #[ApiResource(
-    shortName: 'VoucherSeries',
+    shortName: 'VoucherSerie',
     provider: VoucherSeriesProvider::class,
     processor: VoucherSeriesProcessor::class,
 )]

@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\Table;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[IgnoreAutowire]
 #[Entity]
@@ -27,20 +28,22 @@ class CategoryEntity
         #[GeneratedValue(strategy: 'CUSTOM')]
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'categoria_id', type: 'string')]
-        public ?string $categoria_id = null,
+        public ?string          $categoria_id = null,
+        #[Assert\NotBlank]
         #[Column(name: 'descripcion', type: 'string')]
-        public ?string $descripcion = null,
+        public ?string          $descripcion = null,
         #[ManyToOne(targetEntity: CategoryEntity::class, inversedBy: 'children')]
         #[JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
-        public ?CategoryEntity $parent = null,
+        public ?CategoryEntity  $parent = null,
         #[ManyToOne(targetEntity: MediaEntity::class)]
         #[JoinColumn(name: 'imagen', referencedColumnName: 'id')]
-        public ?MediaEntity $imagen = null,
+        public ?MediaEntity     $imagen = null,
         #[Column(name: 'estado', type: 'boolean')]
-        public ?bool $estado = false,
+        public ?bool            $estado = false,
         /** @var ArrayCollection<int, CategoryEntity>|array<int, CategoryEntity> */
         #[OneToMany(mappedBy: 'parent', targetEntity: CategoryEntity::class)]
         public Collection|array $children = new ArrayCollection(),
-    ) {
+    )
+    {
     }
 }
