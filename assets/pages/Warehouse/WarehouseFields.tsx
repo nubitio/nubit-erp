@@ -30,7 +30,6 @@ export const WarehouseFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()

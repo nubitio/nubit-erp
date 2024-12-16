@@ -5,8 +5,8 @@ import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
-export const BranchFields = () =>{
-    const fields:Field[] = [];
+export const BranchFields = () => {
+    const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
         .isIdentity(true)
@@ -30,14 +30,12 @@ export const BranchFields = () =>{
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('direccion')
         .label('Direccion')
-        .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)

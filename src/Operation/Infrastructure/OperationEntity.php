@@ -4,6 +4,8 @@ namespace App\Operation\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Uid\Uuid;
 
 #[IgnoreAutowire]
 #[ORM\Entity]
@@ -12,7 +14,8 @@ class OperationEntity
 {
     public function __construct(
         #[ORM\Id]
-        #[ORM\GeneratedValue]
+        #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+        #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
         #[ORM\Column(name: 'operacion_id', type: 'string')]
         public ?string $operacion_id = null,
         #[ORM\Column(name: 'descripcion', type: 'string')]

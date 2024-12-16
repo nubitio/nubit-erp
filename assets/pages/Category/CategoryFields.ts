@@ -20,7 +20,6 @@ export const CategoryFields = () => {
         .type(FieldType.TEXT)
         .name('descripcion')
         .label('Descripcion')
-        .width(100)
         .sortable(true)
         .build());
     fields.push(new FieldBuilder()

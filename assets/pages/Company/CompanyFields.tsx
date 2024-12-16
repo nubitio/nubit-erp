@@ -37,7 +37,6 @@ export const CompanyFields = () => {
         .type(FieldType.TEXT)
         .name('domicilio_fiscal')
         .label('Domicilio fiscal')
-        .width(100)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
@@ -52,7 +51,7 @@ export const CompanyFields = () => {
         .url(Constants.API_BASE_URL + 'media')
         .accept('image/*')
         .formatter((e: ColumnCellTemplateData) => {
-            return SharedUtils.imageFormatter(e.data.logo.path);
+            return SharedUtils.imageFormatter(e.data?.logo?.path, e.data?.nombre_comercial);
         })
         .build());
     fields.push(new FieldBuilder()
