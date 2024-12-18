@@ -5,67 +5,81 @@ namespace App\CashboxDetail\Infrastructure;
 use App\Cashbox\Infrastructure\CashboxEntity;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\CashboxDetail\Domain\CashboxDetailRepositoryInterface;
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\Common\DataGridLoader;
+use App\Core\Infrastructure\DataLoader\DataLoader;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
-class CashboxDetailRepository implements CashboxDetailRepositoryInterface
+readonly class CashboxDetailRepository implements CashboxDetailRepositoryInterface
 {
-    private Connection $connection;
-    private EntityManagerInterface $entityManager;
-    private DataGridLoader $dataGridLoader;
-
-    public function __construct(Connection $connection, EntityManagerInterface $entityManager)
-    {
-        $this->connection = $connection;
-        $this->entityManager = $entityManager;
-        $this->dataGridLoader = new DataGridLoader($connection);
+    public function __construct(
+        private EntityManagerInterface $entityManager,
+        private DataLoader $dataLoader,
+        private Connection $connection,
+    ) {
     }
 
-    /**
-     * @throws Exception
-     */
-    public function getAll(?array $filter = null): array
+    public function getAll(LoadOptions $options): PaginatorInterface
     {
-        return $this->dataGridLoader->load('caja_detalle', 'descripcion', filter: $filter);
+        return $this->dataLoader->loadCollection($options);
     }
 
-    /**
-     * @throws Exception
-     * @throws ORMException
-     */
-    public function insert(CashboxDetail $cashboxDetail): void
+    public function getOne(int $id): ?CashboxDetail
     {
-        /** @var false|bool|float|int|string|null $nextIndex */
-        $nextIndex = $this->connection->fetchOne('SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?', [$cashboxDetail->caja_id]);
-        if (!$nextIndex) {
-            throw new ORMException('No se pudo obtener el siguiente índice');
+        $entity = $this->entityManager->find(CashboxDetailEntity::class, $id);
+
+        if (!$entity) {
+            return null;
         }
-        $cashBox = $this->entityManager->getReference(CashboxEntity::class, $cashboxDetail->caja_id);
-        $cashboxDetail->uid = intval($nextIndex);
-        $entity = DataMapper::map($cashboxDetail, CashboxDetailEntity::class);
-        $entity->cashbox = $cashBox;
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
+
+        return DataMapper::map($entity, CashboxDetail::class);
     }
 
     /**
      * @throws ServiceException
+     * @throws ORMException
+     * @throws Exception
      */
-    public function update(CashboxDetail $cashboxDetail): void
+    public function insert(CashboxDetail $cashboxDetail): CashboxDetail
+    {
+        $entity = DataMapper::map($cashboxDetail, CashboxDetailEntity::class);
+        $entity->cashbox = $this->entityManager->getReference(CashboxEntity::class, $cashboxDetail->caja_id);
+
+        /** @var false|bool|float|int|string|null $nextIndex */
+        $nextIndex = $this->connection->fetchOne(
+            'SELECT IFNULL(MAX(uid), 0) + 1 FROM caja_detalle WHERE caja_id = ?',
+            [$cashboxDetail->caja_id]
+        );
+
+        if (!$nextIndex) {
+            throw new ServiceException('No se pudo obtener el siguiente índice');
+        }
+
+        $entity->uid = intval($nextIndex);
+        $this->entityManager->persist($entity);
+        $this->entityManager->flush();
+
+        return DataMapper::map($entity, CashboxDetail::class);
+    }
+
+    public function update(CashboxDetail $cashboxDetail): CashboxDetail
     {
         $entity = $this->entityManager->find(CashboxDetailEntity::class, $cashboxDetail->id);
 
         if (!$entity) {
-            throw new ServiceException('Detalle de caja no encontrado');
+            throw new ServiceException('Entity not found');
         }
 
-        DataMapper::map($cashboxDetail, $entity);
+        $entity = DataMapper::map($cashboxDetail, $entity);
+        $entity->cashbox = $this->entityManager->getReference(CashboxEntity::class, $cashboxDetail->caja_id);
         $this->entityManager->flush();
+
+        return DataMapper::map($entity, CashboxDetail::class);
     }
 
     public function delete(int $id): void
@@ -78,5 +92,18 @@ class CashboxDetailRepository implements CashboxDetailRepositoryInterface
 
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
+    }
+
+    public function getByCashboxId(string $cashboxId): array
+    {
+        $query = $this->entityManager->createQuery(
+            'SELECT cd
+            FROM App\CashboxDetail\Infrastructure\CashboxDetailEntity cd
+            WHERE cd.cashbox = :cashboxId'
+        );
+
+        $query->setParameter('cashboxId', $cashboxId);
+
+        return $query->getResult();
     }
 }

@@ -1,0 +1,91 @@
+{% extends 'base_report.html.twig' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style media="print">
+        @page {
+            size: {{ data.size|default('A4 portrait') }};
+            margin: 1cm;
+        }
+
+        html, body {
+            font-size: 12px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 padding">
+        <div class="p-4">
+            <table class="table table-borderless">
+                <tr>
+                    <td>
+
+                    </td>
+                    <td class="text-right">
+                        <h4>{{ title }}</h4>
+                        <p>Local: {{ cashbox.local.descripcion|default('') }}</p>
+                        Cajero(a): <span class="text-uppercase">{{ cashbox.usuario.username|default('') }}</span>
+                    </td>
+                </tr>
+            </table>
+            <hr>
+            <table class="table table-borderless mb-4">
+                <tr>
+                    <td style="width: 65%">
+                        <div>Apertura: {{ cashbox.apertura|date("d/m/Y H:i") }}</div>
+                        {% if cashbox.cierre %}
+                            <div>Cierre: {{ cashbox.cierre|date('d/m/Y H:i') }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div>Total
+                            ingresos: {{ cashbox.details|reduce((carry, item) => item.tipo_id == 1 ? carry + item.monto : carry, 0.0) }}</div>
+                        <div>Total
+                            egresos: {{ cashbox.details|reduce((carry, item) => item.tipo_id == 2 ? carry + item.monto : carry, 0.0) }}</div>
+                    </td>
+                </tr>
+            </table>
+            <div class="table-responsive-sm">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th class="text-center">#</th>
+                        <th>Concepto</th>
+                        <th class="text-right">Ingresos</th>
+                        <th class="text-right">Egresos</th>
+                        <th>Observación</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in cashbox.details %}
+                        <tr>
+                            <td class="text-center">{{ item.uid }}</td>
+                            <td>{{ item.descripcion }}</td>
+                            <td class="text-right">{{ (item.tipo_id == 1) ? item.monto : '-' }}</td>
+                            <td class="text-right">{{ (item.tipo_id == 2) ? item.monto : '-' }}</td>
+                            <td>{{ item.referencia }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td class="left" colspan="2">
+                            <strong class="text-dark">Saldo final</strong></td>
+                        <td class="right" colspan="3">
+                            <strong class="text-dark">{{ cashbox.balance|default(0.0) }}</strong>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="mb-0">{{ obs|default('') }}</p>
+        </div>
+    </div>
+{% endblock %}

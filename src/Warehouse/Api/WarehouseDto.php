@@ -15,11 +15,11 @@ use App\Warehouse\Domain\Warehouse;
     processor: WarehouseProcessor::class,
 )]
 #[ApiResource(
-    uriTemplate: '/branches/{local_id}/warehouses',
+    uriTemplate: '/branches/{branch_id}/warehouses',
     shortName: 'Warehouse',
     operations: [new GetCollection()],
     uriVariables: [
-        'local_id' => new Link(
+        'branch_id' => new Link(
             fromProperty: 'local_id',
             fromClass: BranchDto::class,
         ),

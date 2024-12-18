@@ -2,29 +2,27 @@
 
 namespace App\Cashbox\Domain;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
+
 interface CashboxRepositoryInterface
 {
     /**
-     * @param array<int , array<string, mixed>>|null $filter
-     *
-     * @return array<string, mixed>
+     * @return PaginatorInterface<Cashbox>
      */
-    public function getAll(?array $filter = null): array;
+    public function getAll(LoadOptions $options): PaginatorInterface;
 
     public function getOne(string $id): Cashbox;
 
-    public function getLast(string $localId, int $userId): ?Cashbox;
+    public function insert(Cashbox $cashbox): Cashbox;
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function getInfoByReceiptType(string $id): array;
-
-    public function insert(Cashbox $cashbox): void;
-
-    public function update(Cashbox $cashbox): void;
+    public function update(Cashbox $cashbox): Cashbox;
 
     public function delete(string $id): void;
 
+    public function getLast(string $localId): ?Cashbox;
+
     public function updateValues(string $localId, int $userId): void;
+
+    public function getTotalBalance(string $cashboxId): float;
 }

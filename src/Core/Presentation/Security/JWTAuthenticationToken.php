@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Auth\Domain;
+namespace App\Core\Presentation\Security;
 
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken;

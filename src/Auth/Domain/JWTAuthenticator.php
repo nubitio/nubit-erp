@@ -3,6 +3,7 @@
 namespace App\Auth\Domain;
 
 use App\Core\Domain\Util\DataMapper;
+use App\Core\Presentation\Security\JWTAuthenticationToken;
 use App\User\Domain\User;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\ORM\EntityManagerInterface;
