@@ -19,8 +19,8 @@ class AuditableEntity
     #[ORM\Column(name: 'updated_at', type: 'datetime')]
     private ?\DateTimeInterface $updatedAt = null;
 
-    #[ORM\Column(name: 'deleted', type: 'boolean')]
-    private ?bool $deleted = false;
+    #[ORM\Column(name: 'active', type: 'boolean')]
+    private ?bool $active = false;
 
     public function getCreatedBy(): ?int
     {
@@ -70,14 +70,14 @@ class AuditableEntity
         return $this;
     }
 
-    public function isDeleted(): ?bool
+    public function isActive(): ?bool
     {
-        return $this->deleted;
+        return $this->active;
     }
 
-    public function setDeleted(bool $deleted): static
+    public function setActive(bool $active): static
     {
-        $this->deleted = $deleted;
+        $this->active = $active;
 
         return $this;
     }

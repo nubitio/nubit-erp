@@ -5,7 +5,6 @@ namespace App\Operation\Infrastructure;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
-use Symfony\Component\Uid\Uuid;
 
 #[IgnoreAutowire]
 #[ORM\Entity]

@@ -2,6 +2,9 @@
 
 namespace App\CashboxDetail\Domain;
 
+use App\Core\Domain\DataLoader\LoadOptions;
+use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
+
 class CashboxDetailGetAllUseCase
 {
     private CashboxDetailRepositoryInterface $repository;
@@ -12,12 +15,10 @@ class CashboxDetailGetAllUseCase
     }
 
     /**
-     * @param array<int , array<string, mixed>>|null $filter
-     *
-     * @return array<string, mixed>
+     * @return PaginatorInterface<CashboxDetail>
      */
-    public function __invoke(?array $filter = null): array
+    public function __invoke(LoadOptions $options): PaginatorInterface
     {
-        return $this->repository->getAll($filter);
+        return $this->repository->getAll($options);
     }
 }

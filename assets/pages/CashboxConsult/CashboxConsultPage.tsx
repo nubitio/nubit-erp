@@ -4,6 +4,7 @@ import {CashboxDetailFields, CashboxFields} from "../Cashbox/CashboxFields";
 import {Constants} from "../../core/common/Constants";
 import {useRef} from "react";
 import notify from "devextreme/ui/notify";
+import {httpClient} from "../../core/http/HttpClient";
 import {userInformation} from "../../core/common/UserInformation";
 
 export const CashboxConsultPage = () => {
@@ -16,7 +17,7 @@ export const CashboxConsultPage = () => {
 
     const toolbar = [
         {
-            text: 'Reporte Simple',
+            text: 'Reporte',
             type: 'default',
             onClick: () => {
                 let selectedRow = gridRef.current?.getSelectedRow();
@@ -29,33 +30,24 @@ export const CashboxConsultPage = () => {
                     }, {position: 'top right'});
                 }
 
-                window.open('cashbox/export-new/' + selectedRow.caja_id);
+                httpClient.post(Constants.API_BASE_URL + `cashboxes/${selectedRow.caja_id}/export`, {caja_id: selectedRow.caja_id}, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    responseType: 'blob'
+                }).subscribe((response) => {
+                    const url = URL.createObjectURL(response.data as Blob);
+                    window.open(url);
+                });
             }
-        },
-        {
-            text: 'Reporte Detallado',
-            type: 'default',
-            onClick: () => {
-                let selectedRow = gridRef.current?.getSelectedRow();
-
-                if (!selectedRow) {
-                    notify({
-                        message: 'Seleccione un registro',
-                        type: 'info',
-                        displayTime: 3000,
-                    }, {position: 'top right'});
-                }
-
-                window.open('cashbox-new/report/' + selectedRow.caja_id);
-            }
-        },
+        }
     ]
 
     return (
         <div id={container}>
             <DxDataGrid
-                id={'cashbox-consult'}
                 ref={gridRef}
+                id='cashboxes'
                 title={'Reportes de caja'}
                 toolbar={toolbar}
                 url={API_URL}

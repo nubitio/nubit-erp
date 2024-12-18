@@ -5,6 +5,7 @@ import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {Constants} from "../../core/common/Constants";
+import {userInformation} from "../../core/common/UserInformation";
 
 export const CashboxFields = () => {
     const fields: Field[] = [];
@@ -43,7 +44,7 @@ export const CashboxFields = () => {
         .valueField('usuario_id')
         .textField('username')
         .align('center')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.usuario.username)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.usuario?.username)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
@@ -59,9 +60,9 @@ export const CashboxFields = () => {
         .align('center')
         .formatter((cell: ColumnCellTemplateData) => {
             if (Number(cell.value) === 1) {
-                return <span className="badge rounded-pill bg-success">ACTIVO</span>;
+                return <span className="badge badge-outlined rounded-pill text-bg-success">ACTIVO</span>;
             } else if (Number(cell.value) === 2) {
-                return <span className="badge rounded-pill bg-secondary">CERRADO</span>;
+                return <span className="badge badge-outlined rounded-pill text-bg-secondary">CERRADO</span>;
             }
         })
         .build());
@@ -105,9 +106,9 @@ export const CashboxDetailFields = (cashboxId: string | null = null) => {
         ])
         .formatter((cell: ColumnCellTemplateData) => {
             if (Number(cell.value) === 1) {
-                return <span className="text-success"><i className="fas fa-arrow-circle-up"></i> Ingreso</span>;
+                return <span className="text-success"><i className="ph ph-arrow-circle-up"></i> Ingreso</span>;
             } else if (Number(cell.value) === 2) {
-                return <span className="text-danger"><i className="fas fa-arrow-circle-down"></i> Egreso</span>;
+                return <span className="text-danger"><i className="ph ph-arrow-circle-down"></i> Egreso</span>;
             }
         })
         .required(true)

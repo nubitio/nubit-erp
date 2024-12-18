@@ -11,8 +11,8 @@ class CashboxGetLastUseCase
         $this->repository = $repository;
     }
 
-    public function __invoke(string $localId, int $userId): ?Cashbox
+    public function __invoke(string $localId): ?Cashbox
     {
-        return $this->repository->getLast($localId, $userId);
+        return $this->repository->getLast($localId);
     }
 }

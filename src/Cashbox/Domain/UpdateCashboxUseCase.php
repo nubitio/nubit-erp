@@ -2,7 +2,7 @@
 
 namespace App\Cashbox\Domain;
 
-class CashboxGetInfoReceiptUseCase
+class UpdateCashboxUseCase
 {
     private CashboxRepositoryInterface $repository;
 
@@ -11,11 +11,8 @@ class CashboxGetInfoReceiptUseCase
         $this->repository = $repository;
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function __invoke(string $id): array
+    public function __invoke(Cashbox $cashbox): Cashbox
     {
-        return $this->repository->getInfoByReceiptType($id);
+        return $this->repository->update($cashbox);
     }
 }
