@@ -246,7 +246,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             value: 1
         }])
         .required(true)
-        .filterable(false)
         .sortable(false)
         .build());
     fields.push(new FieldBuilder()
@@ -284,7 +283,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             this.defaultSetCellValue(row, value, currentRow);
         })
         .required(true)
-        .filterable(false)
         .sortable(false)
         .build());
     fields.push(new FieldBuilder()
@@ -300,7 +298,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         })
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .required(true)
-        .filterable(false)
         .sortable(false)
         .valueType('number')
         .build());

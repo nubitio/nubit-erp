@@ -3,9 +3,9 @@
 namespace App\CashboxNew\Infrastructure;
 
 use App\CashboxNew\Domain\CashboxUpdateValuesUseCase;
+use App\Core\Application\Session\Security;
 use App\Sale\Domain\SaleCreatedEvent;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 #[AsEventListener(
     event: SaleCreatedEvent::NAME,
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 final readonly class SaleCreatedListener
 {
     public function __construct(
-        private RequestStack $requestStack,
+        private Security $security,
         private CashboxUpdateValuesUseCase $cashboxUpdateValuesUseCase,
     ) {
     }
@@ -24,11 +24,8 @@ final readonly class SaleCreatedListener
         if ('cli' === php_sapi_name()) {
             return;
         }
-        $session = $this->requestStack->getSession();
-        /** @var ?string $branchId */
-        $branchId = $session->get('branch_id');
-        /** @var ?int $userId */
-        $userId = $session->get('user_id');
+        $branchId = $this->security->connectedUser()?->branchId;
+        $userId = $this->security->connectedUser()?->userId;
 
         if (!$branchId || !$userId) {
             return;

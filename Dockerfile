@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 MAINTAINER Johan Guerreros (johangm90@gmail.com)
 
@@ -22,7 +22,7 @@ RUN add-apt-repository ppa:ondrej/php -y
 RUN apt-get update
 
 # install php
-RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl php8.3-redis
+RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl php8.3-redis php8.3-imagick
 RUN apt-get install -y libapache2-mod-php8.3
 
 # configure xdebug
@@ -34,12 +34,6 @@ RUN sed -i -e '$a xdebug.client_port=9003' /etc/php/8.3/mods-available/xdebug.in
 RUN apt-get update
 RUN apt-get -y install libpango1.0-dev python3-pip
 RUN pip3 install WeasyPrint
-
-# install wkhtmltopdf
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
-    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_${arch}.deb && \
-    apt install -y ./wkhtmltox_0.12.6-1.focal_${arch}.deb
 
 # Apache conf
 # allow .htaccess with RewriteEngine
