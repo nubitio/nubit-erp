@@ -116,15 +116,7 @@ class SaleController extends BaseController
 
         $pdfExporter = new PdfExporter();
 
-        return $pdfExporter->export($content, 'invoice', [
-            'no-outline',
-            'page-width' => '62mm',
-            'page-height' => $pageHeight.'mm',
-            'margin-top' => 0,
-            'margin-left' => 0,
-            'margin-right' => 0,
-            'margin-bottom' => 0,
-        ]);
+        return $pdfExporter->export($content, 'invoice');
     }
 
     #[Route('/sale/void/{id}', name: 'sale_void', methods: ['POST'])]

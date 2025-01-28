@@ -19,8 +19,8 @@ class PrintESCPOSController extends BaseController
 {
     public function __construct(
         private readonly LogoProvider $logoProvider,
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private SettingsService $settingsService,
+        private readonly GetOneVoucherUseCase $getOneVoucherUseCase,
+        private readonly SettingsService $settingsService,
     ) {
         parent::__construct();
     }
@@ -115,7 +115,9 @@ class PrintESCPOSController extends BaseController
             $printer->text(new SaleItem('OP. EXONERADA:', '0.00'));
             $printer->text(new SaleItem('IGV ('.$app_option_igv_get.'%):', $voucher->voucher_tax_amount));
             if ($app_option_rc_get >= 1) {
-                $printer->text(new SaleItem('RC ('.$app_option_rc_get.'%):', $voucher->voucher_consumption_surcharge_amount));
+                $printer->text(
+                    new SaleItem('RC ('.$app_option_rc_get.'%):', $voucher->voucher_consumption_surcharge_amount)
+                );
             }
         }
         $printer->text(new SaleItem('TOTAL:', $voucher->voucher_sale_amount));

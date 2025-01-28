@@ -3,6 +3,7 @@
 namespace App\Sale\Infrastructure;
 
 use App\CashboxNew\Domain\CashboxGetLastUseCase;
+use App\Core\Application\Session\Security;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
@@ -10,14 +11,13 @@ use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 readonly class SaleUtils
 {
     public function __construct(
-        private RequestStack $requestStack,
         private Connection $connection,
         private SettingsService $settings,
+        private Security $security,
         private CashboxGetLastUseCase $cashboxGetLastUseCase,
     ) {
     }
@@ -80,12 +80,8 @@ readonly class SaleUtils
 
     public function getCashBoxId(): ?string
     {
-        $session = $this->requestStack->getSession();
-
-        /** @var string $branchId */
-        $branchId = $session->get('branch_id');
-        /** @var int $userId */
-        $userId = $session->get('user_id');
+        $branchId = $this->security->connectedUser()?->branchId;
+        $userId = $this->security->connectedUser()?->userId;
 
         if (!$branchId || !$userId) {
             return null;

@@ -28,7 +28,10 @@ readonly class LogoProvider
 
         $folder = Constants::IMAGE_UPLOAD_DIR;
 
-        $media = $this->connection->fetchAssociative('SELECT path FROM media WHERE id = :id', ['id' => $company['logo']]);
+        $media = $this->connection->fetchAssociative(
+            'SELECT path FROM media WHERE id = :id',
+            ['id' => $company['logo']]
+        );
 
         if (!$media) {
             return '';
