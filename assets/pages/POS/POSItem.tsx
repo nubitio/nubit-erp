@@ -1,45 +1,47 @@
 import React from 'react';
-import {Button} from 'devextreme-react/button';
-import type {MenuItem as MenuItemType} from './types';
+import {Minus, Plus} from "lucide-react"
+import type {PosItem} from './types';
+import './POSPage.scss';
 
 interface POSItemProps {
-    item: MenuItemType;
-    onAdd: (item: MenuItemType) => void;
-    onRemove: (id: number) => void;
+    item: PosItem;
+    onAdd: (item: PosItem) => void;
+    onRemove: (id: string) => void;
     quantity: number;
 }
 
 export function POSItem({item, onAdd, onRemove, quantity}: POSItemProps) {
     return (
-        <div className="bg-white rounded-2xl shadow-md p-4 menu-item-card">
+        <div key={item.producto_id} className="bg-white rounded-xl p-4">
             <img
-                src={item.image || "/placeholder.svg"}
-                alt={item.name}
-                className="w-full h-40 object-cover rounded-xl mb-4"
+                src={item.imagen?.path || "https://fakeimg.pl/600x400?text=" + item.descripcion}
+                alt={item.descripcion}
+                className="w-full h-32 object-cover rounded-lg mb-4"
             />
-            <h3 className="font-semibold text-lg mb-1">{item.name}</h3>
-            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{item.description}</p>
+            <h4 className="font-bold text-lg mb-2 marquee-container">
+                <span className="marquee">{item.descripcion}</span>
+            </h4>
+            <p className="text-gray-600 text-sm mb-4 marquee-container">
+                <span className="marquee">{item.descripcion}</span>
+            </p>
             <div className="flex items-center justify-between">
-                <div className="font-bold text-xl text-primary-color">${item.price.toFixed(1)}</div>
-                <div className="flex items-center bg-gray-100 rounded-full">
-                    <Button
-                        stylingMode="text"
-                        onClick={() => onRemove(item.id)}
-                        disabled={quantity === 0}
-                        text="-"
-                        width={40}
-                        height={40}
-                        className="rounded-full text-xl font-bold"
-                    />
-                    <span className="mx-2 w-8 text-center font-semibold">{quantity}</span>
-                    <Button
-                        stylingMode="text"
+                <span className="text-2xl font-bold">${item.precio.toFixed(2)}</span>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => onRemove(item.producto_id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border"
+                    >
+                        <Minus className="w-4 h-4"/>
+                    </button>
+                    <span className="w-8 text-center">{quantity || 0}</span>
+                    <button
                         onClick={() => onAdd(item)}
-                        text="+"
-                        width={40}
-                        height={40}
-                        className="rounded-full text-xl font-bold"
-                    />
+                        className={`w-8 h-8 flex items-center justify-center rounded-full border ${
+                            quantity > 0 ? 'bg-blue-500 text-white' : 'text-blue-500'
+                        }`}
+                    >
+                        <Plus className="w-4 h-4"/>
+                    </button>
                 </div>
             </div>
         </div>

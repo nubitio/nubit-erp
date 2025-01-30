@@ -1,9 +1,20 @@
-export interface MenuItem {
-    id: number
-    name: string
-    description: string
-    price: number
-    image: string
+export interface PosItem {
+    producto_id: string
+    descripcion: string
+    precio: number
+    imagen?: Image
     quantity?: number
-    category: string
+    category: Category
+}
+
+export interface Category {
+    categoria_id: string
+    descripcion: string
+    icon?: string
+    active?: boolean
+}
+
+export interface Image {
+    id: string
+    path: string
 }
