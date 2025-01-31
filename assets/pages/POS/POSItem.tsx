@@ -13,31 +13,32 @@ interface POSItemProps {
 export function POSItem({item, onAdd, onRemove, quantity}: POSItemProps) {
     return (
         <div key={item.producto_id} className="bg-white rounded-xl p-4">
-            <img
-                src={item.imagen?.path || "https://fakeimg.pl/600x400?text=" + item.descripcion}
-                alt={item.descripcion}
-                className="w-full h-32 object-cover rounded-lg mb-4"
-            />
-            <h4 className="font-bold text-lg mb-2 marquee-container">
-                <span className="marquee">{item.descripcion}</span>
-            </h4>
-            <p className="text-gray-600 text-sm mb-4 marquee-container">
-                <span className="marquee">{item.descripcion}</span>
-            </p>
+            <div className="flex items-center gap-3 mb-2">
+                <img
+                    src={item.imagen?.path || `https://ui-avatars.com/api/?name=${item.descripcion}`}
+                    alt={item.descripcion}
+                    className="w-16 h-16 object-cover rounded-md"
+                />
+                <div className="text-sm font-medium">
+                    {item.descripcion}
+                </div>
+            </div>
             <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">${item.precio.toFixed(2)}</span>
-                <div className="flex items-center gap-3">
+                <span className="text-2xl font-bold">
+                    <span className="text-gray-500">S/</span>{item.precio.toFixed(2)}
+                </span>
+                <div className="flex items-center rounded-full bg-gray-100 border border-gray-200">
                     <button
                         onClick={() => onRemove(item.producto_id)}
-                        className="w-8 h-8 flex items-center justify-center rounded-full border"
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-white"
                     >
                         <Minus className="w-4 h-4"/>
                     </button>
-                    <span className="w-8 text-center">{quantity || 0}</span>
+                    <span className="w-8 text-center text-gray-500">{quantity || 0}</span>
                     <button
                         onClick={() => onAdd(item)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-full border ${
-                            quantity > 0 ? 'bg-blue-500 text-white' : 'text-blue-500'
+                        className={`w-8 h-8 flex items-center justify-center rounded-full ${
+                            quantity > 0 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'
                         }`}
                     >
                         <Plus className="w-4 h-4"/>

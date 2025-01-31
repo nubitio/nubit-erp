@@ -4,7 +4,7 @@ export interface PosItem {
     precio: number
     imagen?: Image
     quantity?: number
-    category: Category
+    categoria: Category
 }
 
 export interface Category {
