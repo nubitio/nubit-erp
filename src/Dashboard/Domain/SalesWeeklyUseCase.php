@@ -14,6 +14,11 @@ readonly class SalesWeeklyUseCase
      */
     public function __invoke(string $localId): array
     {
-        return $this->repository->getWeeklySales($localId);
+        $data = $this->repository->getWeeklySales($localId);
+        foreach ($data as $key => $value) {
+            $data[$key]['venta'] = (float) $value['venta'];
+        }
+
+        return $data;
     }
 }

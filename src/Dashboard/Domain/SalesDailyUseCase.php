@@ -14,6 +14,11 @@ readonly class SalesDailyUseCase
      */
     public function __invoke(string $saleId): array
     {
-        return $this->repository->getDailySales($saleId);
+        $data = $this->repository->getDailySales($saleId);
+        foreach ($data as $key => $value) {
+            $data[$key]['venta'] = (float) $value['venta'];
+        }
+
+        return $data;
     }
 }

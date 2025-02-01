@@ -63,7 +63,7 @@ export const SalePage = () => {
         })
 
         on(DATA_GRID_EVENTS.SELECTION_CHANGED, (e: any) => {
-            if (e.selectedRowKeys.length === 1) {
+            if (e.length === 1) {
                 setPrintEnabled(true);
                 setCloneEnabled(true);
             } else {

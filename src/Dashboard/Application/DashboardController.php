@@ -2,72 +2,53 @@
 
 namespace App\Dashboard\Application;
 
-use App\Base\BaseController;
+use App\Core\Application\Session\Security;
 use App\Dashboard\Domain\BillingMonthlyUseCase;
 use App\Dashboard\Domain\ProductRotationUseCase;
 use App\Dashboard\Domain\SalesDailyUseCase;
 use App\Dashboard\Domain\SalesMonthlyUseCase;
 use App\Dashboard\Domain\SalesWeeklyUseCase;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
-class DashboardController extends BaseController
+class DashboardController extends AbstractController
 {
-    #[Route('/dashboard', name: 'dashboard_index', methods: ['GET'])]
-    public function index(): Response
-    {
-        return $this->render('dashboard/index.html.twig', [
-            'title' => 'Dashboard',
-        ]);
+    public function __construct(
+        private readonly SalesDailyUseCase $salesDaily,
+        private readonly SalesWeeklyUseCase $salesWeekly,
+        private readonly SalesMonthlyUseCase $salesMonthly,
+        private readonly BillingMonthlyUseCase $monthlyInvoicing,
+        private readonly ProductRotationUseCase $productRotation,
+    ) {
     }
 
-    #[Route('/bi/venta-dia', name: 'bi_daily_sales', methods: ['GET'])]
-    public function getDailySales(Request $request, SalesDailyUseCase $salesDaily): Response
+    public function __invoke(Request $request, Security $security): Response
     {
-        /** @var string $localId */
-        $localId = $request->getSession()->get('branch_id');
-        $data = $salesDaily($localId);
+        $type = $request->attributes->get('type');
+        $user = $security->connectedUser();
+        $localId = $user->branchId;
 
-        return $this->json($data);
-    }
-
-    #[Route('/bi/venta-semana', name: 'bi_weekly_sales', methods: ['GET'])]
-    public function getWeeklySales(Request $request, SalesWeeklyUseCase $salesWeekly): Response
-    {
-        /** @var string $localId */
-        $localId = $request->getSession()->get('branch_id');
-        $data = $salesWeekly($localId);
-
-        return $this->json($data);
-    }
-
-    #[Route('/bi/venta-mes', name: 'bi_monthly_sales', methods: ['GET'])]
-    public function getMonthlySales(Request $request, SalesMonthlyUseCase $salesMonthly): Response
-    {
-        /** @var string $localId */
-        $localId = $request->getSession()->get('branch_id');
-        $data = $salesMonthly($localId);
-
-        return $this->json($data);
-    }
-
-    #[Route('/bi/monthly-invoicing', name: 'bi_monthly_invoicing', methods: ['GET'])]
-    public function getMonthlyInvoicing(Request $request, BillingMonthlyUseCase $monthlyInvoicing): Response
-    {
-        /** @var string $localId */
-        $localId = $request->getSession()->get('branch_id');
-        $data = $monthlyInvoicing($localId);
-
-        return $this->json($data);
-    }
-
-    #[Route('/bi/product-rotation/{lapse}', name: 'bi_product_rotation', methods: ['GET'])]
-    public function getProductRotation(Request $request, ProductRotationUseCase $productRotation, string $lapse): Response
-    {
-        /** @var string $localId */
-        $localId = $request->getSession()->get('branch_id');
-        $data = $productRotation($localId, $lapse);
+        switch ($type) {
+            case 'venta-dia':
+                $data = ($this->salesDaily)($localId);
+                break;
+            case 'venta-semana':
+                $data = ($this->salesWeekly)($localId);
+                break;
+            case 'venta-mes':
+                $data = ($this->salesMonthly)($localId);
+                break;
+            case 'monthly-invoicing':
+                $data = ($this->monthlyInvoicing)($localId);
+                break;
+            case 'product-rotation':
+                $lapse = $request->attributes->get('lapse');
+                $data = ($this->productRotation)($localId, $lapse);
+                break;
+            default:
+                $data = [];
+        }
 
         return $this->json($data);
     }

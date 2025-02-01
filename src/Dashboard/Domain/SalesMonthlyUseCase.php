@@ -14,6 +14,11 @@ readonly class SalesMonthlyUseCase
      */
     public function __invoke(string $localId): array
     {
-        return $this->repository->getMonthlySales($localId);
+        $data = $this->repository->getMonthlySales($localId);
+        foreach ($data as $key => $value) {
+            $data[$key]['venta'] = (float) $value['venta'];
+        }
+
+        return $data;
     }
 }
