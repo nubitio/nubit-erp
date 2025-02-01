@@ -60,6 +60,7 @@ export const InboundFields = () => {
         .textField('descripcion')
         //.defaultValue(userInformation().currentWarehouseId)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
@@ -110,7 +111,6 @@ export const InboundDetailFields = () => {
             this.defaultSetCellValue(row, product, currentRow);
         })
         .sortable(false)
-        .filterable(false)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -125,7 +125,6 @@ export const InboundDetailFields = () => {
         })
         .required(true)
         .sortable(false)
-        .filterable(false)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
@@ -141,7 +140,6 @@ export const InboundDetailFields = () => {
         .align('right')
         .valueType('number')
         .sortable(false)
-        .filterable(false)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
