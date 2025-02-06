@@ -2,12 +2,12 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\DataLoader\LoadOptions;
 use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Entity\Branch;
 use App\Warehouse\Domain\Warehouse;
 use App\Warehouse\Domain\WarehouseRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,7 +40,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
     public function insert(Warehouse $warehouse): Warehouse
     {
         $entity = DataMapper::map($warehouse, WarehouseEntity::class);
-        $branch = $this->entityManager->getReference(BranchEntity::class, $warehouse->local?->local_id);
+        $branch = $this->entityManager->getReference(Branch::class, $warehouse->local?->local_id);
         $entity->local = $branch;
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -61,7 +61,7 @@ readonly class WarehouseRepository implements WarehouseRepositoryInterface
         }
 
         $entity = DataMapper::map($warehouse, $entity);
-        $branch = $this->entityManager->getReference(BranchEntity::class, $warehouse->local?->local_id);
+        $branch = $this->entityManager->getReference(Branch::class, $warehouse->local?->local_id);
         $entity->local = $branch;
         $this->entityManager->flush();
 

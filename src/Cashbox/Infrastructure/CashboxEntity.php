@@ -2,8 +2,8 @@
 
 namespace App\Cashbox\Infrastructure;
 
-use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Entity\Branch;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
@@ -21,9 +21,9 @@ class CashboxEntity
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[ORM\Column(name: 'caja_id', type: 'string')]
         public ?string $caja_id = null,
-        #[ORM\ManyToOne(targetEntity: BranchEntity::class)]
+        #[ORM\ManyToOne(targetEntity: Branch::class)]
         #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
-        public ?BranchEntity $local = null,
+        public ?Branch $local = null,
         #[ORM\Column(name: 'apertura', type: 'datetime')]
         public ?\DateTimeInterface $apertura = null,
         #[ORM\Column(name: 'cierre', type: 'datetime')]

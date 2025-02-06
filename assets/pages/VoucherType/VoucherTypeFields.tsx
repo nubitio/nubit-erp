@@ -1,7 +1,6 @@
 import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 
 export const VoucherTypeFields = () => {
     const fields: Field[] = [];
@@ -17,24 +16,16 @@ export const VoucherTypeFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('codigo')
+        .name('code')
         .label('Codigo')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('descripcion')
+        .name('name')
         .label('Descripcion')
         .width('100%')
         .required(true)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .align('center')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
         .build());
 
     return fields;

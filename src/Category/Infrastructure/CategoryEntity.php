@@ -3,7 +3,7 @@
 namespace App\Category\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Media\Infrastructure\MediaEntity;
+use App\Entity\Media;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -35,9 +35,9 @@ class CategoryEntity
         #[ManyToOne(targetEntity: CategoryEntity::class, inversedBy: 'children')]
         #[JoinColumn(name: 'parent_id', referencedColumnName: 'categoria_id')]
         public ?CategoryEntity $parent = null,
-        #[ManyToOne(targetEntity: MediaEntity::class)]
+        #[ManyToOne(targetEntity: Media::class)]
         #[JoinColumn(name: 'imagen', referencedColumnName: 'id')]
-        public ?MediaEntity $imagen = null,
+        public ?Media $imagen = null,
         #[Column(name: 'estado', type: 'boolean')]
         public ?bool $estado = false,
         /** @var ArrayCollection<int, CategoryEntity>|array<int, CategoryEntity> */

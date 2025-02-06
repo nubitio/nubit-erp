@@ -2,7 +2,6 @@
 
 namespace App\CashboxNew\Infrastructure;
 
-use App\Branch\Infrastructure\BranchEntity;
 use App\CashboxNew\Domain\Cashbox;
 use App\CashboxNew\Domain\CashboxRepositoryInterface;
 use App\CashboxNewDetail\Infrastructure\CashboxDetailEntity;
@@ -11,6 +10,7 @@ use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Entity\Branch;
 use App\User\Infrastructure\UserEntity;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -49,7 +49,7 @@ readonly class CashboxRepository implements CashboxRepositoryInterface
     {
         $entity = DataMapper::map($cashbox, CashboxEntity::class);
 
-        $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local?->local_id);
+        $entity->local = $this->entityManager->getReference(Branch::class, $cashbox->local?->local_id);
         $entity->usuario = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario?->usuario_id);
 
         foreach ($entity->details as $detail) {
@@ -75,7 +75,7 @@ readonly class CashboxRepository implements CashboxRepositoryInterface
 
         $entity = DataMapper::map($cashbox, $entity);
 
-        $entity->local = $this->entityManager->getReference(BranchEntity::class, $cashbox->local?->local_id);
+        $entity->local = $this->entityManager->getReference(Branch::class, $cashbox->local?->local_id);
         $entity->usuario = $this->entityManager->getReference(UserEntity::class, $cashbox->usuario?->usuario_id);
         $entity->details = $details;
 

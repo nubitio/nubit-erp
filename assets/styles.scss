@@ -420,3 +420,15 @@ body {
     background-color: var(--base-bg);
   }
 }
+
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.justify-content-center {
+  justify-content: center;
+}

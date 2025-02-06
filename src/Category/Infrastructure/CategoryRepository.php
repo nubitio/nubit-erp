@@ -9,7 +9,7 @@ use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Media\Infrastructure\MediaEntity;
+use App\Entity\Media;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
@@ -48,8 +48,8 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
             $parent = $this->entityManager->getReference(CategoryEntity::class, $category->parent->categoria_id);
             $entity->parent = $parent;
         }
-        if ($category->imagen?->id) {
-            $image = $this->entityManager->getReference(MediaEntity::class, $category->imagen->id);
+        if ($category->imagen?->getId()) {
+            $image = $this->entityManager->getReference(Media::class, $category->imagen->getId());
             $entity->imagen = $image;
         }
         $this->entityManager->persist($entity);
@@ -77,8 +77,8 @@ readonly class CategoryRepository implements CategoryRepositoryInterface
         } else {
             $entity->parent = null;
         }
-        if ($category->imagen?->id) {
-            $image = $this->entityManager->getReference(MediaEntity::class, $category->imagen->id);
+        if ($category->imagen?->getId()) {
+            $image = $this->entityManager->getReference(Media::class, $category->imagen->getId());
             $entity->imagen = $image;
         }
         $this->entityManager->flush();

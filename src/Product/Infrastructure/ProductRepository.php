@@ -13,7 +13,7 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Exception\ValidationException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Media\Infrastructure\MediaEntity;
+use App\Entity\Media;
 use App\Product\Domain\Product;
 use App\Product\Domain\ProductRepositoryInterface;
 use App\Product\Domain\ProductStock;
@@ -41,18 +41,20 @@ readonly class ProductRepository implements ProductRepositoryInterface
 
     public function getOne(string $id): ?Product
     {
-        $entity = $this->dataLoader->loadOne(new LoadOptions(
-            entity: ProductEntity::class,
-            mapping: Product::class,
-            joins: [
-                new JoinRule('e.categoria', 'c'),
-                new JoinRule('e.unidad', 'u', JoinType::LEFT),
-                new JoinRule('e.imagen', 'i', JoinType::LEFT),
-            ],
-            filters: [
-                new FilterRule('producto_id', FilterOperation::Equals, $id),
-            ],
-        ));
+        $entity = $this->dataLoader->loadOne(
+            new LoadOptions(
+                entity: ProductEntity::class,
+                mapping: Product::class,
+                joins: [
+                    new JoinRule('e.categoria', 'c'),
+                    new JoinRule('e.unidad', 'u', JoinType::LEFT),
+                    new JoinRule('e.imagen', 'i', JoinType::LEFT),
+                ],
+                filters: [
+                    new FilterRule('producto_id', FilterOperation::Equals, $id),
+                ],
+            )
+        );
 
         if (!$entity) {
             return null;
@@ -68,15 +70,20 @@ readonly class ProductRepository implements ProductRepositoryInterface
     public function insert(Product $product): Product
     {
         $entity = DataMapper::map($product, ProductEntity::class);
-        $entity->categoria = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+        $entity->categoria = $this->entityManager->getReference(
+            CategoryEntity::class,
+            $product->categoria?->categoria_id
+        );
         $entity->unidad = $this->entityManager->getReference(UnitOfMeasureEntity::class, $product->unidad?->unidad_id);
 
-        if ($product->imagen?->id) {
-            $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
+        if ($product->imagen?->getId()) {
+            $image = $this->entityManager->getReference(Media::class, $product->imagen->getId());
             $entity->imagen = $image;
         }
 
-        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $entity->descripcion]);
+        $product = $this->entityManager->getRepository(ProductEntity::class)->findBy(
+            ['descripcion' => $entity->descripcion]
+        );
 
         if ($product) {
             throw new ValidationException(self::ERROR_MESSAGE);
@@ -101,15 +108,20 @@ readonly class ProductRepository implements ProductRepositoryInterface
         }
 
         $entity = DataMapper::map($product, $entity);
-        $entity->categoria = $this->entityManager->getReference(CategoryEntity::class, $product->categoria?->categoria_id);
+        $entity->categoria = $this->entityManager->getReference(
+            CategoryEntity::class,
+            $product->categoria?->categoria_id
+        );
         $entity->unidad = $this->entityManager->getReference(UnitOfMeasureEntity::class, $product->unidad?->unidad_id);
 
-        if ($product->imagen?->id) {
-            $image = $this->entityManager->getReference(MediaEntity::class, $product->imagen->id);
+        if ($product->imagen?->getId()) {
+            $image = $this->entityManager->getReference(Media::class, $product->imagen->getId());
             $entity->imagen = $image;
         }
 
-        $existingProduct = $this->entityManager->getRepository(ProductEntity::class)->findBy(['descripcion' => $product->descripcion]);
+        $existingProduct = $this->entityManager->getRepository(ProductEntity::class)->findBy(
+            ['descripcion' => $product->descripcion]
+        );
 
         if ($existingProduct && $existingProduct[0]->producto_id !== $entity->producto_id) {
             throw new ValidationException(self::ERROR_MESSAGE);
@@ -153,7 +165,8 @@ readonly class ProductRepository implements ProductRepositoryInterface
                         AND m.almacen_id = :warehouseId
                     GROUP BY
                         p.producto_id, p.descripcion',
-            ['id' => $productId, 'warehouseId' => $warehouseId]);
+            ['id' => $productId, 'warehouseId' => $warehouseId]
+        );
 
         if (!$stock) {
             return new ProductStock($productId, '', 0);

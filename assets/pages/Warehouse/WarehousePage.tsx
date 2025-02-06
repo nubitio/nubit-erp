@@ -40,6 +40,7 @@ export const WarehousePage = () => {
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}
+                    useIRI={true}
                 />
             </DxDialog>
         </div>

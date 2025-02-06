@@ -2,8 +2,8 @@
 
 namespace App\Branch\Domain;
 
-use App\Company\Domain\Company;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Entity\Company;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]

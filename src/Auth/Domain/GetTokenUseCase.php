@@ -2,7 +2,7 @@
 
 namespace App\Auth\Domain;
 
-use App\Branch\Infrastructure\BranchEntity;
+use App\Entity\Branch;
 use App\User\Domain\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\JWT;
@@ -21,7 +21,7 @@ readonly class GetTokenUseCase
         $branch = null;
 
         if (null != $branchId) {
-            $branch = $this->entityManager->find(BranchEntity::class, $branchId);
+            $branch = $this->entityManager->find(Branch::class, $branchId);
         }
 
         $tokenData = [
@@ -32,7 +32,7 @@ readonly class GetTokenUseCase
             'role' => $user->rol?->rol_id,
             'roles' => $user->getRoles(),
             'branchId' => $branchId,
-            'branch' => $branch?->descripcion,
+            'branch' => $branch?->getName(),
             'iat' => time(),
             'exp' => time() + 3600 * 24 * 7,
         ];

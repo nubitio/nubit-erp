@@ -4,7 +4,7 @@ namespace App\Product\Infrastructure;
 
 use App\Category\Infrastructure\CategoryEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Media\Infrastructure\MediaEntity;
+use App\Entity\Media;
 use App\UnitOfMeasure\Infrastructure\UnitOfMeasureEntity;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
@@ -47,9 +47,9 @@ class ProductEntity
         public ?float $precio = null,
         #[Column(name: 'precio_compra', type: 'decimal')]
         public ?float $precio_compra = null,
-        #[ManyToOne(targetEntity: MediaEntity::class)]
+        #[ManyToOne(targetEntity: Media::class)]
         #[JoinColumn(name: 'imagen', referencedColumnName: 'id')]
-        public ?MediaEntity $imagen = null,
+        public ?Media $imagen = null,
         #[Column(name: 'estado', type: 'integer')]
         public ?bool $estado = null,
     ) {
