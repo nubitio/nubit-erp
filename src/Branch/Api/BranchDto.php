@@ -14,5 +14,5 @@ use App\Branch\Domain\Branch;
 class BranchDto extends Branch
 {
     #[ApiProperty(identifier: true)]
-    public ?string $local_id;
+    public ?string $id;
 }

@@ -20,7 +20,7 @@ export const LocalPicker = ({visible, setVisible, username, password}) => {
     const navigate = useNavigate()
 
     const onItemClick = (e: any) => {
-        setSelectedBranch(e.itemData.local_id)
+        setSelectedBranch(e.itemData.id)
     }
 
     const close = () => {
@@ -41,7 +41,6 @@ export const LocalPicker = ({visible, setVisible, username, password}) => {
             const decodedToken = jwtDecode(response.data.token)
             StorageUtils.setItem('user', decodedToken)
             close()
-            //navigate('/')
             window.location.href = '/'
         });
     }
@@ -53,7 +52,7 @@ export const LocalPicker = ({visible, setVisible, username, password}) => {
             branchService.getAll().subscribe((response) => {
                 setDataSource(
                     new ArrayStore({
-                        key: 'id_local',
+                        key: 'id',
                         data: response.data,
                     })
                 )
@@ -93,7 +92,7 @@ export const LocalPicker = ({visible, setVisible, username, password}) => {
             </ToolbarItem>
             <List
                 dataSource={dataSource}
-                displayExpr={'descripcion'}
+                displayExpr={'name'}
                 selectByClick={true}
                 onItemClick={onItemClick}
             />

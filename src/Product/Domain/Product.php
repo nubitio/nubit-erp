@@ -4,7 +4,7 @@ namespace App\Product\Domain;
 
 use App\Category\Domain\Category;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Media\Domain\Media;
+use App\Entity\Media;
 use App\UnitOfMeasure\Domain\UnitOfMeasure;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 

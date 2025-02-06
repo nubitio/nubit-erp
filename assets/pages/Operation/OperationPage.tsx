@@ -9,7 +9,7 @@ export const OperationPage = () => {
     const container = "wrapper";
     const fields = OperationFields();
 
-    const API_URL = Constants.API_BASE_URL + 'operations';
+    const API_URL = Constants.API_BASE_URL + 'logistic-operations';
 
     const EVENTS = {
         ADD: 'operation:add',

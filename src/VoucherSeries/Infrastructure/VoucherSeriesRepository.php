@@ -2,12 +2,12 @@
 
 namespace App\VoucherSeries\Infrastructure;
 
-use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\DataLoader\LoadOptions;
 use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
+use App\Entity\Branch;
 use App\VoucherSeries\Domain\VoucherSeries;
 use App\VoucherSeries\Domain\VoucherSeriesRepositoryInterface;
 use App\VoucherType\Infrastructure\VoucherTypeEntity;
@@ -41,8 +41,10 @@ readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterfa
     {
         $entity = DataMapper::map($voucherSeries, VoucherSeriesEntity::class);
 
-        $entity->local = $this->entityManager->getReference(BranchEntity::class, $voucherSeries->local?->local_id);
-        $entity->tipo_comprobante = $this->entityManager->getRepository(VoucherTypeEntity::class)->findOneBy(['codigo' => $voucherSeries->tipo_comprobante?->codigo]);
+        $entity->local = $this->entityManager->getReference(Branch::class, $voucherSeries->local?->local_id);
+        $entity->tipo_comprobante = $this->entityManager->getRepository(VoucherTypeEntity::class)->findOneBy(
+            ['codigo' => $voucherSeries->tipo_comprobante?->codigo]
+        );
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -60,8 +62,11 @@ readonly class VoucherSeriesRepository implements VoucherSeriesRepositoryInterfa
 
         $entity = DataMapper::map($voucherSeries, $entity);
 
-        $entity->local = $this->entityManager->getReference(BranchEntity::class, $voucherSeries->local?->local_id);
-        $entity->tipo_comprobante = $this->entityManager->getReference(VoucherTypeEntity::class, $voucherSeries->tipo_comprobante?->id);
+        $entity->local = $this->entityManager->getReference(Branch::class, $voucherSeries->local?->local_id);
+        $entity->tipo_comprobante = $this->entityManager->getReference(
+            VoucherTypeEntity::class,
+            $voucherSeries->tipo_comprobante?->id
+        );
 
         $this->entityManager->flush();
 

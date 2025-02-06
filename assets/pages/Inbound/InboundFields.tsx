@@ -39,15 +39,15 @@ export const InboundFields = () => {
         .type(FieldType.ENTITY)
         .name('operacion')
         .label('Operacion')
-        .url(Constants.API_BASE_URL + 'operations')
+        .url(Constants.API_BASE_URL + 'logistic-operations')
         .filters([{
-            field: 'tipo_id',
+            field: 'type',
             operator: '=',
             value: 1
         }])
-        .valueField('operacion_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .valueField('id')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()

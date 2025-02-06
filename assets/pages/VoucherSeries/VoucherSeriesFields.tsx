@@ -2,7 +2,6 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const VoucherSeriesFields = () => {
@@ -18,42 +17,34 @@ export const VoucherSeriesFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('local')
+        .name('branch')
         .label('Local')
         .url(Constants.API_BASE_URL + 'branches')
-        .valueField('local_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.local.descripcion)
+        .valueField('id')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('tipo_comprobante')
+        .name('voucherType')
         .label('Tipo comprobante')
         .url(Constants.API_BASE_URL + 'voucher-types')
-        .valueField('codigo')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_comprobante.descripcion)
+        .valueField('code')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('serie')
+        .name('series')
         .label('Serie')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('serie_asociada')
+        .name('associatedSeries')
         .label('Serie asociada')
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('active')
-        .label('Activo')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
-        .build());
-
     return fields;
 }

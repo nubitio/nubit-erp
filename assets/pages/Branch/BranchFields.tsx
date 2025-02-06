@@ -2,7 +2,6 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const BranchFields = () => {
@@ -12,43 +11,35 @@ export const BranchFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('local_id')
+        .name('id')
         .label('Local id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('empresa')
+        .name('company')
         .label('Empresa')
         .url(Constants.API_BASE_URL + 'companies')
-        .valueField('empresa_id')
-        .textField('razon_social')
+        .valueField('id')
+        .textField('businessName')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.data.empresa.razon_social)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.company?.businessName)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('descripcion')
+        .name('name')
         .label('Descripcion')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('direccion')
+        .name('address')
         .label('Direccion')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('telefono')
+        .name('phone')
         .label('Telefono')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .align('center')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
         .build());
 
     return fields;

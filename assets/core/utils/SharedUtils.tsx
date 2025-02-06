@@ -15,14 +15,20 @@ export class SharedUtils {
     static imageFormatter(imageUrl?: string, alt?: string) {
         if (imageUrl) {
             return (
-                <a href={imageUrl} target="_blank" rel="noreferrer">
-                    <img src={imageUrl} style={{width: '30px', height: '30px'}} alt={alt}/>
-                </a>
+                <div className="d-flex align-items-center justify-content-center">
+                    <a href={imageUrl} target="_blank" rel="noreferrer">
+                        <img src={imageUrl} style={{width: '30px', height: '30px'}} alt={alt}/>
+                    </a>
+                </div>
             )
         } else {
             const name = alt ? alt : 'No image';
             const url = `https://ui-avatars.com/api/?name=${name}`;
-            return <img src={url} style={{width: '30px', height: '30px'}} alt={alt ?? 'No image'}/>
+            return (
+                <div className="d-flex align-items-center justify-content-center">
+                    <img src={url} style={{width: '30px', height: '30px'}} alt={alt ?? 'No image'}/>
+                </div>
+            )
         }
     }
 

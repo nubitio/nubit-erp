@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Media\Api;
+namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
-use App\Media\Application\MediaController;
-use App\Media\Domain\Media;
+use App\Controller\MediaController;
+use App\Repository\MediaRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Serializer\Attribute\Groups;
 
+#[ORM\Entity(repositoryClass: MediaRepository::class)]
 #[ApiResource(
-    shortName: 'Media',
     operations: [
         new Get(
             uriTemplate: '/media/{id}',
@@ -43,11 +45,34 @@ use App\Media\Domain\Media;
             uriTemplate: '/media/{id}',
         ),
     ],
-    provider: MediaProvider::class,
-    processor: MediaProcessor::class
 )]
-class MediaDto extends Media
+class Media
 {
-    #[ApiProperty(identifier: true)]
-    public ?string $id;
+    #[Groups(['company:read'])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[ORM\Column]
+    private ?string $id = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(length: 255)]
+    private ?string $path = null;
+
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function setPath(string $path): static
+    {
+        $this->path = $path;
+
+        return $this;
+    }
 }

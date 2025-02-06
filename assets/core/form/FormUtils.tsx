@@ -61,7 +61,7 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
                 },
                 onUploaded: (e: any) => {
                     let response = JSON.parse(e.request.response);
-                    uploadedFiles.current.push({field: field.name, value: response.id});
+                    uploadedFiles.current.push({field: field, value: response.id});
                 }
             }
         }

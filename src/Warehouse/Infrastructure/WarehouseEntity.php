@@ -2,8 +2,8 @@
 
 namespace App\Warehouse\Infrastructure;
 
-use App\Branch\Infrastructure\BranchEntity;
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Entity\Branch;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\Entity;
@@ -25,9 +25,9 @@ class WarehouseEntity
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'almacen_id', type: 'string')]
         public ?string $almacen_id = null,
-        #[ManyToOne(targetEntity: BranchEntity::class)]
+        #[ManyToOne(targetEntity: Branch::class)]
         #[JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
-        public ?BranchEntity $local = null,
+        public ?Branch $local = null,
         #[Column(name: 'descripcion', type: 'string')]
         public ?string $descripcion = null,
         #[Column(name: 'tipo_id', type: 'integer')]

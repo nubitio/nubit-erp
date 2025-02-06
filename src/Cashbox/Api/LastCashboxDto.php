@@ -5,8 +5,8 @@ namespace App\Cashbox\Api;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
-use App\Branch\Infrastructure\BranchEntity;
 use App\Cashbox\Domain\Cashbox;
+use App\Entity\Branch;
 
 #[ApiResource(
     uriTemplate: '/cashboxes/{branch_id}/last',
@@ -15,7 +15,7 @@ use App\Cashbox\Domain\Cashbox;
     uriVariables: [
         'branch_id' => new Link(
             fromProperty: 'local_id',
-            fromClass: BranchEntity::class,
+            fromClass: Branch::class,
         ),
     ],
     provider: LastCashboxProvider::class

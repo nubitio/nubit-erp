@@ -197,8 +197,13 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             emit(options.events?.LOADING, true);
             let formData = formRef.current?.instance().option('formData');
             uploadedFiles.current.forEach((file: any) => {
-                formData[file.field] = {
-                    id: file.value
+                if (options.useIRI ?? false) {
+                    formData[file.field.name] = getIRI(file.field.url, file.value);
+                    return;
+                } else {
+                    formData[file.field.name] = {
+                        id: file.value
+                    }
                 }
             });
             options.fields.forEach((field: Field) => {

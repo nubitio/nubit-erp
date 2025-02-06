@@ -2,7 +2,6 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const CategoryFields = () => {
@@ -12,13 +11,13 @@ export const CategoryFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('categoria_id')
-        .label('Categoria id')
+        .name('id')
+        .label('Id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('descripcion')
+        .name('name')
         .label('Descripcion')
         .sortable(true)
         .build());
@@ -30,23 +29,6 @@ export const CategoryFields = () => {
         .valueField('categoria_id')
         .textField('descripcion')
         .formatter((cell: ColumnCellTemplateData) => cell.data.parent?.descripcion)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.FILE)
-        .name('imagen')
-        .label('Imagen')
-        .url(Constants.API_BASE_URL + 'media')
-        .accept('image/*')
-        //.formatter(SharedUtils.dxImageFormatter)
-        .align('center')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
-        .align('center')
         .build());
 
     return fields;

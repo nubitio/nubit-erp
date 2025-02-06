@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Media\Api;
+namespace App\Serializer;
 
 use App\Core\Domain\Util\Constants;
-use App\Media\Domain\Media;
+use App\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class MediaNormalizer implements NormalizerInterface
@@ -17,6 +18,11 @@ final class MediaNormalizer implements NormalizerInterface
     ) {
     }
 
+    /**
+     * @param Media $data
+     *
+     * @throws ExceptionInterface
+     */
     public function normalize(
         $data,
         ?string $format = null,
@@ -28,7 +34,7 @@ final class MediaNormalizer implements NormalizerInterface
 
         $folder = Constants::IMAGE_UPLOAD_DIR;
 
-        $data->path = $baseUrl.$folder.$data->path;
+        $data->setPath($baseUrl.$folder.$data->getPath());
 
         return $this->normalizer->normalize($data, $format, $context);
     }
