@@ -9,7 +9,6 @@ import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dia
 import {saleService} from "../../service/sale.service";
 import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
-import {httpClient} from "../../core/http/HttpClient";
 import {userInformation} from "../../core/common/UserInformation";
 import {CustomerPage} from "../Customer/CustomerPage";
 import {CustomerFields} from "../Customer/CustomerFields";
@@ -115,7 +114,7 @@ export const SalePage = () => {
         saleService.voidSale(saleId, reason).subscribe((response) => {
             notify({
                     message: response.data.message,
-                    type: 'success',
+                    type: response.data.success ? 'success' : 'error',
                     displayTime: 3000,
                 }, {position: 'top right'}
             );
@@ -143,7 +142,7 @@ export const SalePage = () => {
 
     const print = (saleId: string) => {
         let config = qz.configs.create(printerName);
-        httpClient.get<any>('/qz/print/' + saleId).subscribe((response) => {
+        saleService.printInvoice(saleId).subscribe((response) => {
             qz.print(config, [response.data]).catch((err: any) => {
                 console.error(err);
             })

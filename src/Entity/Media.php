@@ -24,13 +24,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapiContext: [
                 'requestBody' => [
                     'required' => true,
-                    'content'  => [
+                    'content' => [
                         'multipart/form-data' => [
                             'schema' => [
-                                'type'       => 'object',
+                                'type' => 'object',
                                 'properties' => [
                                     'file' => [
-                                        'type'   => 'string',
+                                        'type' => 'string',
                                         'format' => 'binary',
                                     ],
                                 ],

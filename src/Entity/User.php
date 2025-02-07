@@ -31,13 +31,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Delete(),
     ],
     normalizationContext: [
-        'groups' => ['user:read']
+        'groups' => ['user:read'],
     ],
     denormalizationContext: [
-        'groups' => ['user:create', 'user:update']
+        'groups' => ['user:create', 'user:update'],
     ],
     filters: [
-        DevExtremeFilter::class
+        DevExtremeFilter::class,
     ],
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
@@ -52,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[Groups([
         'user:read',
         'user:create',
-        'user:update'
+        'user:update',
     ])]
     #[ORM\Column(length: 255)]
     private ?string $username = null;
@@ -62,14 +62,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
 
     #[Groups([
         'user:create',
-        'user:update'
+        'user:update',
     ])]
     private ?string $plainPassword = null;
 
     #[Groups([
         'user:read',
         'user:create',
-        'user:update'
+        'user:update',
     ])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
@@ -123,13 +123,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
      */
     public function getUserIdentifier(): string
     {
-        return (string)$this->username;
+        return (string) $this->username;
     }
 
     /**
      * @return list<string>
-     * @see UserInterface
      *
+     * @see UserInterface
      */
     public function getRoles(): array
     {
