@@ -11,8 +11,8 @@ export const UnitOfMeasureFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('unidad_id')
-        .label('Unidad id')
+        .name('id')
+        .label('Id')
         .required(true)
         .valueType('number')
         .build());
@@ -20,7 +20,7 @@ export const UnitOfMeasureFields = () => {
         .type(FieldType.TEXT)
         .name('name')
         .label('Nombre')
-        .width(100)
+        .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -94,7 +94,7 @@ export const UnitOfMeasureFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENUM)
-        .name('type_id')
+        .name('type')
         .label('Tipo')
         .data([
             {value: 1, text: 'Unidad'},
@@ -126,22 +126,20 @@ export const UnitOfMeasureFields = () => {
         .type(FieldType.NUMBER)
         .name('ratio')
         .label('Ratio')
+        .helpText('Relación con la unidad base')
+        .align('center')
         .precision(5)
         .defaultValue(1)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.SWITCH)
-        .name('is_reference')
-        .label('Es referencia')
-        .formatter(SharedUtils.booleanFormatter)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('active')
-        .label('Activo')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
+        .name('reference')
+        .label('Es unidad base')
+        .helpText('Indica si es la unidad base')
+        .align('center')
+        .defaultValue(false)
+        .formatter((cell: ColumnCellTemplateData) => SharedUtils.booleanFormatter(cell.value))
         .build());
 
     return fields;

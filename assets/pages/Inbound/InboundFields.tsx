@@ -67,9 +67,9 @@ export const InboundFields = () => {
         .name('proveedor')
         .label('Proveedor')
         .url(Constants.API_BASE_URL + 'suppliers')
-        .valueField('proveedor_id')
-        .textField('razon_social')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.razon_social)
+        .valueField('id')
+        .textField('businessName')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)
@@ -84,11 +84,6 @@ export const InboundFields = () => {
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .readonly(true)
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
-        .name('estado')
-        .label('Estado')
-        .build());
 
     return fields;
 }
@@ -102,9 +97,9 @@ export const InboundDetailFields = () => {
         .label('Producto')
         .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
-        .valueField('producto_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .valueField('id')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             let product = await productService.getOne(value, true) as ProductDto;
             row.producto = product;

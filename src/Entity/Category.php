@@ -19,14 +19,20 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Category
 {
-    #[Groups(['category:read'])]
+    #[Groups([
+        'category:read',
+        'product:read',
+    ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'categoria_id')]
     private ?string $id = null;
 
-    #[Groups(['category:read'])]
+    #[Groups([
+        'category:read',
+        'product:read',
+    ])]
     #[ORM\Column(name: 'descripcion')]
     private ?string $name = null;
 

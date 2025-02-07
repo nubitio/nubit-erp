@@ -9,9 +9,9 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Operation
 {
     public function __construct(
-        #[SerializedName('operacion_id')]
+        #[SerializedName('id')]
         public ?string $operacion_id = null,
-        #[SerializedName('descripcion')]
+        #[SerializedName('name')]
         public ?string $descripcion = null,
         #[SerializedName('tipo_id')]
         public ?int $tipo_id = null,

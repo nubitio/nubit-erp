@@ -6,7 +6,6 @@ import {BranchPage} from "./pages/Branch/BranchPage";
 import {CashboxPage} from "./pages/Cashbox/CashboxPage";
 import {CashboxConsultPage} from "./pages/CashboxConsult/CashboxConsultPage";
 import {CategoryPage} from "./pages/Category/CategoryPage";
-import {ChangePasswordPage} from "./pages/ChangePassword/ChangePasswordPage";
 import {CompanyPage} from "./pages/Company/CompanyPage";
 import {ConfigPage} from "./pages/Config/ConfigPage";
 import {CreditNotePage} from "./pages/CreditNote/CreditNotePage";
@@ -18,7 +17,6 @@ import {InvoicePage} from "./pages/Invoice/InvoicePage";
 import {KardexPage} from "./pages/Kardex/KardexPage";
 import {OperationPage} from "./pages/Operation/OperationPage";
 import {OutboundPage} from "./pages/Outbound/OutboundPage";
-import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
 import {PositionPage} from "./pages/Position/PositionPage";
 import {RolePage} from "./pages/Role/RolePage";
 import {SaleConsultPage} from "./pages/SaleConsult/SaleConsultPage";
@@ -60,10 +58,6 @@ const routes = [
     {
         path: '/category',
         element: CategoryPage,
-    },
-    {
-        path: '/changePassword',
-        element: ChangePasswordPage,
     },
     {
         path: '/company',
@@ -108,10 +102,6 @@ const routes = [
     {
         path: '/outbound',
         element: OutboundPage,
-    },
-    {
-        path: '/payment-method',
-        element: PaymentMethodPage,
     },
     {
         path: '/position',

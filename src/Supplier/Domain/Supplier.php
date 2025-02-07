@@ -9,11 +9,11 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Supplier
 {
     public function __construct(
-        #[SerializedName('proveedor_id')]
+        #[SerializedName('id')]
         public ?string $proveedor_id = null,
         #[SerializedName('ruc')]
         public ?string $ruc = null,
-        #[SerializedName('razon_social')]
+        #[SerializedName('businessName')]
         public ?string $razon_social = null,
         #[SerializedName('domicilio_fiscal')]
         public ?string $domicilio_fiscal = null,

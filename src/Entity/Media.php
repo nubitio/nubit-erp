@@ -24,13 +24,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             openapiContext: [
                 'requestBody' => [
                     'required' => true,
-                    'content' => [
+                    'content'  => [
                         'multipart/form-data' => [
                             'schema' => [
-                                'type' => 'object',
+                                'type'       => 'object',
                                 'properties' => [
                                     'file' => [
-                                        'type' => 'string',
+                                        'type'   => 'string',
                                         'format' => 'binary',
                                     ],
                                 ],
@@ -48,14 +48,20 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Media
 {
-    #[Groups(['company:read'])]
+    #[Groups([
+        'company:read',
+        'product:read',
+    ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column]
     private ?string $id = null;
 
-    #[Groups(['company:read'])]
+    #[Groups([
+        'company:read',
+        'product:read',
+    ])]
     #[ORM\Column(length: 255)]
     private ?string $path = null;
 

@@ -1,7 +1,6 @@
 import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 
 export const PriceListFields = () => {
     const fields: Field[] = [];
@@ -23,14 +22,5 @@ export const PriceListFields = () => {
         .width('100%')
         .required(true)
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('active')
-        .label('Activo')
-        .width('auto')
-        .align('center')
-        .defaultValue(true)
-        .formatter(SharedUtils.booleanFormatter)
-        .build())
     return fields;
 }

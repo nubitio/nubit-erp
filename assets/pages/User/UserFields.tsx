@@ -2,7 +2,6 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
-import {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 
 export const UserFields = () => {
@@ -12,8 +11,8 @@ export const UserFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('usuario_id')
-        .label('Usuario id')
+        .name('id')
+        .label('Id')
         .required(true)
         .valueType('number')
         .build());
@@ -25,33 +24,21 @@ export const UserFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.PASSWORD)
-        .name('password')
-        .label('Password')
+        .name('plainPassword')
+        .label('Contraseña')
+        .helpText('Deje en blanco si no desea cambiar la contraseña')
         .visible(false)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('pin')
-        .label('Pin')
-        .build());
-    fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('rol')
+        .name('role')
         .label('Rol')
         .url(Constants.API_BASE_URL + 'roles')
-        .textField('descripcion')
-        .valueField('rol_id')
+        .valueField('id')
+        .textField('name')
         .valueType('number')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.data.rol?.descripcion)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .align('center')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .build());
 
     return fields;

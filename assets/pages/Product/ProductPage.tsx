@@ -32,7 +32,7 @@ export const ProductPage = () => {
                 allowDelete={true}
                 fields={fields}
                 events={EVENTS}
-                sort={[{selector: 'descripcion', desc: false}]}
+                sort={[{selector: 'name', desc: false}]}
             />
             <DxDialog
                 events={EVENTS}
@@ -41,6 +41,7 @@ export const ProductPage = () => {
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}
+                    useIRI={true}
                 />
             </DxDialog>
         </div>

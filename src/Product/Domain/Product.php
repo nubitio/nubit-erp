@@ -12,13 +12,13 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Product
 {
     public function __construct(
-        #[SerializedName('producto_id')]
+        #[SerializedName('id')]
         public ?string $producto_id = null,
         #[SerializedName('codigo')]
         public ?string $codigo = null,
         #[SerializedName('tipo_id')]
         public ?int $tipo_id = null,
-        #[SerializedName('descripcion')]
+        #[SerializedName('name')]
         public ?string $descripcion = null,
         #[SerializedName('categoria')]
         public ?Category $categoria = null,
