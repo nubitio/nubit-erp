@@ -63,7 +63,7 @@ export class SharedUtils {
         return `${dialog}-${Math.random().toString(36).substring(2, 9)}`;
     }
 
-    static validateRUC(ruc): boolean {
+    static validateRUC(ruc: any): boolean {
         let rucCopy = ruc;
         let validStartWith = [10, 15, 16, 17, 20];
         let rucPart = ruc.toString().substring(0, 2);

@@ -12,8 +12,17 @@ import {textField} from "../../core/field/TextFieldBuilder";
 export const CustomerFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
-    fields.push(textField()
+    fields.push(new FieldBuilder()
         .isIdentity(true)
+        .visible(false)
+        .type(FieldType.NONE)
+        .name('id')
+        .label('Id')
+        .valueType('number')
+        .required(true)
+        .valueType('number')
+        .build());
+    fields.push(textField()
         .name('ruc')
         .label('RUC/DNI')
         .maxLength(11)
@@ -75,41 +84,48 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)
-        .name('razon_social')
+        .name('businessName')
         .label('Cliente')
         .required(true)
         .sortable(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)
-        .name('domicilio_fiscal')
+        .name('fiscalAddress')
         .label('Domicilio')
         .build());
     fields.push(new FieldBuilder()
-        .name('telefono')
+        .name('phone')
         .label('Teléfono')
+        .validators([
+            {
+                type: 'pattern',
+                options: {
+                    pattern: '^\\+?[1-9]\\d{1,2}[-.\\s]?\\d{6,14}$',
+                    message: 'El teléfono ingresado no es válido'
+                }
+            }
+        ])
         .build());
     fields.push(new FieldBuilder()
         .name('email')
         .label('Email')
+        .validators([
+            {
+                type: 'email',
+                options: {message: 'El email ingresado no es válido'}
+            }
+        ])
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('price_list')
+        .name('priceList')
         .label('Tarifa')
         .url(Constants.API_BASE_URL + 'price-lists')
         .valueField('id')
         .textField('name')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.price_list?.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .valueType('number')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .align('center')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
         .build());
 
     return fields;

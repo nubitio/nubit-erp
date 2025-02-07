@@ -65,11 +65,6 @@ export const OutboundFields = () => {
         .name('glosa')
         .label('Glosa')
         .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
-        .name('estado')
-        .label('Estado')
-        .build());
 
     return fields;
 }
@@ -83,16 +78,15 @@ export const OutboundDetailFields = () => {
         .label('Producto')
         .minWidth(250)
         .url(Constants.API_BASE_URL + 'products')
-        .valueField('producto_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .valueField('id')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             let product = await productService.getOne(value, true) as ProductDto;
             row.producto = product;
             this.defaultSetCellValue(row, product, currentRow);
         })
         .sortable(false)
-        .filterable(false)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -101,7 +95,6 @@ export const OutboundDetailFields = () => {
         .label('Cantidad')
         .align('center')
         .sortable(false)
-        .filterable(false)
         .required(true)
         .valueType('number')
         .build());

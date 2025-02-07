@@ -13,18 +13,29 @@ export const ProductFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('producto_id')
-        .label('Producto id')
+        .name('id')
+        .label('Id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
+        .type(FieldType.FILE)
+        .name('photo')
+        .label('Imagen')
+        .align('center')
+        .url(Constants.API_BASE_URL + 'media')
+        .accept('image/*')
+        .formatter((e: ColumnCellTemplateData) => {
+            return SharedUtils.imageFormatter(e.value?.path, e.data?.descripcion);
+        })
+        .build());
+    fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('codigo')
+        .name('code')
         .label('Código')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENUM)
-        .name('tipo_id')
+        .name('type')
         .label('Tipo')
         .data([
             {value: 1, text: 'Fisico'},
@@ -37,56 +48,46 @@ export const ProductFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('descripcion')
+        .name('name')
         .label('Descripción')
         .sortable(true)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('categoria')
+        .name('category')
         .label('Categoría')
         .url(Constants.API_BASE_URL + 'categories')
-        .valueField('categoria_id')
-        .textField('descripcion')
+        .valueField('id')
+        .textField('name')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('unidad')
+        .name('unitOfMeasure')
         .label('Unidad')
         .url(Constants.API_BASE_URL + 'unit-of-measures')
-        .valueField('unidad_id')
+        .valueField('id')
         .textField('name')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.data.unidad?.name)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.CURRENCY)
-        .name('precio')
+        .name('salePrice')
         .label('Precio')
         .align('right')
         .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
         .required(true)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.FILE)
-        .name('imagen')
-        .label('Imagen')
+        .type(FieldType.NUMBER)
+        .name('stock')
+        .label('Stock')
         .align('center')
-        .formatter((e: ColumnCellTemplateData) => {
-            return SharedUtils.imageFormatter(e.data?.imagen?.path, e.data?.descripcion);
-        })
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .align('center')
-        .formatter(SharedUtils.booleanFormatter)
-        .defaultValue(true)
+        .visibleOnForm(false)
         .build());
 
     return fields;

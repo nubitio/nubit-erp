@@ -62,7 +62,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .url(Constants.API_BASE_URL + 'customers')
         .mode('remote')
         .valueField('ruc')
-        .textField('razon_social')
+        .textField('businessName')
         .defaultValue('00000000')
         .required(true)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.razon_social)
@@ -223,11 +223,12 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .minWidth(200)
         .url(Constants.API_BASE_URL + 'products')
         .mode('remote')
-        .valueField('producto_id')
-        .textField('descripcion')
+        .valueField('id')
+        .textField('name')
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             let product = await productService.getOne(value, true) as ProductDto;
-            let price = product.precio;
+            let price = product.salePrice;
+            console.log(priceList, value, product, price);
             if (priceList) {
                 let priceItem = priceList.find((item) => item.id === value);
                 if (priceItem) {
@@ -239,12 +240,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             row.precio_total = price;
             this.defaultSetCellValue(row, product, currentRow);
         })
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
-        .filters([{
-            field: 'estado',
-            operator: '=',
-            value: 1
-        }])
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .sortable(false)
         .build());

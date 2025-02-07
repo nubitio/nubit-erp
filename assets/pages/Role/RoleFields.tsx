@@ -9,14 +9,14 @@ export const RoleFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('rol_id')
-        .label('Rol id')
+        .name('id')
+        .label('Id')
         .required(true)
         .valueType('number')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('descripcion')
+        .name('name')
         .label('Descripcion')
         .required(true)
         .build());

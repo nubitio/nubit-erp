@@ -12,8 +12,8 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('proveedor_id')
-        .label('Proveedor id')
+        .name('id')
+        .label('Id')
         .required(true)
         .build());
     fields.push(textField()
@@ -48,30 +48,31 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXTAREA)
-        .name('razon_social')
+        .name('businessName')
         .label('Razón Social')
         .width('100%')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('domicilio_fiscal')
+        .name('fiscalAddress')
         .label('Dirección')
         .width('100%')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('telefono')
+        .name('phone')
         .label('Teléfono')
+        .validators([
+            {
+                type: 'pattern',
+                options: {
+                    pattern: '^\\+?[1-9]\\d{1,2}[-.\\s]?\\d{6,14}$',
+                    message: 'El teléfono ingresado no es válido'
+                }
+            }
+        ])
         .align('center')
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.SWITCH)
-        .name('estado')
-        .label('Activo')
-        .formatter(SharedUtils.booleanFormatter)
-        .align('center')
-        .defaultValue(true)
         .build());
 
     return fields;
