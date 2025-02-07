@@ -3,12 +3,10 @@
 namespace App\Billing\Domain;
 
 use App\Core\Domain\Exception\ServiceException;
-use App\Core\Domain\Util\DataMapper;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\Voucher;
-use App\RawDocument\Domain\GetOneRawDocumentUseCase;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
@@ -20,7 +18,6 @@ readonly class NoteCreateUseCase
     public function __construct(
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
-        private GetOneRawDocumentUseCase $getOneRawDocumentUseCase,
         private BillUtilsInterface $billUtils,
     ) {
     }
@@ -33,10 +30,6 @@ readonly class NoteCreateUseCase
         $creditNote = $this->getOneCreditNoteUseCase->__invoke($noteId);
         if (null !== $creditNote->sale?->movimiento_id) {
             $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale->movimiento_id);
-        }
-        if (null !== $creditNote->raw_document_id) {
-            $rawDocument = $this->getOneRawDocumentUseCase->__invoke($creditNote->raw_document_id);
-            $voucher = DataMapper::map(json_decode($rawDocument->document ?? '[]', true), Voucher::class);
         }
         if (!isset($voucher)) {
             throw new ServiceException('No se encontró el comprobante asociado a la nota de crédito.');

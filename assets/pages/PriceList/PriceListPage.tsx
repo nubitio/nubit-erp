@@ -12,13 +12,23 @@ import {httpClient} from "../../core/http/HttpClient";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {useEvents} from "../../core/event/EventHook";
+import AppResponse from "../../core/http/AppResponse";
+import toast from "../../core/utils/SharedUtils";
+import DataSource from "devextreme/data/data_source";
+import ArrayStore from "devextreme/data/array_store";
 
 export const PriceListPage = () => {
     const [on, emit] = useEvents();
     const container = "wrapper";
     const fields = PriceListFields();
-    const gridRef = useRef<DxDataGridEvents>(null);
-    const pricesRef = useRef<DataGridRef>(null);
+    const gridRef = useRef<DxDataGridEvents | null>(null);
+    const pricesRef = useRef<DataGridRef | null>(null);
+    const pricesData = useRef<DataSource>(new DataSource({
+        store: new ArrayStore({
+            key: 'id',
+            data: []
+        })
+    }))
 
     const API_URL = Constants.API_BASE_URL + 'price-lists';
 
@@ -61,15 +71,24 @@ export const PriceListPage = () => {
         }
     ]
 
-    let alreadySetup = false;
+    let alreadySetup = useRef(false);
 
     const setupObservers = () => {
         on(PRICES_EVENT.ADD, () => {
             let selectedRow = gridRef.current?.getSelectedRow();
-            httpClient.get<any>('price-list/' + selectedRow.id + '/get')
+            if (!selectedRow) {
+                toast('Debe seleccionar una tarifa', 'warning');
+            }
+            httpClient.get<any>(Constants.API_BASE_URL + 'price-lists/' + selectedRow.id + '/prices')
                 .subscribe(response => {
                     pricesRef.current?.instance().beginCustomLoading('Cargando precios...');
                     pricesRef.current?.instance().option('dataSource', response.data);
+                    let store = pricesData.current.store() as ArrayStore;
+                    store.clear();
+                    response.data.forEach((item: any) => {
+                        store.insert(item);
+                    })
+                    pricesData.current.reload();
                     pricesRef.current?.instance().endCustomLoading();
                 })
         })
@@ -78,18 +97,24 @@ export const PriceListPage = () => {
             let selectedRow = gridRef.current?.getSelectedRow();
             let pricesData: any[] = [];
             let updatedPrices = pricesRef.current?.instance().getDataSource().items();
-            updatedPrices?.forEach((price: any) => {
-                if (!price.updated) return;
+            updatedPrices?.forEach((item: any) => {
+                if (!item.updated) return;
                 pricesData.push({
-                    price_list_id: selectedRow.id,
-                    product_id: price.id,
-                    price: price.price,
+                    productId: item.id,
+                    price: Number(item.price),
                 })
             })
-            httpClient.post<any>('price-list/update', pricesData)
+            if (pricesData.length === 0) {
+                toast('No se han realizado cambios', 'warning');
+                return;
+            }
+            httpClient.post<AppResponse>(Constants.API_BASE_URL + 'price-lists/update', {
+                priceListId: selectedRow.id,
+                prices: pricesData
+            })
                 .subscribe(response => {
                     notify({
-                        message: response.data.msg,
+                        message: response.data.message,
                         type: 'success',
                         displayTime: 3000,
                     }, {position: 'top right'});
@@ -99,9 +124,9 @@ export const PriceListPage = () => {
     }
 
     useEffect(() => {
-        if (!alreadySetup) {
+        if (!alreadySetup.current) {
             setupObservers();
-            alreadySetup = true;
+            alreadySetup.current = true;
         }
     }, [])
 
@@ -133,7 +158,8 @@ export const PriceListPage = () => {
             >
                 <DataGrid
                     ref={pricesRef}
-                    dataSource={[]}
+                    dataSource={pricesData.current}
+                    height={'100%'}
                     showBorders={true}
                     showRowLines={true}
                     onRowUpdated={(e: any) => {

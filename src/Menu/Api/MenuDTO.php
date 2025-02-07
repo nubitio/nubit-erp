@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\GetCollection;
 
 #[ApiResource(
     uriTemplate: '/menu/{role_id}',
-    shortName: 'Menu',
+    shortName: 'MenuDto',
     operations: [new GetCollection()],
     uriVariables: [
         'role_id' => 'role_id',

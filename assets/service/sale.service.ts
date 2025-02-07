@@ -8,19 +8,19 @@ export class SaleService {
     }
 
     voidSale(saleId: string, reason: string) {
-        return httpClient.post<AppResponse>(`/sale/void/${saleId}`, {reason});
+        return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}sales/${saleId}/void`, {saleId, reason});
     }
 
     makeInvoice(saleId: string) {
-        return httpClient.post<AppResponse>(`/sale/invoice/${saleId}`);
+        return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}sales/${saleId}/invoice`, {saleId});
+    }
+
+    printInvoice(saleId: string) {
+        return httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/print-invoice`);
     }
 
     makeNote(noteId: string) {
-        return httpClient.post<any>(`/credit-note/send/${noteId}`);
-    }
-
-    cloneSale(saleId: string) {
-        return httpClient.post<AppResponse>(`/sale/clone/${saleId}`);
+        return httpClient.post<any>(`${Constants.API_BASE_URL}sales/${noteId}/credit-note`);
     }
 }
 

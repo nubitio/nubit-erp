@@ -11,8 +11,8 @@ use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
+use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
-use Psr\Cache\InvalidArgumentException;
 
 readonly class SaleVoidUseCase
 {
@@ -28,12 +28,15 @@ readonly class SaleVoidUseCase
     }
 
     /**
-     * @throws \Exception
      * @throws FilesystemException
-     * @throws InvalidArgumentException
+     * @throws SaleException
+     * @throws Exception
      */
-    public function __invoke(string $saleId, string $reason, int $userId): ApiResponse
-    {
+    public function __invoke(
+        string $saleId,
+        string $reason,
+        int $userId,
+    ): ApiResponse {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $sale = $this->saleRepository->getOne($saleId);
 
@@ -41,7 +44,11 @@ readonly class SaleVoidUseCase
             throw SaleException::alreadyVoided();
         }
 
-        if ($sale->fecha?->format('Y-m-d') < date('Y-m-d', strtotime('-7 days'))) {
+        if ($sale->fecha?->format('Y-m-d') < date(
+            'Y-m-d',
+            strtotime('-7 days')
+        )
+        ) {
             throw SaleException::tooOld();
         }
 
@@ -63,9 +70,13 @@ readonly class SaleVoidUseCase
         if ($response) {
             $sunatResponse = $response->sunatResponse;
             $success = $sunatResponse->isSuccess();
-            $description = $success ? 'Anulado correctamente' : $sunatResponse->getError()?->getMessage();
+            $description = $success ? 'Anulado correctamente'
+                : $sunatResponse->getError()?->getMessage();
 
-            return new ApiResponse($success ?? false, $description ?? 'Error al anular');
+            return new ApiResponse(
+                $success ?? false,
+                $description ?? 'Error al anular'
+            );
         }
 
         return new ApiResponse(
@@ -75,12 +86,14 @@ readonly class SaleVoidUseCase
     }
 
     /**
-     * @throws \Exception
      * @throws FilesystemException
-     * @throws InvalidArgumentException
+     * @throws SaleException
+     * @throws Exception
      */
-    private function voidInvoice(string $saleId, string $reason): SummaryResponse
-    {
+    private function voidInvoice(
+        string $saleId,
+        string $reason,
+    ): SummaryResponse {
         $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
         if ('0' !== $invoice->envio_sunat) {
@@ -91,11 +104,16 @@ readonly class SaleVoidUseCase
         $invoice->correlativo_baja = explode('-', $response->name)[3];
         $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->isSuccess()) {
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
+            $this->fileManager->write(
+                $this->settings->get(Constants::COMPANY_ID).'/'.$response->name
+                .'.xml',
+                $response->xml
+            );
             $invoice->ticket_baja = $response->sunatResponse->getTicket();
             $invoice->voided = 2;
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->getTicket() ?? $invoice->ticket_baja;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket() ??
+                $invoice->ticket_baja;
             $invoice->voided = 3;
         }
         $this->invoiceRepository->update($invoice);
@@ -104,9 +122,9 @@ readonly class SaleVoidUseCase
     }
 
     /**
-     * @throws \Exception
      * @throws FilesystemException
-     * @throws InvalidArgumentException
+     * @throws SaleException
+     * @throws \Exception
      */
     private function voidReceipt(string $saleId): SummaryResponse
     {
@@ -120,11 +138,16 @@ readonly class SaleVoidUseCase
         $invoice->correlativo_baja = explode('-', $response->name)[3];
         $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->isSuccess()) {
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
+            $this->fileManager->write(
+                $this->settings->get(Constants::COMPANY_ID).'/'.$response->name
+                .'.xml',
+                $response->xml
+            );
             $invoice->ticket_baja = $response->sunatResponse->getTicket();
             $invoice->voided = 2;
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->getTicket() ?? $invoice->ticket_baja;
+            $invoice->ticket_baja = $response->sunatResponse->getTicket() ??
+                $invoice->ticket_baja;
             $invoice->voided = 3;
         }
         $this->invoiceRepository->update($invoice);

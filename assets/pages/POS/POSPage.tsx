@@ -134,8 +134,8 @@ const POSPage = () => {
 
             {/* Invoice Section */}
             <Item resizable size="30%" minSize="25%" collapsible>
-                <div className="h-full flex p-5 bg-gray-100">
-                    <div className="h-full flex flex-col p-4 bg-white">
+                <div className="h-full p-5 bg-gray-100">
+                    <div className="h-full flex flex-col p-4 bg-white rounded-xl shadow-lg">
                         <div className="flex-1 space-y-6">
                             {cart.map(item => (
                                 <div key={item.producto_id} className="flex gap-4">

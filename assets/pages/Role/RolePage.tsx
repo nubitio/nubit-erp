@@ -11,6 +11,19 @@ import {httpClient} from "../../core/http/HttpClient";
 import DataSource from "devextreme/data/data_source";
 import ArrayStore from "devextreme/data/array_store";
 import {useEvents} from "../../core/event/EventHook";
+import AppResponse from "../../core/http/AppResponse";
+
+type RoleMenu = {
+    id: number,
+    text: string,
+    items: MenuItem[]
+}
+
+type MenuItem = {
+    id: number,
+    text: string,
+    selected: boolean
+}
 
 export const RolePage = () => {
     const [on, emit] = useEvents();
@@ -54,8 +67,8 @@ export const RolePage = () => {
             onClick: () => {
                 let row = gridRef.current?.getSelectedRow();
                 if (row) {
-                    emit(PERMISSION_EVENTS.ADD, {title: 'Permisos de ' + row.descripcion});
-                    httpClient.get<any>('role-menu/get?format=dx', {params: {roleId: row.rol_id}})
+                    emit(PERMISSION_EVENTS.ADD, {title: 'Permisos de ' + row.name});
+                    httpClient.get<RoleMenu[]>(Constants.API_BASE_URL + `role-menu/${row.id}`)
                         .subscribe(response => {
                             let store = permissionsData.current.store() as ArrayStore;
                             store.clear();
@@ -84,19 +97,23 @@ export const RolePage = () => {
                 let data = treeRef.current?.instance().getSelectedNodes();
                 let permissions: any[] = [];
                 data?.forEach(item => {
-                    permissions.push(item.parent?.key);
+                    if (item.parent?.key) {
+                        permissions.push(item.parent.key);
+                    }
                     permissions.push(item.key);
                 })
                 permissions = [...new Set(permissions)];
-                httpClient.post<any>('role-menu/add', {roleId: row.rol_id, permissions: permissions})
-                    .subscribe(response => {
-                        notify({
-                            message: response.data.msg,
-                            type: 'success',
-                            displayTime: 3000,
-                        }, {position: 'top right'})
-                        emit(PERMISSION_EVENTS.SUCCESS);
-                    })
+                httpClient.post<AppResponse>(Constants.API_BASE_URL + 'role-menu', {
+                    roleId: row.id,
+                    permissions: permissions
+                }).subscribe(response => {
+                    notify({
+                        message: response.data.message,
+                        type: 'success',
+                        displayTime: 3000,
+                    }, {position: 'top right'})
+                    emit(PERMISSION_EVENTS.SUCCESS);
+                })
             }
         })
     }

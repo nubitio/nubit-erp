@@ -4,15 +4,16 @@ import type {PosItem} from './types';
 import './POSPage.scss';
 
 interface POSItemProps {
+    key: any;
     item: PosItem;
     onAdd: (item: PosItem) => void;
     onRemove: (id: string) => void;
     quantity: number;
 }
 
-export function POSItem({item, onAdd, onRemove, quantity}: POSItemProps) {
+export function POSItem({key, item, onAdd, onRemove, quantity}: POSItemProps) {
     return (
-        <div key={item.producto_id} className="bg-white rounded-xl p-4">
+        <div key={key} className="bg-white rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
                 <img
                     src={item.imagen?.path || `https://ui-avatars.com/api/?name=${item.descripcion}`}
