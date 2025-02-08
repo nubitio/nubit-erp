@@ -23,13 +23,13 @@ class SaleDetailEntity
         #[ORM\ManyToOne(targetEntity: ProductEntity::class)]
         #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
         public ?ProductEntity $producto = null,
-        #[ORM\Column(name: 'cantidad', type: 'decimal')]
+        #[ORM\Column(name: 'cantidad')]
         public ?float $cantidad = null,
-        #[ORM\Column(name: 'precio_unitario', type: 'decimal')]
+        #[ORM\Column(name: 'precio_unitario')]
         public ?float $precio_unitario = null,
-        #[ORM\Column(name: 'descuento', type: 'decimal')]
+        #[ORM\Column(name: 'descuento')]
         public ?float $descuento = null,
-        #[ORM\Column(name: 'precio_total', type: 'decimal')]
+        #[ORM\Column(name: 'precio_total')]
         public ?float $precio_total = null,
     ) {
     }

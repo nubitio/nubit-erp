@@ -1,15 +1,15 @@
 export interface PosItem {
-    producto_id: string
-    descripcion: string
-    precio: number
-    imagen?: Image
+    id: string
+    name: string
+    salePrice: number
+    photo?: Image
     quantity?: number
-    categoria: Category
+    category: Category
 }
 
 export interface Category {
-    categoria_id: string
-    descripcion: string
+    id: string
+    name: string
     icon?: string
     active?: boolean
 }

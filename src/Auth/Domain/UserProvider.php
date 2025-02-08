@@ -2,8 +2,8 @@
 
 namespace App\Auth\Domain;
 
+use App\Entity\User;
 use App\User\Domain\GetOneUserByUsernameUseCase;
-use App\User\Domain\User;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -45,6 +45,10 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
 
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
-        // TODO: Implement upgradePassword() method.
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+        }
+
+        $user->setPassword($newHashedPassword);
     }
 }

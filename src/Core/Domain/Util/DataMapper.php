@@ -17,8 +17,11 @@ class DataMapper
      *
      * @phpstan-return T
      */
-    public static function map(mixed $input, mixed $output, array $ignoredFields = []): object
-    {
+    public static function map(
+        mixed $input,
+        mixed $output,
+        array $ignoredFields = [],
+    ): object {
         if (is_string($output)) {
             $output = new $output();
         }
@@ -33,8 +36,11 @@ class DataMapper
             }
 
             try {
-                $reflectionProperty = new \ReflectionProperty(get_class($output), strval($key));
-                $ignore = $reflectionProperty->getAttributes(Ignore::class)[0] ?? null;
+                $reflectionProperty = new \ReflectionProperty(
+                    get_class($output), strval($key)
+                );
+                $ignore = $reflectionProperty->getAttributes(Ignore::class)[0]
+                    ?? null;
                 if (null !== $ignore) {
                     continue;
                 }
@@ -43,7 +49,9 @@ class DataMapper
             }
 
             if (property_exists($output, strval($key))) {
-                if (is_object($value) && !($value instanceof \DateTimeInterface)) {
+                if (is_object($value)
+                    && !($value instanceof \DateTimeInterface)
+                ) {
                     if ($value instanceof Collection) {
                         $output->$key = [];
                         try {
@@ -55,24 +63,33 @@ class DataMapper
                         }
                         /** @var object $item */
                         foreach ($value as $item) {
-                            $type = ReflectionUtil::getPropertyType($output, strval($key));
+                            $type = ReflectionUtil::getPropertyType(
+                                $output,
+                                strval($key)
+                            );
                             if (null === $type) {
-                                throw new \RuntimeException('Type not found');
+                                throw new \RuntimeException("Type not found for {$key}");
                             }
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
-                        $type = ReflectionUtil::getPropertyType($output, strval($key));
+                        $type = ReflectionUtil::getPropertyType(
+                            $output,
+                            strval($key)
+                        );
                         if (null === $type) {
-                            throw new \RuntimeException('Type not found');
+                            throw new \RuntimeException("Type not found for {$key}");
                         }
                         $output->$key = self::map($value, $type);
                     }
                 } else {
                     if (is_array($value)) {
-                        $type = ReflectionUtil::getPropertyType($output, strval($key));
+                        $type = ReflectionUtil::getPropertyType(
+                            $output,
+                            strval($key)
+                        );
                         if (null === $type) {
-                            throw new \RuntimeException('Type not found');
+                            throw new \RuntimeException("Type not found for {$key}");
                         }
                         $output->$key = [];
                         foreach ($value as $item) {

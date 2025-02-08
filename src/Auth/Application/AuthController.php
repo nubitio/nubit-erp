@@ -3,14 +3,8 @@
 namespace App\Auth\Application;
 
 use App\Base\BaseController;
-use App\Branch\Domain\BranchGetOneUseCase;
-use App\Core\Domain\Common\ApiResponse;
-use App\Core\Domain\Util\ArrayUtils;
-use App\Warehouse\Domain\GetAllByBranchUseCase;
-use App\Warehouse\Domain\Warehouse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class AuthController extends BaseController
 {
@@ -24,35 +18,5 @@ class AuthController extends BaseController
     public function logout(): Response
     {
         throw new \Exception('This should never be reached!');
-    }
-
-    #[Route('/auth/local', name: 'auth_local', methods: ['POST'])]
-    public function setLocal(Request $request, BranchGetOneUseCase $branchGetOneUseCase, GetAllByBranchUseCase $getAllByBranchUseCase): Response
-    {
-        /** @var array<string, string> $data */
-        $data = json_decode($request->getContent(), true);
-        $localId = $data['localId'];
-
-        $local = $branchGetOneUseCase($localId);
-
-        $warehouses = $getAllByBranchUseCase($localId);
-        /** @var ?Warehouse $defaultWarehouse */
-        $defaultWarehouse = ArrayUtils::find($warehouses, fn ($warehouse) => $warehouse->is_default);
-
-        $session = $request->getSession();
-        $session->set('branch_id', $localId);
-        $session->set('branch_name', $local?->descripcion ?? null);
-        $session->set('warehouse_id', $defaultWarehouse?->almacen_id ?? null);
-
-        $sessionInfo = [
-            'user_id' => $session->get('user_id'),
-            'username' => $session->get('username'),
-            'role_id' => $session->get('role_id'),
-            'branch_id' => $session->get('branch_id'),
-            'branch_name' => $session->get('branch_name'),
-            'warehouse_id' => $session->get('warehouse_id'),
-        ];
-
-        return $this->json(new ApiResponse(true, '', $sessionInfo));
     }
 }
