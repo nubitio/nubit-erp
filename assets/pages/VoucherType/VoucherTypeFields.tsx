@@ -7,14 +7,6 @@ export const VoucherTypeFields = () => {
 
     fields.push(new FieldBuilder()
         .isIdentity(true)
-        .visible(false)
-        .type(FieldType.NONE)
-        .name('id')
-        .label('Id')
-        .required(true)
-        .valueType('number')
-        .build());
-    fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('code')
         .label('Codigo')

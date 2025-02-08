@@ -17,22 +17,12 @@ class VoucherType
 {
     #[Groups(['voucher_series:read'])]
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
-    #[Groups(['voucher_series:read'])]
     #[ORM\Column(name: 'codigo', length: 2)]
     private ?string $code = null;
 
     #[Groups(['voucher_series:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private ?string $name = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getCode(): ?string
     {

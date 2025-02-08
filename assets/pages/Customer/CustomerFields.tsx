@@ -12,17 +12,8 @@ import {textField} from "../../core/field/TextFieldBuilder";
 export const CustomerFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
 
-    fields.push(new FieldBuilder()
-        .isIdentity(true)
-        .visible(false)
-        .type(FieldType.NONE)
-        .name('id')
-        .label('Id')
-        .valueType('number')
-        .required(true)
-        .valueType('number')
-        .build());
     fields.push(textField()
+        .isIdentity(true)
         .name('ruc')
         .label('RUC/DNI')
         .maxLength(11)
