@@ -15,10 +15,6 @@ use Doctrine\ORM\Mapping as ORM;
 class Customer
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'cliente_id')]
-    private ?int $id = null;
-
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
@@ -37,11 +33,6 @@ class Customer
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
     private ?PriceList $priceList = null;
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getRuc(): ?string
     {

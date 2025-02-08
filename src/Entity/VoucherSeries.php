@@ -30,7 +30,7 @@ class VoucherSeries
 
     #[Groups(['voucher_series:read'])]
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'codigo', nullable: false)]
     private ?VoucherType $voucherType = null;
 
     #[Groups(['voucher_series:read'])]
