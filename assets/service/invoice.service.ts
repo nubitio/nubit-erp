@@ -1,21 +1,22 @@
 import {httpClient} from "../core/http/HttpClient";
 import AppResponse from "../core/http/AppResponse";
+import {Constants} from "../core/common/Constants";
 
 export class InvoiceService {
-    sendInvoice(saleId: string) {
-        return httpClient.post<AppResponse>(`/invoice/${saleId}/send`);
+    consultInvoice(saleId: string) {
+        return httpClient.get<AppResponse>(`${Constants.API_BASE_URL}invoices/${saleId}/consult`);
     }
 
-    consultInvoice(saleId: string) {
-        return httpClient.get<AppResponse>(`/invoice/${saleId}/consult`);
+    sendInvoice(saleId: string) {
+        return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}invoices/${saleId}/send`, {saleId});
     }
 
     validateInvoice(saleId: string) {
-        return httpClient.get<AppResponse>(`/invoice/${saleId}/validate`);
+        return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}invoices/${saleId}/validate`, {saleId});
     }
 
     sendEmail(saleId: string) {
-        return httpClient.post<any>(`/invoice/${saleId}/email`);
+        return httpClient.post<any>(`${Constants.API_BASE_URL}invoices/${saleId}/email`, {saleId});
     }
 }
 

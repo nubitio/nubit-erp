@@ -43,8 +43,12 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
                     />
                 </div>
             </ToolbarItem>
-            <iframe src={`/sale/print/${props.saleId}?preview=true`} width={'100%'} height={'100%'}
-                    style={{border: 'none'}}/>
+            <iframe
+                src={`/receipt/${props.saleId}/ticket?preview=true`}
+                width={'100%'}
+                height={'100%'}
+                style={{border: 'none'}}
+            />
         </Popup>
     );
 }

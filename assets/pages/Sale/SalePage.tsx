@@ -285,7 +285,7 @@ export const SalePage = () => {
                 visible={isPreviewVisible}
                 onPositive={() => {
                     setIsPreviewVisible(false);
-                    window.open(`/sale/print/${selectedSaleId.current}`, '_blank');
+                    window.open(`/receipt/${selectedSaleId.current}/ticket`, '_blank');
                 }}
                 onNegative={() => {
                     setIsPreviewVisible(false);

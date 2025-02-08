@@ -3,7 +3,6 @@ import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
 import {SharedUtils} from "../../core/utils/SharedUtils";
-import {StorageUtils} from "../../core/utils/StorageUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {ProductDto} from "../../dto/product.dto";
@@ -123,12 +122,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
-        .name('numero')
-        .label('Voucher')
-        //.formatter(SharedUtils.voucherFormatter)
-        .build());
-    fields.push(new FieldBuilder()
-        .type(FieldType.NONE)
         .name('invoice')
         .label('Comprobante')
         .formatter((cell: ColumnCellTemplateData) => {
@@ -141,7 +134,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
                 return (
                     <a href={url} className='text-reset' target='_blank'>
-                        <i className='fas fa-file-invoice fa-lg'></i> {cell.value}
+                        <i className='ph ph-file-pdf text-primary'/> {cell.value}
                     </a>
                 );
             }
@@ -193,6 +186,12 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .name('estado')
         .label('Anulado')
         .align('center')
+        .formatter((cell: ColumnCellTemplateData) => {
+            if (cell.value === 2) {
+                return <span className='badge badge-outlined rounded-pill text-bg-danger'>Anulado</span>;
+            }
+            return '';
+        })
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NUMBER)
