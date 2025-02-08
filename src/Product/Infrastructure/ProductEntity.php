@@ -43,14 +43,14 @@ class ProductEntity
         public ?int $destino_id = null,
         #[Column(name: 'stock_minimo', type: 'integer')]
         public ?int $stock_minimo = null,
-        #[Column(name: 'precio', type: 'decimal')]
+        #[Column(name: 'precio')]
         public ?float $precio = null,
-        #[Column(name: 'precio_compra', type: 'decimal')]
+        #[Column(name: 'precio_compra')]
         public ?float $precio_compra = null,
         #[ManyToOne(targetEntity: Media::class)]
         #[JoinColumn(name: 'imagen', referencedColumnName: 'id')]
         public ?Media $imagen = null,
-        #[Column(name: 'estado', type: 'integer')]
+        #[Column(name: 'estado')]
         public ?bool $estado = null,
     ) {
     }

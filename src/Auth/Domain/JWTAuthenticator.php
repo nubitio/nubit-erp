@@ -2,10 +2,8 @@
 
 namespace App\Auth\Domain;
 
-use App\Core\Domain\Util\DataMapper;
 use App\Core\Presentation\Security\JWTAuthenticationToken;
-use App\User\Domain\User;
-use App\User\Infrastructure\UserEntity;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
@@ -28,13 +26,14 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public const string LOGIN_ROUTE = '_api_/auth_post';
 
     public function __construct(
-        private EntityManagerInterface $em,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has(self::AUTH_HEADER) && self::LOGIN_ROUTE !== $request->attributes->get('_route');
+        return $request->headers->has(self::AUTH_HEADER)
+            && self::LOGIN_ROUTE !== $request->attributes->get('_route');
     }
 
     public function authenticate(Request $request): Passport
@@ -48,7 +47,10 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $apiToken = str_replace('Bearer ', '', $apiToken);
 
         try {
-            $tokenData = JWT::decode($apiToken, new Key($_ENV['APP_SECRET'], 'HS256'));
+            $tokenData = JWT::decode(
+                $apiToken,
+                new Key($_ENV['APP_SECRET'], 'HS256')
+            );
         } catch (ExpiredException $e) {
             throw new AuthenticationException('Expired token', Response::HTTP_UNAUTHORIZED);
         } catch (\Throwable $e) {
@@ -69,27 +71,40 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return $passport;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
-    {
+    public function onAuthenticationSuccess(
+        Request $request,
+        TokenInterface $token,
+        string $firewallName,
+    ): ?Response {
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
-    {
+    public function onAuthenticationFailure(
+        Request $request,
+        AuthenticationException $exception,
+    ): ?Response {
         return new JsonResponse([
-            'message' => strtr($exception->getMessageKey(), $exception->getMessageData()),
+            'message' => strtr(
+                $exception->getMessageKey(),
+                $exception->getMessageData()
+            ),
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function start(Request $request, ?AuthenticationException $authException = null): Response
-    {
+    public function start(
+        Request $request,
+        ?AuthenticationException $authException = null,
+    ): Response {
         return new JsonResponse([
-            'message' => $authException ? $authException->getMessage() : 'Authentication Required',
+            'message' => $authException ? $authException->getMessage()
+                : 'Authentication Required',
         ], Response::HTTP_UNAUTHORIZED);
     }
 
-    public function createToken(Passport $passport, string $firewallName): TokenInterface
-    {
+    public function createToken(
+        Passport $passport,
+        string $firewallName,
+    ): TokenInterface {
         return new JWTAuthenticationToken(
             $passport->getUser(),
             $firewallName,
@@ -100,12 +115,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     private function loadUser(int $userId): UserInterface
     {
-        $user = $this->em->find(UserEntity::class, $userId);
+        $user = $this->entityManager->find(User::class, $userId);
 
         if (null === $user) {
             throw new AuthenticationException('User not found', Response::HTTP_UNAUTHORIZED);
         }
 
-        return DataMapper::map($user, User::class);
+        return $user;
     }
 }

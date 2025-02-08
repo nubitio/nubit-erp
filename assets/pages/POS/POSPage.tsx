@@ -16,10 +16,10 @@ const POSPage = () => {
 
     const addToCart = (item: PosItem) => {
         setCart((prevCart) => {
-            const existingItem = prevCart.find(cartItem => cartItem.producto_id === item.producto_id);
+            const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
             if (existingItem) {
                 return prevCart.map(cartItem =>
-                    cartItem.producto_id === item.producto_id
+                    cartItem.id === item.id
                         ? {...cartItem, quantity: (cartItem.quantity || 0) + 1}
                         : cartItem
                 );
@@ -31,20 +31,20 @@ const POSPage = () => {
     const removeFromCart = (id: string) => {
         setCart((prevCart) =>
             prevCart
-                .map(cartItem => cartItem.producto_id === id
+                .map(cartItem => cartItem.id === id
                     ? {...cartItem, quantity: (cartItem.quantity || 0) - 1}
                     : cartItem)
                 .filter(cartItem => (cartItem.quantity || 0) > 0)
         );
     };
 
-    const subtotal = cart.reduce((sum, item) => sum + item.precio * (item.quantity || 0), 0);
+    const subtotal = cart.reduce((sum, item) => sum + item.salePrice * (item.quantity || 0), 0);
     const tax = subtotal * 0.1;
     const total = subtotal + tax;
 
     const filteredMenu = menuData.filter(item =>
-        (!activeCategory || item.categoria.categoria_id === activeCategory) &&
-        item.descripcion.toLowerCase().includes(searchQuery.toLowerCase())
+        (!activeCategory || item.category.id === activeCategory) &&
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     useEffect(() => {
@@ -97,13 +97,13 @@ const POSPage = () => {
                                     </button>
                                     {categories.map(category => (
                                         <button
-                                            key={category.categoria_id}
+                                            key={category.id}
                                             className={`flex items-center gap-3 rounded-xl p-4 transition-colors ${
-                                                activeCategory === category.categoria_id ? "bg-blue-500 text-white" : "bg-white hover:bg-gray-50"
+                                                activeCategory === category.id ? "bg-blue-500 text-white" : "bg-white hover:bg-gray-50"
                                             }`}
-                                            onClick={() => setActiveCategory(category.categoria_id)}
+                                            onClick={() => setActiveCategory(category.id)}
                                         >
-                                            <div className="text-left font-semibold">{category.descripcion}</div>
+                                            <div className="text-left font-semibold">{category.name}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -118,11 +118,11 @@ const POSPage = () => {
                                     className="grid grid-cols-3 gap-6">
                                     {filteredMenu.map(item => (
                                         <POSItem
-                                            key={item.producto_id}
+                                            key={item.id}
                                             item={item}
                                             onAdd={addToCart}
                                             onRemove={removeFromCart}
-                                            quantity={cart.find(cartItem => cartItem.producto_id === item.producto_id)?.quantity || 0}
+                                            quantity={cart.find(cartItem => cartItem.id === item.id)?.quantity || 0}
                                         />
                                     ))}
                                 </div>
@@ -138,19 +138,20 @@ const POSPage = () => {
                     <div className="h-full flex flex-col p-4 bg-white rounded-xl shadow-lg">
                         <div className="flex-1 space-y-6">
                             {cart.map(item => (
-                                <div key={item.producto_id} className="flex gap-4">
+                                <div key={item.id} className="flex gap-4">
                                     <img
-                                        src={item.imagen?.path || `https://ui-avatars.com/api/?name=${item.descripcion}`}
-                                        alt={item.descripcion}
+                                        src={item.photo?.path || `https://ui-avatars.com/api/?name=${item.name}`}
+                                        alt={item.name}
                                         className="w-12 h-12 rounded-lg object-cover"
                                     />
                                     <div className="flex-1">
-                                        <h3 className="font-bold">{item.descripcion}</h3>
+                                        <h3 className="font-bold">{item.name}</h3>
                                         <div className="text-sm text-gray-500">
-                                            {item.quantity}× <span className="ml-2">{item.precio.toFixed(2)}</span>
+                                            {item.quantity}× <span className="ml-2">{item.salePrice.toFixed(2)}</span>
                                         </div>
                                     </div>
-                                    <div className="font-bold">${(item.precio * (item.quantity || 0)).toFixed(2)}</div>
+                                    <div
+                                        className="font-bold">${(item.salePrice * (item.quantity || 0)).toFixed(2)}</div>
                                 </div>
                             ))}
                         </div>

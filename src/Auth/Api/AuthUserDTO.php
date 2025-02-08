@@ -2,7 +2,7 @@
 
 namespace App\Auth\Api;
 
-use App\User\Domain\User;
+use App\Entity\User;
 
 final readonly class AuthUserDTO
 {
@@ -17,9 +17,9 @@ final readonly class AuthUserDTO
     public static function createFromUserDTO(User $user): AuthUserDTO
     {
         return new self(
-            userId: $user->usuario_id,
-            username: $user->username,
-            roleId: $user->rol?->rol_id,
+            userId: $user->getId(),
+            username: $user->getUsername(),
+            roleId: $user->getRole()?->getId(),
         );
     }
 

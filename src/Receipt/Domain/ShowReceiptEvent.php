@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class ShowReceiptEvent extends RequestEvent
 {
-    public const NAME = 'receipt.show';
+    public const string NAME = 'receipt.show';
 
     private Receipt $receipt;
 

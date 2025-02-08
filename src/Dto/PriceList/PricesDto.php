@@ -5,7 +5,7 @@ namespace App\Dto\PriceList;
 class PricesDto
 {
     public function __construct(
-        public ?int $priceListId = null,
+        public int $priceListId,
         /**
          * @var PriceItemDto[]
          */

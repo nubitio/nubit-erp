@@ -64,7 +64,7 @@ class SaleEntity
         public ?string $serie = null,
         #[Column(name: 'numero', type: 'string')]
         public ?string $numero = null,
-        #[Column(name: 'descuento', type: 'decimal')]
+        #[Column(name: 'descuento')]
         public ?float $descuento = null,
         #[Column(name: 'glosa', type: 'string')]
         public ?string $glosa = null,
@@ -92,16 +92,19 @@ class SaleEntity
         public ?int $recargo_consumo = null,
         #[Column(name: 'invoice', type: 'string')]
         public ?string $invoice = null,
-        #[Column(name: 'subtotal', type: 'decimal')]
+        #[Column(name: 'subtotal')]
         public ?float $subtotal = null,
-        #[Column(name: 'total', type: 'decimal')]
+        #[Column(name: 'total')]
         public ?float $total = null,
         /**
          * @var SaleDetailEntity[] $details
          *
          * @phpstan-var ArrayCollection<int , SaleDetailEntity>|array<int , SaleDetailEntity>
          */
-        #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+        #[OneToMany(mappedBy: 'movimiento', targetEntity: SaleDetailEntity::class, cascade: [
+            'persist',
+            'remove',
+        ], orphanRemoval: true)]
         public Collection|array $details = new ArrayCollection(),
     ) {
     }
