@@ -16,22 +16,18 @@ export const DashboardPage = () => {
     useEffect(() => {
         httpClient.get<any>(Constants.API_BASE_URL + "bi/venta-dia").subscribe((response) => {
             const data = response.data;
-            console.log(data);
             setDailySales(data);
         });
         httpClient.get<any>(Constants.API_BASE_URL + "bi/venta-semana").subscribe((response) => {
             const data = response.data;
-            console.log(data);
             setWeeklySales(data);
         });
         httpClient.get<any>(Constants.API_BASE_URL + "bi/venta-mes").subscribe((response) => {
             const data = response.data;
-            console.log(data);
             setMonthlySales(data);
         });
         httpClient.get<any>(Constants.API_BASE_URL + "bi/monthly-invoicing").subscribe((response) => {
             const data = response.data;
-            console.log(data);
             setMonthlyInvoicing(data);
         });
     }, []);

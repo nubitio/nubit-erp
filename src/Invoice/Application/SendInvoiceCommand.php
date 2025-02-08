@@ -9,7 +9,6 @@ use App\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
-use Psr\Cache\InvalidArgumentException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -54,7 +53,7 @@ class SendInvoiceCommand extends Command
             $io->success('Done!');
 
             return Command::SUCCESS;
-        } catch (ServiceException|Exception|FilesystemException|InvalidArgumentException $e) {
+        } catch (ServiceException|Exception|FilesystemException $e) {
             $io->error('Error: '.$e->getMessage());
 
             return Command::FAILURE;
@@ -62,7 +61,6 @@ class SendInvoiceCommand extends Command
     }
 
     /**
-     * @throws InvalidArgumentException
      * @throws FilesystemException
      * @throws ServiceException
      * @throws Exception

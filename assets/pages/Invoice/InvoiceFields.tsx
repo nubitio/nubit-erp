@@ -67,7 +67,12 @@ export const InvoiceFields = () => {
         .type(FieldType.SWITCH)
         .name('voided')
         .label('Anulado')
-        //.formatter(SharedUtils.dxVoidedFormatter)
+        .formatter((cell: ColumnCellTemplateData) => {
+            if (cell.value === 2) {
+                return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>
+            }
+            return ''
+        })
         .align('center')
         .build());
     fields.push(new FieldBuilder()
@@ -79,7 +84,25 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('envio_sunat')
         .label('Envio sunat')
-        //.formatter(SharedUtils.dxBillStatusFormatter)
+        .formatter((cell: ColumnCellTemplateData) => {
+            let value = cell.value;
+            if (value === null || value === undefined || value === '') {
+                value = -1
+            } else {
+                value = Number(value);
+            }
+            if (value === -1) {
+                return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>
+            } else if (value === 0) {
+                return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>
+            } else if (value < 2000) {
+                return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>
+            } else if (value >= 2000 && value < 4000) {
+                return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>
+            } else if (value >= 4000) {
+                return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>
+            }
+        })
         .align('center')
         .build());
     fields.push(new FieldBuilder()

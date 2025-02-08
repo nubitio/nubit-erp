@@ -5,12 +5,8 @@ namespace App\Sale\Application;
 use App\Base\BaseController;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
-use App\Invoice\Domain\GetOneVoucherUseCase;
-use App\Sale\Domain\DocType;
-use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -108,44 +104,5 @@ class SaleController extends BaseController
         }
 
         return $reportFile;
-    }
-
-    #[Route('/sale/print/{id}', name: 'sale_print', methods: ['GET'])]
-    public function print(
-        Request $request,
-        string $id,
-        GetOneVoucherUseCase $getOneById,
-    ): Response {
-        $voucher = $getOneById($id);
-        $qr = '';
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));
-        }
-
-        $template = 'sale/report/invoice.html.twig';
-        $content = $this->renderView($template, [
-            'qr' => $qr,
-            'voucher' => $voucher,
-            'extraData' => null,
-        ]);
-
-        $preview = $request->get('preview');
-
-        if ($preview) {
-            return new Response($content);
-        }
-
-        $pageHeight = 150;
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $pageHeight = 220;
-        }
-
-        $items = count($voucher->voucher_items);
-
-        $pageHeight += $items * 5;
-
-        $pdfExporter = new PdfExporter();
-
-        return $pdfExporter->export($content, 'invoice');
     }
 }
