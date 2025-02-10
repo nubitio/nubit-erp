@@ -1,0 +1,54 @@
+<?php
+
+namespace App\State\CashRegister;
+
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProviderInterface;
+use App\Core\Application\Session\Security;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+
+readonly class CashRegisterDashboardProvider implements ProviderInterface
+{
+    public function __construct(
+        private Connection $connection,
+        private Security $security,
+    ) {
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function provide(
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = [],
+    ): object|array|null {
+        $user = $this->security->connectedUser();
+        $branchId = $user->branchId;
+
+        $sql = <<<SQL
+SELECT
+    c.id,
+    c.name,
+    cs.id AS cashShiftId,
+    cs.opened_at as openedAt,
+    cs.closed_at as closedAt,
+    u.username AS cashier,
+    cs.opening_balance +
+    COALESCE(SUM(IF(cm.type = 'income', cm.amount, 0)), 0) -
+    COALESCE(SUM(IF(cm.type = 'expense', cm.amount, 0)), 0)
+    AS balance,
+    IF(cs.id IS NOT NULL AND cs.closed_at IS NULL, 'open', 'closed') AS status
+FROM cash_register c
+LEFT JOIN cash_shift cs ON cs.cash_register_id = c.id AND cs.closed_at IS NULL
+LEFT JOIN cash_movement cm ON cm.caja_shift_id = cs.id
+LEFT JOIN usuario u ON cs.opened_by = u.usuario_id
+WHERE c.branch_id = ?
+GROUP BY c.id, cs.id
+ORDER BY c.id
+SQL;
+
+        return $this->connection->fetchAllAssociative($sql, [$branchId]);
+    }
+}
