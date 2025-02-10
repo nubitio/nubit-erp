@@ -2,7 +2,6 @@
 
 namespace App\Cashbox\Domain;
 
-use App\Branch\Domain\Branch;
 use App\CashboxDetail\Domain\CashboxDetail;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 use App\User\Domain\User;
@@ -14,8 +13,6 @@ class Cashbox
     public function __construct(
         #[SerializedName('caja_id')]
         public ?string $caja_id = null,
-        #[SerializedName('local')]
-        public ?Branch $local = null,
         #[SerializedName('apertura')]
         public ?\DateTimeInterface $apertura = null,
         #[SerializedName('cierre')]

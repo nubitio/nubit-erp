@@ -3,7 +3,7 @@ import DateBox from "devextreme-react/date-box";
 import {Button} from "devextreme-react";
 import {useRef, useState} from "react";
 import Form, {FormRef, SimpleItem} from "devextreme-react/form";
-import {CardAuth} from "../../components";
+import {Card} from "../../components";
 import SelectBox from "devextreme-react/select-box";
 
 const reportTypes = [
@@ -16,7 +16,6 @@ const reportTypes = [
 ];
 
 export const SaleConsultPage = () => {
-    const container = "wrapper"
     const [selectedReport, setSelectedReport] = useState<string>();
     const [startDate, setStartDate] = useState<Date>();
     const [endDate, setEndDate] = useState<Date>();
@@ -28,8 +27,8 @@ export const SaleConsultPage = () => {
         formRef.current?.instance().clear();
     };
     return (
-        <div id={container}>
-            <CardAuth title='Reportes de venta'>
+        <>
+            <Card title='Reportes de venta'>
                 <Form ref={formRef} width={300}>
                     <SimpleItem label={{text: 'Tipo de reporte'}}>
                         <SelectBox
@@ -67,7 +66,7 @@ export const SaleConsultPage = () => {
                         />
                     </SimpleItem>
                 </Form>
-            </CardAuth>
-        </div>
+            </Card>
+        </>
     );
 };

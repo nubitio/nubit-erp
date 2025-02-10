@@ -23,6 +23,7 @@ class Branch
         'branch:read',
         'warehouse:read',
         'voucher_series:read',
+        'cash_register:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -34,6 +35,7 @@ class Branch
         'branch:read',
         'warehouse:read',
         'voucher_series:read',
+        'cash_register:read',
     ])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private ?string $name = null;

@@ -29,6 +29,11 @@ import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
+import {CashRegisterPage} from "./pages/CashRegister/CashRegisterPage";
+import {CashRegisterDashboard} from "./features/cashRegister/pages/CashRegisterDashboard";
+import {CashRegisterOpen} from "./features/cashRegister/pages/CashRegisterOpen";
+import {CashRegisterClose} from "./features/cashRegister/pages/CashRegisterClose";
+import {CashRegisterMovements} from "./features/cashRegister/pages/CashRegisterMovements";
 
 const routes = [
     {
@@ -46,6 +51,26 @@ const routes = [
     {
         path: '/branch',
         element: BranchPage,
+    },
+    {
+        path: '/cash-register',
+        element: CashRegisterPage,
+    },
+    {
+        path: '/cash-register-dashboard',
+        element: CashRegisterDashboard,
+    },
+    {
+        path: '/cash-register/:id/open',
+        element: CashRegisterOpen,
+    },
+    {
+        path: '/cash-register/:id/close',
+        element: CashRegisterClose,
+    },
+    {
+        path: '/cash-register/:id/movements',
+        element: CashRegisterMovements
     },
     {
         path: '/cashbox',
