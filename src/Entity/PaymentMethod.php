@@ -5,16 +5,19 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PaymentMethodRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
 #[ApiResource]
 class PaymentMethod
 {
+    #[Groups(['cash_movement:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 

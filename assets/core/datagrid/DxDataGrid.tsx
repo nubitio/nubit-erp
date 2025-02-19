@@ -62,6 +62,7 @@ export interface DxDataGridOptions {
     selectionMode?: 'single' | 'multiple';
     onSelectionChanged?: (e: SelectionChangedEvent) => void;
     onRowPrepared?: (e: RowPreparedEvent) => void;
+    onContentReady?: () => void;
 }
 
 export interface DxDataGridEvents {
@@ -231,6 +232,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                         onSelectionChanged
                     }
                     onRowPrepared={options.onRowPrepared}
+                    onContentReady={options.onContentReady}
                     columnHidingEnabled={options.columnsHidingEnabled ?? false}
                     allowColumnResizing={true}
                     columnResizingMode={'widget'}

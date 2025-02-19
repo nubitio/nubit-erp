@@ -26,6 +26,12 @@ class DevExtremeFilter extends AbstractFilter
                 'required' => false,
                 'description' => 'Filtering parameter.',
             ],
+            'searchValue' => [
+                'property' => 'searchValue',
+                'type' => 'string',
+                'required' => false,
+                'description' => 'Search parameter.',
+            ],
         ];
     }
 
@@ -45,6 +51,18 @@ class DevExtremeFilter extends AbstractFilter
         if ('filter' === $property) {
             $this->applyFilter($queryBuilder, $value);
         }
+
+        if ('searchValue' === $property) {
+            if (isset($context['filters']['searchExpr'])) {
+                $filter = [];
+                $filter[] = [
+                    $context['filters']['searchExpr'],
+                    'contains',
+                    $value,
+                ];
+                $this->applyFilter($queryBuilder, $filter);
+            }
+        }
     }
 
     private function applySort(QueryBuilder $queryBuilder, array $sort): void
@@ -53,12 +71,17 @@ class DevExtremeFilter extends AbstractFilter
             $field = $sortParam['selector'];
             $isDesc = 'true' === $sortParam['desc'];
 
-            $queryBuilder->addOrderBy(sprintf('o.%s', $field), $isDesc ? 'DESC' : 'ASC');
+            $queryBuilder->addOrderBy(
+                sprintf('o.%s', $field),
+                $isDesc ? 'DESC' : 'ASC'
+            );
         }
     }
 
-    private function applyFilter(QueryBuilder $queryBuilder, array $filter): void
-    {
+    private function applyFilter(
+        QueryBuilder $queryBuilder,
+        array $filter,
+    ): void {
         foreach ($filter as $filterParam) {
             if (is_string($filterParam)) {
                 continue;
@@ -69,16 +92,26 @@ class DevExtremeFilter extends AbstractFilter
             }
             $field = $filterParam[0];
             $operator = $this->getOperation($filterParam[1]);
-            $value = $this->getValueForOperation($filterParam[1], $filterParam[2]);
+            $value = $this->getValueForOperation(
+                $filterParam[1],
+                $filterParam[2]
+            );
 
-            $uniqueParameterName = $this->getUniqueParameterName($queryBuilder, $field);
-            $queryBuilder->andWhere(sprintf('o.%s %s :%s', $field, $operator, $uniqueParameterName))
+            $uniqueParameterName = $this->getUniqueParameterName(
+                $queryBuilder,
+                $field
+            );
+            $queryBuilder->andWhere(
+                sprintf('o.%s %s :%s', $field, $operator, $uniqueParameterName)
+            )
                 ->setParameter($uniqueParameterName, $value);
         }
     }
 
-    private function getUniqueParameterName(QueryBuilder $queryBuilder, string $field): string
-    {
+    private function getUniqueParameterName(
+        QueryBuilder $queryBuilder,
+        string $field,
+    ): string {
         $index = 1;
         $parameterName = $field;
 

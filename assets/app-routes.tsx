@@ -33,7 +33,7 @@ import {CashRegisterPage} from "./pages/CashRegister/CashRegisterPage";
 import {CashRegisterDashboard} from "./features/cashRegister/pages/CashRegisterDashboard";
 import {CashRegisterOpen} from "./features/cashRegister/pages/CashRegisterOpen";
 import {CashRegisterClose} from "./features/cashRegister/pages/CashRegisterClose";
-import {CashRegisterMovements} from "./features/cashRegister/pages/CashRegisterMovements";
+import {CashMovements} from "./features/cashRegister/pages/CashMovements";
 
 const routes = [
     {
@@ -70,7 +70,7 @@ const routes = [
     },
     {
         path: '/cash-register/:id/movements',
-        element: CashRegisterMovements
+        element: CashMovements
     },
     {
         path: '/cashbox',
