@@ -3,15 +3,45 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
+use App\State\CashRegister\CashShiftClosureSummaryProvider;
+use App\State\CashRegister\CashShiftMovementsProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
+)]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/cash-shifts/{id}/movements',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: CashShift::class,
+                ),
+            ],
+            output: CashMovement::class,
+            provider: CashShiftMovementsProvider::class,
+        ),
+    ],
+    normalizationContext: ['groups' => ['cash_movement:read']],
+    paginationEnabled: false,
+)]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/cash-shifts/{id}/summary',
+            provider: CashShiftClosureSummaryProvider::class,
+        ),
+    ],
+    paginationEnabled: false
 )]
 class CashShift
 {

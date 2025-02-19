@@ -5,10 +5,12 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use App\Core\Domain\Common\ApiResponse;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Repository\CashRegisterRepository;
+use App\State\CashRegister\CashRegisterCloseProcessor;
 use App\State\CashRegister\CashRegisterDashboardProvider;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use Doctrine\ORM\Mapping as ORM;
@@ -32,9 +34,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
             output: CashShift::class,
             processor: CashRegisterOpenProcessor::class,
         ),
-        new Put(
+    ],
+)]
+#[ApiResource(
+    operations: [
+        new Post(
             uriTemplate: '/cash-registers/{id}/close',
-            provider: CashRegisterDashboardProvider::class,
+            input: CashRegisterCloseDto::class,
+            output: ApiResponse::class,
+            processor: CashRegisterCloseProcessor::class,
         ),
     ],
 )]

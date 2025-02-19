@@ -5,20 +5,19 @@ import {DxForm} from "../../../core/form/DxForm";
 import {useRef, useState} from "react";
 import {Constants} from "../../../core/common/Constants";
 import cashMovementsFields from "../components/fields/cashMovementsFields";
-import {useParams} from "react-router-dom";
-import {useEvents} from "../../../core/event/EventHook";
+import {useNavigate, useParams} from "react-router-dom";
 
 type CashMovementsParams = {
     id: string;
 }
 
 export const CashMovements = () => {
+    const {id} = useParams<CashMovementsParams>();
     const API_URL = Constants.API_BASE_URL + 'cash-movements';
     const gridRef = useRef<DxDataGridEvents>(null);
-    const {id} = useParams<CashMovementsParams>();
     const fields = cashMovementsFields(id);
     const [balance, setBalance] = useState<number | undefined>(undefined);
-    const [on, emit] = useEvents();
+    const navigate = useNavigate();
 
     const EVENTS = {
         ADD: 'cash-movement:add',
@@ -29,6 +28,16 @@ export const CashMovements = () => {
         SUCCESS: 'cash-movement:success',
         LOADING: 'cash-movement:loading',
     }
+
+    const toolbar = [
+        {
+            text: 'Cerrar Caja',
+            type: 'info',
+            onClick: () => {
+                navigate(`/cash-register/${id}/close`);
+            }
+        }
+    ]
 
     const onContentReady = () => {
         let balance = 0;
@@ -46,7 +55,8 @@ export const CashMovements = () => {
                 ref={gridRef}
                 id='cash-movements'
                 title='Cashbox'
-                url={API_URL}
+                toolbar={toolbar}
+                url={Constants.API_BASE_URL + 'cash-shifts/' + id + '/movements'}
                 allowAdd={true}
                 allowEdit={true}
                 allowDelete={true}

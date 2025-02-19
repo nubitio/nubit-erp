@@ -9,8 +9,8 @@ const cashRegisterService = () => {
         });
     }
 
-    const closeCashRegister = (id: string) => {
-        return httpClient.put<any>(Constants.API_BASE_URL + `cash-registers/${id}/close`, {id: id});
+    const closeCashRegister = (id: string, closureData: any) => {
+        return httpClient.post<any>(Constants.API_BASE_URL + `cash-registers/${id}/close`, {closureItems: closureData});
     }
 
     const getMovements = (id: string) => {

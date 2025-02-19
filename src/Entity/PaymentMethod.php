@@ -11,6 +11,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource]
 class PaymentMethod
 {
+    final public const int CASH = 1;
     #[Groups(['cash_movement:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]

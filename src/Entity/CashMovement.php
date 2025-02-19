@@ -22,6 +22,7 @@ class CashMovement
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?CashShift $cashShift = null;
