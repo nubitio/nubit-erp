@@ -56,7 +56,6 @@ readonly class SaleProcessor implements ApiProcessorInterface
 
         $cashShift = $this->entityManager->getRepository(CashShift::class)
             ->findOneBy([
-                'cashRegister' => $data->caja_id,
                 'status' => CashShiftStatus::OPEN,
                 'openedBy' => $user->userId,
             ]);
