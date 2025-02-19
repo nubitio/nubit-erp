@@ -64,7 +64,7 @@ const cashRegisterDashboardFields = () => {
                                 stylingMode="outlined"
                                 icon="ph ph-eye"
                                 onClick={() => {
-                                    navigate(`/cash-register/${cell.data.id}/movements`)
+                                    navigate(`/cash-shift/${cell.data.cashShiftId}/movements`)
                                 }}
                             />
                             <Button
@@ -73,7 +73,7 @@ const cashRegisterDashboardFields = () => {
                                 stylingMode="outlined"
                                 icon="ph ph-cash-register"
                                 onClick={() => {
-                                    navigate(`/cash-register/${cell.data.id}/close`)
+                                    navigate(`/cash-register/${cell.data.cashShiftId}/close`)
                                 }}
                             />
                         </div>

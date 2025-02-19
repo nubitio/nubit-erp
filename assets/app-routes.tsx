@@ -69,7 +69,7 @@ const routes = [
         element: CashRegisterClose,
     },
     {
-        path: '/cash-register/:id/movements',
+        path: '/cash-shift/:id/movements',
         element: CashMovements
     },
     {
