@@ -2,8 +2,8 @@
 
 namespace App\Enum;
 
-enum CashShiftStatus: int
+enum CashShiftStatus: string
 {
-    case OPEN = 1;
-    case CLOSED = 2;
+    case OPEN = 'open';
+    case CLOSED = 'closed';
 }

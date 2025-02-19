@@ -6,15 +6,17 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashMovementRepository::class)]
 #[ApiResource(
+    normalizationContext: ['groups' => ['cash_movement:read']],
     filters: [DevExtremeFilter::class],
 )]
 class CashMovement
 {
+    #[Groups(['cash_movement:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -24,16 +26,20 @@ class CashMovement
     #[ORM\JoinColumn(nullable: false)]
     private ?CashShift $cashShift = null;
 
+    #[Groups(['cash_movement:read'])]
     #[ORM\Column(enumType: CashMovementType::class)]
     private ?CashMovementType $type = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $amount = null;
+    #[Groups(['cash_movement:read'])]
+    #[ORM\Column]
+    private ?float $amount = null;
 
+    #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?PaymentMethod $paymentMethod = null;
 
+    #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
@@ -69,12 +75,12 @@ class CashMovement
         return $this;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): ?float
     {
         return $this->amount;
     }
 
-    public function setAmount(string $amount): static
+    public function setAmount(float $amount): static
     {
         $this->amount = $amount;
 

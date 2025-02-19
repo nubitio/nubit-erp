@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping\Table;
 
 #[IgnoreAutowire]
 #[Entity]
-#[Table(name: 'payment_type')]
+#[Table(name: 'payment_method')]
 class PaymentMethodEntity
 {
     public function __construct(

@@ -42,7 +42,7 @@ SELECT
     IF(cs.id IS NOT NULL AND cs.closed_at IS NULL, 'open', 'closed') AS status
 FROM cash_register c
 LEFT JOIN cash_shift cs ON cs.cash_register_id = c.id AND cs.closed_at IS NULL
-LEFT JOIN cash_movement cm ON cm.caja_shift_id = cs.id
+LEFT JOIN cash_movement cm ON cm.cash_shift_id = cs.id
 LEFT JOIN usuario u ON cs.opened_by = u.usuario_id
 WHERE c.branch_id = ?
 GROUP BY c.id, cs.id
