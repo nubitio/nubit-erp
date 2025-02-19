@@ -2,23 +2,25 @@
 
 namespace App\Sale\Infrastructure;
 
-use App\Cashbox\Domain\CashboxGetLastUseCase;
 use App\Core\Application\Session\Security;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
+use App\Entity\CashShift;
+use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 
 readonly class SaleUtils
 {
     public function __construct(
+        private EntityManagerInterface $entityManager,
         private Connection $connection,
         private SettingsService $settings,
         private Security $security,
-        private CashboxGetLastUseCase $cashboxGetLastUseCase,
     ) {
     }
 
@@ -89,17 +91,16 @@ readonly class SaleUtils
         return $sale;
     }
 
-    public function getCashBoxId(): ?string
+    private function getCashBoxId()
     {
-        $branchId = $this->security->connectedUser()?->branchId;
-        $userId = $this->security->connectedUser()?->userId;
+        $user = $this->security->connectedUser();
 
-        if (!$branchId || !$userId) {
-            return null;
-        }
+        $cashShift = $this->entityManager->getRepository(CashShift::class)
+            ->findOneBy([
+                'status' => CashShiftStatus::OPEN,
+                'openedBy' => $user->userId,
+            ]);
 
-        $cashBox = $this->cashboxGetLastUseCase->__invoke($branchId, $userId);
-
-        return $cashBox?->caja_id;
+        return $cashShift?->getCashRegister()->getId();
     }
 }
