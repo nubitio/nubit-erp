@@ -6,7 +6,6 @@
     <PHPCodeStyleSettings>
       <option name="ALIGN_PHPDOC_PARAM_NAMES" value="true" />
       <option name="ALIGN_PHPDOC_COMMENTS" value="true" />
-      <option name="CONCAT_SPACES" value="false" />
       <option name="COMMA_AFTER_LAST_ARRAY_ELEMENT" value="true" />
       <option name="PHPDOC_BLANK_LINE_BEFORE_TAGS" value="true" />
       <option name="PHPDOC_BLANK_LINES_AROUND_PARAMETERS" value="true" />
@@ -20,6 +19,7 @@
       <option name="BLANK_LINES_AFTER_OPENING_TAG" value="1" />
       <option name="KEEP_BLANK_LINES_AFTER_LBRACE" value="0" />
       <option name="NEW_LINE_AFTER_PHP_OPENING_TAG" value="true" />
+      <option name="SPACES_AROUND_PIPE_IN_UNION_TYPE" value="true" />
       <option name="IF_RPAREN_ON_NEXT_LINE" value="true" />
     </PHPCodeStyleSettings>
     <codeStyleSettings language="PHP">

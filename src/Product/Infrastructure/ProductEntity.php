@@ -41,6 +41,8 @@ class ProductEntity
         public ?UnitOfMeasureEntity $unidad = null,
         #[Column(name: 'destino_id', type: 'integer')]
         public ?int $destino_id = null,
+        #[Column(name: 'stock')]
+        public ?int $stock = null,
         #[Column(name: 'stock_minimo', type: 'integer')]
         public ?int $stock_minimo = null,
         #[Column(name: 'precio')]

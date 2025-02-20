@@ -219,7 +219,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         .type(FieldType.ENTITY)
         .name('producto')
         .label('Producto')
-        .minWidth(200)
+        .minWidth(300)
         .url(Constants.API_BASE_URL + 'products')
         .mode('remote')
         .valueField('id')
