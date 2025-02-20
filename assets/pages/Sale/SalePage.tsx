@@ -257,8 +257,8 @@ export const SalePage = () => {
                 ]}
             />
             <DxDialog
-                width={900}
-                height={620}
+                width={1080}
+                height={720}
                 events={EVENTS}
             >
                 <DxForm

@@ -5,6 +5,7 @@ import {useRef, useState} from "react";
 import Form, {FormRef, SimpleItem} from "devextreme-react/form";
 import {Card} from "../../components";
 import SelectBox from "devextreme-react/select-box";
+import {DateUtils} from "../../core/utils/DateUtils";
 
 const reportTypes = [
     {value: 'sale-by-product', text: 'Ventas por producto'},
@@ -12,7 +13,7 @@ const reportTypes = [
     {value: 'accounting-report', text: 'Ventas contable'},
     {value: 'voided-sales', text: 'Comunicaciones de baja'},
     {value: 'credit-notes', text: 'Notas de credito valorizado'},
-    {value: 'sale-notes', text: 'Reporte de notas de pedido'},
+    {value: 'sale-notes', text: 'Reporte de notas de venta'},
 ];
 
 export const SaleConsultPage = () => {
@@ -22,7 +23,9 @@ export const SaleConsultPage = () => {
     const formRef = useRef<FormRef>(null);
 
     const handleGenerateReport = () => {
-        let data = `report=${selectedReport}&date-from=${startDate?.toISOString()}&date-to=${endDate?.toISOString()}`;
+        const dateFrom = DateUtils.dateFormatter(startDate || new Date());
+        const dateTo = DateUtils.dateFormatter(endDate || new Date());
+        let data = `report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
         window.open(`/sale/consult?${data}`);
         formRef.current?.instance().clear();
     };

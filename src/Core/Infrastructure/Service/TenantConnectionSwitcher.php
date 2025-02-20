@@ -2,7 +2,9 @@
 
 namespace App\Core\Infrastructure\Service;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Doctrine\DBAL\TenantConnection;
+use Doctrine\DBAL\Driver\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
 
 readonly class TenantConnectionSwitcher
@@ -12,6 +14,11 @@ readonly class TenantConnectionSwitcher
     ) {
     }
 
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function switchConnection(string $tenant): void
     {
         /** @var TenantConnection $connection */

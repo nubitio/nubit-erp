@@ -26,6 +26,7 @@ class Product
         public ?UnitOfMeasure $unidad = null,
         #[SerializedName('destino_id')]
         public ?int $destino_id = null,
+        public ?int $stock = null,
         #[SerializedName('stock_minimo')]
         public ?int $stock_minimo = null,
         #[SerializedName('precio')]

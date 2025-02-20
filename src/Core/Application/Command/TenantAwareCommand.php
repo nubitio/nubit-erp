@@ -2,8 +2,10 @@
 
 namespace App\Core\Application\Command;
 
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
 use App\Core\Infrastructure\Service\TenantManager;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +22,7 @@ abstract class TenantAwareCommand extends Command
     public function __construct(
         private readonly TenantManager $tenantManager,
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
+        protected readonly LoggerInterface $logger,
     ) {
         parent::__construct();
         $this->tenants = $this->tenantManager->getTenants();
@@ -33,14 +36,20 @@ abstract class TenantAwareCommand extends Command
             shortcut: 't',
             mode: InputOption::VALUE_REQUIRED,
             description: 'Execute command for a specific tenant',
-            suggestedValues: array_column($this->tenants, 'name'),
         );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         if (!$this->lock()) {
-            $output->writeln('The command is already running in another process.');
+            $this->logger->info(
+                'The command is already running in another process.'
+            );
+            $output->writeln(
+                'The command is already running in another process.'
+            );
 
             return Command::SUCCESS;
         }
@@ -48,6 +57,7 @@ abstract class TenantAwareCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         if (empty($this->tenants)) {
+            $this->logger->warning('No tenants found');
             $io->warning('No tenants found');
 
             return Command::SUCCESS;
@@ -69,14 +79,29 @@ abstract class TenantAwareCommand extends Command
         }
     }
 
-    private function executeAllTenants(SymfonyStyle $io, InputInterface $input, OutputInterface $output): int
-    {
+    private function executeAllTenants(
+        SymfonyStyle $io,
+        InputInterface $input,
+        OutputInterface $output,
+    ): int {
         foreach ($this->tenants as $tenant) {
-            $tenantName = $tenant['name'];
-            $this->tenantConnectionSwitcher->switchConnection($tenantName);
-            $io->title('Tenant: '.$tenantName);
+            try {
+                $tenantName = $tenant['name'];
+                $this->tenantConnectionSwitcher->switchConnection($tenantName);
+                $io->title('Tenant: '.$tenantName);
 
-            $this->executeTenantCommand($input, $output);
+                $this->executeTenantCommand($input, $output);
+            } catch (ServiceException|\Doctrine\DBAL\Driver\Exception|\Doctrine\DBAL\Exception|\Exception $e) {
+                $this->logger->error(
+                    'An error occurred while executing command for tenant '
+                    .$tenantName,
+                    ['exception' => $e]
+                );
+                $io->error(
+                    'An error occurred while executing command for tenant '
+                    .$tenantName
+                );
+            }
         }
 
         $io->success('Done!');
@@ -86,5 +111,8 @@ abstract class TenantAwareCommand extends Command
         return Command::SUCCESS;
     }
 
-    abstract protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int;
+    abstract protected function executeTenantCommand(
+        InputInterface $input,
+        OutputInterface $output,
+    ): int;
 }
