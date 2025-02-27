@@ -20,6 +20,6 @@ readonly class NotePdfUseCase
         $note = $this->noteCreateUseCase->__invoke($noteId);
         $pdf = $this->noteRepository->pdf($note);
 
-        return new FileResponse($pdf, $note->getName().'.pdf');
+        return new FileResponse($pdf, $note->getName() . '.pdf');
     }
 }

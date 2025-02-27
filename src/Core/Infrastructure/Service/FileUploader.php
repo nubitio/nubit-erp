@@ -23,11 +23,11 @@ final readonly class FileUploader
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
         $safeName = $this->slugger->slug($originalName);
-        $fileName = $safeName.'-'.uniqid().'.'.$file->guessExtension();
+        $fileName = $safeName . '-' . uniqid() . '.' . $file->guessExtension();
 
         $stream = fopen($file->getPathname(), 'r');
 
-        $this->uploadsFilesystem->writeStream($targetDir.'/'.$fileName, $stream);
+        $this->uploadsFilesystem->writeStream($targetDir . '/' . $fileName, $stream);
 
         if (is_resource($stream)) {
             fclose($stream);

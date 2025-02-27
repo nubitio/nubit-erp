@@ -43,7 +43,7 @@ class SaleDuplicatorCommand extends Command
 
             /** @var string $selectedTenant */
             $selectedTenant = $io->choice('Select tenant', array_map(fn ($tenant) => $tenant['name'], $tenants));
-            $io->writeln('Tenant selected: '.$selectedTenant);
+            $io->writeln('Tenant selected: ' . $selectedTenant);
             $io->writeln('Switching tenant connection...');
             $this->tenantConnectionSwitcher->switchConnection($selectedTenant);
             $io->writeln('Tenant connection switched');
@@ -83,14 +83,14 @@ class SaleDuplicatorCommand extends Command
 
                 $sale = $this->createSaleUseCase->__invoke($sale);
 
-                $io->writeln('Sale duplicated: '.$sale->movimiento_id);
+                $io->writeln('Sale duplicated: ' . $sale->movimiento_id);
             }
 
             $io->success('Sales duplicated successfully');
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: '.$e->getMessage());
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }

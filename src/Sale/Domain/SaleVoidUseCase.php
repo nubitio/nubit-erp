@@ -44,10 +44,11 @@ readonly class SaleVoidUseCase
             throw SaleException::alreadyVoided();
         }
 
-        if ($sale->fecha?->format('Y-m-d') < date(
-            'Y-m-d',
-            strtotime('-7 days')
-        )
+        if (
+            $sale->fecha?->format('Y-m-d') < date(
+                'Y-m-d',
+                strtotime('-7 days')
+            )
         ) {
             throw SaleException::tooOld();
         }
@@ -105,8 +106,8 @@ readonly class SaleVoidUseCase
         $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
-                $this->settings->get(Constants::COMPANY_ID).'/'.$response->name
-                .'.xml',
+                $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
+                . '.xml',
                 $response->xml
             );
             $invoice->ticket_baja = $response->sunatResponse->getTicket();
@@ -139,8 +140,8 @@ readonly class SaleVoidUseCase
         $invoice->updated_at = new \DateTime();
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
-                $this->settings->get(Constants::COMPANY_ID).'/'.$response->name
-                .'.xml',
+                $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
+                . '.xml',
                 $response->xml
             );
             $invoice->ticket_baja = $response->sunatResponse->getTicket();

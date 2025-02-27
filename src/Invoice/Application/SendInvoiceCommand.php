@@ -45,7 +45,7 @@ class SendInvoiceCommand extends Command
                 /** @var string $tenantName */
                 $tenantName = $tenant['name'];
                 $this->tenantConnectionSwitcher->switchConnection($tenantName);
-                $io->title('Tenant: '.$tenantName);
+                $io->title('Tenant: ' . $tenantName);
 
                 $this->sendInvoice($io);
             }
@@ -53,8 +53,8 @@ class SendInvoiceCommand extends Command
             $io->success('Done!');
 
             return Command::SUCCESS;
-        } catch (ServiceException|Exception|FilesystemException $e) {
-            $io->error('Error: '.$e->getMessage());
+        } catch (ServiceException | Exception | FilesystemException $e) {
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }
@@ -76,7 +76,7 @@ class SendInvoiceCommand extends Command
                 AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
             ");
 
-        $io->text('Pending: '.count($pending));
+        $io->text('Pending: ' . count($pending));
 
         /** @var array<string, string> $item */
         foreach ($pending as $item) {

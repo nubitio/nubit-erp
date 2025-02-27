@@ -31,7 +31,7 @@ class TenantConnection extends Connection
     {
         /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
-        $tenantsConfigFilePath = dirname(__DIR__, 5).'/config/tenants.json';
+        $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
         if (file_exists($tenantsConfigFilePath)) {
             $configContent = file_get_contents($tenantsConfigFilePath);
 

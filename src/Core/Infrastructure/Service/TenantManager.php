@@ -9,7 +9,7 @@ class TenantManager
 
     public function __construct()
     {
-        $this->tenantsConfigFilePath = dirname(__DIR__, 4).'/config/tenants.json';
+        $this->tenantsConfigFilePath = dirname(__DIR__, 4) . '/config/tenants.json';
 
         if (!file_exists($this->tenantsConfigFilePath)) {
             file_put_contents($this->tenantsConfigFilePath, '[]');

@@ -27,7 +27,7 @@ class OptionsBuilder
             foreach ($sortFields as $sortField) {
                 /** @var array<string, mixed> $sortRule */
                 $sortRule = is_array($sortField) ? $sortField : json_decode($sortField, true);
-                $strSortFields .= $sortRule['selector'].',';
+                $strSortFields .= $sortRule['selector'] . ',';
                 $strOrderFields .= true === boolval($sortRule['desc']) ? 'desc,' : 'asc,';
             }
             $sortFields = $strSortFields ? substr($strSortFields, 0, -1) : null;

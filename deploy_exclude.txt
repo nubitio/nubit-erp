@@ -7,16 +7,11 @@
 .DS_Store
 .maintenance
 .version
-deploy.sh
 deploy_exclude.txt
 Dockerfile
 docker-compose.yml
 /assets
 /node_modules
-/public/wcpcache/*
-/public/efact/*
-/public/uploads/*
 /tests/
 /var/
-/stats/
 /config/tenants.json

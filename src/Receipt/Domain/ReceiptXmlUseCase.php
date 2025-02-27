@@ -44,12 +44,12 @@ readonly class ReceiptXmlUseCase
         $voucher = $this->getOneVoucherUseCase->__invoke($id);
         $companyId = $this->settings->get(Constants::COMPANY_ID);
 
-        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
-        $docFullName = $companyId.'-'.$voucher->voucher_type.'-'.$docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $companyId . '-' . $voucher->voucher_type . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId.'/'.$docFullName.'.xml'),
-            $docFullName.'.xml'
+            $this->fileManager->read($companyId . '/' . $docFullName . '.xml'),
+            $docFullName . '.xml'
         );
     }
 
@@ -63,12 +63,12 @@ readonly class ReceiptXmlUseCase
         $note = $this->getOneCreditNoteUseCase->__invoke($id);
         $companyId = $this->settings->get(Constants::COMPANY_ID);
 
-        $docName = $note->serie.'-'.$note->correlativo;
-        $docFullName = $companyId.'-'.$note->tipo_id.'-'.$docName;
+        $docName = $note->serie . '-' . $note->correlativo;
+        $docFullName = $companyId . '-' . $note->tipo_id . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId.'/'.$docFullName.'.xml'),
-            $docFullName.'.xml'
+            $this->fileManager->read($companyId . '/' . $docFullName . '.xml'),
+            $docFullName . '.xml'
         );
     }
 }

@@ -19,6 +19,8 @@ final class MediaNormalizer implements NormalizerInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param Media $data
      *
      * @throws ExceptionInterface
@@ -27,20 +29,26 @@ final class MediaNormalizer implements NormalizerInterface
         $data,
         ?string $format = null,
         array $context = [],
-    ): array|\ArrayObject|bool|float|int|string|null {
+    ): array | \ArrayObject | bool | float | int | string | null {
         $context[self::ALREADY_CALLED] = true;
 
-        $baseUrl = $_ENV['S3_ENDPOINT'].'/'.$_ENV['S3_BUCKET_NAME'].'/';
+        $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
 
         $folder = Constants::IMAGE_UPLOAD_DIR;
 
-        $data->setPath($baseUrl.$folder.$data->getPath());
+        $data->setPath($baseUrl . $folder . $data->getPath());
 
         return $this->normalizer->normalize($data, $format, $context);
     }
 
-    public function supportsNormalization($data, ?string $format = null, array $context = []): bool
-    {
+    /**
+     * @inheritdoc
+     */
+    public function supportsNormalization(
+        $data,
+        ?string $format = null,
+        array $context = []
+    ): bool {
         if (isset($context[self::ALREADY_CALLED])) {
             return false;
         }
@@ -48,6 +56,9 @@ final class MediaNormalizer implements NormalizerInterface
         return $data instanceof Media;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function getSupportedTypes(?string $format): array
     {
         return [Media::class => true];

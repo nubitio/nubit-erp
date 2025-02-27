@@ -15,6 +15,9 @@ readonly class ValidateInvoiceProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
     public function process(
         mixed $data,
         Operation $operation,
@@ -38,7 +41,7 @@ readonly class ValidateInvoiceProcessor implements ProcessorInterface
                     $result
                 );
             }
-        } catch (\Exception|InvalidArgumentException $e) {
+        } catch (\Exception | InvalidArgumentException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }
     }

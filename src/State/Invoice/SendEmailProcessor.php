@@ -16,6 +16,9 @@ readonly class SendEmailProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
     public function process(
         mixed $data,
         Operation $operation,
@@ -26,7 +29,7 @@ readonly class SendEmailProcessor implements ProcessorInterface
             $this->emailUseCase->__invoke($uriVariables['id']);
 
             return new ApiResponse(true, 'Email enviado');
-        } catch (\Exception|FilesystemException|TransportExceptionInterface $e) {
+        } catch (\Exception | FilesystemException | TransportExceptionInterface $e) {
             return new ApiResponse(false, 'Error al enviar el email', $e);
         }
     }

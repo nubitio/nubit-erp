@@ -24,7 +24,7 @@ readonly class SummaryCreateUseCase
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $summaryDetail = (new SummaryDetail())
         ->setTipoDoc(strval($voucher->voucher_type))
-        ->setSerieNro($voucher->voucher_series.'-'.$voucher->voucher_number)
+        ->setSerieNro($voucher->voucher_series . '-' . $voucher->voucher_number)
         ->setEstado('3')
         ->setClienteTipo(strval($voucher->customer_doc_type))
         ->setClienteNro(strval($voucher->customer_doc_number))

@@ -39,7 +39,7 @@ class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = BillConstants::BILL_API_BASE_URL.'invoice/send?token='.BillConstants::BILL_API_TOKEN;
+        $url = BillConstants::BILL_API_BASE_URL . 'invoice/send?token=' . BillConstants::BILL_API_TOKEN;
 
         $response = $httpClient->request('POST', $url, [
             'headers' => [
@@ -66,7 +66,7 @@ class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = BillConstants::BILL_API_BASE_URL.'invoice/xml?token='.BillConstants::BILL_API_TOKEN;
+        $url = BillConstants::BILL_API_BASE_URL . 'invoice/xml?token=' . BillConstants::BILL_API_TOKEN;
 
         $response = $httpClient->request('POST', $url, [
             'headers' => [
@@ -98,7 +98,7 @@ class BillRepository implements BillRepositoryInterface
         ));
 
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
-        $url = BillConstants::BILL_API_BASE_URL.'invoice/pdf?token='.BillConstants::BILL_API_TOKEN;
+        $url = BillConstants::BILL_API_BASE_URL . 'invoice/pdf?token=' . BillConstants::BILL_API_TOKEN;
 
         $response = $httpClient->request('POST', $url, [
             'headers' => [
@@ -128,7 +128,7 @@ class BillRepository implements BillRepositoryInterface
         ];
 
         $urlParams = http_build_query($params);
-        $url = BillConstants::BILL_API_BASE_URL.'invoice/status?token='.BillConstants::BILL_API_TOKEN."&$urlParams";
+        $url = BillConstants::BILL_API_BASE_URL . 'invoice/status?token=' . BillConstants::BILL_API_TOKEN . "&$urlParams";
 
         $response = $httpClient->request('GET', $url);
 

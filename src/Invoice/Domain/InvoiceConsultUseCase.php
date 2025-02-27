@@ -35,8 +35,8 @@ readonly class InvoiceConsultUseCase
                 $invoice->envio_sunat = $consultResponse->getCdrResponse()->getCode();
                 $invoice->mensaje_sunat = $consultResponse->getCdrResponse()->getDescription();
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
-                $name = $this->settings->get(Constants::COMPANY_ID).$invoice->tipo_comprobante_id.$consultResponse->getCdrResponse()->getId().'.zip';
-                $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/R-'.$name.'.zip', $cdr);
+                $name = $this->settings->get(Constants::COMPANY_ID) . $invoice->tipo_comprobante_id . $consultResponse->getCdrResponse()->getId() . '.zip';
+                $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/R-' . $name . '.zip', $cdr);
             } else {
                 $invoice->envio_sunat = $consultResponse->getError()?->getCode();
                 $invoice->mensaje_sunat = $consultResponse->getError()?->getMessage();

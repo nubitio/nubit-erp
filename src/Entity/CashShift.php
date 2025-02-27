@@ -57,11 +57,11 @@ class CashShift
     #[ORM\Column(enumType: CashShiftStatus::class)]
     private ?CashShiftStatus $status = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $openingBalance = null;
+    #[ORM\Column]
+    private ?float $openingBalance = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    private ?string $closingBalance = null;
+    #[ORM\Column]
+    private ?float $closingBalance = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
@@ -106,24 +106,24 @@ class CashShift
         return $this;
     }
 
-    public function getOpeningBalance(): ?string
+    public function getOpeningBalance(): ?float
     {
         return $this->openingBalance;
     }
 
-    public function setOpeningBalance(string $openingBalance): static
+    public function setOpeningBalance(float $openingBalance): static
     {
         $this->openingBalance = $openingBalance;
 
         return $this;
     }
 
-    public function getClosingBalance(): ?string
+    public function getClosingBalance(): ?float
     {
         return $this->closingBalance;
     }
 
-    public function setClosingBalance(?string $closingBalance): static
+    public function setClosingBalance(?float $closingBalance): static
     {
         $this->closingBalance = $closingBalance;
 

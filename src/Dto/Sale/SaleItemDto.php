@@ -25,7 +25,7 @@ class SaleItemDto
         if (is_numeric($this->price)) {
             $this->price = number_format(floatval($this->price), 2, '.', '');
         }
-        $right = str_pad($sign.$this->price, $rightCols, ' ', STR_PAD_LEFT);
+        $right = str_pad($sign . $this->price, $rightCols, ' ', STR_PAD_LEFT);
 
         return "$left$right\n";
     }

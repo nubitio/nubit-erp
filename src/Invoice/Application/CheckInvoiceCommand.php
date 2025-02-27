@@ -59,7 +59,7 @@ class CheckInvoiceCommand extends Command
                         'last_modified' => date('Y-m-d H:i:s', intval($item['lastModified'])),
                     ];
                 }, $files);
-                $io->title('Tenant: '.$dir['path']);
+                $io->title('Tenant: ' . $dir['path']);
                 $io->table(['path', 'tenant', 'type', 'serie', 'number', 'last_modified'], $filesArray);
                 if (count($filesArray) > 0) {
                     $this->xlsExporter->save($filesArray, strval($dir['path']));
@@ -69,8 +69,8 @@ class CheckInvoiceCommand extends Command
             $io->success('Done!');
 
             return Command::SUCCESS;
-        } catch (FilesystemException|\Doctrine\DBAL\Exception|Exception $e) {
-            $io->error('Error: '.$e->getMessage());
+        } catch (FilesystemException | \Doctrine\DBAL\Exception | Exception $e) {
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }

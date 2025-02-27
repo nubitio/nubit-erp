@@ -37,7 +37,8 @@ class DataMapper
 
             try {
                 $reflectionProperty = new \ReflectionProperty(
-                    get_class($output), strval($key)
+                    get_class($output),
+                    strval($key)
                 );
                 $ignore = $reflectionProperty->getAttributes(Ignore::class)[0]
                     ?? null;
@@ -49,7 +50,8 @@ class DataMapper
             }
 
             if (property_exists($output, strval($key))) {
-                if (is_object($value)
+                if (
+                    is_object($value)
                     && !($value instanceof \DateTimeInterface)
                 ) {
                     if ($value instanceof Collection) {

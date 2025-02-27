@@ -30,7 +30,7 @@ readonly class SaleInvoiceUseCase
         $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
         $sale->has_invoice = true;
-        $sale->invoice = $invoice->serie.'-'.$invoice->numero;
+        $sale->invoice = $invoice->serie . '-' . $invoice->numero;
         $sale->total = $invoice->total;
         $this->updateSaleUseCase->__invoke($sale);
 

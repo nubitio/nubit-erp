@@ -106,6 +106,6 @@ class ColorUtils
         $g = dechex((int) $rgb[1]);
         $b = dechex((int) $rgb[2]);
 
-        return '#'.$r.$g.$b;
+        return '#' . $r . $g . $b;
     }
 }

@@ -11,6 +11,9 @@ use Doctrine\ORM\QueryBuilder;
 
 class DevExtremeFilter extends AbstractFilter
 {
+    /**
+     * @inheritdoc
+     */
     public function getDescription(string $resourceClass): array
     {
         return [
@@ -35,6 +38,9 @@ class DevExtremeFilter extends AbstractFilter
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function filterProperty(
         string $property,
         $value,
@@ -116,7 +122,7 @@ class DevExtremeFilter extends AbstractFilter
         $parameterName = $field;
 
         while ($queryBuilder->getParameter($parameterName)) {
-            $parameterName = $field.$index++;
+            $parameterName = $field . $index++;
         }
 
         return $parameterName;

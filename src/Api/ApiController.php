@@ -122,7 +122,7 @@ class ApiController extends BaseController
     }
 
     #[Route('/api/image/category/{id}', name: 'api_uploadImageCategory', methods: ['PUT'])]
-    public function uploadImageCategory(string $id): Response
+    public function uploadImageCategory(): Response
     {
         return $this->json(['success' => true, 'message' => 'Image uploaded'], Response::HTTP_OK);
     }
@@ -179,14 +179,14 @@ class ApiController extends BaseController
     }
 
     #[Route('/api/customers/{id}/image/upload', name: 'api_uploadImageCustomer', methods: ['POST'])]
-    public function uploadImageCustomer(string $id): Response
+    public function uploadImageCustomer(): Response
     {
         return $this->json(['success' => true, 'message' => 'Image uploaded'], Response::HTTP_OK);
     }
 
     // Product
     #[Route('/api/product/{local_id}', name: 'api_getAllProducts', methods: ['GET'])]
-    public function getAllProducts(string $local_id): Response
+    public function getAllProducts(): Response
     {
         return $this->json($this->apiRepository->getAllProducts());
     }
@@ -238,7 +238,7 @@ class ApiController extends BaseController
     }
 
     #[Route('/api/products/{id}/image/upload', name: 'api_uploadImageProduct', methods: ['POST'])]
-    public function uploadImage(string $id): Response
+    public function uploadImage(): Response
     {
         return $this->json(['success' => true, 'message' => 'Image uploaded'], Response::HTTP_OK);
     }
@@ -318,34 +318,6 @@ class ApiController extends BaseController
         return $this->json($data['total']);
     }
 
-    #[Route('/api/dashboard/salesWeekly/{date}', name: 'api_getWeeklySales', methods: ['GET'])]
-    public function getWeeklySales(string $date): Response
-    {
-        $data = $this->apiRepository->getWeeklySales();
-
-        return $this->json($data);
-    }
-
-    #[Route('/api/dashboard/salesWeeklySoles/{local_id}/{date}', name: 'api_getWeeklySalesSoles', methods: ['GET'])]
-    public function getWeeklySalesSoles(string $date, string $local_id): Response
-    {
-        return $this->json($this->apiRepository->getWeeklySalesSoles($local_id));
-    }
-
-    #[Route('/api/dashboard/salesMonthSoles/{local_id}/{date}', name: 'api_getMonthSalesSoles', methods: ['GET'])]
-    public function getMonthSalesSoles(string $date, string $local_id): Response
-    {
-        return $this->json($this->apiRepository->getMonthSalesSoles($local_id));
-    }
-
-    #[Route('/api/dashboard/salesMonth/{date}', name: 'api_getMonthSales', methods: ['GET'])]
-    public function getMonthSales(string $date): Response
-    {
-        $data = $this->apiRepository->getMonthSales();
-
-        return $this->json($data);
-    }
-
     #[Route('/api/dashboard/TopProduct', name: 'api_getTopProduct', methods: ['GET'])]
     public function getTopProduct(): Response
     {
@@ -371,7 +343,7 @@ class ApiController extends BaseController
     public function getImageCustomer(string $id): Response
     {
         $data = $this->apiRepository->getImageCustomer($id);
-        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+        $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
         return new StreamedResponse(function () use ($imageUrl) {
             readfile($imageUrl);
@@ -382,7 +354,7 @@ class ApiController extends BaseController
     public function getImageProduct(string $id): Response
     {
         $data = $this->apiRepository->getImageProduct($id);
-        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+        $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
         return new StreamedResponse(function () use ($imageUrl) {
             readfile($imageUrl);
@@ -393,7 +365,7 @@ class ApiController extends BaseController
     public function getImageCategory(string $id): Response
     {
         $data = $this->apiRepository->getImageCategory($id);
-        $imageUrl = 'https://ui-avatars.com/api/?name='.$data[0]['nombre'];
+        $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
         return new StreamedResponse(function () use ($imageUrl) {
             readfile($imageUrl);

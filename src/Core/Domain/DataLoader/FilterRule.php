@@ -21,7 +21,7 @@ class FilterRule
     {
         $op = FilterUtils::getOperation($this->op);
         $uniqueParam = FilterUtils::getUniqueParam($queryBuilder, $this->field);
-        $field = 'e.'.$this->field;
+        $field = 'e.' . $this->field;
         if (str_contains($this->field, '.')) {
             $field = $this->field;
         }

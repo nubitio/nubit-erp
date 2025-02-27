@@ -53,7 +53,7 @@ readonly class NoteCreateUseCase
         // TODO: review setMtoOperGravadas and setMtoImpVenta
         $note->setUblVersion('2.1')
             ->setTipDocAfectado($voucher->voucher_type)
-            ->setNumDocfectado($voucher->voucher_series.'-'.$voucher->voucher_number)
+            ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
             ->setFechaEmision($creditNote->fecha)
             ->setCodMotivo(strval($creditNote->codigo_motivo))
             ->setDesMotivo(strval($creditNote->descripcion_motivo))
@@ -89,7 +89,7 @@ readonly class NoteCreateUseCase
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
         $amount = $formatter->format((int) $parts[0]);
-        $strTotal = mb_strtoupper('SON '.$amount.' CON '.$parts[1].' / 100 SOLES');
+        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
         $legend = new Legend();
         $legend->setCode('1000')

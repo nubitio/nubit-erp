@@ -44,7 +44,7 @@ class MakeCrudCommand extends Command
 
             /** @var string $moduleName */
             $moduleName = $io->ask('Module name');
-            $modulePath = dirname(__DIR__, 2).'/src/'.StringUtils::toPascalCase($moduleName);
+            $modulePath = dirname(__DIR__, 2) . '/src/' . StringUtils::toPascalCase($moduleName);
 
             $schemaManager = $this->connection->createSchemaManager();
             $tables = $schemaManager->listTableNames();

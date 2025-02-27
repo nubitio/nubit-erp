@@ -24,7 +24,7 @@ readonly class LogoProvider
             return '';
         }
 
-        $baseUrl = $_ENV['S3_ENDPOINT'].'/'.$_ENV['S3_BUCKET_NAME'].'/';
+        $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
 
         $folder = Constants::IMAGE_UPLOAD_DIR;
 
@@ -37,6 +37,6 @@ readonly class LogoProvider
             return '';
         }
 
-        return $baseUrl.$folder.$media['path'];
+        return $baseUrl . $folder . $media['path'];
     }
 }

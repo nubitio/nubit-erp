@@ -34,7 +34,7 @@ class StorageMigrateCommand extends Command
         $io = new SymfonyStyle($input, $output);
         try {
             $io->title('Migrando archivos de comprobantes');
-            $currentPath = dirname(__DIR__, 4).'/public/'.$_ENV['EFACT_DIR'];
+            $currentPath = dirname(__DIR__, 4) . '/public/' . $_ENV['EFACT_DIR'];
             $newPath = $this->settingsService->get(Constants::COMPANY_ID);
             $files = scandir($currentPath);
 
@@ -51,19 +51,19 @@ class StorageMigrateCommand extends Command
                 if (in_array($file, $ignore)) {
                     continue;
                 }
-                $progressBar->setMessage('Migrando archivo: '.$file);
-                $data = file_get_contents($currentPath.'/'.$file);
+                $progressBar->setMessage('Migrando archivo: ' . $file);
+                $data = file_get_contents($currentPath . '/' . $file);
 
                 if (!$data) {
-                    throw new \Exception('Error al leer el archivo: '.$file);
+                    throw new \Exception('Error al leer el archivo: ' . $file);
                 }
 
-                $this->fileManager->write($newPath.'/'.$file, $data);
-                if ($this->fileManager->exists($newPath.'/'.$file)) {
-                    $progressBar->setMessage('Archivo migrado: '.$file);
-                    unlink($currentPath.'/'.$file);
+                $this->fileManager->write($newPath . '/' . $file, $data);
+                if ($this->fileManager->exists($newPath . '/' . $file)) {
+                    $progressBar->setMessage('Archivo migrado: ' . $file);
+                    unlink($currentPath . '/' . $file);
                 } else {
-                    throw new \Exception('Error al migrar el archivo: '.$file);
+                    throw new \Exception('Error al migrar el archivo: ' . $file);
                 }
                 $progressBar->advance();
             }
@@ -71,7 +71,7 @@ class StorageMigrateCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: '.$e->getMessage());
+            $io->error('Error: ' . $e->getMessage());
 
             return Command::FAILURE;
         }
