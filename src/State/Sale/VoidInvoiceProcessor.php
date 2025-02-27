@@ -21,6 +21,8 @@ readonly class VoidInvoiceProcessor implements ProcessorInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param VoidSaleDto $data
      */
     public function process(
@@ -34,7 +36,7 @@ readonly class VoidInvoiceProcessor implements ProcessorInterface
 
         try {
             $this->saleVoidUseCase->__invoke($saleId, $data->reason, $userId);
-        } catch (FilesystemException|Exception $e) {
+        } catch (FilesystemException | Exception $e) {
             return new ApiResponse(
                 success: false,
                 message: 'Error al anular comprobante'

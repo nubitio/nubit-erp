@@ -1,2 +1,17 @@
 grumphp:
-    tasks: { phpstan: null }
+    tasks:
+        phpcsfixer2:
+            config: .php-cs-fixer.dist.php
+        phpcs:
+            standard: 'phpcs.xml.dist'
+            whitelist_patterns:
+                - /^src/
+        phpmd:
+            ruleset:
+                - phpmd.xml.dist
+            report_format: ansi
+            whitelist_patterns:
+                - /^src/
+        phpstan:
+            configuration: phpstan.dist.neon
+        phpunit: ~

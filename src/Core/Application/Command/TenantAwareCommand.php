@@ -65,7 +65,7 @@ abstract class TenantAwareCommand extends Command
 
         if ($tenantName = $input->getOption('tenant')) {
             $this->tenantConnectionSwitcher->switchConnection($tenantName);
-            $io->title('Tenant: '.$tenantName);
+            $io->title('Tenant: ' . $tenantName);
 
             $this->executeTenantCommand($input, $output);
 
@@ -88,18 +88,18 @@ abstract class TenantAwareCommand extends Command
             try {
                 $tenantName = $tenant['name'];
                 $this->tenantConnectionSwitcher->switchConnection($tenantName);
-                $io->title('Tenant: '.$tenantName);
+                $io->title('Tenant: ' . $tenantName);
 
                 $this->executeTenantCommand($input, $output);
-            } catch (ServiceException|\Doctrine\DBAL\Driver\Exception|\Doctrine\DBAL\Exception|\Exception $e) {
+            } catch (ServiceException | \Doctrine\DBAL\Driver\Exception | \Doctrine\DBAL\Exception | \Exception $e) {
                 $this->logger->error(
                     'An error occurred while executing command for tenant '
-                    .$tenantName,
+                    . $tenantName,
                     ['exception' => $e]
                 );
                 $io->error(
                     'An error occurred while executing command for tenant '
-                    .$tenantName
+                    . $tenantName
                 );
             }
         }

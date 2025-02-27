@@ -51,6 +51,6 @@ class Voucher
         $parts = explode('.', number_format($this->voucher_sale_amount ?? 0, 2, '.', ''));
         $amount = $formatter->format((int) $parts[0]);
 
-        return 'Son: '.mb_strtoupper($amount.' Y '.$parts[1].'/100');
+        return 'Son: ' . mb_strtoupper($amount . ' Y ' . $parts[1] . '/100');
     }
 }

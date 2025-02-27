@@ -102,7 +102,7 @@ readonly class BillCreateUseCase
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
         $amount = $formatter->format((int) $parts[0]);
-        $strTotal = mb_strtoupper('SON '.$amount.' CON '.$parts[1].' / 100 SOLES');
+        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
         $legend = (new Legend())
             ->setCode('1000')

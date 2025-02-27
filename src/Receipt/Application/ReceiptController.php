@@ -66,15 +66,6 @@ class ReceiptController extends BaseController
             return new Response($content);
         }
 
-        $pageHeight = 150;
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $pageHeight = 220;
-        }
-
-        $items = count($voucher->voucher_items);
-
-        $pageHeight += $items * 5;
-
         $pdfExporter = new PdfExporter();
 
         return $pdfExporter->export($content, 'invoice');
@@ -94,7 +85,7 @@ class ReceiptController extends BaseController
         $response->headers->set('Content-Type', 'text/xml');
         $response->headers->set(
             'Content-Disposition',
-            'attachment; filename="'.$fileResponse->name.'"'
+            'attachment; filename="' . $fileResponse->name . '"'
         );
 
         return $response;
@@ -114,7 +105,7 @@ class ReceiptController extends BaseController
         $response->headers->set('Content-Type', 'application/zip');
         $response->headers->set(
             'Content-Disposition',
-            'attachment; filename="'.$fileResponse->name.'"'
+            'attachment; filename="' . $fileResponse->name . '"'
         );
 
         return $response;
@@ -129,7 +120,7 @@ class ReceiptController extends BaseController
         ReceiptPdfUseCase $receiptPdfUseCase,
         string $payload,
     ): StreamedResponse {
-        $preview = (bool) $request->query->get('preview', false);
+        $preview = (bool)$request->query->get('preview', false);
 
         $fileResponse = $receiptPdfUseCase($this->getReceiptRequest($payload));
 
@@ -143,12 +134,12 @@ class ReceiptController extends BaseController
         if ($preview) {
             $response->headers->set(
                 'Content-Disposition',
-                'inline; filename="'.$fileResponse->name.'"'
+                'inline; filename="' . $fileResponse->name . '"'
             );
         } else {
             $response->headers->set(
                 'Content-Disposition',
-                'attachment; filename="'.$fileResponse->name.'"'
+                'attachment; filename="' . $fileResponse->name . '"'
             );
         }
 

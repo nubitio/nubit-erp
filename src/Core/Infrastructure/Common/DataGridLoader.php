@@ -85,43 +85,43 @@ class DataGridLoader
                 }
                 switch ($filterArray[$i]['op']) {
                     case 'contains':
-                        $where .= $filterDataField." LIKE '%".$filterValue."%'";
+                        $where .= $filterDataField . " LIKE '%" . $filterValue . "%'";
                         break;
                     case 'equal':
-                        $where .= $filterDataField." = '".$filterValue."'";
+                        $where .= $filterDataField . " = '" . $filterValue . "'";
                         break;
                     case 'notequal':
-                        $where .= $filterDataField." <> '".$filterValue."'";
+                        $where .= $filterDataField . " <> '" . $filterValue . "'";
                         break;
                     case 'beginwith':
-                        $where .= $filterDataField." LIKE '".$filterValue."%'";
+                        $where .= $filterDataField . " LIKE '" . $filterValue . "%'";
                         break;
                     case 'endwith':
-                        $where .= $filterDataField." LIKE '%".$filterValue."'";
+                        $where .= $filterDataField . " LIKE '%" . $filterValue . "'";
                         break;
                     case 'less':
-                        $where .= $filterDataField." < '".$filterValue."'";
+                        $where .= $filterDataField . " < '" . $filterValue . "'";
                         break;
                     case 'lessorequal':
-                        $where .= $filterDataField." <= '".$filterValue."'";
+                        $where .= $filterDataField . " <= '" . $filterValue . "'";
                         break;
                     case 'greater':
-                        $where .= $filterDataField." > '".$filterValue."'";
+                        $where .= $filterDataField . " > '" . $filterValue . "'";
                         break;
                     case 'greaterorequal':
-                        $where .= $filterDataField." >= '".$filterValue."'";
+                        $where .= $filterDataField . " >= '" . $filterValue . "'";
                         break;
                     case 'in':
-                        $where .= $filterDataField.' IN ('.$filterValue.')';
+                        $where .= $filterDataField . ' IN (' . $filterValue . ')';
                         break;
                     case 'notin':
-                        $where .= $filterDataField.' NOT IN ('.$filterValue.')';
+                        $where .= $filterDataField . ' NOT IN (' . $filterValue . ')';
                         break;
                     case 'isnull':
-                        $where .= $filterDataField.' IS NULL';
+                        $where .= $filterDataField . ' IS NULL';
                         break;
                     case 'isnotnull':
-                        $where .= $filterDataField.' IS NOT NULL';
+                        $where .= $filterDataField . ' IS NOT NULL';
                         break;
                 }
                 $tmpDataField = $filterDataField;

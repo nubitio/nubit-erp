@@ -58,6 +58,6 @@ class InvoiceUpdater
             ]);
         }
 
-        return 'Registros actualizados: '.count($pending);
+        return 'Registros actualizados: ' . count($pending);
     }
 }

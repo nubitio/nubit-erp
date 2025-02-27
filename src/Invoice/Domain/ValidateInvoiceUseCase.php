@@ -70,7 +70,7 @@ readonly class ValidateInvoiceUseCase
     private function getToken(): string
     {
         $customerID = $this->settings->get(Constants::COMPANY_ID);
-        $tokenKey = $customerID.'_cpe_token';
+        $tokenKey = $customerID . '_cpe_token';
 
         return $this->cache->get($tokenKey, function (ItemInterface $item) {
             $apiInstance = new AuthApi(new Client());

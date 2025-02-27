@@ -76,7 +76,7 @@ class SummaryRepository implements SummaryRepositoryInterface
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
         $httpClient = HttpClient::create();
-        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket='.$ticket.'&ruc='.$ruc);
+        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');

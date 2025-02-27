@@ -1,36 +1,30 @@
 #!/bin/sh
 
+#
+# Run the hook command.
+# Note: this will be replaced by the real command during copy.
+#
+
+# GrumPHP env vars
+export GRUMPHP_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
+
 # Web container name
 WEB_CONTAINER="web"
 
 # Path to the directory where the composer.json file is located inside the container
 COMPOSER_PATH="/var/www/html/"
 
-# Function to execute commands inside the web container
-run_in_container() {
-  docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && $1"
-}
+# Temporary file to store the git diff
+TEMP_FILE="/tmp/grumphp_diff.txt"
 
-# Function to check the result of the previous command
-check_result() {
-  if [ $? -ne 0 ]; then
-    echo ""
-    echo "****************************************************"
-    echo "Errors found! Commit cannot proceed."
-    echo "****************************************************"
-    echo ""
-    exit 1
-  fi
-}
+# Fetch the GIT diff and save it to a temporary file
+git -c diff.mnemonicprefix=false -c diff.noprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged > "$TEMP_FILE"
 
-# Run phpstan inside the web container
-run_in_container "vendor/bin/phpstan analyse --no-progress --no-interaction --memory-limit=2G"
-check_result
+# Copy the diff file into the container
+docker cp "$TEMP_FILE" "$WEB_CONTAINER:$TEMP_FILE"
 
-# Run php-cs-fixer inside the web container
-run_in_container "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff"
-check_result
+# Run GrumPHP inside the container using the copied diff file
+docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && cat $TEMP_FILE | vendor/bin/grumphp git:pre-commit --skip-success-output"
 
-# Run phpunit inside the web container
-run_in_container "bin/phpunit"
-check_result
+# Clean up temporary file
+rm -f "$TEMP_FILE"

@@ -62,6 +62,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getAvatarUrl(): string
     {
-        return 'https://robohash.org/'.$this->username;
+        return 'https://robohash.org/' . $this->username;
     }
 }

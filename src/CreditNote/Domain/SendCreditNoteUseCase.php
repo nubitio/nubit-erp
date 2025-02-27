@@ -37,12 +37,12 @@ readonly class SendCreditNoteUseCase
 
         $response = $this->noteSendUseCase->__invoke($noteId);
         $note->digest = $response->hash;
-        $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/'.$response->name.'.xml', $response->xml);
+        $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml', $response->xml);
         if ($response->sunatResponse->isSuccess()) {
             $note->envio_sunat = $response->sunatResponse->getCdrResponse()?->getCode();
             $note->mensaje_sunat = $response->sunatResponse->getCdrResponse()?->getDescription();
             $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
-            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID).'/R-'.$response->name.'.zip', $cdr);
+            $this->fileManager->write($this->settings->get(Constants::COMPANY_ID) . '/R-' . $response->name . '.zip', $cdr);
             $this->creditNoteRepository->update($note);
         } else {
             $note->envio_sunat = $response->sunatResponse->getError()?->getCode();

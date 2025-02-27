@@ -53,7 +53,7 @@ class XlsExporter
         $spreadsheet = $this->makeSpreadsheet($data);
 
         $writer = new Xlsx($spreadsheet);
-        $writer->save($filename.'.xlsx');
+        $writer->save($filename . '.xlsx');
     }
 
     /**
@@ -66,7 +66,7 @@ class XlsExporter
     {
         $accentColor = $this->settingsService->get('app_theme_accent_color');
         $arr = explode(' ', strval($accentColor));
-        $accentColor = dechex((int) $arr[0]).dechex((int) $arr[1]).dechex((int) $arr[2]);
+        $accentColor = dechex((int) $arr[0]) . dechex((int) $arr[1]) . dechex((int) $arr[2]);
         $lightenAccentColor = ColorUtils::lightenColor($accentColor, 60);
         $lightenAccentColor = str_replace('#', '', $lightenAccentColor);
         $contrastColor = ColorUtils::contrastColor($accentColor);
@@ -95,7 +95,7 @@ class XlsExporter
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
                 'startColor' => [
-                    'argb' => 'FF'.$accentColor,
+                    'argb' => 'FF' . $accentColor,
                 ],
             ],
             'borders' => [
@@ -110,7 +110,7 @@ class XlsExporter
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
                     'color' => [
-                        'argb' => 'FF'.$accentColor,
+                        'argb' => 'FF' . $accentColor,
                     ],
                 ],
             ],
@@ -121,7 +121,7 @@ class XlsExporter
         $zebraStyle->setOperatorType(Conditional::OPERATOR_EQUAL);
         $zebraStyle->addCondition('MOD(ROW(),2)=0');
         $zebraStyle->getStyle()->getFill()->setFillType(Fill::FILL_SOLID);
-        $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB('FF'.$lightenAccentColor);
+        $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB('FF' . $lightenAccentColor);
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()
@@ -141,13 +141,13 @@ class XlsExporter
                 ->setAutoSize(true);
         }
 
-        $spreadsheet->getActiveSheet()->getStyle('A1:'.$lastColumn.'1')
+        $spreadsheet->getActiveSheet()->getStyle('A1:' . $lastColumn . '1')
             ->applyFromArray($headerStyle);
 
-        $spreadsheet->getActiveSheet()->getStyle('A2:'.$lastColumn.count($data))
+        $spreadsheet->getActiveSheet()->getStyle('A2:' . $lastColumn . count($data))
             ->setConditionalStyles([$zebraStyle]);
 
-        $spreadsheet->getActiveSheet()->getStyle('A2:'.$lastColumn.count($data))
+        $spreadsheet->getActiveSheet()->getStyle('A2:' . $lastColumn . count($data))
             ->applyFromArray($borderStyle);
 
         return $spreadsheet;

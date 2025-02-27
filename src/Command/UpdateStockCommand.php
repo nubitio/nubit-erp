@@ -62,23 +62,23 @@ class UpdateStockCommand extends TenantAwareCommand
                     continue;
                 }
                 $this->logger->info(
-                    'Updating stock for product '.$product->getId(),
+                    'Updating stock for product ' . $product->getId(),
                     ['stock' => $stock]
                 );
                 $io->text(
-                    'Updating stock for product '.$product->getId().' to '
-                    .$stock
+                    'Updating stock for product ' . $product->getId() . ' to '
+                    . $stock
                 );
                 $product->setStock($stock);
             } catch (Exception $e) {
                 $this->logger->error(
                     'An error occurred while calculating stock for product '
-                    .$product->getId(),
+                    . $product->getId(),
                     ['exception' => $e]
                 );
                 $io->error(
                     'An error occurred while calculating stock for product '
-                    .$product->getId()
+                    . $product->getId()
                 );
             }
             ++$processed;

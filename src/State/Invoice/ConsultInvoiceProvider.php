@@ -15,11 +15,14 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
     public function provide(
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
-    ): object|array|null {
+    ): object | array | null {
         $id = $uriVariables['id'];
         try {
             $result = $this->invoiceConsultUseCase->__invoke($id);
@@ -38,7 +41,7 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
                         $result
                     );
             }
-        } catch (\Exception|FilesystemException $e) {
+        } catch (\Exception | FilesystemException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }
     }

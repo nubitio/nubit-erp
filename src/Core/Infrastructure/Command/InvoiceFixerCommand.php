@@ -133,8 +133,8 @@ class InvoiceFixerCommand extends Command
 
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $io->error('Error: '.$e->getMessage());
-            $io->error('Trace: '.$e->getTraceAsString());
+            $io->error('Error: ' . $e->getMessage());
+            $io->error('Trace: ' . $e->getTraceAsString());
 
             return Command::FAILURE;
         }
@@ -179,7 +179,7 @@ class InvoiceFixerCommand extends Command
             'descripcion_motivo' => 'ERROR DEL SISTEMA',
             'serie' => $creditNoteSeries,
             'correlativo' => $creditNoteNumber,
-            'doc_afectado' => $cloneInvoice['serie'].'-'.$cloneInvoice['numero'],
+            'doc_afectado' => $cloneInvoice['serie'] . '-' . $cloneInvoice['numero'],
             'total' => $cloneInvoice['total'],
             'created_at' => date('Y-m-d H:i:s'),
         ];

@@ -57,12 +57,12 @@ readonly class InvoiceEmailUseCase
 
         $invoiceUrl = $this->urlGenerator->generate('receipt_show', ['payload' => $payload], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $docName = $voucher->voucher_series.'-'.$voucher->voucher_number;
-        $docFullName = $voucher->company_id.'-'.$voucher->voucher_type.'-'.$docName;
+        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
+        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
         $companyName = $this->settings->get('company_name') ?? $voucher->company_name;
 
-        $subject = $companyName.': Tu comprobante de pago electrónico - '.$docName;
-        $xmlPath = $this->settings->get(Constants::COMPANY_ID).'/'.$docFullName.'.xml';
+        $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
+        $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
         $pdfResponse = $this->billPdfUseCase->__invoke($saleId);
         $pdfContent = $pdfResponse->file;
@@ -85,8 +85,8 @@ readonly class InvoiceEmailUseCase
             ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
             ->subject($subject)
             ->html($content)
-            ->attach($xmlContent, $docFullName.'.xml')
-            ->attach($pdfContent, $docFullName.'.pdf');
+            ->attach($xmlContent, $docFullName . '.xml')
+            ->attach($pdfContent, $docFullName . '.pdf');
         $this->mailer->send($email);
     }
 }

@@ -10,10 +10,19 @@
 
     <rule ref="PSR12"/>
 
-    <file>bin/</file>
-    <file>config/</file>
-    <file>public/</file>
     <file>src/</file>
     <file>tests/</file>
 
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <element key="dd">
+                    "Use logger instead of dd"
+                </element>
+                <element key="dump">
+                    "Use logger instead of dump"
+                </element>
+            </property>
+        </properties>
+    </rule>
 </ruleset>

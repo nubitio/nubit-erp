@@ -19,7 +19,7 @@ class RemoteEscposImage extends EscposImage
             throw new \Exception("Failed to download image from URL: $imageUrl");
         }
 
-        $tempPath = sys_get_temp_dir().'/escpos_temp_image.png';
+        $tempPath = sys_get_temp_dir() . '/escpos_temp_image.png';
         if (false === file_put_contents($tempPath, $imageContent)) {
             throw new \Exception('Failed to save downloaded image to temporary file.');
         }

@@ -15,6 +15,9 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
     public function process(
         mixed $data,
         Operation $operation,
@@ -39,7 +42,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
                     $result->sunatResponse->getError()?->getMessage() ?: ''
                 );
             }
-        } catch (\Exception|FilesystemException $e) {
+        } catch (\Exception | FilesystemException $e) {
             return new ApiResponse(
                 success: false,
                 message: 'Error sending invoice',

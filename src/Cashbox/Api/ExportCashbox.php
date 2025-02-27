@@ -32,6 +32,6 @@ class ExportCashbox extends AbstractController
             $content = $e->getMessage();
         }
 
-        return $exporter->export($content, 'caja_'.$cashBoxId);
+        return $exporter->export($content, 'caja_' . $cashBoxId);
     }
 }

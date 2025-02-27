@@ -15,6 +15,6 @@ readonly class BillPdfUseCase
         $bill = $this->billCreateUseCase->__invoke($saleId);
         $pdf = $this->billRepository->getPdf($bill);
 
-        return new FileResponse($pdf, $bill->getName().'.pdf');
+        return new FileResponse($pdf, $bill->getName() . '.pdf');
     }
 }

@@ -14,7 +14,7 @@ class ConsultRepository implements ConsultRepositoryInterface
 
     public function consult(string $id, DocType $docType): Consult
     {
-        $url = self::API_URL.$docType->value.'/'.$id.'?token=abcxyz';
+        $url = self::API_URL . $docType->value . '/' . $id . '?token=abcxyz';
         $httpClient = HttpClient::create();
         $response = $httpClient->request('GET', $url);
         if (200 !== $response->getStatusCode()) {
@@ -36,7 +36,7 @@ class ConsultRepository implements ConsultRepositoryInterface
     {
         return new Consult(
             strval($data['dni']),
-            $data['nombres'].' '.$data['apellidoPaterno'].' '.$data['apellidoMaterno'],
+            $data['nombres'] . ' ' . $data['apellidoPaterno'] . ' ' . $data['apellidoMaterno'],
             '',
             true
         );

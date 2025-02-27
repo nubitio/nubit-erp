@@ -24,6 +24,8 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param CashRegisterCloseDto $data
      *
      * @throws Exception
@@ -40,7 +42,8 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 CashShift::class,
                 $uriVariables['id']
             );
-            $cashPaymentMethodIRI = 'api/v1/payment-methods/'.PaymentMethod::CASH;
+            $cashPaymentMethodIRI = 'api/v1/payment-methods/'
+                . PaymentMethod::CASH;
             $cashClosureKey = array_search(
                 $cashPaymentMethodIRI,
                 array_column($data->closureItems, 'paymentMethod')

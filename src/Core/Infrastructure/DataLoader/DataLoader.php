@@ -129,7 +129,7 @@ readonly class DataLoader implements DataLoaderInterface
                     foreach ($options->filters as $filter) {
                         $parentObj = new $parent();
                         if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
-                            $filter->field = $alias.'.'.$filter->field;
+                            $filter->field = $alias . '.' . $filter->field;
                         }
                     }
                 }

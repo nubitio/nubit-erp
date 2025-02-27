@@ -25,7 +25,7 @@ class SettingsExtension extends AbstractExtension
         $version = 'dev';
 
         if ('version' === $settingName) {
-            $versionFile = dirname(__DIR__, 4).'/.version';
+            $versionFile = dirname(__DIR__, 4) . '/.version';
             if (file_exists($versionFile)) {
                 $fileContent = file_get_contents($versionFile);
                 $version = trim(strval($fileContent ?: $version));
