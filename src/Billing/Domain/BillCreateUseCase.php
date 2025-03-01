@@ -40,7 +40,11 @@ readonly class BillCreateUseCase
             ->setSerie(strval($voucher->voucher_series))
             ->setCorrelativo(strval($voucher->voucher_number))
             ->setFechaEmision(new \DateTime(strval($voucher->voucher_date)))
-            ->setFormaPago(2 == $voucher->voucher_payment_method ? new FormaPagoCredito($voucher->voucher_sale_amount) : new FormaPagoContado())
+            ->setFormaPago(
+                2 == $voucher->voucher_payment_method ? new FormaPagoCredito(
+                    $voucher->voucher_sale_amount
+                ) : new FormaPagoContado()
+            )
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setClient($customer)
             ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
@@ -101,7 +105,7 @@ readonly class BillCreateUseCase
 
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
-        $amount = $formatter->format((int) $parts[0]);
+        $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
         $legend = (new Legend())

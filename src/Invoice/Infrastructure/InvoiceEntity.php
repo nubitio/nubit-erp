@@ -3,7 +3,7 @@
 namespace App\Invoice\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Customer\Infrastructure\CustomerEntity;
+use App\Entity\Customer;
 use Doctrine\ORM\Mapping as ORM;
 
 #[IgnoreAutowire]
@@ -20,9 +20,9 @@ class InvoiceEntity
         public ?string $movimiento_id = null,
         #[ORM\Column(name: 'raw_document_id', type: 'integer')]
         public ?int $raw_document_id = null,
-        #[ORM\ManyToOne(targetEntity: CustomerEntity::class)]
+        #[ORM\ManyToOne(targetEntity: Customer::class)]
         #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
-        public ?CustomerEntity $cliente = null,
+        public ?Customer $cliente = null,
         #[ORM\Column(name: 'tipo_comprobante_id', type: 'string')]
         public ?string $tipo_comprobante_id = null,
         #[ORM\Column(name: 'fecha', type: 'date')]

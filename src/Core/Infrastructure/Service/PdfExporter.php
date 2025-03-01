@@ -18,7 +18,7 @@ class PdfExporter
         $pdf->setOptions($options);
         $pdf->setTimeout(self::TIMEOUT);
 
-        $response = new StreamedResponse(function () use ($pdf, $content) {
+        $response = new StreamedResponse(function () use ($pdf, $content): void {
             echo $pdf->getOutputFromHtml($content);
         });
 

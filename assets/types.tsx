@@ -28,14 +28,14 @@ export interface UserMenuSectionProps {
 }
 
 export interface User {
-    id: number;
+    userId: number;
     username: string;
     email: string;
     name: string;
     role: number;
     roles: string[];
     branchId: number;
-    branch: string;
+    branchName: string;
     warehouseId: number;
     avatarUrl: string;
 }

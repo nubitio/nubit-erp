@@ -6,11 +6,8 @@ use Greenter\Model\Response\StatusCdrResult;
 
 class VoidedStatusUseCase
 {
-    private VoidedRepositoryInterface $voidedRepository;
-
-    public function __construct(VoidedRepositoryInterface $voidedRepository)
+    public function __construct(private readonly VoidedRepositoryInterface $voidedRepository)
     {
-        $this->voidedRepository = $voidedRepository;
     }
 
     public function __invoke(string $ticket, string $ruc): StatusCdrResult

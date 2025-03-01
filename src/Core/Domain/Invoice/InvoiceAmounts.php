@@ -8,10 +8,15 @@ use App\Core\Domain\Annotation\IgnoreAutowire;
 class InvoiceAmounts
 {
     private float $subtotal;
+
     private float $taxedAmount;
+
     private float $discountAmount;
+
     private float $chargesAmount;
+
     private float $tax;
+
     private float $total;
 
     public function getSubtotal(): float

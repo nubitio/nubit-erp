@@ -25,6 +25,8 @@ RUN apt-get update
 RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl php8.3-redis php8.3-imagick
 RUN apt-get install -y libapache2-mod-php8.3
 
+RUN update-alternatives --set php /usr/bin/php8.3
+
 # configure xdebug
 RUN sed -i -e '$a xdebug.mode=debug,coverage' /etc/php/8.3/mods-available/xdebug.ini
 RUN sed -i -e '$a xdebug.client_host=host.docker.internal' /etc/php/8.3/mods-available/xdebug.ini

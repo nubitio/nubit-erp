@@ -28,6 +28,7 @@ abstract class TenantAwareCommand extends Command
         $this->tenants = $this->tenantManager->getTenants();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('This command allows you to execute tenant command');
@@ -39,6 +40,7 @@ abstract class TenantAwareCommand extends Command
         );
     }
 
+    #[\Override]
     protected function execute(
         InputInterface $input,
         OutputInterface $output,
@@ -56,7 +58,7 @@ abstract class TenantAwareCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-        if (empty($this->tenants)) {
+        if ($this->tenants === []) {
             $this->logger->warning('No tenants found');
             $io->warning('No tenants found');
 
@@ -74,9 +76,8 @@ abstract class TenantAwareCommand extends Command
             $this->release();
 
             return Command::SUCCESS;
-        } else {
-            return $this->executeAllTenants($io, $input, $output);
         }
+        return $this->executeAllTenants($io, $input, $output);
     }
 
     private function executeAllTenants(

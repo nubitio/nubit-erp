@@ -18,6 +18,10 @@ readonly class ConsultProvider implements ApiProviderInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if (isset($uriVariables['dni'])) {

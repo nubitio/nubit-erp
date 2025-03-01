@@ -4,6 +4,7 @@ namespace App\State\PriceList;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Dto\PriceList\PriceListDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
@@ -15,13 +16,12 @@ readonly class PriceListProvider implements ProviderInterface
     }
 
     /**
+     * @inheritdoc
      * @throws Exception
      */
-    public function provide(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): object|array|null {
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    {
         $id = $uriVariables['id'];
         $sql = '
             select
@@ -34,6 +34,15 @@ readonly class PriceListProvider implements ProviderInterface
             where p.estado = 1
             order by p.descripcion';
 
-        return $this->connection->fetchAllAssociative($sql, ['id' => $id]);
+        $data = $this->connection->fetchAllAssociative($sql, ['id' => $id]);
+
+        return array_map(
+            fn ($item): \App\Dto\PriceList\PriceListDto => new PriceListDto(
+                id: (int)$item['id'],
+                name: $item['name'],
+                price: (float)$item['price'],
+            ),
+            $data
+        );
     }
 }

@@ -15,22 +15,16 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class SummaryRepository implements SummaryRepositoryInterface
+readonly class SummaryRepository implements SummaryRepositoryInterface
 {
-    private Connection $connection;
-    private SerializerService $serializer;
-
-    public function __construct(
-        Connection $connection,
-        SerializerService $serializer,
-    ) {
-        $this->connection = $connection;
-        $this->serializer = $serializer;
+    public function __construct(private Connection $connection, private SerializerService $serializer)
+    {
     }
 
     /**
      * @throws Exception
      */
+    #[\Override]
     public function getLastCorrelativeByDate(string $date): int
     {
         $sql = 'select ifnull(max(right(correlative, 1)), 0) as correlative from summary where date = ?';
@@ -50,6 +44,7 @@ class SummaryRepository implements SummaryRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function createSummary(Summary $summary): SummaryResponse
     {
         $httpClient = HttpClient::create();
@@ -73,10 +68,14 @@ class SummaryRepository implements SummaryRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
         $httpClient = HttpClient::create();
-        $response = $httpClient->request('GET', 'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc);
+        $response = $httpClient->request(
+            'GET',
+            'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc
+        );
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');

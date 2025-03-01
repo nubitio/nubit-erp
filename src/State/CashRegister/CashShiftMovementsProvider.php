@@ -14,14 +14,14 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
     ) {
     }
 
-    public function provide(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): object|array|null {
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    {
         $cashShiftId = $uriVariables['id'];
 
-        return $this->entityManager->getRepository(CashMovement::class)
-            ->findBy(['cashShift' => $cashShiftId]);
+        return $this->entityManager->getRepository(CashMovement::class)->findBy(['cashShift' => $cashShiftId]);
     }
 }

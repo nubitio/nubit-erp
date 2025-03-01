@@ -14,6 +14,7 @@ class DevExtremeFilter extends AbstractFilter
     /**
      * @inheritdoc
      */
+    #[\Override]
     public function getDescription(string $resourceClass): array
     {
         return [
@@ -41,6 +42,7 @@ class DevExtremeFilter extends AbstractFilter
     /**
      * @inheritdoc
      */
+    #[\Override]
     protected function filterProperty(
         string $property,
         $value,
@@ -58,16 +60,14 @@ class DevExtremeFilter extends AbstractFilter
             $this->applyFilter($queryBuilder, $value);
         }
 
-        if ('searchValue' === $property) {
-            if (isset($context['filters']['searchExpr'])) {
-                $filter = [];
-                $filter[] = [
-                    $context['filters']['searchExpr'],
-                    'contains',
-                    $value,
-                ];
-                $this->applyFilter($queryBuilder, $filter);
-            }
+        if ('searchValue' === $property && isset($context['filters']['searchExpr'])) {
+            $filter = [];
+            $filter[] = [
+                $context['filters']['searchExpr'],
+                'contains',
+                $value,
+            ];
+            $this->applyFilter($queryBuilder, $filter);
         }
     }
 
@@ -92,10 +92,12 @@ class DevExtremeFilter extends AbstractFilter
             if (is_string($filterParam)) {
                 continue;
             }
+
             if (is_array($filterParam[0])) {
                 $this->applyFilter($queryBuilder, $filterParam);
                 continue;
             }
+
             $field = $filterParam[0];
             $operator = $this->getOperation($filterParam[1]);
             $value = $this->getValueForOperation(
@@ -128,12 +130,12 @@ class DevExtremeFilter extends AbstractFilter
         return $parameterName;
     }
 
-    private function getValueForOperation(string $op, $value): string
+    private function getValueForOperation(string $op, string $value): string
     {
         return match ($op) {
-            'contains', 'notcontains' => "%$value%",
-            'startswith' => "$value%",
-            'endswith' => "%$value",
+            'contains', 'notcontains' => sprintf('%%%s%%', $value),
+            'startswith' => $value . '%',
+            'endswith' => '%' . $value,
             default => $value,
         };
     }

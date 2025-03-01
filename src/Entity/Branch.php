@@ -137,11 +137,9 @@ class Branch
 
     public function removeWarehouse(Warehouse $warehouse): static
     {
-        if ($this->warehouses->removeElement($warehouse)) {
-            // set the owning side to null (unless already changed)
-            if ($warehouse->getBranch() === $this) {
-                $warehouse->setBranch(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->warehouses->removeElement($warehouse) && $warehouse->getBranch() === $this) {
+            $warehouse->setBranch(null);
         }
 
         return $this;

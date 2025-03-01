@@ -14,5 +14,5 @@ use App\Sale\Domain\Sale;
 class SaleDto extends Sale
 {
     #[ApiProperty(identifier: true)]
-    public ?string $movimiento_id;
+    public ?string $movimiento_id = null;
 }

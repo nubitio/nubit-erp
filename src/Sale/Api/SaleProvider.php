@@ -28,6 +28,7 @@ readonly class SaleProvider implements ApiProviderInterface
     ) {
     }
 
+    #[\Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
         if ($operation instanceof CollectionOperationInterface) {
@@ -58,9 +59,8 @@ readonly class SaleProvider implements ApiProviderInterface
         $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
-        $context = OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 1));
 
-        return $context;
+        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 1));
     }
 
     /**
@@ -75,9 +75,8 @@ readonly class SaleProvider implements ApiProviderInterface
         $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
-        $context = OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
 
-        return $context;
+        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
     }
 
     /**
@@ -94,8 +93,7 @@ readonly class SaleProvider implements ApiProviderInterface
         $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::GreaterThan, 0));
-        $context = OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
 
-        return $context;
+        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
     }
 }

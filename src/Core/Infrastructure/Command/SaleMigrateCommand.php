@@ -21,11 +21,13 @@ class SaleMigrateCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Actualiza valores de las ventas');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -36,8 +38,8 @@ class SaleMigrateCommand extends Command
             $io->success('Success');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+        } catch (\Exception $exception) {
+            $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;
         }
@@ -50,36 +52,48 @@ class SaleMigrateCommand extends Command
         $progressBar->start();
         foreach ($pending as $sale) {
             $progressBar->setMessage('Updating sale ' . $sale['movimiento_id']);
-            $invoice = $this->connection->fetchAssociative('SELECT * FROM comprobante WHERE movimiento_id = ?', [$sale['movimiento_id']]);
+            $invoice = $this->connection->fetchAssociative(
+                'SELECT * FROM comprobante WHERE movimiento_id = ?',
+                [$sale['movimiento_id']]
+            );
             $receipt = null;
             if ($invoice) {
                 $receipt = $invoice['serie'] . '-' . $invoice['numero'];
             }
+
             $subtotal = null;
             $total = null;
-            $saleDetails = $this->connection->fetchAllAssociative('SELECT * FROM movimiento_detalle WHERE movimiento_id = ?', [$sale['movimiento_id']]);
+            $saleDetails = $this->connection->fetchAllAssociative(
+                'SELECT * FROM movimiento_detalle WHERE movimiento_id = ?',
+                [$sale['movimiento_id']]
+            );
             foreach ($saleDetails as $detail) {
                 $subtotal += $detail['precio_total'];
             }
+
             $discount = $subtotal * $sale['descuento'] / 100;
             $total = $subtotal - $discount;
 
-            $this->connection->executeStatement('
-                update 
-                    movimiento 
-                set 
+            $this->connection->executeStatement(
+                '
+                update
+                    movimiento
+                set
                    invoice = ?,
                    subtotal = ?,
                    total = ?
                 where
-                    movimiento_id = ?', [
-                $receipt,
-                $subtotal,
-                $total,
-                $sale['movimiento_id'],
-            ]);
+                    movimiento_id = ?',
+                [
+                    $receipt,
+                    $subtotal,
+                    $total,
+                    $sale['movimiento_id'],
+                ]
+            );
             $progressBar->advance();
         }
+
         $progressBar->finish();
     }
 }

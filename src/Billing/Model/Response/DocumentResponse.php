@@ -7,7 +7,10 @@ use Greenter\Model\Response\BillResult;
 class DocumentResponse
 {
     public string $name;
+
     public string $xml;
+
     public string $hash;
+
     public BillResult $sunatResponse;
 }

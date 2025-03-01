@@ -5,6 +5,7 @@ namespace App\State\CashRegister;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Application\Session\Security;
+use App\Dto\CashRegister\CashRegisterDashboardDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
@@ -17,13 +18,12 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     }
 
     /**
-     * @throws Exception
+     * @inheritdoc
+     * @throws Exception|\DateMalformedStringException
      */
-    public function provide(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): object|array|null {
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    {
         $user = $this->security->connectedUser();
         $branchId = $user->branchId;
 
@@ -49,6 +49,17 @@ GROUP BY c.id, cs.id
 ORDER BY c.id
 SQL;
 
-        return $this->connection->fetchAllAssociative($sql, [$branchId]);
+        $data = $this->connection->fetchAllAssociative($sql, [$branchId]);
+
+        return array_map(fn ($row): \App\Dto\CashRegister\CashRegisterDashboardDto => new CashRegisterDashboardDto(
+            id: (int)$row['id'],
+            name: $row['name'],
+            cashShiftId: $row['cashShiftId'] ? (int)$row['cashShiftId'] : null,
+            openedAt: $row['openedAt'] ? new \DateTimeImmutable($row['openedAt']) : null,
+            closedAt: $row['closedAt'] ? new \DateTimeImmutable($row['closedAt']) : null,
+            cashier: $row['cashier'],
+            balance: (float)$row['balance'],
+            status: $row['status'],
+        ), $data);
     }
 }

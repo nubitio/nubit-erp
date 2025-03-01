@@ -22,9 +22,11 @@ class CreditNoteController extends BaseController
         $result = $sendCreditNoteUseCase($id);
 
         if ($result->sunatResponse->isSuccess()) {
-            return $this->json(new ApiResponse(true, $result->sunatResponse->getCdrResponse()?->getDescription() ?: ''));
-        } else {
-            return $this->json(new ApiResponse(false, $result->sunatResponse->getError()?->getMessage() ?: ''));
+            return $this->json(
+                new ApiResponse(true, $result->sunatResponse->getCdrResponse()?->getDescription() ?: '')
+            );
         }
+
+        return $this->json(new ApiResponse(false, $result->sunatResponse->getError()?->getMessage() ?: ''));
     }
 }

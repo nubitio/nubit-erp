@@ -14,10 +14,11 @@ class LogoExtension extends AbstractExtension
     ) {
     }
 
+    #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('logo', [$this, 'getLogo']),
+            new TwigFunction('logo', $this->getLogo(...)),
         ];
     }
 

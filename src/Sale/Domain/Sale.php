@@ -3,13 +3,13 @@
 namespace App\Sale\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Customer\Domain\Customer;
-use App\Operation\Domain\Operation;
-use App\PaymentMethod\Domain\PaymentMethod;
-use App\PriceList\Domain\PriceList;
+use App\Entity\Customer;
+use App\Entity\LogisticOperation;
+use App\Entity\PaymentMethod;
+use App\Entity\PriceList;
+use App\Entity\Supplier;
+use App\Entity\Warehouse;
 use App\SaleDetail\Domain\SaleDetail;
-use App\Supplier\Domain\Supplier;
-use App\Warehouse\Domain\Warehouse;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]
@@ -19,7 +19,7 @@ class Sale
         #[SerializedName('movimiento_id')]
         public ?string $movimiento_id = null,
         #[SerializedName('operacion')]
-        public ?Operation $operacion = null,
+        public ?LogisticOperation $operacion = null,
         #[SerializedName('almacen')]
         public ?Warehouse $almacen = null,
         #[SerializedName('cliente')]

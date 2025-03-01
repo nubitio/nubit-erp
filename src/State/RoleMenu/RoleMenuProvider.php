@@ -4,8 +4,8 @@ namespace App\State\RoleMenu;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Dto\RoleMenu\MenuDto;
-use App\Dto\RoleMenu\MenuItemDto;
+use App\Dto\RoleMenu\RoleMenuDto;
+use App\Dto\RoleMenu\RoleMenuItemDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
@@ -17,13 +17,12 @@ readonly class RoleMenuProvider implements ProviderInterface
     }
 
     /**
+     * @inheritdoc
      * @throws Exception
      */
-    public function provide(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): object|array|null {
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
+    {
         $roleId = $uriVariables['role_id'];
 
         $result = $this->connection->fetchAllAssociative(
@@ -50,15 +49,16 @@ readonly class RoleMenuProvider implements ProviderInterface
                 $j = 0;
                 foreach ($result as $option) {
                     if ($menu['menu_id'] == $option['parent_id']) {
-                        $submenu[$j] = new MenuItemDto(
+                        $submenu[$j] = new RoleMenuItemDto(
                             id: intval($option['menu_id']),
                             text: $option['descripcion'],
-                            selected: (bool) $option['checked']
+                            selected: (bool)$option['checked']
                         );
                         ++$j;
                     }
                 }
-                $data[$i] = new MenuDto(
+
+                $data[$i] = new RoleMenuDto(
                     id: intval($menu['menu_id']),
                     text: $menu['descripcion'],
                     items: $submenu

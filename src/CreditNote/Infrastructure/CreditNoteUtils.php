@@ -26,7 +26,10 @@ readonly class CreditNoteUtils
         }
 
         /** @var false|string $creditNoteSeries */
-        $creditNoteSeries = $this->connection->fetchOne('select serie from local_comprobante where serie_asociada = ?', [$saleSeries]);
+        $creditNoteSeries = $this->connection->fetchOne(
+            'select serie from local_comprobante where serie_asociada = ?',
+            [$saleSeries]
+        );
 
         if (!$creditNoteSeries) {
             throw new ServiceException('No se encontró la serie asociada para el tipo de comprobante.');
@@ -42,7 +45,10 @@ readonly class CreditNoteUtils
     public function getCreditNoteNumber(string $series): int
     {
         /** @var false|int $number */
-        $number = $this->connection->fetchOne('select ifnull(max(cast(correlativo as int)), 0) + 1 as number from nota where serie = ?', [$series]);
+        $number = $this->connection->fetchOne(
+            'select ifnull(max(cast(correlativo as int)), 0) + 1 as number from nota where serie = ?',
+            [$series]
+        );
 
         if (!$number) {
             throw new ServiceException('No se encontró el número de comprobante.');

@@ -4,11 +4,8 @@ namespace App\Invoice\Domain;
 
 class GetOneInvoiceUseCase
 {
-    private InvoiceRepositoryInterface $repository;
-
-    public function __construct(InvoiceRepositoryInterface $repository)
+    public function __construct(private readonly InvoiceRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     public function __invoke(string $id): Invoice

@@ -55,6 +55,7 @@ class PrintESCPOSController extends BaseController
         $printer = new Printer($connector);
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
+
         $app_option_logo = $this->settingsService->get(
             'app_option_printing_logo'
         );
@@ -62,12 +63,14 @@ class PrintESCPOSController extends BaseController
             $printer->graphics($logo);
             $printer->feed();
         }
+
         $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
         $printer->text($voucher->company_name . "\n");
         $printer->selectPrintMode();
         $printer->text('RUC: ' . $voucher->company_id . "\n");
         $printer->text($voucher->company_address . "\n");
         $printer->text('Tel.: ' . $voucher->company_phone . "\n");
+
         $docType = match ($voucher->voucher_type) {
             DocType::FACTURA->value => 'FACTURA ELECTRONICA',
             DocType::BOLETA->value => 'BOLETA ELECTRONICA',
@@ -82,7 +85,8 @@ class PrintESCPOSController extends BaseController
         $printer->setEmphasis(false);
         $printer->setJustification();
         $printer->text($divider);
-        $docDate = date('d/m/Y', strtotime($voucher->voucher_date));
+
+        $docDate = date('d/m/Y', strtotime((string) $voucher->voucher_date));
         $printer->text('Fecha emision: ' . $docDate . "\n");
         $printer->text("Moneda: Soles\n");
         $printer->text($divider);
@@ -92,12 +96,14 @@ class PrintESCPOSController extends BaseController
         } elseif ($voucher->voucher_type == DocType::BOLETA->value) {
             $printer->text('DNI: ' . $voucher->customer_doc_number . "\n");
         }
+
         $printer->text('DIRECCION: ' . $voucher->customer_address . "\n");
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $paymentMethod = 2 == $voucher->voucher_payment_method ? 'CREDITO'
                 : 'CONTADO';
-            $printer->text("FORMA DE PAGO: $paymentMethod\n");
+            $printer->text(sprintf('FORMA DE PAGO: %s%s', $paymentMethod, PHP_EOL));
         }
+
         $printer->text($divider);
         $printer->setEmphasis();
         $printer->text(new SaleItemDto('# Descripcion', 'S/'));
@@ -144,6 +150,7 @@ class PrintESCPOSController extends BaseController
                 );
             }
         }
+
         $printer->text(
             new SaleItemDto('TOTAL:', $voucher->voucher_sale_amount)
         );
@@ -160,6 +167,7 @@ class PrintESCPOSController extends BaseController
                     8
                 );
             }
+
             $printer->feed();
             $printer->text('Resumen: ' . $voucher->voucher_hash . "\n");
             $printer->feed();
@@ -167,12 +175,14 @@ class PrintESCPOSController extends BaseController
             $printer->text('comprobante electronico, consulte en' . "\n");
             $printer->text($_ENV['EFACT_URL'] . "\n");
         }
+
         $printer->feed();
         $printer->text(date('d/m/Y H:i:s') . "\n");
         $printer->text('** Gracias por su preferencia **' . "\n");
         $printer->feed();
         $printer->cut();
         $printer->pulse();
+
         $commands = $connector->getData();
         $printer->close();
 

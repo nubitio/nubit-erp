@@ -3,7 +3,7 @@
 namespace App\SaleDetail\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Product\Infrastructure\ProductEntity;
+use App\Entity\Product;
 use App\Sale\Infrastructure\SaleEntity;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,9 +20,9 @@ class SaleDetailEntity
         #[ORM\ManyToOne(targetEntity: SaleEntity::class, inversedBy: 'details')]
         #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
         public ?SaleEntity $movimiento = null,
-        #[ORM\ManyToOne(targetEntity: ProductEntity::class)]
+        #[ORM\ManyToOne(targetEntity: Product::class)]
         #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
-        public ?ProductEntity $producto = null,
+        public ?Product $producto = null,
         #[ORM\Column(name: 'cantidad')]
         public ?float $cantidad = null,
         #[ORM\Column(name: 'precio_unitario')]

@@ -23,11 +23,13 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }
 
+    #[\Override]
     public function getOne(string $id): ?CreditNote
     {
         $entity = $this->entityManager->find(CreditNoteEntity::class, $id);
@@ -43,6 +45,7 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
      * @throws ServiceException
      * @throws Exception|ORMException
      */
+    #[\Override]
     public function insert(CreditNote $creditNote): CreditNote
     {
         $entity = DataMapper::map($creditNote, CreditNoteEntity::class);
@@ -64,6 +67,7 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
      * @throws ServiceException
      * @throws ORMException
      */
+    #[\Override]
     public function update(CreditNote $creditNote): CreditNote
     {
         $entity = $this->entityManager->find(CreditNoteEntity::class, $creditNote->nota_id);
@@ -73,14 +77,16 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
         }
 
         $entity = DataMapper::map($creditNote, $entity);
-        if ($creditNote->sale) {
+        if ($creditNote->sale instanceof \App\Sale\Domain\Sale) {
             $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale->movimiento_id);
         }
+
         $this->entityManager->flush();
 
         return DataMapper::map($entity, CreditNote::class);
     }
 
+    #[\Override]
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(CreditNoteEntity::class, $id);

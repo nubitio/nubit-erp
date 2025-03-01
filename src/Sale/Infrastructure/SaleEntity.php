@@ -3,13 +3,14 @@
 namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Customer\Infrastructure\CustomerEntity;
-use App\Operation\Infrastructure\OperationEntity;
-use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
-use App\PriceList\Infrastructure\PriceListEntity;
+use App\Entity\Customer;
+use App\Entity\LogisticOperation;
+use App\Entity\PaymentMethod;
+use App\Entity\PriceList;
+use App\Entity\Supplier;
+use App\Entity\Warehouse;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
-use App\Supplier\Infrastructure\SupplierEntity;
-use App\Warehouse\Infrastructure\WarehouseEntity;
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping\Column;
@@ -34,30 +35,30 @@ class SaleEntity
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[Column(name: 'movimiento_id', type: 'string')]
         public ?string $movimiento_id = null,
-        #[ManyToOne(targetEntity: OperationEntity::class)]
+        #[ManyToOne(targetEntity: LogisticOperation::class)]
         #[JoinColumn(name: 'operacion_id', referencedColumnName: 'operacion_id')]
-        public ?OperationEntity $operacion = null,
-        #[ManyToOne(targetEntity: WarehouseEntity::class)]
+        public ?LogisticOperation $operacion = null,
+        #[ManyToOne(targetEntity: Warehouse::class)]
         #[JoinColumn(name: 'almacen_id', referencedColumnName: 'almacen_id')]
-        public ?WarehouseEntity $almacen = null,
-        #[ManyToOne(targetEntity: CustomerEntity::class)]
+        public ?Warehouse $almacen = null,
+        #[ManyToOne(targetEntity: Customer::class)]
         #[JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
-        public ?CustomerEntity $cliente = null,
-        #[ManyToOne(targetEntity: PriceListEntity::class)]
+        public ?Customer $cliente = null,
+        #[ManyToOne(targetEntity: PriceList::class)]
         #[JoinColumn(name: 'price_list_id', referencedColumnName: 'id')]
-        public ?PriceListEntity $price_list = null,
+        public ?PriceList $price_list = null,
         #[Column(name: 'tipo_id', type: 'integer')]
         public ?int $tipo_id = null,
         #[Column(name: 'fecha', type: 'date')]
-        public ?\DateTimeInterface $fecha = null,
-        #[ManyToOne(targetEntity: SupplierEntity::class)]
+        public ?DateTimeInterface $fecha = null,
+        #[ManyToOne(targetEntity: Supplier::class)]
         #[JoinColumn(name: 'proveedor_id', referencedColumnName: 'proveedor_id')]
-        public ?SupplierEntity $proveedor = null,
+        public ?Supplier $proveedor = null,
         #[Column(name: 'forma_pago', type: 'integer')]
         public ?int $forma_pago = null,
-        #[ManyToOne(targetEntity: PaymentMethodEntity::class)]
+        #[ManyToOne(targetEntity: PaymentMethod::class)]
         #[JoinColumn(name: 'tipo_pago', referencedColumnName: 'id')]
-        public ?PaymentMethodEntity $tipo_pago = null,
+        public ?PaymentMethod $tipo_pago = null,
         #[Column(name: 'tipo_tarjeta', type: 'integer')]
         public ?int $tipo_tarjeta = null,
         #[Column(name: 'serie', type: 'string')]
@@ -79,9 +80,9 @@ class SaleEntity
         #[Column(name: 'estado', type: 'integer')]
         public ?int $estado = null,
         #[Column(name: 'date_created', type: 'datetime')]
-        public ?\DateTimeInterface $date_created = null,
+        public ?DateTimeInterface $date_created = null,
         #[Column(name: 'date_updated', type: 'datetime')]
-        public ?\DateTimeInterface $date_updated = null,
+        public ?DateTimeInterface $date_updated = null,
         #[Column(name: 'created_by', type: 'integer')]
         public ?int $created_by = null,
         #[Column(name: 'updated_by', type: 'integer')]
@@ -105,7 +106,7 @@ class SaleEntity
             'persist',
             'remove',
         ], orphanRemoval: true)]
-        public Collection|array $details = new ArrayCollection(),
+        public Collection | array $details = new ArrayCollection(),
     ) {
     }
 }

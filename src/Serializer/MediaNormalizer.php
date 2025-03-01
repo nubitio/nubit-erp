@@ -8,13 +8,13 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-final class MediaNormalizer implements NormalizerInterface
+final readonly class MediaNormalizer implements NormalizerInterface
 {
     private const string ALREADY_CALLED = 'MEDIA_NORMALIZER_ALREADY_CALLED';
 
     public function __construct(
         #[Autowire(service: 'serializer.normalizer.object')]
-        private readonly NormalizerInterface $normalizer,
+        private NormalizerInterface $normalizer,
     ) {
     }
 
@@ -25,6 +25,7 @@ final class MediaNormalizer implements NormalizerInterface
      *
      * @throws ExceptionInterface
      */
+    #[\Override]
     public function normalize(
         $data,
         ?string $format = null,
@@ -44,6 +45,7 @@ final class MediaNormalizer implements NormalizerInterface
     /**
      * @inheritdoc
      */
+    #[\Override]
     public function supportsNormalization(
         $data,
         ?string $format = null,
@@ -59,6 +61,7 @@ final class MediaNormalizer implements NormalizerInterface
     /**
      * @inheritdoc
      */
+    #[\Override]
     public function getSupportedTypes(?string $format): array
     {
         return [Media::class => true];

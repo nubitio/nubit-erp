@@ -79,10 +79,10 @@ readonly class SaleUtils
         $sale->tipo_id = 2;
         $sale->serie = $this->getSaleSeries(
             $docType->value,
-            $sale->almacen?->almacen_id ?: ''
+            $sale->almacen?->getId() ?: ''
         );
         $sale->numero = $this->getSaleNumber($sale->serie);
-        $sale->caja_id = $sale->caja_id ?? $this->getCashBoxId();
+        $sale->caja_id ??= $this->getCashBoxId();
         $sale->igv = intval($this->settings->get(Constants::TAX));
         $sale->recargo_consumo = intval(
             $this->settings->get(Constants::CONSUMPTION_TAX)

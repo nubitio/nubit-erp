@@ -4,14 +4,14 @@ import {StorageUtils} from "../core/utils/StorageUtils";
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export async function signIn(email: string, password: string) {
     const defaultUser = {
-        id: 1,
+        userId: 1,
         username: 'admin',
         email: 'demo@demo.com',
         name: 'Admin',
         role: 0,
         roles: ['admin'],
         branchId: 1,
-        branch: 'Main Branch',
+        branchName: 'Main Branch',
         warehouseId: 1,
         avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/01.png',
     }

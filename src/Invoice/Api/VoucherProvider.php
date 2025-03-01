@@ -17,8 +17,11 @@ readonly class VoucherProvider implements ApiProviderInterface
     ) {
     }
 
-    /** inheritdoc */
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         return $this->getOneUseCase->__invoke(strval($uriVariables['sale_id']));
     }

@@ -32,6 +32,7 @@ class UpdateStockCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
+    #[\Override]
     protected function configure(): void
     {
         parent::configure();
@@ -40,6 +41,7 @@ class UpdateStockCommand extends TenantAwareCommand
         );
     }
 
+    #[\Override]
     protected function executeTenantCommand(
         InputInterface $input,
         OutputInterface $output,
@@ -61,6 +63,7 @@ class UpdateStockCommand extends TenantAwareCommand
                 if ($stock === $currentStock) {
                     continue;
                 }
+
                 $this->logger->info(
                     'Updating stock for product ' . $product->getId(),
                     ['stock' => $stock]
@@ -81,6 +84,7 @@ class UpdateStockCommand extends TenantAwareCommand
                     . $product->getId()
                 );
             }
+
             ++$processed;
             $io->progressAdvance();
             if (($processed % $batchSize) === 0) {

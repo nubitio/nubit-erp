@@ -4,11 +4,8 @@ namespace App\Sale\Domain;
 
 class UpdateSaleUseCase
 {
-    private SaleRepositoryInterface $repository;
-
-    public function __construct(SaleRepositoryInterface $repository)
+    public function __construct(private readonly SaleRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     public function __invoke(Sale $sale): Sale

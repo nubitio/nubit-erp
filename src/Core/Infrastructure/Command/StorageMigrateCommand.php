@@ -24,11 +24,13 @@ class StorageMigrateCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Mueve los archivos de los comprobantes a la nueva ubicación');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -51,6 +53,7 @@ class StorageMigrateCommand extends Command
                 if (in_array($file, $ignore)) {
                     continue;
                 }
+
                 $progressBar->setMessage('Migrando archivo: ' . $file);
                 $data = file_get_contents($currentPath . '/' . $file);
 
@@ -65,13 +68,15 @@ class StorageMigrateCommand extends Command
                 } else {
                     throw new \Exception('Error al migrar el archivo: ' . $file);
                 }
+
                 $progressBar->advance();
             }
+
             $progressBar->finish();
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+        } catch (\Exception $exception) {
+            $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;
         }

@@ -41,18 +41,20 @@ class InvoiceFixerCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Corrección de comprobantes');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         try {
             $io->title('Corrección de comprobantes');
             $tenants = $this->tenantManager->getTenants();
-            $tenants = array_map(fn ($tenant) => $tenant['name'], $tenants);
+            $tenants = array_map(fn ($tenant): mixed => $tenant['name'], $tenants);
             /** @var string $sourceTenant */
             $sourceTenant = $io->choice('Tenant origen', $tenants);
             /** @var string $targetTenant */
@@ -62,14 +64,18 @@ class InvoiceFixerCommand extends Command
                 $invoiceSeries = $io->ask('Serie de comprobante');
                 $invoiceNumber = $io->ask('Número de comprobante');
                 /** @var array<string, string|int|float|null> $invoice */
-                $invoice = $this->connection->fetchAssociative('SELECT * FROM comprobante WHERE serie = :serie AND numero = :number', [
-                    'serie' => $invoiceSeries,
-                    'number' => $invoiceNumber,
-                ]);
+                $invoice = $this->connection->fetchAssociative(
+                    'SELECT * FROM comprobante WHERE serie = :serie AND numero = :number',
+                    [
+                        'serie' => $invoiceSeries,
+                        'number' => $invoiceNumber,
+                    ]
+                );
                 $cloneInvoice = $invoice;
                 if (!$invoice) {
                     throw new \Exception('Comprobante no encontrado');
                 }
+
                 $io->table(['fecha', 'cliente', 'serie', 'numero', 'estado sunat', 'mensaje sunat', 'total'], [
                     [
                         $invoice['fecha'],
@@ -104,9 +110,14 @@ class InvoiceFixerCommand extends Command
                         if ($updateCDR) {
                             $invoice['envio_sunat'] = $cdrResponse->getCode();
                             $invoice['mensaje_sunat'] = $cdrResponse->getMessage();
-                            $this->connection->update('comprobante', $invoice, ['comprobante_id' => $invoice['comprobante_id']]);
+                            $this->connection->update(
+                                'comprobante',
+                                $invoice,
+                                ['comprobante_id' => $invoice['comprobante_id']]
+                            );
                             $io->success('CDR actualizado');
                         }
+
                         $resend = $io->confirm('¿Desea reenviar el comprobante?');
                         if ($resend) {
                             $response = $this->invoiceSendUseCase->__invoke(strval($invoice['movimiento_id']));
@@ -132,9 +143,9 @@ class InvoiceFixerCommand extends Command
             $io->success('Proceso finalizado');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
-            $io->error('Trace: ' . $e->getTraceAsString());
+        } catch (\Exception $exception) {
+            $io->error('Error: ' . $exception->getMessage());
+            $io->error('Trace: ' . $exception->getTraceAsString());
 
             return Command::FAILURE;
         }
@@ -159,13 +170,17 @@ class InvoiceFixerCommand extends Command
         $cloneInvoice['comprobante_id'] = Uuid::v4();
         $cloneInvoice['movimiento_id'] = null;
         $cloneInvoice['raw_document_id'] = $this->connection->lastInsertId();
-        $existingInvoice = $this->connection->fetchAssociative('SELECT * FROM comprobante WHERE serie = :serie AND numero = :number', [
-            'serie' => $cloneInvoice['serie'],
-            'number' => $cloneInvoice['numero'],
-        ]);
+        $existingInvoice = $this->connection->fetchAssociative(
+            'SELECT * FROM comprobante WHERE serie = :serie AND numero = :number',
+            [
+                'serie' => $cloneInvoice['serie'],
+                'number' => $cloneInvoice['numero'],
+            ]
+        );
         if (!$existingInvoice) {
             $this->connection->insert('comprobante', $cloneInvoice);
         }
+
         /** @var string $creditNoteSeries */
         $creditNoteSeries = $io->ask('Serie de nota de crédito');
         $creditNoteUtils = new CreditNoteUtils($this->connection);

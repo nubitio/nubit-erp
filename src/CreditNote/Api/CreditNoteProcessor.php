@@ -22,8 +22,16 @@ readonly class CreditNoteProcessor implements ApiProcessorInterface
     ) {
     }
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?CreditNote
-    {
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = []
+    ): ?CreditNote {
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->nota_id) {
                 $this->deleteUseCase->__invoke($data->nota_id);

@@ -5,23 +5,14 @@ namespace App\Core\Domain\Invoice;
 use App\Core\Domain\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
-class InvoiceCalculator
+readonly class InvoiceCalculator
 {
-    private float $total;
-    private float $discountPercentage;
-    private float $taxPercentage;
-    private float $chargesPercentage;
-
     public function __construct(
-        float $total,
-        float $discountPercentage,
-        float $taxPercentage,
-        float $chargesPercentage,
+        private float $total,
+        private float $discountPercentage,
+        private float $taxPercentage,
+        private float $chargesPercentage
     ) {
-        $this->total = $total;
-        $this->discountPercentage = $discountPercentage;
-        $this->taxPercentage = $taxPercentage;
-        $this->chargesPercentage = $chargesPercentage;
     }
 
     public function calculate(): InvoiceAmounts

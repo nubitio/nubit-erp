@@ -20,5 +20,5 @@ use App\Invoice\Domain\Invoice;
 class InvoiceDto extends Invoice
 {
     #[ApiProperty(identifier: true)]
-    public ?string $comprobante_id;
+    public ?string $comprobante_id = null;
 }

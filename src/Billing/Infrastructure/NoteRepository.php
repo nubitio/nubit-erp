@@ -15,12 +15,8 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class NoteRepository implements NoteRepositoryInterface
 {
-    private SerializerService $serializer;
-
-    public function __construct(
-        SerializerService $serializer,
-    ) {
-        $this->serializer = $serializer;
+    public function __construct(private readonly SerializerService $serializer)
+    {
     }
 
     /**
@@ -29,6 +25,7 @@ class NoteRepository implements NoteRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function send(Note $note): DocumentResponse
     {
         $httpClient = HttpClient::create();
@@ -52,6 +49,7 @@ class NoteRepository implements NoteRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function pdf(Note $note): string
     {
         $httpClient = HttpClient::create();

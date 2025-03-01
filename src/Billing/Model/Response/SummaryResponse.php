@@ -7,7 +7,10 @@ use Greenter\Model\Response\SummaryResult;
 class SummaryResponse
 {
     public string $name;
+
     public string $xml;
+
     public string $hash;
+
     public SummaryResult $sunatResponse;
 }

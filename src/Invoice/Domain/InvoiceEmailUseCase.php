@@ -55,7 +55,11 @@ readonly class InvoiceEmailUseCase
 
         $payload = base64_encode(strval(json_encode($payload)));
 
-        $invoiceUrl = $this->urlGenerator->generate('receipt_show', ['payload' => $payload], UrlGeneratorInterface::ABSOLUTE_URL);
+        $invoiceUrl = $this->urlGenerator->generate(
+            'receipt_show',
+            ['payload' => $payload],
+            UrlGeneratorInterface::ABSOLUTE_URL
+        );
 
         $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
         $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;

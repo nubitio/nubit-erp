@@ -9,13 +9,11 @@ use Greenter\Model\Company\Company;
 
 class BillUtils implements BillUtilsInterface
 {
-    private SettingsService $settingsService;
-
-    public function __construct(SettingsService $settingsService)
+    public function __construct(private readonly SettingsService $settingsService)
     {
-        $this->settingsService = $settingsService;
     }
 
+    #[\Override]
     public function getCompany(): Company
     {
         $address = new Address();

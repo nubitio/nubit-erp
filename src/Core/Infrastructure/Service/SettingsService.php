@@ -15,7 +15,7 @@ readonly class SettingsService
     /**
      * @throws Exception
      */
-    public function get(string $key, ?string $default = null): bool|float|int|string|null
+    public function get(string $key, ?string $default = null): bool | float | int | string | null
     {
         /** @var bool|float|int|string|null $value */
         $value = $this->db->fetchOne('SELECT value FROM options WHERE name = ?', [$key]);
@@ -32,6 +32,9 @@ readonly class SettingsService
      */
     public function set(string $key, mixed $value): void
     {
-        $this->db->executeStatement('INSERT INTO options (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?', [$key, $value, $value]);
+        $this->db->executeStatement(
+            'INSERT INTO options (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?',
+            [$key, $value, $value]
+        );
     }
 }

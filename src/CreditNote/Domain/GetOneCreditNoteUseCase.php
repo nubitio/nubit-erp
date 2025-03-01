@@ -6,11 +6,8 @@ use App\Core\Domain\Exception\ServiceException;
 
 class GetOneCreditNoteUseCase
 {
-    private CreditNoteRepositoryInterface $repository;
-
-    public function __construct(CreditNoteRepositoryInterface $repository)
+    public function __construct(private readonly CreditNoteRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     /**
@@ -20,7 +17,7 @@ class GetOneCreditNoteUseCase
     {
         $creditNote = $this->repository->getOne($id);
 
-        if (!$creditNote) {
+        if (!$creditNote instanceof \App\CreditNote\Domain\CreditNote) {
             throw new ServiceException('No se encontró la nota de crédito.');
         }
 

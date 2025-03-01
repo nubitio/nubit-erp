@@ -18,8 +18,9 @@ use Symfony\Contracts\Cache\ItemInterface;
 
 readonly class ValidateInvoiceUseCase
 {
-    private const GRANT_TYPE = 'client_credentials';
-    private const SCOPE = 'https://api.sunat.gob.pe/v1/contribuyente/contribuyentes';
+    private const string GRANT_TYPE = 'client_credentials';
+
+    private const string SCOPE = 'https://api.sunat.gob.pe/v1/contribuyente/contribuyentes';
 
     public function __construct(
         private CacheInterface $cache,
@@ -52,12 +53,10 @@ readonly class ValidateInvoiceUseCase
 
         $response = $apiInstance->consultarCpe(strval($customerId), $cpeFilter);
 
-        if ($response->getSuccess()) {
-            if ('0' === $response->getData()?->getEstadoCp()) {
-                $invoice->envio_sunat = '';
-                $invoice->mensaje_sunat = '';
-                $this->updateInvoiceUseCase->__invoke($invoice);
-            }
+        if ($response->getSuccess() && '0' === $response->getData()?->getEstadoCp()) {
+            $invoice->envio_sunat = '';
+            $invoice->mensaje_sunat = '';
+            $this->updateInvoiceUseCase->__invoke($invoice);
         }
 
         return $response;

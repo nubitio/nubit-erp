@@ -4,7 +4,7 @@ namespace App\SaleDetail\Domain;
 
 use App\Core\Domain\Annotation\Ignore;
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Product\Domain\Product;
+use App\Entity\Product;
 use App\Sale\Domain\Sale;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 

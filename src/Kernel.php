@@ -11,12 +11,14 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    #[\Override]
     protected function build(ContainerBuilder $container): void
     {
         parent::build($container);
         $container->addCompilerPass(new RemoveUnwantedServices());
     }
 
+    #[\Override]
     public function boot(): void
     {
         date_default_timezone_set('America/Lima');

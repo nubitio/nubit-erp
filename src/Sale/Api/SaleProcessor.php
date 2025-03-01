@@ -32,8 +32,10 @@ readonly class SaleProcessor implements ApiProcessorInterface
     }
 
     /**
+     * @inheritdoc
      * @throws \Exception
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,

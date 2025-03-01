@@ -25,11 +25,13 @@ class CheckInvoiceCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Verifica comprobantes');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -38,16 +40,22 @@ class CheckInvoiceCommand extends Command
             $dirList = $dirList->toArray();
 
             /** @var array<int, array<string, string>> $dirList */
-            $dirs = array_filter($dirList, fn ($item) => 'dir' === $item['type'] && 'images' !== $item['path']);
+            $dirs = array_filter($dirList, fn ($item): bool => 'dir' === $item['type'] && 'images' !== $item['path']);
             /** @var array<string, string> $dir */
             foreach ($dirs as $dir) {
                 $filesList = $this->fileManager->listContents($dir['path']);
                 $filesList = $filesList->toArray();
                 /** @var array<int, array<string, string>> $filesList */
-                $files = array_filter($filesList, fn ($item) => 'file' === $item['type'] && str_contains($item['path'], '.xml'));
-                $files = array_filter($files, fn ($item) => !str_contains(explode('/', $item['path'])[1], $dir['path']));
-                $filesArray = array_map(function ($item) {
-                    $path = explode('/', $item['path'])[1];
+                $files = array_filter(
+                    $filesList,
+                    fn ($item): bool => 'file' === $item['type'] && str_contains((string)$item['path'], '.xml')
+                );
+                $files = array_filter(
+                    $files,
+                    fn ($item): bool => !str_contains(explode('/', (string)$item['path'])[1], $dir['path'])
+                );
+                $filesArray = array_map(function (array $item): array {
+                    $path = explode('/', (string)$item['path'])[1];
                     $parts = explode('-', $path);
 
                     return [
@@ -61,7 +69,7 @@ class CheckInvoiceCommand extends Command
                 }, $files);
                 $io->title('Tenant: ' . $dir['path']);
                 $io->table(['path', 'tenant', 'type', 'serie', 'number', 'last_modified'], $filesArray);
-                if (count($filesArray) > 0) {
+                if ($filesArray !== []) {
                     $this->xlsExporter->save($filesArray, strval($dir['path']));
                 }
             }
