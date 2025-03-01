@@ -17,10 +17,13 @@ readonly class RoleMenuProcessor implements ProcessorInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param RoleMenuResource $data
      *
      * @throws Exception
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -54,7 +57,7 @@ readonly class RoleMenuProcessor implements ProcessorInterface
                 success: true,
                 message: 'Permisos asignados correctamente'
             );
-        } catch (Exception $e) {
+        } catch (Exception) {
             $this->connection->rollBack();
 
             return new ApiResponse(

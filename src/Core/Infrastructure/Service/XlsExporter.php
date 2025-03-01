@@ -14,11 +14,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class XlsExporter
 {
-    private SettingsService $settingsService;
-
-    public function __construct(SettingsService $settingsService)
+    public function __construct(private readonly SettingsService $settingsService)
     {
-        $this->settingsService = $settingsService;
     }
 
     /**
@@ -32,7 +29,7 @@ class XlsExporter
         $spreadsheet = $this->makeSpreadsheet($data);
 
         $writer = new Xlsx($spreadsheet);
-        $response = new StreamedResponse(function () use ($writer) {
+        $response = new StreamedResponse(function () use ($writer): void {
             $writer->save('php://output');
         });
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -69,6 +66,7 @@ class XlsExporter
         $accentColor = dechex((int) $arr[0]) . dechex((int) $arr[1]) . dechex((int) $arr[2]);
         $lightenAccentColor = ColorUtils::lightenColor($accentColor, 60);
         $lightenAccentColor = str_replace('#', '', $lightenAccentColor);
+
         $contrastColor = ColorUtils::contrastColor($accentColor);
         $contrastColor = str_replace('#', '', $contrastColor);
 
@@ -78,6 +76,7 @@ class XlsExporter
             foreach ($properties as $property) {
                 $headers[$property] = ucfirst($property);
             }
+
             array_unshift($data, $headers);
         }
 
@@ -129,13 +128,13 @@ class XlsExporter
             ->setTitle('Efact export');
 
         $spreadsheet->setActiveSheetIndex(0);
-        if (count($data) > 0) {
+        if ($data !== []) {
             $spreadsheet->getActiveSheet()->fromArray($data);
         } else {
             $spreadsheet->getActiveSheet()->setCellValue('A1', 'No data');
         }
 
-        $lastColumn = 0 === count($headers) ? 'A' : $columnLetters[count($headers) - 1];
+        $lastColumn = [] === $headers ? 'A' : $columnLetters[count($headers) - 1];
         foreach (range('A', $lastColumn) as $columnID) {
             $spreadsheet->getActiveSheet()->getColumnDimension($columnID)
                 ->setAutoSize(true);

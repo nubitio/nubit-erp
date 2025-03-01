@@ -23,5 +23,5 @@ use App\Invoice\Domain\Voucher;
 class VoucherDto extends Voucher
 {
     #[ApiProperty(identifier: true)]
-    public ?string $sale_id;
+    public ?string $sale_id = null;
 }

@@ -31,6 +31,7 @@ readonly class DataLoader implements DataLoaderInterface
     /**
      * @throws \Exception
      */
+    #[\Override]
     public function loadCollection(LoadOptions $options): PaginatorInterface
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
@@ -70,6 +71,7 @@ readonly class DataLoader implements DataLoaderInterface
     /**
      * @throws NonUniqueResultException
      */
+    #[\Override]
     public function loadOne(LoadOptions $options): ?object
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
@@ -106,6 +108,7 @@ readonly class DataLoader implements DataLoaderInterface
                     DataMapper::map($mappedItem->$key, $mappedItem, ['id']);
                 }
             }
+
             $this->mapParent($parent, $mappedItem);
         }
     }
@@ -126,6 +129,7 @@ readonly class DataLoader implements DataLoaderInterface
                             break;
                         }
                     }
+
                     foreach ($options->filters as $filter) {
                         $parentObj = new $parent();
                         if (ReflectionUtil::hasProperty($parentObj, $filter->field)) {
@@ -134,6 +138,7 @@ readonly class DataLoader implements DataLoaderInterface
                     }
                 }
             }
+
             $this->fillFilterAlias($parent, $options);
         }
     }
@@ -150,6 +155,7 @@ readonly class DataLoader implements DataLoaderInterface
             } else {
                 $queryBuilder->leftJoin($join->entity, $join->alias);
             }
+
             $aliases[] = $join->alias;
         }
 
@@ -175,7 +181,7 @@ readonly class DataLoader implements DataLoaderInterface
             if (str_contains($sortItem->field, '.')) {
                 $queryBuilder->addOrderBy($sortItem->field, $sortItem->order);
             } else {
-                $queryBuilder->addOrderBy("e.$sortItem->field", $sortItem->order);
+                $queryBuilder->addOrderBy('e.' . $sortItem->field, $sortItem->order);
             }
         }
     }

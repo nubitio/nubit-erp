@@ -22,6 +22,7 @@ final readonly class UserPasswordHasher implements ProcessorInterface
     /**
      * @param User $data
      */
+    #[\Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (!$data->getPlainPassword()) {

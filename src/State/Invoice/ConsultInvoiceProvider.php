@@ -18,6 +18,7 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
+    #[\Override]
     public function provide(
         Operation $operation,
         array $uriVariables = [],
@@ -33,14 +34,13 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
                         true,
                         $result->getCdrResponse()?->getDescription() ?: ''
                     );
-            } else {
-                return
-                    new ApiResponse(
-                        false,
-                        $result->getError()?->getMessage() ?: '',
-                        $result
-                    );
             }
+            return
+                new ApiResponse(
+                    false,
+                    $result->getError()?->getMessage() ?: '',
+                    $result
+                );
         } catch (\Exception | FilesystemException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }

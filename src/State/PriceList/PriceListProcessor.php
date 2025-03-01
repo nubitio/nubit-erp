@@ -17,10 +17,13 @@ readonly class PriceListProcessor implements ProcessorInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param PricesDto $data
      *
      * @throws Exception
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -29,11 +32,15 @@ readonly class PriceListProcessor implements ProcessorInterface
     ): ApiResponse {
         $priceListId = $data->priceListId;
 
+        $sql = <<<SQL
+INSERT INTO price_list_detail (product_id, price_list_id, price)
+VALUES (:productId, :priceListId, :price)
+ON DUPLICATE KEY UPDATE price = :price
+SQL;
+
         $this->connection->beginTransaction();
         try {
-            $insertStmt = $this->connection->prepare(
-                'INSERT INTO price_list_detail (product_id, price_list_id, price) VALUES (:productId, :priceListId, :price) ON DUPLICATE KEY UPDATE price = :price'
-            );
+            $insertStmt = $this->connection->prepare($sql);
 
             foreach ($data->prices as $price) {
                 $insertStmt->executeStatement([
@@ -49,7 +56,7 @@ readonly class PriceListProcessor implements ProcessorInterface
                 success: true,
                 message: 'Precios actualizados correctamente'
             );
-        } catch (Exception $e) {
+        } catch (Exception) {
             $this->connection->rollBack();
 
             return new ApiResponse(

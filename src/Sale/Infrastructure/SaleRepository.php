@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Sale\Infrastructure;
 
 use App\Core\Domain\DataLoader\FilterOperation;
@@ -10,16 +12,16 @@ use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Customer\Infrastructure\CustomerEntity;
-use App\Operation\Infrastructure\OperationEntity;
-use App\PaymentMethod\Infrastructure\PaymentMethodEntity;
-use App\PriceList\Infrastructure\PriceListEntity;
-use App\Product\Infrastructure\ProductEntity;
+use App\Entity\Customer;
+use App\Entity\LogisticOperation;
+use App\Entity\PaymentMethod;
+use App\Entity\PriceList;
+use App\Entity\Product;
+use App\Entity\Supplier;
+use App\Entity\Warehouse;
 use App\Sale\Domain\Sale;
 use App\Sale\Domain\SaleRepositoryInterface;
 use App\SaleDetail\Infrastructure\SaleDetailEntity;
-use App\Supplier\Infrastructure\SupplierEntity;
-use App\Warehouse\Infrastructure\WarehouseEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 
@@ -32,6 +34,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
@@ -41,6 +44,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
      * @throws NonUniqueResultException
      * @throws ServiceException
      */
+    #[\Override]
     public function getOne(string $id): Sale
     {
         $entity = $this->entityManager->find(SaleEntity::class, $id);
@@ -77,69 +81,78 @@ readonly class SaleRepository implements SaleRepositoryInterface
         return $sale;
     }
 
+    #[\Override]
     public function insert(Sale $sale): Sale
     {
-        if ($sale->tipo_pago) {
+        if ($sale->tipo_pago instanceof \App\Entity\PaymentMethod) {
             $sale = $this->saleUtils->fillSaleValues($sale);
         }
+
         $entity = DataMapper::map($sale, SaleEntity::class);
         $warehouse = $this->entityManager->getReference(
-            WarehouseEntity::class,
-            $sale->almacen?->almacen_id
+            Warehouse::class,
+            $sale->almacen?->getId()
         );
         $entity->almacen = $warehouse;
-        if ($sale->operacion) {
+        if ($sale->operacion instanceof \App\Entity\LogisticOperation) {
             $operation = $this->entityManager->getReference(
-                OperationEntity::class,
-                $sale->operacion->operacion_id
+                LogisticOperation::class,
+                $sale->operacion->getId()
             );
             $entity->operacion = $operation;
         }
-        if ($sale->proveedor) {
+
+        if ($sale->proveedor instanceof \App\Entity\Supplier) {
             $supplier = $this->entityManager->getReference(
-                SupplierEntity::class,
-                $sale->proveedor->proveedor_id
+                Supplier::class,
+                $sale->proveedor->getId()
             );
             $entity->proveedor = $supplier;
         }
-        if ($sale->cliente) {
+
+        if ($sale->cliente instanceof \App\Entity\Customer) {
             $customer = $this->entityManager->getReference(
-                CustomerEntity::class,
-                $sale->cliente->ruc
+                Customer::class,
+                $sale->cliente->getRuc()
             );
             $entity->cliente = $customer;
         }
-        if ($sale->price_list) {
+
+        if ($sale->price_list instanceof \App\Entity\PriceList) {
             $priceList = $this->entityManager->getReference(
-                PriceListEntity::class,
-                $sale->price_list->id
+                PriceList::class,
+                $sale->price_list->getId()
             );
             $entity->price_list = $priceList;
         }
-        if ($sale->tipo_pago) {
+
+        if ($sale->tipo_pago instanceof \App\Entity\PaymentMethod) {
             $paymentMethod = $this->entityManager->getReference(
-                PaymentMethodEntity::class,
-                $sale->tipo_pago->id
+                PaymentMethod::class,
+                $sale->tipo_pago->getId()
             );
             $entity->tipo_pago = $paymentMethod;
         }
+
         $subtotal = 0;
         /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
             $product = $this->entityManager->getRepository(
-                ProductEntity::class
-            )->find($detail->producto->producto_id);
+                Product::class
+            )->find($detail->producto->getId());
             $detail->producto = $product;
             $subtotal += $detail->precio_total;
-            $currentStock = $product->stock;
+            $currentStock = $product->getStock();
             if (1 === $sale->tipo_id) {
-                $product->stock = $currentStock + $detail->cantidad;
+                $product->setStock($currentStock + $detail->cantidad);
             } else {
-                $product->stock = $currentStock - $detail->cantidad;
+                $product->setStock($currentStock - $detail->cantidad);
             }
+
             $this->entityManager->persist($product);
         }
+
         $entity->subtotal = $subtotal;
         $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->persist($entity);
@@ -148,11 +161,12 @@ readonly class SaleRepository implements SaleRepositoryInterface
         return DataMapper::map($entity, Sale::class);
     }
 
+    #[\Override]
     public function update(Sale $sale): Sale
     {
         /** @var SaleEntity $entity */
         $entity = $this->entityManager->find(
-            SaleEntity::class,
+            Sale::class,
             $sale->movimiento_id
         );
         $details = $entity->details;
@@ -160,56 +174,63 @@ readonly class SaleRepository implements SaleRepositoryInterface
         if ($entity->numero > 0) {
             $entity->details = $details;
         }
+
         $warehouse = $this->entityManager->getReference(
-            WarehouseEntity::class,
-            $sale->almacen?->almacen_id
+            Warehouse::class,
+            $sale->almacen?->getId()
         );
         $entity->almacen = $warehouse;
-        if ($sale->operacion) {
+        if ($sale->operacion instanceof \App\Entity\LogisticOperation) {
             $operation = $this->entityManager->getReference(
-                OperationEntity::class,
-                $sale->operacion->operacion_id
+                LogisticOperation::class,
+                $sale->operacion->getId()
             );
             $entity->operacion = $operation;
         }
-        if ($sale->proveedor) {
+
+        if ($sale->proveedor instanceof \App\Entity\Supplier) {
             $supplier = $this->entityManager->getReference(
-                SupplierEntity::class,
-                $sale->proveedor->proveedor_id
+                Supplier::class,
+                $sale->proveedor->getId()
             );
             $entity->proveedor = $supplier;
         }
-        if ($sale->cliente) {
+
+        if ($sale->cliente instanceof \App\Entity\Customer) {
             $customer = $this->entityManager->getReference(
-                CustomerEntity::class,
-                $sale->cliente->ruc
+                Customer::class,
+                $sale->cliente->getRuc()
             );
             $entity->cliente = $customer;
         }
-        if ($sale->price_list) {
+
+        if ($sale->price_list instanceof \App\Entity\PriceList) {
             $priceList = $this->entityManager->getReference(
-                PriceListEntity::class,
-                $sale->price_list->id
+                PriceList::class,
+                $sale->price_list->getId()
             );
             $entity->price_list = $priceList;
         }
-        if ($sale->tipo_pago) {
+
+        if ($sale->tipo_pago instanceof \App\Entity\PaymentMethod) {
             $paymentMethod = $this->entityManager->getReference(
-                PaymentMethodEntity::class,
-                $sale->tipo_pago->id
+                PaymentMethod::class,
+                $sale->tipo_pago->getId()
             );
             $entity->tipo_pago = $paymentMethod;
         }
+
         $subtotal = 0;
         /** @var SaleDetailEntity $detail */
         foreach ($entity->details as $detail) {
             $detail->movimiento = $entity;
             $detail->producto = $this->entityManager->getReference(
-                ProductEntity::class,
-                $detail->producto?->producto_id
+                Product::class,
+                $detail->producto?->getId()
             );
             $subtotal += $detail->precio_total;
         }
+
         $entity->subtotal = $subtotal;
         $entity->total = $subtotal - ($subtotal * $entity->descuento / 100);
         $this->entityManager->flush();
@@ -217,6 +238,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         return DataMapper::map($entity, Sale::class);
     }
 
+    #[\Override]
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(SaleEntity::class, $id);
@@ -229,6 +251,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $this->entityManager->flush();
     }
 
+    #[\Override]
     public function void(Sale $sale): void
     {
         $entity = $this->entityManager->find(
@@ -247,6 +270,7 @@ readonly class SaleRepository implements SaleRepositoryInterface
         $this->entityManager->flush();
     }
 
+    #[\Override]
     public function getSaleByCustomerId(string $id): PaginatorInterface
     {
         return $this->dataLoader->loadCollection(

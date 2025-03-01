@@ -40,22 +40,21 @@ class ApiController extends BaseController
 
         if (!$user) {
             return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
-        } else {
-            if (1 == $user['estado'] && password_verify(strval($this->body['password']), strval($user['password']))) {
-                $data = [
-                    'iat' => time(),
-                    'exp' => time() + (60 * 60),
-                    'sub' => $user['usuario_id'],
-                    'name' => $user['username'],
-                    'role' => $user['rol_id'],
-                ];
-                $token = JWT::encode($data, $key, 'HS256');
-
-                return $this->json(['token' => $token]);
-            } else {
-                return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
-            }
         }
+        if (1 == $user['estado'] && password_verify(strval($this->body['password']), strval($user['password']))) {
+            $data = [
+                'iat' => time(),
+                'exp' => time() + (60 * 60),
+                'sub' => $user['usuario_id'],
+                'name' => $user['username'],
+                'role' => $user['rol_id'],
+            ];
+            $token = JWT::encode($data, $key, 'HS256');
+
+            return $this->json(['token' => $token]);
+        }
+
+        return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
     }
 
     #[Route('/api/config', name: 'api_getConfig', methods: ['GET'])]
@@ -83,9 +82,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->getOneCategory($id);
         if ($result) {
             return $this->json($result);
-        } else {
-            return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
         }
+
+        return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/api/categories', name: 'api_createCategory', methods: ['POST'])]
@@ -94,9 +93,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->createCategory($this->body);
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_CREATED);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/categories/{id}', name: 'api_updateCategory', methods: ['PUT'])]
@@ -105,9 +104,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->updateCategory($id, $this->body);
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/categories/{id}', name: 'api_deleteCategory', methods: ['DELETE'])]
@@ -116,9 +115,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->deleteCategory($id);
         if ($result['success']) {
             return $this->json([], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/image/category/{id}', name: 'api_uploadImageCategory', methods: ['PUT'])]
@@ -140,9 +139,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->getOneCustomer($id);
         if ($result) {
             return $this->json($result);
-        } else {
-            return $this->json(['error' => 'Customer not found'], Response::HTTP_NOT_FOUND);
         }
+
+        return $this->json(['error' => 'Customer not found'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/api/customers', name: 'api_createCustomer', methods: ['POST'])]
@@ -151,9 +150,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->createCustomer($this->body);
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_CREATED);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/customers/{id} ', name: 'api-updateCustomer', methods: ['PUT'])]
@@ -162,9 +161,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->updateCustomer($id, $this->body);
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/customers/{id}', name: 'api_deleteCustomer', methods: ['DELETE'])]
@@ -173,9 +172,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->deleteCustomer($id);
         if ($result['success']) {
             return $this->json([], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/customers/{id}/image/upload', name: 'api_uploadImageCustomer', methods: ['POST'])]
@@ -197,33 +196,33 @@ class ApiController extends BaseController
         $result = $this->apiRepository->getOneProduct($id);
         if ($result) {
             return $this->json($result);
-        } else {
-            return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
         }
+
+        return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/api/products/{local_id}', name: 'api_createProduct', methods: ['POST'])]
-    public function createProduct(string $local_id): Response
+    public function createProduct(): Response
     {
-        $result = $this->apiRepository->createProduct($local_id, $this->body);
+        $result = $this->apiRepository->createProduct($this->body);
 
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_CREATED);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/products/{id}/{local_id}', name: 'api_updateProduct', methods: ['PUT'])]
-    public function updateProduct(string $id, string $local_id): Response
+    public function updateProduct(string $id): Response
     {
-        $result = $this->apiRepository->updateProduct($local_id, $id, $this->body);
+        $result = $this->apiRepository->updateProduct($id, $this->body);
 
         if ($result['success']) {
             return $this->json($result['data'], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/products/{id}', name: 'api_deleteProduct', methods: ['DELETE'])]
@@ -232,9 +231,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->deleteProduct($id);
         if ($result['success']) {
             return $this->json([], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/products/{id}/image/upload', name: 'api_uploadImageProduct', methods: ['POST'])]
@@ -256,9 +255,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->getOneSale($id);
         if ($result) {
             return $this->json($result);
-        } else {
-            return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
         }
+
+        return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/api/sales', name: 'api_createSale', methods: ['POST'])]
@@ -275,9 +274,9 @@ class ApiController extends BaseController
             }
 
             return $this->json($result['data'], Response::HTTP_CREATED);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/sales/{id}', name: 'api_updateSale', methods: ['PUT'])]
@@ -290,9 +289,9 @@ class ApiController extends BaseController
             }
 
             return $this->json($result['data'], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/sales/{id}', name: 'api_deleteSale', methods: ['DELETE'])]
@@ -301,9 +300,9 @@ class ApiController extends BaseController
         $result = $this->apiRepository->deleteSale($id);
         if ($result['success']) {
             return $this->json([], Response::HTTP_OK);
-        } else {
-            return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+
+        return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     #[Route('/api/dashboard/sales/{date}', name: 'api_getSalesByDate', methods: ['GET'])]
@@ -345,7 +344,7 @@ class ApiController extends BaseController
         $data = $this->apiRepository->getImageCustomer($id);
         $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
-        return new StreamedResponse(function () use ($imageUrl) {
+        return new StreamedResponse(function () use ($imageUrl): void {
             readfile($imageUrl);
         });
     }
@@ -356,7 +355,7 @@ class ApiController extends BaseController
         $data = $this->apiRepository->getImageProduct($id);
         $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
-        return new StreamedResponse(function () use ($imageUrl) {
+        return new StreamedResponse(function () use ($imageUrl): void {
             readfile($imageUrl);
         });
     }
@@ -367,7 +366,7 @@ class ApiController extends BaseController
         $data = $this->apiRepository->getImageCategory($id);
         $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
 
-        return new StreamedResponse(function () use ($imageUrl) {
+        return new StreamedResponse(function () use ($imageUrl): void {
             readfile($imageUrl);
         });
     }

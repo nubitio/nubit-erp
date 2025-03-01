@@ -14,6 +14,10 @@ readonly class MakeInvoiceProcessor implements ProcessorInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,

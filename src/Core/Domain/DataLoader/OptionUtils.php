@@ -15,7 +15,7 @@ class OptionUtils
         $sortRules = $context['filters']['sort'] ?? [];
 
         foreach ($sortRules as $sortRule) {
-            $sortRule = is_array($sortRule) ? $sortRule : json_decode($sortRule, true);
+            $sortRule = is_array($sortRule) ? $sortRule : json_decode((string) $sortRule, true);
             if ($sortRule['selector'] === $sort->field) {
                 $sortRule['desc'] = 'desc' === $sort->order;
                 $sortRules = [$sortRule, ...$sortRules];
@@ -44,7 +44,7 @@ class OptionUtils
      */
     public static function addFilter(array $context, FilterRule $filter): array
     {
-        $context['filters']['filterRules'] = $context['filters']['filterRules'] ?? '[]';
+        $context['filters']['filterRules'] ??= '[]';
         /** @var array<int, array<string, mixed>> $filterRules */
         $filterRules = json_decode(strval($context['filters']['filterRules']), true);
         $filterRules[] = [
@@ -64,7 +64,7 @@ class OptionUtils
      */
     public static function addJoin(array $context, JoinRule $join): array
     {
-        $context['filters']['joinRules'] = $context['filters']['joinRules'] ?? '[]';
+        $context['filters']['joinRules'] ??= '[]';
         /** @var array<int, array<string, mixed>> $joinRules */
         $joinRules = json_decode(strval($context['filters']['joinRules']), true);
         $joinRules[] = [

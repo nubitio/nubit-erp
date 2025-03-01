@@ -18,6 +18,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -36,12 +37,11 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
                         $result->sunatResponse->getCdrResponse()
                             ?->getDescription() ?: ''
                     );
-            } else {
-                return new ApiResponse(
-                    false,
-                    $result->sunatResponse->getError()?->getMessage() ?: ''
-                );
             }
+            return new ApiResponse(
+                false,
+                $result->sunatResponse->getError()?->getMessage() ?: ''
+            );
         } catch (\Exception | FilesystemException $e) {
             return new ApiResponse(
                 success: false,

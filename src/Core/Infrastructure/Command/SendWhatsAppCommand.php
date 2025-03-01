@@ -14,11 +14,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class SendWhatsAppCommand extends Command
 {
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Send a whatsapp to a user');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -28,8 +30,8 @@ class SendWhatsAppCommand extends Command
             $io->success('Success');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+        } catch (\Exception $exception) {
+            $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;
         }

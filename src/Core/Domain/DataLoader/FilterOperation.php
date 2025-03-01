@@ -36,7 +36,7 @@ enum FilterOperation: string
             'isnull' => self::IsNull,
             'isnotnull' => self::IsNotNull,
             'and' => self::And,
-            default => throw new \InvalidArgumentException("Invalid filter operation: $value"),
+            default => throw new \InvalidArgumentException('Invalid filter operation: ' . $value),
         };
     }
 }

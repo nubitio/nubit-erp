@@ -7,11 +7,8 @@ use Doctrine\DBAL\Exception;
 
 class DataGridLoader
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     /**
@@ -27,7 +24,7 @@ class DataGridLoader
         $rows = isset($_POST['rows']) ? intval($_POST['rows']) : 10;
         $sort = isset($_POST['sort']) ? strval($_POST['sort']) : $sort;
         $order = isset($_POST['order']) ? strval($_POST['order']) : $order;
-        $filterRules = isset($_POST['filterRules']) ? ($_POST['filterRules']) : '';
+        $filterRules = $_POST['filterRules'] ?? '';
         $offset = ($page - 1) * $rows;
         $result = [];
         $where = '1=1';
@@ -36,15 +33,17 @@ class DataGridLoader
         $sort_items = [];
         foreach ($sorts as $index => $column) {
             $type = $orders[$index];
-            $sort_items[] = "$column $type";
+            $sort_items[] = sprintf('%s %s', $column, $type);
         }
-        $order_str = join(',', $sort_items);
+
+        $order_str = implode(',', $sort_items);
         if (!empty($filterRules) || null != $filter) {
             /** @var array<int, array<string, mixed>> $filterRules */
             $filterRules = json_decode(strval($filterRules), true) ?? [];
             $where = $this->buildFilterQuery([...$filterRules, ...$filter ?? []]);
         }
-        $row = $this->connection->fetchNumeric("SELECT count(*) FROM $table WHERE $where");
+
+        $row = $this->connection->fetchNumeric(sprintf('SELECT count(*) FROM %s WHERE %s', $table, $where));
 
         if (!$row) {
             throw new Exception('Error while fetching data');
@@ -55,10 +54,10 @@ class DataGridLoader
           SELECT
             *
           FROM
-            $table
-          WHERE $where
-          ORDER BY $order_str
-          LIMIT $offset,$rows
+            {$table}
+          WHERE {$where}
+          ORDER BY {$order_str}
+          LIMIT {$offset},{$rows}
         ");
         $result['rows'] = $items;
 
@@ -83,6 +82,7 @@ class DataGridLoader
                 } elseif ($tmpDataField != $filterDataField) {
                     $where .= ' AND ';
                 }
+
                 switch ($filterArray[$i]['op']) {
                     case 'contains':
                         $where .= $filterDataField . " LIKE '%" . $filterValue . "%'";
@@ -124,6 +124,7 @@ class DataGridLoader
                         $where .= $filterDataField . ' IS NOT NULL';
                         break;
                 }
+
                 $tmpDataField = $filterDataField;
             }
         }

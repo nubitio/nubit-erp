@@ -20,24 +20,21 @@ class ReflectionUtil
         $propertyInfoExtractor = new PropertyInfoExtractor([], [$phpDocExtractor, $reflectionExtractor]);
 
         /** @var Type[] $types */
-        $types = $propertyInfoExtractor->getTypes(get_class($object), $property);
+        $types = $propertyInfoExtractor->getTypes($object::class, $property);
 
         if (count($types) > 0) {
             if ($types[0]->isCollection()) {
                 $className = $types[0]->getCollectionValueTypes()[0]->getClassName();
                 if (null !== $className && class_exists($className)) {
                     return $className;
-                } else {
-                    return null;
                 }
-            } else {
-                $className = $types[0]->getClassName();
-                if (null !== $className && class_exists($className)) {
-                    return $className;
-                } else {
-                    return null;
-                }
+                return null;
             }
+            $className = $types[0]->getClassName();
+            if (null !== $className && class_exists($className)) {
+                return $className;
+            }
+            return null;
         }
 
         return null;

@@ -13,10 +13,11 @@ class SettingsExtension extends AbstractExtension
     ) {
     }
 
+    #[\Override]
     public function getFunctions(): array
     {
         return [
-            new TwigFunction('setting', [$this, 'getSetting']),
+            new TwigFunction('setting', $this->getSetting(...)),
         ];
     }
 

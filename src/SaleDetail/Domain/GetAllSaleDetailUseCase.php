@@ -7,11 +7,8 @@ use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 class GetAllSaleDetailUseCase
 {
-    private SaleDetailRepositoryInterface $repository;
-
-    public function __construct(SaleDetailRepositoryInterface $repository)
+    public function __construct(private readonly SaleDetailRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     /**

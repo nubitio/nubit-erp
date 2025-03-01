@@ -24,6 +24,7 @@ class Util
                 return $column;
             }
         }
+
         throw new \Exception('No primary key found');
     }
 
@@ -56,7 +57,8 @@ class Util
         $field = '';
         foreach ($columns as $column) {
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
-                $field = '    public ?' . self::getType($column->getType()->getName()) . ' $' . $column->getName() . ";\n";
+                $field = '    public ?' . self::getType($column->getType()->getName()) . ' $' . $column->getName(
+                ) . ";\n";
                 break;
             }
         }
@@ -99,6 +101,7 @@ class Util
             if (in_array($column->getName(), Util::getIgnoredColumns())) {
                 continue;
             }
+
             $field = '    ' . $varName . ".push(new FieldBuilder()\n";
             $formType = match ($column->getType()->getName()) {
                 'integer' => 'FieldType.NUMBER',
@@ -109,17 +112,20 @@ class Util
             if (in_array($column, $foreignKeys)) {
                 $formType = 'FieldType.SELECT';
             }
+
             if (!empty($primaryKey?->getColumns()) && $column->getName() == $primaryKey->getColumns()[0]) {
                 $formType = 'FieldType.NONE';
                 $field .= "        .isIdentity(true)\n";
                 $field .= "        .visible(false)\n";
             }
+
             $field .= '        .type(' . $formType . ")\n";
             $field .= "        .name('" . $column->getName() . "')\n";
             $field .= "        .label('" . ucfirst(str_replace('_', ' ', $column->getName())) . "')\n";
             if ($column->getNotnull()) {
                 $field .= "        .required(true)\n";
             }
+
             $field .= "        .build());\n";
             $fields .= $field;
         }

@@ -78,7 +78,7 @@ class ReceiptController extends BaseController
     ): StreamedResponse {
         $fileResponse = $receiptXmlUseCase($this->getReceiptRequest($payload));
 
-        $response = new StreamedResponse(function () use ($fileResponse) {
+        $response = new StreamedResponse(function () use ($fileResponse): void {
             echo $fileResponse->file;
         });
 
@@ -98,7 +98,7 @@ class ReceiptController extends BaseController
     ): StreamedResponse {
         $fileResponse = $receiptCdrUseCase($this->getReceiptRequest($payload));
 
-        $response = new StreamedResponse(function () use ($fileResponse) {
+        $response = new StreamedResponse(function () use ($fileResponse): void {
             echo $fileResponse->file;
         });
 
@@ -125,7 +125,7 @@ class ReceiptController extends BaseController
         $fileResponse = $receiptPdfUseCase($this->getReceiptRequest($payload));
 
         $response = new StreamedResponse();
-        $response->setCallback(function () use ($fileResponse) {
+        $response->setCallback(function () use ($fileResponse): void {
             echo $fileResponse->file;
         });
 
@@ -156,7 +156,7 @@ class ReceiptController extends BaseController
 
         $receiptType = ReceiptType::tryFrom($decoded['type']);
 
-        if (null === $receiptType) {
+        if (!$receiptType instanceof \App\Receipt\Domain\ReceiptType) {
             throw new ServiceException('Invalid receipt type');
         }
 

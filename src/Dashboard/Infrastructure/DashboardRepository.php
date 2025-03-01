@@ -12,26 +12,31 @@ readonly class DashboardRepository implements DashboardRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getDailySales(string $localId): array
     {
         return $this->connection->fetchAllAssociative('call sp_bi_venta_por_dia (?)', [$localId]);
     }
 
+    #[\Override]
     public function getWeeklySales(string $localId): array
     {
         return $this->connection->fetchAllAssociative('call sp_bi_venta_por_semana (?)', [$localId]);
     }
 
+    #[\Override]
     public function getMonthlySales(string $localId): array
     {
         return $this->connection->fetchAllAssociative('call sp_bi_venta_por_mes (?)', [$localId]);
     }
 
-    public function getMonthlyInvoicing(string $localId): array
+    #[\Override]
+    public function getMonthlyInvoicing(): array
     {
         return $this->connection->fetchAllAssociative('call sp_bi_monthly_invoicing');
     }
 
+    #[\Override]
     public function getProductRotation(string $localId, string $lapse): array
     {
         return $this->connection->fetchAllAssociative('CALL sp_bi_product_rotation (?, ?)', [$localId, $lapse]);

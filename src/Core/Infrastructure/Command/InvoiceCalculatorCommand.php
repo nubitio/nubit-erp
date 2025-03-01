@@ -15,11 +15,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class InvoiceCalculatorCommand extends Command
 {
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Calcula valores de los comprobantes');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -54,7 +56,7 @@ class InvoiceCalculatorCommand extends Command
             $io->success('Success');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $io->error('Error');
 
             return Command::FAILURE;

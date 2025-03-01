@@ -22,7 +22,7 @@ interface DashboardRepositoryInterface
     /**
      * @return array<int, mixed>
      */
-    public function getMonthlyInvoicing(string $localId): array;
+    public function getMonthlyInvoicing(): array;
 
     /**
      * @return array<int, mixed>

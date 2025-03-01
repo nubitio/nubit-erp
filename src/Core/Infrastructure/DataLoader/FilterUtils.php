@@ -30,10 +30,11 @@ class FilterUtils
         if (str_contains($field, '.')) {
             $field = substr($field, strrpos($field, '.') + 1);
         }
+
         $param = $field;
         $i = 1;
         while ($queryBuilder->getParameter($param)) {
-            $param = "{$field}_{$i}";
+            $param = sprintf('%s_%d', $field, $i);
             ++$i;
         }
 

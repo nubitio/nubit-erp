@@ -31,6 +31,7 @@ readonly class NoteCreateUseCase
         if (null !== $creditNote->sale?->movimiento_id) {
             $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale->movimiento_id);
         }
+
         if (!isset($voucher)) {
             throw new ServiceException('No se encontró el comprobante asociado a la nota de crédito.');
         }

@@ -19,14 +19,10 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class BillRepository implements BillRepositoryInterface
+readonly class BillRepository implements BillRepositoryInterface
 {
-    private SerializerService $serializer;
-
-    public function __construct(
-        SerializerService $serializer,
-    ) {
-        $this->serializer = $serializer;
+    public function __construct(private SerializerService $serializer)
+    {
     }
 
     /**
@@ -35,6 +31,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function sendBill(Invoice $invoice): DocumentResponse
     {
         $httpClient = HttpClient::create();
@@ -62,6 +59,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function getXml(Invoice $invoice): string
     {
         $httpClient = HttpClient::create();
@@ -84,18 +82,25 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function getPdf(Invoice $invoice): string
     {
         $httpClient = HttpClient::create();
 
-        $fileRequest = new FileRequest($invoice, new Parameters(
-            user: new User(
-                extras: [
-                    new Extra('FORMA DE PAGO', $invoice->getFormaPago() instanceof FormaPagoCredito ? 'CREDITO' : 'CONTADO'),
-                    new Extra('OBS', strval($invoice->getObservacion())),
-                ],
+        $fileRequest = new FileRequest(
+            $invoice,
+            new Parameters(
+                user: new User(
+                    extras: [
+                        new Extra(
+                            'FORMA DE PAGO',
+                            $invoice->getFormaPago() instanceof FormaPagoCredito ? 'CREDITO' : 'CONTADO'
+                        ),
+                        new Extra('OBS', strval($invoice->getObservacion())),
+                    ],
+                )
             )
-        ));
+        );
 
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
         $url = BillConstants::BILL_API_BASE_URL . 'invoice/pdf?token=' . BillConstants::BILL_API_TOKEN;
@@ -116,6 +121,7 @@ class BillRepository implements BillRepositoryInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
      */
+    #[\Override]
     public function getStatus(Invoice $invoice): StatusCdrResult
     {
         $httpClient = HttpClient::create();
@@ -128,7 +134,8 @@ class BillRepository implements BillRepositoryInterface
         ];
 
         $urlParams = http_build_query($params);
-        $url = BillConstants::BILL_API_BASE_URL . 'invoice/status?token=' . BillConstants::BILL_API_TOKEN . "&$urlParams";
+        $baseUrl = BillConstants::BILL_API_BASE_URL . 'invoice/status?token=' . BillConstants::BILL_API_TOKEN;
+        $url = $baseUrl . ('&' . $urlParams);
 
         $response = $httpClient->request('GET', $url);
 

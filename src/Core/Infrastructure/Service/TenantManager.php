@@ -4,8 +4,9 @@ namespace App\Core\Infrastructure\Service;
 
 class TenantManager
 {
-    private string $tenantsConfigFilePath;
-    private string $tenantsConfigContent;
+    private readonly string $tenantsConfigFilePath;
+
+    private readonly string $tenantsConfigContent;
 
     public function __construct()
     {

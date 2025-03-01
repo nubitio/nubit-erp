@@ -25,10 +25,13 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
     }
 
     /**
+     * @inheritdoc
+     *
      * @param CashRegisterOpenDto $data
      *
      * @throws ORMException
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -38,35 +41,22 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $user = $this->security->connectedUser();
         $cashShift = new CashShift();
 
-        $cashShift->setCashRegister(
-            $this->entityManager->getReference(
-                CashRegister::class,
-                $data->id
-            )
-        );
+        $cashShift->setCashRegister($this->entityManager->getReference(CashRegister::class, $data->id));
         $cashShift->setStatus(CashShiftStatus::OPEN);
         $cashShift->setOpeningBalance($data->openingBalance);
-        $cashShift->setOpenedBy(
-            $this->entityManager->getReference(
-                User::class,
-                $user->userId
-            )
-        );
+        $cashShift->setOpenedBy($this->entityManager->getReference(User::class, $user->userId));
         $cashShift->setOpenedAt(new \DateTimeImmutable());
+
         $this->entityManager->persist($cashShift);
 
         $cashMovement = new CashMovement();
         $cashMovement->setCashShift($cashShift);
         $cashMovement->setType(CashMovementType::INCOME);
         $cashMovement->setAmount($data->openingBalance);
-        $cashMovement->setPaymentMethod(
-            $this->entityManager->getReference(
-                PaymentMethod::class,
-                PaymentMethod::CASH
-            )
-        );
+        $cashMovement->setPaymentMethod($this->entityManager->getReference(PaymentMethod::class, PaymentMethod::CASH));
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new \DateTimeImmutable());
+
         $this->entityManager->persist($cashMovement);
 
         $this->entityManager->flush();

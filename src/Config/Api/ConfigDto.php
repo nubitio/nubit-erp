@@ -14,5 +14,5 @@ use App\Config\Domain\Config;
 class ConfigDto extends Config
 {
     #[ApiProperty(identifier: true)]
-    public ?int $id;
+    public ?int $id = null;
 }

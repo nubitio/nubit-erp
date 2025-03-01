@@ -136,11 +136,10 @@ class ApiRepository
     public function getOneCategory(string $id): ?array
     {
         $data = $this->db->fetchAllAssociative('select * from categoria where categoria_id = ?', [$id]);
-        if ($data) {
+        if ($data !== []) {
             return $data[0];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -157,8 +156,8 @@ class ApiRepository
             $this->db->insert('categoria', $filteredCategory);
 
             return ['success' => true, 'data' => $category, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -174,8 +173,8 @@ class ApiRepository
             $this->db->update('categoria', $filteredCategory, ['categoria_id' => $id]);
 
             return ['success' => true, 'data' => $category, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -188,8 +187,8 @@ class ApiRepository
             $this->db->delete('categoria', ['categoria_id' => $id]);
 
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -211,11 +210,10 @@ class ApiRepository
     public function getOneCustomer(string $id): ?array
     {
         $data = $this->db->fetchAllAssociative('select * from cliente where ruc = ?', [$id]);
-        if ($data) {
+        if ($data !== []) {
             return $data[0];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -231,8 +229,8 @@ class ApiRepository
             $this->db->insert('cliente', $filteredCustomer);
 
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -248,8 +246,8 @@ class ApiRepository
             $this->db->update('cliente', $filteredCustomer, ['ruc' => $id]);
 
             return ['success' => true, 'data' => $customer, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -262,8 +260,8 @@ class ApiRepository
             $this->db->delete('cliente', ['ruc' => $id]);
 
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -292,11 +290,10 @@ class ApiRepository
     public function getOneProduct(string $id): ?array
     {
         $data = $this->db->fetchAllAssociative('select * from vw_producto where producto_id = ?', [$id]);
-        if ($data) {
+        if ($data !== []) {
             return $data[0];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -304,7 +301,7 @@ class ApiRepository
      *
      * @return array<string, mixed>
      */
-    public function createProduct(string $local_id, array $product): array
+    public function createProduct(array $product): array
     {
         $product['producto_id'] = Uuid::v4();
         $product['tipo_id'] = 2;
@@ -314,8 +311,8 @@ class ApiRepository
             $this->db->insert('producto', $filteredProduct);
 
             return ['success' => true, 'data' => $product, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -324,15 +321,15 @@ class ApiRepository
      *
      * @return array<string, mixed>
      */
-    public function updateProduct(string $local_id, string $id, array $product): array
+    public function updateProduct(string $id, array $product): array
     {
         try {
             $filteredProduct = array_intersect_key($product, $this->productColumns);
             $this->db->update('producto', $filteredProduct, ['producto_id' => $id]);
 
             return ['success' => true, 'data' => $product, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -345,8 +342,8 @@ class ApiRepository
             $this->db->delete('producto', ['producto_id' => $id]);
 
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -358,9 +355,22 @@ class ApiRepository
     public function getAllSales(string $local_id): array
     {
         $result = [];
-        $sales = $this->db->fetchAllAssociative("select * from vw_movimiento where operacion like 'VENTA%' and local_id = ? order by date_created desc limit 50", [$local_id]);
+        $sql = <<<SQL
+select
+    *
+from vw_movimiento
+where
+    operacion like 'VENTA%'
+  and local_id = ?
+order by date_created
+desc limit 50
+SQL;
+        $sales = $this->db->fetchAllAssociative($sql, [$local_id]);
         foreach ($sales as $sale) {
-            $detail = $this->db->fetchAllAssociative('select * from vw_movimiento_detalle where movimiento_id = ?', [$sale['movimiento_id']]);
+            $detail = $this->db->fetchAllAssociative(
+                'select * from vw_movimiento_detalle where movimiento_id = ?',
+                [$sale['movimiento_id']]
+            );
             $sale['detail'] = $detail;
             $result[] = $sale;
         }
@@ -376,20 +386,22 @@ class ApiRepository
     public function getOneSale(string $id): ?array
     {
         $data = $this->db->fetchAllAssociative('select * from vw_movimiento where movimiento_id = ?', [$id]);
-        if ($data) {
-            $detail = $this->db->fetchAllAssociative('select * from vw_movimiento_detalle where movimiento_id = ?', [$id]);
+        if ($data !== []) {
+            $detail = $this->db->fetchAllAssociative(
+                'select * from vw_movimiento_detalle where movimiento_id = ?',
+                [$id]
+            );
             $data[0]['detail'] = $detail;
 
             return $data[0];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
      * @throws Exception
      */
-    public function getOption(string $name): string|int|float|bool|null
+    public function getOption(string $name): string | int | float | bool | null
     {
         /** @var string|int|float|bool|false|null $data */
         $data = $this->db->fetchOne('select value from options where name = ?', [$name]);
@@ -411,10 +423,22 @@ class ApiRepository
     public function createSale(array $sale): array
     {
         $uuid = Uuid::v4();
-        $operation = $this->db->fetchAllAssociative('select * from operacion where descripcion like ? limit 1', ['VENTA%']);
-        $warehouse = $this->db->fetchAllAssociative('select * from almacen where local_id = ? limit 1', [$sale['local_id']]);
-        $series = $this->db->fetchAllAssociative('select * from local_comprobante where tipo_comprobante_id = ? and local_id = ?', ['00', $sale['local_id']]);
-        $number = $this->db->fetchAllAssociative('select ifnull(max(cast(numero as integer)),0)+1 as number from movimiento where serie = ?', [$series[0]['serie']]);
+        $operation = $this->db->fetchAllAssociative(
+            'select * from operacion where descripcion like ? limit 1',
+            ['VENTA%']
+        );
+        $warehouse = $this->db->fetchAllAssociative(
+            'select * from almacen where local_id = ? limit 1',
+            [$sale['local_id']]
+        );
+        $series = $this->db->fetchAllAssociative(
+            'select * from local_comprobante where tipo_comprobante_id = ? and local_id = ?',
+            ['00', $sale['local_id']]
+        );
+        $number = $this->db->fetchAllAssociative(
+            'select ifnull(max(cast(numero as integer)),0)+1 as number from movimiento where serie = ?',
+            [$series[0]['serie']]
+        );
         $sale['movimiento_id'] = $uuid;
         $sale['fecha'] = date('Y-m-d');
         $sale['tipo_id'] = 2;
@@ -426,14 +450,15 @@ class ApiRepository
         $sale['is_consume'] = (1 == $sale['is_consume']) ? 1 : 0;
         $sale['tipo_pago'] = 1;
         $sale['estado'] = 1;
-        $sale['igv'] = (int) $this->getOption('app_option_igv');
-        $sale['recargo_consumo'] = (int) $this->getOption('app_option_rc');
+        $sale['igv'] = (int)$this->getOption('app_option_igv');
+        $sale['recargo_consumo'] = (int)$this->getOption('app_option_rc');
         /** @var array<int, array<string, mixed>> $saleDetail */
         $saleDetail = $sale['detail'];
         $sale['subtotal'] = 0;
         foreach ($saleDetail as $item) {
             $sale['subtotal'] += $item['precio_total'];
         }
+
         $sale['total'] = $sale['subtotal'] - ($sale['subtotal'] * ($sale['descuento'] / 100));
         $filteredSale = array_intersect_key($sale, $this->saleColumns);
         try {
@@ -445,8 +470,8 @@ class ApiRepository
             }
 
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro insertado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -465,8 +490,8 @@ class ApiRepository
             $this->db->update('movimiento', $filteredSale, ['movimiento_id' => $id]);
 
             return ['success' => true, 'data' => $sale, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -479,8 +504,8 @@ class ApiRepository
             $this->db->delete('movimiento', ['movimiento_id' => $id]);
 
             return ['success' => true, 'data' => null, 'msg' => 'Registro actualizado'];
-        } catch (Exception $e) {
-            return ['success' => false, 'data' => null, 'msg' => $e->getMessage()];
+        } catch (Exception $exception) {
+            return ['success' => false, 'data' => null, 'msg' => $exception->getMessage()];
         }
     }
 
@@ -491,12 +516,19 @@ class ApiRepository
      */
     public function getSalesByDate(string $date): ?array
     {
-        $data = $this->db->fetchAllAssociative('select count(*) as total from movimiento where year(date_created) = year(:date) and month(date_created) = month(:date)', ['date' => $date]);
-        if ($data) {
+        $sql = <<<SQL
+select
+    count(*) as total
+from movimiento
+where
+    year(date_created) = year(:date) and month(date_created) = month(:date)
+SQL;
+
+        $data = $this->db->fetchAllAssociative($sql, ['date' => $date]);
+        if ($data !== []) {
             return $data[0];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -736,7 +768,7 @@ class ApiRepository
      *
      * @throws Exception
      */
-    public function getUserByName(string $username): array|false
+    public function getUserByName(string $username): array | false
     {
         /** @var array<string, string|int|bool>|false $data */
         $data = $this->db->fetchAssociative('SELECT * FROM usuario WHERE username = ?', [$username]);

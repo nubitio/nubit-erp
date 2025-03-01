@@ -24,7 +24,12 @@ git -c diff.mnemonicprefix=false -c diff.noprefix=false --no-pager diff -r -p -m
 docker cp "$TEMP_FILE" "$WEB_CONTAINER:$TEMP_FILE"
 
 # Run GrumPHP inside the container using the copied diff file
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && cat $TEMP_FILE | vendor/bin/grumphp git:pre-commit --skip-success-output"
+docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && cat $TEMP_FILE | /usr/bin/php vendor/bin/grumphp git:pre-commit --skip-success-output"
 
 # Clean up temporary file
 rm -f "$TEMP_FILE"
+
+echo "Git Hook Environment:" > /tmp/git_env.txt
+env >> /tmp/git_env.txt
+docker exec web env >> /tmp/git_env.txt
+

@@ -37,7 +37,7 @@ class DataMapper
 
             try {
                 $reflectionProperty = new \ReflectionProperty(
-                    get_class($output),
+                    $output::class,
                     strval($key)
                 );
                 $ignore = $reflectionProperty->getAttributes(Ignore::class)[0]
@@ -45,7 +45,7 @@ class DataMapper
                 if (null !== $ignore) {
                     continue;
                 }
-            } catch (\ReflectionException $e) {
+            } catch (\ReflectionException) {
                 continue;
             }
 
@@ -60,9 +60,10 @@ class DataMapper
                             if ($value->isEmpty()) {
                                 continue;
                             }
-                        } catch (\Exception $e) {
+                        } catch (\Exception) {
                             continue;
                         }
+
                         /** @var object $item */
                         foreach ($value as $item) {
                             $type = ReflectionUtil::getPropertyType(
@@ -70,8 +71,9 @@ class DataMapper
                                 strval($key)
                             );
                             if (null === $type) {
-                                throw new \RuntimeException("Type not found for {$key}");
+                                throw new \RuntimeException('Type not found for ' . $key);
                             }
+
                             $output->$key[] = self::map($item, $type);
                         }
                     } else {
@@ -80,26 +82,25 @@ class DataMapper
                             strval($key)
                         );
                         if (null === $type) {
-                            throw new \RuntimeException("Type not found for {$key}");
+                            throw new \RuntimeException('Type not found for ' . $key);
                         }
+
                         $output->$key = self::map($value, $type);
                     }
-                } else {
-                    if (is_array($value)) {
-                        $type = ReflectionUtil::getPropertyType(
-                            $output,
-                            strval($key)
-                        );
-                        if (null === $type) {
-                            throw new \RuntimeException("Type not found for {$key}");
-                        }
-                        $output->$key = [];
-                        foreach ($value as $item) {
-                            $output->$key[] = self::map($item, $type);
-                        }
-                    } else {
-                        $output->$key = $value;
+                } elseif (is_array($value)) {
+                    $type = ReflectionUtil::getPropertyType(
+                        $output,
+                        strval($key)
+                    );
+                    if (null === $type) {
+                        throw new \RuntimeException('Type not found for ' . $key);
                     }
+                    $output->$key = [];
+                    foreach ($value as $item) {
+                        $output->$key[] = self::map($item, $type);
+                    }
+                } else {
+                    $output->$key = $value;
                 }
             }
         }

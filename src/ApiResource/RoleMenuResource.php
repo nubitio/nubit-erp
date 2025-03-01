@@ -5,7 +5,7 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use App\Dto\RoleMenu\MenuDto;
+use App\Dto\RoleMenu\RoleMenuDto;
 use App\State\RoleMenu\RoleMenuProcessor;
 use App\State\RoleMenu\RoleMenuProvider;
 
@@ -14,7 +14,7 @@ use App\State\RoleMenu\RoleMenuProvider;
     operations: [
         new GetCollection(
             uriTemplate: '/role-menu/{role_id}',
-            output: MenuDto::class,
+            output: RoleMenuDto::class,
             provider: RoleMenuProvider::class,
         ),
         new Post(

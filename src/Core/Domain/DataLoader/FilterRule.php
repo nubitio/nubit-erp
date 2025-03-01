@@ -25,28 +25,30 @@ class FilterRule
         if (str_contains($this->field, '.')) {
             $field = $this->field;
         }
+
         if (FilterOperation::IsNull === $this->op || FilterOperation::IsNotNull === $this->op) {
             if (FilterType::OR === $this->type) {
-                $queryBuilder->orWhere("$field $op");
+                $queryBuilder->orWhere(sprintf('%s %s', $field, $op));
             } else {
-                $queryBuilder->andWhere("$field $op");
+                $queryBuilder->andWhere(sprintf('%s %s', $field, $op));
             }
 
             return;
         }
+
         if (FilterType::OR === $this->type) {
-            $queryBuilder->orWhere("$field $op :$uniqueParam");
+            $queryBuilder->orWhere(sprintf('%s %s :%s', $field, $op, $uniqueParam));
         } else {
-            $queryBuilder->andWhere("$field $op :$uniqueParam");
+            $queryBuilder->andWhere(sprintf('%s %s :%s', $field, $op, $uniqueParam));
         }
 
         $value = strval($this->value);
         if (FilterOperation::Contains === $this->op) {
-            $queryBuilder->setParameter($uniqueParam, "%{$value}%");
+            $queryBuilder->setParameter($uniqueParam, sprintf('%%%s%%', $value));
         } elseif (FilterOperation::BeginsWith === $this->op) {
-            $queryBuilder->setParameter($uniqueParam, "{$value}%");
+            $queryBuilder->setParameter($uniqueParam, $value . '%');
         } elseif (FilterOperation::EndsWith === $this->op) {
-            $queryBuilder->setParameter($uniqueParam, "%{$value}");
+            $queryBuilder->setParameter($uniqueParam, '%' . $value);
         } else {
             $queryBuilder->setParameter($uniqueParam, $this->value);
         }

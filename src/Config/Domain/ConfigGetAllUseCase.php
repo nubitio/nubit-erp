@@ -7,11 +7,8 @@ use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 
 class ConfigGetAllUseCase
 {
-    private ConfigRepositoryInterface $repository;
-
-    public function __construct(ConfigRepositoryInterface $repository)
+    public function __construct(private readonly ConfigRepositoryInterface $repository)
     {
-        $this->repository = $repository;
     }
 
     /**

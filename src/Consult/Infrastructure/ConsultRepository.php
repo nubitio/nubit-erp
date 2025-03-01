@@ -10,8 +10,9 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class ConsultRepository implements ConsultRepositoryInterface
 {
-    private const API_URL = 'https://consultapi.efact.app/api/v1/';
+    private const string API_URL = 'https://consultapi.efact.app/api/v1/';
 
+    #[\Override]
     public function consult(string $id, DocType $docType): Consult
     {
         $url = self::API_URL . $docType->value . '/' . $id . '?token=abcxyz';
@@ -20,6 +21,7 @@ class ConsultRepository implements ConsultRepositoryInterface
         if (200 !== $response->getStatusCode()) {
             throw new ServiceException('No se pudo consultar el documento, intente nuevamente');
         }
+
         /** @var array<string, bool|float|int|string|null> $data */
         $data = $response->toArray();
 

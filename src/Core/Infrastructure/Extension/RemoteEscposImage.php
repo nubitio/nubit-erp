@@ -16,7 +16,7 @@ class RemoteEscposImage extends EscposImage
     {
         $imageContent = @file_get_contents($imageUrl);
         if (false === $imageContent) {
-            throw new \Exception("Failed to download image from URL: $imageUrl");
+            throw new \Exception('Failed to download image from URL: ' . $imageUrl);
         }
 
         $tempPath = sys_get_temp_dir() . '/escpos_temp_image.png';

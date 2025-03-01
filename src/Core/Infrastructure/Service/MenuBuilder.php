@@ -25,7 +25,6 @@ readonly class MenuBuilder
         foreach ($data as $parent) {
             if (0 == $parent['parent_id'] && empty($parent['link'])) {
                 $items = [];
-
                 foreach ($data as $child) {
                     if ($child['parent_id'] == $parent['menu_id']) {
                         $items[] = [
@@ -34,20 +33,17 @@ readonly class MenuBuilder
                         ];
                     }
                 }
-
                 $menu[] = [
                     'text' => $parent['descripcion'],
                     'icon' => $parent['icon'],
                     'items' => $items,
                 ];
-            } else {
-                if (0 == $parent['parent_id'] && !empty($parent['link'])) {
-                    $menu[] = [
-                        'text' => $parent['descripcion'],
-                        'icon' => $parent['icon'],
-                        'path' => $parent['link'],
-                    ];
-                }
+            } elseif (0 == $parent['parent_id'] && !empty($parent['link'])) {
+                $menu[] = [
+                    'text' => $parent['descripcion'],
+                    'icon' => $parent['icon'],
+                    'path' => $parent['link'],
+                ];
             }
         }
 
@@ -62,14 +58,15 @@ readonly class MenuBuilder
     public function getMenuForRole(int $roleId): array
     {
         if (0 == $roleId) {
-            $result = $this->connection->fetchAllAssociative('
+            return $this->connection->fetchAllAssociative('
                     SELECT
                         m.*
                     FROM menu m
                     ORDER BY menu_id, orden
                 ');
-        } else {
-            $result = $this->connection->fetchAllAssociative('
+        }
+
+        return $this->connection->fetchAllAssociative('
                     SELECT
                         m.*
                     FROM menu m
@@ -77,8 +74,5 @@ readonly class MenuBuilder
                     WHERE mr.rol_id = ? AND mr.estado = 1
                     ORDER BY menu_id, orden
                 ', [$roleId]);
-        }
-
-        return $result;
     }
 }

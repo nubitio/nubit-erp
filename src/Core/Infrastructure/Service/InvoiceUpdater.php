@@ -7,11 +7,8 @@ use Doctrine\DBAL\Connection;
 
 class InvoiceUpdater
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
-        $this->connection = $connection;
     }
 
     /**
@@ -22,7 +19,10 @@ class InvoiceUpdater
         $pending = $this->connection->fetchAllAssociative('select * from comprobante where envio_sunat is null');
         foreach ($pending as $invoice) {
             /** @var false|array<string, string|int|float|null> $sale */
-            $sale = $this->connection->fetchAssociative('SELECT * FROM vw_movimiento WHERE movimiento_id = ?', [$invoice['movimiento_id']]);
+            $sale = $this->connection->fetchAssociative(
+                'SELECT * FROM vw_movimiento WHERE movimiento_id = ?',
+                [$invoice['movimiento_id']]
+            );
 
             if (false === $sale) {
                 continue;
@@ -36,26 +36,29 @@ class InvoiceUpdater
             );
 
             $invoiceAmounts = $invoiceCalculator->calculate();
-            $this->connection->executeStatement('
-                update 
-                    comprobante 
-                set 
-                    subtotal = ?, 
-                    gravada = ?, 
-                    igv = ?, 
-                    total = ?, 
-                    discount_percent = ?, 
+            $this->connection->executeStatement(
+                '
+                update
+                    comprobante
+                set
+                    subtotal = ?,
+                    gravada = ?,
+                    igv = ?,
+                    total = ?,
+                    discount_percent = ?,
                     discount_amount = ?
                 where
-                    comprobante_id = ?', [
-                $invoiceAmounts->getSubtotal(),
-                $invoiceAmounts->getTaxedAmount(),
-                $invoiceAmounts->getTax(),
-                $invoiceAmounts->getTotal(),
-                $sale['descuento'],
-                $invoiceAmounts->getDiscountAmount(),
-                $invoice['comprobante_id'],
-            ]);
+                    comprobante_id = ?',
+                [
+                    $invoiceAmounts->getSubtotal(),
+                    $invoiceAmounts->getTaxedAmount(),
+                    $invoiceAmounts->getTax(),
+                    $invoiceAmounts->getTotal(),
+                    $sale['descuento'],
+                    $invoiceAmounts->getDiscountAmount(),
+                    $invoice['comprobante_id'],
+                ]
+            );
         }
 
         return 'Registros actualizados: ' . count($pending);

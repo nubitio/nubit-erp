@@ -2,7 +2,7 @@
 
 namespace App\Core\Application\Session;
 
-use App\Auth\Api\AuthUserDTO;
+use App\Dto\Auth\AuthUserDTO;
 
 interface Security
 {

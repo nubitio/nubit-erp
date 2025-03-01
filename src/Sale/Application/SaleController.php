@@ -3,7 +3,6 @@
 namespace App\Sale\Application;
 
 use App\Base\BaseController;
-use App\Core\Infrastructure\Service\PdfExporter;
 use App\Core\Infrastructure\Service\XlsExporter;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +15,6 @@ class SaleController extends BaseController
     public function report(
         Request $request,
         XlsExporter $xlsExporter,
-        PdfExporter $pdfExporter,
         Connection $connection,
     ): StreamedResponse {
         $report = $request->get('report');

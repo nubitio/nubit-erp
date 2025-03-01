@@ -14,6 +14,7 @@ readonly class SaleDetailRepository implements SaleDetailRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);

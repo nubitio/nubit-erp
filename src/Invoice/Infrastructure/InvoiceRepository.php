@@ -8,7 +8,7 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Customer\Infrastructure\CustomerEntity;
+use App\Entity\Customer;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
@@ -27,6 +27,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
@@ -35,6 +36,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * @throws \Exception
      */
+    #[\Override]
     public function getOne(string $invoiceId): Invoice
     {
         /** @var ?InvoiceEntity $invoiceEntity */
@@ -50,10 +52,13 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * @throws \Exception
      */
+    #[\Override]
     public function getOneBySaleId(string $saleId): Invoice
     {
         /** @var ?InvoiceEntity $invoiceEntity */
-        $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(['movimiento_id' => $saleId]);
+        $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(
+            ['movimiento_id' => $saleId]
+        );
 
         if (!$invoiceEntity) {
             throw new \Exception('Invoice not found');
@@ -65,9 +70,13 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     /**
      * @throws \Exception
      */
+    #[\Override]
     public function create(Sale $sale): void
     {
-        $localId = $this->connection->fetchOne('select local_id from almacen where almacen_id = ?', [$sale->almacen?->almacen_id]);
+        $localId = $this->connection->fetchOne(
+            'select local_id from almacen where almacen_id = ?',
+            [$sale->almacen?->getId()]
+        );
         $invoiceCalculator = new InvoiceCalculator(
             floatval($sale->subtotal),
             $sale->descuento ?? 0.0,
@@ -87,6 +96,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
         ]);
     }
 
+    #[\Override]
     public function insert(Invoice $invoice): Invoice
     {
         $entity = DataMapper::map($invoice, InvoiceEntity::class);
@@ -100,6 +110,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
      * @throws ServiceException
      * @throws ORMException
      */
+    #[\Override]
     public function update(Invoice $invoice): Invoice
     {
         $entity = $this->entityManager->find(InvoiceEntity::class, $invoice->comprobante_id);
@@ -110,12 +121,13 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
 
         $entity = DataMapper::map($invoice, $entity);
 
-        $entity->cliente = $this->entityManager->getReference(CustomerEntity::class, $invoice->cliente?->ruc);
+        $entity->cliente = $this->entityManager->getReference(Customer::class, $invoice->cliente?->getRuc());
         $this->entityManager->flush();
 
         return DataMapper::map($entity, Invoice::class);
     }
 
+    #[\Override]
     public function delete(string $id): void
     {
         $entity = $this->entityManager->find(InvoiceEntity::class, $id);
@@ -132,6 +144,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
      * @throws ServiceException
      * @throws Exception
      */
+    #[\Override]
     public function getVoucher(string $saleId): Voucher
     {
         $voucher = $this->connection->executeQuery('CALL sp_sale_header(?)', [$saleId])->fetchAssociative();

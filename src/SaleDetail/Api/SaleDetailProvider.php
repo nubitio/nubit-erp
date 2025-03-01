@@ -24,12 +24,16 @@ readonly class SaleDetailProvider implements ApiProviderInterface
     ) {
     }
 
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    #[\Override]
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         if ($operation instanceof CollectionOperationInterface) {
             $context = OptionUtils::addJoin($context, new JoinRule('e.producto', 'p'));
             // $context = OptionUtils::addSort($context, new SortRule('p.descripcion', 'asc'));
-            $context = OptionUtils::addFilter($context, new FilterRule('movimiento', FilterOperation::Equals, strval($uriVariables['movimiento_id'])));
+            $context = OptionUtils::addFilter(
+                $context,
+                new FilterRule('movimiento', FilterOperation::Equals, strval($uriVariables['movimiento_id']))
+            );
             $options = OptionsBuilder::build($context, SaleDetailEntity::class, SaleDetail::class);
 
             return $this->getAllUseCase->__invoke($options);

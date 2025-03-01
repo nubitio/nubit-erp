@@ -30,6 +30,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
      *
      * @throws Exception
      */
+    #[\Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -46,7 +47,8 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 . PaymentMethod::CASH;
             $cashClosureKey = array_search(
                 $cashPaymentMethodIRI,
-                array_column($data->closureItems, 'paymentMethod')
+                array_column($data->closureItems, 'paymentMethod'),
+                true
             );
             $cashShift->setClosingBalance(
                 $data->closureItems[$cashClosureKey]->getCountedAmount()
@@ -67,13 +69,13 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
-        } catch (ORMException $e) {
+        } catch (ORMException $ormException) {
             $this->entityManager->getConnection()->rollBack();
 
             return new ApiResponse(
                 success: false,
                 message: 'Error al cerrar la caja',
-                data: $e->getMessage(),
+                data: $ormException->getMessage(),
             );
         }
 

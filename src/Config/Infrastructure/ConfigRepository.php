@@ -19,11 +19,13 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
     ) {
     }
 
+    #[\Override]
     public function getAll(LoadOptions $options): PaginatorInterface
     {
         return $this->dataLoader->loadCollection($options);
     }
 
+    #[\Override]
     public function getOne(int $id): ?Config
     {
         /** @var ?ConfigEntity $entity */
@@ -36,6 +38,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         return DataMapper::map($entity, Config::class);
     }
 
+    #[\Override]
     public function insert(Config $config): Config
     {
         $entity = DataMapper::map($config, ConfigEntity::class);
@@ -48,6 +51,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
     /**
      * @throws ServiceException
      */
+    #[\Override]
     public function update(Config $config): Config
     {
         $entity = $this->entityManager->find(ConfigEntity::class, $config->id);
@@ -62,6 +66,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         return DataMapper::map($entity, Config::class);
     }
 
+    #[\Override]
     public function delete(int $id): void
     {
         $entity = $this->entityManager->find(ConfigEntity::class, $id);
@@ -74,6 +79,7 @@ readonly class ConfigRepository implements ConfigRepositoryInterface
         $this->entityManager->flush();
     }
 
+    #[\Override]
     public function getOneByKey(string $key): ?Config
     {
         /** @var ?ConfigEntity $entity */

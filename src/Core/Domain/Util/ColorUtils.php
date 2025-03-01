@@ -28,7 +28,8 @@ class ColorUtils
         $l = ($max + $min) / 2;
         $d = $max - $min;
         if (0 == $d) {
-            $h = $s = 0;
+            $h = 0;
+            $s = 0;
         } else {
             $s = $d / (1 - abs(2 * $l - 1));
             switch ($max) {
@@ -37,6 +38,7 @@ class ColorUtils
                     if ($b > $g) {
                         $h += 360;
                     }
+
                     break;
                 case $g:
                     $h = 60 * (($b - $r) / $d + 2);
@@ -85,6 +87,7 @@ class ColorUtils
             $g = 0;
             $b = $x;
         }
+
         $r = ($r + $m) * 255;
         $g = ($g + $m) * 255;
         $b = ($b + $m) * 255;

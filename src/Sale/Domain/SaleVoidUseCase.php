@@ -68,7 +68,7 @@ readonly class SaleVoidUseCase
 
         $this->saleRepository->update($sale);
 
-        if ($response) {
+        if ($response instanceof \App\Billing\Model\Response\SummaryResponse) {
             $sunatResponse = $response->sunatResponse;
             $success = $sunatResponse->isSuccess();
             $description = $success ? 'Anulado correctamente'
@@ -117,6 +117,7 @@ readonly class SaleVoidUseCase
                 $invoice->ticket_baja;
             $invoice->voided = 3;
         }
+
         $this->invoiceRepository->update($invoice);
 
         return $response;
@@ -151,6 +152,7 @@ readonly class SaleVoidUseCase
                 $invoice->ticket_baja;
             $invoice->voided = 3;
         }
+
         $this->invoiceRepository->update($invoice);
 
         return $response;

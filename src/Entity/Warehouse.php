@@ -7,7 +7,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\WarehouseRepository;
-use App\Warehouse\Api\WarehouseProvider;
+use App\State\Warehouse\WarehousesByBranchProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -27,7 +27,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             fromClass: Branch::class,
         ),
     ],
-    provider: WarehouseProvider::class
+    provider: WarehousesByBranchProvider::class
 )]
 class Warehouse
 {

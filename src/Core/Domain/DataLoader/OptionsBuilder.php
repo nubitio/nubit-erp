@@ -26,17 +26,20 @@ class OptionsBuilder
         if (is_array($sortFields)) {
             foreach ($sortFields as $sortField) {
                 /** @var array<string, mixed> $sortRule */
-                $sortRule = is_array($sortField) ? $sortField : json_decode($sortField, true);
+                $sortRule = is_array($sortField) ? $sortField : json_decode((string)$sortField, true);
                 $strSortFields .= $sortRule['selector'] . ',';
-                $strOrderFields .= true === boolval($sortRule['desc']) ? 'desc,' : 'asc,';
+                $strOrderFields .= boolval($sortRule['desc']) ? 'desc,' : 'asc,';
             }
-            $sortFields = $strSortFields ? substr($strSortFields, 0, -1) : null;
+
+            $sortFields = $strSortFields !== '' && $strSortFields !== '0' ? substr($strSortFields, 0, -1) : null;
         }
+
         /** @var string|null $orderFields */
         $orderFields = $context['filters']['order'] ?? null;
-        if (!empty($strOrderFields)) {
+        if ($strOrderFields !== '' && $strOrderFields !== '0') {
             $orderFields = substr($strOrderFields, 0, -1);
         }
+
         $sortArray = $sortFields ? explode(',', $sortFields) : [];
         $orderArray = $orderFields ? explode(',', strval($orderFields)) : [];
         $sortRules = array_map(null, $sortArray, $orderArray);
@@ -50,15 +53,17 @@ class OptionsBuilder
         $filters = $context['filters']['filter'] ?? [];
 
         foreach ($filters as $filter) {
-            $filterRule = is_array($filter) ? $filter : json_decode($filter, true);
+            $filterRule = is_array($filter) ? $filter : json_decode((string)$filter, true);
             if (!is_array($filterRule)) {
                 continue;
             }
+
             if (is_array($filterRule[0])) {
                 foreach ($filterRule as $rule) {
                     if (!is_array($rule)) {
                         continue;
                     }
+
                     $filterRules[] = [
                         'field' => $rule[0],
                         'op' => $rule[1],
@@ -73,7 +78,12 @@ class OptionsBuilder
                 ];
             }
         }
-        if (3 === count($filters) && !is_array(is_array($filters[0]) ? $filters[0] : json_decode($filters[0], true))) {
+
+        if (
+            3 === count($filters) && !is_array(
+                is_array($filters[0]) ? $filters[0] : json_decode((string)$filters[0], true)
+            )
+        ) {
             $filterRules[] = [
                 'field' => $filters[0],
                 'op' => $filters[1],
@@ -96,8 +106,10 @@ class OptionsBuilder
                         $type = 'or';
                         $subFilters[] = self::buildSearchRule($expression, $searchOperation, $searchValue, $type);
                     }
+
                     ++$index;
                 }
+
                 $filter['subFilters'] = $subFilters;
                 $filterRules[] = $filter;
             } else {
@@ -153,7 +165,7 @@ class OptionsBuilder
      */
     private static function buildSort(array $sortRules): array
     {
-        return array_map(fn ($item) => new SortRule(
+        return array_map(fn ($item): \App\Core\Domain\DataLoader\SortRule => new SortRule(
             field: strval($item[0]),
             order: strval($item[1] ?? 'ASC'),
         ), $sortRules);
@@ -168,15 +180,23 @@ class OptionsBuilder
     {
         $filters = [];
         foreach ($filterRules as $filter) {
-            if ('' === $filter['field'] || '' === $filter['op'] || 'or' === $filter['op']) {
+            if ('' === $filter['field']) {
                 continue;
             }
+            if ('' === $filter['op']) {
+                continue;
+            }
+            if ('or' === $filter['op']) {
+                continue;
+            }
+
             $op = FilterOperation::tryFrom(strval($filter['op'])) ?? FilterOperation::fromString(strval($filter['op']));
             if ('true' === $filter['value']) {
                 $filter['value'] = true;
             } elseif ('false' === $filter['value']) {
                 $filter['value'] = false;
             }
+
             $subFilters = $filter['subFilters'] ?? null;
             if (is_array($subFilters)) {
                 $filters[] = new FilterRule(
@@ -188,9 +208,14 @@ class OptionsBuilder
                 );
                 continue;
             }
-            if (is_array($filter['field']) || is_array($filter['value'])) {
+
+            if (is_array($filter['field'])) {
                 continue;
             }
+            if (is_array($filter['value'])) {
+                continue;
+            }
+
             $filters[] = new FilterRule(
                 field: strval($filter['field']),
                 op: $op,

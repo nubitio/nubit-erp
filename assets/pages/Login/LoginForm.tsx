@@ -1,6 +1,4 @@
 import React, {useCallback, useRef, useState} from 'react';
-
-import {useNavigate} from 'react-router-dom';
 import Form, {ButtonItem, ButtonOptions, Item, Label, RequiredRule} from 'devextreme-react/form';
 import LoadIndicator from 'devextreme-react/load-indicator';
 
@@ -10,7 +8,6 @@ import {StorageUtils} from "../../core/utils/StorageUtils";
 import {LocalPicker} from "../../components/utils/local-picker/LocalPicker";
 
 export const LoginForm = () => {
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const formData = useRef({username: '', password: ''});
     const [showLocalPicker, setShowLocalPicker] = useState(false);
@@ -29,7 +26,7 @@ export const LoginForm = () => {
                 StorageUtils.setItem('token', response.data.token);
                 setShowLocalPicker(true);
             },
-            complete: () => {
+            error: () => {
                 setLoading(false);
             }
         });

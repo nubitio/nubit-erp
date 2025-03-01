@@ -12,14 +12,17 @@ use Symfony\Component\Security\Core\Exception\RuntimeException;
 
 class TenantConnection extends Connection
 {
-    protected array $tenantParams;
     protected bool $isConnected = false;
+
     protected bool $autoCommit = true;
 
-    public function __construct(array $params, Driver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
-    {
-        $this->tenantParams = $params;
-        parent::__construct($params, $driver, $config, $eventManager);
+    public function __construct(
+        protected array $tenantParams,
+        Driver $driver,
+        ?Configuration $config = null,
+        ?EventManager $eventManager = null
+    ) {
+        parent::__construct($this->tenantParams, $driver, $config, $eventManager);
     }
 
     /**
@@ -47,7 +50,7 @@ class TenantConnection extends Connection
             throw new ServiceException('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn ($item) => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn ($item): bool => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
@@ -62,6 +65,7 @@ class TenantConnection extends Connection
      * @throws Exception
      * @throws \Doctrine\DBAL\Exception
      */
+    #[\Override]
     public function connect(): bool
     {
         if ($this->isConnected) {
@@ -71,18 +75,20 @@ class TenantConnection extends Connection
         $this->_conn = $this->_driver->connect($this->tenantParams);
         $this->isConnected = true;
 
-        if (true !== $this->autoCommit) {
+        if (!$this->autoCommit) {
             $this->beginTransaction();
         }
 
         return true;
     }
 
+    #[\Override]
     public function getParams(): array
     {
         return $this->tenantParams;
     }
 
+    #[\Override]
     public function close(): void
     {
         $this->isConnected = false;

@@ -30,11 +30,13 @@ class SaleDuplicatorCommand extends Command
         parent::__construct();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('This command allows you to duplicate sales');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -42,7 +44,7 @@ class SaleDuplicatorCommand extends Command
             $tenants = $this->tenantManager->getTenants();
 
             /** @var string $selectedTenant */
-            $selectedTenant = $io->choice('Select tenant', array_map(fn ($tenant) => $tenant['name'], $tenants));
+            $selectedTenant = $io->choice('Select tenant', array_map(fn ($tenant): mixed => $tenant['name'], $tenants));
             $io->writeln('Tenant selected: ' . $selectedTenant);
             $io->writeln('Switching tenant connection...');
             $this->tenantConnectionSwitcher->switchConnection($selectedTenant);
@@ -60,8 +62,10 @@ class SaleDuplicatorCommand extends Command
                 if ('fecha' === $field) {
                     $value = new \DateTime($value);
                 }
+
                 $customFields[$field] = $value;
             }
+
             foreach ($saleList as $saleId) {
                 $sale = $this->getOneSaleUseCase->__invoke($saleId);
                 $sale->movimiento_id = null;
@@ -89,8 +93,8 @@ class SaleDuplicatorCommand extends Command
             $io->success('Sales duplicated successfully');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error('Error: ' . $e->getMessage());
+        } catch (\Exception $exception) {
+            $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;
         }

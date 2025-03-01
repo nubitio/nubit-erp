@@ -92,6 +92,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return $this;
     }
 
+    #[\Override]
     public function getPassword(): ?string
     {
         return $this->password;
@@ -121,6 +122,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
      *
      * @see UserInterface
      */
+    #[\Override]
     public function getUserIdentifier(): string
     {
         return (string) $this->username;
@@ -131,6 +133,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
      *
      * @see UserInterface
      */
+    #[\Override]
     public function getRoles(): array
     {
         $roles = match ($this->getRole()?->getId()) {
@@ -148,11 +151,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     /**
      * @see UserInterface
      */
+    #[\Override]
     public function eraseCredentials(): void
     {
         $this->plainPassword = null;
     }
 
+    #[\Override]
     public function isEqualTo(UserInterface $user): bool
     {
         return $this->getUserIdentifier() === $user->getUserIdentifier();

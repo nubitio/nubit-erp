@@ -3,7 +3,7 @@
 namespace App\Invoice\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Customer\Domain\Customer;
+use App\Entity\Customer;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[IgnoreAutowire]

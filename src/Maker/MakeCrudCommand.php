@@ -17,14 +17,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class MakeCrudCommand extends Command
 {
-    private Connection $connection;
-
-    public function __construct(Connection $connection)
+    public function __construct(private readonly Connection $connection)
     {
         parent::__construct();
-        $this->connection = $connection;
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setHelp('Crud generator for a given entity');
@@ -32,6 +30,7 @@ class MakeCrudCommand extends Command
         $this->addOption('overwrite', 'o', InputOption::VALUE_NONE, 'Overwrite existing files');
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $isInteractive = boolval($input->getOption('interactive') ?? false);
@@ -55,18 +54,32 @@ class MakeCrudCommand extends Command
             }
 
             if ('Master detail' === $crudType) {
-                $crudMaker = new MasterDetailCrudMaker($io, $schemaManager, $moduleName, $modulePath, $isInteractive, $overwrite);
+                $crudMaker = new MasterDetailCrudMaker(
+                    $io,
+                    $schemaManager,
+                    $moduleName,
+                    $modulePath,
+                    $isInteractive,
+                    $overwrite
+                );
             } else {
-                $crudMaker = new SimpleCrudMaker($io, $schemaManager, $moduleName, $modulePath, $isInteractive, $overwrite);
+                $crudMaker = new SimpleCrudMaker(
+                    $io,
+                    $schemaManager,
+                    $moduleName,
+                    $modulePath,
+                    $isInteractive,
+                    $overwrite
+                );
             }
 
             $crudMaker->makeCrud();
             $io->success('Success');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
-            $io->error($e->getMessage());
-            $io->error($e->getTraceAsString());
+        } catch (\Exception $exception) {
+            $io->error($exception->getMessage());
+            $io->error($exception->getTraceAsString());
 
             return Command::FAILURE;
         }

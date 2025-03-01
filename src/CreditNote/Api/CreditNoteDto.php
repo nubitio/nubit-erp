@@ -14,5 +14,5 @@ use App\CreditNote\Domain\CreditNote;
 class CreditNoteDto extends CreditNote
 {
     #[ApiProperty(identifier: true)]
-    public ?string $nota_id;
+    public ?string $nota_id = null;
 }

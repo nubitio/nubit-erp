@@ -2,26 +2,28 @@
 
 namespace App\Core\Infrastructure\Symfony\Security;
 
-use App\Auth\Api\AuthUserDTO;
 use App\Core\Application\Session\Security;
-use App\Core\Presentation\Security\JWTAuthenticationToken;
+use App\Core\Security\Auth\JWTAuthenticationToken;
+use App\Core\Security\Auth\JWTManager;
+use App\Dto\Auth\AuthUserDTO;
 use App\Entity\User;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
 final readonly class SecurityService implements Security
 {
     public function __construct(
         private SecurityComponent $security,
+        private JWTManager $jwtManager,
     ) {
     }
 
+    #[\Override]
     public function isAuthenticated(): bool
     {
-        return null !== $this->connectedUser();
+        return $this->connectedUser() instanceof \App\Dto\Auth\AuthUserDTO;
     }
 
+    #[\Override]
     public function connectedUser(): ?AuthUserDTO
     {
         $authenticatedUser = $this->security->getUser();
@@ -36,10 +38,7 @@ final readonly class SecurityService implements Security
             return null;
         }
 
-        $jwtPayload = (array) JWT::decode(
-            $token->getCredentials(),
-            new Key($_ENV['APP_SECRET'], 'HS256')
-        );
+        $jwtPayload = $this->jwtManager->decode($token->getCredentials());
 
         return AuthUserDTO::createFromJWTPayload($jwtPayload);
     }

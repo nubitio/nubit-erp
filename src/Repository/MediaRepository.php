@@ -33,8 +33,8 @@ class MediaRepository extends ServiceEntityRepository
 
         try {
             $this->uploadsFilesystem->delete(Constants::IMAGE_UPLOAD_DIR . $entity->getPath());
-        } catch (FilesystemException $e) {
-            $this->logger->alert($e->getMessage());
+        } catch (FilesystemException $filesystemException) {
+            $this->logger->alert($filesystemException->getMessage());
         }
 
         $this->_em->remove($entity);

@@ -22,6 +22,10 @@ readonly class ConfigProcessor implements ApiProcessorInterface
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
+    #[\Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?Config
     {
         if ($operation instanceof DeleteOperationInterface) {
