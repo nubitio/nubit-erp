@@ -15,7 +15,7 @@ export const InboundPage = () => {
     const fields = InboundFields();
     const detailFields = InboundDetailFields();
 
-    const API_URL = Constants.API_BASE_URL + 'sales';
+    const API_URL = Constants.API_BASE_URL + 'movements';
 
     const EVENTS = {
         ADD: 'inbound:add',
@@ -41,7 +41,7 @@ export const InboundPage = () => {
 
     const setupObservers = () => {
         on(EVENTS.EDIT, (payload: any) => {
-            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
+            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/items`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
         })
@@ -72,7 +72,7 @@ export const InboundPage = () => {
                 id={'inbound'}
                 title={'Ingresos'}
                 url={API_URL + '?type=inbound'}
-                detailUrl={API_URL + '/{id}/details'}
+                detailUrl={API_URL + '/{id}/items'}
                 allowAdd={true}
                 allowEdit={true}
                 allowDelete={true}

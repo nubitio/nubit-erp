@@ -9,7 +9,7 @@ use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\CreditNoteRepositoryInterface;
-use App\Sale\Infrastructure\SaleEntity;
+use App\Entity\SaleEntity;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -49,7 +49,7 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
     public function insert(CreditNote $creditNote): CreditNote
     {
         $entity = DataMapper::map($creditNote, CreditNoteEntity::class);
-        $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale?->movimiento_id);
+        $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale?->id);
 
         $entity->tipo_id = '07';
         $entity->serie = $this->creditNoteUtils->getCreditNoteSeries($creditNote->sale?->movimiento_id ?? '');
@@ -77,8 +77,8 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
         }
 
         $entity = DataMapper::map($creditNote, $entity);
-        if ($creditNote->sale instanceof \App\Sale\Domain\Sale) {
-            $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale->movimiento_id);
+        if ($creditNote->sale instanceof \App\Entity\SaleEntity) {
+            $entity->sale = $this->entityManager->getReference(SaleEntity::class, $creditNote->sale->id);
         }
 
         $this->entityManager->flush();

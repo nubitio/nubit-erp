@@ -3,6 +3,7 @@
 namespace App\CreditNote\Domain;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Entity\SaleEntity;
 use App\Sale\Domain\Sale;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
@@ -13,7 +14,7 @@ class CreditNote
         #[SerializedName('nota_id')]
         public ?string $nota_id = null,
         #[SerializedName('sale')]
-        public ?Sale $sale = null,
+        public ?SaleEntity $sale = null,
         #[SerializedName('raw_document_id')]
         public ?int $raw_document_id = null,
         #[SerializedName('fecha')]

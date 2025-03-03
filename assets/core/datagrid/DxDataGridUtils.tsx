@@ -3,6 +3,7 @@ import {FieldType} from "../field/FieldType";
 import {Column, Item, ITotalItemProps, Lookup, RequiredRule, TotalItem} from "devextreme-react/data-grid";
 import {dxUtils} from "../common/DxUtils";
 import {Button} from "devextreme-react";
+import React from "react";
 
 export const buildToolbar = (items: any[] = []) => {
     return items?.map((item: any, index) => {
@@ -22,7 +23,7 @@ export const buildToolbar = (items: any[] = []) => {
                 })}
             </Item>
         }
-        return <Item location='after' locateInMenu='auto' key={index}>
+        return <Item location='after' locateInMenu='auto' key={index} visible={item.visible}>
             <Button
                 icon={item.icon}
                 text={item.text}
@@ -37,11 +38,11 @@ export const buildToolbar = (items: any[] = []) => {
 
 const buildLookup = (field: Field) => {
     if (!field.filterable) return;
-    let lookup;
+    let lookup: React.JSX.Element | null = null;
     if (field.type === FieldType.ENTITY) {
         lookup = <Lookup
             dataSource={{
-                store: dxUtils.getDataStore(field.url ?? '', field.valueField, field.byKeyUrl, field.filters),
+                store: dxUtils.getDataStore(field.url ?? '', field.valueField, field.byKeyUrl, field.filters, [], []),
                 paginate: true,
                 pageSize: 10
             }}
@@ -57,8 +58,9 @@ const buildLookup = (field: Field) => {
         />
     }
     if (field.type === FieldType.SWITCH) {
+        const data = (field.data) ? field.data : [{value: true, text: 'Si'}, {value: false, text: 'No'}];
         lookup = <Lookup
-            dataSource={[{value: true, text: 'Si'}, {value: false, text: 'No'}]}
+            dataSource={data}
             valueExpr="value"
             displayExpr="text"
         />
@@ -124,10 +126,13 @@ export const buildColumns = (fields: Field[], forceLookup = false) => {
             width={field.width}
             minWidth={field.minWidth}
             editorOptions={editorOptions}
+            editCellComponent={field.contentRender}
             dataType={field.valueType}
+            format={field.format}
             filterValue={field.filterValue}
             hidingPriority={field.hidingPriority}
             fixed={field.fixed}
+            fixedPosition={field.fixedPosition}
         >
             {buildLookup(clone)}
             {buildValidationRules(clone)}

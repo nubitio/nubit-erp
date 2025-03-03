@@ -2,18 +2,18 @@
 
 namespace App\Dashboard\Domain;
 
-class BillingMonthlyUseCase
+readonly class BillingMonthlyUseCase
 {
     public function __construct(
-        private readonly DashboardRepositoryInterface $repository,
+        private DashboardRepositoryInterface $repository,
     ) {
     }
 
     /**
      * @return array<int, mixed>
      */
-    public function __invoke(string $localId): array
+    public function __invoke(): array
     {
-        return $this->repository->getMonthlyInvoicing($localId);
+        return $this->repository->getMonthlyInvoicing();
     }
 }

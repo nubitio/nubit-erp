@@ -3,7 +3,7 @@
 namespace App\CreditNote\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Sale\Infrastructure\SaleEntity;
+use App\Entity\SaleEntity;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\GeneratedValue;

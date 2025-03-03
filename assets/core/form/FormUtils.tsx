@@ -61,7 +61,7 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
                 },
                 onUploaded: (e: any) => {
                     let response = JSON.parse(e.request.response);
-                    uploadedFiles.current.push({field: field, value: response.id});
+                    uploadedFiles.current.push({field: field.name, value: response.id});
                 }
             }
         }
@@ -70,7 +70,8 @@ export const buildField = (field: Field, key: any, isEditable: Boolean = true, u
         editorOptions = {
             type: 'date',
             displayFormat: 'dd/MM/yyyy',
-            defaultValue: new Date()
+            defaultValue: new Date(),
+            min: field.data?.[0]?.min ?? undefined,
         }
     }
     if (field.type === FieldType.DATETIME) {

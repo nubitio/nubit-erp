@@ -1,35 +1,31 @@
 <?php
 
-namespace App\Sale\Api;
+namespace App\State\Sale;
 
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
-use App\Core\Domain\Api\ApiProviderInterface;
+use ApiPlatform\State\ProviderInterface;
 use App\Core\Domain\DataLoader\FilterOperation;
 use App\Core\Domain\DataLoader\FilterRule;
-use App\Core\Domain\DataLoader\JoinRule;
-use App\Core\Domain\DataLoader\JoinType;
-use App\Core\Domain\DataLoader\OptionsBuilder;
 use App\Core\Domain\DataLoader\OptionUtils;
 use App\Core\Domain\DataLoader\SortRule;
-use App\Sale\Domain\GetAllSaleUseCase;
-use App\Sale\Domain\GetOneSaleUseCase;
-use App\Sale\Domain\Sale;
-use App\Sale\Infrastructure\SaleEntity;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-/**
- * @implements ApiProviderInterface<Sale>
- */
-readonly class SaleProvider implements ApiProviderInterface
+readonly class SaleProvider implements ProviderInterface
 {
     public function __construct(
-        private GetAllSaleUseCase $getAllUseCase,
-        private GetOneSaleUseCase $getOneUseCase,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
+        private ProviderInterface $collectionProvider,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.item_provider')]
+        private ProviderInterface $itemProvider,
     ) {
     }
 
+    /**
+     * @inheritdoc
+     */
     #[\Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         if ($operation instanceof CollectionOperationInterface) {
             $type = $context['filters']['type'] ?? null;
@@ -38,12 +34,11 @@ readonly class SaleProvider implements ApiProviderInterface
                 'outbound' => $context = $this->buildContextForOutbound($context),
                 default => $context = $this->buildContextForSale($context),
             };
-            $options = OptionsBuilder::build($context, SaleEntity::class, Sale::class);
 
-            return $this->getAllUseCase->__invoke($options);
+            return $this->collectionProvider->provide($operation, $uriVariables, $context);
         }
 
-        return $this->getOneUseCase->__invoke(strval($uriVariables['movimiento_id']));
+        return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
     /**
@@ -53,10 +48,6 @@ readonly class SaleProvider implements ApiProviderInterface
      */
     private function buildContextForInbound(array $context): array
     {
-        $context = OptionUtils::addJoin($context, new JoinRule('e.almacen', 'a'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.operacion', 'o'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.proveedor', 'p', JoinType::LEFT));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
 
@@ -70,9 +61,6 @@ readonly class SaleProvider implements ApiProviderInterface
      */
     private function buildContextForOutbound(array $context): array
     {
-        $context = OptionUtils::addJoin($context, new JoinRule('e.almacen', 'a'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.operacion', 'o'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
 
@@ -86,11 +74,6 @@ readonly class SaleProvider implements ApiProviderInterface
      */
     private function buildContextForSale(array $context): array
     {
-        $context = OptionUtils::addJoin($context, new JoinRule('e.cliente', 'c'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.price_list', 'pl', JoinType::LEFT));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.almacen', 'a'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.tipo_pago', 'pm'));
-        $context = OptionUtils::addJoin($context, new JoinRule('e.details', 'sd'));
         $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
         $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::GreaterThan, 0));
 

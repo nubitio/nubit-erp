@@ -12,13 +12,8 @@ type DxDetailDataGridProps = {
 export const DxDetailDataGrid = ({options}: DxDetailDataGridProps) => {
     const [data, setData] = useState<CustomStore | null>(null);
 
-    let alreadyLoaded = false;
-
     useEffect(() => {
-        if (!alreadyLoaded) {
-            setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
-            alreadyLoaded = true;
-        }
+        setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
     }, []);
 
     return (
@@ -27,6 +22,8 @@ export const DxDetailDataGrid = ({options}: DxDetailDataGridProps) => {
                 dataSource={data}
                 className='grid'
                 noDataText=''
+                columnMinWidth={50}
+                columnAutoWidth={true}
             >
                 {buildColumns(options.fields)}
                 <Paging enabled={false}/>

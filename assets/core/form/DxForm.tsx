@@ -5,7 +5,7 @@ import {FieldType} from "../field/FieldType";
 import React, {forwardRef, useEffect, useImperativeHandle, useRef} from "react";
 import {FORM_ERRORS_EVENT, httpClient} from "../http/HttpClient";
 import {confirm} from "devextreme/ui/dialog";
-import DataGrid, {DataGridRef, Editing, KeyboardNavigation, Paging} from "devextreme-react/data-grid";
+import DataGrid, {DataGridRef, Editing, KeyboardNavigation, LoadPanel, Paging} from "devextreme-react/data-grid";
 import {buildColumns} from "../datagrid/DxDataGridUtils";
 import ArrayStore from "devextreme/data/array_store";
 import DataSource from "devextreme/data/data_source";
@@ -17,14 +17,17 @@ import toast from "../utils/SharedUtils";
 export interface DxFormOptions {
     className?: string;
     url: string;
+    detailUrl?: string;
     fields: Field[];
-    detailFields?: Field[];
+    detailFields?: any;
+    detailPropertyName?: string;
     allowAdding?: boolean;
     allowUpdating?: boolean;
     allowDeleting?: boolean;
     events?: any;
     editable?: boolean;
     format?: 'json' | 'multipart';
+    requiredDetail?: boolean;
     useIRI?: boolean;
 }
 
@@ -39,7 +42,13 @@ export interface DxFormEvents {
     setValues: (data: any) => void;
     setReadonly: (field: string, value: boolean) => void;
     setDisabled: (field: string, value: boolean) => void;
+    enableValidation: (field: string) => void;
+    disableValidation: (field: string) => void;
+    setError: (field: string, message: string) => void;
+    showField: (field: string) => void;
+    hideField: (field: string) => void
     validate: () => boolean;
+    setIsEdit: (value: boolean) => void;
 }
 
 export const FORM_EVENTS = {
@@ -58,19 +67,24 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const isEdit = useRef<boolean>(false);
     const data = useRef<DataSource>(new DataSource({
         store: new ArrayStore({
-            key: options.fields.find(field => field.isIdentity)?.name ?? '',
+            key: options.detailFields?.find(field => field.isIdentity)?.name ?? '',
             data: [],
         }),
     }));
     const [on, emit] = useEvents();
+    const detailPropertyName = options.detailPropertyName ?? 'items';
 
     const getIdField = () => {
         return options.fields.find(field => field.isIdentity)?.name ?? '';
     }
 
+    const getDetailIdField = () => {
+        return options.detailFields?.find(field => field.isIdentity)?.name ?? '';
+    }
+
     const buildFields = (fields: Field[]) => {
         return fields.map((field: Field, index) => {
-            return buildField(field, index, options.editable, uploadedFiles, formRef);
+            return buildField(field, index, options.editable ?? true, uploadedFiles, formRef);
         });
     }
 
@@ -80,7 +94,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             if (field.defaultValue !== undefined) {
                 row[field.name] = field.defaultValue;
             } else {
-                row[field.name] = null;
+                row[field.name] = undefined;
             }
         });
         return row;
@@ -89,9 +103,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const validate = () => {
         let formValidation = formRef.current?.instance().validate();
         let formValid = formValidation?.isValid ?? true;
-        let gridValid = gridRef.current?.instance().hasEditData() ?? true;
+        let gridValid = !gridRef.current?.instance().hasEditData() ?? true;
 
-        if (options.detailFields) {
+        if (options.requiredDetail) {
             gridValid = (gridRef.current?.instance().totalCount() ?? 0) > 0;
         }
 
@@ -135,6 +149,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     let value = row[field.name].split('/').pop();
                     row[field.name] = {id: value};
                 }
+                if (row[field.name] === null || row[field.name] === undefined) {
+                    row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
+                }
             }
         });
 
@@ -149,6 +166,15 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             });
         });
 
+        on<boolean>(FORM_EVENTS.LOADING, (loading) => {
+            if (loading) {
+                gridRef.current?.instance().option('noDataText', '');
+                gridRef.current?.instance().beginCustomLoading('Cargando...');
+            } else {
+                gridRef.current?.instance().endCustomLoading();
+            }
+        });
+
         on(options.events?.ADD, (payload: any) => {
             formRef.current?.instance().option('formData', null);
             uploadedFiles.current = [];
@@ -161,13 +187,17 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     let row = getData(payload);
                     formRef.current?.instance().getEditor(field.name)?.option('value', row[field.name]);
                 });
-                if (payload['details']) {
-                    setDetailData(payload['details'])
+                if (payload[detailPropertyName]) {
+                    setDetailData(payload[detailPropertyName])
                 }
             } else {
                 options.fields.forEach((field: Field) => {
                     if (field.defaultValue !== undefined) {
-                        formRef.current?.instance().getEditor(field.name)?.option('value', field.defaultValue);
+                        if (field.defaultValue instanceof Function) {
+                            formRef.current?.instance().getEditor(field.name)?.option('value', field.defaultValue());
+                        } else {
+                            formRef.current?.instance().getEditor(field.name)?.option('value', field.defaultValue);
+                        }
                     }
                 });
             }
@@ -178,6 +208,13 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             let row = getData(payload.row)
             formRef.current?.instance().option('formData', row);
             isEdit.current = true;
+            let detailUrl = options.detailUrl?.replace('{id}', row[getIdField()]);
+            if (!detailUrl) return;
+            setDetailData([]);
+            emit(FORM_EVENTS.LOADING, true)
+            httpClient.get<any>(detailUrl).subscribe((response) => {
+                setDetailData(response.data);
+            }).add(() => emit(FORM_EVENTS.LOADING, false))
         });
 
         on(options.events?.DELETE, (payload: any) => {
@@ -195,44 +232,36 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         on(options.events?.SAVE, () => {
             if (!validate()) return;
             emit(options.events?.LOADING, true);
-            let formData = formRef.current?.instance().option('formData');
+            const _formData = formRef.current?.instance().option('formData');
+            let formData = {..._formData};
             uploadedFiles.current.forEach((file: any) => {
-                if (options.useIRI ?? false) {
-                    formData[file.field.name] = getIRI(file.field.url, file.value);
-                    return;
-                } else {
-                    formData[file.field.name] = {
-                        id: file.value
-                    }
+                formData[file.field] = {
+                    id: file.value
                 }
             });
             options.fields.forEach((field: Field) => {
                 if (field.type === FieldType.ENTITY) {
                     const type = typeof formData[field.name];
-                    if (formData[field.name] === null || formData[field.name] === undefined) {
+                    if (formData[field.name] === null ||
+                        formData[field.name] === undefined ||
+                        formData[field.name] === '' ||
+                        formData[field.name] === -999
+                    ) {
                         delete formData[field.name];
                         return;
                     }
                     if (type === 'object' && formData[field.name] !== null) {
-                        if (options.useIRI ?? false) {
-                            formData[field.name] = getIRI(field.url ?? '', formData[field.name][field.valueField].toString())
-                        }
+                        formData[field.name] = getIRI(field.url ?? '', formData[field.name][field.valueField].toString())
                     }
 
                     if (type === 'string' || type === 'number') {
-                        if (options.useIRI ?? false) {
-                            formData[field.name] = getIRI(field.url ?? '', formData[field.name].toString())
-                        } else {
-                            formData[field.name] = {
-                                [field.valueField]: formData[field.name]
-                            }
-                        }
+                        formData[field.name] = getIRI(field.url ?? '', formData[field.name].toString())
                     }
                 }
                 if (field.type === FieldType.FILE) {
                     if (options.format === 'multipart') {
                         const files = getFieldValue(field.name);
-                        if (files) {
+                        if (files.length > 0) {
                             formData[field.name] = files[0];
                         } else {
                             delete formData[field.name];
@@ -267,11 +296,31 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             });
 
             if (options.detailFields) {
-                formData['details'] = gridRef.current?.instance().getDataSource().items();
+                const items = gridRef.current?.instance().getDataSource().items() ?? [];
+                formData[detailPropertyName] = JSON.parse(JSON.stringify(items));
                 options.detailFields.forEach((field: Field) => {
+                    if (field.type === FieldType.ENTITY) {
+                        formData[detailPropertyName].forEach((detail: any) => {
+                            const type = typeof (detail[field.name] ?? '');
+                            if (type === 'object') {
+                                detail[field.name] = getIRI(field.url ?? '', detail[field.name][field.valueField].toString())
+                            }
+                        });
+                    }
                     if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
-                        formData['details'].forEach((detail: any) => {
+                        formData[detailPropertyName].forEach((detail: any) => {
                             detail[field.name] = Number(detail[field.name]);
+                        });
+                    }
+                    if (!isEdit.current) {
+                        formData[detailPropertyName].forEach((detail: any) => {
+                            delete detail[getDetailIdField()];
+                        });
+                    } else {
+                        formData[detailPropertyName].forEach((detail: any) => {
+                            if (typeof detail[getDetailIdField()] === 'string') {
+                                delete detail[getDetailIdField()];
+                            }
                         });
                     }
                 })
@@ -354,6 +403,10 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     }
 
     const setError = (field: string, message: string) => {
+        if (field === 'items') {
+            toast(message, 'error');
+            return;
+        }
         const editor = formRef.current?.instance().getEditor(field);
         editor?.option({
             isValid: false,
@@ -361,6 +414,26 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                 message: message
             }
         });
+    }
+
+    const showField = (field: string) => {
+        formRef.current?.instance().itemOption(field, 'visible', true);
+    }
+
+    const hideField = (field: string) => {
+        formRef.current?.instance().itemOption(field, 'visible', false);
+    }
+
+    const enableValidation = (field: string) => {
+        formRef.current?.instance().getEditor(field)?.option('isValid', true);
+    }
+
+    const disableValidation = (field: string) => {
+        formRef.current?.instance().getEditor(field)?.option('isValid', false);
+    }
+
+    const setIsEdit = (value: boolean) => {
+        isEdit.current = value;
     }
 
     useImperativeHandle(ref, () => ({
@@ -375,10 +448,16 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         setReadonly,
         setDisabled,
         validate,
+        setError,
+        showField,
+        hideField,
+        enableValidation,
+        disableValidation,
+        setIsEdit,
     }));
 
     const renderForm = () => {
-        if (options.detailFields) {
+        if (options.detailFields?.length > 0) {
             return (
                 <Form
                     ref={formRef}
@@ -386,18 +465,20 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                     labelMode={'floating'}
                 >
                     <Item itemType="group" colCount={4}>
-                        <GroupItem colCount={1}>
+                        <GroupItem>
                             {buildFields(options.fields)}
                         </GroupItem>
                         <GroupItem colSpan={3}>
                             <DataGrid
+                                id={'form-detail-grid'}
                                 ref={gridRef}
-                                keyExpr={getIdField()}
+                                keyExpr={getDetailIdField()}
                                 dataSource={data.current}
                                 showBorders={true}
                                 showRowLines={true}
                                 showColumnLines={true}
                                 focusedRowEnabled={true}
+                                repaintChangesOnly={true}
                                 onInitNewRow={(e: any) => {
                                     e.data = buildEmptyRow(options.detailFields ?? []);
                                     e.component.saveEditData();
@@ -415,6 +496,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                                     emit(FORM_EVENTS.ROW_UPDATED, e.data);
                                 }}
                             >
+                                <LoadPanel showPane={false}/>
                                 <KeyboardNavigation
                                     editOnKeyPress={true}
                                     enterKeyAction="moveFocus"
@@ -422,10 +504,10 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                                 />
                                 <Editing
                                     mode="cell"
-                                    allowUpdating={options.allowUpdating}
-                                    allowDeleting={options.allowDeleting}
-                                    allowAdding={options.allowAdding}
-                                    startEditAction='click'
+                                    allowUpdating={options.allowUpdating ?? true}
+                                    allowDeleting={options.allowDeleting ?? true}
+                                    allowAdding={options.allowAdding ?? true}
+                                    startEditAction='dblClick'
                                     confirmDelete={false}
                                 />
                                 <Paging enabled={false}/>
@@ -455,10 +537,3 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         </React.Fragment>
     );
 });
-
-DxForm.defaultProps = {
-    editable: true,
-    allowAdding: true,
-    allowUpdating: true,
-    allowDeleting: true,
-}

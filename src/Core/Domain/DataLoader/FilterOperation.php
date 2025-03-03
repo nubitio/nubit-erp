@@ -5,14 +5,14 @@ namespace App\Core\Domain\DataLoader;
 enum FilterOperation: string
 {
     case Contains = 'contains';
-    case Equals = 'equal';
-    case NotEquals = 'notequal';
-    case BeginsWith = 'beginwith';
-    case EndsWith = 'endwith';
-    case LessThan = 'less';
-    case LessThanOrEqual = 'lessorequal';
-    case GreaterThan = 'greater';
-    case GreaterThanOrEqual = 'greaterorequal';
+    case Equals = '=';
+    case NotEquals = '<>';
+    case BeginsWith = 'startswith';
+    case EndsWith = 'endswith';
+    case LessThan = '<';
+    case LessThanOrEqual = '<=';
+    case GreaterThan = '>';
+    case GreaterThanOrEqual = '>=';
     case In = 'in';
     case NotIn = 'notin';
     case IsNull = 'isnull';
@@ -24,7 +24,7 @@ enum FilterOperation: string
         return match ($value) {
             'contains' => self::Contains,
             'equal', '=' => self::Equals,
-            'notequal' => self::NotEquals,
+            'notequal', '<>', '!=' => self::NotEquals,
             'beginwith' => self::BeginsWith,
             'endwith' => self::EndsWith,
             '<' => self::LessThan,

@@ -52,7 +52,7 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
                     const doc = formRef?.getFieldValue('ruc');
                     if (doc.length === 8) {
                         consultService.consultDni(doc).subscribe((response) => {
-                            formRef?.setFieldValue('razon_social', response.data.name);
+                            formRef?.setFieldValue('businessName', response.data.name);
                         });
                     } else if (doc.length === 11) {
                         consultService.consultRuc(doc).subscribe((response) => {
@@ -64,8 +64,8 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
                                 }, {position: 'top right'})
                                 return;
                             }
-                            formRef?.setFieldValue('razon_social', response.data.name);
-                            formRef?.setFieldValue('domicilio_fiscal', response.data.address);
+                            formRef?.setFieldValue('businessName', response.data.name);
+                            formRef?.setFieldValue('fiscalAddress', response.data.address);
                         });
                     }
                 }

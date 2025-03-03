@@ -28,8 +28,8 @@ readonly class NoteCreateUseCase
     public function __invoke(string $noteId): Note
     {
         $creditNote = $this->getOneCreditNoteUseCase->__invoke($noteId);
-        if (null !== $creditNote->sale?->movimiento_id) {
-            $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale->movimiento_id);
+        if (null !== $creditNote->sale?->id) {
+            $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale->id);
         }
 
         if (!isset($voucher)) {

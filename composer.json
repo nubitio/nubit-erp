@@ -114,9 +114,11 @@
       "cache:clear": "symfony-cmd",
       "assets:install %PUBLIC_DIR%": "symfony-cmd"
     },
-    "install-pre-commit-hook": [
+    "git-init": [
       "php -r \"file_exists('.git') && copy('pre-commit.sh', '.git/hooks/pre-commit');\"",
-      "chmod +x .git/hooks/pre-commit"
+      "chmod +x .git/hooks/pre-commit",
+      "php -r \"file_exists('.git') && copy('commit-msg.sh', '.git/hooks/commit-msg');\"",
+      "chmod +x .git/hooks/commit-msg"
     ],
     "post-install-cmd": [
       "@auto-scripts"

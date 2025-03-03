@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CustomerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'cliente')]
@@ -14,10 +15,12 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 class Customer
 {
+    #[Groups(['sale:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
+    #[Groups(['sale:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private ?string $businessName = null;
 
