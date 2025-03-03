@@ -5,31 +5,13 @@
 # Note: this will be replaced by the real command during copy.
 #
 
-# GrumPHP env vars
+# Fetch the GIT diff and format it as command input:
+DIFF=$(git -c diff.mnemonicprefix=false -c diff.noprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged | cat)
+
+# Grumphp env vars
+
 export GRUMPHP_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 
-# Web container name
-WEB_CONTAINER="web"
-
-# Path to the directory where the composer.json file is located inside the container
-COMPOSER_PATH="/var/www/html/"
-
-# Temporary file to store the git diff
-TEMP_FILE="/tmp/grumphp_diff.txt"
-
-# Fetch the GIT diff and save it to a temporary file
-git -c diff.mnemonicprefix=false -c diff.noprefix=false --no-pager diff -r -p -m -M --full-index --no-color --staged > "$TEMP_FILE"
-
-# Copy the diff file into the container
-docker cp "$TEMP_FILE" "$WEB_CONTAINER:$TEMP_FILE"
-
-# Run GrumPHP inside the container using the copied diff file
-docker exec "$WEB_CONTAINER" sh -c "cd $COMPOSER_PATH && cat $TEMP_FILE | /usr/bin/php vendor/bin/grumphp git:pre-commit --skip-success-output"
-
-# Clean up temporary file
-rm -f "$TEMP_FILE"
-
-echo "Git Hook Environment:" > /tmp/git_env.txt
-env >> /tmp/git_env.txt
-docker exec web env >> /tmp/git_env.txt
-
+# Run GrumPHP
+#(cd "./" && printf "%s\n" "${DIFF}" | exec 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
+(cd "./" && printf "%s\n" "${DIFF}" | docker exec web 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')

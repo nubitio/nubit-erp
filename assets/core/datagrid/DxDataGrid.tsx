@@ -1,8 +1,7 @@
 import './DxDataGrid.scss';
 import {
     ColumnChooser,
-    ColumnFixing,
-    DataGridRef,
+    ColumnFixing, DataGridRef,
     DataGridTypes,
     Export,
     FilterRow,
@@ -20,29 +19,30 @@ import {
     Toolbar
 } from "devextreme-react/data-grid";
 import {Button, DataGrid} from "devextreme-react";
-import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {forwardRef, ReactNode, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {jsPDF as JsPdf} from 'jspdf';
 import {saveAs} from 'file-saver';
 import {Workbook} from 'exceljs';
 import {exportDataGrid as exportDataGridToPdf} from 'devextreme/pdf_exporter';
 import {exportDataGrid as exportDataGridToXLSX} from 'devextreme/excel_exporter';
 import {dxUtils} from "../common/DxUtils";
-import CustomStore from "devextreme/data/custom_store";
 import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGridUtils";
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
 import {DxFilterRule} from "../common/FilterRule";
 import {useEvents} from "../event/EventHook";
 import DevExpress from "devextreme";
 import toast from "../utils/SharedUtils";
-import {RowPreparedEvent} from "devextreme/ui/data_grid";
+import {Field} from "../field/Field";
+import {Store} from "devextreme/data";
 import SelectionChangedEvent = DevExpress.ui.dxDataGrid.SelectionChangedEvent;
+import RowPreparedEvent = DevExpress.ui.dxDataGrid.RowPreparedEvent;
 
 export interface DxDataGridOptions {
     id: string;
     title: string;
     url: string;
     detailUrl?: string;
-    fields: any;
+    fields: Field[];
     detailFields?: any;
     columns?: any[];
     toolbar?: any[];
@@ -50,6 +50,10 @@ export interface DxDataGridOptions {
     allowAdd?: boolean;
     allowEdit?: boolean;
     allowDelete?: boolean;
+    allowExport?: boolean;
+    addDisabled?: boolean;
+    editDisabled?: boolean;
+    deleteDisabled?: boolean;
     summaryFields?: ITotalItemProps[];
     filter?: DxFilterRule[];
     sort?: any[];
@@ -63,32 +67,51 @@ export interface DxDataGridOptions {
     onSelectionChanged?: (e: SelectionChangedEvent) => void;
     onRowPrepared?: (e: RowPreparedEvent) => void;
     onContentReady?: () => void;
+    filterRow?: boolean;
+    manualLoad?: boolean;
+    beforeToolbar?: () => ReactNode;
 }
 
 export interface DxDataGridEvents {
     showLoading: (message?: string) => void;
     hideLoading: () => void;
     refresh: () => void;
+    reset: () => void;
+    getVisibleRows: () => any;
     getSelectedRowKey: () => any;
     getSelectedRow: () => any;
     getSelectedRowKeys: () => any;
     getSelectedRows: () => any;
-    getDataSource: () => CustomStore | null;
+    getDataSource: () => Store | null;
+    setDataSource: (dataSource: Store | null) => void;
+
+    getFilter(): any[];
+
+    filter(filterRule: DxFilterRule | null): void;
 }
 
 export const DATA_GRID_EVENTS = {
     SELECTION_CHANGED: 'datagrid:selection.changed',
+    TOOLBAR_EVENT: 'datagrid:toolbar.event',
 }
 
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
     const gridRef = useRef<DataGridRef | null>(null);
-    const [data, setData] = useState<CustomStore | null>(null);
+    const [data, setData] = useState<Store | null>(null);
     const exportFormats = ['xlsx', 'pdf'];
     const viewMode = options.mode ?? 'full';
     const [on, emit] = useEvents()
 
     const refresh = () => {
         gridRef.current?.instance().refresh();
+    }
+
+    const reset = () => {
+        gridRef.current?.instance().clearSelection();
+        gridRef.current?.instance().deselectAll();
+        gridRef.current?.instance().clearSorting();
+        gridRef.current?.instance().clearFilter();
+        gridRef.current?.instance().resetOption('focusedRowKey');
     }
 
     const onExporting = (e: DataGridTypes.ExportingEvent) => {
@@ -149,14 +172,18 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     }
 
     useEffect(() => {
-        setData(dxUtils.getDataStore(
+        setupObservers();
+        if (options.manualLoad) {
+            return;
+        }
+        const newDataStore = dxUtils.getDataStore(
             options.url,
             getIdField(options.fields),
             options.url,
             options.filter,
             options.sort
-        ));
-        setupObservers();
+        );
+        setData(newDataStore);
     }, []);
 
     const renderDetail = useCallback((e: any) => {
@@ -176,6 +203,10 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         gridRef.current?.instance().endCustomLoading();
     }
 
+    const getVisibleRows = () => {
+        return gridRef.current?.instance().getVisibleRows();
+    }
+
     const getSelectedRowKey = () => {
         return gridRef.current?.instance().getSelectedRowKeys()[0];
     }
@@ -192,8 +223,30 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         return gridRef.current?.instance().getSelectedRowsData();
     }
 
+    const setDataSource = (dataSource: Store | null) => {
+        setData(dataSource);
+    }
+
     const getDataSource = () => {
         return data;
+    }
+
+    const getFilter = () => {
+        let filter = gridRef.current?.instance().getCombinedFilter();
+
+        if (Array.isArray(filter) && filter.length === 3 && !(typeof filter[0] === 'object')) {
+            return [filter];
+        }
+
+        return filter ?? [];
+    }
+
+    const filter = (filterRule: DxFilterRule | null) => {
+        if (filterRule) {
+            gridRef.current?.instance().filter([filterRule.field, filterRule.operator, filterRule.value]);
+        } else {
+            gridRef.current?.instance().filter(filterRule);
+        }
     }
 
     const onSelectionChanged = (e: SelectionChangedEvent) => {
@@ -204,11 +257,16 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         showLoading,
         hideLoading,
         refresh,
+        reset,
+        getVisibleRows,
         getSelectedRowKey,
         getSelectedRow,
         getSelectedRowKeys,
         getSelectedRows,
         getDataSource,
+        setDataSource,
+        getFilter,
+        filter
     }));
 
     return (
@@ -244,7 +302,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                     <LoadPanel showPane={false}/>
                     <ColumnChooser enabled mode="select"/>
                     <ColumnFixing enabled={true}/>
-                    <Export enabled allowExportSelectedData formats={exportFormats}/>
+                    <Export enabled={options.allowExport ?? false} allowExportSelectedData formats={exportFormats}/>
                     <Selection
                         mode={options.selectionMode ?? 'single'}
                         selectAllMode='page'
@@ -261,12 +319,14 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                         <Item location='before' visible={'full' === viewMode}>
                             <div className='grid-header'>{options.title}</div>
                         </Item>
+                        {options.beforeToolbar && options.beforeToolbar()}
                         <Item location='after' locateInMenu='auto' visible={options.allowAdd ?? false}>
                             <Button
                                 text='Nuevo'
                                 type='default'
                                 stylingMode='outlined'
                                 onClick={onAddClick}
+                                disabled={options.addDisabled ?? false}
                             />
                         </Item>
                         <Item location='after' locateInMenu='auto' visible={options.allowEdit ?? false}>
@@ -276,6 +336,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                                 className='dx-button-warning'
                                 stylingMode='outlined'
                                 onClick={onEditClick}
+                                disabled={options.editDisabled ?? false}
                             />
                         </Item>
                         <Item location='after' locateInMenu='auto' visible={options.allowDelete ?? false}>
@@ -284,6 +345,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                                 type='danger'
                                 stylingMode='outlined'
                                 onClick={onDeleteClick}
+                                disabled={options.deleteDisabled ?? false}
                             />
                         </Item>
                         {buildToolbar(options.toolbar)}
@@ -300,32 +362,18 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                                 onClick={refresh}
                             />
                         </Item>
-                        <Item location='after' locateInMenu='auto'>
-                            <div className='separator'/>
-                        </Item>
+                        {options.allowExport &&
+                            <Item location='after' locateInMenu='auto'>
+                                <div className='separator'/>
+                            </Item>
+                        }
                         <Item name='exportButton'/>
                         <Item location='after' locateInMenu='auto'>
                             <div className='separator'/>
                         </Item>
                         <Item name='columnChooserButton' locateInMenu='auto'/>
-                        <Item location='after' locateInMenu='auto'>
-                            <div className='separator'/>
-                        </Item>
-                        <Item
-                            location='after'
-                            locateInMenu='auto'
-                            showText='inMenu'
-                            widget='dxButton'
-                        >
-                            <Button
-                                icon='ph ph-circle-notch'
-                                text='Restablecer'
-                                stylingMode='text'
-                                onClick={() => gridRef.current?.instance().state(null)}
-                            />
-                        </Item>
                     </Toolbar>
-                    <FilterRow visible={true}/>
+                    <FilterRow visible={options.filterRow ?? true}/>
                     <StateStoring
                         enabled={options.stateStoringEnabled ?? false}
                         type="localStorage"
@@ -336,7 +384,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                         {buildSummary(options.summaryFields)}
                     </Summary>
                     <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail}/>
-                    <Paging enabled={options.paging ?? true} defaultPageSize={20}/>
+                    <Paging defaultPageSize={20}/>
                     <Pager
                         visible={options.paging ?? true}
                         allowedPageSizes={[10, 20, 50, 100]}

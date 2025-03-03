@@ -16,8 +16,8 @@ export const InboundFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('movimiento_id')
-        .label('Movimiento id')
+        .name('id')
+        .label('ID')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -54,8 +54,15 @@ export const InboundFields = () => {
         .type(FieldType.ENTITY)
         .name('almacen')
         .label('Almacen')
-        .url(Constants.API_BASE_URL + 'branches/' + userInformation().currentBranchId + '/warehouses')
+        .url(Constants.API_BASE_URL + 'warehouses')
         .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
+        .filters([
+            {
+                field: 'branch',
+                operator: '=',
+                value: userInformation().currentBranchId
+            }
+        ])
         .valueField('almacen_id')
         .textField('descripcion')
         //.defaultValue(userInformation().currentWarehouseId)

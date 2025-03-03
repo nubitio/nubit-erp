@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Product
 {
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'sale_item:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -32,7 +32,7 @@ class Product
     #[ORM\Column(name: 'tipo_id')]
     private ?int $type = null;
 
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'sale_item:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private ?string $name = null;
 

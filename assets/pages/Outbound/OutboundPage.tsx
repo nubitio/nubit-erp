@@ -15,7 +15,7 @@ export const OutboundPage = () => {
     const detailFields = OutboundDetailFields();
     const formRef = useRef<DxFormEvents>(null)
 
-    const API_URL = Constants.API_BASE_URL + 'sales';
+    const API_URL = Constants.API_BASE_URL + 'movements';
 
     const EVENTS = {
         ADD: 'outbound:add',
@@ -31,7 +31,7 @@ export const OutboundPage = () => {
 
     const setupObservers = () => {
         on(EVENTS.EDIT, (payload: any) => {
-            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/details`).subscribe((response) => {
+            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/items`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
         })
@@ -50,7 +50,7 @@ export const OutboundPage = () => {
                 id={'outbound'}
                 title={'Salidas'}
                 url={API_URL + '?type=outbound'}
-                detailUrl={API_URL + '/{id}/details'}
+                detailUrl={API_URL + '/{id}/items'}
                 allowAdd={true}
                 allowEdit={true}
                 allowDelete={true}

@@ -53,8 +53,15 @@ export const OutboundFields = () => {
         .type(FieldType.ENTITY)
         .name('almacen')
         .label('Almacen')
-        .url(Constants.API_BASE_URL + 'branches/' + userInformation().currentBranchId + '/warehouses')
+        .url(Constants.API_BASE_URL + 'warehouses')
         .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
+        .filters([
+            {
+                field: 'branch',
+                operator: '=',
+                value: userInformation().currentBranchId
+            }
+        ])
         .valueField('almacen_id')
         .textField('descripcion')
         .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)

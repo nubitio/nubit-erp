@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Sale\Infrastructure;
+namespace App\State\Sale;
 
 use App\Core\Application\Session\Security;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Entity\CashShift;
+use App\Entity\SaleDetailEntity;
+use App\Entity\SaleEntity;
 use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
-use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -73,9 +74,9 @@ readonly class SaleUtils
     }
 
     public function fillSaleValues(
-        Sale $sale,
+        SaleEntity $sale,
         DocType $docType = DocType::NOTA_VENTA,
-    ): Sale {
+    ): SaleEntity {
         $sale->tipo_id = 2;
         $sale->serie = $this->getSaleSeries(
             $docType->value,
@@ -87,6 +88,16 @@ readonly class SaleUtils
         $sale->recargo_consumo = intval(
             $this->settings->get(Constants::CONSUMPTION_TAX)
         );
+
+        $subtotal = 0;
+        /** @var SaleDetailEntity $item */
+        foreach ($sale->items as $item) {
+            $item->movimiento = $sale;
+            $subtotal += $item->precio_total;
+        }
+
+        $sale->subtotal = $subtotal;
+        $sale->total = $subtotal - ($subtotal * $sale->descuento / 100);
 
         return $sale;
     }

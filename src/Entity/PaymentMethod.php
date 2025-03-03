@@ -13,13 +13,19 @@ class PaymentMethod
 {
     final public const int CASH = 1;
 
-    #[Groups(['cash_movement:read'])]
+    #[Groups([
+        'cash_movement:read',
+        'sale:read',
+    ])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[Groups(['cash_movement:read'])]
+    #[Groups([
+        'cash_movement:read',
+        'sale:read',
+    ])]
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 

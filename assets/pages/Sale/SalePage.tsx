@@ -9,7 +9,6 @@ import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dia
 import {saleService} from "../../service/sale.service";
 import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
-import {userInformation} from "../../core/common/UserInformation";
 import {CustomerPage} from "../Customer/CustomerPage";
 import {CustomerFields} from "../Customer/CustomerFields";
 import {Setting, settings} from "../../Settings";
@@ -31,7 +30,7 @@ export const SalePage = () => {
     const fields = SaleFields(formRef.current);
     const detailFields = SaleDetailFields(formRef.current);
 
-    const API_URL = Constants.API_BASE_URL + 'sales';
+    const API_URL = Constants.API_BASE_URL + 'movements';
 
     const EVENTS = {
         ADD: 'sale:add',
@@ -75,7 +74,7 @@ export const SalePage = () => {
             settings.get(Setting.AUTO_INVOICE).then((setting) => {
                 console.log(setting)
                 if (setting?.value === 'true') {
-                    makeInvoice(payload.data.movimiento_id);
+                    makeInvoice(payload.data.id);
                 }
             })
         })
@@ -226,7 +225,7 @@ export const SalePage = () => {
             onClick: () => {
                 let saleId = gridRef.current?.getSelectedRowKey();
                 saleService.getOne(saleId).subscribe((response) => {
-                    delete response.data.movimiento_id;
+                    delete response.data.id;
                     console.log(response.data);
                     emit(EVENTS.ADD, response.data);
                 });
@@ -245,15 +244,11 @@ export const SalePage = () => {
                 fields={fields}
                 allowAdd={true}
                 toolbar={toolbar}
-                detailUrl={API_URL + '/{id}/details'}
+                detailUrl={API_URL + '/{id}/items'}
                 detailFields={detailFields}
                 events={EVENTS}
-                filter={[
-                    {
-                        field: 'a.local',
-                        operator: '=',
-                        value: userInformation().currentBranchId
-                    }
+                sort={[
+                    {selector: 'numero', desc: true}
                 ]}
             />
             <DxDialog
@@ -267,6 +262,7 @@ export const SalePage = () => {
                     fields={fields}
                     detailFields={detailFields}
                     events={EVENTS}
+                    useIRI={true}
                 />
             </DxDialog>
             <DiscountDialog/>

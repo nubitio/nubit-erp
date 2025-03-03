@@ -99,8 +99,8 @@ class DevExtremeFilter extends AbstractFilter
             }
 
             $field = $filterParam[0];
-            $operator = $this->getOperation($filterParam[1]);
-            $value = $this->getValueForOperation(
+            $operator = $this->getOperator($filterParam[1]);
+            $value = $this->getValueForOperator(
                 $filterParam[1],
                 $filterParam[2]
             );
@@ -109,10 +109,16 @@ class DevExtremeFilter extends AbstractFilter
                 $queryBuilder,
                 $field
             );
-            $queryBuilder->andWhere(
-                sprintf('o.%s %s :%s', $field, $operator, $uniqueParameterName)
-            )
-                ->setParameter($uniqueParameterName, $value);
+            if ('isnull' === $filterParam[1] || 'isnotnull' === $filterParam[1]) {
+                $queryBuilder->andWhere(
+                    sprintf('o.%s %s', $field, $operator)
+                );
+            } else {
+                $queryBuilder->andWhere(
+                    sprintf('o.%s %s :%s', $field, $operator, $uniqueParameterName)
+                )
+                    ->setParameter($uniqueParameterName, $value);
+            }
         }
     }
 
@@ -130,21 +136,24 @@ class DevExtremeFilter extends AbstractFilter
         return $parameterName;
     }
 
-    private function getValueForOperation(string $op, string $value): string
+    private function getValueForOperator(string $op, string $value): string
     {
         return match ($op) {
             'contains', 'notcontains' => sprintf('%%%s%%', $value),
             'startswith' => $value . '%',
             'endswith' => '%' . $value,
+            'isnull', 'isnotnull' => '',
             default => $value,
         };
     }
 
-    private function getOperation(string $op): string
+    private function getOperator(string $op): string
     {
         return match ($op) {
             'contains', 'startswith', 'endswith' => 'LIKE',
             'notcontains' => 'NOT LIKE',
+            'isnull' => 'IS NULL',
+            'isnotnull' => 'IS NOT NULL',
             default => $op,
         };
     }

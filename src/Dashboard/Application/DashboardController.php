@@ -40,7 +40,7 @@ class DashboardController extends AbstractController
                 $data = ($this->salesMonthly)($localId);
                 break;
             case 'monthly-invoicing':
-                $data = ($this->monthlyInvoicing)($localId);
+                $data = ($this->monthlyInvoicing);
                 break;
             case 'product-rotation':
                 $lapse = $request->attributes->get('lapse');

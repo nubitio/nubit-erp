@@ -29,12 +29,18 @@ class DxUtils {
             });
     }
 
-    private async fetchById(url: string, id: any): Promise<any> {
+    private async fetchById(url: string, id: any, loadOptions: any): Promise<any> {
         let subscription = httpClient.get<any>(`${url}/${id}`);
 
         return lastValueFrom(subscription)
             .then((response: ApiResponse<any>) => {
                 return response.data;
+            })
+            .catch((error) => {
+                console.log(loadOptions);
+                if (loadOptions.prependData) {
+                    return loadOptions.prependData;
+                }
             });
     }
 
@@ -88,7 +94,15 @@ class DxUtils {
             byKey: (key) => {
                 let id = typeof key === 'object' ? key[idField] : key;
                 if (id === undefined) return Promise.resolve(null);
-                return this.fetchById(byKeyUrl ?? url, id)
+                let loadOptions = {};
+                options.forEach((option) => {
+                    for (const key in option) {
+                        if (option.hasOwnProperty(key)) {
+                            loadOptions[key] = option[key];
+                        }
+                    }
+                });
+                return this.fetchById(byKeyUrl ?? url, id, loadOptions);
             }
         });
     }

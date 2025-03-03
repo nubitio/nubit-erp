@@ -9,10 +9,10 @@ use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Entity\Customer;
+use App\Entity\SaleEntity;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
-use App\Sale\Domain\Sale;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,7 +71,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
      * @throws \Exception
      */
     #[\Override]
-    public function create(Sale $sale): void
+    public function create(SaleEntity $sale): void
     {
         $localId = $this->connection->fetchOne(
             'select local_id from almacen where almacen_id = ?',
@@ -85,7 +85,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
         $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?,?)', [
-            $sale->movimiento_id,
+            $sale->id,
             $localId,
             $invoiceAmounts->getSubtotal(),
             $invoiceAmounts->getTaxedAmount(),

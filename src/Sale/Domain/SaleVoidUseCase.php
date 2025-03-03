@@ -9,15 +9,17 @@ use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use App\Entity\SaleEntity;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
 
 readonly class SaleVoidUseCase
 {
     public function __construct(
-        private SaleRepositoryInterface $saleRepository,
+        private EntityManagerInterface $entityManager,
         private GetOneVoucherUseCase $getOneVoucherUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
         private VoidedCreateUseCase $voidedCreateUseCase,
@@ -38,7 +40,7 @@ readonly class SaleVoidUseCase
         int $userId,
     ): ApiResponse {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
-        $sale = $this->saleRepository->getOne($saleId);
+        $sale = $this->entityManager->find(SaleEntity::class, $saleId);
 
         if (2 === $sale->estado) {
             throw SaleException::alreadyVoided();
@@ -66,7 +68,8 @@ readonly class SaleVoidUseCase
         $sale->updated_by = $userId;
         $sale->date_updated = new \DateTime();
 
-        $this->saleRepository->update($sale);
+        $this->entityManager->persist($sale);
+        $this->entityManager->flush();
 
         if ($response instanceof \App\Billing\Model\Response\SummaryResponse) {
             $sunatResponse = $response->sunatResponse;

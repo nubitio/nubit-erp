@@ -28,7 +28,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('movimiento_id')
+        .name('id')
         .label('Movimiento id')
         .required(true)
         .build());
@@ -41,15 +41,18 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .valueType('date')
         .build());
-    let warehouseUrl = `${Constants.API_BASE_URL}branches/${userInformation().currentBranchId}/warehouses`;
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('almacen')
         .label('Almacen')
-        .url(warehouseUrl)
-        .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
-        .valueField('almacen_id')
-        .textField('descripcion')
+        .url(Constants.API_BASE_URL + 'warehouses')
+        .filters([{
+            field: 'branch',
+            operator: '=',
+            value: userInformation().currentBranchId
+        }])
+        .valueField('id')
+        .textField('name')
         .visible(false)
         .required(true)
         //.defaultValue(session['warehouse_id'])
@@ -64,7 +67,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .textField('businessName')
         .defaultValue('00000000')
         .required(true)
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.razon_social)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
         .onSelect((event: any) => {
             if (event.itemData.price_list) {
                 form?.setFieldValue('price_list', event.itemData.price_list.id);

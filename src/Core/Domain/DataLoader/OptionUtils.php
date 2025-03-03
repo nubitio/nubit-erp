@@ -15,7 +15,7 @@ class OptionUtils
         $sortRules = $context['filters']['sort'] ?? [];
 
         foreach ($sortRules as $sortRule) {
-            $sortRule = is_array($sortRule) ? $sortRule : json_decode((string) $sortRule, true);
+            $sortRule = is_array($sortRule) ? $sortRule : json_decode((string)$sortRule, true);
             if ($sortRule['selector'] === $sort->field) {
                 $sortRule['desc'] = 'desc' === $sort->order;
                 $sortRules = [$sortRule, ...$sortRules];
@@ -44,15 +44,18 @@ class OptionUtils
      */
     public static function addFilter(array $context, FilterRule $filter): array
     {
-        $context['filters']['filterRules'] ??= '[]';
+        $context['filters']['filter'] ??= [];
         /** @var array<int, array<string, mixed>> $filterRules */
-        $filterRules = json_decode(strval($context['filters']['filterRules']), true);
+        $filterRules = $context['filters']['filter'];
+        if (!empty($filterRules)) {
+            $filterRules[] = "and";
+        }
         $filterRules[] = [
-            'field' => $filter->field,
-            'op' => $filter->op->value,
-            'value' => $filter->value,
+            $filter->field,
+            $filter->op->value,
+            strval($filter->value),
         ];
-        $context['filters']['filterRules'] = json_encode($filterRules);
+        $context['filters']['filter'] = $filterRules;
 
         return $context;
     }
