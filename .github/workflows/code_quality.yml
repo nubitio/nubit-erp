@@ -1,16 +1,34 @@
-name: Code Quality Check
+name: Code quality check
+
 on:
   workflow_call:
 
 jobs:
-  qodana:
+  analyze:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          fetch-depth: 0
-      - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2023.1.0
-        env:
-          QODANA_TOKEN: ${{ secrets.QODANA_TOKEN }}
+          php-version: 8.3
+          extensions: curl, intl, json, pdo, soap, zip
+
+      - name: Cache Composer dependencies
+        id: composer-cache
+        run: |
+          echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run GrumPHP
+        run: vendor/bin/grumphp run
