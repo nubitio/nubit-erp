@@ -9,7 +9,8 @@ use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
 use App\Core\Infrastructure\DataLoader\DataLoader;
 use App\Entity\Customer;
-use App\Entity\SaleEntity;
+use App\Entity\InvoiceEntity;
+use App\Entity\Sale;
 use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
@@ -71,7 +72,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
      * @throws \Exception
      */
     #[\Override]
-    public function create(SaleEntity $sale): void
+    public function create(Sale $sale): void
     {
         $localId = $this->connection->fetchOne(
             'select local_id from almacen where almacen_id = ?',

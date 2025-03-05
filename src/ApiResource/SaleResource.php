@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Post;
 use App\Controller\PrintESCPOSController;
 use App\Core\Domain\Common\ApiResponse;
 use App\Dto\Sale\VoidSaleDto;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use App\State\Sale\MakeInvoiceProcessor;
 use App\State\Sale\VoidInvoiceProcessor;
 
@@ -21,7 +21,7 @@ use App\State\Sale\VoidInvoiceProcessor;
             uriVariables: [
                 'id' => new Link(
                     fromProperty: 'movimiento_id',
-                    fromClass: SaleEntity::class
+                    fromClass: Sale::class
                 ),
             ],
             processor: MakeInvoiceProcessor::class,
@@ -31,7 +31,7 @@ use App\State\Sale\VoidInvoiceProcessor;
             uriVariables: [
                 'id' => new Link(
                     fromProperty: 'movimiento_id',
-                    fromClass: SaleEntity::class
+                    fromClass: Sale::class
                 ),
             ],
             input: VoidSaleDto::class,
@@ -43,7 +43,7 @@ use App\State\Sale\VoidInvoiceProcessor;
             uriVariables: [
                 'id' => new Link(
                     fromProperty: 'movimiento_id',
-                    fromClass: SaleEntity::class
+                    fromClass: Sale::class
                 ),
             ],
             controller: PrintESCPOSController::class,

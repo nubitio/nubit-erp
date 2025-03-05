@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use App\State\Invoice\ConsultInvoiceProvider;
 use App\State\Invoice\SendEmailProcessor;
 use App\State\Invoice\SendInvoiceProcessor;
@@ -35,7 +35,7 @@ use App\State\Invoice\ValidateInvoiceProcessor;
     uriVariables: [
         'id' => new Link(
             fromProperty: 'id',
-            fromClass: SaleEntity::class
+            fromClass: Sale::class
         ),
     ]
 )]

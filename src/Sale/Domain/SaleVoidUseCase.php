@@ -9,7 +9,7 @@ use App\Core\Domain\Common\ApiResponse;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Exception;
@@ -40,7 +40,7 @@ readonly class SaleVoidUseCase
         int $userId,
     ): ApiResponse {
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
-        $sale = $this->entityManager->find(SaleEntity::class, $saleId);
+        $sale = $this->entityManager->find(Sale::class, $saleId);
 
         if (2 === $sale->estado) {
             throw SaleException::alreadyVoided();

@@ -119,8 +119,9 @@ class HttpClient {
             abortController.abort();
         }
 
-        return fromPromise(promise)
-            .pipe(map((response) => new ApiResponse<T>(response)));
+        return fromPromise(promise).pipe(
+            map((response) => new ApiResponse<T>(response))
+        );
     }
 
     get<T>(url: string, config?: AxiosRequestConfig) {

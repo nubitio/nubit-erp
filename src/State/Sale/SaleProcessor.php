@@ -8,7 +8,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Domain\Exception\ServiceException;
 use App\Entity\CashShift;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use App\Enum\CashShiftStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -29,7 +29,7 @@ readonly class SaleProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      *
-     * @param SaleEntity $data
+     * @param Sale $data
      *
      * @throws ServiceException
      */
