@@ -102,7 +102,7 @@ readonly class SaleUtils
         return $sale;
     }
 
-    private function getCashBoxId()
+    private function getCashBoxId(): ?int
     {
         $user = $this->security->connectedUser();
 

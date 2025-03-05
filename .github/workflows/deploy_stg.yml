@@ -6,9 +6,14 @@ on:
       - main
 
 jobs:
+  code_quality:
+    name: Code quality check
+    uses: ./.github/workflows/code_quality.yml
+
   build:
     name: Build
     uses: ./.github/workflows/build.yml
+    needs: [ code_quality ]
 
   deployment:
     name: Deployment

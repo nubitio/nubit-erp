@@ -7,14 +7,10 @@ on:
 
 jobs:
   static_code_analysis:
-    name: Static Code Analysis
-    uses: ./.github/workflows/analyze.yml
+    name: Code quality check
+    uses: ./.github/workflows/code_quality.yml
 
   build:
     name: Build
     uses: ./.github/workflows/build.yml
     needs: [ static_code_analysis ]
-
-  unit_tests:
-    name: Unit Tests
-    uses: ./.github/workflows/test.yml

@@ -99,7 +99,7 @@ class UpdateStockCommand extends TenantAwareCommand
     /**
      * @throws Exception
      */
-    private function calculateStock($productId): int
+    private function calculateStock(string $productId): int
     {
         $connection = $this->entityManager->getConnection();
 
