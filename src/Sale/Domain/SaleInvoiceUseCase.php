@@ -2,7 +2,7 @@
 
 namespace App\Sale\Domain;
 
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceCreatedEvent;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
@@ -22,7 +22,7 @@ readonly class SaleInvoiceUseCase
 
     public function __invoke(string $saleId): ?Voucher
     {
-        $sale = $this->entityManager->find(SaleEntity::class, $saleId);
+        $sale = $this->entityManager->find(Sale::class, $saleId);
 
         if (!$sale->has_invoice) {
             $this->invoiceRepository->create($sale);

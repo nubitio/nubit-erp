@@ -4,7 +4,7 @@ namespace App\Invoice\Domain;
 
 use App\Core\Domain\DataLoader\LoadOptions;
 use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 
 interface InvoiceRepositoryInterface
 {
@@ -17,7 +17,7 @@ interface InvoiceRepositoryInterface
 
     public function getOneBySaleId(string $saleId): Invoice;
 
-    public function create(SaleEntity $sale): void;
+    public function create(Sale $sale): void;
 
     public function insert(Invoice $invoice): Invoice;
 

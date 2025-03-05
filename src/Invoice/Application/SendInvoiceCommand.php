@@ -2,13 +2,12 @@
 
 namespace App\Invoice\Application;
 
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
 use App\Core\Infrastructure\Service\TenantManager;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
-use League\Flysystem\FilesystemException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,15 +18,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'invoice:send',
     description: 'Send invoice',
 )]
-class SendInvoiceCommand extends Command
+class SendInvoiceCommand extends TenantAwareCommand
 {
     public function __construct(
-        private readonly TenantManager $tenantManager,
-        private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        LoggerInterface $logger,
         private readonly Connection $connection,
         private readonly InvoiceSendUseCase $invoiceSendUseCase,
     ) {
-        parent::__construct();
+        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
     #[\Override]
@@ -36,47 +36,20 @@ class SendInvoiceCommand extends Command
         $this->setHelp('Envía comprobante');
     }
 
-    #[\Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        try {
-            $tenants = $this->tenantManager->getTenants();
 
-            foreach ($tenants as $tenant) {
-                /** @var string $tenantName */
-                $tenantName = $tenant['name'];
-                $this->tenantConnectionSwitcher->switchConnection($tenantName);
-                $io->title('Tenant: ' . $tenantName);
-
-                $this->sendInvoice($io);
-            }
-
-            $io->success('Done!');
-
-            return Command::SUCCESS;
-        } catch (ServiceException | Exception | FilesystemException $e) {
-            $io->error('Error: ' . $e->getMessage());
-
-            return Command::FAILURE;
-        }
-    }
-
-    /**
-     * @throws FilesystemException
-     * @throws ServiceException
-     * @throws Exception
-     */
-    private function sendInvoice(SymfonyStyle $io): void
-    {
-        $pending = $this->connection->fetchAllAssociative("
+        $pending = $this->connection->fetchAllAssociative(
+            "
             SELECT
                 movimiento_id
             FROM comprobante
             WHERE
                 (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
                 AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
-            ");
+            "
+        );
 
         $io->text('Pending: ' . count($pending));
 
@@ -90,5 +63,7 @@ class SendInvoiceCommand extends Command
                 $io->warning($response->sunatResponse->getError()?->getMessage() ?? '');
             }
         }
+
+        return Command::SUCCESS;
     }
 }

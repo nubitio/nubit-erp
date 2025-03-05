@@ -7,8 +7,8 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Entity\CashShift;
-use App\Entity\SaleDetailEntity;
-use App\Entity\SaleEntity;
+use App\Entity\SaleItem;
+use App\Entity\Sale;
 use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;
@@ -74,9 +74,9 @@ readonly class SaleUtils
     }
 
     public function fillSaleValues(
-        SaleEntity $sale,
+        Sale $sale,
         DocType $docType = DocType::NOTA_VENTA,
-    ): SaleEntity {
+    ): Sale {
         $sale->tipo_id = 2;
         $sale->serie = $this->getSaleSeries(
             $docType->value,
@@ -90,7 +90,7 @@ readonly class SaleUtils
         );
 
         $subtotal = 0;
-        /** @var SaleDetailEntity $item */
+        /** @var SaleItem $item */
         foreach ($sale->items as $item) {
             $item->movimiento = $sale;
             $subtotal += $item->precio_total;

@@ -15,12 +15,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Customer
 {
-    #[Groups(['sale:read'])]
+    #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
-    #[Groups(['sale:read'])]
+    #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private ?string $businessName = null;
 

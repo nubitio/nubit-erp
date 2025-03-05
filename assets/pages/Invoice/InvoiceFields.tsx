@@ -32,13 +32,13 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('c.razon_social')
         .label('Cliente')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.razon_social)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.businessName)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('tipo_comprobante_id')
         .label('Tipo')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.tipo_comprobante_id === '01' ? 'Factura' : 'Boleta')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_comprobante_id === '01' ? 'Factura' : 'Boleta')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)

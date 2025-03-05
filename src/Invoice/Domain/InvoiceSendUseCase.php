@@ -8,15 +8,16 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
+use App\Entity\InvoiceEntity;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
 
 readonly class InvoiceSendUseCase
 {
     public function __construct(
-        private GetOneInvoiceBySaleIdUseCase $getOneInvoiceUseCase,
+        private EntityManagerInterface $entityManager,
         private BillSendUseCase $billSendUseCase,
-        private UpdateInvoiceUseCase $updateInvoiceUseCase,
         private FileManager $fileManager,
         private SettingsService $settings,
     ) {
@@ -29,7 +30,9 @@ readonly class InvoiceSendUseCase
      */
     public function __invoke(string $saleId): DocumentResponse
     {
-        $invoice = $this->getOneInvoiceUseCase->__invoke($saleId);
+        $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(
+            ['movimiento_id' => $saleId]
+        );
 
         if (null == $invoice) {
             throw new ServiceException('Invoice not found');
@@ -55,7 +58,8 @@ readonly class InvoiceSendUseCase
             $invoice->mensaje_sunat = $response->sunatResponse->getError()?->getMessage();
         }
 
-        $this->updateInvoiceUseCase->__invoke($invoice);
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush();
 
         return $response;
     }

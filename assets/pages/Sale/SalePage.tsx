@@ -14,6 +14,8 @@ import {CustomerFields} from "../Customer/CustomerFields";
 import {Setting, settings} from "../../Settings";
 import {SalePrintPreviewPopup} from "./SalePrintPreviewPopup";
 import {useEvents} from "../../core/event/EventHook";
+import {httpClient} from "../../core/http/HttpClient";
+import {forkJoin, map, of, switchMap} from "rxjs";
 
 export const SalePage = () => {
     const [on, emit] = useEvents();
@@ -223,12 +225,25 @@ export const SalePage = () => {
             text: 'Duplicar',
             type: 'info',
             onClick: () => {
+                emit(FORM_EVENTS.LOADING, true)
                 let saleId = gridRef.current?.getSelectedRowKey();
-                saleService.getOne(saleId).subscribe((response) => {
-                    delete response.data.id;
-                    console.log(response.data);
-                    emit(EVENTS.ADD, response.data);
-                });
+                httpClient.get<any>(Constants.API_BASE_URL + 'movements/' + saleId).pipe(
+                    switchMap(saleResponse =>
+                        forkJoin({
+                            sale: of(saleResponse),
+                            items: httpClient.get<any>(Constants.API_BASE_URL + 'movements/' + saleId + '/items')
+                        })
+                    ),
+                    map(({sale, items}) => ({
+                        ...sale.data,
+                        items: items.data
+                    }))
+                ).subscribe({
+                    next: (data) => {
+                        emit(EVENTS.ADD, data)
+                    },
+                    complete: () => emit(FORM_EVENTS.LOADING, false)
+                })
             },
             disabled: !cloneEnabled
         }

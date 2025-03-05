@@ -3,7 +3,7 @@
 namespace App\CreditNote\Infrastructure;
 
 use App\Core\Domain\Annotation\IgnoreAutowire;
-use App\Entity\SaleEntity;
+use App\Entity\Sale;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\CustomIdGenerator;
 use Doctrine\ORM\Mapping\GeneratedValue;
@@ -20,9 +20,9 @@ class CreditNoteEntity
         #[CustomIdGenerator(class: UuidGenerator::class)]
         #[ORM\Column(name: 'nota_id', type: 'string')]
         public ?string $nota_id = null,
-        #[ORM\ManyToOne(targetEntity: SaleEntity::class)]
+        #[ORM\ManyToOne(targetEntity: Sale::class)]
         #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
-        public ?SaleEntity $sale = null,
+        public ?Sale $sale = null,
         #[ORM\Column(name: 'raw_document_id', type: 'integer')]
         public ?int $raw_document_id = null,
         #[ORM\Column(name: 'fecha', type: 'date')]

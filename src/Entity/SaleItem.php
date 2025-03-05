@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     uriVariables: [
         'id' => new Link(
             fromProperty: 'items',
-            fromClass: SaleEntity::class,
+            fromClass: Sale::class,
         ),
     ],
     normalizationContext: ['groups' => ['sale_item:read']],
@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 #[ORM\Entity]
 #[ORM\Table(name: 'movimiento_detalle')]
-class SaleDetailEntity
+class SaleItem
 {
     public function __construct(
         #[Groups(['sale_item:read'])]
@@ -32,21 +32,21 @@ class SaleDetailEntity
         public ?int $id = null,
         #[ORM\ManyToOne(cascade: ['persist', 'remove'], inversedBy: 'items')]
         #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
-        public ?SaleEntity $movimiento = null,
-        #[Groups(['sale_item:read'])]
+        public ?Sale $movimiento = null,
+        #[Groups(['sale_item:read', 'sale:write'])]
         #[ORM\ManyToOne(targetEntity: Product::class)]
         #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
         public ?Product $producto = null,
-        #[Groups(['sale_item:read'])]
+        #[Groups(['sale_item:read', 'sale:write'])]
         #[ORM\Column(name: 'cantidad')]
         public ?float $cantidad = null,
-        #[Groups(['sale_item:read'])]
+        #[Groups(['sale_item:read', 'sale:write'])]
         #[ORM\Column(name: 'precio_unitario')]
         public ?float $precio_unitario = null,
-        #[Groups(['sale_item:read'])]
+        #[Groups(['sale_item:read', 'sale:write'])]
         #[ORM\Column(name: 'descuento')]
         public ?float $descuento = null,
-        #[Groups(['sale_item:read'])]
+        #[Groups(['sale_item:read', 'sale:write'])]
         #[ORM\Column(name: 'precio_total')]
         public ?float $precio_total = null,
     ) {
