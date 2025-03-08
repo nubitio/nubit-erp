@@ -31,14 +31,22 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class Warehouse
 {
-    #[Groups(['warehouse:read'])]
+    #[Groups([
+        'warehouse:read',
+        'inbound:read',
+        'outbound:read',
+    ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'almacen_id')]
     private ?string $id = null;
 
-    #[Groups(['warehouse:read'])]
+    #[Groups([
+        'warehouse:read',
+        'inbound:read',
+        'outbound:read',
+    ])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private ?string $name = null;
 

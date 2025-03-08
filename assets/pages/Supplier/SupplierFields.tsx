@@ -1,9 +1,10 @@
 import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
-import {SharedUtils} from "../../core/utils/SharedUtils";
+import toast, {SharedUtils} from "../../core/utils/SharedUtils";
 import {textField} from "../../core/field/TextFieldBuilder";
 import {DxFormEvents} from "../../core/form/DxForm";
+import {consultService} from "../../service/consult.service";
 
 export const SupplierFields = (formRef: DxFormEvents | null) => {
     const fields: Field[] = [];
@@ -44,6 +45,24 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
                 }
             }
         ])
+        .buttons([{
+            name: 'search',
+            location: 'after',
+            options: {
+                icon: 'search',
+                onClick: (e: any) => {
+                    const doc = formRef?.getFieldValue('ruc');
+                    consultService.consultRuc(doc).subscribe((response) => {
+                        if (!response.data.active) {
+                            toast("El RUC ingresado no se encuentra activo", "error");
+                            return;
+                        }
+                        formRef?.setFieldValue('businessName', response.data.name);
+                        formRef?.setFieldValue('fiscalAddress', response.data.address);
+                    });
+                }
+            }
+        }])
         .required(true)
         .build());
     fields.push(new FieldBuilder()

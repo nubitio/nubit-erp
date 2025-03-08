@@ -15,8 +15,8 @@ export const OutboundFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('movimiento_id')
-        .label('Movimiento id')
+        .name('id')
+        .label('Id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -62,9 +62,9 @@ export const OutboundFields = () => {
                 value: userInformation().currentBranchId
             }
         ])
-        .valueField('almacen_id')
-        .textField('descripcion')
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .valueField('id')
+        .textField('name')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         //.defaultValue(userInformation().currentWarehouseId)
         .build());
     fields.push(new FieldBuilder()
@@ -79,6 +79,14 @@ export const OutboundFields = () => {
 export const OutboundDetailFields = () => {
     const fields: Field[] = [];
 
+    fields.push(new FieldBuilder()
+        .isIdentity(true)
+        .visible(false)
+        .type(FieldType.NONE)
+        .name('id')
+        .label('Id')
+        .required(true)
+        .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('producto')

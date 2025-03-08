@@ -74,7 +74,11 @@ class Sale
         ])]
         #[ORM\Column(name: 'fecha', type: 'date')]
         public ?DateTimeInterface $fecha = null,
-        #[Groups(['inbound:read', 'outbound:read'])]
+        #[Groups([
+            'sale:write',
+            'inbound:read',
+            'outbound:read',
+        ])]
         #[ORM\ManyToOne(targetEntity: Supplier::class)]
         #[ORM\JoinColumn(name: 'proveedor_id', referencedColumnName: 'proveedor_id')]
         public ?Supplier $proveedor = null,
