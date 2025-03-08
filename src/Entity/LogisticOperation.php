@@ -7,6 +7,7 @@ use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\LogisticOperationRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: LogisticOperationRepository::class)]
 #[ORM\Table(name: 'operacion')]
@@ -15,12 +16,14 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 )]
 class LogisticOperation
 {
+    #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'operacion_id')]
     private ?string $id = null;
 
+    #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'descripcion')]
     private ?string $name = null;
 

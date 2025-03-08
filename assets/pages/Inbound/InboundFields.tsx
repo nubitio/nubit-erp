@@ -63,10 +63,10 @@ export const InboundFields = () => {
                 value: userInformation().currentBranchId
             }
         ])
-        .valueField('almacen_id')
-        .textField('descripcion')
+        .valueField('id')
+        .textField('name')
         //.defaultValue(userInformation().currentWarehouseId)
-        .formatter((cell: ColumnCellTemplateData) => cell.value?.descripcion)
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -98,6 +98,14 @@ export const InboundFields = () => {
 export const InboundDetailFields = () => {
     const fields: Field[] = [];
 
+    fields.push(new FieldBuilder()
+        .isIdentity(true)
+        .visible(false)
+        .type(FieldType.NONE)
+        .name('id')
+        .label('Id')
+        .required(true)
+        .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
         .name('producto')

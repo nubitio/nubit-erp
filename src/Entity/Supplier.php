@@ -7,6 +7,7 @@ use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SupplierRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SupplierRepository::class)]
 #[ORM\Table(name: 'proveedor')]
@@ -15,6 +16,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 )]
 class Supplier
 {
+    #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -24,6 +26,7 @@ class Supplier
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
+    #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private ?string $businessName = null;
 

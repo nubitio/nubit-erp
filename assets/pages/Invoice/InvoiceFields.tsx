@@ -4,6 +4,7 @@ import {FieldType} from "../../core/field/FieldType";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {SharedUtils} from "../../core/utils/SharedUtils";
+import {Constants} from "../../core/common/Constants";
 
 export const InvoiceFields = () => {
     const fields: Field[] = [];
@@ -20,24 +21,34 @@ export const InvoiceFields = () => {
         .type(FieldType.DATE)
         .name('fecha')
         .label('Fecha')
+        .valueType('date')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('cliente_id')
+        .name('ruc')
         .label('DNI/RUC')
         .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.ruc)
+        .filterable(false)
+        .sortable(false)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
-        .name('c.razon_social')
+        .type(FieldType.ENTITY)
+        .name('cliente')
         .label('Cliente')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.businessName)
+        .url(Constants.API_BASE_URL + 'customers')
+        .valueField('ruc')
+        .textField('businessName')
+        .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
         .build());
     fields.push(new FieldBuilder()
-        .type(FieldType.TEXT)
+        .type(FieldType.ENUM)
         .name('tipo_comprobante_id')
         .label('Tipo')
+        .data([
+            {value: '01', text: 'Factura'},
+            {value: '03', text: 'Boleta'}
+        ])
         .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_comprobante_id === '01' ? 'Factura' : 'Boleta')
         .build());
     fields.push(new FieldBuilder()

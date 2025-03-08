@@ -162,6 +162,9 @@ export const InvoicePage = () => {
                     url={API_URL}
                     fields={fields}
                     events={EVENTS}
+                    sort={[
+                        {selector: 'created_at', desc: true}
+                    ]}
                 />
                 <DxDialog
                     events={EVENTS}

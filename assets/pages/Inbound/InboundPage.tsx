@@ -41,7 +41,7 @@ export const InboundPage = () => {
 
     const setupObservers = () => {
         on(EVENTS.EDIT, (payload: any) => {
-            httpClient.get<any>(`${API_URL}/${payload.row.movimiento_id}/items`).subscribe((response) => {
+            httpClient.get<any>(`${API_URL}/${payload.row.id}/items`).subscribe((response) => {
                 formRef.current?.setDetailData(response.data);
             })
         })

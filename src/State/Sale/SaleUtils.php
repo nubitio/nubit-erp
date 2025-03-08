@@ -7,7 +7,6 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Entity\CashShift;
-use App\Entity\SaleItem;
 use App\Entity\Sale;
 use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
@@ -88,16 +87,6 @@ readonly class SaleUtils
         $sale->recargo_consumo = intval(
             $this->settings->get(Constants::CONSUMPTION_TAX)
         );
-
-        $subtotal = 0;
-        /** @var SaleItem $item */
-        foreach ($sale->items as $item) {
-            $item->movimiento = $sale;
-            $subtotal += $item->precio_total;
-        }
-
-        $sale->subtotal = $subtotal;
-        $sale->total = $subtotal - ($subtotal * $sale->descuento / 100);
 
         return $sale;
     }

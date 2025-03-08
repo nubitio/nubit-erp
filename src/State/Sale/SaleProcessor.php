@@ -9,6 +9,7 @@ use App\Core\Application\Session\Security;
 use App\Core\Domain\Exception\ServiceException;
 use App\Entity\CashShift;
 use App\Entity\Sale;
+use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -53,6 +54,16 @@ readonly class SaleProcessor implements ProcessorInterface
             }
             $data = $this->saleUtils->fillSaleValues($data);
         }
+
+        $subtotal = 0;
+        /** @var SaleItem $item */
+        foreach ($data->items as $item) {
+            $item->movimiento = $data;
+            $subtotal += $item->precio_total;
+        }
+
+        $data->subtotal = $subtotal;
+        $data->total = $subtotal - ($subtotal * $data->descuento / 100);
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }
