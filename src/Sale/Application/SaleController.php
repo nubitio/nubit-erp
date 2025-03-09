@@ -2,7 +2,7 @@
 
 namespace App\Sale\Application;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Core\Infrastructure\Service\XlsExporter;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;

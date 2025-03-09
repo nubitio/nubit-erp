@@ -5,9 +5,11 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ProductRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'producto')]
@@ -15,6 +17,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['product:read']],
     filters: [DevExtremeFilter::class],
 )]
+#[AppAssert\UniqueEntity(fields: ['code'], message: 'Ya existe un producto con el mismo código.')]
+#[AppAssert\UniqueEntity(fields: ['name'], message: 'Ya existe un producto con el mismo nombre.')]
 class Product
 {
     #[Groups(['product:read', 'sale_item:read'])]
@@ -28,19 +32,23 @@ class Product
     #[ORM\Column(name: 'codigo', length: 255, nullable: true)]
     private ?string $code = null;
 
+    #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'tipo_id')]
     private ?int $type = null;
 
+    #[Assert\NotBlank]
     #[Groups(['product:read', 'sale_item:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private ?string $name = null;
 
+    #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id', nullable: false)]
     private ?Category $category = null;
 
+    #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id', nullable: false)]
@@ -50,6 +58,7 @@ class Product
     #[ORM\Column(name: 'precio_compra')]
     private ?float $purchasePrice = null;
 
+    #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'precio')]
     private ?float $salePrice = null;

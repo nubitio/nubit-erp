@@ -2,7 +2,7 @@
 
 namespace App\Home\Application;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Core\Infrastructure\Service\LogoProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;

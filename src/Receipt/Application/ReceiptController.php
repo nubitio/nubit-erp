@@ -2,7 +2,7 @@
 
 namespace App\Receipt\Application;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\PdfExporter;
 use App\Invoice\Domain\GetOneVoucherUseCase;

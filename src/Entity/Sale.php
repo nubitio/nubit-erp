@@ -12,6 +12,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'movimiento')]
@@ -47,6 +48,7 @@ class Sale
             'inbound:read',
             'outbound:read',
         ])]
+        #[Assert\NotBlank]
         #[ORM\ManyToOne(targetEntity: Warehouse::class)]
         #[ORM\JoinColumn(name: 'almacen_id', referencedColumnName: 'almacen_id')]
         public ?Warehouse $almacen = null,
@@ -66,6 +68,7 @@ class Sale
         ])]
         #[ORM\Column(name: 'tipo_id', type: 'integer')]
         public ?int $tipo_id = null,
+        #[Assert\NotBlank]
         #[Groups([
             'sale:read',
             'sale:write',

@@ -2,7 +2,7 @@
 
 namespace App\Api;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Sale\Domain\SaleInvoiceUseCase;
 use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\RequestStack;

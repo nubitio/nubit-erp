@@ -45,11 +45,12 @@ export const ProductFields = () => {
         .formatter((cell: ColumnCellTemplateData) => {
             return cell.value === 1 ? 'Fisico' : 'Servicio';
         })
+        .defaultValue(1)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('name')
-        .label('Descripción')
+        .label('Nombre')
         .sortable(true)
         .required(true)
         .build());
