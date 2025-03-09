@@ -5,21 +5,27 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CustomerRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'cliente')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
 )]
+#[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC.')]
 class Customer
 {
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe tener 11 dígitos.')]
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
+    #[Assert\NotBlank]
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private ?string $businessName = null;
@@ -27,9 +33,11 @@ class Customer
     #[ORM\Column(name: 'domicilio_fiscal', nullable: true)]
     private ?string $fiscalAddress = null;
 
+    #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]
     #[ORM\Column(name: 'telefono', length: 20, nullable: true)]
     private ?string $phone = null;
 
+    #[Assert\Email]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 

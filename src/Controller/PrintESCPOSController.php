@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Extension\RemoteEscposImage;
 use App\Core\Infrastructure\Service\LogoProvider;

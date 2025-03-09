@@ -5,15 +5,18 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SupplierRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SupplierRepository::class)]
 #[ORM\Table(name: 'proveedor')]
 #[ApiResource(
     filters: [DevExtremeFilter::class],
 )]
+#[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un proveedor con este RUC.')]
 class Supplier
 {
     #[Groups(['inbound:read', 'outbound:read'])]
@@ -23,9 +26,12 @@ class Supplier
     #[ORM\Column(name: 'proveedor_id')]
     private ?string $id = null;
 
+    #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^[0-9]{11}$/', message: 'El RUC debe contener 11 dígitos.')]
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 
+    #[Assert\NotBlank]
     #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private ?string $businessName = null;
@@ -33,6 +39,7 @@ class Supplier
     #[ORM\Column(name: 'domicilio_fiscal', length: 255, nullable: true)]
     private ?string $fiscalAddress = null;
 
+    #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]
     #[ORM\Column(name: 'telefono', length: 14, nullable: true)]
     private ?string $phone = null;
 

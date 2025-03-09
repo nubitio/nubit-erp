@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Base;
+namespace App\Core\Base;
 
 use App\Core\Infrastructure\Service\SerializerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

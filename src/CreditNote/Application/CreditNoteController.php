@@ -2,7 +2,7 @@
 
 namespace App\CreditNote\Application;
 
-use App\Base\BaseController;
+use App\Core\Base\BaseController;
 use App\Core\Domain\Common\ApiResponse;
 use App\CreditNote\Domain\SendCreditNoteUseCase;
 use Symfony\Component\HttpFoundation\Response;
