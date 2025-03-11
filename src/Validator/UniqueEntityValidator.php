@@ -43,12 +43,6 @@ final class UniqueEntityValidator extends ConstraintValidator
             $qb->andWhere('e.active = 1');
         }
 
-        $entityId = $propertyAccessor->getValue($value, 'id');
-        if ($entityId) {
-            $qb->andWhere('e.id != :id')
-                ->setParameter('id', $entityId);
-        }
-
         $qb->setMaxResults(1);
 
         $result = $qb->getQuery()->getOneOrNullResult();
