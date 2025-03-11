@@ -29,7 +29,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         .visible(false)
         .type(FieldType.NONE)
         .name('id')
-        .label('Movimiento id')
+        .label('Id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
@@ -131,7 +131,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
             if (cell.value) {
                 let payload = {
                     type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
-                    id: cell.data.movimiento_id,
+                    id: cell.data.id,
                 }
                 let payloadEncoded = btoa(JSON.stringify(payload));
                 let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
