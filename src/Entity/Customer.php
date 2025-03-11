@@ -15,11 +15,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     filters: [DevExtremeFilter::class],
 )]
-#[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC.')]
+#[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
 class Customer
 {
     #[Assert\NotBlank]
-    #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe tener 11 dígitos.')]
+    #[Assert\Regex(pattern: '/^[0-9]{8,11}$/', message: 'El RUC/DNI debe contener entre 8 y 11 dígitos.')]
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]
