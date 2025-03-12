@@ -35,7 +35,8 @@ class SendInvoiceCommand extends TenantAwareCommand
     #[\Override]
     protected function configure(): void
     {
-        $this->setHelp('Envía comprobante');
+        parent::configure();
+        $this->setHelp('Send pending invoices to SUNAT');
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
