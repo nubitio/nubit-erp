@@ -34,6 +34,7 @@ import {CashRegisterDashboard} from "./features/cashRegister/pages/CashRegisterD
 import {CashRegisterOpen} from "./features/cashRegister/pages/CashRegisterOpen";
 import {CashRegisterClose} from "./features/cashRegister/pages/CashRegisterClose";
 import {CashMovements} from "./features/cashRegister/pages/CashMovements";
+import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
 
 const routes = [
     {
@@ -131,6 +132,10 @@ const routes = [
     {
         path: '/position',
         element: PositionPage,
+    },
+    {
+        path: '/payment-method',
+        element: PaymentMethodPage,
     },
     {
         path: '/role',
