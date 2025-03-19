@@ -8,7 +8,7 @@ use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ApiController extends BaseController
 {
@@ -198,7 +198,7 @@ class ApiController extends BaseController
             return $this->json($result);
         }
 
-        return $this->json(['error' => 'Category not found'], Response::HTTP_NOT_FOUND);
+        return $this->json(['error' => 'Product not found'], Response::HTTP_NOT_FOUND);
     }
 
     #[Route('/api/products/{local_id}', name: 'api_createProduct', methods: ['POST'])]

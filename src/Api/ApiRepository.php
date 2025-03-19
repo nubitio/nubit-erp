@@ -289,7 +289,7 @@ class ApiRepository
      */
     public function getOneProduct(string $id): ?array
     {
-        $data = $this->db->fetchAllAssociative('select * from vw_producto where producto_id = ?', [$id]);
+        $data = $this->db->fetchAllAssociative('select * from producto where producto_id = ?', [$id]);
         if ($data !== []) {
             return $data[0];
         }
