@@ -11,20 +11,19 @@ export const LoginForm = () => {
     const [loading, setLoading] = useState(false);
     const formData = useRef({username: '', password: ''});
     const [showLocalPicker, setShowLocalPicker] = useState(false);
-    const [user, setUser] = useState('');
-    const [password, setPassword] = useState('');
+    const [credentials, setCredentials] = useState({username: '', password: ''});
 
     const onSubmit = useCallback(async (e) => {
         e.preventDefault();
         const {username, password} = formData.current;
-        setUser(username);
-        setPassword(password);
+        setCredentials({username, password});
         setLoading(true);
 
         authService.login(username, password).subscribe({
             next: (response) => {
                 StorageUtils.setItem('token', response.data.token);
                 setShowLocalPicker(true);
+                setLoading(false);
             },
             error: () => {
                 setLoading(false);
@@ -55,7 +54,12 @@ export const LoginForm = () => {
                     </ButtonOptions>
                 </ButtonItem>
             </Form>
-            <LocalPicker visible={showLocalPicker} setVisible={setShowLocalPicker} username={user} password={password}/>
+            <LocalPicker
+                visible={showLocalPicker}
+                setVisible={setShowLocalPicker}
+                username={credentials.username}
+                password={credentials.password}
+            />
         </form>
     );
 };

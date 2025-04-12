@@ -1,7 +1,6 @@
 import {withNavigationWatcher} from './contexts/navigation';
 import {DashboardPage} from "./pages/Dashboard/DashboardPage";
 import {ProductPage} from "./pages/Product/ProductPage";
-import {AuthPage} from "./pages/Auth/AuthPage";
 import {BranchPage} from "./pages/Branch/BranchPage";
 import {CashboxPage} from "./pages/Cashbox/CashboxPage";
 import {CashboxConsultPage} from "./pages/CashboxConsult/CashboxConsultPage";
@@ -44,10 +43,6 @@ const routes = [
     {
         path: '/product',
         element: ProductPage,
-    },
-    {
-        path: '/auth',
-        element: AuthPage,
     },
     {
         path: '/branch',
