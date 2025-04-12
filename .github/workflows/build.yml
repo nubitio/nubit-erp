@@ -10,16 +10,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: |
+          echo "corepack enable"
+          corepack enable
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 20
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "yarn install"
+          yarn install
 
-      - name: Build frontend
-        run: npm run build
+      - name: Build
+        run: |
+          echo "yarn build"
+          yarn build
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
