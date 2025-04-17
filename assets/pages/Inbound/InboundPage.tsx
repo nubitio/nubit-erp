@@ -79,6 +79,9 @@ export const InboundPage = () => {
                 fields={fields}
                 detailFields={detailFields}
                 events={EVENTS}
+                sort={[
+                    {selector: 'date_created', desc: true}
+                ]}
             />
             <DxDialog
                 width={900}

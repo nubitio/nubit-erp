@@ -77,8 +77,17 @@ class DxUtils {
                 let userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
                 loadOptions.filter = this.normalizeFilterRules(userFilter, defaultFilterRules);
                 let userSort = (loadOptions.sort ?? []) as any[];
-                if (userSort.length === 1 && userSort[0].selector === 'id') {
-                    loadOptions.sort = [...defaultSortRules, ...userSort];
+                if (
+                    userSort.length === 1 &&
+                    userSort[0].selector === 'id' &&
+                    defaultSortRules.length === 0
+                ) {
+                    loadOptions.sort = [];
+                } else if (
+                    userSort.length === 1 &&
+                    userSort[0].selector === 'id'
+                ) {
+                    loadOptions.sort = [...defaultSortRules];
                 } else {
                     loadOptions.sort = userSort;
                 }

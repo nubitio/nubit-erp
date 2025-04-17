@@ -64,6 +64,13 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $data->subtotal = $subtotal;
         $data->total = $subtotal - ($subtotal * $data->descuento / 100);
+        $data->estado = 1;
+
+        if (!$data->id) {
+            $data->date_created = new \DateTimeImmutable();
+        } else {
+            $data->date_updated = new \DateTimeImmutable();
+        }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
     }

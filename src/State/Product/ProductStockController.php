@@ -9,10 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductStockController extends AbstractController
 {
-    public function __invoke(
-        Connection $connection,
-        Request $request,
-    ): Response {
+    public function __invoke(Connection $connection, Request $request): Response
+    {
         $productId = $request->attributes->get('id') ?? null;
         $warehouseId = $request->attributes->get('warehouseId') ?? null;
 
@@ -21,20 +19,30 @@ class ProductStockController extends AbstractController
         }
 
         $sql = <<<SQL
+WITH stock_por_producto AS (
+    SELECT
+        md.producto_id,
+        SUM(
+            CASE
+                WHEN m.tipo_id = 1 THEN COALESCE(md.cantidad, 0)
+                ELSE COALESCE(md.cantidad, 0) * -1
+            END
+        ) AS stock
+    FROM movimiento_detalle md
+    INNER JOIN movimiento m
+        ON md.movimiento_id = m.movimiento_id
+        AND m.estado = 1
+        AND m.almacen_id = :warehouseId
+    GROUP BY md.producto_id
+)
+
 SELECT
     p.producto_id AS id,
-    p.descripcion AS `name`,
-    SUM(IF(m.tipo_id = 1, IFNULL(md.cantidad, 0), IFNULL(md.cantidad, 0) * -1)) AS stock
-FROM
-    producto p
-    INNER JOIN movimiento_detalle md ON p.producto_id = md.producto_id
-    INNER JOIN movimiento m ON md.movimiento_id = m.movimiento_id
-WHERE
-    m.estado = 1
-    AND p.producto_id = :id
-    AND m.almacen_id = :warehouseId
-GROUP BY
-    p.producto_id, p.descripcion
+    p.descripcion AS name,
+    COALESCE(sp.stock, 0) AS stock
+FROM producto p
+LEFT JOIN stock_por_producto sp ON p.producto_id = sp.producto_id
+WHERE p.producto_id = :id
 SQL;
         $params = [
             'id' => $productId,

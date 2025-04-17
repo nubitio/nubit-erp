@@ -75,7 +75,7 @@ class DevExtremeFilter extends AbstractFilter
     {
         foreach ($sort as $sortParam) {
             $field = $sortParam['selector'];
-            $isDesc = 'true' === $sortParam['desc'];
+            $isDesc = is_bool($sortParam['desc']) ? $sortParam['desc'] : 'true' === $sortParam['desc'];
 
             $queryBuilder->addOrderBy(
                 sprintf('o.%s', $field),
