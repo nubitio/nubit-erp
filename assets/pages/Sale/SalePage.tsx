@@ -263,7 +263,7 @@ export const SalePage = () => {
                 detailFields={detailFields}
                 events={EVENTS}
                 sort={[
-                    {selector: 'numero', desc: true}
+                    {selector: 'date_created', desc: true},
                 ]}
             />
             <DxDialog

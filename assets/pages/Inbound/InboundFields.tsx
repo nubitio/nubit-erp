@@ -65,7 +65,6 @@ export const InboundFields = () => {
         ])
         .valueField('id')
         .textField('name')
-        //.defaultValue(userInformation().currentWarehouseId)
         .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
         .required(true)
         .build());
@@ -118,6 +117,7 @@ export const InboundDetailFields = () => {
         .onChange(async function (this: any, row: any, value: any, currentRow: any) {
             let product = await productService.getOne(value, true) as ProductDto;
             row.producto = product;
+            row.precio_unitario = 0;
             this.defaultSetCellValue(row, product, currentRow);
         })
         .sortable(false)
