@@ -55,10 +55,6 @@ Encore
 
     // uncomment if you use TypeScript
     .enableTypeScriptLoader()
-
-    .configureWatchOptions(watchOptions => {
-        watchOptions.poll = 250;
-    })
 ;
 
 module.exports = Encore.getWebpackConfig();

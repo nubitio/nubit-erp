@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ProductRepository;
+use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -16,6 +18,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     normalizationContext: ['groups' => ['product:read']],
     filters: [DevExtremeFilter::class],
+)]
+#[ApiResource(
+    uriTemplate: 'products/{id}/stock/{warehouseId}',
+    operations: [
+        new Get(
+            controller: ProductStockController::class,
+            read: false
+        ),
+    ],
 )]
 #[AppAssert\UniqueEntity(fields: ['code'], message: 'Ya existe un producto con el mismo código.')]
 #[AppAssert\UniqueEntity(fields: ['name'], message: 'Ya existe un producto con el mismo nombre.')]

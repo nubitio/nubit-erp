@@ -2,7 +2,7 @@ import {Field} from "../../core/field/Field";
 import {FieldBuilder} from "../../core/field/FieldBuilder";
 import {FieldType} from "../../core/field/FieldType";
 import {Constants} from "../../core/common/Constants";
-import {SharedUtils} from "../../core/utils/SharedUtils";
+import toast, {SharedUtils} from "../../core/utils/SharedUtils";
 import {ColumnCellTemplateData} from "devextreme/ui/data_grid";
 import NumberUtils from "../../core/utils/NumberUtils";
 import {ProductDto} from "../../dto/product.dto";
@@ -20,6 +20,7 @@ import {dispatch} from "../../core/event/EventHook";
 import {userInformation} from "../../core/common/UserInformation";
 
 let priceList: PriceListItemDto[] = [];
+let selectedWarehouseId = "";
 
 export const SaleFields = (form: DxFormEvents | null) => {
     const fields: Field[] = [];
@@ -53,6 +54,10 @@ export const SaleFields = (form: DxFormEvents | null) => {
         }])
         .valueField('id')
         .textField('name')
+        .onChange((e: any) => {
+            console.log(e);
+            selectedWarehouseId = e;
+        })
         .visible(false)
         .required(true)
         //.defaultValue(session['warehouse_id'])
@@ -261,7 +266,14 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
 
             row.precio_total = currentRow.precio_unitario * value;
             if (value > 0 && checkStock?.value == 'true') {
-                let stockData = await GetStockUseCase(currentRow.producto.producto_id);
+                if (!selectedWarehouseId) {
+                    toast(
+                        'Seleccione un almacen para verificar el stock',
+                        'error',
+                    )
+                    return;
+                }
+                let stockData = await GetStockUseCase(currentRow.producto.id, selectedWarehouseId);
                 notify({
                     message: 'Stock actual: ' + stockData.stock,
                     type: 'info',

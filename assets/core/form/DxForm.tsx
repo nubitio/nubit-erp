@@ -507,7 +507,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                                     allowUpdating={options.allowUpdating ?? true}
                                     allowDeleting={options.allowDeleting ?? true}
                                     allowAdding={options.allowAdding ?? true}
-                                    startEditAction='dblClick'
+                                    startEditAction='click'
                                     confirmDelete={false}
                                 />
                                 <Paging enabled={false}/>
