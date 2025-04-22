@@ -50,10 +50,6 @@ const routes = [
     },
     {
         path: '/cash-register',
-        element: CashRegisterPage,
-    },
-    {
-        path: '/cash-register-dashboard',
         element: CashRegisterDashboard,
     },
     {
