@@ -20,7 +20,7 @@ final readonly class SecurityService implements Security
     #[\Override]
     public function isAuthenticated(): bool
     {
-        return $this->connectedUser() instanceof \App\Dto\Auth\AuthUserDTO;
+        return $this->connectedUser() instanceof AuthUserDTO;
     }
 
     #[\Override]

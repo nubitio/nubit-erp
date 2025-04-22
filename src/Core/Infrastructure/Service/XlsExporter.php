@@ -12,9 +12,9 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class XlsExporter
+readonly class XlsExporter
 {
-    public function __construct(private readonly SettingsService $settingsService)
+    public function __construct(private SettingsService $settingsService)
     {
     }
 

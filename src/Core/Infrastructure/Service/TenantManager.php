@@ -2,11 +2,11 @@
 
 namespace App\Core\Infrastructure\Service;
 
-class TenantManager
+readonly class TenantManager
 {
-    private readonly string $tenantsConfigFilePath;
+    private string $tenantsConfigFilePath;
 
-    private readonly string $tenantsConfigContent;
+    private string $tenantsConfigContent;
 
     public function __construct()
     {
