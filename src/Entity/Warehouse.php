@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Link;
 use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\WarehouseRepository;
 use App\State\Warehouse\WarehousesByBranchProvider;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -55,6 +57,16 @@ class Warehouse
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
     private ?Branch $branch = null;
 
+    /**
+     * @var Collection<int, ProductStock>
+     */
+    #[Groups(['warehouse:read'])]
+    #[ORM\OneToMany(mappedBy: 'warehouse', targetEntity: ProductStock::class, cascade: [
+        'persist',
+        'remove',
+    ], orphanRemoval: true)]
+    private Collection $productStocks;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -82,5 +94,51 @@ class Warehouse
         $this->branch = $branch;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->productStocks = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, ProductStock>
+     */
+    public function getProductStocks(): Collection
+    {
+        return $this->productStocks;
+    }
+
+    public function addProductStock(ProductStock $productStock): static
+    {
+        if (!$this->productStocks->contains($productStock)) {
+            $this->productStocks->add($productStock);
+            $productStock->setWarehouse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProductStock(ProductStock $productStock): static
+    {
+        if ($this->productStocks->removeElement($productStock)) {
+            // set the owning side to null (unless already changed)
+            if ($productStock->getWarehouse() === $this) {
+                $productStock->setWarehouse(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getProductStock(Product $product): ?ProductStock
+    {
+        foreach ($this->productStocks as $productStock) {
+            if ($productStock->getProduct() === $product) {
+                return $productStock;
+            }
+        }
+
+        return null;
     }
 }
