@@ -11,6 +11,7 @@ use App\Entity\CashShift;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
+use App\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -24,6 +25,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private Security $security,
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
+        private ProductStockService $productStockService,
     ) {
     }
 
@@ -65,6 +67,37 @@ readonly class SaleProcessor implements ProcessorInterface
         $data->subtotal = $subtotal;
         $data->total = $subtotal - ($subtotal * $data->descuento / 100);
         $data->estado = 1;
+
+        // Update warehouse-specific stock
+        if ($data->almacen) {
+            /** @var SaleItem $item */
+            foreach ($data->items as $item) {
+                if ($item->producto) {
+                    $currentStock = $this->productStockService->getStockForProductInWarehouse(
+                        $item->producto,
+                        $data->almacen
+                    );
+
+                    if ($data->tipo_id === 1) {
+                        // Increase stock for purchases (tipo_id = 1)
+                        $newStock = $currentStock + $item->cantidad;
+                        $this->productStockService->updateStockForProductInWarehouse(
+                            $item->producto,
+                            $data->almacen,
+                            $newStock
+                        );
+                    } elseif ($data->tipo_id === 2) {
+                        // Reduce stock for sales (tipo_id = 2)
+                        $newStock = max(0, $currentStock - $item->cantidad);
+                        $this->productStockService->updateStockForProductInWarehouse(
+                            $item->producto,
+                            $data->almacen,
+                            $newStock
+                        );
+                    }
+                }
+            }
+        }
 
         if (!$data->id) {
             $data->date_created = new \DateTimeImmutable();

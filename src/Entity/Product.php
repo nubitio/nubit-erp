@@ -8,6 +8,8 @@ use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -81,6 +83,16 @@ class Product
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'stock_minimo')]
     private ?int $minStock = null;
+
+    /**
+     * @var Collection<int, ProductStock>
+     */
+    #[Groups(['product:read'])]
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductStock::class, cascade: [
+        'persist',
+        'remove',
+    ], orphanRemoval: true)]
+    private Collection $stocks;
 
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
@@ -210,5 +222,51 @@ class Product
         $this->photo = $photo;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->stocks = new ArrayCollection();
+    }
+
+    /**
+     * @return Collection<int, ProductStock>
+     */
+    public function getStocks(): Collection
+    {
+        return $this->stocks;
+    }
+
+    public function addStock(ProductStock $stock): static
+    {
+        if (!$this->stocks->contains($stock)) {
+            $this->stocks->add($stock);
+            $stock->setProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStock(ProductStock $stock): static
+    {
+        if ($this->stocks->removeElement($stock)) {
+            // set the owning side to null (unless already changed)
+            if ($stock->getProduct() === $this) {
+                $stock->setProduct(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getStockByWarehouse(Warehouse $warehouse): ?int
+    {
+        foreach ($this->stocks as $stock) {
+            if ($stock->getWarehouse() === $warehouse) {
+                return $stock->getStock();
+            }
+        }
+
+        return 0;
     }
 }

@@ -39,7 +39,7 @@ class InvoiceEntity
         #[ORM\Column(name: 'tipo_comprobante_id', type: 'string')]
         public ?string $tipo_comprobante_id = null,
         #[Groups(['invoice:read'])]
-        #[ORM\Column(name: 'fecha', type: 'date')]
+        #[ORM\Column(name: 'fecha', type: 'datetime')]
         public ?\DateTimeInterface $fecha = null,
         #[Groups(['invoice:read'])]
         #[ORM\Column(name: 'serie', type: 'string')]

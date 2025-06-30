@@ -6,6 +6,8 @@ use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
 use App\Core\Infrastructure\Service\TenantManager;
 use App\Entity\Product;
+use App\Entity\Warehouse;
+use App\Service\ProductStockService;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -28,6 +30,7 @@ class UpdateStockCommand extends TenantAwareCommand
         TenantConnectionSwitcher $tenantConnectionSwitcher,
         LoggerInterface $logger,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ProductStockService $productStockService,
     ) {
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
@@ -50,29 +53,68 @@ class UpdateStockCommand extends TenantAwareCommand
         $batchSize = 100;
         $processed = 0;
 
-        $io->title('Updating stock for all products');
+        $io->title('Updating stock for all products in all warehouses');
         $io->progressStart();
 
-        $products = $this->entityManager->getRepository(Product::class)
-            ->findAll();
+        $products = $this->entityManager->getRepository(Product::class)->findAll();
+        $warehouses = $this->entityManager->getRepository(Warehouse::class)->findAll();
+
+        if (empty($warehouses)) {
+            $io->warning('No warehouses found. Skipping stock update.');
+            return Command::SUCCESS;
+        }
 
         foreach ($products as $product) {
             try {
-                $stock = $this->calculateStock($product->getId());
-                $currentStock = $product->getStock();
-                if ($stock === $currentStock) {
-                    continue;
+                // Update warehouse-specific stock
+                foreach ($warehouses as $warehouse) {
+                    $warehouseStock = $this->calculateStock($product->getId(), $warehouse->getId());
+
+                    $this->productStockService->updateStockForProductInWarehouse(
+                        $product,
+                        $warehouse,
+                        $warehouseStock
+                    );
+
+                    $this->logger->info(
+                        'Updated stock for product in warehouse',
+                        [
+                            'product' => $product->getId(),
+                            'warehouse' => $warehouse->getId(),
+                            'stock' => $warehouseStock
+                        ]
+                    );
+                    $io->text(
+                        sprintf(
+                            'Updated stock for product %s in warehouse %s to %d',
+                            $product->getId(),
+                            $warehouse->getName(),
+                            $warehouseStock
+                        )
+                    );
                 }
 
-                $this->logger->info(
-                    'Updating stock for product ' . $product->getId(),
-                    ['stock' => $stock]
-                );
-                $io->text(
-                    'Updating stock for product ' . $product->getId() . ' to '
-                    . $stock
-                );
-                $product->setStock($stock);
+                // Update global stock (sum of all warehouse stocks)
+                $globalStock = $this->calculateStock($product->getId());
+                $currentStock = $product->getStock();
+
+                if ($globalStock !== $currentStock) {
+                    $product->setStock($globalStock);
+                    $this->logger->info(
+                        'Updated global stock for product',
+                        [
+                            'product' => $product->getId(),
+                            'stock' => $globalStock
+                        ]
+                    );
+                    $io->text(
+                        sprintf(
+                            'Updated global stock for product %s to %d',
+                            $product->getId(),
+                            $globalStock
+                        )
+                    );
+                }
             } catch (Exception $e) {
                 $this->logger->error(
                     'An error occurred while calculating stock for product '
@@ -90,8 +132,17 @@ class UpdateStockCommand extends TenantAwareCommand
             if (($processed % $batchSize) === 0) {
                 $this->entityManager->flush();
                 $this->entityManager->clear();
+
+                // Reload repositories after clearing entity manager
+                if ($processed < count($products)) {
+                    $products = $this->entityManager->getRepository(Product::class)->findAll();
+                    $warehouses = $this->entityManager->getRepository(Warehouse::class)->findAll();
+                }
             }
         }
+
+        // Final flush for any remaining entities
+        $this->entityManager->flush();
 
         return Command::SUCCESS;
     }
@@ -99,7 +150,7 @@ class UpdateStockCommand extends TenantAwareCommand
     /**
      * @throws Exception
      */
-    private function calculateStock(string $productId): int
+    private function calculateStock(string $productId, ?string $warehouseId = null): int
     {
         $connection = $this->entityManager->getConnection();
 
@@ -112,11 +163,20 @@ FROM movimiento_detalle md
 INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id
 WHERE md.producto_id = :productId
 AND m.estado = 1
-GROUP BY md.producto_id
 SQL;
 
-        $result = $connection->executeQuery($sql, ['productId' => $productId]);
+        $params = ['productId' => $productId];
 
-        return (int) $result->fetchOne();
+        if ($warehouseId !== null) {
+            $sql .= " AND m.almacen_id = :warehouseId";
+            $params['warehouseId'] = $warehouseId;
+        }
+
+        $sql .= " GROUP BY md.producto_id";
+
+        $result = $connection->executeQuery($sql, $params);
+        $stockValue = $result->fetchOne();
+
+        return $stockValue ? (int) $stockValue : 0;
     }
 }
