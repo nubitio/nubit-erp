@@ -75,7 +75,7 @@ class Sale
             'inbound:read',
             'outbound:read',
         ])]
-        #[ORM\Column(name: 'fecha', type: 'date')]
+        #[ORM\Column(name: 'fecha', type: 'datetime')]
         public ?DateTimeInterface $fecha = null,
         #[Groups([
             'sale:write',

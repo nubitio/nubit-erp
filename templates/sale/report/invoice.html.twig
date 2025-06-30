@@ -67,7 +67,7 @@
                 </tr>
                 <tr class="row-bb">
                     <td>
-                        Fecha: {{ voucher.voucher_date|date('d/m/Y') }}<br>
+                        Fecha: {{ voucher.voucher_date|date('d/m/Y', 'America/Lima') }}<br>
                         Moneda: Soles
                     </td>
                 </tr>
@@ -170,7 +170,7 @@
                 <tr>
                     <td class="text-center">
                         <p></p>
-                        {{ "now"|date("d/m/Y H:i:s") }}<br>
+                        {{ "now"|date("d/m/Y H:i:s", 'America/Lima') }}<br>
                         ** Gracias por su preferencia **
                     </td>
                 </tr>

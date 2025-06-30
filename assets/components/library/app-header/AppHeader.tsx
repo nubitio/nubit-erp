@@ -39,14 +39,14 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
                              onEnterKey={handleSearch}/>
                 </Item>
                 <Item location='after' locateInMenu='never'>
-                    <Button icon='ph ph-basket' onClick={() => navigate('/pos')}/>
+                    <Button icon='ph ph-basket' stylingMode='text' onClick={() => navigate('/pos')}/>
                 </Item>
                 <Item location='after' locateInMenu='never'>
                     <ThemeSwitcher/>
                 </Item>
                 <Item location='after'>
                     <div className='messages' id='notification'>
-                        <Button icon='belloutline' onClick={toggleNotificationPanel}/>
+                        <Button icon='belloutline' stylingMode='text' onClick={toggleNotificationPanel}/>
                         <div className='dx-badge'>
                             4
                         </div>
