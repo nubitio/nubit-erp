@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: web
+    container_name: efact_web
     build: .
     ports:
       - '8080:80'
