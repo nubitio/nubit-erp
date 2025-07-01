@@ -18,4 +18,4 @@ export GRUMPHP_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 
 # Run GrumPHP
 #(cd "./" && printf "%s\n" "${DIFF}" | exec 'vendor/bin/grumphp' 'git:commit-msg' "--git-user='$GIT_USER'" "--git-email='$GIT_EMAIL'" "$COMMIT_MSG_FILE")
-(cd "./" && printf "%s\n" "${DIFF}" | docker exec web 'vendor/bin/grumphp' 'git:commit-msg' "--git-user='$GIT_USER'" "--git-email='$GIT_EMAIL'" "$COMMIT_MSG_FILE")
+(cd "./" && printf "%s\n" "${DIFF}" | docker exec efact-web 'vendor/bin/grumphp' 'git:commit-msg' "--git-user='$GIT_USER'" "--git-email='$GIT_EMAIL'" "$COMMIT_MSG_FILE")
