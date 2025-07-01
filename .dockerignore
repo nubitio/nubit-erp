@@ -1,0 +1,20 @@
+.git/
+.github/
+.idea/
+.gitignore
+.env.local
+.env.test
+.DS_Store
+.maintenance
+.version
+deploy_exclude.txt
+/node_modules
+/tests/
+/var/
+/config/tenants.json
+# Docker specific ignores
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+# Vendor directory - will be installed in the container
+/vendor/

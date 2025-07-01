@@ -1,80 +1,121 @@
-FROM ubuntu:22.04
+# Use PHP 8.3 with Apache as the base image
+FROM php:8.3-apache AS base
 
-MAINTAINER Johan Guerreros (johangm90@gmail.com)
+# Set metadata
+LABEL maintainer="Johan Guerreros <johangm90@gmail.com>"
+LABEL description="PHP 8.3 Apache image for efact application"
+LABEL version="1.0"
 
-# set noninteractive
-ARG DEBIAN_FRONTEND=noninteractive
+# Set environment variables
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+ENV PHP_MEMORY_LIMIT=256M
+ENV PHP_MAX_EXECUTION_TIME=30
+ENV PHP_UPLOAD_MAX_FILESIZE=20M
+ENV PHP_POST_MAX_SIZE=20M
 
-# update package list
-RUN apt-get update
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    zip \
+    unzip \
+    wget \
+    libicu-dev \
+    libzip-dev \
+    libxml2-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libgmp-dev \
+    libpq-dev \
+    libxslt1-dev \
+    libonig-dev \
+    libsodium-dev \
+    libmagickwand-dev \
+    # WeasyPrint dependencies
+    libpango1.0-dev \
+    python3-pip \
+    python3-dev \
+    python3-setuptools \
+    python3-wheel \
+    python3-venv \
+    # Redis
+    libhiredis-dev \
+    # Cleanup
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# install prerequisites
-RUN apt-get install -y software-properties-common
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+    intl \
+    zip \
+    soap \
+    gd \
+    opcache \
+    pdo_mysql \
+    exif \
+    bcmath \
+    sockets \
+    && pecl install redis imagick xdebug \
+    && docker-php-ext-enable redis imagick
 
-# install curl and git
-RUN apt-get install -y curl git zip unzip wget
+# Install WeasyPrint
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir WeasyPrint && \
+    ln -sf /opt/venv/bin/weasyprint /usr/local/bin/weasyprint
 
-# install apache
-RUN apt-get install -y apache2
+# Configure Apache
+RUN a2enmod rewrite \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# php ppa
-RUN add-apt-repository ppa:ondrej/php -y
-RUN apt-get update
+# Configure PHP
+RUN { \
+    echo 'memory_limit=${PHP_MEMORY_LIMIT}'; \
+    echo 'max_execution_time=${PHP_MAX_EXECUTION_TIME}'; \
+    echo 'upload_max_filesize=${PHP_UPLOAD_MAX_FILESIZE}'; \
+    echo 'post_max_size=${PHP_POST_MAX_SIZE}'; \
+    echo 'error_reporting=E_ALL & ~E_DEPRECATED & ~E_STRICT'; \
+    echo 'display_errors=Off'; \
+    echo 'display_startup_errors=Off'; \
+    echo 'log_errors=On'; \
+    echo 'error_log=/dev/stderr'; \
+    echo 'date.timezone=UTC'; \
+    } > /usr/local/etc/php/conf.d/custom.ini
 
-# install php
-RUN apt-get -y install php8.3 mcrypt php8.3-xdebug php8.3-mbstring php8.3-xml php8.3-mysql php8.3-curl php8.3-zip php8.3-soap php8.3-gd php8.3-intl php8.3-redis php8.3-imagick
-RUN apt-get install -y libapache2-mod-php8.3
+# Configure Xdebug (only for development)
+RUN { \
+    echo 'xdebug.mode=debug,coverage'; \
+    echo 'xdebug.client_host=host.docker.internal'; \
+    echo 'xdebug.client_port=9003'; \
+    echo 'xdebug.start_with_request=trigger'; \
+    } > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-RUN update-alternatives --set php /usr/bin/php8.3
-
-# configure xdebug
-RUN sed -i -e '$a xdebug.mode=debug,coverage' /etc/php/8.3/mods-available/xdebug.ini
-RUN sed -i -e '$a xdebug.client_host=host.docker.internal' /etc/php/8.3/mods-available/xdebug.ini
-RUN sed -i -e '$a xdebug.client_port=9003' /etc/php/8.3/mods-available/xdebug.ini
-
-# install weasyprint
-RUN apt-get update
-RUN apt-get -y install libpango1.0-dev python3-pip
-RUN pip3 install WeasyPrint
-
-# Apache conf
-# allow .htaccess with RewriteEngine
-RUN a2enmod rewrite
-# to see live logs we do : docker logs -f [CONTAINER ID]
-# without the following line we get "AH00558: apache2: Could not reliably determine the server's fully qualified domain name"
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-# allow .htaccess files
-RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
-# set document root
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-# install composer
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-RUN php composer-setup.php
-RUN php -r "unlink('composer-setup.php');"
-RUN mv composer.phar /usr/local/bin/composer
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Configure permissions
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-RUN userdel -f www-data &&\
-    if getent group www-data ; then groupdel www-data; fi &&\
-    groupadd -g ${GROUP_ID} www-data &&\
-    useradd -l -u ${USER_ID} -g www-data www-data &&\
-    install -d -m 0755 -o www-data -g www-data /home/www-data &&\
-    chown --changes --silent --no-dereference --recursive \
-          --from=33:33 ${USER_ID}:${GROUP_ID} \
-        /home/www-data
+RUN usermod -u ${USER_ID} www-data \
+    && groupmod -g ${GROUP_ID} www-data \
+    && chown -R www-data:www-data /var/www
 
-# Add volumes
-VOLUME ["/var/www/html"]
+# Add healthcheck
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost/ || exit 1
 
-EXPOSE 80
-
+# Set working directory
 WORKDIR /var/www/html/
 
-CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
+# Expose port
+EXPOSE 80
+
+# Set volume
+VOLUME ["/var/www/html"]
+
+# Start Apache
+CMD ["apache2-foreground"]

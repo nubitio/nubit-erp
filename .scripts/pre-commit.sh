@@ -14,4 +14,4 @@ export GRUMPHP_GIT_WORKING_DIR="$(git rev-parse --show-toplevel)"
 
 # Run GrumPHP
 #(cd "./" && printf "%s\n" "${DIFF}" | exec 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
-(cd "./" && printf "%s\n" "${DIFF}" | docker exec web 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
+(cd "./" && printf "%s\n" "${DIFF}" | docker exec efact-web 'vendor/bin/grumphp' 'git:pre-commit' '--skip-success-output')
