@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Infrastructure\Command;
+namespace App\Command;
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
