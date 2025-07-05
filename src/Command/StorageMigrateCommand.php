@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Infrastructure\Command;
+namespace App\Command;
 
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;

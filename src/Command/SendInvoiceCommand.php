@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Invoice\Application;
+namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
@@ -56,14 +56,40 @@ class SendInvoiceCommand extends TenantAwareCommand
 
         $io->text('Pending: ' . count($pending));
 
+        $errors = [];
+
         /** @var array<string, string> $item */
         foreach ($pending as $item) {
-            $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
+            try {
+                $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
 
-            if ($response->sunatResponse->isSuccess()) {
-                $io->success($response->sunatResponse->getCdrResponse()?->getDescription() ?? '');
-            } else {
-                $io->warning($response->sunatResponse->getError()?->getMessage() ?? '');
+                if ($response->sunatResponse->isSuccess()) {
+                    $io->success($response->sunatResponse->getCdrResponse()?->getDescription() ?? '');
+                } else {
+                    $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
+                    $io->warning($message);
+                    $this->logger->warning('Invoice sending warning', [
+                        'movimiento_id' => $item['movimiento_id'],
+                        'message' => $message
+                    ]);
+                }
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'movimiento_id' => $item['movimiento_id'],
+                    'error' => $e->getMessage()
+                ];
+                $this->logger->error('Error sending invoice', [
+                    'movimiento_id' => $item['movimiento_id'],
+                    'exception' => $e
+                ]);
+                $io->error('Error processing invoice ' . $item['movimiento_id'] . ': ' . $e->getMessage());
+            }
+        }
+
+        if (!empty($errors)) {
+            $io->section('Errors summary');
+            foreach ($errors as $error) {
+                $io->text('Invoice ID: ' . $error['movimiento_id'] . ' - Error: ' . $error['error']);
             }
         }
 
