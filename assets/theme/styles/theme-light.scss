@@ -1,5 +1,8 @@
 /* stylelint-disable */
 @use 'devextreme/scss/bundles/dx.fluent.blue.light.scss';
+@use './variables-mixin.scss' as * with (
+  $theme-mode: 'light'
+);
 
 .app-theme-light {
   content: '';

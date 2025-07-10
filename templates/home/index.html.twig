@@ -12,7 +12,7 @@
     #}
     <title>Efact</title>
     {% block stylesheets %}
-        {{ encore_entry_link_tags('app') }}
+        {{ vite_entry_link_tags('app') }}
     {% endblock %}
 </head>
 <body class="dx-viewport">
@@ -20,7 +20,7 @@
 <div id="root"></div>
 <div id="main-content"></div>
 {% block javascripts %}
-    {{ encore_entry_script_tags('app') }}
+    {{ vite_entry_script_tags('app', { dependency: "react" }) }}
 {% endblock %}
 <script>
     window.app_version = '{{ setting('version') }}';

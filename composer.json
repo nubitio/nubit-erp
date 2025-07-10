@@ -32,6 +32,7 @@
     "mike42/escpos-php": "^4.0",
     "nelmio/cors-bundle": "^2.3",
     "oneup/flysystem-bundle": "^4.9",
+    "pentatrion/vite-bundle": "^8.2",
     "phpdocumentor/reflection-docblock": "^5.3",
     "phpoffice/phpspreadsheet": "^1.18",
     "phpoffice/phpword": "^1.1",
@@ -60,7 +61,6 @@
     "symfony/twig-bundle": "7.3.*",
     "symfony/uid": "7.3.*",
     "symfony/validator": "7.3.*",
-    "symfony/webpack-encore-bundle": "^2.0",
     "symfony/yaml": "7.3.*"
   },
   "require-dev": {
