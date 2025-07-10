@@ -2,12 +2,10 @@ import {httpClient} from "../http/HttpClient";
 import {lastValueFrom} from "rxjs";
 import ApiResponse from "../http/ApiResponse";
 import CustomStore from "devextreme/data/custom_store";
-import DevExpress from "devextreme";
-import {FilterDescriptor} from "devextreme/data";
+import {FilterDescriptor, SortDescriptor} from "devextreme/data";
 import GridData from "../../types/GridData";
 import {DxFilterRule} from "./FilterRule";
 import {LoadOption} from "../field/Field";
-import SortDescriptor = DevExpress.data.SortDescriptor;
 
 class DxUtils {
     private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {

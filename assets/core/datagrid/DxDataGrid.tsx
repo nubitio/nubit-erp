@@ -30,12 +30,10 @@ import {buildColumns, buildSummary, buildToolbar, getIdField} from "./DxDataGrid
 import {DxDetailDataGrid} from "./DxDetailDataGrid";
 import {DxFilterRule} from "../common/FilterRule";
 import {useEvents} from "../event/EventHook";
-import DevExpress from "devextreme";
 import toast from "../utils/SharedUtils";
 import {Field} from "../field/Field";
 import {Store} from "devextreme/data";
-import SelectionChangedEvent = DevExpress.ui.dxDataGrid.SelectionChangedEvent;
-import RowPreparedEvent = DevExpress.ui.dxDataGrid.RowPreparedEvent;
+import {RowPreparedEvent, SelectionChangedEvent} from "devextreme/ui/data_grid";
 
 export interface DxDataGridOptions {
     id: string;

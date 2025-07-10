@@ -6,83 +6,86 @@ const themes = ['light', 'dark'] as const;
 const storageKey = 'app-theme';
 const themePrefix = 'app-theme-';
 
-const prefixes = ['./styles/theme-dx-', './styles/variables-'];
+export type Theme = (typeof themes)[number];
 
-const loadStylesImports = async() => {
-    await Promise.all([
-        ...prefixes.flatMap((prefix) => [
-            import(/* webpackChunkName: "app-theme-dark" */ `${prefix}dark.scss`),
-            import(/* webpackChunkName: "app-theme-light" */ `${prefix}light.scss`)
-        ]),
-    ]);
-};
-
-export type Theme = typeof themes[number];
-
-function getNextTheme(theme?: Theme) {
-    return themes[themes.indexOf(theme as Theme) + 1] || themes[0];
+function getNextTheme(theme?: Theme): Theme {
+  return themes[themes.indexOf(theme as Theme) + 1] || themes[0];
 }
 
 function getCurrentTheme(): Theme {
-    return window.localStorage[storageKey] || getNextTheme();
+  return (window.localStorage[storageKey] as Theme) || 'light';
 }
 
-function isThemeStyleSheet(styleSheet, theme: Theme) {
-    const themeMarker = `${themePrefix}${theme}`;
-    // eslint-disable-next-line no-undef
-    if(process.env.NODE_ENV === 'production') {
-        return styleSheet?.href?.includes(`${themeMarker}`);
+function setThemeToDOM(theme: Theme): Promise<void> {
+  return new Promise(resolve => {
+    const id = 'theme-link';
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+
+    const href = `/themes/${themePrefix}${theme}.css`;
+
+    if (link) {
+      if (link.href.endsWith(href)) return resolve(); // already loaded
+      link.href = href;
     } else {
-        const rules = Array.from<CSSStyleRule>(styleSheet.cssRules);
-        return !!rules.find((rule) => rule?.selectorText?.includes(`.${themeMarker}`));
+      link = document.createElement('link');
+      link.id = id;
+      link.rel = 'stylesheet';
+      link.href = href;
+      document.head.appendChild(link);
     }
+
+    link.onload = () => resolve();
+  });
 }
 
-function switchThemeStyleSheets(enabledTheme: Theme) {
-    const disabledTheme = getNextTheme(enabledTheme);
+async function setAppTheme(theme: Theme) {
+  await setThemeToDOM(theme);
 
-    Array.from<CSSStyleSheet>(document.styleSheets).forEach((styleSheet) => {
-        styleSheet.disabled = isThemeStyleSheet(styleSheet, disabledTheme);
-    });
-}
-
-async function setAppTheme(newTheme?: Theme) {
-    const themeName = newTheme || getCurrentTheme();
-
-    switchThemeStyleSheets(themeName);
-
-    const regexTheme = new RegExp(`\\.(${themes.join('|')})`, 'g');
-    currentVizTheme(currentVizTheme().replace(regexTheme, `.${themeName}`));
-    refreshTheme();
+  const regexTheme = new RegExp(`\\.(${themes.join('|')})`, 'g');
+  currentVizTheme(currentVizTheme().replace(regexTheme, `.${theme}`));
+  refreshTheme();
 }
 
 function toggleTheme(currentTheme: Theme): Theme {
-    const newTheme = getNextTheme(currentTheme);
-    window.localStorage[storageKey] = newTheme;
-    return newTheme;
+  const newTheme = getNextTheme(currentTheme);
+  window.localStorage[storageKey] = newTheme;
+  return newTheme;
 }
 
 export function useThemeContext() {
-    const [theme, setTheme] = useState(getCurrentTheme());
-    const [isLoaded, setIsLoaded] = useState(false);
+  const [theme, setTheme] = useState(getCurrentTheme());
+  const [isLoaded, setIsLoaded] = useState(false);
 
-    useEffect(() => {
-        loadStylesImports().then(() => {
-            setIsLoaded(true);
-        });
-    }, []);
+  useEffect(() => {
+    setThemeToDOM(theme).then(() => setIsLoaded(true));
+  }, []);
 
-    const switchTheme = useCallback(() => setTheme((currentTheme: Theme) => toggleTheme(currentTheme)), []);
+  useEffect(() => {
+    if (isLoaded) {
+      setAppTheme(theme);
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        const baseBgColor = getComputedStyle(document.body).getPropertyValue('--base-bg').trim();
+        metaThemeColor.setAttribute(
+          'content',
+          baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff')
+        );
+      }
+    }
+  }, [theme, isLoaded]);
 
-    const isFluent = useCallback((): boolean => {
-        return getCurrentDXTheme().includes('fluent');
-    }, []);
+  const switchTheme = useCallback(() => {
+    setTheme(currentTheme => toggleTheme(currentTheme));
+  }, []);
 
-    useEffect(() => {
-        isLoaded && setAppTheme(theme);
-    }, [theme, isLoaded]);
+  const isFluent = useCallback(() => {
+    return getCurrentDXTheme().includes('fluent');
+  }, []);
 
-    return useMemo(()=> ({ theme, switchTheme, isLoaded, isFluent }), [theme, isLoaded, isFluent]);
+  return useMemo(
+    () => ({ theme, switchTheme, isLoaded, isFluent }),
+    [theme, switchTheme, isLoaded, isFluent]
+  );
 }
 
 export const ThemeContext = React.createContext<ReturnType<typeof useThemeContext> | null>(null);

@@ -6,13 +6,17 @@ services:
       - '8080:80'
     volumes:
       - '.:/var/www/html'
-  webpack:
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+  vite:
     image: node:20.13.1
     #command: npm run watch
     working_dir: /home/node/app
     volumes:
       - '.:/home/node/app'
     stdin_open: true
+    ports:
+      - '5173:5173'
   redis:
     image: redis:6.2.6
     ports:

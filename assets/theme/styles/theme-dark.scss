@@ -1,5 +1,8 @@
 /* stylelint-disable */
 @use 'devextreme/scss/bundles/dx.fluent.blue.dark.scss';
+@use './variables-mixin.scss' as * with (
+  $theme-mode: 'dark'
+);
 
 .app-theme-dark {
   content: '';
