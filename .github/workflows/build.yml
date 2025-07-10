@@ -35,4 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: public/build
+          include-hidden-files: true
+          path: |
+            public/build
+            public/themes

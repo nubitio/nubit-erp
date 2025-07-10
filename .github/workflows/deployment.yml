@@ -53,7 +53,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build
-          path: public/build
+          path: public
 
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -82,6 +82,7 @@ jobs:
             rm -rf ${{ secrets.SSH_BASE_PATH }}vendor
             rm -rf ${{ secrets.SSH_BASE_PATH }}public/build
             rm -rf ${{ secrets.SSH_BASE_PATH }}public/assets
+            rm -rf ${{ secrets.SSH_BASE_PATH }}public/themes
 
       - name: Deploy with rsync
         run: rsync -auzP --force --delete --progress --exclude-from=deploy_exclude.txt -e 'ssh -p 22' ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_BASE_PATH }}
