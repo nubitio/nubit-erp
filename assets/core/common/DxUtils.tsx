@@ -77,13 +77,13 @@ class DxUtils {
                 let userSort = (loadOptions.sort ?? []) as any[];
                 if (
                     userSort.length === 1 &&
-                    userSort[0].selector === 'id' &&
+                    userSort[0].selector === idField &&
                     defaultSortRules.length === 0
                 ) {
                     loadOptions.sort = [];
                 } else if (
                     userSort.length === 1 &&
-                    userSort[0].selector === 'id'
+                    userSort[0].selector === idField
                 ) {
                     loadOptions.sort = [...defaultSortRules];
                 } else {
