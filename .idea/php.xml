@@ -218,7 +218,6 @@
       <path value="$PROJECT_DIR$/vendor/fidry/cpu-core-counter" />
       <path value="$PROJECT_DIR$/vendor/pdepend/pdepend" />
       <path value="$PROJECT_DIR$/vendor/amphp/parallel" />
-      <path value="$PROJECT_DIR$/vendor/amphp/windows-registry" />
       <path value="$PROJECT_DIR$/vendor/amphp/pipeline" />
       <path value="$PROJECT_DIR$/vendor/amphp/byte-stream" />
       <path value="$PROJECT_DIR$/vendor/amphp/parser" />
@@ -249,6 +248,7 @@
       <path value="$PROJECT_DIR$/vendor/chillerlan/php-qrcode" />
       <path value="$PROJECT_DIR$/vendor/chillerlan/php-settings-container" />
       <path value="$PROJECT_DIR$/vendor/rector/rector" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php84" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
