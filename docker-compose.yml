@@ -1,7 +1,9 @@
 services:
   web:
     container_name: efact-web
-    build: .
+    build:
+      context: .
+      target: dev
     ports:
       - '8080:80'
     volumes:
