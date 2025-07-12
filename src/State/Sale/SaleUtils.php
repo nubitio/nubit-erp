@@ -76,17 +76,21 @@ readonly class SaleUtils
         Sale $sale,
         DocType $docType = DocType::NOTA_VENTA,
     ): Sale {
-        $sale->tipo_id = 2;
-        $sale->serie = $this->getSaleSeries(
+        $sale->setTipoId(2);
+        $sale->setSerie($this->getSaleSeries(
             $docType->value,
-            $sale->almacen?->getId() ?: ''
-        );
-        $sale->numero = $this->getSaleNumber($sale->serie);
-        $sale->caja_id ??= $this->getCashBoxId();
-        $sale->igv = intval($this->settings->get(Constants::TAX));
-        $sale->recargo_consumo = intval(
+            $sale->getAlmacen()?->getId() ?: ''
+        ));
+        $sale->setNumero($this->getSaleNumber($sale->getSerie()));
+
+        if ($sale->getCajaId() === null) {
+            $sale->setCajaId($this->getCashBoxId());
+        }
+
+        $sale->setIgv(intval($this->settings->get(Constants::TAX)));
+        $sale->setRecargoConsumo(intval(
             $this->settings->get(Constants::CONSUMPTION_TAX)
-        );
+        ));
 
         return $sale;
     }
