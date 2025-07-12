@@ -1,121 +1,182 @@
-# Use PHP 8.3 with Apache as the base image
-FROM php:8.3-apache AS base
+# Dockerfile for Marriot application
+# Using multi-stage builds for development, staging, and production environments
 
-# Set metadata
-LABEL maintainer="Johan Guerreros <johangm90@gmail.com>"
-LABEL description="PHP 8.3 Apache image for efact application"
-LABEL version="1.0"
+# -----------------------------------------------------------------------------
+# Build arguments for customization
+# -----------------------------------------------------------------------------
+ARG PHP_VERSION=8.3
+
+# -----------------------------------------------------------------------------
+# Base image
+# -----------------------------------------------------------------------------
+FROM ubuntu:22.04 AS base
 
 # Set environment variables
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-ENV PHP_MEMORY_LIMIT=256M
-ENV PHP_MAX_EXECUTION_TIME=30
-ENV PHP_UPLOAD_MAX_FILESIZE=20M
-ENV PHP_POST_MAX_SIZE=20M
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Add metadata labels
+LABEL maintainer="Nubit Team"
+LABEL org.opencontainers.image.title="Efact Application"
+LABEL org.opencontainers.image.description="Efact Application"
+LABEL org.opencontainers.image.version="1.0"
+LABEL org.opencontainers.image.vendor="Nubit"
+
+# Setup PHP PPA
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    gnupg \
+    ca-certificates \
+    && add-apt-repository ppa:ondrej/php -y \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    zip \
     unzip \
-    wget \
-    libicu-dev \
-    libzip-dev \
-    libxml2-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libgmp-dev \
-    libpq-dev \
-    libxslt1-dev \
-    libonig-dev \
-    libsodium-dev \
-    libmagickwand-dev \
-    # WeasyPrint dependencies
-    libpango1.0-dev \
+    curl \
+    mcrypt \
+    libaio1 \
+    build-essential \
+    apache2 \
+    supervisor \
+    python3 \
     python3-pip \
-    python3-dev \
-    python3-setuptools \
-    python3-wheel \
-    python3-venv \
-    # Redis
-    libhiredis-dev \
-    # Cleanup
+    libpango1.0-dev \
+    libapache2-mod-php8.3 \
+    php8.3 \
+    php8.3-fpm \
+    php8.3-redis \
+    php8.3-curl \
+    php8.3-gd \
+    php8.3-intl \
+    php8.3-mbstring \
+    php8.3-xml \
+    php8.3-zip \
+    php8.3-mysql \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    intl \
-    zip \
-    soap \
-    gd \
-    opcache \
-    pdo_mysql \
-    exif \
-    bcmath \
-    sockets \
-    && pecl install redis imagick xdebug \
-    && docker-php-ext-enable redis imagick
+# Set php 8.3 as the default
+RUN update-alternatives --set php /usr/bin/php8.3
 
 # Install WeasyPrint
-RUN python3 -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir WeasyPrint && \
-    ln -sf /opt/venv/bin/weasyprint /usr/local/bin/weasyprint
-
-# Configure Apache
-RUN a2enmod rewrite \
-    && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
-    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
-
-# Configure PHP
-RUN { \
-    echo 'memory_limit=${PHP_MEMORY_LIMIT}'; \
-    echo 'max_execution_time=${PHP_MAX_EXECUTION_TIME}'; \
-    echo 'upload_max_filesize=${PHP_UPLOAD_MAX_FILESIZE}'; \
-    echo 'post_max_size=${PHP_POST_MAX_SIZE}'; \
-    echo 'error_reporting=E_ALL & ~E_DEPRECATED & ~E_STRICT'; \
-    echo 'display_errors=Off'; \
-    echo 'display_startup_errors=Off'; \
-    echo 'log_errors=On'; \
-    echo 'error_log=/dev/stderr'; \
-    echo 'date.timezone=UTC'; \
-    } > /usr/local/etc/php/conf.d/custom.ini
-
-# Configure Xdebug (only for development)
-RUN { \
-    echo 'xdebug.mode=debug,coverage'; \
-    echo 'xdebug.client_host=host.docker.internal'; \
-    echo 'xdebug.client_port=9003'; \
-    echo 'xdebug.start_with_request=trigger'; \
-    } > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN pip3 install WeasyPrint \
+    && rm -rf ~/.cache/pip
 
 # Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configure permissions
-ARG USER_ID=1000
-ARG GROUP_ID=1000
+# Configure Apache
+RUN a2enmod rewrite ssl
+RUN mkdir -p /etc/ssl/private && chmod 755 /etc/ssl/private && chown www-data:www-data /etc/ssl/private
+COPY docker/apache/apache.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache/servername.conf /etc/apache2/conf-available/servername.conf
+RUN a2enconf servername
+COPY docker/apache/cert.pem /etc/ssl/certs/cert.pem
+COPY docker/apache/cert-key.pem /etc/ssl/private/cert-key.pem
+RUN chmod 600 /etc/ssl/private/cert-key.pem && \
+    chown www-data:www-data /etc/ssl/certs/cert.pem /etc/ssl/private/cert-key.pem && \
+    chown -R www-data:www-data /etc/ssl/private
 
-RUN usermod -u ${USER_ID} www-data \
-    && groupmod -g ${GROUP_ID} www-data \
-    && chown -R www-data:www-data /var/www
+# Configure Supervisord
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create required log directories for supervisor and apache
+RUN mkdir -p /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2 \
+    && chown -R www-data:www-data /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2 \
+    && chmod -R 755 /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Expose ports
+EXPOSE 80 443
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
-# Set working directory
-WORKDIR /var/www/html/
+# -----------------------------------------------------------------------------
+# Development image
+# -----------------------------------------------------------------------------
+FROM base AS dev
 
-# Expose port
-EXPOSE 80
+# Set environment
+ENV APP_ENV=dev
 
-# Set volume
-VOLUME ["/var/www/html"]
+# Install development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    vim \
+    lnav \
+    tmux \
+    php8.3-xdebug \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Start Apache
-CMD ["apache2-foreground"]
+# Configure PHP for development
+COPY docker/php/php.dev.ini $PHP_INI_DIR/php.ini
+
+# Mount application code
+VOLUME /var/www/html
+
+# Start services with Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+# -----------------------------------------------------------------------------
+# Staging image
+# -----------------------------------------------------------------------------
+FROM base AS stg
+
+# Set environment (corrected from 'dev' to 'staging')
+ENV APP_ENV=staging
+
+# Configure PHP for staging (using dev config as fallback, ideally should have its own php.stg.ini)
+COPY docker/php/php.dev.ini $PHP_INI_DIR/php.ini
+
+# Copy application code
+COPY --chown=www-data:www-data . /var/www/html
+
+# Install dependencies
+RUN composer install --no-interaction --no-scripts
+
+# Set permissions and create required directories
+RUN mkdir -p var/cache/dev var/log \
+    && chown -R www-data:www-data var public \
+    && chmod -R 775 var public \
+    && chmod +x bin/console
+
+# Start services with Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+# -----------------------------------------------------------------------------
+# Production image
+# -----------------------------------------------------------------------------
+FROM base AS prod
+
+# Set environment
+ENV APP_ENV=prod
+
+# Configure PHP for production
+COPY docker/php/php.prod.ini $PHP_INI_DIR/php.ini
+
+# Copy application code
+COPY --chown=www-data:www-data . /var/www/html
+
+# Install dependencies and optimize autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
+    && composer dump-autoload --no-dev --classmap-authoritative \
+    && composer dump-env prod \
+    && rm -rf /root/.composer/cache
+
+# Set permissions and create required directories
+RUN mkdir -p var/cache/prod var/log \
+    && chown -R www-data:www-data var public \
+    && chmod -R 775 var public \
+    && chmod +x bin/console \
+    && php bin/console cache:clear \
+    && php bin/console assets:install
+
+# Start services with Supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
