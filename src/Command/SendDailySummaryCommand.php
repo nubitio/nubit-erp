@@ -38,6 +38,7 @@ class SendDailySummaryCommand extends TenantAwareCommand
     #[\Override]
     protected function configure(): void
     {
+        parent::configure();
         $this->setHelp('Send daily summary to all customers');
     }
 
