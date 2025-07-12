@@ -1,26 +1,25 @@
 api_platform:
-  title: 'Efact API'
-  description: 'Efact API'
-  version: '1.0.0'
-  path_segment_name_generator: 'api_platform.metadata.path_segment_name_generator.dash'
-  mapping:
-    paths: [ '%kernel.project_dir%/src' ]
-  formats:
-    json: [ 'application/json' ]
-    jsonld: [ 'application/ld+json' ]
-    html: [ 'text/html' ]
-  swagger:
-    api_keys:
-      JWT:
-        name: Authorization
-        type: header
-  defaults:
-    stateless: true
-    cache_headers:
-      vary: [ 'Content-Type', 'Authorization', 'Origin' ]
-    extra_properties:
-      standard_put: true
-      rfc_7807_compliant_errors: true
-    pagination_client_items_per_page: true
-  keep_legacy_inflector: false
-  use_symfony_listeners: true
+    title: 'Efact API'
+    description: 'Efact API'
+    version: '1.0.0'
+    path_segment_name_generator: 'api_platform.metadata.path_segment_name_generator.dash'
+    mapping:
+        paths: [ '%kernel.project_dir%/src' ]
+    formats:
+        json: [ 'application/json' ]
+        jsonld: [ 'application/ld+json' ]
+        html: [ 'text/html' ]
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
+    defaults:
+        stateless: true
+        cache_headers:
+            vary: [ 'Content-Type', 'Authorization', 'Origin' ]
+        extra_properties:
+            standard_put: true
+            rfc_7807_compliant_errors: true
+        pagination_client_items_per_page: true
+    use_symfony_listeners: true

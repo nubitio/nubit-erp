@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\RequestBody;
 use App\Controller\MediaController;
 use App\Repository\MediaRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,10 +23,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(
             uriTemplate: '/media',
             controller: MediaController::class,
-            openapiContext: [
-                'requestBody' => [
-                    'required' => true,
-                    'content' => [
+            openapi: new Operation(
+                requestBody: new RequestBody(
+                    content: new \ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
                                 'type' => 'object',
@@ -36,9 +37,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
                                 ],
                             ],
                         ],
-                    ],
-                ],
-            ],
+                    ]),
+                    required: true,
+                ),
+            ),
             deserialize: false,
         ),
         new Delete(
