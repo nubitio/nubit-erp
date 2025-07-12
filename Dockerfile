@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     php8.3-xml \
     php8.3-zip \
     php8.3-mysql \
+    php8.3-soap \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
