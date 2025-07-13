@@ -13,7 +13,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -23,7 +22,6 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
     name: 'notify:daily-summary',
     description: 'Send daily summary to all customers'
 )]
-#[AsCronTask(expression: '0 22 * * *', timezone: 'America/Lima')]
 class SendDailySummaryCommand extends TenantAwareCommand
 {
     public function __construct(
@@ -47,11 +45,10 @@ class SendDailySummaryCommand extends TenantAwareCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            // Get company name - using a default value since we don't know the exact column name
-            $companyName = 'Nubit EIRL';
-
-            // Get user name - using a default value since we don't know the exact column name
-            $userName = 'Usuario';
+            // Get company Name
+            $companyName = $this->connection->fetchOne(
+                'SELECT nombre_comercial FROM empresa LIMIT 1'
+            );
 
             // Get today's date in Y-m-d format
             $today = date('Y-m-d');
@@ -64,8 +61,8 @@ class SendDailySummaryCommand extends TenantAwareCommand
 
             // For simplicity, we'll use default values for customer metrics
             // since we don't know the exact schema
-            $newCustomersCount = 10;
-            $recurringCustomersCount = 5;
+            $newCustomersCount = 0;
+            $recurringCustomersCount = 0;
 
             // Get invoices sent to SUNAT count for today
             $invoicesSentCount = (int)$this->connection->fetchOne(
@@ -84,7 +81,6 @@ class SendDailySummaryCommand extends TenantAwareCommand
             // Send the summary to Bird API
             $this->sendToBirdApi(
                 $companyName,
-                $userName,
                 $salesCount,
                 $newCustomersCount,
                 $recurringCustomersCount,
@@ -112,7 +108,6 @@ class SendDailySummaryCommand extends TenantAwareCommand
      */
     private function sendToBirdApi(
         string $companyName,
-        string $userName,
         int $salesCount,
         int $newCustomersCount,
         int $recurringCustomersCount,
@@ -136,6 +131,8 @@ class SendDailySummaryCommand extends TenantAwareCommand
 
         $httpClient = HttpClient::create();
 
+        $dateString = date('d de MMMM de Y');
+
         $url = "https://api.bird.com/workspaces/{$workspaceId}/channels/{$channelId}/messages";
 
         $data = [
@@ -155,12 +152,12 @@ class SendDailySummaryCommand extends TenantAwareCommand
                     [
                         'type' => 'string',
                         'key' => '1',
-                        'value' => $companyName,
+                        'value' => $dateString,
                     ],
                     [
                         'type' => 'string',
                         'key' => '2',
-                        'value' => $userName,
+                        'value' => $companyName,
                     ],
                     [
                         'type' => 'string',
