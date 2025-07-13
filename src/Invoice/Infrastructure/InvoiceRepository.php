@@ -76,17 +76,17 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     {
         $localId = $this->connection->fetchOne(
             'select local_id from almacen where almacen_id = ?',
-            [$sale->almacen?->getId()]
+            [$sale->getAlmacen()?->getId()]
         );
         $invoiceCalculator = new InvoiceCalculator(
-            floatval($sale->subtotal),
-            $sale->descuento ?? 0.0,
-            floatval($sale->igv),
-            $sale->recargo_consumo ?? 0.0
+            floatval($sale->getSubtotal()),
+            $sale->getDescuento() ?? 0.0,
+            floatval($sale->getIgv()),
+            $sale->getRecargoConsumo() ?? 0.0
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
         $this->connection->executeQuery('CALL sp_make_invoice(?,?,?,?,?,?,?,?)', [
-            $sale->id,
+            $sale->getId(),
             $localId,
             $invoiceAmounts->getSubtotal(),
             $invoiceAmounts->getTaxedAmount(),

@@ -49,13 +49,13 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
     public function insert(CreditNote $creditNote): CreditNote
     {
         $entity = DataMapper::map($creditNote, CreditNoteEntity::class);
-        $entity->sale = $this->entityManager->getReference(Sale::class, $creditNote->sale?->id);
+        $entity->sale = $this->entityManager->getReference(Sale::class, $creditNote->sale?->getId());
 
         $entity->tipo_id = '07';
         $entity->serie = $this->creditNoteUtils->getCreditNoteSeries($creditNote->sale?->movimiento_id ?? '');
         $entity->correlativo = $this->creditNoteUtils->getCreditNoteNumber($entity->serie);
-        $entity->doc_afectado = $entity->sale?->invoice ?? '';
-        $entity->total = $entity->sale?->total ?? 0;
+        $entity->doc_afectado = $entity->sale?->getInvoice() ?? '';
+        $entity->total = $entity->sale?->getTotal() ?? 0;
         $entity->created_at = new \DateTimeImmutable();
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
@@ -78,7 +78,7 @@ readonly class CreditNoteRepository implements CreditNoteRepositoryInterface
 
         $entity = DataMapper::map($creditNote, $entity);
         if ($creditNote->sale instanceof \App\Entity\Sale) {
-            $entity->sale = $this->entityManager->getReference(Sale::class, $creditNote->sale->id);
+            $entity->sale = $this->entityManager->getReference(Sale::class, $creditNote->sale->getId());
         }
 
         $this->entityManager->flush();

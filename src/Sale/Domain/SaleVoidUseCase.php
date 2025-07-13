@@ -42,12 +42,12 @@ readonly class SaleVoidUseCase
         $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
         $sale = $this->entityManager->find(Sale::class, $saleId);
 
-        if (2 === $sale->estado) {
+        if (2 === $sale->getEstado()) {
             throw SaleException::alreadyVoided();
         }
 
         if (
-            $sale->fecha?->format('Y-m-d') < date(
+            $sale->getFecha()?->format('Y-m-d') < date(
                 'Y-m-d',
                 strtotime('-7 days')
             )
@@ -63,10 +63,10 @@ readonly class SaleVoidUseCase
             $response = $this->voidReceipt($saleId);
         }
 
-        $sale->glosa = $reason;
-        $sale->estado = 2;
-        $sale->updated_by = $userId;
-        $sale->date_updated = new \DateTime();
+        $sale->setGlosa($reason);
+        $sale->setEstado(2);
+        $sale->setUpdatedBy($userId);
+        $sale->setDateUpdated(new \DateTime());
 
         $this->entityManager->persist($sale);
         $this->entityManager->flush();

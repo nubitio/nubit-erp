@@ -24,15 +24,15 @@ readonly class SaleInvoiceUseCase
     {
         $sale = $this->entityManager->find(Sale::class, $saleId);
 
-        if (!$sale->has_invoice) {
+        if (!$sale->isHasInvoice()) {
             $this->invoiceRepository->create($sale);
         }
 
         $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
 
-        $sale->has_invoice = true;
-        $sale->invoice = $invoice->serie . '-' . $invoice->numero;
-        $sale->total = $invoice->total;
+        $sale->setHasInvoice(true);
+        $sale->setInvoice($invoice->serie . '-' . $invoice->numero);
+        $sale->setTotal($invoice->total);
         $this->entityManager->persist($sale);
         $this->entityManager->flush();
 
