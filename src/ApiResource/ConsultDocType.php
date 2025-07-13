@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Consult\Domain;
+namespace App\ApiResource;
 
-enum DocType: string
+enum ConsultDocType: string
 {
     case DNI = 'dni';
     case RUC = 'ruc';
