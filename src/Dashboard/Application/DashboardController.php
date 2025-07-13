@@ -3,11 +3,7 @@
 namespace App\Dashboard\Application;
 
 use App\Core\Application\Session\Security;
-use App\Dashboard\Domain\BillingMonthlyUseCase;
-use App\Dashboard\Domain\ProductRotationUseCase;
-use App\Dashboard\Domain\SalesDailyUseCase;
-use App\Dashboard\Domain\SalesMonthlyUseCase;
-use App\Dashboard\Domain\SalesWeeklyUseCase;
+use App\Dashboard\Domain\DashboardRepositoryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,11 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 class DashboardController extends AbstractController
 {
     public function __construct(
-        private readonly SalesDailyUseCase $salesDaily,
-        private readonly SalesWeeklyUseCase $salesWeekly,
-        private readonly SalesMonthlyUseCase $salesMonthly,
-        private readonly BillingMonthlyUseCase $monthlyInvoicing,
-        private readonly ProductRotationUseCase $productRotation,
+        private readonly DashboardRepositoryInterface $repository,
     ) {
     }
 
@@ -27,24 +19,37 @@ class DashboardController extends AbstractController
     {
         $type = $request->attributes->get('type');
         $user = $security->connectedUser();
+
+        if (!$user) {
+            return $this->json([]);
+        }
+
         $localId = $user->branchId;
 
         switch ($type) {
             case 'venta-dia':
-                $data = ($this->salesDaily)($localId);
+                $data = $this->repository->getDailySales($localId);
+                // Convert 'venta' to float for each item
+                foreach ($data as $key => $value) {
+                    $data[$key]['venta'] = (float)$value['venta'];
+                }
                 break;
             case 'venta-semana':
-                $data = ($this->salesWeekly)($localId);
+                $data = $this->repository->getWeeklySales($localId);
+                // Convert 'venta' to float for each item
+                foreach ($data as $key => $value) {
+                    $data[$key]['venta'] = (float)$value['venta'];
+                }
                 break;
             case 'venta-mes':
-                $data = ($this->salesMonthly)($localId);
+                $data = $this->repository->getMonthlySales($localId);
+                // Convert 'venta' to float for each item
+                foreach ($data as $key => $value) {
+                    $data[$key]['venta'] = (float)$value['venta'];
+                }
                 break;
             case 'monthly-invoicing':
-                $data = ($this->monthlyInvoicing);
-                break;
-            case 'product-rotation':
-                $lapse = $request->attributes->get('lapse');
-                $data = ($this->productRotation)($localId, $lapse);
+                $data = $this->repository->getMonthlyInvoicing();
                 break;
             default:
                 $data = [];

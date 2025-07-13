@@ -23,9 +23,4 @@ interface DashboardRepositoryInterface
      * @return array<int, mixed>
      */
     public function getMonthlyInvoicing(): array;
-
-    /**
-     * @return array<int, mixed>
-     */
-    public function getProductRotation(string $localId, string $lapse): array;
 }

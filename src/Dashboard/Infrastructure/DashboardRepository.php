@@ -15,30 +15,87 @@ readonly class DashboardRepository implements DashboardRepositoryInterface
     #[\Override]
     public function getDailySales(string $localId): array
     {
-        return $this->connection->fetchAllAssociative('call sp_bi_venta_por_dia (?)', [$localId]);
+        $sql = "
+        SELECT
+            td.day AS dia,
+            SUM(IFNULL(v.p_venta, 0)) AS venta
+        FROM time_dimension td
+        LEFT JOIN vw_descuento v ON td.db_date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
+            AND v.estado = 1
+            AND v.local_id = ?
+            AND td.month = MONTH(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'))
+            AND td.year = YEAR(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'))
+        GROUP BY td.day
+        ORDER BY td.day
+        ";
+
+        return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
     #[\Override]
     public function getWeeklySales(string $localId): array
     {
-        return $this->connection->fetchAllAssociative('call sp_bi_venta_por_semana (?)', [$localId]);
+        $sql = "
+        SELECT
+            td.day_name AS dia,
+            SUM(IFNULL(v.p_venta, 0)) AS venta
+        FROM time_dimension td
+        LEFT JOIN vw_descuento v ON td.db_date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
+            AND v.estado = 1
+            AND v.local_id = ?
+        WHERE YEARWEEK( td.db_date ) = YEARWEEK(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima' ) )
+        GROUP BY td.db_date
+        ORDER BY td.db_date
+        ";
+
+        return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
     #[\Override]
     public function getMonthlySales(string $localId): array
     {
-        return $this->connection->fetchAllAssociative('call sp_bi_venta_por_mes (?)', [$localId]);
+        $sql = "
+        SELECT
+            td.month_name AS mes,
+            SUM(IFNULL(v.p_venta, 0)) AS venta
+        FROM
+            time_dimension td
+            LEFT JOIN vw_descuento v ON td.db_date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
+            AND v.estado = 1
+            AND v.local_id = ?
+        WHERE
+            td.db_date > DATE_SUB(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'), INTERVAL 11 MONTH)
+        GROUP BY
+            td.year,
+            td.month
+        ORDER BY
+            td.year,
+            td.month
+        ";
+
+        return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
     #[\Override]
     public function getMonthlyInvoicing(): array
     {
-        return $this->connection->fetchAllAssociative('call sp_bi_monthly_invoicing');
-    }
+        $sql = "
+        SELECT
+            td.month_name AS `month`,
+            COUNT(i.comprobante_id) AS total
+        FROM
+            time_dimension td
+            LEFT JOIN comprobante i ON td.db_date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+        WHERE
+            td.db_date > DATE_SUB(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'), INTERVAL 11 MONTH)
+        GROUP BY
+            td.year,
+            td.month
+        ORDER BY
+            td.year,
+            td.month
+        ";
 
-    #[\Override]
-    public function getProductRotation(string $localId, string $lapse): array
-    {
-        return $this->connection->fetchAllAssociative('CALL sp_bi_product_rotation (?, ?)', [$localId, $lapse]);
+        return $this->connection->fetchAllAssociative($sql);
     }
 }

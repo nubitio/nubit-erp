@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Home\Application;
+namespace App\Controller;
 
 use App\Core\Base\BaseController;
 use App\Core\Infrastructure\Service\LogoProvider;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class HomeController extends BaseController
 {
