@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Dashboard\Infrastructure;
+namespace App\Repository;
 
 use App\Dashboard\Domain\DashboardRepositoryInterface;
 use Doctrine\DBAL\Connection;
 
-readonly class DashboardRepository implements DashboardRepositoryInterface
+readonly class DashboardRepository
 {
     public function __construct(
         private Connection $connection,
     ) {
     }
 
-    #[\Override]
     public function getDailySales(string $localId): array
     {
         $sql = "
@@ -32,7 +31,6 @@ readonly class DashboardRepository implements DashboardRepositoryInterface
         return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
-    #[\Override]
     public function getWeeklySales(string $localId): array
     {
         $sql = "
@@ -51,7 +49,6 @@ readonly class DashboardRepository implements DashboardRepositoryInterface
         return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
-    #[\Override]
     public function getMonthlySales(string $localId): array
     {
         $sql = "
@@ -76,7 +73,6 @@ readonly class DashboardRepository implements DashboardRepositoryInterface
         return $this->connection->fetchAllAssociative($sql, [$localId]);
     }
 
-    #[\Override]
     public function getMonthlyInvoicing(): array
     {
         $sql = "
