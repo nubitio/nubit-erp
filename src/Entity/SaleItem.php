@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use App\Repository\SaleItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -20,35 +21,115 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['sale_item:read']],
     paginationEnabled: false,
 )]
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: SaleItemRepository::class)]
 #[ORM\Table(name: 'movimiento_detalle')]
 class SaleItem
 {
-    public function __construct(
-        #[Groups(['sale_item:read'])]
-        #[ORM\Id]
-        #[ORM\GeneratedValue]
-        #[ORM\Column(name: 'id', type: 'integer')]
-        public ?int $id = null,
-        #[ORM\ManyToOne(cascade: ['persist', 'remove'], inversedBy: 'items')]
-        #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
-        public ?Sale $movimiento = null,
-        #[Groups(['sale_item:read', 'sale:write'])]
-        #[ORM\ManyToOne(targetEntity: Product::class)]
-        #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
-        public ?Product $producto = null,
-        #[Groups(['sale_item:read', 'sale:write'])]
-        #[ORM\Column(name: 'cantidad')]
-        public ?float $cantidad = null,
-        #[Groups(['sale_item:read', 'sale:write'])]
-        #[ORM\Column(name: 'precio_unitario')]
-        public ?float $precio_unitario = null,
-        #[Groups(['sale_item:read', 'sale:write'])]
-        #[ORM\Column(name: 'descuento')]
-        public ?float $descuento = null,
-        #[Groups(['sale_item:read', 'sale:write'])]
-        #[ORM\Column(name: 'precio_total')]
-        public ?float $precio_total = null,
-    ) {
+    #[Groups(['sale_item:read'])]
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column(name: 'id', type: 'integer')]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(cascade: ['persist', 'remove'], inversedBy: 'items')]
+    #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
+    private ?Sale $movimiento = null;
+
+    #[Groups(['sale_item:read', 'sale:write'])]
+    #[ORM\ManyToOne(targetEntity: Product::class)]
+    #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
+    private ?Product $producto = null;
+
+    #[Groups(['sale_item:read', 'sale:write'])]
+    #[ORM\Column(name: 'cantidad')]
+    private ?float $cantidad = null;
+
+    #[Groups(['sale_item:read', 'sale:write'])]
+    #[ORM\Column(name: 'precio_unitario')]
+    private ?float $precio_unitario = null;
+
+    #[Groups(['sale_item:read', 'sale:write'])]
+    #[ORM\Column(name: 'descuento')]
+    private ?float $descuento = null;
+
+    #[Groups(['sale_item:read', 'sale:write'])]
+    #[ORM\Column(name: 'precio_total')]
+    private ?float $precio_total = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getMovimiento(): ?Sale
+    {
+        return $this->movimiento;
+    }
+
+    public function setMovimiento(?Sale $movimiento): static
+    {
+        $this->movimiento = $movimiento;
+
+        return $this;
+    }
+
+    public function getProducto(): ?Product
+    {
+        return $this->producto;
+    }
+
+    public function setProducto(?Product $producto): static
+    {
+        $this->producto = $producto;
+
+        return $this;
+    }
+
+    public function getCantidad(): ?float
+    {
+        return $this->cantidad;
+    }
+
+    public function setCantidad(?float $cantidad): static
+    {
+        $this->cantidad = $cantidad;
+
+        return $this;
+    }
+
+    public function getPrecioUnitario(): ?float
+    {
+        return $this->precio_unitario;
+    }
+
+    public function setPrecioUnitario(?float $precio_unitario): static
+    {
+        $this->precio_unitario = $precio_unitario;
+
+        return $this;
+    }
+
+    public function getDescuento(): ?float
+    {
+        return $this->descuento;
+    }
+
+    public function setDescuento(?float $descuento): static
+    {
+        $this->descuento = $descuento;
+
+        return $this;
+    }
+
+    public function getPrecioTotal(): ?float
+    {
+        return $this->precio_total;
+    }
+
+    public function setPrecioTotal(?float $precio_total): static
+    {
+        $this->precio_total = $precio_total;
+
+        return $this;
     }
 }

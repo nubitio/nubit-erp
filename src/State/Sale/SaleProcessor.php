@@ -43,7 +43,7 @@ readonly class SaleProcessor implements ProcessorInterface
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
-        if (!$data->id && $data->tipo_pago) {
+        if (!$data->getId() && $data->getTipoPago()) {
             $user = $this->security->connectedUser();
             $cashShift = $this->entityManager->getRepository(CashShift::class)
                 ->findOneBy([
@@ -59,39 +59,39 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $subtotal = 0;
         /** @var SaleItem $item */
-        foreach ($data->items as $item) {
-            $item->movimiento = $data;
-            $subtotal += $item->precio_total;
+        foreach ($data->getItems() as $item) {
+            $item->setMovimiento($data);
+            $subtotal += $item->getPrecioTotal();
         }
 
-        $data->subtotal = $subtotal;
-        $data->total = $subtotal - ($subtotal * $data->descuento / 100);
-        $data->estado = 1;
+        $data->setSubtotal($subtotal);
+        $data->setTotal($subtotal - ($subtotal * $data->getDescuento() / 100));
+        $data->setEstado(1);
 
         // Update warehouse-specific stock
-        if ($data->almacen) {
+        if ($data->getAlmacen()) {
             /** @var SaleItem $item */
-            foreach ($data->items as $item) {
-                if ($item->producto) {
+            foreach ($data->getItems() as $item) {
+                if ($item->getProducto()) {
                     $currentStock = $this->productStockService->getStockForProductInWarehouse(
-                        $item->producto,
-                        $data->almacen
+                        $item->getProducto(),
+                        $data->getAlmacen()
                     );
 
-                    if ($data->tipo_id === 1) {
+                    if ($data->getTipoId() === 1) {
                         // Increase stock for purchases (tipo_id = 1)
-                        $newStock = $currentStock + $item->cantidad;
+                        $newStock = $currentStock + $item->getCantidad();
                         $this->productStockService->updateStockForProductInWarehouse(
-                            $item->producto,
-                            $data->almacen,
+                            $item->getProducto(),
+                            $data->getAlmacen(),
                             $newStock
                         );
-                    } elseif ($data->tipo_id === 2) {
+                    } elseif ($data->getTipoId() === 2) {
                         // Reduce stock for sales (tipo_id = 2)
-                        $newStock = max(0, $currentStock - $item->cantidad);
+                        $newStock = max(0, $currentStock - $item->getCantidad());
                         $this->productStockService->updateStockForProductInWarehouse(
-                            $item->producto,
-                            $data->almacen,
+                            $item->getProducto(),
+                            $data->getAlmacen(),
                             $newStock
                         );
                     }
@@ -99,10 +99,10 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if (!$data->id) {
-            $data->date_created = new \DateTimeImmutable();
+        if (!$data->getId()) {
+            $data->setDateCreated(new \DateTimeImmutable());
         } else {
-            $data->date_updated = new \DateTimeImmutable();
+            $data->setDateUpdated(new \DateTimeImmutable());
         }
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
