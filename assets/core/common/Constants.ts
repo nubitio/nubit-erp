@@ -1,4 +1,5 @@
 export const Constants = {
+    BASE_URL: '/',
     API_URL: 'http://localhost:8080',
     API_BASE_URL: '/api/v1/',
     TEXT_ADD: 'Nuevo',

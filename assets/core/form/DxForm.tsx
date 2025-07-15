@@ -333,7 +333,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             }
 
             if (isEdit.current) {
-                httpClient.put(`${options.url}/${id}`, formData).subscribe((response: any) => {
+                httpClient.patch(`${options.url}/${id}`, formData).subscribe((response: any) => {
                     emit(options.events?.SUCCESS, response);
                 }).add(() => emit(options.events?.LOADING, false));
             } else {
