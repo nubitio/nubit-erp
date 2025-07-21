@@ -1,8 +1,8 @@
-import {FieldType} from "./FieldType";
-import {DxFilterRule} from "../common/FilterRule";
-import {ValidationRule} from "./ValidationRule";
+import { FieldType } from './FieldType';
+import { DxFilterRule } from '../common/FilterRule';
+import { ValidationRule } from './ValidationRule';
 
-export type LoadOption = Record<string, any>
+export type LoadOption = Record<string, any>;
 
 export interface Field {
     isIdentity: boolean;
@@ -14,20 +14,33 @@ export interface Field {
     height: number | null;
     minWidth: number | undefined;
     minHeight: number | undefined;
-    align: "left" | "center" | "right" | undefined;
+    align: 'left' | 'center' | 'right' | undefined;
     sortable: boolean;
     filterable: boolean;
     hideable: boolean;
     validators: ValidationRule[];
-    mode: "remote" | "local" | "none";
+    mode: 'remote' | 'local' | 'none';
     url: string | undefined;
     loadOptions: LoadOption[];
     filters: DxFilterRule[];
     byKeyUrl: string | null;
     textField: string;
     valueField: string;
-    valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime";
+    valueType: 'string' | 'number' | 'date' | 'boolean' | 'object' | 'datetime';
     format: string;
+    selectedFilterOperation:
+        | '<'
+        | '<='
+        | '<>'
+        | '='
+        | '>'
+        | '>='
+        | 'between'
+        | 'contains'
+        | 'endswith'
+        | 'notcontains'
+        | 'startswith'
+        | undefined;
     filterValue: any;
     data: any[];
     formatter: any;
@@ -49,9 +62,11 @@ export interface Field {
     searchEnabled: boolean;
     searchExpr: string[] | null;
     fixed: boolean;
-    fixedPosition: "left" | "right" | undefined;
+    fixedPosition: 'left' | 'right' | undefined;
     helpText: string | undefined;
     contentRender: any;
     visibleOnForm: boolean;
     maxLength: number | undefined;
+    multiple: boolean;
+    editorOptions: any | undefined;
 }
