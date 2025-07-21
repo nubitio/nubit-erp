@@ -1,7 +1,7 @@
-import {FieldType} from "./FieldType";
-import {Field, LoadOption} from "./Field";
-import {DxFilterRule} from "../common/FilterRule";
-import {ValidationRule} from "./ValidationRule";
+import { FieldType } from './FieldType';
+import { Field, LoadOption } from './Field';
+import { DxFilterRule } from '../common/FilterRule';
+import { ValidationRule } from './ValidationRule';
 
 export class FieldBuilder {
     private readonly _field: Field;
@@ -30,6 +30,7 @@ export class FieldBuilder {
             textField: '',
             valueField: '',
             valueType: 'string',
+            selectedFilterOperation: undefined,
             filterValue: undefined,
             data: [],
             format: '',
@@ -56,7 +57,9 @@ export class FieldBuilder {
             helpText: undefined,
             contentRender: null,
             visibleOnForm: true,
-            maxLength: undefined
+            maxLength: undefined,
+            multiple: false,
+            editorOptions: undefined,
         };
     }
 
@@ -105,7 +108,7 @@ export class FieldBuilder {
         return this;
     }
 
-    align(align: "left" | "center" | "right"): FieldBuilder {
+    align(align: 'left' | 'center' | 'right'): FieldBuilder {
         this._field.align = align;
         return this;
     }
@@ -130,7 +133,7 @@ export class FieldBuilder {
         return this;
     }
 
-    mode(mode: "remote" | "local" | "none"): FieldBuilder {
+    mode(mode: 'remote' | 'local' | 'none'): FieldBuilder {
         this._field.mode = mode;
         return this;
     }
@@ -165,8 +168,28 @@ export class FieldBuilder {
         return this;
     }
 
-    valueType(valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime"): FieldBuilder {
+    valueType(
+        valueType: 'string' | 'number' | 'date' | 'boolean' | 'object' | 'datetime',
+    ): FieldBuilder {
         this._field.valueType = valueType;
+        return this;
+    }
+
+    selectedFilterOperation(
+        operation:
+            | '<'
+            | '<='
+            | '<>'
+            | '='
+            | '>'
+            | '>='
+            | 'between'
+            | 'contains'
+            | 'endswith'
+            | 'notcontains'
+            | 'startswith',
+    ): FieldBuilder {
+        this._field.selectedFilterOperation = operation;
         return this;
     }
 
@@ -275,7 +298,7 @@ export class FieldBuilder {
         return this;
     }
 
-    fixedPosition(value: "left" | "right"): FieldBuilder {
+    fixedPosition(value: 'left' | 'right'): FieldBuilder {
         this._field.fixedPosition = value;
         return this;
     }
@@ -297,6 +320,16 @@ export class FieldBuilder {
 
     onKeyPress(param: (e) => void) {
         this._field.onKeyPress = param;
+        return this;
+    }
+
+    multiple(value: boolean): FieldBuilder {
+        this._field.multiple = value;
+        return this;
+    }
+
+    editorOptions(param: any) {
+        this._field.editorOptions = param;
         return this;
     }
 

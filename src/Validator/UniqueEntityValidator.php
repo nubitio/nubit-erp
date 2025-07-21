@@ -43,6 +43,18 @@ final class UniqueEntityValidator extends ConstraintValidator
             $qb->andWhere('e.active = 1');
         }
 
+        // Exclude the current entity if it already has an ID (edit case)
+        $metadata = $this->entityManager->getClassMetadata($entityClass);
+        $identifierValues = $metadata->getIdentifierValues($value);
+
+        if (!empty($identifierValues)) {
+            $identifierField = $metadata->getSingleIdentifierFieldName();
+            $identifierValue = reset($identifierValues);
+
+            $qb->andWhere("e.$identifierField != :entityId")
+                ->setParameter('entityId', $identifierValue);
+        }
+
         $qb->setMaxResults(1);
 
         $result = $qb->getQuery()->getOneOrNullResult();

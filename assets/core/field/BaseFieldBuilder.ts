@@ -1,6 +1,6 @@
-import {FieldType} from "./FieldType";
-import {Field} from "./Field";
-import {ValidationRule} from "./ValidationRule";
+import { FieldType } from './FieldType';
+import { Field } from './Field';
+import { ValidationRule } from './ValidationRule';
 
 export class BaseFieldBuilder {
     protected _field: Field;
@@ -30,6 +30,7 @@ export class BaseFieldBuilder {
             valueField: '',
             valueType: 'string',
             filterValue: undefined,
+            selectedFilterOperation: undefined,
             data: [],
             format: '',
             formatter: null,
@@ -55,7 +56,9 @@ export class BaseFieldBuilder {
             helpText: undefined,
             contentRender: null,
             visibleOnForm: true,
-            maxLength: undefined
+            maxLength: undefined,
+            multiple: false,
+            editorOptions: undefined,
         };
     }
 
@@ -99,7 +102,7 @@ export class BaseFieldBuilder {
         return this;
     }
 
-    align(align: "left" | "center" | "right"): this {
+    align(align: 'left' | 'center' | 'right'): this {
         this._field.align = align;
         return this;
     }
@@ -124,12 +127,12 @@ export class BaseFieldBuilder {
         return this;
     }
 
-    mode(mode: "remote" | "local" | "none"): this {
+    mode(mode: 'remote' | 'local' | 'none'): this {
         this._field.mode = mode;
         return this;
     }
 
-    valueType(valueType: "string" | "number" | "date" | "boolean" | "object" | "datetime"): this {
+    valueType(valueType: 'string' | 'number' | 'date' | 'boolean' | 'object' | 'datetime'): this {
         this._field.valueType = valueType;
         return this;
     }
@@ -239,7 +242,7 @@ export class BaseFieldBuilder {
         return this;
     }
 
-    fixedPosition(value: "left" | "right"): this {
+    fixedPosition(value: 'left' | 'right'): this {
         this._field.fixedPosition = value;
         return this;
     }

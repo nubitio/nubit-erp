@@ -6,9 +6,18 @@ type ValidationOptions = {
     comparisonType?: '==' | '!=' | '>' | '<' | '>=' | '<=';
     pattern?: string;
     validationCallback?: (options: any) => boolean;
-}
+};
 
 export type ValidationRule = {
-    type: 'async' | 'compare' | 'custom' | 'email' | 'numeric' | 'pattern' | 'range' | 'required' | 'stringLength';
+    type:
+        | 'async'
+        | 'compare'
+        | 'custom'
+        | 'email'
+        | 'numeric'
+        | 'pattern'
+        | 'range'
+        | 'required'
+        | 'stringLength';
     options: ValidationOptions;
-}
+};

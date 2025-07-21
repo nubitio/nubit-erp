@@ -19,4 +19,6 @@ export enum FieldType {
     FILE = 'file',
     SUBMIT = 'submit',
     LOOKUP = 'lookup',
+    TAGS = 'tags',
+    HTML = 'html',
 }
