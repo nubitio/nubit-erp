@@ -48,6 +48,7 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
             location: 'after',
             options: {
                 icon: 'search',
+                stylingMode: 'text',
                 onClick: (e: any) => {
                     const doc = formRef?.getFieldValue('ruc');
                     if (doc.length === 8) {

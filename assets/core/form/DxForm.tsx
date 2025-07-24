@@ -370,7 +370,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
             const hasId = formData[getIdField()] !== undefined;
 
-            if (isEdit.current || hasId) {
+            if (isEdit.current) {
                 httpClient
                     .patch(`${options.url}/${id}`, formData)
                     .subscribe((response: any) => {
