@@ -92,10 +92,7 @@ class HttpClient {
             const refreshToken = StorageUtils.getItem('refreshToken');
 
             if (!refreshToken) {
-                const errorResponse = error.response;
-                const message = errorResponse?.data?.detail || HttpClient.DEFAULT_MESSAGES.unauthorized;
-                toast(message, 'error');
-                return Promise.reject(error);
+                this.handleTokenRefreshError()
             }
 
             this.isRefreshing = true;

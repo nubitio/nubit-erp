@@ -440,7 +440,7 @@ SQL;
             [$series[0]['serie']]
         );
         $sale['movimiento_id'] = $uuid;
-        $sale['fecha'] = date('Y-m-d');
+        $sale['fecha'] = new \DateTimeImmutable();
         $sale['tipo_id'] = 2;
         $sale['operacion_id'] = $operation[0]['operacion_id'];
         $sale['almacen_id'] = $warehouse[0]['almacen_id'];
