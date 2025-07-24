@@ -50,6 +50,7 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
             location: 'after',
             options: {
                 icon: 'search',
+                stylingMode: 'text',
                 onClick: (e: any) => {
                     const doc = formRef?.getFieldValue('ruc');
                     consultService.consultRuc(doc).subscribe((response) => {

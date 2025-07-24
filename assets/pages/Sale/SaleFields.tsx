@@ -84,6 +84,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
                 location: 'first',
                 options: {
                     icon: 'add',
+                    stylingMode: 'text',
                     onClick: (e: any) => {
                         dispatch(CustomerPage.EVENTS.ADD)
                     }
