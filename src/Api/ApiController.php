@@ -32,10 +32,41 @@ class ApiController extends BaseController
         $this->body = $body;
     }
 
+    #[Route('/api/auth/login', name: 'api_login', methods: ['POST'])]
+    public function login(): Response
+    {
+        $key = 'YSFEeBPAo1MyOsOleKoVtasDl';
+        $user = $this->apiRepository->getUserByName(strval($this->body['username']));
+
+        if (!$user) {
+            return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
+        }
+        if (1 == $user['estado'] && password_verify(strval($this->body['password']), strval($user['password']))) {
+            $data = [
+                'iat' => time(),
+                'exp' => time() + (60 * 60),
+                'sub' => $user['usuario_id'],
+                'name' => $user['username'],
+                'role' => $user['rol_id'],
+            ];
+            $token = JWT::encode($data, $key, 'HS256');
+
+            return $this->json(['token' => $token]);
+        }
+
+        return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
+    }
+
     #[Route('/api/config', name: 'api_getConfig', methods: ['GET'])]
     public function getConfig(): Response
     {
         return $this->json($this->apiRepository->getConfig());
+    }
+
+    #[Route('/api/locals', name: 'api_getAllLocals', methods: ['GET'])]
+    public function getAllLocals(): Response
+    {
+        return $this->json($this->apiRepository->getAllLocals());
     }
 
     // Categories
