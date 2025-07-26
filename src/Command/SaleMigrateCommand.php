@@ -2,7 +2,11 @@
 
 namespace App\Command;
 
+use App\Core\Application\Command\TenantAwareCommand;
+use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
+use App\Core\Infrastructure\Service\TenantManager;
 use Doctrine\DBAL\Connection;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -13,22 +17,25 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:sale:migrate',
     description: 'Migrate sales',
 )]
-class SaleMigrateCommand extends Command
+class SaleMigrateCommand extends TenantAwareCommand
 {
     public function __construct(
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        LoggerInterface $logger,
         private readonly Connection $connection,
     ) {
-        parent::__construct();
+        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
     #[\Override]
     protected function configure(): void
     {
+        parent::configure();
         $this->setHelp('Actualiza valores de las ventas');
     }
 
-    #[\Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         try {
