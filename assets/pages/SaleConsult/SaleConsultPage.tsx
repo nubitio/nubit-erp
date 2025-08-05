@@ -26,7 +26,7 @@ export const SaleConsultPage = () => {
         const dateFrom = DateUtils.dateFormatter(startDate || new Date());
         const dateTo = DateUtils.dateFormatter(endDate || new Date());
         let data = `report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
-        window.open(`/sale/consult?${data}`);
+        window.open(`/api/v1/sales/report?${data}`);
         formRef.current?.instance().clear();
     };
     return (
