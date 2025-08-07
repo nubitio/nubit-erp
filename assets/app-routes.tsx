@@ -28,12 +28,12 @@ import {PriceListPage} from "./pages/PriceList/PriceListPage";
 import {SupplierPage} from "./pages/Supplier/SupplierPage";
 import {SalePage} from "./pages/Sale/SalePage";
 import {UnitOfMeasurePage} from "./pages/UnitOfMeasure/UnitOfMeasurePage";
-import {CashRegisterPage} from "./pages/CashRegister/CashRegisterPage";
 import {CashRegisterDashboard} from "./features/cashRegister/pages/CashRegisterDashboard";
 import {CashRegisterOpen} from "./features/cashRegister/pages/CashRegisterOpen";
 import {CashRegisterClose} from "./features/cashRegister/pages/CashRegisterClose";
 import {CashMovements} from "./features/cashRegister/pages/CashMovements";
 import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
+import Assistant from "./features/assistant/Assistant";
 
 const routes = [
     {
@@ -171,6 +171,10 @@ const routes = [
     {
         path: '/unit-of-measure',
         element: UnitOfMeasurePage,
+    },
+    {
+        path: '/assistant',
+        element: Assistant
     },
 ];
 

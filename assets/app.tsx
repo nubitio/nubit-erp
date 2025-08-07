@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import {EfactApp} from "./EfactApp";
-
 import './app.scss';
 
 window.addEventListener('load', () => {
