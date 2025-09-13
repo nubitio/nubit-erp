@@ -10,7 +10,6 @@ use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Entity\Sale;
-use App\Invoice\Domain\GetOneVoucherUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,7 +19,6 @@ readonly class SaleVoidUseCase
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
         private InvoiceRepositoryInterface $invoiceRepository,
         private VoidedCreateUseCase $voidedCreateUseCase,
         private SummaryCreateUseCase $summaryCreateUseCase,
@@ -39,7 +37,7 @@ readonly class SaleVoidUseCase
         string $reason,
         int $userId,
     ): ApiResponse {
-        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
+        $voucher = $this->invoiceRepository->getVoucher($saleId);
         $sale = $this->entityManager->find(Sale::class, $saleId);
 
         if (2 === $sale->getEstado()) {
@@ -71,7 +69,7 @@ readonly class SaleVoidUseCase
         $this->entityManager->persist($sale);
         $this->entityManager->flush();
 
-        if ($response instanceof \App\Billing\Model\Response\SummaryResponse) {
+        if ($response instanceof SummaryResponse) {
             $sunatResponse = $response->sunatResponse;
             $success = $sunatResponse->isSuccess();
             $description = $success ? 'Anulado correctamente'
@@ -121,7 +119,8 @@ readonly class SaleVoidUseCase
             $invoice->voided = 3;
         }
 
-        $this->invoiceRepository->update($invoice);
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush();
 
         return $response;
     }
@@ -156,7 +155,8 @@ readonly class SaleVoidUseCase
             $invoice->voided = 3;
         }
 
-        $this->invoiceRepository->update($invoice);
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush();
 
         return $response;
     }

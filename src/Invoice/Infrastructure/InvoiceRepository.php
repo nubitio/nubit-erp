@@ -2,52 +2,23 @@
 
 namespace App\Invoice\Infrastructure;
 
-use App\Core\Domain\DataLoader\LoadOptions;
-use App\Core\Domain\DataLoader\Paginator\PaginatorInterface;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Invoice\InvoiceCalculator;
 use App\Core\Domain\Util\DataMapper;
-use App\Core\Infrastructure\DataLoader\DataLoader;
-use App\Entity\Customer;
-use App\Entity\InvoiceEntity;
+use App\Entity\Invoice;
 use App\Entity\Sale;
-use App\Invoice\Domain\Invoice;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 
 readonly class InvoiceRepository implements InvoiceRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Connection $connection,
-        private DataLoader $dataLoader,
     ) {
-    }
-
-    #[\Override]
-    public function getAll(LoadOptions $options): PaginatorInterface
-    {
-        return $this->dataLoader->loadCollection($options);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    #[\Override]
-    public function getOne(string $invoiceId): Invoice
-    {
-        /** @var ?InvoiceEntity $invoiceEntity */
-        $invoiceEntity = $this->entityManager->find(InvoiceEntity::class, $invoiceId);
-
-        if (!$invoiceEntity) {
-            throw new \Exception('Invoice not found');
-        }
-
-        return DataMapper::map($invoiceEntity, Invoice::class);
     }
 
     /**
@@ -56,8 +27,8 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
     #[\Override]
     public function getOneBySaleId(string $saleId): Invoice
     {
-        /** @var ?InvoiceEntity $invoiceEntity */
-        $invoiceEntity = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(
+        /** @var ?Invoice $invoiceEntity */
+        $invoiceEntity = $this->entityManager->getRepository(Invoice::class)->findOneBy(
             ['movimiento_id' => $saleId]
         );
 
@@ -65,7 +36,7 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
             throw new \Exception('Invoice not found');
         }
 
-        return DataMapper::map($invoiceEntity, Invoice::class);
+        return $invoiceEntity;
     }
 
     /**
@@ -95,50 +66,6 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
             $invoiceAmounts->getChargesAmount(),
             $invoiceAmounts->getTotal(),
         ]);
-    }
-
-    #[\Override]
-    public function insert(Invoice $invoice): Invoice
-    {
-        $entity = DataMapper::map($invoice, InvoiceEntity::class);
-        $this->entityManager->persist($entity);
-        $this->entityManager->flush();
-
-        return DataMapper::map($entity, Invoice::class);
-    }
-
-    /**
-     * @throws ServiceException
-     * @throws ORMException
-     */
-    #[\Override]
-    public function update(Invoice $invoice): Invoice
-    {
-        $entity = $this->entityManager->find(InvoiceEntity::class, $invoice->comprobante_id);
-
-        if (!$entity) {
-            throw new ServiceException('La factura no existe');
-        }
-
-        $entity = DataMapper::map($invoice, $entity);
-
-        $entity->cliente = $this->entityManager->getReference(Customer::class, $invoice->cliente?->getRuc());
-        $this->entityManager->flush();
-
-        return DataMapper::map($entity, Invoice::class);
-    }
-
-    #[\Override]
-    public function delete(string $id): void
-    {
-        $entity = $this->entityManager->find(InvoiceEntity::class, $id);
-
-        if (!$entity) {
-            return;
-        }
-
-        $this->entityManager->remove($entity);
-        $this->entityManager->flush();
     }
 
     /**

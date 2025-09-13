@@ -8,14 +8,14 @@ use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
+use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
-use Psr\Cache\InvalidArgumentException;
 
 readonly class ReceiptCdrUseCase
 {
     public function __construct(
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
         private SettingsService $settings,
         private FileManager $fileManager,
@@ -24,8 +24,8 @@ readonly class ReceiptCdrUseCase
 
     /**
      * @throws ServiceException
-     * @throws InvalidArgumentException
      * @throws FilesystemException
+     * @throws Exception
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
     {
@@ -36,12 +36,12 @@ readonly class ReceiptCdrUseCase
     }
 
     /**
-     * @throws InvalidArgumentException
      * @throws FilesystemException
+     * @throws Exception
      */
     public function getCdrForInvoice(string $id): FileResponse
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($id);
+        $voucher = $this->invoiceRepository->getVoucher($id);
         $companyId = $this->settings->get(Constants::COMPANY_ID);
 
         $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
@@ -54,9 +54,9 @@ readonly class ReceiptCdrUseCase
     }
 
     /**
-     * @throws InvalidArgumentException
      * @throws ServiceException
      * @throws FilesystemException
+     * @throws Exception
      */
     public function getCdrForNote(string $id): FileResponse
     {

@@ -8,7 +8,7 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
-use App\Entity\InvoiceEntity;
+use App\Entity\Invoice;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
@@ -30,7 +30,7 @@ readonly class InvoiceSendUseCase
      */
     public function __invoke(string $saleId): DocumentResponse
     {
-        $invoice = $this->entityManager->getRepository(InvoiceEntity::class)->findOneBy(
+        $invoice = $this->entityManager->getRepository(Invoice::class)->findOneBy(
             ['movimiento_id' => $saleId]
         );
 

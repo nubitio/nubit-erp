@@ -4,7 +4,7 @@ namespace App\Invoice\Api;
 
 use ApiPlatform\Metadata\Operation;
 use App\Core\Domain\Api\ApiProviderInterface;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
 
 /**
@@ -13,7 +13,7 @@ use App\Invoice\Domain\Voucher;
 readonly class VoucherProvider implements ApiProviderInterface
 {
     public function __construct(
-        private GetOneVoucherUseCase $getOneUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
     ) {
     }
 
@@ -23,6 +23,6 @@ readonly class VoucherProvider implements ApiProviderInterface
     #[\Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
-        return $this->getOneUseCase->__invoke(strval($uriVariables['sale_id']));
+        return $this->invoiceRepository->getVoucher(strval($uriVariables['sale_id']));
     }
 }

@@ -20,7 +20,7 @@ export class SharedUtils {
                         <img
                             src={imageUrl}
                             className="object-cover"
-                            style={{ width: '30px', height: '30px' }}
+                            style={{width: '30px', height: '30px'}}
                             alt={alt}
                         />
                     </a>
@@ -34,7 +34,7 @@ export class SharedUtils {
                     <img
                         src={url}
                         className="object-cover"
-                        style={{ width: '30px', height: '30px' }}
+                        style={{width: '30px', height: '30px'}}
                         alt={alt ?? 'No image'}
                     />
                 </div>
@@ -42,16 +42,30 @@ export class SharedUtils {
         }
     }
 
-    static dateFormatter(value: string) {
-        const date = new Date(value);
-        const timeOffset = date.getTimezoneOffset() * 60000;
-        date.setTime(date.getTime() + timeOffset);
-        return date.toLocaleDateString('es-PE', { timeZone: 'UTC' });
+    static dateFormatter(value: Date | string | null | undefined) {
+        if (value === null || value === undefined || value === '') return '';
+        if (value instanceof Date) {
+            return value.toLocaleDateString('es-PE', {timeZone: 'UTC'});
+        }
+        const dateStr = value.trim();
+        if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
+            const ymd = dateStr.slice(0, 10);
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+            if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+        }
+
+        // YYYY-MM-DD (date-only)
+        let m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+        if (m) return `${m[3]}/${m[2]}/${m[1]}`;
+
+        // DD/MM/YYYY (already formatted)
+        m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dateStr);
+        if (m) return dateStr;
     }
 
     static timeFormatter(value: string) {
         const time = new Date(value);
-        return time.toLocaleTimeString('es-PE', { timeZone: 'UTC' });
+        return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
     }
 
     static dateTimeFormatter(value: string) {
@@ -114,8 +128,8 @@ export class SharedUtils {
     static htmlFormatter(value: any) {
         if (value) {
             return (
-                <div className="text-truncate" style={{ maxWidth: '200px' }}>
-                    <span dangerouslySetInnerHTML={{ __html: value }} />
+                <div className="text-truncate" style={{maxWidth: '200px'}}>
+                    <span dangerouslySetInnerHTML={{__html: value}}/>
                 </div>
             );
         } else {
@@ -136,7 +150,7 @@ export default function toast(
             type: type,
             displayTime: time,
         },
-        { position: position },
+        {position: position},
     );
 }
 

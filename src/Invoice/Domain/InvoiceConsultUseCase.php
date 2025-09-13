@@ -7,6 +7,7 @@ use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
 
@@ -17,6 +18,7 @@ readonly class InvoiceConsultUseCase
         private BillConsultUseCase $billConsultUseCase,
         private FileManager $fileManager,
         private SettingsService $settings,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -47,7 +49,8 @@ readonly class InvoiceConsultUseCase
                 $invoice->mensaje_sunat = $consultResponse->getError()?->getMessage();
             }
 
-            $this->invoiceRepository->update($invoice);
+            $this->entityManager->persist($invoice);
+            $this->entityManager->flush();
         }
 
         return $consultResponse;

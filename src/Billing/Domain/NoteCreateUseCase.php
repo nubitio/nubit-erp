@@ -5,7 +5,7 @@ namespace App\Billing\Domain;
 use App\Core\Domain\Exception\ServiceException;
 use App\CreditNote\Domain\CreditNote;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
@@ -17,7 +17,7 @@ readonly class NoteCreateUseCase
 {
     public function __construct(
         private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
         private BillUtilsInterface $billUtils,
     ) {
     }
@@ -29,7 +29,7 @@ readonly class NoteCreateUseCase
     {
         $creditNote = $this->getOneCreditNoteUseCase->__invoke($noteId);
         if (null !== $creditNote->sale?->getId()) {
-            $voucher = $this->getOneVoucherUseCase->__invoke($creditNote->sale->getId());
+            $voucher = $this->invoiceRepository->getVoucher($creditNote->sale->getId());
         }
 
         if (!isset($voucher)) {
@@ -89,7 +89,7 @@ readonly class NoteCreateUseCase
 
         $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
-        $amount = $formatter->format((int) $parts[0]);
+        $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
         $legend = new Legend();
