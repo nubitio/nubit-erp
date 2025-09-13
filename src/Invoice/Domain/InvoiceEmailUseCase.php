@@ -20,7 +20,7 @@ use Twig\Error\SyntaxError;
 readonly class InvoiceEmailUseCase
 {
     public function __construct(
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
         private MailerInterface $mailer,
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
@@ -40,7 +40,7 @@ readonly class InvoiceEmailUseCase
      */
     public function __invoke(string $saleId): void
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
+        $voucher = $this->invoiceRepository->getVoucher($saleId);
 
         $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',

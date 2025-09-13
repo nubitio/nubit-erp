@@ -6,13 +6,13 @@ use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\GetOneVoucherUseCase;
-use Psr\Cache\InvalidArgumentException;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
+use Doctrine\DBAL\Exception;
 
 readonly class ReceiptShowUseCase
 {
     public function __construct(
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
         private GetOneCreditNoteUseCase $getOneNoteUseCase,
         private SettingsService $settings,
     ) {
@@ -20,7 +20,7 @@ readonly class ReceiptShowUseCase
 
     /**
      * @throws ServiceException
-     * @throws InvalidArgumentException
+     * @throws Exception
      */
     public function __invoke(ReceiptRequest $request): Receipt
     {
@@ -31,11 +31,11 @@ readonly class ReceiptShowUseCase
     }
 
     /**
-     * @throws InvalidArgumentException
+     * @throws Exception
      */
     private function makeReceiptForInvoice(string $id): Receipt
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($id);
+        $voucher = $this->invoiceRepository->getVoucher($id);
         $companyName = $this->settings->get(Constants::COMPANY_NAME);
 
         return new Receipt(
@@ -50,7 +50,7 @@ readonly class ReceiptShowUseCase
 
     /**
      * @throws ServiceException
-     * @throws InvalidArgumentException
+     * @throws Exception
      */
     private function makeReceiptForNote(string $id): Receipt
     {

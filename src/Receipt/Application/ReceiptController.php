@@ -5,7 +5,7 @@ namespace App\Receipt\Application;
 use App\Core\Base\BaseController;
 use App\Core\Domain\Exception\ServiceException;
 use App\Core\Infrastructure\Service\PdfExporter;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Receipt\Domain\ReceiptCdrUseCase;
 use App\Receipt\Domain\ReceiptPdfUseCase;
 use App\Receipt\Domain\ReceiptRequest;
@@ -14,6 +14,7 @@ use App\Receipt\Domain\ReceiptType;
 use App\Receipt\Domain\ReceiptXmlUseCase;
 use App\Sale\Domain\DocType;
 use chillerlan\QRCode\QRCode;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -21,11 +22,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ReceiptController extends BaseController
 {
+    /**
+     * @throws ServiceException
+     * @throws Exception
+     */
     #[Route('/receipt/{payload}', name: 'receipt_show', methods: ['GET'])]
-    public function show(
-        ReceiptShowUseCase $receiptShowUseCase,
-        string $payload,
-    ): Response {
+    public function show(ReceiptShowUseCase $receiptShowUseCase, string $payload): Response
+    {
         $receipt = $receiptShowUseCase($this->getReceiptRequest($payload));
 
         return $this->render('receipt/show.html.twig', [
@@ -45,9 +48,9 @@ class ReceiptController extends BaseController
     public function ticket(
         Request $request,
         string $id,
-        GetOneVoucherUseCase $getOneById,
+        InvoiceRepositoryInterface $invoiceRepository,
     ): Response {
-        $voucher = $getOneById($id);
+        $voucher = $invoiceRepository->getVoucher($id);
         $qr = '';
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));

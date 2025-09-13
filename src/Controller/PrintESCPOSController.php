@@ -8,7 +8,7 @@ use App\Core\Infrastructure\Extension\RemoteEscposImage;
 use App\Core\Infrastructure\Service\LogoProvider;
 use App\Core\Infrastructure\Service\SettingsService;
 use App\Dto\Sale\SaleItemDto;
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
@@ -19,7 +19,7 @@ class PrintESCPOSController extends BaseController
 {
     public function __construct(
         private readonly LogoProvider $logoProvider,
-        private readonly GetOneVoucherUseCase $getOneVoucherUseCase,
+        private readonly InvoiceRepositoryInterface $invoiceRepository,
         private readonly SettingsService $settingsService,
     ) {
         parent::__construct();
@@ -48,7 +48,7 @@ class PrintESCPOSController extends BaseController
         $divider = str_pad('', $_ENV['PRINTER_LINE_WIDTH'], '-', STR_PAD_BOTH)
             . "\n";
 
-        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
+        $voucher = $this->invoiceRepository->getVoucher($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
 
         $connector = new DummyPrintConnector();
@@ -59,7 +59,7 @@ class PrintESCPOSController extends BaseController
         $app_option_logo = $this->settingsService->get(
             'app_option_printing_logo'
         );
-        if ('true' == $app_option_logo) {
+        if ('true' == $app_option_logo && $logo !== null) {
             $printer->graphics($logo);
             $printer->feed();
         }
@@ -86,7 +86,7 @@ class PrintESCPOSController extends BaseController
         $printer->setJustification();
         $printer->text($divider);
 
-        $docDate = date('d/m/Y', strtotime((string) $voucher->voucher_date));
+        $docDate = date('d/m/Y', strtotime((string)$voucher->voucher_date));
         $printer->text('Fecha emision: ' . $docDate . "\n");
         $printer->text("Moneda: Soles\n");
         $printer->text($divider);
@@ -124,10 +124,10 @@ class PrintESCPOSController extends BaseController
             );
         }
 
-        $app_option_rc_get = (int) $this->settingsService->get(
+        $app_option_rc_get = (int)$this->settingsService->get(
             Constants::CONSUMPTION_TAX
         );
-        $app_option_igv_get = (int) $this->settingsService->get(Constants::TAX);
+        $app_option_igv_get = (int)$this->settingsService->get(Constants::TAX);
 
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $printer->text(

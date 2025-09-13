@@ -5,6 +5,7 @@ namespace App\Invoice\Domain;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\SettingsService;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Api\AuthApi;
 use Greenter\Sunat\ConsultaCpe\Api\ConsultaApi;
 use Greenter\Sunat\ConsultaCpe\ApiException;
@@ -25,8 +26,8 @@ readonly class ValidateInvoiceUseCase
     public function __construct(
         private CacheInterface $cache,
         private SettingsService $settings,
-        private GetOneInvoiceUseCase $getOneInvoiceUseCase,
-        private UpdateInvoiceUseCase $updateInvoiceUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -37,7 +38,7 @@ readonly class ValidateInvoiceUseCase
      */
     public function __invoke(string $invoiceId): CpeResponse
     {
-        $invoice = $this->getOneInvoiceUseCase->__invoke($invoiceId);
+        $invoice = $this->invoiceRepository->getOneBySaleId($invoiceId);
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));
@@ -56,7 +57,7 @@ readonly class ValidateInvoiceUseCase
         if ($response->getSuccess() && '0' === $response->getData()?->getEstadoCp()) {
             $invoice->envio_sunat = '';
             $invoice->mensaje_sunat = '';
-            $this->updateInvoiceUseCase->__invoke($invoice);
+            $this->entityManager->persist($invoice);
         }
 
         return $response;

@@ -2,7 +2,7 @@
 
 namespace App\Billing\Domain;
 
-use App\Invoice\Domain\GetOneVoucherUseCase;
+use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Charge;
@@ -16,14 +16,14 @@ use Greenter\Model\Sale\SaleDetail;
 readonly class BillCreateUseCase
 {
     public function __construct(
-        private GetOneVoucherUseCase $getOneVoucherUseCase,
+        private InvoiceRepositoryInterface $invoiceRepository,
         private BillUtilsInterface $billUtils,
     ) {
     }
 
     public function __invoke(string $saleId): Invoice
     {
-        $voucher = $this->getOneVoucherUseCase->__invoke($saleId);
+        $voucher = $this->invoiceRepository->getVoucher($saleId);
         $customerAddress = (new Address())
             ->setDireccion(strval($voucher->customer_address));
 
