@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Controller\PrintESCPOSController;
 use App\Core\Domain\Common\ApiResponse;
+use App\Core\Domain\Exception\ServiceException;
 use App\Dto\Sale\VoidSaleDto;
 use App\Entity\Sale;
 use App\State\Sale\MakeInvoiceProcessor;
@@ -35,9 +36,12 @@ use App\State\Sale\VoidInvoiceProcessor;
                     fromClass: Sale::class
                 ),
             ],
+            exceptionToStatus: [
+                ServiceException::class => 400,
+            ],
             input: VoidSaleDto::class,
             output: ApiResponse::class,
-            processor: VoidInvoiceProcessor::class,
+            processor: VoidInvoiceProcessor::class
         ),
         new Get(
             uriTemplate: '/sales/{id}/print-invoice',

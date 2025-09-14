@@ -6,6 +6,7 @@ use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
 use App\Billing\Model\Response\SummaryResponse;
 use App\Core\Domain\Common\ApiResponse;
+use App\Core\Domain\Exception\ServiceException;
 use App\Core\Domain\Util\Constants;
 use App\Core\Infrastructure\Service\FileManager;
 use App\Core\Infrastructure\Service\SettingsService;
@@ -14,6 +15,7 @@ use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
+use Psr\Log\LoggerInterface;
 
 readonly class SaleVoidUseCase
 {
@@ -24,6 +26,7 @@ readonly class SaleVoidUseCase
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
         private SettingsService $settings,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -150,9 +153,14 @@ readonly class SaleVoidUseCase
             $invoice->ticket_baja = $response->sunatResponse->getTicket();
             $invoice->voided = 2;
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->getTicket() ??
-                $invoice->ticket_baja;
-            $invoice->voided = 3;
+            $this->logger->error('Error al anular el comprobante', [
+                'response' => $response,
+                'sale_id' => $saleId,
+                'message' => $response->sunatResponse->getError()?->getMessage() ?? 'Error desconocido',
+            ]);
+            throw new ServiceException(
+                'Error al anular el comprobante' . $response->sunatResponse->getError()?->getMessage()
+            );
         }
 
         $this->entityManager->persist($invoice);

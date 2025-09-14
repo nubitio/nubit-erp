@@ -60,7 +60,7 @@ class HttpClient {
                 const errorResponse = error.response;
                 const originalRequest = error.config;
                 const status = errorResponse?.status;
-                const message = errorResponse?.data?.detail;
+                const message = errorResponse?.data?.detail || errorResponse?.data?.message;
 
                 if (status === HttpCode.UNAUTHORIZED && originalRequest.url?.endsWith('auth/refresh')) {
                     this.failedQueue = [];

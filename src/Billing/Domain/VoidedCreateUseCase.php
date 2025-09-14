@@ -16,6 +16,9 @@ readonly class VoidedCreateUseCase
     ) {
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     */
     public function __invoke(string $saleId, string $reason): SummaryResponse
     {
         $voucher = $this->invoiceRepository->getVoucher($saleId);
