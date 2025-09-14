@@ -4,9 +4,9 @@ namespace App\Billing\Domain;
 
 use Greenter\Model\Response\StatusCdrResult;
 
-class VoidedStatusUseCase
+readonly class VoidedStatusUseCase
 {
-    public function __construct(private readonly VoidedRepositoryInterface $voidedRepository)
+    public function __construct(private VoidedRepositoryInterface $voidedRepository)
     {
     }
 

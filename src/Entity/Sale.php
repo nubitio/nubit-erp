@@ -145,7 +145,7 @@ class Sale
     private ?bool $is_consume = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'caja_id', type: 'string')]
+    #[ORM\Column(name: 'caja_id', type: 'integer')]
     private ?int $caja_id = null;
 
     #[Groups([
