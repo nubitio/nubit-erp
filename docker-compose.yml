@@ -10,6 +10,17 @@ services:
       - '.:/var/www/html'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
+    environment:
+      OTEL_PHP_AUTOLOAD_ENABLED: "true"
+      OTEL_SERVICE_NAME: "efact"
+      OTEL_TRACES_EXPORTER: "otlp"
+      OTEL_LOGS_EXPORTER: "otlp"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://154.53.35.210:4318"
+      OTEL_PROPAGATORS: "baggage,tracecontext"
+      OTEL_TRACES_SAMPLER: "always_on"
+      OTEL_LOG_LEVEL: "debug"
+      OTEL_PHP_LOG_DESTINATION: "stderr"
   vite:
     image: node:20.13.1
     #command: npm run watch

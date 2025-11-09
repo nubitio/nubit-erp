@@ -33,3 +33,15 @@ services:
   App\Core\Infrastructure\Service\TenantConnectionSwitcher:
     arguments:
       $connectionRegistry: '@doctrine'
+
+  # OpenTelemetry Logger Provider
+  open_telemetry.logger_provider:
+    class: OpenTelemetry\SDK\Logs\LoggerProviderInterface
+    factory: ['OpenTelemetry\API\Globals', 'loggerProvider']
+
+  # OpenTelemetry Monolog Handler
+  open_telemetry.monolog.handler:
+    class: OpenTelemetry\Contrib\Logs\Monolog\Handler
+    arguments:
+      $loggerProvider: '@open_telemetry.logger_provider'
+      $level: !php/const Monolog\Level::Warning
