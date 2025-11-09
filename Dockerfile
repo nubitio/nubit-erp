@@ -73,6 +73,30 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
 
 # -----------------------------------------------------------------------------
+# Frontend builder stage
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies (Yarn 4 with Corepack)
+RUN corepack enable && \
+    yarn set version stable && \
+    yarn install
+
+# Copy source files needed for build
+COPY assets ./assets
+COPY vite.config.js ./
+COPY tsconfig.json ./
+COPY postcss.config.mjs ./
+
+# Build frontend assets
+RUN yarn build
+
+# -----------------------------------------------------------------------------
 # Development image
 # -----------------------------------------------------------------------------
 FROM base AS dev
@@ -121,6 +145,9 @@ COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 # Copy application code
 COPY --chown=www-data:www-data . /app
 
+# Copy built frontend assets from frontend-builder stage
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
+
 # Install dependencies
 RUN composer install --no-interaction --no-scripts
 
@@ -149,6 +176,9 @@ COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Copy application code
 COPY --chown=www-data:www-data . /app
+
+# Copy built frontend assets from frontend-builder stage
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
 
 # Install dependencies and optimize autoloader
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
