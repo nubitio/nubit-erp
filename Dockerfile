@@ -87,9 +87,11 @@ COPY assets ./assets
 RUN mkdir -p public/themes
 
 # Install dependencies (Yarn 4 with Corepack)
+# Configure to use node_modules instead of PnP for compatibility with sass
 # Use --mode skip-build to skip lifecycle scripts (postinstall, etc)
 RUN corepack enable && \
     yarn set version stable && \
+    yarn config set nodeLinker node-modules && \
     yarn install --mode skip-build
 
 # Run theme build after dependencies are installed
