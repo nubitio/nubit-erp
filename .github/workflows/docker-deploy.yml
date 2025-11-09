@@ -33,6 +33,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Update docker-compose with new image
+        run: |
+          sed -i "s|image:.*|image: ${{ inputs.docker_image }}|g" docker-compose.prod.yml
+
       - name: Deploy to Portainer
         env:
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
