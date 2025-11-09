@@ -1,4 +1,4 @@
-name: Deploy to Production
+name: Deploy to Production (Docker)
 
 on:
   push:
@@ -10,20 +10,26 @@ jobs:
     name: Code quality check
     uses: ./.github/workflows/code_quality.yml
 
-  build:
-    name: Build
-    uses: ./.github/workflows/build.yml
-    needs: [ code_quality ]
-
-  deployment:
-    name: Deployment
-    uses: ./.github/workflows/deployment.yml
+  build-docker:
+    name: Build Docker Image
+    uses: ./.github/workflows/docker-build.yml
+    permissions:
+      contents: read
+      packages: write
+    needs: [code_quality]
     with:
       environment: prod
+      image_tag: ${{ github.ref_name }}
+
+  deploy:
+    name: Deploy to Portainer
+    uses: ./.github/workflows/docker-deploy.yml
+    needs: [build-docker]
+    with:
+      environment: prod
+      docker_image: ${{ needs.build-docker.outputs.image }}
     secrets:
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      SSH_HOST_KEY: ${{ secrets.SSH_HOST_KEY }}
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SSH_BASE_PATH: ${{ secrets.SSH_BASE_PATH }}
-    needs: [ build ]
+      PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+      PORTAINER_API_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
+      PORTAINER_STACK_ID: ${{ secrets.PORTAINER_STACK_ID_PROD }}
+      PORTAINER_ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}

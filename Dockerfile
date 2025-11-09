@@ -1,20 +1,20 @@
-# Dockerfile for Marriot application
-# Using multi-stage builds for development, staging, and production environments
+# Dockerfile for Efact application
+# Using multi-stage builds with FrankenPHP for development, staging, and production environments
 
 # -----------------------------------------------------------------------------
 # Build arguments for customization
 # -----------------------------------------------------------------------------
 ARG PHP_VERSION=8.3
+ARG FRANKENPHP_VERSION=latest
 
 # -----------------------------------------------------------------------------
-# Base image
+# Base image with FrankenPHP
 # -----------------------------------------------------------------------------
-FROM ubuntu:22.04 AS base
+FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
 
 # Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=UTC
+ENV SERVER_NAME=:80
 
 # Add metadata labels
 LABEL maintainer="Nubit Team"
@@ -23,90 +23,47 @@ LABEL org.opencontainers.image.description="Efact Application"
 LABEL org.opencontainers.image.version="1.0"
 LABEL org.opencontainers.image.vendor="Nubit"
 
-# Setup PHP PPA
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    software-properties-common \
-    gnupg \
-    ca-certificates \
-    && add-apt-repository ppa:ondrej/php -y \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     curl \
-    mcrypt \
-    libaio1 \
-    build-essential \
-    apache2 \
     supervisor \
     python3 \
     python3-pip \
     libpango1.0-dev \
-    libapache2-mod-php8.3 \
-    php8.3 \
-    php8.3-fpm \
-    php8.3-redis \
-    php8.3-curl \
-    php8.3-gd \
-    php8.3-intl \
-    php8.3-mbstring \
-    php8.3-xml \
-    php8.3-zip \
-    php8.3-mysql \
-    php8.3-soap \
-    php8.3-imagick \
-    php8.3-dev \
-    php-pear \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Set php 8.3 as the default
-RUN update-alternatives --set php /usr/bin/php8.3
+# Install PHP extensions
+RUN install-php-extensions \
+    pdo_mysql \
+    redis \
+    gd \
+    intl \
+    zip \
+    soap \
+    imagick \
+    opcache \
+    protobuf \
+    opentelemetry
 
 # Install WeasyPrint
-RUN pip3 install WeasyPrint \
+RUN pip3 install --break-system-packages WeasyPrint \
     && rm -rf ~/.cache/pip
 
 # Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install Protobuf extension (required for OTLP)
-RUN pecl install protobuf && \
-    echo "extension=protobuf.so" > /etc/php/8.3/mods-available/protobuf.ini && \
-    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/cli/conf.d/20-protobuf.ini && \
-    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/apache2/conf.d/20-protobuf.ini && \
-    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/fpm/conf.d/20-protobuf.ini
-
-# Install OpenTelemetry PHP extension
-RUN pecl install opentelemetry && \
-    echo "extension=opentelemetry.so" > /etc/php/8.3/mods-available/opentelemetry.ini && \
-    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/cli/conf.d/20-opentelemetry.ini && \
-    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/apache2/conf.d/20-opentelemetry.ini && \
-    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/fpm/conf.d/20-opentelemetry.ini
-
-# Configure Apache
-RUN a2enmod rewrite ssl
-RUN mkdir -p /etc/ssl/private && chmod 755 /etc/ssl/private && chown www-data:www-data /etc/ssl/private
-COPY docker/apache/apache.conf /etc/apache2/sites-available/000-default.conf
-COPY docker/apache/servername.conf /etc/apache2/conf-available/servername.conf
-RUN a2enconf servername
-COPY docker/apache/cert.pem /etc/ssl/certs/cert.pem
-COPY docker/apache/cert-key.pem /etc/ssl/private/cert-key.pem
-RUN chmod 600 /etc/ssl/private/cert-key.pem && \
-    chown www-data:www-data /etc/ssl/certs/cert.pem /etc/ssl/private/cert-key.pem && \
-    chown -R www-data:www-data /etc/ssl/private
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configure Supervisord
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/frankenphp/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Create required log directories for supervisor and apache
-RUN mkdir -p /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2 \
-    && chown -R www-data:www-data /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2 \
-    && chmod -R 755 /var/log/messenger /var/log/supervisor /var/log/apache2 /var/run/apache2
+# Create required log directories
+RUN mkdir -p /var/log/messenger /var/log/supervisor \
+    && chown -R www-data:www-data /var/log/messenger /var/log/supervisor \
+    && chmod -R 755 /var/log/messenger /var/log/supervisor
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
 # Expose ports
 EXPOSE 80 443
@@ -129,15 +86,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vim \
     lnav \
     tmux \
-    php8.3-xdebug \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install Xdebug
+RUN install-php-extensions xdebug
+
 # Configure PHP for development
-COPY docker/php/php.dev.ini $PHP_INI_DIR/php.ini
+COPY docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
+
+# Copy Caddyfile
+COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Mount application code
-VOLUME /var/www/html
+VOLUME /app
 
 # Start services with Supervisor
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
@@ -147,14 +109,17 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 # -----------------------------------------------------------------------------
 FROM base AS stg
 
-# Set environment (corrected from 'dev' to 'staging')
+# Set environment
 ENV APP_ENV=staging
 
-# Configure PHP for staging (using dev config as fallback, ideally should have its own php.stg.ini)
-COPY docker/php/php.dev.ini $PHP_INI_DIR/php.ini
+# Configure PHP for staging
+COPY docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
+
+# Copy Caddyfile
+COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Copy application code
-COPY --chown=www-data:www-data . /var/www/html
+COPY --chown=www-data:www-data . /app
 
 # Install dependencies
 RUN composer install --no-interaction --no-scripts
@@ -177,10 +142,13 @@ FROM base AS prod
 ENV APP_ENV=prod
 
 # Configure PHP for production
-COPY docker/php/php.prod.ini $PHP_INI_DIR/php.ini
+COPY docker/php/php.prod.ini $PHP_INI_DIR/conf.d/99-app.ini
+
+# Copy Caddyfile
+COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Copy application code
-COPY --chown=www-data:www-data . /var/www/html
+COPY --chown=www-data:www-data . /app
 
 # Install dependencies and optimize autoloader
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
