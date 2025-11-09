@@ -56,6 +56,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     php8.3-mysql \
     php8.3-soap \
     php8.3-imagick \
+    php8.3-dev \
+    php-pear \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -68,6 +70,20 @@ RUN pip3 install WeasyPrint \
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install Protobuf extension (required for OTLP)
+RUN pecl install protobuf && \
+    echo "extension=protobuf.so" > /etc/php/8.3/mods-available/protobuf.ini && \
+    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/cli/conf.d/20-protobuf.ini && \
+    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/apache2/conf.d/20-protobuf.ini && \
+    ln -s /etc/php/8.3/mods-available/protobuf.ini /etc/php/8.3/fpm/conf.d/20-protobuf.ini
+
+# Install OpenTelemetry PHP extension
+RUN pecl install opentelemetry && \
+    echo "extension=opentelemetry.so" > /etc/php/8.3/mods-available/opentelemetry.ini && \
+    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/cli/conf.d/20-opentelemetry.ini && \
+    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/apache2/conf.d/20-opentelemetry.ini && \
+    ln -s /etc/php/8.3/mods-available/opentelemetry.ini /etc/php/8.3/fpm/conf.d/20-opentelemetry.ini
 
 # Configure Apache
 RUN a2enmod rewrite ssl
