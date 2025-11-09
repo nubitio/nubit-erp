@@ -83,13 +83,17 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 COPY assets ./assets
 
-# Create public/themes directory for postinstall script
+# Create public/themes directory for theme compilation
 RUN mkdir -p public/themes
 
 # Install dependencies (Yarn 4 with Corepack)
+# Use --mode skip-build to skip lifecycle scripts (postinstall, etc)
 RUN corepack enable && \
     yarn set version stable && \
-    yarn install
+    yarn install --mode skip-build
+
+# Run theme build after dependencies are installed
+RUN yarn build:themes
 
 # Copy remaining source files needed for build
 COPY vite.config.js ./
