@@ -79,16 +79,19 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files and assets (needed for postinstall script)
 COPY package.json yarn.lock ./
+COPY assets ./assets
+
+# Create public/themes directory for postinstall script
+RUN mkdir -p public/themes
 
 # Install dependencies (Yarn 4 with Corepack)
 RUN corepack enable && \
     yarn set version stable && \
     yarn install
 
-# Copy source files needed for build
-COPY assets ./assets
+# Copy remaining source files needed for build
 COPY vite.config.js ./
 COPY tsconfig.json ./
 COPY postcss.config.mjs ./
