@@ -1,0 +1,57 @@
+{
+    {$CADDY_GLOBAL_OPTIONS}
+    frankenphp {
+        {$FRANKENPHP_CONFIG}
+    }
+    # Increase default timeouts for slow operations
+    grace_period 30s
+}
+
+{$SERVER_NAME:localhost}
+
+log {
+    level {$LOG_LEVEL:info}
+    format json
+}
+
+# Error handling
+handle_errors {
+    @5xx expression `{http.error.status_code} >= 500`
+    handle @5xx {
+        respond "Internal Server Error: {http.error.status_code}" {http.error.status_code}
+    }
+    
+    respond "{http.error.status_code} {http.error.status_text}"
+}
+
+route {
+    root * /app/public
+    
+    # Encode responses
+    encode gzip zstd
+    
+    # Serve static files
+    @static {
+        file
+        path *.css *.js *.ico *.png *.jpg *.jpeg *.gif *.svg *.woff *.woff2 *.ttf *.eot *.map
+    }
+    handle @static {
+        file_server
+        header Cache-Control "public, max-age=31536000, immutable"
+    }
+    
+    # Serve uploaded files
+    @uploads {
+        path /uploads/*
+    }
+    handle @uploads {
+        file_server
+        header Cache-Control "public, max-age=604800"
+    }
+
+    # Pass PHP requests to FrankenPHP
+    php_server {
+        # Resolve root symlink for better performance
+        resolve_root_symlink
+    }
+}

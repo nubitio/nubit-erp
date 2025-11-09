@@ -1,0 +1,76 @@
+name: Deploy to Portainer
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Target environment (stg/prod)'
+      docker_image:
+        required: true
+        type: string
+        description: 'Docker image to deploy'
+    secrets:
+      PORTAINER_URL:
+        required: true
+        description: 'Portainer server URL'
+      PORTAINER_API_TOKEN:
+        required: true
+        description: 'Portainer API access token'
+      PORTAINER_STACK_ID:
+        required: true
+        description: 'Portainer stack ID'
+      PORTAINER_ENDPOINT_ID:
+        required: false
+        description: 'Portainer endpoint ID (defaults to 1)'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Portainer
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
+          STACK_ID: ${{ secrets.PORTAINER_STACK_ID }}
+          ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
+        run: |
+          # Update stack via Portainer API
+          curl -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+            -H "X-API-Key: $PORTAINER_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d @- <<EOF
+          {
+            "stackFileContent": "$(cat docker-compose.prod.yml | jq -Rs .)",
+            "prune": true,
+            "pullImage": true
+          }
+          EOF
+
+      - name: Wait for deployment
+        run: sleep 30
+
+      - name: Verify deployment
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
+          STACK_ID: ${{ secrets.PORTAINER_STACK_ID }}
+          ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
+        run: |
+          # Check stack status
+          STATUS=$(curl -s -X GET "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+            -H "X-API-Key: $PORTAINER_TOKEN" | jq -r '.Status')
+
+          echo "Stack status: $STATUS"
+
+          if [ "$STATUS" != "1" ]; then
+            echo "Deployment failed or stack not running"
+            exit 1
+          fi
+
+          echo "Deployment successful!"
