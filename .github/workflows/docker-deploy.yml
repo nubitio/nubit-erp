@@ -35,7 +35,10 @@ jobs:
 
       - name: Update docker-compose with new image
         run: |
-          sed -i "s|image:.*|image: ${{ inputs.docker_image }}|g" docker-compose.prod.yml
+          # Use only the first image tag
+          IMAGE=$(echo "${{ inputs.docker_image }}" | head -n1)
+          echo "Using image: $IMAGE"
+          sed -i "s|image:.*|image: $IMAGE|g" docker-compose.prod.yml
 
       - name: Deploy to Portainer
         env:

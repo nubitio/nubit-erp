@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.primary-tag.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -66,5 +66,13 @@ jobs:
             PHP_VERSION=8.3
             FRANKENPHP_VERSION=latest
 
+      - name: Extract primary image tag
+        id: primary-tag
+        run: |
+          # Get first tag from metadata output
+          PRIMARY_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "Primary tag: $PRIMARY_TAG"
+          echo "tag=$PRIMARY_TAG" >> $GITHUB_OUTPUT
+      
       - name: Image digest
         run: echo ${{ steps.build.outputs.digest }}
