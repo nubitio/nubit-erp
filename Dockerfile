@@ -156,6 +156,7 @@ COPY --chown=www-data:www-data . /app
 
 # Copy built frontend assets from frontend-builder stage
 COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/themes /app/public/themes
 
 # Install dependencies
 RUN composer install --no-interaction --no-scripts
@@ -188,6 +189,7 @@ COPY --chown=www-data:www-data . /app
 
 # Copy built frontend assets from frontend-builder stage
 COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
+COPY --from=frontend-builder --chown=www-data:www-data /app/public/themes /app/public/themes
 
 # Install dependencies and optimize autoloader
 RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
