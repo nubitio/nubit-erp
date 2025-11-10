@@ -6,6 +6,7 @@ use App\Entity\Branch;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\ExpiredException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +31,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly EntityManagerInterface $entityManager,
         private readonly UserProvider $userProvider,
         private readonly JWTManager $jwtManager,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -82,7 +84,8 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
                 $tokenData = $this->jwtManager->decode($jwtToken);
             } catch (ExpiredException) {
                 throw new AuthenticationException('Su sesión ha expirado', Response::HTTP_UNAUTHORIZED);
-            } catch (\Throwable) {
+            } catch (\Throwable $e) {
+                $this->logger->error('Error decoding JWT token', ['exception' => $e]);
                 throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
             }
 
