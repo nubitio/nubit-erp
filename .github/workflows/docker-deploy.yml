@@ -47,8 +47,41 @@ jobs:
           STACK_ID: ${{ secrets.PORTAINER_STACK_ID }}
           ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
         run: |
+          echo "=== Portainer Deployment Debug Info ==="
+          echo "Portainer URL: $PORTAINER_URL"
+          echo "Stack ID: $STACK_ID"
+          echo "Endpoint ID: $ENDPOINT_ID"
+          echo "API Token (first 10 chars): ${PORTAINER_TOKEN:0:10}..."
+          echo "========================================"
+          
+          # Test API token first
+          echo "Testing API token..."
+          TEST_RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$PORTAINER_URL/api/users/me" \
+            -H "X-API-Key: $PORTAINER_TOKEN")
+          
+          TEST_BODY=$(echo "$TEST_RESPONSE" | head -n -1)
+          TEST_CODE=$(echo "$TEST_RESPONSE" | tail -n 1)
+          
+          if [ "$TEST_CODE" != "200" ]; then
+            echo "❌ API token validation failed!"
+            echo "HTTP Code: $TEST_CODE"
+            echo "Response: $TEST_BODY"
+            echo ""
+            echo "Possible issues:"
+            echo "1. API token is invalid or expired"
+            echo "2. Token doesn't have sufficient permissions"
+            echo "3. Portainer URL is incorrect"
+            echo "4. Token format is wrong (should be ptr_xxxxx for API tokens)"
+            exit 1
+          fi
+          
+          echo "✓ API token is valid"
+          echo "User info: $(echo "$TEST_BODY" | jq -r '.Username // .username // "unknown"')"
+          
           # Update stack via Portainer API
-          curl -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+          echo ""
+          echo "Updating stack..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
             -H "X-API-Key: $PORTAINER_TOKEN" \
             -H "Content-Type: application/json" \
             -d @- <<EOF
@@ -58,6 +91,54 @@ jobs:
             "pullImage": true
           }
           EOF
+          )
+          
+          # Extract response body and status code
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          
+          echo "HTTP Status Code: $HTTP_CODE"
+          echo "Response Body: $BODY"
+          
+          # Check if update was successful
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Stack update failed!"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $BODY"
+            
+            # Provide helpful error messages
+            case "$HTTP_CODE" in
+              401)
+                echo ""
+                echo "Authentication failed. Check:"
+                echo "1. PORTAINER_API_TOKEN secret is correct"
+                echo "2. Token has not expired"
+                echo "3. Token format: should be 'ptr_xxxxx'"
+                ;;
+              403)
+                echo ""
+                echo "Permission denied. Check:"
+                echo "1. User has admin or team leader role"
+                echo "2. User has access to the stack"
+                echo "3. User has access to the endpoint"
+                ;;
+              404)
+                echo ""
+                echo "Not found. Check:"
+                echo "1. PORTAINER_STACK_ID is correct"
+                echo "2. PORTAINER_ENDPOINT_ID is correct"
+                echo "3. Stack exists in Portainer"
+                ;;
+              500)
+                echo ""
+                echo "Server error. Check Portainer logs"
+                ;;
+            esac
+            
+            exit 1
+          fi
+          
+          echo "✓ Stack update initiated successfully!"
 
       - name: Wait for deployment
         run: sleep 30
@@ -69,15 +150,34 @@ jobs:
           STACK_ID: ${{ secrets.PORTAINER_STACK_ID }}
           ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
         run: |
+          echo "Verifying deployment..."
+          
           # Check stack status
-          STATUS=$(curl -s -X GET "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-            -H "X-API-Key: $PORTAINER_TOKEN" | jq -r '.Status')
-
-          echo "Stack status: $STATUS"
-
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
+            -H "X-API-Key: $PORTAINER_TOKEN")
+          
+          BODY=$(echo "$RESPONSE" | head -n -1)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Failed to get stack status"
+            echo "HTTP Code: $HTTP_CODE"
+            echo "Response: $BODY"
+            exit 1
+          fi
+          
+          STATUS=$(echo "$BODY" | jq -r '.Status')
+          echo "Stack status code: $STATUS"
+          
+          # Stack status codes:
+          # 1 = active/running
+          # 2 = inactive/stopped
           if [ "$STATUS" != "1" ]; then
-            echo "Deployment failed or stack not running"
+            echo "❌ Deployment failed or stack not running"
+            echo "Stack details:"
+            echo "$BODY" | jq '.'
             exit 1
           fi
 
-          echo "Deployment successful!"
+          echo "✓ Deployment successful!"
+          echo "Stack is running and healthy"
