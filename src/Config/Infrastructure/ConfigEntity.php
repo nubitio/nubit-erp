@@ -2,7 +2,7 @@
 
 namespace App\Config\Infrastructure;
 
-use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Core\Annotation\IgnoreAutowire;
 use Doctrine\ORM\Mapping\Column;
 use Doctrine\ORM\Mapping\Entity;
 use Doctrine\ORM\Mapping\GeneratedValue;

@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;

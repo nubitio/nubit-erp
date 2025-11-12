@@ -4,7 +4,7 @@ namespace App\Billing\Infrastructure;
 
 use App\Billing\Domain\SummaryRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
-use App\Core\Infrastructure\Service\SerializerService;
+use App\Core\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Response\StatusCdrResult;

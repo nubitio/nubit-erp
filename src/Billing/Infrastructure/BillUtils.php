@@ -3,7 +3,7 @@
 namespace App\Billing\Infrastructure;
 
 use App\Billing\Domain\BillUtilsInterface;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Service\SettingsService;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Company\Company;
 

@@ -5,10 +5,6 @@ namespace App\State\Sale;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Core\Domain\DataLoader\FilterOperation;
-use App\Core\Domain\DataLoader\FilterRule;
-use App\Core\Domain\DataLoader\OptionUtils;
-use App\Core\Domain\DataLoader\SortRule;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 readonly class SaleProvider implements ProviderInterface
@@ -42,41 +38,96 @@ readonly class SaleProvider implements ProviderInterface
     }
 
     /**
-     * @param array<string, array<string, bool|float|int|string|null>> $context
-     *
-     * @return array<string, array<string, bool|float|int|string|null>>
+     * Build context for inbound sales (tipo_id = 1, no invoice number)
      */
     private function buildContextForInbound(array $context): array
     {
-        $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
-        $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
+        // Add sort: date_created DESC
+        $context = $this->addSort($context, 'date_created', 'desc');
 
-        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 1));
+        // Add filters: numero IS NULL AND tipo_id = 1
+        $context = $this->addFilters($context, [
+            ['numero', 'isnull', null],
+            'and',
+            ['tipo_id', '=', 1],
+        ]);
+
+        return $context;
     }
 
     /**
-     * @param array<string, array<string, bool|float|int|string|null>> $context
-     *
-     * @return array<string, array<string, bool|float|int|string|null>>
+     * Build context for outbound sales (tipo_id = 2, no invoice number)
      */
     private function buildContextForOutbound(array $context): array
     {
-        $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
-        $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::IsNull));
+        // Add sort: date_created DESC
+        $context = $this->addSort($context, 'date_created', 'desc');
 
-        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
+        // Add filters: numero IS NULL AND tipo_id = 2
+        $context = $this->addFilters($context, [
+            ['numero', 'isnull', null],
+            'and',
+            ['tipo_id', '=', 2],
+        ]);
+
+        return $context;
     }
 
     /**
-     * @param array<string, array<string, bool|float|int|string|null>> $context
-     *
-     * @return array<string, array<string, bool|float|int|string|null>>
+     * Build context for regular sales (tipo_id = 2, with invoice number)
      */
     private function buildContextForSale(array $context): array
     {
-        $context = OptionUtils::addSort($context, new SortRule('date_created', 'desc'));
-        $context = OptionUtils::addFilter($context, new FilterRule('numero', FilterOperation::GreaterThan, 0));
+        // Add sort: date_created DESC
+        $context = $this->addSort($context, 'date_created', 'desc');
 
-        return OptionUtils::addFilter($context, new FilterRule('tipo_id', FilterOperation::Equals, 2));
+        // Add filters: numero > 0 AND tipo_id = 2
+        $context = $this->addFilters($context, [
+            ['numero', '>', 0],
+            'and',
+            ['tipo_id', '=', 2],
+        ]);
+
+        return $context;
+    }
+
+    /**
+     * Add sort to context in DevExtreme format
+     */
+    private function addSort(array $context, string $selector, string $direction = 'asc'): array
+    {
+        if (!isset($context['filters']['sort'])) {
+            $context['filters']['sort'] = [];
+        }
+
+        $context['filters']['sort'][] = [
+            'selector' => $selector,
+            'desc' => $direction === 'desc',
+        ];
+
+        return $context;
+    }
+
+    /**
+     * Add filters to context in DevExtreme format
+     */
+    private function addFilters(array $context, array $newFilters): array
+    {
+        if (!isset($context['filters']['filter'])) {
+            $context['filters']['filter'] = [];
+        }
+
+        // If existing filters, combine with AND
+        if (!empty($context['filters']['filter'])) {
+            $context['filters']['filter'] = [
+                $context['filters']['filter'],
+                'and',
+                $newFilters,
+            ];
+        } else {
+            $context['filters']['filter'] = $newFilters;
+        }
+
+        return $context;
     }
 }

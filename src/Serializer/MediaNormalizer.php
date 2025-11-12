@@ -2,7 +2,7 @@
 
 namespace App\Serializer;
 
-use App\Core\Domain\Util\Constants;
+use App\Core\Util\Constants;
 use App\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;

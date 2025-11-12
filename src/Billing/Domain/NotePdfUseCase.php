@@ -2,7 +2,7 @@
 
 namespace App\Billing\Domain;
 
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 
 readonly class NotePdfUseCase
 {

@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementRepository;
 use Doctrine\ORM\Mapping as ORM;

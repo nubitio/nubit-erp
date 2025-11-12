@@ -2,9 +2,9 @@
 
 namespace App\Receipt\Domain;
 
-use App\Core\Domain\Exception\ServiceException;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Exception\ServiceException;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use Doctrine\DBAL\Exception;

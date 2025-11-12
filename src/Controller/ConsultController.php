@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\ApiResource\ConsultDocType;
 use App\ApiResource\ConsultResource;
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;

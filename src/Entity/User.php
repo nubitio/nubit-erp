@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\UserRepository;
 use App\State\User\UserPasswordHasher;
 use Doctrine\ORM\Mapping as ORM;

@@ -3,7 +3,7 @@
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Response\DocumentResponse;
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 
 readonly class NoteSendUseCase
 {

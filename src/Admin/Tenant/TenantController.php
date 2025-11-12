@@ -2,7 +2,7 @@
 
 namespace App\Admin\Tenant;
 
-use App\Core\Infrastructure\Service\TenantManager;
+use App\Core\Service\TenantManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

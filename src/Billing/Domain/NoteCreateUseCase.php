@@ -2,11 +2,11 @@
 
 namespace App\Billing\Domain;
 
-use App\Core\Domain\Exception\ServiceException;
-use App\CreditNote\Domain\CreditNote;
-use App\CreditNote\Domain\GetOneCreditNoteUseCase;
+use App\Core\Exception\ServiceException;
+use App\Entity\CreditNote;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
+use App\Repository\CreditNoteRepository;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
@@ -16,7 +16,7 @@ use Greenter\Model\Sale\SaleDetail;
 readonly class NoteCreateUseCase
 {
     public function __construct(
-        private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
+        private CreditNoteRepository $creditNoteRepository,
         private InvoiceRepositoryInterface $invoiceRepository,
         private BillUtilsInterface $billUtils,
     ) {
@@ -27,9 +27,9 @@ readonly class NoteCreateUseCase
      */
     public function __invoke(string $noteId): Note
     {
-        $creditNote = $this->getOneCreditNoteUseCase->__invoke($noteId);
-        if (null !== $creditNote->sale?->getId()) {
-            $voucher = $this->invoiceRepository->getVoucher($creditNote->sale->getId());
+        $creditNote = $this->creditNoteRepository->find($noteId);
+        if (null !== $creditNote->getSale()?->getId()) {
+            $voucher = $this->invoiceRepository->getVoucher($creditNote->getSale()->getId());
         }
 
         if (!isset($voucher)) {
@@ -55,12 +55,12 @@ readonly class NoteCreateUseCase
         $note->setUblVersion('2.1')
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
-            ->setFechaEmision($creditNote->fecha)
-            ->setCodMotivo(strval($creditNote->codigo_motivo))
-            ->setDesMotivo(strval($creditNote->descripcion_motivo))
-            ->setTipoDoc(strval($creditNote->tipo_id))
-            ->setSerie(strval($creditNote->serie))
-            ->setCorrelativo(strval($creditNote->correlativo))
+            ->setFechaEmision($creditNote->getFecha())
+            ->setCodMotivo(strval($creditNote->getCodigoMotivo()))
+            ->setDesMotivo(strval($creditNote->getDescripcionMotivo()))
+            ->setTipoDoc(strval($creditNote->getTipoId()))
+            ->setSerie(strval($creditNote->getSerie()))
+            ->setCorrelativo(strval($creditNote->getCorrelativo()))
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
             ->setClient($client)

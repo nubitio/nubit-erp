@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Infrastructure\Service\XlsExporter;
-use App\Core\Infrastructure\Symfony\Security\SecurityService;
+use App\Core\Service\XlsExporter;
+use App\Core\Symfony\Security\SecurityService;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;

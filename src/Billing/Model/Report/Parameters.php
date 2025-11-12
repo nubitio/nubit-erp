@@ -2,7 +2,7 @@
 
 namespace App\Billing\Model\Report;
 
-use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Core\Annotation\IgnoreAutowire;
 
 #[IgnoreAutowire]
 readonly class Parameters

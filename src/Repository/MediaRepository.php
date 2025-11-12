@@ -2,7 +2,7 @@
 
 namespace App\Repository;
 
-use App\Core\Domain\Util\Constants;
+use App\Core\Util\Constants;
 use App\Entity\Media;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;

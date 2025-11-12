@@ -2,9 +2,9 @@
 
 namespace App\Core\Application\Command;
 
-use App\Core\Domain\Exception\ServiceException;
-use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
-use App\Core\Infrastructure\Service\TenantManager;
+use App\Core\Exception\ServiceException;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;

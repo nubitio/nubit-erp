@@ -3,8 +3,8 @@
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
-use App\Core\Infrastructure\Service\TenantManager;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;

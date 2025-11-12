@@ -4,7 +4,7 @@ namespace App\State\Invoice;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Core\Domain\Common\ApiResponse;
+use App\Core\Common\ApiResponse;
 use App\Invoice\Domain\InvoiceConsultUseCase;
 use League\Flysystem\FilesystemException;
 

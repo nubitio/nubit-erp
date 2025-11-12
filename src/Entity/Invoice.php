@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;

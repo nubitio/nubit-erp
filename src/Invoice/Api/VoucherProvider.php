@@ -3,14 +3,10 @@
 namespace App\Invoice\Api;
 
 use ApiPlatform\Metadata\Operation;
-use App\Core\Domain\Api\ApiProviderInterface;
+use ApiPlatform\State\ProviderInterface;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
-use App\Invoice\Domain\Voucher;
 
-/**
- * @implements ApiProviderInterface<Voucher>
- */
-readonly class VoucherProvider implements ApiProviderInterface
+readonly class VoucherProvider implements ProviderInterface
 {
     public function __construct(
         private InvoiceRepositoryInterface $invoiceRepository,

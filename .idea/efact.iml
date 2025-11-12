@@ -217,6 +217,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/context" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/exporter-otlp" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/gen-otlp-protobuf" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/opentelemetry-auto-doctrine" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/opentelemetry-auto-symfony" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/opentelemetry-logger-monolog" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/open-telemetry/sdk" />

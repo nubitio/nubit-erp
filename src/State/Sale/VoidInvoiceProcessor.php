@@ -5,7 +5,7 @@ namespace App\State\Sale;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
-use App\Core\Domain\Common\ApiResponse;
+use App\Core\Common\ApiResponse;
 use App\Dto\Sale\VoidSaleDto;
 use App\Sale\Domain\SaleException;
 use App\Sale\Domain\SaleVoidUseCase;

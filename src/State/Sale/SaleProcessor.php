@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 use App\Entity\CashShift;
 use App\Entity\Sale;
 use App\Entity\SaleItem;

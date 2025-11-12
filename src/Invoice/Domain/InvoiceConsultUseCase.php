@@ -3,9 +3,9 @@
 namespace App\Invoice\Domain;
 
 use App\Billing\Domain\BillConsultUseCase;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Service\FileManager;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Model\Response\StatusCdrResult;

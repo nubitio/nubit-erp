@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Infrastructure\Service\LogoProvider;
+use App\Core\Service\LogoProvider;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 

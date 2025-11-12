@@ -3,8 +3,8 @@
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Infrastructure\Service\TenantConnectionSwitcher;
-use App\Core\Infrastructure\Service\TenantManager;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use App\Entity\Product;
 use App\Entity\Warehouse;
 use App\Service\ProductStockService;

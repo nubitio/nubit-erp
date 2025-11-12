@@ -3,9 +3,9 @@
 namespace App\Invoice\Domain;
 
 use App\Billing\Domain\BillPdfUseCase;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Service\FileManager;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
