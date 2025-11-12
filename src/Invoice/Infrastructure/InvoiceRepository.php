@@ -2,9 +2,8 @@
 
 namespace App\Invoice\Infrastructure;
 
-use App\Core\Domain\Exception\ServiceException;
-use App\Core\Domain\Invoice\InvoiceCalculator;
-use App\Core\Domain\Util\DataMapper;
+use App\Core\Exception\ServiceException;
+use App\Core\Invoice\InvoiceCalculator;
 use App\Entity\Invoice;
 use App\Entity\Sale;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
@@ -12,12 +11,14 @@ use App\Invoice\Domain\Voucher;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 readonly class InvoiceRepository implements InvoiceRepositoryInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Connection $connection,
+        private SerializerInterface $serializer,
     ) {
     }
 
@@ -84,6 +85,6 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
 
         $voucher['voucher_items'] = $items;
 
-        return DataMapper::map($voucher, Voucher::class);
+        return $this->serializer->denormalize($voucher, Voucher::class);
     }
 }

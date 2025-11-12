@@ -3,10 +3,10 @@
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Extension\RemoteEscposImage;
-use App\Core\Infrastructure\Service\LogoProvider;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Extension\RemoteEscposImage;
+use App\Core\Service\LogoProvider;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Dto\Sale\SaleItemDto;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Sale\Domain\DocType;

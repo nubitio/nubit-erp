@@ -3,7 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SaleRepository;
 use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleProvider;

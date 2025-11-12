@@ -2,9 +2,9 @@
 
 namespace App\Command;
 
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\FileManager;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Service\FileManager;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

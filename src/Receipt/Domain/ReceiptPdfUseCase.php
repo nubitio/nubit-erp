@@ -5,7 +5,7 @@ namespace App\Receipt\Domain;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Billing\Domain\FileResponse;
 use App\Billing\Domain\NotePdfUseCase;
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 
 readonly class ReceiptPdfUseCase
 {

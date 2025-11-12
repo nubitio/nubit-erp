@@ -5,12 +5,11 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use App\Core\Infrastructure\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
 use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use App\State\CashRegister\CashShiftMovementsProvider;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]

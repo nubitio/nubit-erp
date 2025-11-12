@@ -3,9 +3,9 @@
 namespace App\State\Sale;
 
 use App\Core\Application\Session\Security;
-use App\Core\Domain\Exception\ServiceException;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\SettingsService;
+use App\Core\Exception\ServiceException;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Entity\CashShift;
 use App\Entity\Sale;
 use App\Enum\CashShiftStatus;

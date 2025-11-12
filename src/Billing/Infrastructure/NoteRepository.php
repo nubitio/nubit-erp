@@ -5,7 +5,7 @@ namespace App\Billing\Infrastructure;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Domain\NoteRepositoryInterface;
 use App\Billing\Model\Response\DocumentResponse;
-use App\Core\Infrastructure\Service\SerializerService;
+use App\Core\Service\SerializerService;
 use Greenter\Model\Sale\Note;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;

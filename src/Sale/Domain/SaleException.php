@@ -2,7 +2,7 @@
 
 namespace App\Sale\Domain;
 
-use App\Core\Domain\Exception\ServiceException;
+use App\Core\Exception\ServiceException;
 
 class SaleException extends ServiceException
 {

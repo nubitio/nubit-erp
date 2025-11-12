@@ -9,7 +9,7 @@ use App\Billing\Model\Report\Extra;
 use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
-use App\Core\Infrastructure\Service\SerializerService;
+use App\Core\Service\SerializerService;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;

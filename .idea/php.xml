@@ -265,6 +265,7 @@
       <path value="$PROJECT_DIR$/vendor/open-telemetry/gen-otlp-protobuf" />
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-auto-symfony" />
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-logger-monolog" />
+      <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-auto-doctrine" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

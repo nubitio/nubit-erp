@@ -3,14 +3,11 @@
 namespace App\Invoice\Api;
 
 use ApiPlatform\Metadata\Operation;
-use App\Core\Domain\Api\ApiProcessorInterface;
+use ApiPlatform\State\ProcessorInterface;
 use App\Invoice\Domain\Voucher;
 use App\Sale\Domain\SaleInvoiceUseCase;
 
-/**
- * @implements ApiProcessorInterface<Voucher, Voucher>
- */
-readonly class VoucherProcessor implements ApiProcessorInterface
+readonly class VoucherProcessor implements ProcessorInterface
 {
     public function __construct(
         public SaleInvoiceUseCase $saleInvoiceUseCase,

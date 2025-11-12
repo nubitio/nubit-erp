@@ -3,7 +3,7 @@
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Report\Parameters;
-use App\Core\Domain\Annotation\IgnoreAutowire;
+use App\Core\Annotation\IgnoreAutowire;
 use Greenter\Model\DocumentInterface;
 
 #[IgnoreAutowire]

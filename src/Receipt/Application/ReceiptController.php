@@ -3,8 +3,8 @@
 namespace App\Receipt\Application;
 
 use App\Core\Base\BaseController;
-use App\Core\Domain\Exception\ServiceException;
-use App\Core\Infrastructure\Service\PdfExporter;
+use App\Core\Exception\ServiceException;
+use App\Core\Service\PdfExporter;
 use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Receipt\Domain\ReceiptCdrUseCase;
 use App\Receipt\Domain\ReceiptPdfUseCase;

@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Domain\Util\Constants;
-use App\Core\Infrastructure\Service\FileUploader;
+use App\Core\Service\FileUploader;
+use App\Core\Util\Constants;
 use App\Entity\Media;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
