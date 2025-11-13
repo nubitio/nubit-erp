@@ -1,33 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Core\Entity;
 
+use App\Core\Traits\TimestampableTrait;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\MappedSuperclass]
-class AuditableEntity
+#[ORM\HasLifecycleCallbacks]
+abstract class AuditableEntity
 {
-    #[ORM\Column(name: 'created_by', type: 'integer')]
+    use TimestampableTrait;
+
+    #[ORM\Column(name: 'created_by', type: 'integer', nullable: true)]
     private ?int $createdBy = null;
 
-    #[ORM\Column(name: 'updated_by', type: 'integer')]
+    #[ORM\Column(name: 'updated_by', type: 'integer', nullable: true)]
     private ?int $updatedBy = null;
 
-    #[ORM\Column(name: 'created_at', type: 'datetime')]
-    private ?\DateTimeInterface $createdAt = null;
-
-    #[ORM\Column(name: 'updated_at', type: 'datetime')]
-    private ?\DateTimeInterface $updatedAt = null;
-
-    #[ORM\Column(name: 'active', type: 'boolean')]
-    private ?bool $active = false;
+    #[ORM\Column(name: 'active', type: 'boolean', options: ['default' => true])]
+    private bool $active = true;
 
     public function getCreatedBy(): ?int
     {
         return $this->createdBy;
     }
 
-    public function setCreatedBy(int $createdBy): static
+    public function setCreatedBy(?int $createdBy): static
     {
         $this->createdBy = $createdBy;
 
@@ -39,38 +39,14 @@ class AuditableEntity
         return $this->updatedBy;
     }
 
-    public function setUpdatedBy(int $updatedBy): static
+    public function setUpdatedBy(?int $updatedBy): static
     {
         $this->updatedBy = $updatedBy;
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): static
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function isActive(): ?bool
+    public function isActive(): bool
     {
         return $this->active;
     }
@@ -78,6 +54,20 @@ class AuditableEntity
     public function setActive(bool $active): static
     {
         $this->active = $active;
+
+        return $this;
+    }
+
+    public function activate(): static
+    {
+        $this->active = true;
+
+        return $this;
+    }
+
+    public function deactivate(): static
+    {
+        $this->active = false;
 
         return $this;
     }

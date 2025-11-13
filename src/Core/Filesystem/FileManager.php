@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Core\Service;
+declare(strict_types=1);
+
+namespace App\Core\Filesystem;
 
 use League\Flysystem\DirectoryListing;
 use League\Flysystem\FilesystemException;
@@ -36,6 +38,14 @@ final readonly class FileManager
     public function exists(string $fileName): bool
     {
         return $this->uploadsFilesystem->fileExists($fileName);
+    }
+
+    /**
+     * @throws FilesystemException
+     */
+    public function delete(string $fileName): void
+    {
+        $this->uploadsFilesystem->delete($fileName);
     }
 
     /**

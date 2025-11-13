@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Core\Util;
+declare(strict_types=1);
 
-class ColorUtils
+namespace App\Core\Color;
+
+final class ColorUtils
 {
     public static function contrastColor(string $hexColor): string
     {
@@ -105,9 +107,34 @@ class ColorUtils
         $hsl[2] += $percent / 100;
         $hsl[2] = min($hsl[2], 1);
         $rgb = self::hslToRgb($hsl[0], $hsl[1], $hsl[2]);
-        $r = dechex((int) $rgb[0]);
-        $g = dechex((int) $rgb[1]);
-        $b = dechex((int) $rgb[2]);
+        $r = str_pad(dechex((int) $rgb[0]), 2, '0', STR_PAD_LEFT);
+        $g = str_pad(dechex((int) $rgb[1]), 2, '0', STR_PAD_LEFT);
+        $b = str_pad(dechex((int) $rgb[2]), 2, '0', STR_PAD_LEFT);
+
+        return '#' . $r . $g . $b;
+    }
+
+    public static function darkenColor(string $hexColor, int $percent): string
+    {
+        return self::lightenColor($hexColor, -$percent);
+    }
+
+    public static function hexToRgb(string $hexColor): array
+    {
+        $hexColor = str_replace('#', '', $hexColor);
+        
+        return [
+            hexdec(substr($hexColor, 0, 2)),
+            hexdec(substr($hexColor, 2, 2)),
+            hexdec(substr($hexColor, 4, 2)),
+        ];
+    }
+
+    public static function rgbToHex(int $r, int $g, int $b): string
+    {
+        $r = str_pad(dechex($r), 2, '0', STR_PAD_LEFT);
+        $g = str_pad(dechex($g), 2, '0', STR_PAD_LEFT);
+        $b = str_pad(dechex($b), 2, '0', STR_PAD_LEFT);
 
         return '#' . $r . $g . $b;
     }

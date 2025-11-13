@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\PriceList\PriceListDto;
 use App\Dto\PriceList\PricesDto;

@@ -3,7 +3,7 @@
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Entity\CreditNote;
 use App\Repository\CreditNoteRepository;
 use App\Service\CreditNoteService;

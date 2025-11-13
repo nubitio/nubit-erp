@@ -4,7 +4,7 @@ namespace App\State\Sale;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Sale\Domain\SaleInvoiceUseCase;
 
 readonly class MakeInvoiceProcessor implements ProcessorInterface

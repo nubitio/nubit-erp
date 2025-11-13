@@ -2,7 +2,7 @@
 
 namespace App\Core\Service;
 
-use App\Core\Util\ColorUtils;
+use App\Core\Color\ColorUtils;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;

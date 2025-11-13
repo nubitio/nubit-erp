@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Core\Service\FileManager;
+use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use Symfony\Component\Console\Attribute\AsCommand;

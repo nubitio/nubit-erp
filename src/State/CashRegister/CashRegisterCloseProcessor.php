@@ -5,7 +5,7 @@ namespace App\State\CashRegister;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;

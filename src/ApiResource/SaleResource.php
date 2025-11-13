@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Controller\PrintESCPOSController;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Core\Exception\ServiceException;
 use App\Dto\Sale\VoidSaleDto;
 use App\Entity\Sale;

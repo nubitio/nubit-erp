@@ -5,7 +5,7 @@ namespace App\Invoice\Domain;
 use App\Billing\Domain\BillSendUseCase;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
-use App\Core\Service\FileManager;
+use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\Invoice;

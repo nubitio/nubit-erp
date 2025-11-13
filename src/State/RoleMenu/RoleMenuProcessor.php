@@ -5,7 +5,7 @@ namespace App\State\RoleMenu;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\RoleMenuResource;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 

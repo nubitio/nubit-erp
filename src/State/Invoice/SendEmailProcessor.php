@@ -4,7 +4,7 @@ namespace App\State\Invoice;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\InvoiceEmailUseCase;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
