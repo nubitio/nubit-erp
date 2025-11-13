@@ -5,15 +5,15 @@ namespace App\Receipt\Domain;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\CreditNoteRepository;
+use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 
 readonly class ReceiptShowUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
-        private GetOneCreditNoteUseCase $getOneNoteUseCase,
+        private InvoiceRepository $invoiceRepository,
+        private CreditNoteRepository $creditNoteRepository,
         private SettingsService $settings,
     ) {
     }
@@ -54,16 +54,16 @@ readonly class ReceiptShowUseCase
      */
     private function makeReceiptForNote(string $id): Receipt
     {
-        $note = $this->getOneNoteUseCase->__invoke($id);
+        $note = $this->creditNoteRepository->find($id);
         $companyName = $this->settings->get(Constants::COMPANY_NAME);
 
         return new Receipt(
             company: strval($companyName),
             type: ($note->tipo_id) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
-            series: strval($note->serie),
-            number: strval($note->correlativo),
-            date: strval($note->fecha?->format('Y-m-d')),
-            total: floatval($note->total)
+            series: strval($note->getSerie()),
+            number: strval($note->getCorrelativo()),
+            date: strval($note->getFecha()?->format('Y-m-d')),
+            total: floatval($note->getTotal())
         );
     }
 }

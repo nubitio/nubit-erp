@@ -3,7 +3,7 @@
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Response\SummaryResponse;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 
@@ -11,7 +11,7 @@ readonly class SummaryCreateUseCase
 {
     public function __construct(
         private SummaryRepositoryInterface $summaryRepository,
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private BillUtilsInterface $invoiceUtils,
     ) {
     }

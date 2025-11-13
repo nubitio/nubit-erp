@@ -38,6 +38,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
                             ?->getDescription() ?: ''
                     );
             }
+
             return new ApiResponse(
                 false,
                 $result->sunatResponse->getError()?->getMessage() ?: ''

@@ -5,16 +5,17 @@ namespace App\Receipt\Application;
 use App\Core\Base\BaseController;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\PdfExporter;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Receipt\Domain\ReceiptCdrUseCase;
 use App\Receipt\Domain\ReceiptPdfUseCase;
 use App\Receipt\Domain\ReceiptRequest;
 use App\Receipt\Domain\ReceiptShowUseCase;
 use App\Receipt\Domain\ReceiptType;
 use App\Receipt\Domain\ReceiptXmlUseCase;
+use App\Repository\InvoiceRepository;
 use App\Sale\Domain\DocType;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Exception;
+use League\Flysystem\FilesystemException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -44,11 +45,14 @@ class ReceiptController extends BaseController
         ]);
     }
 
+    /**
+     * @throws Exception
+     */
     #[Route('/receipt/{id}/ticket', name: 'receipt_ticket', methods: ['GET'])]
     public function ticket(
         Request $request,
         string $id,
-        InvoiceRepositoryInterface $invoiceRepository,
+        InvoiceRepository $invoiceRepository,
     ): Response {
         $voucher = $invoiceRepository->getVoucher($id);
         $qr = '';
@@ -74,6 +78,10 @@ class ReceiptController extends BaseController
         return $pdfExporter->export($content, 'invoice');
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws Exception
+     */
     #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
     public function xml(
         ReceiptXmlUseCase $receiptXmlUseCase,
@@ -94,6 +102,10 @@ class ReceiptController extends BaseController
         return $response;
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws Exception
+     */
     #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
     public function cdr(
         ReceiptCdrUseCase $receiptCdrUseCase,

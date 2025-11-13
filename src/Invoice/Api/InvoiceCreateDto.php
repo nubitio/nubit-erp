@@ -5,6 +5,7 @@ namespace App\Invoice\Api;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Api\MakeInvoice;
 use App\Invoice\Domain\Voucher;
 
 #[ApiResource(
@@ -15,7 +16,7 @@ use App\Invoice\Domain\Voucher;
             output: Voucher::class,
         ),
     ],
-    processor: VoucherProcessor::class
+    processor: MakeInvoice::class
 )]
 class InvoiceCreateDto
 {

@@ -2,27 +2,26 @@
 
 namespace App\Controller;
 
-use App\Core\Base\BaseController;
 use App\Core\Extension\RemoteEscposImage;
 use App\Core\Service\LogoProvider;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Sale\SaleItemDto;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 
-class PrintESCPOSController extends BaseController
+class PrintESCPOSController extends AbstractController
 {
     public function __construct(
         private readonly LogoProvider $logoProvider,
-        private readonly InvoiceRepositoryInterface $invoiceRepository,
+        private readonly InvoiceRepository $invoiceRepository,
         private readonly SettingsService $settingsService,
     ) {
-        parent::__construct();
     }
 
     /**

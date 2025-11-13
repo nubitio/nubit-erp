@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Core\Http;
 
-readonly class ApiResponse
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+class ApiResponse extends JsonResponse
 {
     public function __construct(
         public bool $success,
         public string $message,
         public mixed $data = null,
     ) {
+        parent::__construct($this->toArray(), $success ? 200 : 400);
     }
 
     public static function success(string $message = 'Success', mixed $data = null): self

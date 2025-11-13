@@ -4,9 +4,10 @@ namespace App\Billing\Domain;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\CreditNote;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
 use App\Invoice\Domain\Voucher;
 use App\Repository\CreditNoteRepository;
+use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
@@ -17,13 +18,14 @@ readonly class NoteCreateUseCase
 {
     public function __construct(
         private CreditNoteRepository $creditNoteRepository,
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private BillUtilsInterface $billUtils,
     ) {
     }
 
     /**
      * @throws ServiceException
+     * @throws Exception
      */
     public function __invoke(string $noteId): Note
     {

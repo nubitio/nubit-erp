@@ -4,6 +4,7 @@ namespace App\Invoice\Domain;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
+use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Api\AuthApi;
@@ -26,7 +27,7 @@ readonly class ValidateInvoiceUseCase
     public function __construct(
         private CacheInterface $cache,
         private SettingsService $settings,
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -38,7 +39,9 @@ readonly class ValidateInvoiceUseCase
      */
     public function __invoke(string $invoiceId): CpeResponse
     {
-        $invoice = $this->invoiceRepository->getOneBySaleId($invoiceId);
+        $invoice = $this->invoiceRepository->findOneBy(
+            ['movimiento_id' => $invoiceId]
+        );
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));

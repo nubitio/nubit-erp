@@ -11,7 +11,7 @@ use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\Sale;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
@@ -21,7 +21,7 @@ readonly class SaleVoidUseCase
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private VoidedCreateUseCase $voidedCreateUseCase,
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
@@ -34,6 +34,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws SaleException
      * @throws Exception
+     * @throws \DateMalformedStringException
      */
     public function __invoke(
         string $saleId,
@@ -94,12 +95,15 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws SaleException
      * @throws Exception
+     * @throws \DateMalformedStringException
      */
     private function voidInvoice(
         string $saleId,
         string $reason,
     ): SummaryResponse {
-        $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
+        $invoice = $this->invoiceRepository->findOneBy(
+            ['movimiento_id' => $saleId]
+        );
 
         if ('0' !== $invoice->envio_sunat) {
             throw SaleException::notIssued();
@@ -135,7 +139,9 @@ readonly class SaleVoidUseCase
      */
     private function voidReceipt(string $saleId): SummaryResponse
     {
-        $invoice = $this->invoiceRepository->getOneBySaleId($saleId);
+        $invoice = $this->invoiceRepository->findOneBy(
+            ['movimiento_id' => $saleId]
+        );
 
         if ('0' !== $invoice->envio_sunat) {
             throw SaleException::notIssued();

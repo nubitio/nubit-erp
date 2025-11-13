@@ -6,6 +6,7 @@ use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
+use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -20,7 +21,7 @@ use Twig\Error\SyntaxError;
 readonly class InvoiceEmailUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private MailerInterface $mailer,
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
