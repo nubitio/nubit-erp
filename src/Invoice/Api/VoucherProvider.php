@@ -4,17 +4,19 @@ namespace App\Invoice\Api;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Exception;
 
 readonly class VoucherProvider implements ProviderInterface
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
     ) {
     }
 
     /**
      * @inheritdoc
+     * @throws Exception
      */
     #[\Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null

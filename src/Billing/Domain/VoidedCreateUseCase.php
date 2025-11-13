@@ -3,7 +3,8 @@
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Response\SummaryResponse;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Exception;
 use Greenter\Model\Voided\Voided;
 use Greenter\Model\Voided\VoidedDetail;
 
@@ -11,13 +12,14 @@ readonly class VoidedCreateUseCase
 {
     public function __construct(
         private VoidedRepositoryInterface $voidedRepository,
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private BillUtilsInterface $invoiceUtils,
     ) {
     }
 
     /**
      * @throws \DateMalformedStringException
+     * @throws Exception
      */
     public function __invoke(string $saleId, string $reason): SummaryResponse
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Core\Invoice;
+namespace App\Service;
 
 use App\Core\Annotation\IgnoreAutowire;
 

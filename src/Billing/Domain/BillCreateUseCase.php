@@ -2,7 +2,8 @@
 
 namespace App\Billing\Domain;
 
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Charge;
@@ -16,11 +17,15 @@ use Greenter\Model\Sale\SaleDetail;
 readonly class BillCreateUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
+        private InvoiceRepository $invoiceRepository,
         private BillUtilsInterface $billUtils,
     ) {
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     * @throws Exception
+     */
     public function __invoke(string $saleId): Invoice
     {
         $voucher = $this->invoiceRepository->getVoucher($saleId);
