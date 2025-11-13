@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Core\Service;
+declare(strict_types=1);
+
+namespace App\Core\Filesystem;
 
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;

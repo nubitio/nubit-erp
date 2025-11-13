@@ -1,16 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Core\EventListener;
 
+use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
+use App\Core\Exception\ValidationException;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 
 #[AsEventListener]
-class ExceptionListener
+final readonly class ExceptionListener
 {
+    public function __construct(
+        private LoggerInterface $logger,
+        #[Autowire(param: 'kernel.environment')]
+        private string $environment,
+    ) {
+    }
+
     public function __invoke(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
@@ -19,17 +32,45 @@ class ExceptionListener
             return;
         }
 
-        $isDev = 'dev' === $_ENV['APP_ENV'];
+        $this->logger->error($exception->getMessage(), [
+            'exception' => $exception,
+        ]);
 
-        $data = [];
-        $data['message'] = $exception->getMessage();
-        $data['code'] = $exception->getCode();
+        $isDev = 'dev' === $this->environment;
+        $statusCode = $this->getStatusCode($exception);
+
+        $data = [
+            'success' => false,
+            'message' => $exception->getMessage(),
+            'code' => $exception->getCode(),
+        ];
+
+        if ($exception instanceof ValidationException) {
+            $data['errors'] = $exception->getErrors();
+        }
 
         if ($isDev) {
             $data['trace'] = $exception->getTrace();
+            $data['file'] = $exception->getFile();
+            $data['line'] = $exception->getLine();
         }
 
-        $response = new JsonResponse($data, Response::HTTP_BAD_REQUEST);
+        $response = new JsonResponse($data, $statusCode);
         $event->setResponse($response);
+    }
+
+    private function getStatusCode(\Throwable $exception): int
+    {
+        if ($exception instanceof NotFoundException) {
+            return Response::HTTP_NOT_FOUND;
+        }
+
+        if ($exception instanceof ValidationException) {
+            return Response::HTTP_UNPROCESSABLE_ENTITY;
+        }
+
+        $code = $exception->getCode();
+        
+        return ($code >= 400 && $code < 600) ? $code : Response::HTTP_BAD_REQUEST;
     }
 }

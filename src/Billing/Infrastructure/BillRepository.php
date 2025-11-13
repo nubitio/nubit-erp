@@ -9,11 +9,12 @@ use App\Billing\Model\Report\Extra;
 use App\Billing\Model\Report\Parameters;
 use App\Billing\Model\Report\User;
 use App\Billing\Model\Response\DocumentResponse;
-use App\Core\Service\SerializerService;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -21,7 +22,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 readonly class BillRepository implements BillRepositoryInterface
 {
-    public function __construct(private SerializerService $serializer)
+    public function __construct(private SerializerInterface $serializer)
     {
     }
 
@@ -30,6 +31,7 @@ readonly class BillRepository implements BillRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function sendBill(Invoice $invoice): DocumentResponse
@@ -58,6 +60,7 @@ readonly class BillRepository implements BillRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function getXml(Invoice $invoice): string
@@ -81,6 +84,7 @@ readonly class BillRepository implements BillRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function getPdf(Invoice $invoice): string
@@ -120,6 +124,7 @@ readonly class BillRepository implements BillRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function getStatus(Invoice $invoice): StatusCdrResult

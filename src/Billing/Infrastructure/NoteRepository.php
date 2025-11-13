@@ -5,17 +5,18 @@ namespace App\Billing\Infrastructure;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Domain\NoteRepositoryInterface;
 use App\Billing\Model\Response\DocumentResponse;
-use App\Core\Service\SerializerService;
 use Greenter\Model\Sale\Note;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-class NoteRepository implements NoteRepositoryInterface
+readonly class NoteRepository implements NoteRepositoryInterface
 {
-    public function __construct(private readonly SerializerService $serializer)
+    public function __construct(private SerializerInterface $serializer)
     {
     }
 
@@ -24,6 +25,7 @@ class NoteRepository implements NoteRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function send(Note $note): DocumentResponse
@@ -48,6 +50,7 @@ class NoteRepository implements NoteRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function pdf(Note $note): string

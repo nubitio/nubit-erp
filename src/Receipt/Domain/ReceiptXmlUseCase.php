@@ -4,7 +4,7 @@ namespace App\Receipt\Domain;
 
 use App\Billing\Domain\FileResponse;
 use App\Core\Exception\ServiceException;
-use App\Core\Service\FileManager;
+use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\CreditNote\Domain\GetOneCreditNoteUseCase;

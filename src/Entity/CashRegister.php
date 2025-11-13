@@ -5,7 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use App\Core\Common\ApiResponse;
+use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;

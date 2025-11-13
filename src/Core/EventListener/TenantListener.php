@@ -3,6 +3,7 @@
 namespace App\Core\EventListener;
 
 use App\Core\Service\TenantConnectionSwitcher;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 
@@ -14,6 +15,10 @@ readonly class TenantListener
     ) {
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Driver\Exception
+     */
     public function __invoke(RequestEvent $event): void
     {
         $host = $event->getRequest()->getHost();

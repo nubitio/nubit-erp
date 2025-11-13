@@ -11,6 +11,7 @@ use App\Invoice\Domain\Voucher;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 readonly class InvoiceRepository implements InvoiceRepositoryInterface
@@ -85,6 +86,8 @@ readonly class InvoiceRepository implements InvoiceRepositoryInterface
 
         $voucher['voucher_items'] = $items;
 
-        return $this->serializer->denormalize($voucher, Voucher::class);
+        $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
+
+        return $this->serializer->denormalize($voucher, Voucher::class, null, $context);
     }
 }

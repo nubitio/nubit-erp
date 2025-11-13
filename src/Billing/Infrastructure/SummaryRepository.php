@@ -4,12 +4,13 @@ namespace App\Billing\Infrastructure;
 
 use App\Billing\Domain\SummaryRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
-use App\Core\Service\SerializerService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Summary\Summary;
 use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
@@ -17,7 +18,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 readonly class SummaryRepository implements SummaryRepositoryInterface
 {
-    public function __construct(private Connection $connection, private SerializerService $serializer)
+    public function __construct(private Connection $connection, private SerializerInterface $serializer)
     {
     }
 
@@ -43,6 +44,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function createSummary(Summary $summary): SummaryResponse
@@ -67,6 +69,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
      * @throws ServerExceptionInterface
      * @throws RedirectionExceptionInterface
      * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
      */
     #[\Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
