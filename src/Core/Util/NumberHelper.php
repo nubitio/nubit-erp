@@ -47,6 +47,13 @@ final class NumberHelper
         return !self::isEven($number);
     }
 
+    /**
+     * @param 1|2|3|4 $mode Rounding mode constant
+     * PHP_ROUND_HALF_UP=1,
+     * PHP_ROUND_HALF_DOWN=2,
+     * PHP_ROUND_HALF_EVEN=3,
+     * PHP_ROUND_HALF_ODD=4
+     */
     public static function round(float $value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP): float
     {
         return round($value, $precision, $mode);

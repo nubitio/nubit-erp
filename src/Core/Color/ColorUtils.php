@@ -122,7 +122,7 @@ final class ColorUtils
     public static function hexToRgb(string $hexColor): array
     {
         $hexColor = str_replace('#', '', $hexColor);
-        
+
         return [
             hexdec(substr($hexColor, 0, 2)),
             hexdec(substr($hexColor, 2, 2)),

@@ -58,7 +58,7 @@ final class DateHelper
         if ($date instanceof \DateTime) {
             $date = \DateTimeImmutable::createFromMutable($date);
         }
-        
+
         return $date->modify(sprintf('%+d days', $days));
     }
 
@@ -67,7 +67,7 @@ final class DateHelper
         if ($date instanceof \DateTime) {
             $date = \DateTimeImmutable::createFromMutable($date);
         }
-        
+
         return $date->modify(sprintf('%+d hours', $hours));
     }
 
@@ -76,7 +76,7 @@ final class DateHelper
         if ($date instanceof \DateTime) {
             $date = \DateTimeImmutable::createFromMutable($date);
         }
-        
+
         return $date->modify(sprintf('%+d minutes', $minutes));
     }
 
@@ -95,7 +95,7 @@ final class DateHelper
         if ($date instanceof \DateTime) {
             $date = \DateTimeImmutable::createFromMutable($date);
         }
-        
+
         return $date->modify('first day of this month')->setTime(0, 0);
     }
 
@@ -104,7 +104,7 @@ final class DateHelper
         if ($date instanceof \DateTime) {
             $date = \DateTimeImmutable::createFromMutable($date);
         }
-        
+
         return $date->modify('last day of this month')->setTime(23, 59, 59);
     }
 }

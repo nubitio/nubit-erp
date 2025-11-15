@@ -13,5 +13,6 @@ grumphp:
             whitelist_patterns:
                 - /^src/
         phpstan:
+            memory_limit: 1G
             configuration: phpstan.dist.neon
         phpunit: ~

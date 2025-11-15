@@ -7,15 +7,16 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\CreditNoteRepository;
+use App\Repository\InvoiceRepository;
 use League\Flysystem\FilesystemException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class ReceiptXmlUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
-        private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
+        private InvoiceRepository $invoiceRepository,
+        private CreditNoteRepository $creditNoteRepository,
         private SettingsService $settings,
         private FileManager $fileManager,
     ) {
@@ -24,6 +25,7 @@ readonly class ReceiptXmlUseCase
     /**
      * @throws ServiceException
      * @throws FilesystemException|\Doctrine\DBAL\Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
     {
@@ -35,6 +37,7 @@ readonly class ReceiptXmlUseCase
 
     /**
      * @throws FilesystemException|\Doctrine\DBAL\Exception
+     * @throws ExceptionInterface
      */
     public function getXmlForInvoice(string $id): FileResponse
     {
@@ -56,11 +59,11 @@ readonly class ReceiptXmlUseCase
      */
     public function getXmlForNote(string $id): FileResponse
     {
-        $note = $this->getOneCreditNoteUseCase->__invoke($id);
+        $note = $this->creditNoteRepository->find($id);
         $companyId = $this->settings->get(Constants::COMPANY_ID);
 
-        $docName = $note->serie . '-' . $note->correlativo;
-        $docFullName = $companyId . '-' . $note->tipo_id . '-' . $docName;
+        $docName = $note->getSerie() . '-' . $note->getcorrelativo();
+        $docFullName = $companyId . '-' . $note->getTipoId() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/' . $docFullName . '.xml'),
