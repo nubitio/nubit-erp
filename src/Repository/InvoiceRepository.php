@@ -11,7 +11,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * @extends ServiceEntityRepository<Invoice>
@@ -20,7 +20,7 @@ class InvoiceRepository extends ServiceEntityRepository
 {
     public function __construct(
         ManagerRegistry $registry,
-        private readonly SerializerInterface $serializer
+        private readonly DenormalizerInterface $denormalizer
     ) {
         parent::__construct($registry, Invoice::class);
     }
@@ -41,9 +41,9 @@ class InvoiceRepository extends ServiceEntityRepository
         $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
 
         $voucher['voucher_items'] = array_map(function (array $item) use ($context) {
-            return $this->serializer->deserialize($item, VoucherItem::class, 'array', $context);
+            return $this->denormalizer->denormalize($item, VoucherItem::class, null, $context);
         }, $items);
 
-        return $this->serializer->deserialize($voucher, Voucher::class, 'array', $context);
+        return $this->denormalizer->denormalize($voucher, Voucher::class, null, $context);
     }
 }

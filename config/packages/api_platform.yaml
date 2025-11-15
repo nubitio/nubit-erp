@@ -8,6 +8,9 @@ api_platform:
     formats:
         json: [ 'application/json' ]
         jsonld: [ 'application/ld+json' ]
+    docs_formats:
+        jsonld: [ 'application/ld+json' ]
+        jsonopenapi: [ 'application/vnd.openapi+json' ]
         html: [ 'text/html' ]
     swagger:
         api_keys:
