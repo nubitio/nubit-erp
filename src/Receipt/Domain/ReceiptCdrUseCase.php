@@ -7,16 +7,17 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\CreditNote\Domain\GetOneCreditNoteUseCase;
-use App\Invoice\Domain\InvoiceRepositoryInterface;
+use App\Repository\CreditNoteRepository;
+use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class ReceiptCdrUseCase
 {
     public function __construct(
-        private InvoiceRepositoryInterface $invoiceRepository,
-        private GetOneCreditNoteUseCase $getOneCreditNoteUseCase,
+        private InvoiceRepository $invoiceRepository,
+        private CreditNoteRepository $creditNoteRepository,
         private SettingsService $settings,
         private FileManager $fileManager,
     ) {
@@ -26,6 +27,7 @@ readonly class ReceiptCdrUseCase
      * @throws ServiceException
      * @throws FilesystemException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
     {
@@ -38,6 +40,7 @@ readonly class ReceiptCdrUseCase
     /**
      * @throws FilesystemException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function getCdrForInvoice(string $id): FileResponse
     {
@@ -60,11 +63,11 @@ readonly class ReceiptCdrUseCase
      */
     public function getCdrForNote(string $id): FileResponse
     {
-        $voucher = $this->getOneCreditNoteUseCase->__invoke($id);
+        $voucher = $this->creditNoteRepository->find($id);
         $companyId = $this->settings->get(Constants::COMPANY_ID);
 
-        $docName = $voucher->serie . '-' . $voucher->correlativo;
-        $docFullName = $companyId . '-' . $voucher->tipo_id . '-' . $docName;
+        $docName = $voucher->getSerie() . '-' . $voucher->getCorrelativo();
+        $docFullName = $companyId . '-' . $voucher->getTipoId() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/R-' . $docFullName . '.zip'),

@@ -9,6 +9,7 @@ use App\Invoice\Domain\VoucherItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -26,6 +27,7 @@ class InvoiceRepository extends ServiceEntityRepository
 
     /**
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function getVoucher(string $saleId): Voucher
     {
@@ -39,9 +41,9 @@ class InvoiceRepository extends ServiceEntityRepository
         $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
 
         $voucher['voucher_items'] = array_map(function (array $item) use ($context) {
-            return $this->serializer->denormalize($item, VoucherItem::class, null, $context);
+            return $this->serializer->deserialize($item, VoucherItem::class, 'array', $context);
         }, $items);
 
-        return $this->serializer->denormalize($voucher, Voucher::class, null, $context);
+        return $this->serializer->deserialize($voucher, Voucher::class, 'array', $context);
     }
 }

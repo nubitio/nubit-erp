@@ -12,7 +12,9 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\CreditNote;
 use App\Repository\CreditNoteRepository;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use League\Flysystem\FilesystemException;
 
 /**
  * Service for Credit Note business logic
@@ -34,6 +36,8 @@ readonly class CreditNoteService
      * Send credit note to SUNAT
      *
      * @throws ServiceException
+     * @throws Exception
+     * @throws FilesystemException
      */
     public function sendToSunat(CreditNote $creditNote): DocumentResponse
     {
@@ -48,7 +52,7 @@ readonly class CreditNoteService
             throw new ServiceException('La nota de crédito ya fue enviada a SUNAT');
         }
 
-        // Send to SUNAT using existing billing service
+        // Send to SUNAT using an existing billing service
         $response = $this->noteSendUseCase->__invoke($creditNote->getId());
 
         // Update credit note with SUNAT response
@@ -95,20 +99,22 @@ readonly class CreditNoteService
     public function generatePdf(CreditNote $creditNote): string
     {
         $fileResponse = $this->notePdfUseCase->__invoke($creditNote->getId());
-        return $fileResponse->content;
+        return $fileResponse->file;
     }
 
     /**
      * Generate XML for credit note
      *
      * @throws ServiceException
+     * @throws FilesystemException
+     * @throws Exception
      */
     public function generateXml(CreditNote $creditNote): string
     {
         $note = $this->noteCreateUseCase->__invoke($creditNote->getId());
 
         // XML generation would be handled by Greenter library
-        // For now, try to read from saved file or generate
+        // For now, try to read from a saved file or generate
         $companyId = $this->settings->get(Constants::COMPANY_ID);
         $xmlPath = $companyId . '/' . $note->getName() . '.xml';
 
@@ -128,7 +134,7 @@ readonly class CreditNoteService
     }
 
     /**
-     * Create credit note from sale
+     * Create a credit note from sale
      */
     public function createFromSale($sale, array $data): CreditNote
     {
@@ -141,9 +147,6 @@ readonly class CreditNoteService
         $creditNote->setSerie($data['serie'] ?? 'NC01');
         $creditNote->setCorrelativo($this->getNextCorrelativo($data['serie'] ?? 'NC01'));
         $creditNote->setTotal($data['total'] ?? '0.00');
-        $creditNote->setSubtotal($data['subtotal'] ?? '0.00');
-        $creditNote->setGravada($data['gravada'] ?? '0.00');
-        $creditNote->setIgv($data['igv'] ?? '0.00');
         $creditNote->setEnvioSunat('pendiente');
 
         $this->creditNoteRepository->save($creditNote, true);

@@ -44,7 +44,7 @@ final class JWTManager
     {
         try {
             $payload = $this->decode($token);
-            
+
             if (!isset($payload['exp'])) {
                 return false;
             }

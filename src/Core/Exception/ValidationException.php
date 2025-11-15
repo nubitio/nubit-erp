@@ -12,7 +12,7 @@ class ValidationException extends ServiceException
     {
         $exception = new self('Validation failed');
         $exception->errors = $errors;
-        
+
         return $exception;
     }
 

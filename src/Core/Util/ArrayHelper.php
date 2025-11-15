@@ -64,7 +64,7 @@ final class ArrayHelper
     public static function flatten(array $array, string $separator = '.'): array
     {
         $result = [];
-        
+
         foreach ($array as $key => $value) {
             if (is_array($value)) {
                 $flattened = self::flatten($value, $separator);

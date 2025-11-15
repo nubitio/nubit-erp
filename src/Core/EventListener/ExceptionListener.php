@@ -70,7 +70,7 @@ final readonly class ExceptionListener
         }
 
         $code = $exception->getCode();
-        
+
         return ($code >= 400 && $code < 600) ? $code : Response::HTTP_BAD_REQUEST;
     }
 }

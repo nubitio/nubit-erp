@@ -2,16 +2,17 @@
 
 namespace App\Controller;
 
-use App\Core\Base\BaseController;
 use App\Core\Http\ApiResponse;
-use App\Entity\CreditNote;
 use App\Repository\CreditNoteRepository;
 use App\Service\CreditNoteService;
+use Doctrine\DBAL\Exception;
+use League\Flysystem\FilesystemException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/credit-note')]
-class CreditNoteController extends BaseController
+class CreditNoteController extends AbstractController
 {
     public function __construct(
         private readonly CreditNoteRepository $creditNoteRepository,
@@ -38,7 +39,7 @@ class CreditNoteController extends BaseController
         }
 
         try {
-            $result = $this->creditNoteService->sendToSunat($creditNote);
+            $result = $this->creditNoteService->sendToSunat($creditNote)->sunatResponse;
 
             if ($result->isSuccess()) {
                 return $this->json(
@@ -53,6 +54,11 @@ class CreditNoteController extends BaseController
         } catch (\Exception $e) {
             return $this->json(
                 new ApiResponse(false, $e->getMessage()),
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );
+        } catch (FilesystemException $e) {
+            return $this->json(
+                new ApiResponse(false, 'Error al guardar el archivo XML'),
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -82,6 +88,10 @@ class CreditNoteController extends BaseController
         );
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws Exception
+     */
     #[Route('/{id}/xml', name: 'credit_note_xml', methods: ['GET'])]
     public function downloadXml(string $id): Response
     {

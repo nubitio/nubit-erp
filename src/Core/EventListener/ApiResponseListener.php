@@ -15,7 +15,7 @@ final readonly class ApiResponseListener
     {
         $request = $event->getRequest();
         $data = $request->attributes->get('data');
-        
+
         if ($data instanceof PaginatorInterface) {
             $response = $event->getResponse();
             $response->headers->add([

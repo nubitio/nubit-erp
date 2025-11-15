@@ -8,6 +8,7 @@ use App\Core\Util\Constants;
 use App\Repository\CreditNoteRepository;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class ReceiptShowUseCase
 {
@@ -32,6 +33,7 @@ readonly class ReceiptShowUseCase
 
     /**
      * @throws Exception
+     * @throws ExceptionInterface
      */
     private function makeReceiptForInvoice(string $id): Receipt
     {
@@ -59,7 +61,7 @@ readonly class ReceiptShowUseCase
 
         return new Receipt(
             company: strval($companyName),
-            type: ($note->tipo_id) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
+            type: ($note->getTipoId()) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
             series: strval($note->getSerie()),
             number: strval($note->getCorrelativo()),
             date: strval($note->getFecha()?->format('Y-m-d')),

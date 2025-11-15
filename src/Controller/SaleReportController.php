@@ -6,18 +6,23 @@ use App\Core\Base\BaseController;
 use App\Core\Service\XlsExporter;
 use App\Core\Symfony\Security\SecurityService;
 use Doctrine\DBAL\Connection;
+use PhpOffice\PhpSpreadsheet\Exception;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class SaleReportController extends BaseController
+class SaleReportController extends AbstractController
 {
     public function __construct(
         private readonly XlsExporter $xlsExporter,
         private readonly Connection $connection,
     ) {
-        parent::__construct();
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function __invoke(Request $request, SecurityService $securityService): StreamedResponse
     {
         $report = $request->query->get('report');

@@ -47,7 +47,7 @@ final class StringHelper
         $value = mb_strtolower($value);
         $value = preg_replace('/[^a-z0-9\s-]/', '', $value);
         $value = preg_replace('/[\s-]+/', $separator, $value);
-        
+
         return trim($value, $separator);
     }
 
@@ -60,7 +60,7 @@ final class StringHelper
     {
         $value = str_replace(['-', '_'], ' ', $value);
         $value = ucwords($value);
-        
+
         return str_replace(' ', '', $value);
     }
 
@@ -68,7 +68,7 @@ final class StringHelper
     {
         $value = preg_replace('/\s+/', '', ucwords($value));
         $value = preg_replace('/(.)(?=[A-Z])/u', '$1_', $value);
-        
+
         return mb_strtolower($value);
     }
 
