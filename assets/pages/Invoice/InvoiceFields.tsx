@@ -13,13 +13,13 @@ export const InvoiceFields = () => {
         .isIdentity(true)
         .visible(false)
         .type(FieldType.NONE)
-        .name('comprobante_id')
+        .name('id')
         .label('Comprobante id')
         .required(true)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.DATE)
-        .name('fecha')
+        .name('issuedAt')
         .label('Fecha')
         .valueType('date')
         .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
@@ -28,13 +28,13 @@ export const InvoiceFields = () => {
         .type(FieldType.TEXT)
         .name('ruc')
         .label('DNI/RUC')
-        .formatter((cell: ColumnCellTemplateData) => cell.data.cliente?.ruc)
+        .formatter((cell: ColumnCellTemplateData) => cell.data.customer?.ruc)
         .filterable(false)
         .sortable(false)
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENTITY)
-        .name('cliente')
+        .name('customer')
         .label('Cliente')
         .url(Constants.API_BASE_URL + 'customers')
         .valueField('ruc')
@@ -43,22 +43,22 @@ export const InvoiceFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.ENUM)
-        .name('tipo_comprobante_id')
+        .name('voucherTypeId')
         .label('Tipo')
         .data([
             {value: '01', text: 'Factura'},
             {value: '03', text: 'Boleta'}
         ])
-        .formatter((cell: ColumnCellTemplateData) => cell.data.tipo_comprobante_id === '01' ? 'Factura' : 'Boleta')
+        .formatter((cell: ColumnCellTemplateData) => cell.data.voucherTypeId === '01' ? 'Factura' : 'Boleta')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('serie')
+        .name('series')
         .label('Serie')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('numero')
+        .name('number')
         .label('Número')
         .build());
     fields.push(new FieldBuilder()
@@ -70,7 +70,7 @@ export const InvoiceFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.NONE)
-        .name('nota')
+        .name('voidCorrelation')
         .label('Nota C.')
         .align('center')
         .build());
@@ -88,12 +88,12 @@ export const InvoiceFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('ticket_baja')
+        .name('voidTicket')
         .label('Ticket baja')
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('envio_sunat')
+        .name('sunatStatus')
         .label('Envio sunat')
         .formatter((cell: ColumnCellTemplateData) => {
             let value = cell.value;
@@ -118,7 +118,7 @@ export const InvoiceFields = () => {
         .build());
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
-        .name('mensaje_sunat')
+        .name('sunatMessage')
         .label('Mensaje sunat')
         .build());
 
