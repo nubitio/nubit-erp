@@ -26,6 +26,17 @@ services:
       OTEL_TRACES_SAMPLER: "always_on"
       OTEL_LOG_LEVEL: "debug"
       OTEL_PHP_LOG_DESTINATION: "stderr"
+  database:
+    image: mariadb:10.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: efact
+      MYSQL_USER: efact
+      MYSQL_PASSWORD: Admin.3000
+    ports:
+      - '3306:3306'
+    volumes:
+      - db-data:/var/lib/mysql
   vite:
     image: node:20.13.1
     #command: npm run watch
@@ -39,3 +50,6 @@ services:
     image: redis:6.2.6
     ports:
       - '6379:6379'
+
+volumes:
+  db-data:
