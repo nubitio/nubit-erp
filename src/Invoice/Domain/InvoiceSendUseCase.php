@@ -31,7 +31,7 @@ readonly class InvoiceSendUseCase
     public function __invoke(string $saleId): DocumentResponse
     {
         $invoice = $this->entityManager->getRepository(Invoice::class)->findOneBy(
-            ['movimiento_id' => $saleId]
+            ['sale' => $saleId]
         );
 
         if (null == $invoice) {
@@ -39,23 +39,23 @@ readonly class InvoiceSendUseCase
         }
 
         $response = $this->billSendUseCase->__invoke($saleId);
-        $invoice->digest = $response->hash;
+        $invoice->setDigest($response->hash);
         $this->fileManager->write(
             $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml',
             $response->xml
         );
 
         if ($response->sunatResponse->isSuccess()) {
-            $invoice->envio_sunat = $response->sunatResponse->getCdrResponse()?->getCode();
-            $invoice->mensaje_sunat = $response->sunatResponse->getCdrResponse()?->getDescription();
+            $invoice->setSunatStatus($response->sunatResponse->getCdrResponse()?->getCode());
+            $invoice->setSunatMessage($response->sunatResponse->getCdrResponse()?->getDescription());
             $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
             $this->fileManager->write(
                 $this->settings->get(Constants::COMPANY_ID) . '/R-' . $response->name . '.zip',
                 $cdr
             );
         } else {
-            $invoice->envio_sunat = $response->sunatResponse->getError()?->getCode();
-            $invoice->mensaje_sunat = $response->sunatResponse->getError()?->getMessage();
+            $invoice->setSunatStatus($response->sunatResponse->getError()?->getCode());
+            $invoice->setSunatMessage($response->sunatResponse->getError()?->getMessage());
         }
 
         $this->entityManager->persist($invoice);

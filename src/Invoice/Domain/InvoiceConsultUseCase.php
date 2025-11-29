@@ -33,23 +33,23 @@ readonly class InvoiceConsultUseCase
 
         if ($consultResponse->isSuccess()) {
             $invoice = $this->invoiceRepository->findOneBy(
-                ['movimiento_id' => $saleId]
+                ['sale' => $saleId]
             );
 
             if ($consultResponse->getCdrResponse()?->isAccepted()) {
-                $invoice->envio_sunat = $consultResponse->getCdrResponse()->getCode();
-                $invoice->mensaje_sunat = $consultResponse->getCdrResponse()->getDescription();
+                $invoice->setSunatStatus($consultResponse->getCdrResponse()->getCode());
+                $invoice->setSunatMessage($consultResponse->getCdrResponse()->getDescription());
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
                 $name = $this->settings->get(
                     Constants::COMPANY_ID
-                ) . $invoice->tipo_comprobante_id . $consultResponse->getCdrResponse()->getId() . '.zip';
+                ) . $invoice->getVoucherTypeId() . $consultResponse->getCdrResponse()->getId() . '.zip';
                 $this->fileManager->write(
                     $this->settings->get(Constants::COMPANY_ID) . '/R-' . $name . '.zip',
                     $cdr
                 );
             } else {
-                $invoice->envio_sunat = $consultResponse->getError()?->getCode();
-                $invoice->mensaje_sunat = $consultResponse->getError()?->getMessage();
+                $invoice->setSunatStatus($consultResponse->getError()?->getCode());
+                $invoice->setSunatMessage($consultResponse->getError()?->getMessage());
             }
 
             $this->entityManager->persist($invoice);

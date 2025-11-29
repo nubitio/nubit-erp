@@ -54,12 +54,12 @@ class MakeInvoice extends AbstractController
         ]);
 
         $invoice = $invoiceRepository->findOneBy(
-            ['movimiento_id' => $saleId]
+            ['sale' => $saleId]
         );
 
         $sale->setHasInvoice(true);
-        $sale->setInvoice($invoice->serie . '-' . $invoice->numero);
-        $sale->setTotal($invoice->total);
+        $sale->setInvoice(($invoice?->getSeries() ?? '') . '-' . ($invoice?->getNumber() ?? ''));
+        $sale->setTotal($invoice?->getTotal());
         $entityManager->persist($sale);
         $entityManager->flush();
 
