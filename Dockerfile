@@ -4,8 +4,8 @@
 # -----------------------------------------------------------------------------
 # Build arguments for customization
 # -----------------------------------------------------------------------------
-ARG PHP_VERSION=8.3
-ARG FRANKENPHP_VERSION=latest
+ARG PHP_VERSION=8.5
+ARG FRANKENPHP_VERSION=1.10
 
 # -----------------------------------------------------------------------------
 # Base image with FrankenPHP
@@ -123,7 +123,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install Xdebug
-RUN install-php-extensions xdebug
+#RUN install-php-extensions xdebug
 
 # Configure PHP for development
 COPY docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini

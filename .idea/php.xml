@@ -237,7 +237,6 @@
       <path value="$PROJECT_DIR$/vendor/seld/jsonlint" />
       <path value="$PROJECT_DIR$/vendor/phpmd/phpmd" />
       <path value="$PROJECT_DIR$/vendor/ondram/ci-detector" />
-      <path value="$PROJECT_DIR$/vendor/pontedilana/php-weasyprint" />
       <path value="$PROJECT_DIR$/vendor/league/uri" />
       <path value="$PROJECT_DIR$/vendor/league/uri-interfaces" />
       <path value="$PROJECT_DIR$/vendor/squizlabs/php_codesniffer" />
@@ -266,6 +265,7 @@
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-auto-symfony" />
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-logger-monolog" />
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-auto-doctrine" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php85" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
@@ -355,7 +355,7 @@
       </interpreter>
     </phpInfoCache>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="8.3">
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.5">
     <option name="suggestChangeDefaultLanguageLevel" value="false" />
   </component>
   <component name="PhpStan">
