@@ -265,6 +265,9 @@
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-logger-monolog" />
       <path value="$PROJECT_DIR$/vendor/open-telemetry/opentelemetry-auto-doctrine" />
       <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php85" />
+      <path value="$PROJECT_DIR$/vendor/pontedilana/php-weasyprint" />
+      <path value="$PROJECT_DIR$/vendor/doctrine/data-fixtures" />
+      <path value="$PROJECT_DIR$/vendor/doctrine/doctrine-fixtures-bundle" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
