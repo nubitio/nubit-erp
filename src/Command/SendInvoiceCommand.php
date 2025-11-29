@@ -7,6 +7,7 @@ use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,9 +20,11 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
     name: 'invoice:send',
     description: 'Send invoice',
 )]
-#[AsCronTask(expression: '0 * * * *')]
+#[AsCronTask('*/5 * * * *')]
 class SendInvoiceCommand extends TenantAwareCommand
 {
+    private const int CHUNK_SIZE = 100;
+
     public function __construct(
         TenantManager $tenantManager,
         TenantConnectionSwitcher $tenantConnectionSwitcher,
@@ -42,55 +45,115 @@ class SendInvoiceCommand extends TenantAwareCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        $startedAt = microtime(true);
 
-        $pending = $this->connection->fetchAllAssociative(
+        $pendingTotal = (int) $this->connection->fetchOne(
             "
-            SELECT
-                movimiento_id
+            SELECT COUNT(1) AS total
             FROM comprobante
-            WHERE
-                (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
-                AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+            WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
+              AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
             "
         );
 
-        $io->text('Pending: ' . count($pending));
+        if ($pendingTotal === 0) {
+            $io->success('No pending invoices to send.');
 
-        $errors = [];
-
-        /** @var array<string, string> $item */
-        foreach ($pending as $item) {
-            try {
-                $response = $this->invoiceSendUseCase->__invoke($item['movimiento_id']);
-
-                if ($response->sunatResponse->isSuccess()) {
-                    $io->success($response->sunatResponse->getCdrResponse()?->getDescription() ?? '');
-                } else {
-                    $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
-                    $io->warning($message);
-                    $this->logger->warning('Invoice sending warning', [
-                        'movimiento_id' => $item['movimiento_id'],
-                        'message' => $message
-                    ]);
-                }
-            } catch (\Exception $e) {
-                $errors[] = [
-                    'movimiento_id' => $item['movimiento_id'],
-                    'error' => $e->getMessage()
-                ];
-                $this->logger->error('Error sending invoice', [
-                    'movimiento_id' => $item['movimiento_id'],
-                    'exception' => $e
-                ]);
-                $io->error('Error processing invoice ' . $item['movimiento_id'] . ': ' . $e->getMessage());
-            }
+            return Command::SUCCESS;
         }
 
-        if (!empty($errors)) {
-            $io->section('Errors summary');
-            foreach ($errors as $error) {
-                $io->text('Invoice ID: ' . $error['movimiento_id'] . ' - Error: ' . $error['error']);
+        $io->text('Pending: ' . $pendingTotal);
+        $io->progressStart($pendingTotal);
+
+        $errors = [];
+        $sent = 0;
+        $batchOffset = 0;
+
+        while (true) {
+            $pendingIds = $this->connection->fetchFirstColumn(
+                "
+                SELECT movimiento_id
+                FROM comprobante
+                WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
+                  AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+                ORDER BY fecha ASC
+                LIMIT :limit OFFSET :offset
+                ",
+                [
+                    'limit' => self::CHUNK_SIZE,
+                    'offset' => $batchOffset,
+                ],
+                [
+                    'limit' => ParameterType::INTEGER,
+                    'offset' => ParameterType::INTEGER,
+                ]
+            );
+
+            if (!is_array($pendingIds) || $pendingIds === []) {
+                break;
             }
+
+            foreach ($pendingIds as $movimientoId) {
+                try {
+                    $response = $this->invoiceSendUseCase->__invoke((string) $movimientoId);
+
+                    if ($response->sunatResponse->isSuccess()) {
+                        $sent++;
+                    } else {
+                        $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
+                        $errors[] = [
+                            'movimiento_id' => (int) $movimientoId,
+                            'error' => $message,
+                        ];
+                        $this->logger->warning('Invoice sending warning', [
+                            'movimiento_id' => $movimientoId,
+                            'message' => $message,
+                        ]);
+                    }
+                } catch (\Throwable $exception) {
+                    $errors[] = [
+                        'movimiento_id' => (int) $movimientoId,
+                        'error' => $exception->getMessage(),
+                    ];
+                    $this->logger->error('Error sending invoice', [
+                        'movimiento_id' => $movimientoId,
+                        'exception' => $exception,
+                    ]);
+                } finally {
+                    $io->progressAdvance();
+                }
+            }
+
+            $batchOffset += self::CHUNK_SIZE;
+        }
+
+        $io->progressFinish();
+
+        if ($errors !== []) {
+            $io->section('Errors summary');
+            $io->table(['Invoice ID', 'Error'], $errors);
+        }
+
+        $durationMs = (int) ((microtime(true) - $startedAt) * 1000);
+
+        $io->success(
+            sprintf(
+                'Completed. Sent: %d, Failed: %d, Duration: %d ms',
+                $sent,
+                count($errors),
+                $durationMs
+            )
+        );
+
+        $this->logger->info('Invoice send command completed', [
+            'pending_total' => $pendingTotal,
+            'sent' => $sent,
+            'failed' => count($errors),
+            'duration_ms' => $durationMs,
+        ]);
+
+        if ($errors !== []) {
+            return Command::FAILURE;
         }
 
         return Command::SUCCESS;
