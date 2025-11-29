@@ -20,7 +20,6 @@
     "api-platform/core": "^4.1",
     "aws/aws-sdk-php": "^3.279",
     "chillerlan/php-qrcode": "^5.0",
-    "doctrine/annotations": "^2.0",
     "doctrine/doctrine-bundle": "^2.15",
     "doctrine/doctrine-migrations-bundle": "^3.2",
     "doctrine/orm": "^2.15",
