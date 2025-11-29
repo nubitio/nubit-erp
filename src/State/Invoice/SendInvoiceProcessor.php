@@ -7,11 +7,13 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use League\Flysystem\FilesystemException;
+use Psr\Log\LoggerInterface;
 
 readonly class SendInvoiceProcessor implements ProcessorInterface
 {
     public function __construct(
         private InvoiceSendUseCase $invoiceSendUseCase,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -39,11 +41,19 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
                     );
             }
 
+            $this->logger->error('Error sending invoice', [
+                'result' => $result->sunatResponse->getError()?->getMessage(),
+            ]);
+
             return new ApiResponse(
                 false,
                 $result->sunatResponse->getError()?->getMessage() ?: ''
             );
         } catch (\Exception | FilesystemException $e) {
+            $this->logger->error('Error sending invoice', [
+                'exception' => $e,
+            ]);
+
             return new ApiResponse(
                 success: false,
                 message: 'Error sending invoice',

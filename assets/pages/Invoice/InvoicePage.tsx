@@ -50,7 +50,7 @@ export const InvoicePage = () => {
                     }
 
                     gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-                    invoiceService.sendInvoice(selectedRow.movimiento_id).subscribe((response) => {
+                    invoiceService.sendInvoice(selectedRow.saleId).subscribe((response) => {
                         notify({
                             message: response.data.message,
                             type: response.data.success ? 'success' : 'error',
@@ -74,7 +74,7 @@ export const InvoicePage = () => {
                     }
 
                     gridRef.current?.showLoading('Enviando comprobante por correo...');
-                    invoiceService.sendEmail(selectedRow.movimiento_id).subscribe((data) => {
+                    invoiceService.sendEmail(selectedRow.saleId).subscribe((data) => {
                         notify({
                             message: 'El comprobante fue enviado por correo',
                             type: 'success',
@@ -97,8 +97,8 @@ export const InvoicePage = () => {
                         return
                     }
                     let payload = {
-                        type: selectedRow?.tipo_comprobante_id,
-                        id: selectedRow?.movimiento_id,
+                        type: selectedRow?.voucherTypeId,
+                        id: selectedRow?.saleId,
                     }
                     let payloadEncoded = btoa(JSON.stringify(payload));
                     window.open('receipt/' + payloadEncoded, '_blank');
@@ -117,7 +117,7 @@ export const InvoicePage = () => {
                         return
                     }
                     gridRef.current?.showLoading('Consultando CDR...');
-                    invoiceService.consultInvoice(selectedRow.movimiento_id).subscribe((response) => {
+                    invoiceService.consultInvoice(selectedRow.saleId).subscribe((response) => {
                         notify({
                             message: response.data.message,
                             type: 'success',
@@ -163,7 +163,7 @@ export const InvoicePage = () => {
                     fields={fields}
                     events={EVENTS}
                     sort={[
-                        {selector: 'created_at', desc: true}
+                        {selector: 'createdAt', desc: true}
                     ]}
                 />
                 <DxDialog
