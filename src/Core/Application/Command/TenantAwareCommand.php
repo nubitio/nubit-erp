@@ -61,6 +61,10 @@ abstract class TenantAwareCommand extends Command
         if ($this->tenants === []) {
             $this->logger->warning('No tenants found');
             $io->warning('No tenants found');
+            $io->info('Using default connection');
+            $this->executeTenantCommand($input, $output);
+            $io->success('Done!');
+            $this->release();
 
             return Command::SUCCESS;
         }
@@ -68,15 +72,13 @@ abstract class TenantAwareCommand extends Command
         if ($tenantName = $input->getOption('tenant')) {
             $this->tenantConnectionSwitcher->switchConnection($tenantName);
             $io->title('Tenant: ' . $tenantName);
-
             $this->executeTenantCommand($input, $output);
-
             $io->success('Done!');
-
             $this->release();
 
             return Command::SUCCESS;
         }
+
         return $this->executeAllTenants($io, $input, $output);
     }
 
