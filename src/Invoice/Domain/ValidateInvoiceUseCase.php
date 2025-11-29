@@ -40,7 +40,7 @@ readonly class ValidateInvoiceUseCase
     public function __invoke(string $invoiceId): CpeResponse
     {
         $invoice = $this->invoiceRepository->findOneBy(
-            ['movimiento_id' => $invoiceId]
+            ['sale' => $invoiceId]
         );
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
@@ -49,17 +49,17 @@ readonly class ValidateInvoiceUseCase
 
         $cpeFilter = (new CpeFilter())
             ->setNumRuc(strval($customerId))
-            ->setCodComp(strval($invoice->tipo_comprobante_id))
-            ->setNumeroSerie(strval($invoice->serie))
-            ->setNumero(strval($invoice->numero))
-            ->setFechaEmision(strval($invoice->fecha?->format('d/m/Y')))
-            ->setMonto(strval($invoice->total));
+            ->setCodComp(strval($invoice?->getVoucherTypeId()))
+            ->setNumeroSerie(strval($invoice?->getSeries()))
+            ->setNumero(strval($invoice?->getNumber()))
+            ->setFechaEmision(strval($invoice?->getIssuedAt()?->format('d/m/Y')))
+            ->setMonto(strval($invoice?->getTotal()));
 
         $response = $apiInstance->consultarCpe(strval($customerId), $cpeFilter);
 
         if ($response->getSuccess() && '0' === $response->getData()?->getEstadoCp()) {
-            $invoice->envio_sunat = '';
-            $invoice->mensaje_sunat = '';
+            $invoice?->setSunatStatus('');
+            $invoice?->setSunatMessage('');
             $this->entityManager->persist($invoice);
         }
 

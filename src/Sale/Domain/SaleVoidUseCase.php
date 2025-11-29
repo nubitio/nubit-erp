@@ -102,28 +102,28 @@ readonly class SaleVoidUseCase
         string $reason,
     ): SummaryResponse {
         $invoice = $this->invoiceRepository->findOneBy(
-            ['movimiento_id' => $saleId]
+            ['sale' => $saleId]
         );
 
-        if ('0' !== $invoice->envio_sunat) {
+        if ('0' !== $invoice->getSunatStatus()) {
             throw SaleException::notIssued();
         }
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
-        $invoice->correlativo_baja = explode('-', $response->name)[3];
-        $invoice->updated_at = new \DateTime();
+        $invoice->setVoidCorrelation(explode('-', $response->name)[3]);
+        $invoice->setUpdatedAt(new \DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
                 $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
                 . '.xml',
                 $response->xml
             );
-            $invoice->ticket_baja = $response->sunatResponse->getTicket();
-            $invoice->voided = 2;
+            $invoice->setVoidTicket($response->sunatResponse->getTicket());
+            $invoice->setVoided(2);
         } else {
-            $invoice->ticket_baja = $response->sunatResponse->getTicket() ??
-                $invoice->ticket_baja;
-            $invoice->voided = 3;
+            $invoice->setVoidTicket($response->sunatResponse->getTicket() ??
+                $invoice->getVoidTicket());
+            $invoice->setVoided(3);
         }
 
         $this->entityManager->persist($invoice);
@@ -140,24 +140,24 @@ readonly class SaleVoidUseCase
     private function voidReceipt(string $saleId): SummaryResponse
     {
         $invoice = $this->invoiceRepository->findOneBy(
-            ['movimiento_id' => $saleId]
+            ['sale' => $saleId]
         );
 
-        if ('0' !== $invoice->envio_sunat) {
+        if ('0' !== $invoice->getSunatStatus()) {
             throw SaleException::notIssued();
         }
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
-        $invoice->correlativo_baja = explode('-', $response->name)[3];
-        $invoice->updated_at = new \DateTime();
+        $invoice->setVoidCorrelation(explode('-', $response->name)[3]);
+        $invoice->setUpdatedAt(new \DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
                 $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
                 . '.xml',
                 $response->xml
             );
-            $invoice->ticket_baja = $response->sunatResponse->getTicket();
-            $invoice->voided = 2;
+            $invoice->setVoidTicket($response->sunatResponse->getTicket());
+            $invoice->setVoided(2);
         } else {
             $this->logger->error('Error al anular el comprobante', [
                 'response' => $response,
