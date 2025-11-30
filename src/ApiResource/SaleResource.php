@@ -7,6 +7,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
+use ArrayObject;
 use App\Controller\Api\MakeInvoice;
 use App\Controller\PrintESCPOSController;
 use App\Core\Http\ApiResponse;
@@ -54,16 +56,16 @@ use App\State\Sale\VoidInvoiceProcessor;
             controller: PrintESCPOSController::class,
             openapi: new Operation(
                 responses: [
-                    '200' => [
-                        'description' => 'Invoice printed',
-                        'content' => [
+                    '200' => new Response(
+                        description: 'Invoice printed',
+                        content: new ArrayObject([
                             'application/octet-stream' => [
                                 'schema' => [
                                     'type' => 'string',
                                 ],
                             ],
-                        ],
-                    ],
+                        ])
+                    ),
                 ],
                 summary: 'Print invoice',
                 description: 'Print invoice in ESC/POS format',

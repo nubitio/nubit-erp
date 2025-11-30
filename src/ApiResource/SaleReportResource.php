@@ -5,7 +5,9 @@ namespace App\ApiResource;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\OpenApi\Model\Operation;
+use ApiPlatform\OpenApi\Model\Response;
 use App\Controller\SaleReportController;
+use ArrayObject;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[ApiResource(
@@ -16,23 +18,19 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
             controller: SaleReportController::class,
             openapi: new Operation(
                 responses: [
-                    '200' => [
-                        'description' => 'Report generated successfully',
-                        'content' => [
+                    '200' => new Response(
+                        description: 'Report generated successfully',
+                        content: new ArrayObject([
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => [
                                 'schema' => [
                                     'type' => 'string',
                                     'format' => 'binary'
                                 ]
                             ]
-                        ]
-                    ],
-                    '400' => [
-                        'description' => 'Invalid input'
-                    ],
-                    '404' => [
-                        'description' => 'Report not found'
-                    ]
+                        ])
+                    ),
+                    '400' => new Response(description: 'Invalid input'),
+                    '404' => new Response(description: 'Report not found'),
                 ],
                 summary: 'Generate sales report',
                 description: 'Generates a sales report based on the specified parameters',
