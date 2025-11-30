@@ -63,8 +63,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            PHP_VERSION=8.3
-            FRANKENPHP_VERSION=latest
+            PHP_VERSION=8.5
+            FRANKENPHP_VERSION=1.10
 
       - name: Extract primary image tag
         id: primary-tag
@@ -73,6 +73,6 @@ jobs:
           PRIMARY_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           echo "Primary tag: $PRIMARY_TAG"
           echo "tag=$PRIMARY_TAG" >> $GITHUB_OUTPUT
-      
+
       - name: Image digest
         run: echo ${{ steps.build.outputs.digest }}
