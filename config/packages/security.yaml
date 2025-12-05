@@ -35,6 +35,7 @@ security:
   access_control:
     - { path: ^/api/auth, roles: PUBLIC_ACCESS }
     - { path: ^/api/settings, roles: PUBLIC_ACCESS }
+    - { path: ^/api/setup, roles: PUBLIC_ACCESS }
     - { path: ^/api/branches, roles: PUBLIC_ACCESS }
     - { path: ^/api/sales/report, roles: PUBLIC_ACCESS }
     - { path: ^/receipt/[\w-]+$, roles: PUBLIC_ACCESS }
