@@ -94,7 +94,7 @@ class Sale
     private ?Supplier $proveedor = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'forma_pago', type: 'integer')]
+    #[ORM\Column(name: 'forma_pago', type: 'integer', nullable: true)]
     private ?int $forma_pago = null;
 
     #[Groups([
@@ -108,7 +108,7 @@ class Sale
     private ?PaymentMethod $tipo_pago = null;
 
     #[Groups(['sale:read'])]
-    #[ORM\Column(name: 'tipo_tarjeta', type: 'integer')]
+    #[ORM\Column(name: 'tipo_tarjeta', type: 'integer', nullable: true)]
     private ?int $tipo_tarjeta = null;
 
     #[Groups(['sale:read', 'sale:write'])]
@@ -129,20 +129,20 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\Column(name: 'glosa', type: 'string')]
+    #[ORM\Column(name: 'glosa', type: 'string', nullable: true)]
     private ?string $glosa = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'orden_id', type: 'integer')]
+    #[ORM\Column(name: 'orden_id', type: 'integer', nullable: true)]
     private ?int $orden_id = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'has_invoice', type: 'boolean')]
-    private ?bool $has_invoice = null;
+    #[ORM\Column(name: 'has_invoice', type: 'boolean', options: ['default' => false])]
+    private bool $has_invoice = false;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'is_consume', type: 'boolean')]
-    private ?bool $is_consume = null;
+    #[ORM\Column(name: 'is_consume', type: 'boolean', options: ['default' => false])]
+    private bool $is_consume = false;
 
     #[Groups(['sale:read', 'sale:write'])]
     #[ORM\Column(name: 'caja_id', type: 'integer')]
@@ -154,15 +154,15 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\Column(name: 'estado', type: 'integer')]
-    private ?int $estado = null;
+    #[ORM\Column(name: 'estado', type: 'integer', options: ['default' => 1])]
+    private int $estado = 1;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'date_created', type: 'datetime')]
+    #[ORM\Column(name: 'date_created', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?DateTimeInterface $date_created = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'date_updated', type: 'datetime')]
+    #[ORM\Column(name: 'date_updated', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $date_updated = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
@@ -170,7 +170,7 @@ class Sale
     private ?int $created_by = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'updated_by', type: 'integer')]
+    #[ORM\Column(name: 'updated_by', type: 'integer', nullable: true)]
     private ?int $updated_by = null;
 
     #[Groups(['sale:read', 'sale:write'])]
@@ -182,7 +182,7 @@ class Sale
     private ?int $recargo_consumo = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'invoice', type: 'string')]
+    #[ORM\Column(name: 'invoice', type: 'string', nullable: true)]
     private ?string $invoice = null;
 
     #[Groups([

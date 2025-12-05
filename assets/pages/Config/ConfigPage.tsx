@@ -9,7 +9,7 @@ export const ConfigPage = () => {
     const container = "wrapper";
     const fields = ConfigFields();
 
-    const API_URL = Constants.API_BASE_URL + 'settings';
+    const API_URL = Constants.API_BASE_URL + 'configs';
 
     const EVENTS = {
         ADD: 'config:add',

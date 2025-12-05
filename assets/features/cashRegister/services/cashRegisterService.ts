@@ -3,9 +3,10 @@ import {Constants} from "../../../core/common/Constants";
 
 const cashRegisterService = () => {
     const openCashRegister = (id: string, openingBalance: number) => {
+        const amount = Number(openingBalance ?? 0);
         return httpClient.post<any>(Constants.API_BASE_URL + `cash-registers/${id}/open`, {
             id: Number(id),
-            openingBalance: openingBalance.toFixed(2)
+            openingBalance: Number(amount.toFixed(2))
         });
     }
 

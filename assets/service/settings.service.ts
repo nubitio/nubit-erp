@@ -4,7 +4,7 @@ import {Constants} from "../core/common/Constants";
 
 class SettingsService {
     getAll() {
-        return httpClient.get<SettingDto[]>(`${Constants.API_BASE_URL}settings`);
+        return httpClient.get<SettingDto[]>(`${Constants.API_BASE_URL}configs`);
     }
 }
 

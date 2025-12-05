@@ -59,7 +59,7 @@ class CashShift
     #[ORM\Column]
     private ?float $openingBalance = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?float $closingBalance = null;
 
     #[ORM\ManyToOne]

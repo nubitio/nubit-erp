@@ -34,6 +34,7 @@ import {CashRegisterClose} from "./features/cashRegister/pages/CashRegisterClose
 import {CashMovements} from "./features/cashRegister/pages/CashMovements";
 import {PaymentMethodPage} from "./pages/PaymentMethod/PaymentMethodPage";
 import Assistant from "./features/assistant/Assistant";
+import {CashRegisterPage} from "./pages/CashRegister/CashRegisterPage";
 
 const routes = [
     {
@@ -49,8 +50,12 @@ const routes = [
         element: BranchPage,
     },
     {
-        path: '/cash-register',
+        path: '/cashbox',
         element: CashRegisterDashboard,
+    },
+    {
+        path: '/cash-register',
+        element: CashRegisterPage,
     },
     {
         path: '/cash-register/:id/open',
@@ -63,10 +68,6 @@ const routes = [
     {
         path: '/cash-shift/:id/movements',
         element: CashMovements
-    },
-    {
-        path: '/cashbox',
-        element: CashboxPage,
     },
     {
         path: '/cashbox-consult',

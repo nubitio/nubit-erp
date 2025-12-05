@@ -36,29 +36,29 @@ readonly class MenuProvider implements ProviderInterface
         $data = $this->getMenuForRole($roleId);
 
         foreach ($data as $parent) {
-            if (0 == $parent['parent_id'] && empty($parent['link'])) {
+            if (0 == $parent['parent_id'] && empty($parent['route'])) {
                 $items = [];
 
                 foreach ($data as $child) {
-                    if ($child['parent_id'] == $parent['menu_id']) {
+                    if ($child['parent_id'] == $parent['id']) {
                         $items[] = new SubMenuDto(
-                            $child['descripcion'],
-                            $child['link']
+                            $child['key_name'],
+                            $child['route']
                         );
                     }
                 }
 
                 yield new MenuDto(
-                    $parent['descripcion'],
+                    $parent['key_name'],
                     $parent['icon'],
                     '',
                     $items
                 );
-            } elseif (0 == $parent['parent_id'] && !empty($parent['link'])) {
+            } elseif (0 == $parent['parent_id'] && !empty($parent['route'])) {
                 yield new MenuDTO(
-                    $parent['descripcion'],
+                    $parent['key_name'],
                     $parent['icon'],
-                    $parent['link']
+                    $parent['route']
                 );
             }
         }
@@ -77,7 +77,7 @@ readonly class MenuProvider implements ProviderInterface
                     SELECT
                         m.*
                     FROM menu m
-                    ORDER BY menu_id, orden
+                    ORDER BY id, order_index
                 '
             );
         }
@@ -87,9 +87,9 @@ readonly class MenuProvider implements ProviderInterface
                     SELECT
                         m.*
                     FROM menu m
-                        INNER JOIN menu_rol mr ON mr.menu_id = m.menu_id
-                    WHERE mr.rol_id = ? AND mr.estado = 1
-                    ORDER BY menu_id, orden
+                        INNER JOIN menu_rol mr ON mr.menu_id = m.id
+                    WHERE mr.role_id = ?
+                    ORDER BY menu_id, order_index
                 ',
             [$roleId]
         );
