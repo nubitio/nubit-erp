@@ -68,7 +68,7 @@ class Product
     private ?UnitOfMeasure $unitOfMeasure = null;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'precio_compra')]
+    #[ORM\Column(name: 'precio_compra', nullable: true)]
     private ?float $purchasePrice = null;
 
     #[Assert\NotBlank]
@@ -77,11 +77,11 @@ class Product
     private ?float $salePrice = null;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock')]
+    #[ORM\Column(name: 'stock', nullable: true)]
     private ?int $stock = null;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock_minimo')]
+    #[ORM\Column(name: 'stock_minimo', nullable: true)]
     private ?int $minStock = null;
 
     /**
