@@ -3,7 +3,7 @@ import {FieldType} from "../../core/field/FieldType";
 import {Field} from "../../core/field/Field";
 
 export const ConfigFields = () => {
-    let fields: Field[] = [];
+    const fields: Field[] = [];
 
     fields.push(new FieldBuilder()
         .isIdentity(true)
@@ -14,18 +14,37 @@ export const ConfigFields = () => {
         .required(true)
         .valueType('number')
         .build());
+
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('name')
-        .label('Name')
+        .label('Nombre')
         .required(true)
         .build());
+
+    fields.push(new FieldBuilder()
+        .type(FieldType.ENUM)
+        .name('type')
+        .label('Tipo')
+        .data([
+            {value: 'string', text: 'Texto'},
+            {value: 'int', text: 'Entero'},
+            {value: 'float', text: 'Decimal'},
+            {value: 'bool', text: 'Booleano'},
+            {value: 'json', text: 'JSON'},
+        ])
+        .valueField('value')
+        .textField('text')
+        .valueType('string')
+        .required(true)
+        .build());
+
     fields.push(new FieldBuilder()
         .type(FieldType.TEXT)
         .name('value')
-        .label('Value')
+        .label('Valor')
         .required(true)
-        .build())
+        .build());
 
     return fields;
 }

@@ -3,11 +3,14 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\ConfigRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConfigRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    filters: [DevExtremeFilter::class],
+)]
 class Config
 {
     #[ORM\Id]

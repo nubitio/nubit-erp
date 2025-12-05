@@ -158,12 +158,12 @@ class InitialSetupService
      */
     private function assignFullMenuToRole(int $roleId): void
     {
-        $menuIds = $this->connection->fetchFirstColumn('SELECT menu_id FROM menu');
+        $menuIds = $this->connection->fetchFirstColumn('SELECT id FROM menu');
 
         foreach ($menuIds as $menuId) {
             $this->connection->executeStatement(
-                'INSERT INTO menu_rol (menu_id, rol_id, estado)
-                VALUES (?, ?, 1) ON DUPLICATE KEY UPDATE estado = VALUES(estado)',
+                'INSERT INTO menu_rol (menu_id, role_id)
+                VALUES (?, ?) ON DUPLICATE KEY UPDATE menu_id = VALUES(menu_id), role_id = VALUES(role_id)',
                 [$menuId, $roleId]
             );
         }
