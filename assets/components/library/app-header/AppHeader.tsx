@@ -34,13 +34,13 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
                     <Button icon='menu' stylingMode='text' onClick={toggleMenu}/>
                 </Item>
                 <Item location='before' cssClass='header-title' text={title} visible={!!title}/>
-                <Item location='after' locateInMenu='auto' cssClass='global-search-box'>
+                {/*<Item location='after' locateInMenu='auto' cssClass='global-search-box'>
                     <TextBox placeholder='Buscar' width={200} mode='search' stylingMode='outlined'
                              onEnterKey={handleSearch}/>
-                </Item>
-                <Item location='after' locateInMenu='never'>
+                </Item>*/}
+                {/*<Item location='after' locateInMenu='never'>
                     <Button icon='ph ph-basket' stylingMode='text' onClick={() => navigate('/pos')}/>
-                </Item>
+                </Item>*/}
                 <Item location='after' locateInMenu='never'>
                     <ThemeSwitcher/>
                 </Item>
@@ -48,7 +48,7 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
                     <div className='messages' id='notification'>
                         <Button icon='belloutline' stylingMode='text' onClick={toggleNotificationPanel}/>
                         <div className='dx-badge'>
-                            4
+                            
                         </div>
                     </div>
                     <Popover

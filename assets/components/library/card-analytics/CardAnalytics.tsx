@@ -1,5 +1,5 @@
-import React, { ReactNode } from 'react';
-import { CardMenu } from '../card-menu/CardMenu';
+import React, {ReactNode} from 'react';
+import {CardMenu} from '../card-menu/CardMenu';
 import './CardAnalytics.scss';
 
 type CardProps = {
@@ -11,21 +11,22 @@ type CardProps = {
 };
 
 const menuItems = [
-  { text: 'Configure' },
-  { text: 'Remove' },
+  {text: 'Configure'},
+  {text: 'Remove'},
 ];
 
-export const CardAnalytics = ({
-  title,
-  contentClass,
-  isLoading = false,
-  children,
-  additionalHeaderContent,
-  menuVisible = true,
-}: React.PropsWithChildren<CardProps>) => (
+export const CardAnalytics = (
+  {
+    title,
+    contentClass,
+    isLoading = false,
+    children,
+    additionalHeaderContent,
+    menuVisible = true,
+  }: React.PropsWithChildren<CardProps>) => (
   <div className={`card ${contentClass}`}>
     <div className='header'>
-      <CardMenu visible={menuVisible} items={menuItems} />
+      <CardMenu visible={menuVisible} items={menuItems}/>
       {title && <div className='title'>{title}</div>}
       {additionalHeaderContent}
     </div>
