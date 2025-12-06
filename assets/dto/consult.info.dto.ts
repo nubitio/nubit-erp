@@ -1,6 +1,6 @@
 export interface ConsultInfoDto {
-    id: string;
-    name: string;
-    address: string;
-    active: boolean;
+  id: string;
+  name: string;
+  address: string;
+  active: boolean;
 }

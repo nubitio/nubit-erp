@@ -1,4 +1,4 @@
-import {percentFormatter} from './formatters';
+import { percentFormatter } from './formatters';
 import './StatCard.scss';
 
 type StatCardProps = {

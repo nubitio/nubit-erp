@@ -15,7 +15,10 @@
   flex-direction: column;
   gap: 12px;
   min-height: 130px;
-  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease;
 
   &::before {
     content: '';
@@ -89,7 +92,7 @@ $metric-accents: (
   yellow: #b45309,
   rose: #be123c,
   purple: #6d28d9,
-  gray: #4b5563
+  gray: #4b5563,
 );
 
 @each $name, $accent in $metric-accents {

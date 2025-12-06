@@ -1,5 +1,5 @@
-import React, {ReactNode} from 'react';
-import {CardMenu} from '../card-menu/CardMenu';
+import React, { ReactNode } from 'react';
+import { CardMenu } from '../card-menu/CardMenu';
 import './CardAnalytics.scss';
 
 type CardProps = {
@@ -10,26 +10,22 @@ type CardProps = {
   menuVisible?: boolean;
 };
 
-const menuItems = [
-  {text: 'Configure'},
-  {text: 'Remove'},
-];
+const menuItems = [{ text: 'Configure' }, { text: 'Remove' }];
 
-export const CardAnalytics = (
-  {
-    title,
-    contentClass,
-    isLoading = false,
-    children,
-    additionalHeaderContent,
-    menuVisible = true,
-  }: React.PropsWithChildren<CardProps>) => (
+export const CardAnalytics = ({
+  title,
+  contentClass,
+  isLoading = false,
+  children,
+  additionalHeaderContent,
+  menuVisible = true,
+}: React.PropsWithChildren<CardProps>) => (
   <div className={`card ${contentClass}`}>
-    <div className='header'>
-      <CardMenu visible={menuVisible} items={menuItems}/>
-      {title && <div className='title'>{title}</div>}
+    <div className="header">
+      <CardMenu visible={menuVisible} items={menuItems} />
+      {title && <div className="title">{title}</div>}
       {additionalHeaderContent}
     </div>
-    {!isLoading && <div className='card-contents'>{children}</div>}
+    {!isLoading && <div className="card-contents">{children}</div>}
   </div>
 );
