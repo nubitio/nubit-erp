@@ -10,6 +10,7 @@ import {LocalPicker} from "../../utils/local-picker/LocalPicker";
 
 export const LoginForm = () => {
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const formData = useRef({username: '', password: ''});
     const [showLocalPicker, setShowLocalPicker] = useState(false);
     const [user, setUser] = useState('');
@@ -46,7 +47,25 @@ export const LoginForm = () => {
                     <RequiredRule message='Usuario es requerido'/>
                     <Label visible={false}/>
                 </Item>
-                <Item dataField='password' editorType='dxTextBox' editorOptions={passwordEditorOptions}>
+                <Item
+                    dataField='password'
+                    editorType='dxTextBox'
+                    editorOptions={{
+                        stylingMode: 'outlined',
+                        placeholder: 'Contraseña',
+                        mode: showPassword ? 'text' : 'password',
+                        buttons: [{
+                            name: 'password',
+                            location: 'after',
+                            options: {
+                                icon: showPassword ? 'eyeopen' : 'eyeclose',
+                                type: 'default',
+                                stylingMode: 'text',
+                                onClick: () => setShowPassword(!showPassword)
+                            }
+                        }]
+                    }}
+                >
                     <RequiredRule message='Contraseña es requerida'/>
                     <Label visible={false}/>
                 </Item>
@@ -63,4 +82,3 @@ export const LoginForm = () => {
 };
 
 const emailEditorOptions = {stylingMode: 'outlined', placeholder: 'Usuario', mode: 'text', value: ''};
-const passwordEditorOptions = {stylingMode: 'outlined', placeholder: 'Contraseña', mode: 'password', value: ''};
