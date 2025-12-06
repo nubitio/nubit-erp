@@ -27,8 +27,7 @@ readonly class BillRepository implements BillRepositoryInterface
     public function __construct(
         private SerializerInterface $serializer,
         private LoggerInterface $logger
-    )
-    {
+    ) {
     }
 
     /**

@@ -87,7 +87,27 @@ SELECT
     i.created_at AS date_comprobante,
     i.digest AS voucher_hash,
     IFNULL(i.voided, m.estado) AS voucher_status,
-    CONCAT(c.ruc,'|',i.tipo_comprobante_id,'|',i.serie,'|',i.numero,'|',i.igv,'|',i.total,'|',i.fecha,'|','0','|','0','|',IFNULL(i.digest,'')) as voucher_qr_data
+    CONCAT(
+        c.ruc,
+        '|',
+        i.tipo_comprobante_id,
+        '|',
+        i.serie,
+        '|',
+        i.numero,
+        '|',
+        i.igv,
+        '|',
+        i.total,
+        '|',
+        i.fecha,
+        '|',
+        '0',
+        '|',
+        '0',
+        '|',
+        IFNULL(i.digest, '')
+    ) as voucher_qr_data
 FROM
     movimiento m
     LEFT JOIN comprobante i ON i.movimiento_id = m.movimiento_id
@@ -98,9 +118,19 @@ FROM
     LEFT JOIN (
         SELECT
             md.movimiento_id,
-            SUM(ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * md.cantidad) AS taxed_amount,
-            SUM(ROUND((ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * m2.igv / 100) * md.cantidad, 2)) AS tax_amount,
-            SUM(ROUND(md.precio_total - md.precio_total * IFNULL(m2.descuento, 0) / 100, 2)) AS sale_amount,
+            SUM(
+                ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * md.cantidad
+            ) AS taxed_amount,
+            SUM(
+                ROUND(
+                    (ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * m2.igv / 100)
+                    * md.cantidad,
+                    2
+                )
+            ) AS tax_amount,
+            SUM(
+                ROUND(md.precio_total - md.precio_total * IFNULL(m2.descuento, 0) / 100, 2)
+            ) AS sale_amount,
             SUM(ROUND(md.precio_total * IFNULL(m2.descuento, 0) / 100, 2)) AS discount_amount
         FROM movimiento m2
         JOIN movimiento_detalle md ON md.movimiento_id = m2.movimiento_id
@@ -124,8 +154,15 @@ SELECT
     ROUND(md.precio_unitario, 2) AS price,
     ROUND(md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)), 6) AS unit_value,
     ROUND((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100))) * md.cantidad, 2) AS taxed_amount,
-    ROUND((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) * m.igv / 100) * md.cantidad, 2) AS tax_amount,
-    ROUND(md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) + ((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100))) * m.igv / 100), 2) AS unit_price,
+    ROUND(
+        (md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) * m.igv / 100) * md.cantidad,
+        2
+    ) AS tax_amount,
+    ROUND(
+        md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) +
+        ((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100))) * m.igv / 100),
+        2
+    ) AS unit_price,
     m.igv AS tax_percentage,
     ROUND(md.precio_total, 2) AS total,
     '10' AS tax_type

@@ -45,7 +45,7 @@ class MakeInvoice extends AbstractController
         $connection = $entityManager->getConnection();
         $connection->beginTransaction();
         try {
-            $voucherType = strlen((string) ($sale->getCliente()?->getRuc() ?? '')) === 11 ? '01' : '03';
+            $voucherType = strlen($sale->getCliente()?->getRuc() ?? '') === 11 ? '01' : '03';
 
             $existingInvoiceId = $connection->fetchOne(
                 'SELECT comprobante_id FROM comprobante WHERE movimiento_id = :saleId FOR UPDATE',
@@ -58,7 +58,11 @@ class MakeInvoice extends AbstractController
             }
 
             $series = $connection->fetchOne(
-                'SELECT serie FROM local_comprobante WHERE local_id = :localId AND tipo_comprobante_id = :voucherType LIMIT 1',
+                'SELECT serie
+                        FROM local_comprobante
+                        WHERE local_id = :localId
+                          AND tipo_comprobante_id = :voucherType
+                        LIMIT 1',
                 [
                     'localId' => $localId,
                     'voucherType' => $voucherType,
@@ -72,7 +76,10 @@ class MakeInvoice extends AbstractController
             }
 
             $nextNumber = $connection->fetchOne(
-                'SELECT IFNULL(MAX(CAST(numero AS SIGNED)), 0) + 1 FROM comprobante WHERE serie = :series FOR UPDATE',
+                'SELECT IFNULL(MAX(CAST(numero AS SIGNED)), 0) + 1
+                 FROM comprobante
+                 WHERE serie = :series
+                 FOR UPDATE',
                 ['series' => $series]
             );
 
