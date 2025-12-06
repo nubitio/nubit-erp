@@ -93,6 +93,7 @@ readonly class DashboardRepository
             LEFT JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             WHERE td.date >= :monthsBackDate
+              AND td.date <= :today
             GROUP BY td.year, td.month
             ORDER BY td.year, td.month
         ", $params);
@@ -124,6 +125,7 @@ readonly class DashboardRepository
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
             WHERE td.date >= :last30days
+              AND td.date <= :today
             GROUP BY td.date, pm.id, pm.name
             ORDER BY td.date
         ", $params);
