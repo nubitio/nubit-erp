@@ -1,32 +1,26 @@
-import {httpClient} from "../core/http/HttpClient";
-import {lastValueFrom} from "rxjs";
-import {Constants} from "../core/common/Constants";
+import { httpClient } from '../core/http/HttpClient';
+import { lastValueFrom } from 'rxjs';
+import { Constants } from '../core/common/Constants';
 
 const CategoryService = {
-    getAll: (loadOptions) => {
-        return lastValueFrom(httpClient.get(`${Constants.API_BASE_URL}categories`, {params: loadOptions})).then((response) => {
-            return {
-                data: response.data,
-                totalCount: Number(response.headers['x-total-count'])
-            }
-        });
-    },
+  getAll: (loadOptions) => {
+    return lastValueFrom(
+      httpClient.get(`${Constants.API_BASE_URL}categories`, { params: loadOptions }),
+    ).then((response) => {
+      return {
+        data: response.data,
+        totalCount: Number(response.headers['x-total-count']),
+      };
+    });
+  },
 
-    getOne: (id) => {
+  getOne: (id) => {},
 
-    },
+  create: (values) => {},
 
-    create: (values) => {
+  update: (id, values) => {},
 
-    },
-
-    update: (id, values) => {
-
-    },
-
-    delete: (id) => {
-
-    }
-}
+  delete: (id) => {},
+};
 
 export default CategoryService;

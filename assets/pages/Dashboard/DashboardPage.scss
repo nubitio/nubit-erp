@@ -1,6 +1,6 @@
-@use "../../variables.scss" as *;
-@use "sass:math";
-@use "sass:color";
+@use '../../variables.scss' as *;
+@use 'sass:math';
+@use 'sass:color';
 
 .view-wrapper-dashboard {
   td.dx-command-adaptive.dx-command-adaptive,
@@ -148,7 +148,8 @@
   font-size: 14px;
 }
 
-.chart-card, .list-card {
+.chart-card,
+.list-card {
   min-height: 320px;
   display: flex;
   flex-direction: column;

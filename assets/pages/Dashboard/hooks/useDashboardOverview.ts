@@ -1,9 +1,9 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {Subscription} from 'rxjs';
-import {httpClient} from '../../../core/http/HttpClient';
-import {Constants} from '../../../core/common/Constants';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Subscription } from 'rxjs';
+import { httpClient } from '../../../core/http/HttpClient';
+import { Constants } from '../../../core/common/Constants';
 import toast from '../../../core/utils/SharedUtils';
-import {DashboardData} from '../types';
+import { DashboardData } from '../types';
 
 const initialData: DashboardData = {
   summary: {
@@ -39,7 +39,7 @@ const initialData: DashboardData = {
 };
 
 const normalize = (payload: any): DashboardData => ({
-  summary: {...initialData.summary, ...(payload?.summary ?? {})},
+  summary: { ...initialData.summary, ...(payload?.summary ?? {}) },
   salesByDay: payload?.salesByDay ?? [],
   salesByMonth: payload?.salesByMonth ?? [],
   paymentMethods: payload?.paymentMethods ?? [],
@@ -62,11 +62,11 @@ export const useDashboardOverview = () => {
 
     lastSubscription.current?.unsubscribe?.();
     const subscription = httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview').subscribe({
-      next: response => {
+      next: (response) => {
         setData(normalize(response.data));
         setLoading(false);
       },
-      error: err => {
+      error: (err) => {
         toast('No se pudo cargar el dashboard', 'error');
         console.error(err);
         setError('No se pudo cargar el dashboard');
@@ -86,5 +86,5 @@ export const useDashboardOverview = () => {
     };
   }, [loadDashboard]);
 
-  return {data, loading, error, refetch: loadDashboard};
+  return { data, loading, error, refetch: loadDashboard };
 };

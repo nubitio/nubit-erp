@@ -17,7 +17,7 @@ function getCurrentTheme(): Theme {
 }
 
 function setThemeToDOM(theme: Theme): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const id = 'theme-link';
     let link = document.getElementById(id) as HTMLLinkElement | null;
 
@@ -68,14 +68,14 @@ export function useThemeContext() {
         const baseBgColor = getComputedStyle(document.body).getPropertyValue('--base-bg').trim();
         metaThemeColor.setAttribute(
           'content',
-          baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff')
+          baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff'),
         );
       }
     }
   }, [theme, isLoaded]);
 
   const switchTheme = useCallback(() => {
-    setTheme(currentTheme => toggleTheme(currentTheme));
+    setTheme((currentTheme) => toggleTheme(currentTheme));
   }, []);
 
   const isFluent = useCallback(() => {
@@ -84,7 +84,7 @@ export function useThemeContext() {
 
   return useMemo(
     () => ({ theme, switchTheme, isLoaded, isFluent }),
-    [theme, switchTheme, isLoaded, isFluent]
+    [theme, switchTheme, isLoaded, isFluent],
   );
 }
 

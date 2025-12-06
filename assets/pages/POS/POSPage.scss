@@ -1,4 +1,4 @@
-@use "tailwindcss";
+@use 'tailwindcss';
 
 .marquee-container {
   overflow: hidden;
@@ -19,5 +19,3 @@
     transform: translateX(-100%);
   }
 }
-
-

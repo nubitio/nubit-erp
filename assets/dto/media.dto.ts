@@ -1,4 +1,4 @@
 export interface MediaDto {
-    id: string;
-    path: string;
+  id: string;
+  path: string;
 }

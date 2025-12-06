@@ -1,78 +1,71 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 
-import {HashRouter as Router, useLocation} from 'react-router-dom';
+import { HashRouter as Router, useLocation } from 'react-router-dom';
 
 import LoadPanel from 'devextreme-react/load-panel';
 
-import {NavigationProvider} from './contexts/navigation';
-import {AuthProvider, useAuth} from './contexts/auth';
-import {useScreenSizeClass} from './utils/media-query';
-import {Content} from './Content';
+import { NavigationProvider } from './contexts/navigation';
+import { AuthProvider, useAuth } from './contexts/auth';
+import { useScreenSizeClass } from './utils/media-query';
+import { Content } from './Content';
 
 import esMessages from 'devextreme/localization/messages/es.json';
-import {ThemeContext, useThemeContext} from './theme/theme';
-import {loadMessages, locale} from "devextreme/localization";
-import config from "devextreme/core/config";
+import { ThemeContext, useThemeContext } from './theme/theme';
+import { loadMessages, locale } from 'devextreme/localization';
+import config from 'devextreme/core/config';
 
 import './styles.scss';
 import './theme/theme';
 import './styles/custom.scss';
-import {UnauthenticatedContent} from "./UnauthenticatedContent";
-import {FullScreenContent} from "./FullScreenContent";
+import { UnauthenticatedContent } from './UnauthenticatedContent';
+import { FullScreenContent } from './FullScreenContent';
 
 function RootApp() {
-    const {user, loading} = useAuth();
-    const isLoginForm = [
-        'login',
-        'reset-password',
-        'create-account',
-    ].includes(useLocation().pathname.substring(1));
+  const { user, loading } = useAuth();
+  const isLoginForm = ['login', 'reset-password', 'create-account'].includes(
+    useLocation().pathname.substring(1),
+  );
 
-    const isFullScreen = [
-        'pos',
-    ].includes(useLocation().pathname.substring(1));
+  const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
 
-    if (loading) {
-        return <LoadPanel visible/>;
-    }
+  if (loading) {
+    return <LoadPanel visible />;
+  }
 
+  if (user && !isLoginForm && !isFullScreen) {
+    return <Content />;
+  }
 
-    if (user && !isLoginForm && !isFullScreen) {
-        return <Content/>;
-    }
+  if (isFullScreen) {
+    return <FullScreenContent />;
+  }
 
-    if (isFullScreen) {
-        return <FullScreenContent/>;
-    }
-
-    return <UnauthenticatedContent/>;
+  return <UnauthenticatedContent />;
 }
 
 export const EfactApp = () => {
-    const screenSizeClass = useScreenSizeClass();
-    const themeContext = useThemeContext();
+  const screenSizeClass = useScreenSizeClass();
+  const themeContext = useThemeContext();
 
-    useEffect(() => {
-        loadMessages(esMessages);
-        locale('es-PE')
-        config({
-            defaultCurrency: 'PEN'
-        })
-    }, []);
+  useEffect(() => {
+    loadMessages(esMessages);
+    locale('es-PE');
+    config({
+      defaultCurrency: 'PEN',
+    });
+  }, []);
 
-    return (
-        <Router>
-            <ThemeContext.Provider value={themeContext}>
-                <AuthProvider>
-                    <NavigationProvider>
-                        <div className={`app ${screenSizeClass}`}>
-                            {
-                                themeContext.isLoaded ? <RootApp/> : ''
-                            }
-                        </div>
-                    </NavigationProvider>
-                </AuthProvider>
-            </ThemeContext.Provider>
-        </Router>
-    );
+  return (
+    <Router>
+      <ThemeContext.Provider value={themeContext}>
+        <AuthProvider>
+          <NavigationProvider>
+            <div className={`app ${screenSizeClass}`}>
+              {themeContext.isLoaded ? <RootApp /> : ''}
+            </div>
+          </NavigationProvider>
+        </AuthProvider>
+      </ThemeContext.Provider>
+    </Router>
+  );
 };

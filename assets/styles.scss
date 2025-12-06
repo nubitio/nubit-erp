@@ -1,4 +1,4 @@
-@use "variables" as *;
+@use 'variables' as *;
 @import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
 
 .view-wrapper-scroll > .dx-scrollable-wrapper > .dx-scrollable-container > .dx-scrollable-content {
@@ -109,7 +109,6 @@ body {
   line-height: 1;
 }
 
-
 .embedded {
   .layout-header,
   .dx-swatch-additional,
@@ -128,7 +127,9 @@ body {
 }
 
 .dx-form.plain-styled-form {
-  &.dx-form > .dx-layout-manager.dx-layout-manager-one-col .dx-field-item.dx-last-row:not(.dx-last-col) {
+  &.dx-form
+    > .dx-layout-manager.dx-layout-manager-one-col
+    .dx-field-item.dx-last-row:not(.dx-last-col) {
     padding-bottom: 0;
   }
 
@@ -262,12 +263,12 @@ body {
 }
 
 .dx-theme-fluent-typography {
-  font-family: "Ubuntu", sans-serif;
+  font-family: 'Ubuntu', sans-serif;
 }
 
 .dx-theme-fluent {
   .dx-widget {
-    font-family: "Ubuntu", sans-serif;
+    font-family: 'Ubuntu', sans-serif;
   }
 
   .dx-drawer-panel-content {

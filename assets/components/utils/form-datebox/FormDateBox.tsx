@@ -3,13 +3,7 @@ import React from 'react';
 import DateBox from 'devextreme-react/date-box';
 import Validator, { RequiredRule } from 'devextreme-react/validator';
 
-export const FormDateBox = ({
-  value,
-  readOnly,
-  name,
-  label,
-  onValueChange
-}) => {
+export const FormDateBox = ({ value, readOnly, name, label, onValueChange }) => {
   return (
     <DateBox
       value={value}
@@ -17,9 +11,9 @@ export const FormDateBox = ({
       name={name}
       label={label}
       inputAttr={{ class: 'form-editor-input' }}
-      stylingMode='filled'
-      placeholder='MM/dd/y'
-      displayFormat='MM/dd/y'
+      stylingMode="filled"
+      placeholder="MM/dd/y"
+      displayFormat="MM/dd/y"
       onValueChange={onValueChange}
     >
       <Validator>
