@@ -4,6 +4,25 @@
   .form-text {
     color: var(--base-text-color-alpha);
   }
+
+  // Password toggle button styling
+  .dx-texteditor-buttons-container {
+    .dx-button {
+      &.dx-button-mode-text {
+        opacity: 0.6;
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 1;
+        }
+
+        .dx-icon {
+          font-size: 18px;
+          color: var(--base-text-color);
+        }
+      }
+    }
+  }
 }
 
 .reset-link {
