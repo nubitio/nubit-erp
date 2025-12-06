@@ -26,38 +26,10 @@ class DashboardController extends AbstractController
 
         $localId = $user->branchId;
 
-        switch ($type) {
-            case 'overview':
-                $data = $this->repository->getOverview($localId);
-                break;
-            case 'venta-dia':
-                $data = $this->repository->getDailySales($localId);
-                // Convert 'venta' to float for each item
-                foreach ($data as $key => $value) {
-                    $data[$key]['venta'] = (float)$value['venta'];
-                }
-                break;
-            case 'venta-semana':
-                $data = $this->repository->getWeeklySales($localId);
-                // Convert 'venta' to float for each item
-                foreach ($data as $key => $value) {
-                    $data[$key]['venta'] = (float)$value['venta'];
-                }
-                break;
-            case 'venta-mes':
-                $data = $this->repository->getMonthlySales($localId);
-                // Convert 'venta' to float for each item
-                foreach ($data as $key => $value) {
-                    $data[$key]['venta'] = (float)$value['venta'];
-                }
-                break;
-            case 'monthly-invoicing':
-                $data = $this->repository->getMonthlyInvoicing();
-                break;
-            default:
-                $data = [];
+        if ($type == 'overview') {
+            $data = $this->repository->getOverview($localId);
         }
 
-        return $this->json($data);
+        return $this->json($data ?? []);
     }
 }

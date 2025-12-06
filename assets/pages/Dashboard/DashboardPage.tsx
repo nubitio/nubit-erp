@@ -1,5 +1,5 @@
 import './DashboardPage.scss';
-import {useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Chart} from 'devextreme-react';
 import {ArgumentAxis, Label, Legend, Series, Size, Tooltip, ValueAxis} from 'devextreme-react/chart';
 import {
@@ -17,10 +17,37 @@ import ScrollView from "devextreme-react/scroll-view";
 import {StatCard} from '../../components/dashboard/StatCard';
 import {currencyFormatter, decimalFormatter} from '../../components/dashboard/formatters';
 import {useDashboardOverview} from './hooks/useDashboardOverview';
+import {CashRegisterStatus} from './types';
+import {httpClient} from '../../core/http/HttpClient';
+import {Constants} from '../../core/common/Constants';
+import toast from '../../core/utils/SharedUtils';
 
 export const DashboardPage = () => {
   const {data, loading, error, refetch} = useDashboardOverview();
+  const [cashRegisters, setCashRegisters] = useState<CashRegisterStatus[]>([]);
+  const [cashboxLoading, setCashboxLoading] = useState(false);
   const summary = useMemo(() => data.summary, [data]);
+  const paymentTrendMethods = data.paymentMethodTrend.methods ?? [];
+  const paymentTrendPoints = data.paymentMethodTrend.points ?? [];
+
+  const loadCashRegisters = useCallback(() => {
+    setCashboxLoading(true);
+    httpClient.get<CashRegisterStatus[]>(Constants.API_BASE_URL + 'cash-registers/dashboard').subscribe({
+      next: response => {
+        setCashRegisters(response.data ?? []);
+        setCashboxLoading(false);
+      },
+      error: err => {
+        console.error(err);
+        toast('No se pudo cargar las cajas', 'error');
+        setCashboxLoading(false);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    loadCashRegisters();
+  }, [loadCashRegisters]);
 
   return (
     <ScrollView className="view-wrapper-scroll">
@@ -37,12 +64,30 @@ export const DashboardPage = () => {
             deltaLabel="vs ayer"
           />
           <StatCard
+            title="Venta semanal"
+            value={currencyFormatter(summary.salesWeek)}
+            description="Últimos 7 días acumulados"
+            accent="purple"
+          />
+          <StatCard
             title="Venta del mes"
             value={currencyFormatter(summary.salesThisMonth)}
             description={`${decimalFormatter(summary.invoicesThisMonth)} comprobantes emitidos`}
             accent="green"
             delta={summary.monthGrowth}
             deltaLabel="vs mes anterior"
+          />
+          <StatCard
+            title="Venta neta mes"
+            value={currencyFormatter(summary.netSalesThisMonth)}
+            description={`Bruta: ${currencyFormatter(summary.salesThisMonth)}`}
+            accent="gray"
+          />
+          <StatCard
+            title="Reembolsos (mes)"
+            value={currencyFormatter(summary.refundsThisMonth)}
+            description={`Hoy: ${currencyFormatter(summary.refundsToday)}`}
+            accent="rose"
           />
           <StatCard
             title="Ticket promedio"
@@ -55,12 +100,6 @@ export const DashboardPage = () => {
             value={decimalFormatter(summary.customersThisMonth)}
             description={`${decimalFormatter(summary.customersWeek)} últimos 7 días`}
             accent="rose"
-          />
-          <StatCard
-            title="Venta semanal"
-            value={currencyFormatter(summary.salesWeek)}
-            description="Últimos 7 días acumulados"
-            accent="purple"
           />
         </div>
 
@@ -92,16 +131,20 @@ export const DashboardPage = () => {
             </Chart>
           </CardAnalytics>
 
-          <CardAnalytics title="Medios de pago (últimos 30 días)" contentClass="chart-card"
+          <CardAnalytics title="Medios de pago (30 días, tendencia)" contentClass="chart-card"
                          menuVisible={false}>
-            <PieChart dataSource={data.paymentMethods} id="payment-methods" palette="Pastel"
-                      resolveLabelOverlapping="shift">
-              <PieSeries argumentField="method" valueField="total"/>
-              <PieLegend visible horizontalAlignment="center" verticalAlignment="bottom"/>
-              <PieTooltip enabled
-                          customizeTooltip={arg => ({text: `${arg.argumentText}: ${currencyFormatter(arg.value)}`})}/>
-              <PieSize height={280}/>
-            </PieChart>
+            <Chart dataSource={paymentTrendPoints} id="payment-methods-trend">
+              <Size height={280}/>
+              <ArgumentAxis discreteAxisDivisionMode="betweenLabels"/>
+              {paymentTrendMethods.map(method => (
+                <Series key={method} valueField={method} argumentField="label" type="stackedbar" name={method}/>
+              ))}
+              <ValueAxis>
+                <Label customizeText={arg => currencyFormatter(Number(arg.value))}/>
+              </ValueAxis>
+              <Tooltip enabled customizeTooltip={arg => ({text: `${arg.seriesName}: ${currencyFormatter(arg.value)}`})}/>
+              <Legend visible horizontalAlignment="center" verticalAlignment="bottom"/>
+            </Chart>
           </CardAnalytics>
 
           <CardAnalytics title="Top productos (últimos 30 días)" contentClass="list-card" menuVisible={false}>
@@ -162,6 +205,23 @@ export const DashboardPage = () => {
                 </li>
               ))}
               {data.lowStockProducts.length === 0 && <div className="empty">✓ Stock en niveles óptimos</div>}
+            </ul>
+          </CardAnalytics>
+
+          <CardAnalytics title="Estado de cajas" contentClass="list-card" menuVisible={false} isLoading={cashboxLoading}>
+            <ul className="ranked-list">
+              {cashRegisters.map(item => (
+                <li key={item.id}>
+                  <div className="ranked-list__title">{item.name}</div>
+                  <div className="ranked-list__meta">
+                    <span style={{color: item.status === 'open' ? '#15803d' : 'var(--texteditor-label-color)'}}>
+                      {item.status === 'open' ? 'Abierta' : 'Cerrada'}{item.cashier ? ` · ${item.cashier}` : ''}
+                    </span>
+                    <span>{currencyFormatter(item.balance ?? 0)}</span>
+                  </div>
+                </li>
+              ))}
+              {cashRegisters.length === 0 && !cashboxLoading && <div className="empty">Sin cajas registradas</div>}
             </ul>
           </CardAnalytics>
         </div>

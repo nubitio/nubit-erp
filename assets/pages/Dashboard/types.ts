@@ -12,11 +12,16 @@ export type SummaryStats = {
   avgTicketToday: number;
   monthGrowth: number | null;
   dailyGrowth: number | null;
+  refundsToday: number;
+  refundsThisMonth: number;
+  netSalesToday: number;
+  netSalesThisMonth: number;
 };
 
 export type SalesByDay = { day: number; label: string; total: number };
 export type SalesByMonth = { label: string; total: number };
 export type PaymentMethodShare = { method: string; total: number };
+export type PaymentMethodTrendPoint = Record<string, string | number>;
 export type TopProduct = { product: string; quantity: number; total: number };
 export type TopCustomer = { customer: string; invoices: number; total: number };
 export type VoucherTypeShare = { type: string; count: number; total: number };
@@ -33,8 +38,23 @@ export type DashboardData = {
   salesByDay: SalesByDay[];
   salesByMonth: SalesByMonth[];
   paymentMethods: PaymentMethodShare[];
+  paymentMethodTrend: {
+    methods: string[];
+    points: PaymentMethodTrendPoint[];
+  };
   topProducts: TopProduct[];
   topCustomers: TopCustomer[];
   voucherTypes: VoucherTypeShare[];
   lowStockProducts: LowStockProduct[];
+};
+
+export type CashRegisterStatus = {
+  id: number;
+  name: string;
+  cashShiftId: number | null;
+  openedAt: string | null;
+  closedAt: string | null;
+  cashier: string | null;
+  balance: number | null;
+  status: 'open' | 'closed' | string;
 };

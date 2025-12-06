@@ -18,7 +18,7 @@
   grid-template-columns: repeat(2, calc(50% - 10px));
 
   &.metrics {
-    grid-template-columns: repeat(4, calc(25% - 15px));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   &.compact {
@@ -46,7 +46,7 @@
     grid-template-columns: repeat(3, calc(33.33% - 14px));
   }
   .cards.metrics {
-    grid-template-columns: repeat(3, calc(33.33% - 14px));
+    grid-template-columns: repeat(4, calc(25% - 12px));
   }
 }
 
