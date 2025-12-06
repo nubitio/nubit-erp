@@ -44,11 +44,17 @@ readonly class DashboardRepository
                 SUM(CASE WHEN td.date = :today THEN i.total ELSE 0 END) AS sales_today,
                 SUM(CASE WHEN td.date = :yesterday THEN i.total ELSE 0 END) AS sales_yesterday,
                 SUM(CASE WHEN td.date >= :last7days THEN i.total ELSE 0 END) AS sales_week,
-                SUM(CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.total ELSE 0 END) AS sales_month,
-                SUM(CASE WHEN td.year = :previousYear AND td.month = :previousMonth THEN i.total ELSE 0 END) AS sales_previous_month,
+                SUM(
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.total ELSE 0 END
+                ) AS sales_month,
+                SUM(
+                    CASE WHEN td.year = :previousYear AND td.month = :previousMonth THEN i.total ELSE 0 END
+                ) AS sales_previous_month,
                 SUM(CASE WHEN td.date = :today THEN 1 ELSE 0 END) AS invoices_today,
                 SUM(CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN 1 ELSE 0 END) AS invoices_month,
-                COUNT(DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.cliente_id END) AS customers_month,
+                COUNT(
+                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.cliente_id END
+                ) AS customers_month,
                 COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN i.cliente_id END) AS customers_week
             FROM comprobante i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id
@@ -103,6 +109,23 @@ readonly class DashboardRepository
             WHERE td.date >= :last30days
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
+        ", $params);
+
+        $paymentMethodTrendRaw = $this->connection->fetchAllAssociative("
+            SELECT
+                td.date AS date_value,
+                DATE_FORMAT(td.date, '%d %b') AS label,
+                COALESCE(pm.name, 'Sin método') AS method,
+                COALESCE(SUM(i.total), 0) AS total
+            FROM time_dimension td
+            LEFT JOIN comprobante i
+                ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+            LEFT JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
+            LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
+            LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
+            WHERE td.date >= :last30days
+            GROUP BY td.date, pm.id, pm.name
+            ORDER BY td.date
         ", $params);
 
         $topProducts = $this->connection->fetchAllAssociative("
@@ -168,6 +191,18 @@ readonly class DashboardRepository
             LIMIT 10
         ", $params);
 
+        $refunds = $this->connection->fetchAssociative("
+            SELECT
+                SUM(CASE WHEN td.date = :today THEN n.total ELSE 0 END) AS refunds_today,
+                SUM(
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN n.total ELSE 0 END
+                ) AS refunds_month
+            FROM nota n
+                INNER JOIN movimiento m ON n.movimiento_id = m.movimiento_id
+                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.fecha, 'UTC', 'America/Lima'))
+        ", $params) ?: [];
+
         $summaryData = [
             'salesToday' => (float) ($summary['sales_today'] ?? 0),
             'salesYesterday' => (float) ($summary['sales_yesterday'] ?? 0),
@@ -178,6 +213,8 @@ readonly class DashboardRepository
             'invoicesThisMonth' => (int) ($summary['invoices_month'] ?? 0),
             'customersThisMonth' => (int) ($summary['customers_month'] ?? 0),
             'customersWeek' => (int) ($summary['customers_week'] ?? 0),
+            'refundsToday' => (float) ($refunds['refunds_today'] ?? 0),
+            'refundsThisMonth' => (float) ($refunds['refunds_month'] ?? 0),
         ];
 
         $summaryData['avgTicket'] = $summaryData['invoicesThisMonth'] > 0
@@ -195,6 +232,23 @@ readonly class DashboardRepository
         $summaryData['dailyGrowth'] = $summaryData['salesYesterday'] > 0
             ? (($summaryData['salesToday'] - $summaryData['salesYesterday']) / $summaryData['salesYesterday']) * 100
             : null;
+
+        $summaryData['netSalesToday'] = max($summaryData['salesToday'] - $summaryData['refundsToday'], 0);
+        $summaryData['netSalesThisMonth'] = max($summaryData['salesThisMonth'] - $summaryData['refundsThisMonth'], 0);
+
+        $paymentTrendPivot = [];
+        $methods = [];
+        foreach ($paymentMethodTrendRaw as $row) {
+            $methods[$row['method']] = true;
+            $key = $row['label'];
+            if (!isset($paymentTrendPivot[$key])) {
+                $paymentTrendPivot[$key] = [
+                    'label' => $row['label'],
+                    'date' => $row['date_value'],
+                ];
+            }
+            $paymentTrendPivot[$key][$row['method']] = (float) $row['total'];
+        }
 
         return [
             'summary' => $summaryData,
@@ -217,6 +271,10 @@ readonly class DashboardRepository
                     'total' => (float) $row['total'],
                 ];
             }, $paymentMethodShare),
+            'paymentMethodTrend' => [
+                'methods' => array_values(array_keys($methods)),
+                'points' => array_values($paymentTrendPivot),
+            ],
             'topProducts' => array_map(static function (array $row): array {
                 return [
                     'product' => $row['product'],
@@ -251,88 +309,5 @@ readonly class DashboardRepository
                 ];
             }, $lowStockProducts),
         ];
-    }
-
-    public function getDailySales(string $localId): array
-    {
-        $sql = "
-        SELECT
-            td.day AS dia,
-            SUM(IFNULL(v.p_venta, 0)) AS venta
-        FROM time_dimension td
-        LEFT JOIN vw_descuento v ON td.date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
-            AND v.estado = 1
-            AND v.local_id = ?
-            AND td.month = MONTH(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'))
-            AND td.year = YEAR(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'))
-        GROUP BY td.day
-        ORDER BY td.day
-        ";
-
-        return $this->connection->fetchAllAssociative($sql, [$localId]);
-    }
-
-    public function getWeeklySales(string $localId): array
-    {
-        $sql = "
-        SELECT
-            td.day_name AS dia,
-            SUM(IFNULL(v.p_venta, 0)) AS venta
-        FROM time_dimension td
-        LEFT JOIN vw_descuento v ON td.date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
-            AND v.estado = 1
-            AND v.local_id = ?
-        WHERE YEARWEEK( td.date ) = YEARWEEK(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima' ) )
-        GROUP BY td.date
-        ORDER BY td.date
-        ";
-
-        return $this->connection->fetchAllAssociative($sql, [$localId]);
-    }
-
-    public function getMonthlySales(string $localId): array
-    {
-        $sql = "
-        SELECT
-            td.month_name AS mes,
-            SUM(IFNULL(v.p_venta, 0)) AS venta
-        FROM
-            time_dimension td
-            LEFT JOIN vw_descuento v ON td.date = DATE(CONVERT_TZ(v.fecha, 'UTC', 'America/Lima'))
-            AND v.estado = 1
-            AND v.local_id = ?
-        WHERE
-            td.date > DATE_SUB(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'), INTERVAL 11 MONTH)
-        GROUP BY
-            td.year,
-            td.month
-        ORDER BY
-            td.year,
-            td.month
-        ";
-
-        return $this->connection->fetchAllAssociative($sql, [$localId]);
-    }
-
-    public function getMonthlyInvoicing(): array
-    {
-        $sql = "
-        SELECT
-            td.month_name AS `month`,
-            COUNT(i.comprobante_id) AS total
-        FROM
-            time_dimension td
-            LEFT JOIN comprobante i ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
-        WHERE
-            td.date > DATE_SUB(CONVERT_TZ(CURDATE(), 'UTC', 'America/Lima'), INTERVAL 11 MONTH)
-        GROUP BY
-            td.year,
-            td.month
-        ORDER BY
-            td.year,
-            td.month
-        ";
-
-        return $this->connection->fetchAllAssociative($sql);
     }
 }
