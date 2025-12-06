@@ -18,6 +18,8 @@ use App\Entity\User;
 use App\Entity\VoucherSeries;
 use App\Entity\VoucherType;
 use App\Entity\Warehouse;
+use App\Service\UbigeoImportService;
+use App\Service\TimeDimensionSeeder;
 use App\Repository\BranchRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
@@ -53,6 +55,8 @@ readonly class InitialSetupService
         private CustomerRepository $customerRepository,
         private Connection $connection,
         private SettingsService $settingsService,
+        private UbigeoImportService $ubigeoImportService,
+        private TimeDimensionSeeder $timeDimensionSeeder,
     ) {
     }
 
@@ -117,6 +121,8 @@ readonly class InitialSetupService
 
             $this->seedSettings();
             $this->seedReferenceData();
+            $this->seedUbigeoFromResource();
+            $this->seedTimeDimension();
             $this->ensureVoucherSeriesForBranch($branch);
             $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
@@ -191,13 +197,16 @@ readonly class InitialSetupService
     {
         $this->getOrCreateUnitOfMeasure('NIU', 'Unidad', 1, 1.0, true);
 
-        // Logistic operations (tipo_id: 1 venta, 2 compra, 3 entrada, 4 salida)
+        // Logistic operations (tipo_id: 1 entrada, 2 salida)
         $operations = [
             ['Venta', 1],
             ['Compra', 2],
-            ['Ingreso', 3],
-            ['Salida', 4],
-            ['Transferencia', 5],
+            ['Devolución de compra', 1],
+            ['Devolución de venta', 2],
+            ['Ajuste de inventario entrada', 1],
+            ['Ajuste de inventario salida', 2],
+            ['Transferencia entrada', 1],
+            ['Transferencia salida', 2],
         ];
         foreach ($operations as [$name, $type]) {
             $this->getOrCreateLogisticOperation($name, $type);
@@ -328,6 +337,31 @@ readonly class InitialSetupService
 
         $this->entityManager->persist($customer);
         $this->entityManager->flush();
+    }
+
+    private function seedUbigeoFromResource(): void
+    {
+        $file = realpath(__DIR__ . '/../Resources/ubugeo.csv');
+        if (!$file || !is_readable($file)) {
+            return;
+        }
+
+        // Incluye cabecera, por eso skipHeader=true.
+        $this->ubigeoImportService->import(
+            filePath: $file,
+            delimiter: ',',
+            skipHeader: true,
+            batchSize: 500,
+        );
+    }
+
+    private function seedTimeDimension(): void
+    {
+        $this->timeDimensionSeeder->seed(
+            startDate: new \DateTimeImmutable('2020-01-01'),
+            endDate: new \DateTimeImmutable('2040-01-01'),
+            batchSize: 500,
+        );
     }
 
     private function ensureVoucherSeriesForBranch(Branch $branch): void
