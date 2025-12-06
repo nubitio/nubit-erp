@@ -1,5 +1,8 @@
 {
   "name": "johangm90/efact",
+  "type": "project",
+  "description": "Efact App",
+  "license": "proprietary",
   "authors": [
     {
       "name": "Johan Guerreros",

@@ -1,0 +1,19 @@
+# Dependencies
+node_modules
+vendor
+
+# Build outputs
+public/build
+var
+dist
+
+# Generated files
+*.min.js
+*.min.css
+
+# Markdown files
+*.md
+
+# Other
+.git
+.DS_Store
