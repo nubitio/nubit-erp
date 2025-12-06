@@ -34,7 +34,6 @@ readonly class DashboardRepository
             'currentMonth' => $currentMonth,
             'previousYear' => $previousYear,
             'previousMonth' => $previousMonth,
-            'last90days' => $today->modify('-90 days')->format('Y-m-d'),
             'last30days' => $today->modify('-30 days')->format('Y-m-d'),
             'last7days' => $lastWeekStart->format('Y-m-d'),
             'monthsBackDate' => $today->modify('-11 months')->format('Y-m-d'),
@@ -101,7 +100,7 @@ readonly class DashboardRepository
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
                 LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
-            WHERE td.date >= :last90days
+            WHERE td.date >= :last30days
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
         ", $params);
@@ -133,7 +132,7 @@ readonly class DashboardRepository
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
                 LEFT JOIN cliente c ON i.cliente_id = c.ruc
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
-            WHERE td.date >= :last90days
+            WHERE td.date >= :last30days
             GROUP BY c.ruc, c.razon_social
             ORDER BY total DESC
             LIMIT 5
@@ -164,7 +163,6 @@ readonly class DashboardRepository
                 INNER JOIN producto p ON ps.product_id = p.producto_id
                 INNER JOIN almacen a ON ps.warehouse_id = a.almacen_id
             WHERE a.local_id = :branchId
-              AND ps.stock > 0
               AND ps.stock <= COALESCE(NULLIF(ps.min_stock, 0), 5)
             ORDER BY (ps.stock / COALESCE(NULLIF(ps.min_stock, 0), 5)) ASC
             LIMIT 10
@@ -241,14 +239,15 @@ readonly class DashboardRepository
                 ];
             }, $voucherTypeStats),
             'lowStockProducts' => array_map(static function (array $row): array {
+                $fallbackMin = $row['min_stock'] > 0 ? $row['min_stock'] : 5;
                 return [
                     'product' => $row['product'],
                     'currentStock' => (float) $row['current_stock'],
                     'minStock' => (float) $row['min_stock'],
                     'avgPrice' => (float) $row['avg_price'],
-                    'stockPercentage' => $row['min_stock'] > 0
-                        ? round(($row['current_stock'] / $row['min_stock']) * 100, 1)
-                        : 100,
+                    'stockPercentage' => $fallbackMin > 0
+                        ? round(($row['current_stock'] / $fallbackMin) * 100, 1)
+                        : 0,
                 ];
             }, $lowStockProducts),
         ];
