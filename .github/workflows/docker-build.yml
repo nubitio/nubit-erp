@@ -48,7 +48,8 @@ jobs:
             type=semver,pattern={{major}}
             type=raw,value=${{ inputs.environment }}
             type=raw,value=${{ inputs.image_tag }},enable=${{ inputs.image_tag != '' }}
-            type=sha,prefix={{branch}}-
+            # avoid empty prefix producing invalid tags when ref is a tag/detached
+            type=sha,prefix={{refname}}-
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
