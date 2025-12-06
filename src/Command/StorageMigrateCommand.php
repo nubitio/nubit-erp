@@ -3,8 +3,7 @@
 namespace App\Command;
 
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +18,7 @@ class StorageMigrateCommand extends Command
 {
     public function __construct(
         private readonly FileManager $fileManager,
-        private readonly SettingsService $settingsService,
+        private readonly CompanyContext $companyContext,
     ) {
         parent::__construct();
     }
@@ -37,7 +36,7 @@ class StorageMigrateCommand extends Command
         try {
             $io->title('Migrando archivos de comprobantes');
             $currentPath = dirname(__DIR__, 4) . '/public/' . $_ENV['EFACT_DIR'];
-            $newPath = $this->settingsService->get(Constants::COMPANY_ID);
+            $newPath = $this->companyContext->getId();
             $files = scandir($currentPath);
 
             if (!$files) {

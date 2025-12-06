@@ -5,7 +5,7 @@ namespace App\Invoice\Domain;
 use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
@@ -28,6 +28,7 @@ readonly class InvoiceEmailUseCase
         private BillPdfUseCase $billPdfUseCase,
         private FileManager $fileManager,
         private SettingsService $settings,
+        private CompanyContext $companyContext,
     ) {
     }
 
@@ -63,11 +64,12 @@ readonly class InvoiceEmailUseCase
         );
 
         $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $voucher->company_id . '-' . $voucher->voucher_type . '-' . $docName;
-        $companyName = $this->settings->get('company_name') ?? $voucher->company_name;
+        $companyId = $this->companyContext->getId();
+        $docFullName = $companyId . '-' . $voucher->voucher_type . '-' . $docName;
+        $companyName = $this->companyContext->getName();
 
         $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
-        $xmlPath = $this->settings->get(Constants::COMPANY_ID) . '/' . $docFullName . '.xml';
+        $xmlPath = $companyId . '/' . $docFullName . '.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
         $pdfResponse = $this->billPdfUseCase->__invoke($saleId);
         $pdfContent = $pdfResponse->file;

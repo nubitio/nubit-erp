@@ -4,8 +4,7 @@ namespace App\Invoice\Domain;
 
 use App\Billing\Domain\BillConsultUseCase;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -18,7 +17,7 @@ readonly class InvoiceConsultUseCase
         private InvoiceRepository $invoiceRepository,
         private BillConsultUseCase $billConsultUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -40,11 +39,10 @@ readonly class InvoiceConsultUseCase
                 $invoice->setSunatStatus($consultResponse->getCdrResponse()->getCode());
                 $invoice->setSunatMessage($consultResponse->getCdrResponse()->getDescription());
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
-                $name = $this->settings->get(
-                    Constants::COMPANY_ID
-                ) . $invoice->getVoucherTypeId() . $consultResponse->getCdrResponse()->getId() . '.zip';
+                $companyId = $this->companyContext->getId();
+                $name = $companyId . $invoice->getVoucherTypeId() . $consultResponse->getCdrResponse()->getId() . '.zip';
                 $this->fileManager->write(
-                    $this->settings->get(Constants::COMPANY_ID) . '/R-' . $name . '.zip',
+                    $companyId . '/R-' . $name . '.zip',
                     $cdr
                 );
             } else {

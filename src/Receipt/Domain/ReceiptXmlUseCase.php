@@ -5,8 +5,7 @@ namespace App\Receipt\Domain;
 use App\Billing\Domain\FileResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Repository\CreditNoteRepository;
 use App\Repository\InvoiceRepository;
 use League\Flysystem\FilesystemException;
@@ -17,7 +16,7 @@ readonly class ReceiptXmlUseCase
     public function __construct(
         private InvoiceRepository $invoiceRepository,
         private CreditNoteRepository $creditNoteRepository,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
         private FileManager $fileManager,
     ) {
     }
@@ -42,7 +41,7 @@ readonly class ReceiptXmlUseCase
     public function getXmlForInvoice(string $id): FileResponse
     {
         $voucher = $this->invoiceRepository->getVoucher($id);
-        $companyId = $this->settings->get(Constants::COMPANY_ID);
+        $companyId = $this->companyContext->getId();
 
         $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
         $docFullName = $companyId . '-' . $voucher->voucher_type . '-' . $docName;
@@ -60,7 +59,7 @@ readonly class ReceiptXmlUseCase
     public function getXmlForNote(string $id): FileResponse
     {
         $note = $this->creditNoteRepository->find($id);
-        $companyId = $this->settings->get(Constants::COMPANY_ID);
+        $companyId = $this->companyContext->getId();
 
         $docName = $note->getSerie() . '-' . $note->getcorrelativo();
         $docFullName = $companyId . '-' . $note->getTipoId() . '-' . $docName;

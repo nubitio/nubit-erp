@@ -41,7 +41,7 @@ class Invoice
     )]
     private ?Sale $sale = null;
 
-    #[ORM\Column(name: 'raw_document_id', type: 'integer')]
+    #[ORM\Column(name: 'raw_document_id', type: 'integer', nullable: true)]
     private ?int $rawDocumentId = null;
 
     #[Groups(['invoice:read'])]
@@ -102,31 +102,31 @@ class Invoice
     private ?int $voided = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'digest', type: 'string')]
+    #[ORM\Column(name: 'digest', type: 'string', nullable: true, options: ['default' => null])]
     private ?string $digest = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'ticket_baja', type: 'string')]
+    #[ORM\Column(name: 'ticket_baja', type: 'string', nullable: true, options: ['default' => null])]
     private ?string $voidTicket = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'correlativo_baja', type: 'string')]
+    #[ORM\Column(name: 'correlativo_baja', type: 'string', nullable: true, options: ['default' => null])]
     private ?string $voidCorrelation = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'envio_sunat', type: 'string')]
+    #[ORM\Column(name: 'envio_sunat', type: 'string', nullable: true, options: ['default' => null])]
     private ?string $sunatStatus = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'mensaje_sunat', type: 'text')]
+    #[ORM\Column(name: 'mensaje_sunat', type: 'text', nullable: true, options: ['default' => null])]
     private ?string $sunatMessage = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'created_at', type: 'datetime')]
+    #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'updated_at', type: 'datetime')]
+    #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true, options: ['default' => null])]
     private ?\DateTimeInterface $updatedAt = null;
 
     public function getId(): ?string

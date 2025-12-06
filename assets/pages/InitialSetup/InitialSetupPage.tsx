@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
+import {Stepper} from "devextreme-react/stepper";
+import Button from "devextreme-react/button";
 import LoadIndicator from "devextreme-react/load-indicator";
-import notify from "devextreme/ui/notify";
+import Form, {FormRef, GroupItem, Item, PatternRule, RequiredRule, StringLengthRule,} from "devextreme-react/form";
 
 import "./InitialSetupPage.scss";
-import {setupService, SetupPayload, SetupStatus} from "../../service/setup.service";
+import {SetupPayload, setupService, SetupStatus} from "../../service/setup.service";
 import {useScreenSizeClass} from "../../utils/media-query";
 
 const steps = [
@@ -29,6 +31,7 @@ const defaultFormData: SetupPayload = {
 export const InitialSetupPage = () => {
     const navigate = useNavigate();
     const screenSizeClass = useScreenSizeClass();
+    const formRef = useRef<FormRef | null>(null);
 
     const [formData, setFormData] = useState<SetupPayload>(defaultFormData);
     const [status, setStatus] = useState<SetupStatus | null>(null);
@@ -53,52 +56,25 @@ export const InitialSetupPage = () => {
         return () => subscription.unsubscribe();
     }, [navigate]);
 
-    const updateField = (field: keyof SetupPayload) => (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setFormData((prev) => ({...prev, [field]: value}));
+    const handleFieldChanged = (e: any) => {
+        setFormData((prev) => ({...prev, [e.dataField]: e.value ?? ''}));
     };
 
-    const validateStep = (currentStep: typeof steps[number]['id']): boolean => {
-        const errors: string[] = [];
+    const validateStep = (): boolean => {
+        const result = formRef.current?.instance().validate();
+        return result?.isValid ?? true;
+    };
 
-        if (currentStep === 'admin') {
-            if (!formData.adminUsername.trim()) {
-                errors.push('Usuario administrador es obligatorio.');
-            }
-            if (formData.adminPassword.trim().length < 6) {
-                errors.push('La contraseña debe tener al menos 6 caracteres.');
-            }
+    const changeStep = (index: number) => {
+        if (index === stepIndex) return;
+        if (index > stepIndex && !validateStep()) {
+            return;
         }
-
-        if (currentStep === 'company') {
-            if (!/^\d{11}$/.test(formData.companyRuc.trim())) {
-                errors.push('El RUC debe tener 11 dígitos.');
-            }
-            if (!formData.companyBusinessName.trim()) {
-                errors.push('La razón social es obligatoria.');
-            }
-            if (!formData.companyFiscalAddress.trim()) {
-                errors.push('El domicilio fiscal es obligatorio.');
-            }
-        }
-
-        if (currentStep === 'branch') {
-            if (!formData.branchName.trim()) {
-                errors.push('El nombre de la sucursal es obligatorio.');
-            }
-        }
-
-        if (errors.length) {
-            notify(errors.join('\n'), 'error', 3500);
-            return false;
-        }
-
-        return true;
+        setStepIndex(index);
     };
 
     const goNext = () => {
-        const currentStep = steps[stepIndex].id;
-        if (!validateStep(currentStep)) {
+        if (!validateStep()) {
             return;
         }
         if (stepIndex < steps.length - 1) {
@@ -119,13 +95,12 @@ export const InitialSetupPage = () => {
         setupService.complete(formData).subscribe({
             next: (response) => {
                 setStatus(response.data);
-                notify('Configuración inicial completada', 'success', 3000);
                 setSubmitting(false);
                 navigate('/login');
             },
             error: (err) => {
                 const message = err?.response?.data?.detail || 'No se pudo completar la configuración.';
-                notify(message, 'error', 4000);
+                console.error(message);
                 setSubmitting(false);
             },
         });
@@ -142,162 +117,102 @@ export const InitialSetupPage = () => {
         );
     }
 
-    const currentStep = steps[stepIndex].id;
-
     return (
         <div className={`initial-setup-page ${screenSizeClass}`}>
             <div className="setup-shell">
                 <header className="setup-header">
                     <div>
                         <p className="eyebrow">Asistente de primer uso</p>
-                        <h1>{steps[stepIndex].title}</h1>
-                        <p className="subtitle">{steps[stepIndex].description}</p>
                     </div>
                 </header>
 
-                <div className="stepper">
-                    {steps.map((step, index) => {
-                        const isActive = index === stepIndex;
-                        const isDone = index < stepIndex;
-                        return (
-                            <div key={step.id} className={`step ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}>
-                                <div className="step-marker">
-                                    {isDone ? 'OK' : index + 1}
-                                </div>
-                                <div className="step-text">
-                                    <div className="step-title">{step.title}</div>
-                                    <div className="step-desc">{step.description}</div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                <Stepper
+                    className="setup-stepper"
+                    items={steps.map((step, index) => ({
+                        id: step.id,
+                        text: index + 1,
+                        label: step.title,
+                        icon: index < stepIndex ? 'check' : undefined,
+                    }))}
+                    selectedIndex={stepIndex}
+                    onSelectedIndexChange={changeStep}
+                />
 
                 <div className="setup-card">
-                    {currentStep === 'admin' && (
-                        <div className="fields-grid two-columns">
-                            <Field
-                                label="Usuario administrador"
-                                placeholder="Ej. admin"
-                                value={formData.adminUsername}
-                                onChange={updateField('adminUsername')}
-                                autoFocus
-                            />
-                            <Field
-                                label="Contraseña"
-                                placeholder="Mínimo 6 caracteres"
-                                type="password"
-                                value={formData.adminPassword}
-                                onChange={updateField('adminPassword')}
-                            />
-                        </div>
-                    )}
+                    <div className="step-caption">
+                        <div className="step-kicker">Paso {stepIndex + 1} de {steps.length}</div>
+                        <div className="step-title">{steps[stepIndex].title}</div>
+                        <div className="step-desc">{steps[stepIndex].description}</div>
+                    </div>
 
-                    {currentStep === 'company' && (
-                        <div className="fields-grid two-columns">
-                            <Field
-                                label="RUC"
-                                placeholder="11 dígitos"
-                                value={formData.companyRuc}
-                                onChange={updateField('companyRuc')}
-                            />
-                            <Field
-                                label="Razón social"
-                                placeholder="Razón social"
-                                value={formData.companyBusinessName}
-                                onChange={updateField('companyBusinessName')}
-                            />
-                            <Field
-                                label="Nombre comercial"
-                                placeholder="Opcional"
-                                value={formData.companyTradeName || ''}
-                                onChange={updateField('companyTradeName')}
-                            />
-                            <Field
-                                label="Domicilio fiscal"
-                                placeholder="Dirección fiscal"
-                                value={formData.companyFiscalAddress}
-                                onChange={updateField('companyFiscalAddress')}
-                            />
-                            <Field
-                                label="Teléfono"
-                                placeholder="Opcional"
-                                value={formData.companyPhone || ''}
-                                onChange={updateField('companyPhone')}
-                            />
-                        </div>
-                    )}
+                    <Form
+                        ref={formRef}
+                        formData={formData}
+                        onFieldDataChanged={handleFieldChanged}
+                        labelMode="floating"
+                        colCountByScreen={{xs: 1, sm: 2, md: 2}}
+                    >
+                        {stepIndex === 0 && (
+                            <GroupItem colCountByScreen={{xs: 1, sm: 2, md: 2}} caption="Credenciales">
+                                <Item dataField="adminUsername" label={{text: 'Usuario administrador'}}>
+                                    <RequiredRule message="Usuario administrador es obligatorio"/>
+                                </Item>
+                                <Item dataField="adminPassword" label={{text: 'Contraseña'}}
+                                      editorOptions={{mode: 'password'}}>
+                                    <RequiredRule message="La contraseña es obligatoria"/>
+                                    <StringLengthRule min={6} message="La contraseña debe tener al menos 6 caracteres"/>
+                                </Item>
+                            </GroupItem>
+                        )}
 
-                    {currentStep === 'branch' && (
-                        <div className="fields-grid two-columns">
-                            <Field
-                                label="Nombre de la sucursal"
-                                placeholder="Ej. Local Central"
-                                value={formData.branchName}
-                                onChange={updateField('branchName')}
-                            />
-                            <Field
-                                label="Dirección"
-                                placeholder="Opcional"
-                                value={formData.branchAddress || ''}
-                                onChange={updateField('branchAddress')}
-                            />
-                            <Field
-                                label="Teléfono"
-                                placeholder="Opcional"
-                                value={formData.branchPhone || ''}
-                                onChange={updateField('branchPhone')}
-                            />
-                        </div>
-                    )}
+                        {stepIndex === 1 && (
+                            <GroupItem colCountByScreen={{xs: 1, sm: 2, md: 2}} caption="Datos de la empresa">
+                                <Item dataField="companyRuc" label={{text: 'RUC'}} editorOptions={{maxLength: 11}}>
+                                    <RequiredRule message="El RUC es obligatorio"/>
+                                    <StringLengthRule min={11} max={11} message="El RUC debe tener 11 dígitos"/>
+                                    <PatternRule pattern={'^[0-9]+$'} message="Solo números"/>
+                                </Item>
+                                <Item dataField="companyBusinessName" label={{text: 'Razón social'}}>
+                                    <RequiredRule message="Razón social es obligatoria"/>
+                                </Item>
+                                <Item dataField="companyTradeName" label={{text: 'Nombre comercial'}}/>
+                                <Item dataField="companyFiscalAddress" label={{text: 'Domicilio fiscal'}}>
+                                    <RequiredRule message="El domicilio fiscal es obligatorio"/>
+                                </Item>
+                                <Item dataField="companyPhone" label={{text: 'Teléfono'}}/>
+                            </GroupItem>
+                        )}
+
+                        {stepIndex === 2 && (
+                            <GroupItem colCountByScreen={{xs: 1, sm: 2, md: 2}} caption="Sucursal principal">
+                                <Item dataField="branchName" label={{text: 'Nombre de la sucursal'}}>
+                                    <RequiredRule message="El nombre de la sucursal es obligatorio"/>
+                                </Item>
+                                <Item dataField="branchAddress" label={{text: 'Dirección'}}/>
+                                <Item dataField="branchPhone" label={{text: 'Teléfono'}}/>
+                            </GroupItem>
+                        )}
+                    </Form>
 
                     <div className="actions">
-                        <button
-                            type="button"
-                            className="ghost"
+                        <Button
+                            type="normal"
+                            stylingMode="outlined"
                             onClick={goBack}
                             disabled={stepIndex === 0 || submitting}
-                        >
-                            Atrás
-                        </button>
-                        <button
-                            type="button"
-                            className="primary"
+                            text="Atrás"
+                        />
+                        <Button
+                            type="default"
+                            stylingMode="contained"
                             onClick={goNext}
                             disabled={submitting}
-                        >
-                            {submitting ? <LoadIndicator visible width={20} height={20}/> : stepIndex === steps.length - 1 ? 'Finalizar configuración' : 'Siguiente'}
-                        </button>
-                    </div>
-                    <div className="helper-links">
-                        <button type="button" className="linkish" onClick={() => navigate('/login')} disabled={submitting}>
-                            ¿Ya configuraste? Ir a inicio de sesión
-                        </button>
+                            icon={submitting ? undefined : stepIndex === steps.length - 1 ? 'check' : 'chevronnext'}
+                            text={submitting ? 'Guardando...' : stepIndex === steps.length - 1 ? 'Finalizar configuración' : 'Siguiente'}
+                        />
                     </div>
                 </div>
             </div>
         </div>
     );
 };
-
-type FieldProps = {
-    label: string;
-    placeholder?: string;
-    type?: string;
-    value: string;
-    autoFocus?: boolean;
-    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-};
-
-const Field = ({label, placeholder, type = 'text', value, onChange, autoFocus}: FieldProps) => (
-    <label className="field">
-        <span>{label}</span>
-        <input
-            type={type}
-            placeholder={placeholder}
-            value={value}
-            onChange={onChange}
-            autoFocus={autoFocus}
-        />
-    </label>
-);

@@ -61,13 +61,25 @@ class DevExtremeFilter extends AbstractFilter
         }
 
         if ('searchValue' === $property && isset($context['filters']['searchExpr'])) {
-            $filter = [];
-            $filter[] = [
-                $context['filters']['searchExpr'],
-                'contains',
-                $value,
-            ];
-            $this->applyFilter($queryBuilder, $filter);
+            $searchExpr = $context['filters']['searchExpr'];
+
+            if (is_array($searchExpr)) {
+                $orX = $queryBuilder->expr()->orX();
+                foreach ($searchExpr as $field) {
+                    $param = $this->getUniqueParameterName($queryBuilder, $field);
+                    $orX->add(sprintf('o.%s LIKE :%s', $field, $param));
+                    $queryBuilder->setParameter($param, sprintf('%%%s%%', $value));
+                }
+                $queryBuilder->andWhere($orX);
+            } else {
+                $filter = [];
+                $filter[] = [
+                    $searchExpr,
+                    'contains',
+                    $value,
+                ];
+                $this->applyFilter($queryBuilder, $filter);
+            }
         }
     }
 

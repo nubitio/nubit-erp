@@ -3,6 +3,7 @@
 namespace App\Invoice\Domain;
 
 use App\Core\Service\SettingsService;
+use App\Core\Service\CompanyContext;
 use App\Core\Util\Constants;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
@@ -27,6 +28,7 @@ readonly class ValidateInvoiceUseCase
     public function __construct(
         private CacheInterface $cache,
         private SettingsService $settings,
+        private CompanyContext $companyContext,
         private InvoiceRepository $invoiceRepository,
         private EntityManagerInterface $entityManager,
     ) {
@@ -45,7 +47,7 @@ readonly class ValidateInvoiceUseCase
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));
-        $customerId = $this->settings->get(Constants::COMPANY_ID);
+        $customerId = $this->companyContext->getId();
 
         $cpeFilter = (new CpeFilter())
             ->setNumRuc(strval($customerId))
@@ -72,7 +74,7 @@ readonly class ValidateInvoiceUseCase
      */
     private function getToken(): string
     {
-        $customerID = $this->settings->get(Constants::COMPANY_ID);
+        $customerID = $this->companyContext->getId();
         $tokenKey = $customerID . '_cpe_token';
 
         return $this->cache->get($tokenKey, function (ItemInterface $item) {

@@ -58,6 +58,22 @@ class Company
     #[ORM\JoinColumn(name: 'logo', referencedColumnName: 'id', nullable: true)]
     private ?Media $logo = null;
 
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'ubigeo', length: 255, nullable: true)]
+    private ?string $ubigeoCode = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'departamento', length: 255, nullable: true)]
+    private ?string $department = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'provincia', length: 255, nullable: true)]
+    private ?string $province = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'distrito', length: 255, nullable: true)]
+    private ?string $district = null;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -131,6 +147,54 @@ class Company
     public function setLogo(?Media $logo): static
     {
         $this->logo = $logo;
+
+        return $this;
+    }
+
+    public function getUbigeoCode(): ?string
+    {
+        return $this->ubigeoCode;
+    }
+
+    public function setUbigeoCode(?string $ubigeoCode): static
+    {
+        $this->ubigeoCode = $ubigeoCode;
+
+        return $this;
+    }
+
+    public function getDepartment(): ?string
+    {
+        return $this->department;
+    }
+
+    public function setDepartment(?string $department): static
+    {
+        $this->department = $department;
+
+        return $this;
+    }
+
+    public function getProvince(): ?string
+    {
+        return $this->province;
+    }
+
+    public function setProvince(?string $province): static
+    {
+        $this->province = $province;
+
+        return $this;
+    }
+
+    public function getDistrict(): ?string
+    {
+        return $this->district;
+    }
+
+    public function setDistrict(?string $district): static
+    {
+        $this->district = $district;
 
         return $this;
     }

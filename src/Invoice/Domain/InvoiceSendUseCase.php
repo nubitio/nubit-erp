@@ -6,8 +6,7 @@ use App\Billing\Domain\BillSendUseCase;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Entity\Invoice;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,7 +18,7 @@ readonly class InvoiceSendUseCase
         private EntityManagerInterface $entityManager,
         private BillSendUseCase $billSendUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
     ) {
     }
 
@@ -40,8 +39,9 @@ readonly class InvoiceSendUseCase
 
         $response = $this->billSendUseCase->__invoke($saleId);
         $invoice->setDigest($response->hash);
+        $companyId = $this->companyContext->getId();
         $this->fileManager->write(
-            $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name . '.xml',
+            $companyId . '/' . $response->name . '.xml',
             $response->xml
         );
 
@@ -50,7 +50,7 @@ readonly class InvoiceSendUseCase
             $invoice->setSunatMessage($response->sunatResponse->getCdrResponse()?->getDescription());
             $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
             $this->fileManager->write(
-                $this->settings->get(Constants::COMPANY_ID) . '/R-' . $response->name . '.zip',
+                $companyId . '/R-' . $response->name . '.zip',
                 $cdr
             );
         } else {
