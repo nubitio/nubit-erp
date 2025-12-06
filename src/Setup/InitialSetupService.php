@@ -13,8 +13,11 @@ use App\Entity\Customer;
 use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Role;
+use App\Entity\UnitOfMeasure;
 use App\Entity\User;
+use App\Entity\VoucherSeries;
 use App\Entity\VoucherType;
+use App\Entity\Warehouse;
 use App\Repository\BranchRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
@@ -22,7 +25,9 @@ use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\RoleRepository;
+use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
+use App\Repository\VoucherSeriesRepository;
 use App\Repository\VoucherTypeRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -30,22 +35,24 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-class InitialSetupService
+readonly class InitialSetupService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly UserRepository $userRepository,
-        private readonly CompanyRepository $companyRepository,
-        private readonly BranchRepository $branchRepository,
-        private readonly RoleRepository $roleRepository,
-        private readonly LogisticOperationRepository $logisticOperationRepository,
-        private readonly PaymentMethodRepository $paymentMethodRepository,
-        private readonly VoucherTypeRepository $voucherTypeRepository,
-        private readonly CategoryRepository $categoryRepository,
-        private readonly CustomerRepository $customerRepository,
-        private readonly Connection $connection,
-        private readonly SettingsService $settingsService,
+        private EntityManagerInterface $entityManager,
+        private UserPasswordHasherInterface $passwordHasher,
+        private UserRepository $userRepository,
+        private CompanyRepository $companyRepository,
+        private BranchRepository $branchRepository,
+        private RoleRepository $roleRepository,
+        private LogisticOperationRepository $logisticOperationRepository,
+        private PaymentMethodRepository $paymentMethodRepository,
+        private VoucherTypeRepository $voucherTypeRepository,
+        private VoucherSeriesRepository $voucherSeriesRepository,
+        private UnitOfMeasureRepository $unitOfMeasureRepository,
+        private CategoryRepository $categoryRepository,
+        private CustomerRepository $customerRepository,
+        private Connection $connection,
+        private SettingsService $settingsService,
     ) {
     }
 
@@ -64,7 +71,7 @@ class InitialSetupService
     }
 
     /**
-     * @throws Exception
+     * @throws Exception|\Throwable
      */
     public function configure(InitialSetupInput $input): SetupStatusDto
     {
@@ -94,6 +101,11 @@ class InitialSetupService
 
             $this->entityManager->persist($branch);
 
+            $warehouse = (new Warehouse())
+                ->setName('Almacén Principal')
+                ->setBranch($branch);
+            $this->entityManager->persist($warehouse);
+
             $user = (new User())
                 ->setUsername($input->adminUsername)
                 ->setRole($superAdminRole);
@@ -103,8 +115,9 @@ class InitialSetupService
             $this->entityManager->persist($user);
             $this->entityManager->flush();
 
-            $this->maybeSeedSettings($company);
+            $this->seedSettings();
             $this->seedReferenceData();
+            $this->ensureVoucherSeriesForBranch($branch);
             $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
             $this->connection->commit();
@@ -141,11 +154,13 @@ class InitialSetupService
         return $superAdmin;
     }
 
-    private function maybeSeedSettings(Company $company): void
+    private function seedSettings(): void
     {
         try {
-            $this->settingsService->set(Constants::COMPANY_ID, (string)$company->getRuc());
-            $this->settingsService->set(Constants::COMPANY_NAME, (string)$company->getBusinessName());
+            $this->settingsService->set(Constants::TAX, 'int', '18');
+            $this->settingsService->set(Constants::CONSUMPTION_TAX, 'int', '0');
+            $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
+            $this->settingsService->set(Constants::CHECK_STOCK, 'bool', 'false');
         } catch (\Throwable) {
             // Settings table might not be ready yet; fail silently to avoid blocking setup.
         }
@@ -174,6 +189,8 @@ class InitialSetupService
      */
     private function seedReferenceData(): void
     {
+        $this->getOrCreateUnitOfMeasure('NIU', 'Unidad', 1, 1.0, true);
+
         // Logistic operations (tipo_id: 1 venta, 2 compra, 3 entrada, 4 salida)
         $operations = [
             ['Venta', 1],
@@ -262,6 +279,29 @@ class InitialSetupService
         $this->entityManager->flush();
     }
 
+    private function getOrCreateUnitOfMeasure(
+        string $code,
+        string $name,
+        int $type,
+        float $ratio,
+        bool $reference
+    ): void {
+        $existing = $this->unitOfMeasureRepository->findOneBy(['code' => $code]);
+        if ($existing) {
+            return;
+        }
+
+        $unit = (new UnitOfMeasure())
+            ->setName($name)
+            ->setCode($code)
+            ->setType($type)
+            ->setRatio($ratio)
+            ->setReference($reference);
+
+        $this->entityManager->persist($unit);
+        $this->entityManager->flush();
+    }
+
     private function getOrCreateCategory(string $name): void
     {
         $existing = $this->categoryRepository->findOneBy(['name' => $name]);
@@ -288,5 +328,44 @@ class InitialSetupService
 
         $this->entityManager->persist($customer);
         $this->entityManager->flush();
+    }
+
+    private function ensureVoucherSeriesForBranch(Branch $branch): void
+    {
+        $seriesList = [
+            ['code' => '01', 'series' => 'F001'], // Factura
+            ['code' => '03', 'series' => 'B001'], // Boleta
+            ['code' => '00', 'series' => 'N001'], // Nota de venta
+        ];
+
+        $needsFlush = false;
+        foreach ($seriesList as $definition) {
+            $voucherType = $this->voucherTypeRepository->find($definition['code']);
+            if (!$voucherType instanceof VoucherType) {
+                continue;
+            }
+
+            $existing = $this->voucherSeriesRepository->findOneBy([
+                'branch' => $branch,
+                'voucherType' => $voucherType,
+                'series' => $definition['series'],
+            ]);
+
+            if ($existing) {
+                continue;
+            }
+
+            $voucherSeries = (new VoucherSeries())
+                ->setBranch($branch)
+                ->setVoucherType($voucherType)
+                ->setSeries($definition['series']);
+
+            $this->entityManager->persist($voucherSeries);
+            $needsFlush = true;
+        }
+
+        if ($needsFlush) {
+            $this->entityManager->flush();
+        }
     }
 }

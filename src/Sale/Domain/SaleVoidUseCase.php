@@ -5,17 +5,17 @@ namespace App\Sale\Domain;
 use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
 use App\Billing\Model\Response\SummaryResponse;
-use App\Core\Http\ApiResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Http\ApiResponse;
+use App\Core\Service\CompanyContext;
 use App\Entity\Sale;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class SaleVoidUseCase
 {
@@ -25,7 +25,7 @@ readonly class SaleVoidUseCase
         private VoidedCreateUseCase $voidedCreateUseCase,
         private SummaryCreateUseCase $summaryCreateUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -35,6 +35,7 @@ readonly class SaleVoidUseCase
      * @throws SaleException
      * @throws Exception
      * @throws \DateMalformedStringException
+     * @throws ExceptionInterface
      */
     public function __invoke(
         string $saleId,
@@ -114,15 +115,17 @@ readonly class SaleVoidUseCase
         $invoice->setUpdatedAt(new \DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
-                $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
+                $this->companyContext->getId() . '/' . $response->name
                 . '.xml',
                 $response->xml
             );
             $invoice->setVoidTicket($response->sunatResponse->getTicket());
             $invoice->setVoided(2);
         } else {
-            $invoice->setVoidTicket($response->sunatResponse->getTicket() ??
-                $invoice->getVoidTicket());
+            $invoice->setVoidTicket(
+                $response->sunatResponse->getTicket() ??
+                $invoice->getVoidTicket()
+            );
             $invoice->setVoided(3);
         }
 
@@ -152,7 +155,7 @@ readonly class SaleVoidUseCase
         $invoice->setUpdatedAt(new \DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
-                $this->settings->get(Constants::COMPANY_ID) . '/' . $response->name
+                $this->companyContext->getId() . '/' . $response->name
                 . '.xml',
                 $response->xml
             );

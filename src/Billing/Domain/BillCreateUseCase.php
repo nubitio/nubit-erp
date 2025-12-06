@@ -13,6 +13,7 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class BillCreateUseCase
 {
@@ -25,6 +26,7 @@ readonly class BillCreateUseCase
     /**
      * @throws \DateMalformedStringException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(string $saleId): Invoice
     {

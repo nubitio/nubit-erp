@@ -263,7 +263,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             if (value === '') return;
 
             const checkStock = await settings.get(Setting.CHECK_STOCK)
-            console.log(checkStock?.value, checkStock);
 
             row.precio_total = currentRow.precio_unitario * value;
             if (value > 0 && checkStock?.value == 'true') {

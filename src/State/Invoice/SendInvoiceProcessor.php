@@ -57,7 +57,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
             return new ApiResponse(
                 success: false,
                 message: 'Error sending invoice',
-                data: $e
+                data: $e->getMessage(),
             );
         }
     }

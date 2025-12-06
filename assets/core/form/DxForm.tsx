@@ -256,6 +256,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             uploadedFiles.current.forEach((file) => {
                 formData[file.name] = file.iri;
             });
+            console.log(formData);
             options.fields.forEach((field: Field) => {
                 if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
                     const type = typeof formData[field.name];

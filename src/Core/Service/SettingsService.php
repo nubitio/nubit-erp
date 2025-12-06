@@ -30,11 +30,11 @@ readonly class SettingsService
     /**
      * @throws Exception
      */
-    public function set(string $key, mixed $value): void
+    public function set(string $key, string $type, mixed $value): void
     {
         $this->db->executeStatement(
-            'INSERT INTO config (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = ?',
-            [$key, $value, $value]
+            'INSERT INTO config (name, type, value) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE value = ?',
+            [$key, $type, $value, $value]
         );
     }
 }

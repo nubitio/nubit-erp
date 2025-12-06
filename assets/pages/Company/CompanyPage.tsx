@@ -1,13 +1,18 @@
 import "./CompanyPage.scss";
 import {DxDataGrid} from "../../core/datagrid/DxDataGrid";
 import {DxDialog} from "../../core/dialog/DxDialog";
-import {DxForm} from "../../core/form/DxForm";
+import {DxForm, FORM_EVENTS} from "../../core/form/DxForm";
 import {Constants} from "../../core/common/Constants";
 import {CompanyFields} from "./CompanyFields";
+import {useEffect, useRef} from "react";
+import {httpClient} from "../../core/http/HttpClient";
+import {useEvents} from "../../core/event/EventHook";
 
 export const CompanyPage = () => {
     const container = "wrapper";
-    const fields = CompanyFields();
+    const formRef = useRef<any>(null);
+    const fields = CompanyFields(formRef.current);
+    const [on, emit] = useEvents();
 
     const API_URL = Constants.API_BASE_URL + 'companies';
 
@@ -20,6 +25,41 @@ export const CompanyPage = () => {
         SUCCESS: 'company:success',
         LOADING: 'company:loading',
     }
+
+    useEffect(() => {
+        const sub = on<any>(FORM_EVENTS.FIELD_CHANGED, (data) => {
+            if (data.field !== 'ubigeo') {
+                return;
+            }
+
+            if (!data.value) {
+                formRef.current?.setFieldValue('ubigeoCode', '');
+                formRef.current?.setFieldValue('department', '');
+                formRef.current?.setFieldValue('province', '');
+                formRef.current?.setFieldValue('district', '');
+                return;
+            }
+
+            emit(EVENTS.LOADING, true);
+            httpClient.get<any>(`${Constants.API_BASE_URL}ubigeos/${data.value}`).subscribe({
+                next: (response) => {
+                    const ubigeo = response.data;
+                    formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
+                    formRef.current?.setFieldValue('department', ubigeo.department ?? '');
+                    formRef.current?.setFieldValue('province', ubigeo.province ?? '');
+                    formRef.current?.setFieldValue('district', ubigeo.district ?? '');
+                },
+                error: () => {
+                    formRef.current?.setFieldValue('ubigeoCode', '');
+                    formRef.current?.setFieldValue('department', '');
+                    formRef.current?.setFieldValue('province', '');
+                    formRef.current?.setFieldValue('district', '');
+                }
+            }).add(() => emit(EVENTS.LOADING, false));
+        });
+
+        return () => sub?.unsubscribe();
+    }, [on, emit]);
 
     return (
         <div id={container}>
@@ -41,6 +81,7 @@ export const CompanyPage = () => {
                     fields={fields}
                     events={EVENTS}
                     useIRI={true}
+                    ref={formRef}
                 />
             </DxDialog>
         </div>

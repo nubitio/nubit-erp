@@ -3,8 +3,7 @@
 namespace App\Receipt\Domain;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Repository\CreditNoteRepository;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
@@ -15,13 +14,13 @@ readonly class ReceiptShowUseCase
     public function __construct(
         private InvoiceRepository $invoiceRepository,
         private CreditNoteRepository $creditNoteRepository,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
     ) {
     }
 
     /**
      * @throws ServiceException
-     * @throws Exception
+     * @throws Exception|ExceptionInterface
      */
     public function __invoke(ReceiptRequest $request): Receipt
     {
@@ -38,7 +37,7 @@ readonly class ReceiptShowUseCase
     private function makeReceiptForInvoice(string $id): Receipt
     {
         $voucher = $this->invoiceRepository->getVoucher($id);
-        $companyName = $this->settings->get(Constants::COMPANY_NAME);
+        $companyName = $this->companyContext->getName();
 
         return new Receipt(
             company: strval($companyName),
@@ -57,7 +56,7 @@ readonly class ReceiptShowUseCase
     private function makeReceiptForNote(string $id): Receipt
     {
         $note = $this->creditNoteRepository->find($id);
-        $companyName = $this->settings->get(Constants::COMPANY_NAME);
+        $companyName = $this->companyContext->getName();
 
         return new Receipt(
             company: strval($companyName),

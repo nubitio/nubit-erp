@@ -7,7 +7,6 @@ import {SaleDetailFields, SaleFields, setTotal} from "./SaleFields";
 import {useEffect, useRef, useState} from "react";
 import {DiscountDialog, DiscountDialogEvent} from "../../components/discount-dialog/DiscountDialog";
 import {saleService} from "../../service/sale.service";
-import notify from "devextreme/ui/notify";
 import * as qz from 'qz-tray';
 import {CustomerPage} from "../Customer/CustomerPage";
 import {CustomerFields} from "../Customer/CustomerFields";
@@ -16,6 +15,7 @@ import {SalePrintPreviewPopup} from "./SalePrintPreviewPopup";
 import {useEvents} from "../../core/event/EventHook";
 import {httpClient} from "../../core/http/HttpClient";
 import {forkJoin, map, of, switchMap} from "rxjs";
+import toast from "../../core/utils/SharedUtils";
 
 export const SalePage = () => {
     const [on, emit] = useEvents();
@@ -113,12 +113,7 @@ export const SalePage = () => {
         }
         gridRef.current?.showLoading('Anulando comprobante...')
         saleService.voidSale(saleId, reason).subscribe((response) => {
-            notify({
-                    message: response.data.message,
-                    type: response.data.success ? 'success' : 'error',
-                    displayTime: 3000,
-                }, {position: 'top right'}
-            );
+            toast(response.data.message, response.data.success ? 'success' : 'error');
             gridRef.current?.refresh();
         }).add(() => {
             gridRef.current?.hideLoading();
@@ -128,12 +123,7 @@ export const SalePage = () => {
     const makeInvoice = (saleId: string) => {
         gridRef.current?.showLoading('Generando comprobante...')
         saleService.makeInvoice(saleId).subscribe((response) => {
-            notify({
-                    message: response.data.message,
-                    type: 'success',
-                    displayTime: 3000,
-                }, {position: 'top right'}
-            );
+            toast(response.data.message, response.data.success ? 'success' : 'error');
             gridRef.current?.refresh();
             print(saleId);
         }).add(() => {
@@ -160,12 +150,7 @@ export const SalePage = () => {
                     selectedSaleId.current = saleId;
                     setIsPreviewVisible(true);
                 } else {
-                    notify({
-                            message: 'Debe seleccionar una venta',
-                            type: 'warning',
-                            displayTime: 3000,
-                        }, {position: 'top right'}
-                    );
+                    toast('Debe seleccionar una venta', 'warning');
                 }
             }
         },
@@ -177,12 +162,7 @@ export const SalePage = () => {
                 if (saleId) {
                     print(saleId);
                 } else {
-                    notify({
-                            message: 'Debe seleccionar una venta',
-                            type: 'warning',
-                            displayTime: 3000,
-                        }, {position: 'top right'}
-                    );
+                    toast('Debe seleccionar una venta', 'warning');
                 }
             },
             disabled: !printEnabled
@@ -195,12 +175,7 @@ export const SalePage = () => {
                 if (saleId) {
                     voidSale(saleId);
                 } else {
-                    notify({
-                            message: 'Debe seleccionar una venta',
-                            type: 'warning',
-                            displayTime: 3000,
-                        }, {position: 'top right'}
-                    );
+                    toast('Debe seleccionar una venta', 'warning');
                 }
             }
         },
@@ -212,12 +187,7 @@ export const SalePage = () => {
                 if (saleId) {
                     makeInvoice(saleId);
                 } else {
-                    notify({
-                            message: 'Debe seleccionar una venta',
-                            type: 'warning',
-                            displayTime: 2000,
-                        }, {position: 'top right'}
-                    );
+                    toast('Debe seleccionar una venta', 'warning');
                 }
             }
         },

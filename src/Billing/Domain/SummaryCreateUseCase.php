@@ -6,6 +6,7 @@ use App\Billing\Model\Response\SummaryResponse;
 use App\Repository\InvoiceRepository;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class SummaryCreateUseCase
 {
@@ -18,6 +19,7 @@ readonly class SummaryCreateUseCase
 
     /**
      * @throws \Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(string $saleId): SummaryResponse
     {

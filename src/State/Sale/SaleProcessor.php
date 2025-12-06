@@ -54,12 +54,13 @@ readonly class SaleProcessor implements ProcessorInterface
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
+        $user = $this->security->connectedUser();
+
         if (!$data->getId() && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
                 'payment_method' => $data->getTipoPago()->getId()
             ]);
 
-            $user = $this->security->connectedUser();
             $this->logger->debug('Checking for open cash shift', [
                 'user_id' => $user->userId
             ]);
@@ -97,7 +98,7 @@ readonly class SaleProcessor implements ProcessorInterface
 
             $this->logger->debug('Processed sale item', [
                 'item_number' => $itemCount,
-                'product_id' => $item->getProducto() ? $item->getProducto()->getId() : null,
+                'product_id' => $item->getProducto()?->getId(),
                 'quantity' => $item->getCantidad(),
                 'price' => $item->getPrecioUnitario(),
                 'total' => $item->getPrecioTotal()
@@ -174,17 +175,20 @@ readonly class SaleProcessor implements ProcessorInterface
                         );
                     }
                 }
+                $item->setDescuento($item->getDescuento() ?? 0);
             }
         }
 
         if (!$data->getId()) {
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new \DateTimeImmutable());
+            $data->setCreatedBy($user->userId);
         } else {
             $this->logger->info('Updating existing sale record', [
                 'sale_id' => $data->getId()
             ]);
             $data->setDateUpdated(new \DateTimeImmutable());
+            $data->setUpdatedBy($user->userId);
         }
 
         $this->logger->info('Persisting sale data', [

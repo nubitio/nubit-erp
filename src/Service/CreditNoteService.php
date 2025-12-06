@@ -8,8 +8,7 @@ use App\Billing\Domain\NoteSendUseCase;
 use App\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
+use App\Core\Service\CompanyContext;
 use App\Entity\CreditNote;
 use App\Repository\CreditNoteRepository;
 use Doctrine\DBAL\Exception;
@@ -28,7 +27,7 @@ readonly class CreditNoteService
         private NoteCreateUseCase $noteCreateUseCase,
         private NotePdfUseCase $notePdfUseCase,
         private FileManager $fileManager,
-        private SettingsService $settings,
+        private CompanyContext $companyContext,
     ) {
     }
 
@@ -60,7 +59,7 @@ readonly class CreditNoteService
 
         // Save XML file
         if (!empty($response->xml)) {
-            $companyId = $this->settings->get(Constants::COMPANY_ID);
+            $companyId = $this->companyContext->getId();
             $this->fileManager->write(
                 $companyId . '/' . $response->name . '.xml',
                 $response->xml
@@ -75,7 +74,7 @@ readonly class CreditNoteService
             // Save CDR (Constancia de Recepción)
             if (!empty($response->sunatResponse->getCdrZip())) {
                 $cdr = base64_decode($response->sunatResponse->getCdrZip());
-                $companyId = $this->settings->get(Constants::COMPANY_ID);
+                $companyId = $this->companyContext->getId();
                 $this->fileManager->write(
                     $companyId . '/R-' . $response->name . '.zip',
                     $cdr
@@ -115,7 +114,7 @@ readonly class CreditNoteService
 
         // XML generation would be handled by Greenter library
         // For now, try to read from a saved file or generate
-        $companyId = $this->settings->get(Constants::COMPANY_ID);
+        $companyId = $this->companyContext->getId();
         $xmlPath = $companyId . '/' . $note->getName() . '.xml';
 
         if ($this->fileManager->exists($xmlPath)) {

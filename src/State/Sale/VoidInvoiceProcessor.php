@@ -37,12 +37,13 @@ readonly class VoidInvoiceProcessor implements ProcessorInterface
 
         try {
             $this->saleVoidUseCase->__invoke($saleId, $data->reason, $userId);
-        } catch (FilesystemException | Exception) {
+        } catch (FilesystemException | SaleException $e) {
             return new ApiResponse(
                 success: false,
-                message: 'Error al anular comprobante'
+                message: 'Error al anular comprobante',
+                data: $e->getMessage()
             );
-        } catch (SaleException $e) {
+        } catch (\Exception $e) {
             return new ApiResponse(
                 success: false,
                 message: $e->getMessage()
