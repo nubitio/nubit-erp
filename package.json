@@ -6,6 +6,13 @@
     "@types/file-saver": "^2.0.7",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5",
     "sass": "^1.55.0",
     "sass-loader": "^16.0.5",
     "ts-loader": "^9.3.0",
@@ -19,7 +26,11 @@
     "dev": "vite",
     "build": "yarn build:themes && vite build",
     "build:themes": "sass --load-path=node_modules assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass --load-path=node_modules assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
-    "postinstall": "yarn build:themes"
+    "postinstall": "yarn build:themes",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.1",

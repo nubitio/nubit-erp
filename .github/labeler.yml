@@ -1,0 +1,92 @@
+# ============================================================================
+# Auto-labeler Configuration
+# ============================================================================
+# Automatically labels PRs based on file paths changed
+
+# Frontend changes
+'area: frontend':
+  - changed-files:
+    - any-glob-to-any-file: 
+      - 'assets/**/*'
+      - 'public/**/*'
+      - '*.js'
+      - '*.ts'
+      - '*.tsx'
+      - '*.jsx'
+      - '*.css'
+      - '*.scss'
+
+# Backend changes
+'area: backend':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/**/*'
+      - 'config/**/*'
+      - 'bin/**/*'
+
+# Database changes
+'area: database':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'migrations/**/*'
+      - 'src/Entity/**/*'
+      - 'src/Repository/**/*'
+
+# API changes
+'area: api':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/Controller/Api/**/*'
+      - 'src/Serializer/**/*'
+
+# Tests
+'area: tests':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'tests/**/*'
+      - '**/*.test.*'
+      - '**/*.spec.*'
+
+# Documentation
+'area: docs':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '*.md'
+      - 'docs/**/*'
+      - '.github/**/*.md'
+
+# CI/CD
+'area: ci/cd':
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - 'Dockerfile*'
+      - 'docker-compose*.yml'
+      - '.dockerignore'
+
+# Dependencies
+'dependencies':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'composer.json'
+      - 'composer.lock'
+      - 'package.json'
+      - 'yarn.lock'
+
+# Configuration
+'area: config':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'config/**/*'
+      - '.env*'
+      - '*.yaml'
+      - '*.yml'
+      - '*.xml'
+      - '*.neon'
+
+# Security
+'security':
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/Security/**/*'
+      - 'config/packages/security.yaml'
