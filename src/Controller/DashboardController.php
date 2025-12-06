@@ -27,6 +27,9 @@ class DashboardController extends AbstractController
         $localId = $user->branchId;
 
         switch ($type) {
+            case 'overview':
+                $data = $this->repository->getOverview($localId);
+                break;
             case 'venta-dia':
                 $data = $this->repository->getDailySales($localId);
                 // Convert 'venta' to float for each item
