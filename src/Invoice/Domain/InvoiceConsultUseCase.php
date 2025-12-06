@@ -40,7 +40,10 @@ readonly class InvoiceConsultUseCase
                 $invoice->setSunatMessage($consultResponse->getCdrResponse()->getDescription());
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
                 $companyId = $this->companyContext->getId();
-                $name = $companyId . $invoice->getVoucherTypeId() . $consultResponse->getCdrResponse()->getId() . '.zip';
+                $name = $companyId .
+                    $invoice->getVoucherTypeId() .
+                    $consultResponse->getCdrResponse()->getId() .
+                    '.zip';
                 $this->fileManager->write(
                     $companyId . '/R-' . $name . '.zip',
                     $cdr

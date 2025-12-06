@@ -35,13 +35,14 @@ class FillTimeDimensionCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $startInput = (string) $input->getArgument('start');
+        $startInput = (string)$input->getArgument('start');
         $endInput = $input->getArgument('end');
-        $locale = (string) $input->getOption('locale');
-        $batchSize = (int) $input->getOption('batch-size');
+        $locale = (string)$input->getOption('locale');
+        $batchSize = (int)$input->getOption('batch-size');
 
         $startDate = new \DateTimeImmutable($startInput);
-        $endDate = $endInput ? new \DateTimeImmutable((string) $endInput) : (new \DateTimeImmutable())->modify('+1 day');
+        $endDate = $endInput ? new \DateTimeImmutable((string)$endInput) :
+            (new \DateTimeImmutable())->modify('+1 day');
 
         if ($startDate >= $endDate) {
             $io->error('La fecha de inicio debe ser menor a la fecha fin.');
@@ -62,7 +63,12 @@ class FillTimeDimensionCommand extends Command
             );
 
             $io->progressFinish();
-            $io->success(sprintf('Dimensión de fechas completada. Filas procesadas: %d', $count));
+            $io->success(
+                sprintf(
+                    'Dimensión de fechas completada. Filas procesadas: %d',
+                    $count
+                )
+            );
 
             return Command::SUCCESS;
         } catch (\Throwable $exception) {
