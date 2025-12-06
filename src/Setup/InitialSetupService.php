@@ -20,6 +20,7 @@ use App\Entity\VoucherType;
 use App\Entity\Warehouse;
 use App\Service\UbigeoImportService;
 use App\Service\TimeDimensionSeeder;
+use App\Service\MenuSeedService;
 use App\Repository\BranchRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
@@ -57,6 +58,7 @@ readonly class InitialSetupService
         private SettingsService $settingsService,
         private UbigeoImportService $ubigeoImportService,
         private TimeDimensionSeeder $timeDimensionSeeder,
+        private MenuSeedService $menuSeedService,
     ) {
     }
 
@@ -123,6 +125,7 @@ readonly class InitialSetupService
             $this->seedReferenceData();
             $this->seedUbigeoFromResource();
             $this->seedTimeDimension();
+            $this->menuSeedService->seed();
             $this->ensureVoucherSeriesForBranch($branch);
             $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
