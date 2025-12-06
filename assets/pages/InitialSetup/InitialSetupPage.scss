@@ -70,6 +70,26 @@
     display: flex;
     flex-direction: column;
     gap: 18px;
+    position: relative;
+}
+
+.setup-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    z-index: 5;
+}
+
+.overlay-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
 }
 
 .step-caption {

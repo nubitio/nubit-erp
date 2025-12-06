@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import {Stepper} from "devextreme-react/stepper";
 import Button from "devextreme-react/button";
 import LoadIndicator from "devextreme-react/load-indicator";
+import LoadPanel from "devextreme-react/load-panel";
 import Form, {FormRef, GroupItem, Item, PatternRule, RequiredRule, StringLengthRule,} from "devextreme-react/form";
 
 import "./InitialSetupPage.scss";
@@ -60,6 +61,13 @@ export const InitialSetupPage = () => {
         setFormData((prev) => ({...prev, [e.dataField]: e.value ?? ''}));
     };
 
+    const focusFirstField = (index: number) => {
+        const fieldByStep = ['adminUsername', 'companyRuc', 'branchName'];
+        const field = fieldByStep[index] ?? fieldByStep[0];
+        const editor = formRef.current?.instance().getEditor(field);
+        editor?.focus();
+    };
+
     const validateStep = (): boolean => {
         const result = formRef.current?.instance().validate();
         return result?.isValid ?? true;
@@ -71,6 +79,7 @@ export const InitialSetupPage = () => {
             return;
         }
         setStepIndex(index);
+        requestAnimationFrame(() => focusFirstField(index));
     };
 
     const goNext = () => {
@@ -79,6 +88,7 @@ export const InitialSetupPage = () => {
         }
         if (stepIndex < steps.length - 1) {
             setStepIndex((prev) => prev + 1);
+            requestAnimationFrame(() => focusFirstField(stepIndex + 1));
         } else {
             submit();
         }
@@ -87,6 +97,7 @@ export const InitialSetupPage = () => {
     const goBack = () => {
         if (stepIndex > 0) {
             setStepIndex((prev) => prev - 1);
+            requestAnimationFrame(() => focusFirstField(stepIndex - 1));
         }
     };
 
@@ -135,6 +146,7 @@ export const InitialSetupPage = () => {
                         icon: index < stepIndex ? 'check' : undefined,
                     }))}
                     selectedIndex={stepIndex}
+                    disabled={submitting}
                     onSelectedIndexChange={changeStep}
                 />
 
@@ -211,6 +223,14 @@ export const InitialSetupPage = () => {
                             text={submitting ? 'Guardando...' : stepIndex === steps.length - 1 ? 'Finalizar configuración' : 'Siguiente'}
                         />
                     </div>
+                    {submitting && (
+                        <div className="setup-overlay">
+                            <div className="overlay-content">
+                                <LoadIndicator visible width={32} height={32}/>
+                                <span>Guardando configuración...</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

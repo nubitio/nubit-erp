@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use Doctrine\DBAL\Connection;
+use App\Service\UbigeoImportService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -18,7 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ImportUbigeoCommand extends Command
 {
     public function __construct(
-        private readonly Connection $connection,
+        private readonly UbigeoImportService $ubigeoImportService,
     ) {
         parent::__construct();
     }
@@ -28,7 +28,8 @@ class ImportUbigeoCommand extends Command
         $this
             ->addArgument('file', InputArgument::REQUIRED, 'Ruta al CSV oficial de ubigeo')
             ->addOption('delimiter', null, InputOption::VALUE_OPTIONAL, 'Delimitador del CSV', ',')
-            ->addOption('skip-header', null, InputOption::VALUE_NONE, 'Indica si el CSV incluye cabecera');
+            ->addOption('skip-header', null, InputOption::VALUE_NONE, 'Indica si el CSV incluye cabecera')
+            ->addOption('batch-size', null, InputOption::VALUE_OPTIONAL, 'Tamaño del lote (filas por INSERT)', 200);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -37,6 +38,7 @@ class ImportUbigeoCommand extends Command
         $filePath = (string) $input->getArgument('file');
         $delimiter = (string) $input->getOption('delimiter');
         $skipHeader = (bool) $input->getOption('skip-header');
+        $batchSize = (int) $input->getOption('batch-size');
 
         if (!is_readable($filePath)) {
             $io->error(sprintf('No se puede leer el archivo: %s', $filePath));
@@ -44,53 +46,25 @@ class ImportUbigeoCommand extends Command
             return Command::FAILURE;
         }
 
-        $handle = fopen($filePath, 'rb');
-        if (!$handle) {
-            $io->error('No se pudo abrir el archivo CSV.');
-
-            return Command::FAILURE;
-        }
-
-        if ($skipHeader) {
-            fgetcsv($handle, 0, $delimiter);
-        }
-
-        $stmt = $this->connection->prepare(
-            'INSERT INTO ubigeo (codigo, departamento, provincia, distrito)
-             VALUES (:code, :department, :province, :district)
-             ON DUPLICATE KEY UPDATE
-                departamento = VALUES(departamento),
-                provincia = VALUES(provincia),
-                distrito = VALUES(distrito)'
-        );
-
-        $this->connection->beginTransaction();
         try {
-            $count = 0;
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
-                // Ajusta los índices según las columnas reales del CSV:
-                // 0 => codigo, 1 => departamento, 2 => provincia, 3 => distrito
-                if (count($row) < 4) {
-                    continue;
-                }
+            $io->progressStart();
+            $count = $this->ubigeoImportService->import(
+                filePath: $filePath,
+                delimiter: $delimiter,
+                skipHeader: $skipHeader,
+                batchSize: $batchSize,
+                progressCallback: static function (int $processed) use ($io): void {
+                    $io->progressAdvance($processed);
+                },
+            );
 
-                $stmt->bindValue('code', trim((string) $row[0]));
-                $stmt->bindValue('department', trim((string) $row[1]));
-                $stmt->bindValue('province', trim((string) $row[2]));
-                $stmt->bindValue('district', trim((string) $row[3]));
-                $stmt->executeStatement();
-                $count++;
-            }
-
-            $this->connection->commit();
-            fclose($handle);
+            $io->progressFinish();
 
             $io->success(sprintf('Importación completada. Filas procesadas: %d', $count));
 
             return Command::SUCCESS;
         } catch (\Throwable $exception) {
-            $this->connection->rollBack();
-            fclose($handle);
+            $io->progressFinish();
             $io->error('Error al importar: ' . $exception->getMessage());
 
             return Command::FAILURE;
