@@ -123,7 +123,10 @@ FROM
             ) AS taxed_amount,
             SUM(
                 ROUND(
-                    (ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * m2.igv / 100)
+                    (
+                        ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6)
+                        * m2.igv / 100
+                    )
                     * md.cantidad,
                     2
                 )
