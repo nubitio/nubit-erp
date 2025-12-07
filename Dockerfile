@@ -27,7 +27,6 @@ LABEL org.opencontainers.image.vendor="Nubit"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     curl \
-    supervisor \
     python3 \
     python3-pip \
     libpango1.0-dev \
@@ -54,15 +53,9 @@ RUN pip3 install --break-system-packages WeasyPrint \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configure Supervisord
-COPY docker/frankenphp/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Entrypoint
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-# Create required log directories
-RUN mkdir -p /var/log/messenger /var/log/supervisor \
-    && chown -R www-data:www-data /var/log/messenger /var/log/supervisor \
-    && chmod -R 755 /var/log/messenger /var/log/supervisor
 
 # Set working directory
 WORKDIR /app
@@ -139,8 +132,8 @@ COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 # Mount application code
 VOLUME /app
 
-# Start services with Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start FrankenPHP
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 
 # -----------------------------------------------------------------------------
 # Staging image
@@ -172,8 +165,8 @@ RUN mkdir -p var/cache/dev var/log \
     && chmod -R 775 var public \
     && chmod +x bin/console
 
-# Start services with Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start FrankenPHP
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
 
 # -----------------------------------------------------------------------------
 # Production image
@@ -210,5 +203,5 @@ RUN mkdir -p var/cache/prod var/log \
     && php bin/console cache:clear \
     && php bin/console assets:install
 
-# Start services with Supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start FrankenPHP
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

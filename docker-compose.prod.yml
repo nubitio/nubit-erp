@@ -57,10 +57,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-
     networks:
       - default
       - shared_net
@@ -77,6 +73,52 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  worker_async:
+    image: ghcr.io/nubitio/efact:stg
+    container_name: efact-worker-async
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+    volumes:
+      - app-var:/app/var
+    networks:
+      - default
+      - shared_net
+    command: >
+      php /app/bin/console messenger:consume async
+      --time-limit=3600
+      --memory-limit=256M
+      --no-interaction
+
+  worker_scheduler:
+    image: ghcr.io/nubitio/efact:stg
+    container_name: efact-worker-scheduler
+    restart: unless-stopped
+    depends_on:
+      - web
+    environment:
+      APP_ENV: ${APP_ENV}
+      APP_SECRET: ${APP_SECRET}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+    volumes:
+      - app-var:/app/var
+    networks:
+      - default
+      - shared_net
+    command: >
+      php /app/bin/console messenger:consume scheduler_default
+      --time-limit=3600
+      --memory-limit=256M
+      --no-interaction
 
 volumes:
   app-var:
