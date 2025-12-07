@@ -233,14 +233,12 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-        continue-on-error: true
 
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
@@ -248,7 +246,6 @@ jobs:
           image: ${{ steps.primary-tag.outputs.image }}
           format: spdx-json
           output-file: sbom.spdx.json
-        continue-on-error: true
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
@@ -257,7 +254,6 @@ jobs:
           name: sbom-${{ needs.plan.outputs.target_env }}
           path: sbom.spdx.json
           retention-days: 90
-        continue-on-error: true
 
   deploy:
     name: Deploy to Portainer
@@ -347,7 +343,6 @@ jobs:
               echo "⚠️ Application returned HTTP $HTTP_CODE" >> $GITHUB_STEP_SUMMARY
             fi
           fi
-        continue-on-error: true
 
       - name: Notify deployment
         if: always()
@@ -366,4 +361,3 @@ jobs:
 
             // You can add Slack/Discord notification here
             console.log(message);
-        continue-on-error: true

@@ -163,7 +163,6 @@ jobs:
           name: backend-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        continue-on-error: true
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -182,7 +181,6 @@ jobs:
           name: PHPUnit Tests
           path: junit.xml
           reporter: java-junit
-        continue-on-error: true
 
   frontend:
     name: Frontend Build & Lint
@@ -207,11 +205,9 @@ jobs:
 
       - name: Lint JavaScript/TypeScript
         run: yarn lint
-        continue-on-error: true
 
       - name: Type check TypeScript
         run: yarn type-check
-        continue-on-error: true
 
       - name: Build themes
         run: |
@@ -311,4 +307,3 @@ jobs:
               issue_number: context.issue.number,
               body: body
             });
-        continue-on-error: true
