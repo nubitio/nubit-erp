@@ -1,29 +1,23 @@
-name: CI
+name: CI & Deploy to Testing
 
+# Cada push/PR a main: ejecuta CI; en push a main despliega a testing.
 on:
   push:
-    branches:
-      - main
-      - release
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.github/**'
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
-      - release
-  workflow_dispatch:
-  merge_group:
+    branches: [ main ]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-main-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
   checks: write
   pull-requests: write
+  actions: read
+  packages: write
+  security-events: write
 
 env:
   PHP_VERSION: '8.5'
@@ -49,7 +43,6 @@ jobs:
           if [[ ! "$TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?:\ .+ ]]; then
             echo "::error::PR title must follow Conventional Commits format"
             echo "Expected format: type(scope): description"
-            echo "Example: feat(auth): add JWT authentication"
             exit 1
           fi
 
@@ -265,42 +258,12 @@ jobs:
             exit 1
           fi
 
-      - name: Post PR comment with results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const results = {
-              preflight: '${{ needs.preflight.result }}',
-              backend: '${{ needs.backend.result }}',
-              frontend: '${{ needs.frontend.result }}'
-            };
-
-            const getEmoji = (status) => {
-              switch(status) {
-                case 'success': return '✅';
-                case 'failure': return '❌';
-                case 'skipped': return '⏭️';
-                default: return '⚠️';
-              }
-            };
-
-            const body = `## CI Pipeline Results
-
-            | Stage | Status |
-            |-------|--------|
-            | Preflight Checks | ${getEmoji(results.preflight)} ${results.preflight} |
-            | Backend Tests | ${getEmoji(results.backend)} ${results.backend} |
-            | Frontend Build | ${getEmoji(results.frontend)} ${results.frontend} |
-
-            ${Object.values(results).every(r => r === 'success')
-              ? '✅ All checks passed! Ready to merge.'
-              : '❌ Some checks failed. Please review the logs.'}
-            `;
-
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: body
-            });
+  deploy-testing:
+    name: Deploy to Testing
+    needs: [preflight, backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: testing
+      version: ${{ github.sha }}
+    secrets: inherit

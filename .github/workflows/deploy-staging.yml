@@ -1,0 +1,21 @@
+name: Deploy to Staging
+
+# Cada push a release/x.y.x despliega automáticamente a staging.
+on:
+  push:
+    branches:
+      - 'release/*'
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+      security-events: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: staging
+      version: ${{ github.sha }}
+    secrets: inherit

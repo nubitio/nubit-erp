@@ -8,10 +8,10 @@ This directory contains GitHub Actions workflows that automate the development, 
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| **ci.yml** | Push, PR | Run tests, linting, and quality checks |
-| **deploy.yml** | Push to main/release, Manual | Build and deploy application |
+| **ci.yml** | PR to main, push to main | Run tests, linting, and quality checks (CI only, no releases) |
+| **deploy.yml** | Tag push (v*.*.*), Manual | Build and deploy application (production driven by release tags) |
 | **security.yml** | Push, PR, Schedule, Manual | Security scanning and vulnerability detection |
-| **versioning.yml** | Tag push, Manual | Automated semantic versioning and releases |
+| **versioning.yml** | Push to release, Manual | Semantic-release: tags + GitHub Releases (no changelog commits) |
 
 ### Operational Workflows
 
@@ -98,14 +98,14 @@ This directory contains GitHub Actions workflows that automate the development, 
 
 ### Deploy Workflow (`deploy.yml`)
 
-**Purpose:** Automated deployment to staging and production
+**Purpose:** Deploy from release artifacts
 
 **Environments:**
-- **Staging**: Auto-deploy on push to `main` or `release` branches
-- **Production**: Requires manual approval, triggered by version tags
+- **Production**: Triggered by tags `v*.*.*` (created on `release`) or manual dispatch with a version/image.
+- **Staging**: Trigger via `workflow_dispatch` (provide environment + version/image).
 
 **Key Features:**
-- 🎯 Smart environment detection
+- 🎯 Tag-driven production promotion
 - 🐳 Multi-stage Docker builds with BuildKit cache
 - 🔒 Container security scanning
 - 📦 SBOM generation for compliance
@@ -126,14 +126,13 @@ This directory contains GitHub Actions workflows that automate the development, 
 
 ### Versioning Workflow (`versioning.yml`)
 
-**Purpose:** Automated semantic versioning and release management
+**Purpose:** Automated semantic versioning and release management on `release` branch
 
 **Features:**
 - 📝 Conventional Commits analysis
 - 🔢 Automatic version bumping (major/minor/patch)
-- 📋 Changelog generation
 - 🏷️ GitHub releases with notes
-- 🚀 Triggers production deployment
+- 🚀 Creates tags `v*.*.*` used for production deploys
 
 **Version Bump Rules:**
 - `feat:` → Minor version
@@ -194,10 +193,10 @@ SLACK_WEBHOOK_URL         # Slack notifications
 ## 🏷️ Branch Strategy
 
 ```
-main          → Staging deployment (auto)
-  └─ feature/* → CI only (PR required)
-  └─ fix/*     → CI only (PR required)
-  
+feature/*  → PR into main (CI only)
+main       → Integration (tests/QA), no releases
+release    → Release branch; semantic-release runs here, creates tags/releases used for prod deploys
+```
 release       → Staging deployment (auto)
   
 v*.*.*        → Production deployment (manual approval)
