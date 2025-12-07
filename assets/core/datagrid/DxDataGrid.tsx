@@ -404,3 +404,5 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     </div>
   );
 });
+
+DxDataGrid.displayName = 'DxDataGrid';

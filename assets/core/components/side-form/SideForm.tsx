@@ -119,3 +119,5 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
     </div>
   );
 });
+
+SideForm.displayName = 'SideForm';

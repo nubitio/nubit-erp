@@ -126,3 +126,5 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
     </React.Fragment>
   );
 });
+
+DxDialog.displayName = 'DxDialog';

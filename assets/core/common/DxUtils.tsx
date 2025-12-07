@@ -92,7 +92,7 @@ class DxUtils {
         }
         options.forEach((option) => {
           for (const key in option) {
-            if (option.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(option, key)) {
               loadOptions[key] = option[key];
             }
           }
@@ -105,7 +105,7 @@ class DxUtils {
         const loadOptions = {};
         options.forEach((option) => {
           for (const key in option) {
-            if (option.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(option, key)) {
               loadOptions[key] = option[key];
             }
           }

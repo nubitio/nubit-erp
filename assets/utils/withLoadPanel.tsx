@@ -8,7 +8,7 @@ type WithLoadProps = {
 };
 
 export const withLoadPanel = <T extends object>(WrappedComponent: React.ComponentType<T>) => {
-  return ({
+  const ComponentWithLoadPanel = ({
     panelProps,
     loading = false,
     hasData,
@@ -16,13 +16,17 @@ export const withLoadPanel = <T extends object>(WrappedComponent: React.Componen
   }: WithLoadProps & Partial<T>): React.ReactElement => {
     if (!hasData) {
       return <LoadPanel showPane={false} visible {...panelProps} />;
-    } else {
-      return (
-        <>
-          {loading && <LoadPanel showPane={false} visible {...panelProps} />}
-          <WrappedComponent {...(props as T)} />
-        </>
-      );
     }
+
+    return (
+      <>
+        {loading && <LoadPanel showPane={false} visible {...panelProps} />}
+        <WrappedComponent {...(props as T)} />
+      </>
+    );
   };
+
+  ComponentWithLoadPanel.displayName = `withLoadPanel(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+
+  return ComponentWithLoadPanel;
 };

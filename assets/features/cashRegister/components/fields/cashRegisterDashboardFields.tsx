@@ -2,12 +2,10 @@ import { FieldBuilder } from '../../../../core/field/FieldBuilder';
 import { FieldType } from '../../../../core/field/FieldType';
 import { Field } from '../../../../core/field/Field';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { useNavigate } from 'react-router-dom';
 import { Button } from 'devextreme-react';
 import NumberUtils from '../../../../core/utils/NumberUtils';
 
-const cashRegisterDashboardFields = () => {
-  const navigate = useNavigate();
+const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
   const fields: Field[] = [];
 
   fields.push(
