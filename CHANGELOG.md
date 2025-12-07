@@ -1,3 +1,35 @@
+## [1.9.0](https://github.com/nubitio/efact/compare/v1.8.0...v1.9.0) (2025-12-07)
+
+### 🚀 Features
+
+* add FrankenPHP Symfony runtime and update Docker configuration ([7451d7e](https://github.com/nubitio/efact/commit/7451d7e51069763afc39df3f59d712d8ce6a3c60))
+* add HealthController for database connectivity health check ([65ec236](https://github.com/nubitio/efact/commit/65ec236fbc52dbce27bf265ab9bd493348e657dc))
+* add logging for email sending errors in SendEmailProcessor ([d84711c](https://github.com/nubitio/efact/commit/d84711cf2362bd205d856a1ad2fd1bfeb1f7cab0))
+* add Symfony Messenger components and update configuration for message handling ([8eb1a97](https://github.com/nubitio/efact/commit/8eb1a976fa5fb0553788fdb195a34638a4762497))
+* automate database migrations during entrypoint execution ([70fc64b](https://github.com/nubitio/efact/commit/70fc64b26b82a831bba9666a618751b087f0588a))
+* enhance CI/CD workflows with improved validation, security scanning, and performance metrics ([#268](https://github.com/nubitio/efact/issues/268)) ([7474723](https://github.com/nubitio/efact/commit/7474723d266193371977da5026d18e477f8a4f0e))
+* enhance type definitions for contentRender and defaultValue, and update cash movement fields to accept navigate function ([07d3803](https://github.com/nubitio/efact/commit/07d3803103e30f52ffcd28ae4cc1cc994a54c55d))
+
+### 🐛 Bug Fixes
+
+* remove continue-on-error from multiple CI/CD steps for better error handling ([c4986a2](https://github.com/nubitio/efact/commit/c4986a23c3a6fa206d1de93cbf5dbecba41a53f8))
+* remove unused APP_URL from deployment environment configuration ([4ea3a99](https://github.com/nubitio/efact/commit/4ea3a9945fce6961b30a9076fcc2525aa8ddf400))
+* update deploy.yml to include actions read access ([ed6ece8](https://github.com/nubitio/efact/commit/ed6ece8362ced03a245fcb25f8718606f3416791))
+* update deploy.yml to include write access for security-events ([a9fde4b](https://github.com/nubitio/efact/commit/a9fde4bbd8d5fbc5ca91270c91d2a40d78ccbe44))
+* update Docker images in docker-compose.prod.yml to use 'main' tag ([b32bbd3](https://github.com/nubitio/efact/commit/b32bbd3424f57a93ed08e2b7dd41d4e160a901d7))
+* update permissions in deploy.yml to include actions read access ([8322bfa](https://github.com/nubitio/efact/commit/8322bfa5f94c75c2f531a7a8ecf49ec1ab5fb078))
+
+### ♻️ Refactoring
+
+* remove production deployment step from workflow configuration ([6eb20b1](https://github.com/nubitio/efact/commit/6eb20b138c65286f89e615e0a1a1b5097ac50143))
+* remove TypeScript type check step from CI pipeline ([c1fa400](https://github.com/nubitio/efact/commit/c1fa400ae124e5ba00c11d6a35c0601b45cdc0a6))
+* replace 'let' with 'const' for variable declarations in multiple files ([9438914](https://github.com/nubitio/efact/commit/94389141cd801c9dc433eae1d3d5147191ae5b57))
+* simplify versioning workflow and add semantic release configuration ([7a8fc01](https://github.com/nubitio/efact/commit/7a8fc011cc7b9e36736971cc362774ac3a5832f5))
+
+### 📚 Documentation
+
+* update CHANGELOG.md ([c4a7ba8](https://github.com/nubitio/efact/commit/c4a7ba8a12bb84c73633ccd89acb7fee0cf81262))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
