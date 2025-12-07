@@ -1,35 +1,39 @@
-## [1.8.0](https://github.com/nubitio/efact/compare/v1.7.0...v1.8.0) (2025-12-07)
-
-### 🚀 Features
-
-* add common entrypoint script for container initialization ([086ae1f](https://github.com/nubitio/efact/commit/086ae1fa095f90a3203382ed0bef09c153180841))
-* add GitHub Container Registry login step to deploy workflow ([b94b0ec](https://github.com/nubitio/efact/commit/b94b0ec68dd18144c48426f99e271db9676c7901))
-* add verification for Portainer configuration secrets before deployment ([bffc1c1](https://github.com/nubitio/efact/commit/bffc1c1ca4067f0959077e80eb210074f2c2ed5b))
-* enhance deployment workflow with improved environment detection and tagging ([8130d7c](https://github.com/nubitio/efact/commit/8130d7c06f98bf0ff2b1fde72835590f9cc7d388))
-* simplify deployment to Portainer by using portainer-stack-deploy action ([d08b174](https://github.com/nubitio/efact/commit/d08b1741d6d7b7fa8c541240292fa048ba6ec498))
-* update CI/CD workflows for release branch support and enhanced deployment options ([6ab849a](https://github.com/nubitio/efact/commit/6ab849aaf9a64cc1f927a4de8a4c2c3dcb60e769))
-
-### 🐛 Bug Fixes
-
-* exclude DataFixtures from automatic service discovery in services configuration ([e94e533](https://github.com/nubitio/efact/commit/e94e5333900b2218f380da4176ac82c7ec9b55d9))
-* remove fallback values for Portainer stack name and endpoint ID in deployment configuration ([4e78dce](https://github.com/nubitio/efact/commit/4e78dce18e531baf98365b012a9ad9df3a8d41bd))
-* remove image digest from deployment configuration for Portainer ([d6d968f](https://github.com/nubitio/efact/commit/d6d968f8c8a74ad7567fe3cfe5980aa7c6b9dca1))
-* update Docker Compose configuration for production environment ([88fef4f](https://github.com/nubitio/efact/commit/88fef4fb09a65aa4ad64d71d60d064b9f9e5c17c))
-
-### 📚 Documentation
-
-* update CHANGELOG.md ([3e862db](https://github.com/nubitio/efact/commit/3e862db2e8b19b1d767bf2d460b6102f53bea551))
-
-### ♻️ Refactoring
-
-* remove security scanning steps from CI and deployment workflows ([3d2579a](https://github.com/nubitio/efact/commit/3d2579a045b02dd00febd509808b681aa3efbf04))
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.8.0] - 2025-12-07
+
+### ♻️ Refactoring
+
+- Remove security scanning steps from CI and deployment workflows ([3d2579a](3d2579a045b02dd00febd509808b681aa3efbf04))
+
+### 🎨 Styling
+
+- Standardize SCSS and TypeScript formatting; adjust import statements and spacing ([bf1e804](bf1e804b78ac6a06fa630a798ce8e9fda923267a))
+
+### 🐛 Bug Fixes
+
+- Remove fallback values for Portainer stack name and endpoint ID in deployment configuration ([4e78dce](4e78dce18e531baf98365b012a9ad9df3a8d41bd))
+- Update Docker Compose configuration for production environment ([88fef4f](88fef4fb09a65aa4ad64d71d60d064b9f9e5c17c))
+- Remove image digest from deployment configuration for Portainer ([d6d968f](d6d968f8c8a74ad7567fe3cfe5980aa7c6b9dca1))
+- Exclude DataFixtures from automatic service discovery in services configuration ([e94e533](e94e5333900b2218f380da4176ac82c7ec9b55d9))
+
+### 📚 Documentation
+
+- Update CHANGELOG.md ([3e862db](3e862db2e8b19b1d767bf2d460b6102f53bea551))
+
+### 🚀 Features
+
+- Add GitHub Container Registry login step to deploy workflow ([b94b0ec](b94b0ec68dd18144c48426f99e271db9676c7901))
+- Simplify deployment to Portainer by using portainer-stack-deploy action ([d08b174](d08b1741d6d7b7fa8c541240292fa048ba6ec498))
+- Add verification for Portainer configuration secrets before deployment ([bffc1c1](bffc1c1ca4067f0959077e80eb210074f2c2ed5b))
+- Enhance deployment workflow with improved environment detection and tagging ([8130d7c](8130d7c06f98bf0ff2b1fde72835590f9cc7d388))
+- Add common entrypoint script for container initialization ([086ae1f](086ae1fa095f90a3203382ed0bef09c153180841))
+- Update CI/CD workflows for release branch support and enhanced deployment options ([6ab849a](6ab849aaf9a64cc1f927a4de8a4c2c3dcb60e769))
 
 ## [1.7.0] - 2025-12-06
 
