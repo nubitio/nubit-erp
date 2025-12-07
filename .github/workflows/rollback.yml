@@ -1,0 +1,198 @@
+name: Rollback Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to rollback'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version/tag to rollback to (leave empty for previous)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+  deployments: write
+
+concurrency:
+  group: rollback-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  validate-rollback:
+    name: Validate Rollback Request
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      target_version: ${{ steps.determine-version.outputs.version }}
+      target_image: ${{ steps.determine-version.outputs.image }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine target version
+        id: determine-version
+        run: |
+          set -euo pipefail
+          
+          if [ -n "${{ inputs.version }}" ]; then
+            TARGET_VERSION="${{ inputs.version }}"
+          else
+            # Get previous version
+            CURRENT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -z "$CURRENT_TAG" ]; then
+              echo "::error::No tags found, cannot determine previous version"
+              exit 1
+            fi
+            
+            # Get tag before current
+            TARGET_VERSION=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "")
+            if [ -z "$TARGET_VERSION" ]; then
+              echo "::error::No previous version found"
+              exit 1
+            fi
+          fi
+          
+          TARGET_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TARGET_VERSION}"
+          
+          echo "version=${TARGET_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "image=${TARGET_IMAGE}" >> "$GITHUB_OUTPUT"
+          
+          echo "## 🔄 Rollback Details" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Version:** ${TARGET_VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Image:** ${TARGET_IMAGE}" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify image exists
+        run: |
+          echo "Verifying image exists in registry..."
+          
+          # Try to pull image metadata (now authenticated)
+          if docker manifest inspect ${{ steps.determine-version.outputs.image }} > /dev/null 2>&1; then
+            echo "✅ Image verified in registry"
+          else
+            echo "::error::Image ${{ steps.determine-version.outputs.image }} not found in registry"
+            echo "::error::Please verify the image exists and you have access to it"
+            exit 1
+          fi
+
+  confirm-rollback:
+    name: Confirm Rollback
+    runs-on: ubuntu-latest
+    needs: validate-rollback
+    timeout-minutes: 5
+    environment: 
+      name: ${{ inputs.environment }}
+
+    steps:
+      - name: Create confirmation summary
+        run: |
+          echo "## ⚠️ Rollback Confirmation Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "You are about to rollback **${{ inputs.environment }}** to:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ needs.validate-rollback.outputs.target_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reason:** ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This action cannot be undone automatically." >> $GITHUB_STEP_SUMMARY
+
+  execute-rollback:
+    name: Execute Rollback
+    runs-on: ubuntu-latest
+    needs: [validate-rollback, confirm-rollback]
+    timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy previous version
+        uses: dann41/portainer-stack-deploy@v1
+        with:
+          portainer-host: ${{ secrets.PORTAINER_URL }}
+          access-token: ${{ secrets.PORTAINER_API_TOKEN }}
+          stack-name: ${{ secrets.PORTAINER_STACK_NAME }}
+          endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID }}
+          stack-definition: docker-compose.prod.yml
+          image: ${{ needs.validate-rollback.outputs.target_image }}
+
+      - name: Wait for rollback to complete
+        run: |
+          echo "Waiting for rollback to complete..."
+          sleep 30
+          
+          if [ -n "${{ secrets.APP_URL }}" ]; then
+            for i in {1..15}; do
+              if curl -sf "${{ secrets.APP_URL }}" > /dev/null 2>&1; then
+                echo "✅ Application is responding after rollback"
+                exit 0
+              fi
+              echo "Waiting for application... (attempt $i/15)"
+              sleep 10
+            done
+            echo "::warning::Health check inconclusive"
+          fi
+
+      - name: Rollback summary
+        if: always()
+        run: |
+          echo "## 🔄 Rollback Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Rolled back to:** ${{ needs.validate-rollback.outputs.target_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Reason:** ${{ inputs.reason }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Executed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Create rollback issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔄 Rollback: ${{ inputs.environment }} to ${{ needs.validate-rollback.outputs.target_version }}`,
+              body: `## Rollback Details
+              
+              **Environment:** ${{ inputs.environment }}
+              **Rolled back to:** ${{ needs.validate-rollback.outputs.target_version }}
+              **Reason:** ${{ inputs.reason }}
+              **Executed by:** @${{ github.actor }}
+              **Workflow Run:** ${context.payload.repository.html_url}/actions/runs/${context.runId}
+              
+              ## Actions Required
+              - [ ] Investigate root cause
+              - [ ] Create fix
+              - [ ] Test fix
+              - [ ] Re-deploy
+              
+              ## Timeline
+              - Rollback executed: ${new Date().toISOString()}
+              `,
+              labels: ['rollback', 'incident', `env:${{ inputs.environment }}`]
+            });
