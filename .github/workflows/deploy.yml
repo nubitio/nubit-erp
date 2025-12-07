@@ -170,16 +170,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare compose file with new image
-        env:
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
-          DIGEST: ${{ needs.build-and-push.outputs.digest }}
+      - name: Verify Portainer configuration
         run: |
-          FULL_IMAGE="$IMAGE@$DIGEST"
-          echo "Deploying image: $FULL_IMAGE"
-          sed -i "s|image: .*|image: $FULL_IMAGE|g" docker-compose.prod.yml
+          echo "Environment: ${{ needs.plan.outputs.environment_name }}"
+          if [ -z "${{ secrets.PORTAINER_URL }}" ]; then
+            echo "❌ PORTAINER_URL is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.PORTAINER_API_TOKEN }}" ]; then
+            echo "❌ PORTAINER_API_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.PORTAINER_STACK_NAME }}" ]; then
+            echo "❌ PORTAINER_STACK_NAME is not set for environment: ${{ needs.plan.outputs.environment_name }}"
+            exit 1
+          fi
+          if [ -z "${{ secrets.PORTAINER_ENDPOINT_ID }}" ]; then
+            echo "❌ PORTAINER_ENDPOINT_ID is not set"
+            exit 1
+          fi
+          echo "✅ All Portainer secrets are configured"
 
       - name: Deploy to Portainer
+        env:
+          IMAGE_WITH_DIGEST: ${{ needs.build-and-push.outputs.image }}@${{ needs.build-and-push.outputs.digest }}
         uses: dann41/portainer-stack-deploy@v1
         with:
           portainer-host: ${{ secrets.PORTAINER_URL }}
@@ -187,4 +201,4 @@ jobs:
           stack-name: ${{ secrets.PORTAINER_STACK_NAME }}
           endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           stack-definition: docker-compose.prod.yml
-          image: ${{ needs.build-and-push.outputs.image }}
+          image: ${{ needs.build-and-push.outputs.image }}@${{ needs.build-and-push.outputs.digest }}
