@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251206035720Ubigeo extends AbstractMigration
+final class Version20251206035720_ubigeo extends AbstractMigration
 {
     public function getDescription(): string
     {
