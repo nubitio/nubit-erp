@@ -1,6 +1,6 @@
 services:
   web:
-    image: ghcr.io/nubitio/efact:stg
+    image: ghcr.io/nubitio/efact:main
     container_name: efact-web
     restart: unless-stopped
     ports:
@@ -75,7 +75,7 @@ services:
         max-file: "3"
 
   worker_async:
-    image: ghcr.io/nubitio/efact:stg
+    image: ghcr.io/nubitio/efact:main
     container_name: efact-worker-async
     restart: unless-stopped
     depends_on:
@@ -98,7 +98,7 @@ services:
       --no-interaction
 
   worker_scheduler:
-    image: ghcr.io/nubitio/efact:stg
+    image: ghcr.io/nubitio/efact:main
     container_name: efact-worker-scheduler
     restart: unless-stopped
     depends_on:
