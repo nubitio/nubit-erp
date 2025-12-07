@@ -2,352 +2,37 @@ name: Versioning & Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      version_bump:
-        description: 'Version bump type'
-        required: true
-        type: choice
-        options:
-          - auto
-          - patch
-          - minor
-          - major
-          - prepatch
-          - preminor
-          - premajor
-      prerelease:
-        description: 'Prerelease identifier (e.g., alpha, beta, rc)'
-        required: false
-        type: string
 
 permissions:
   contents: write
-  pull-requests: write
   issues: write
-  packages: write
-
-concurrency:
-  group: versioning-${{ github.ref || github.run_id }}
-  cancel-in-progress: true
+  pull-requests: write
 
 jobs:
-  analyze-commits:
-    name: Analyze Commits
-    runs-on: ubuntu-latest
-    outputs:
-      should-release: ${{ steps.analysis.outputs.should-release }}
-      version-bump: ${{ steps.analysis.outputs.version-bump }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Analyze conventional commits
-        id: analysis
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { execSync } = require('child_process');
-
-            // Get commits since last tag
-            let commits;
-            try {
-              const lastTag = execSync('git describe --tags --abbrev=0 2>/dev/null || echo ""').toString().trim();
-              if (lastTag) {
-                commits = execSync(`git log ${lastTag}..HEAD --pretty=format:"%s"`).toString().split('\n');
-              } else {
-                commits = execSync('git log --pretty=format:"%s"').toString().split('\n');
-              }
-            } catch (e) {
-              commits = [];
-            }
-
-            let shouldRelease = false;
-            let versionBump = 'patch';
-            let hasBreaking = false;
-            let hasFeat = false;
-            let hasFix = false;
-
-            for (const commit of commits) {
-              if (!commit) continue;
-
-              // Check for breaking changes
-              if (commit.includes('BREAKING CHANGE') || commit.includes('!:')) {
-                hasBreaking = true;
-                shouldRelease = true;
-              }
-
-              // Check for features
-              if (commit.startsWith('feat')) {
-                hasFeat = true;
-                shouldRelease = true;
-              }
-
-              // Check for fixes
-              if (commit.startsWith('fix')) {
-                hasFix = true;
-                shouldRelease = true;
-              }
-            }
-
-            // Determine version bump
-            if (hasBreaking) {
-              versionBump = 'major';
-            } else if (hasFeat) {
-              versionBump = 'minor';
-            } else if (hasFix) {
-              versionBump = 'patch';
-            }
-
-            core.setOutput('should-release', shouldRelease);
-            core.setOutput('version-bump', versionBump);
-
-            console.log(`Should release: ${shouldRelease}`);
-            console.log(`Version bump: ${versionBump}`);
-            console.log(`Breaking changes: ${hasBreaking}`);
-            console.log(`Features: ${hasFeat}`);
-            console.log(`Fixes: ${hasFix}`);
-
   release:
-    name: Create Release
     runs-on: ubuntu-latest
-    needs: [analyze-commits]
-    if: |
-      needs.analyze-commits.outputs.should-release == 'true' ||
-      github.event_name == 'workflow_dispatch'
-    outputs:
-      release-version: ${{ steps.release-version.outputs.version }}
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: 20
 
       - name: Install semantic-release
         run: |
           npm install -g \
-            semantic-release@latest \
+            semantic-release \
             @semantic-release/changelog \
             @semantic-release/git \
             @semantic-release/github \
             conventional-changelog-conventionalcommits
 
-      - name: Create release configuration
-        run: |
-          cat > .releaserc.json << 'EOF'
-          {
-            "branches": ["main", "release"],
-            "plugins": [
-              [
-                "@semantic-release/commit-analyzer",
-                {
-                  "preset": "conventionalcommits",
-                  "releaseRules": [
-                    {"type": "feat", "release": "minor"},
-                    {"type": "fix", "release": "patch"},
-                    {"type": "perf", "release": "patch"},
-                    {"type": "revert", "release": "patch"},
-                    {"type": "docs", "release": "patch"},
-                    {"type": "style", "release": false},
-                    {"type": "refactor", "release": "patch"},
-                    {"type": "test", "release": false},
-                    {"type": "build", "release": false},
-                    {"type": "ci", "release": false},
-                    {"type": "chore", "release": false},
-                    {"breaking": true, "release": "major"}
-                  ]
-                }
-              ],
-              [
-                "@semantic-release/release-notes-generator",
-                {
-                  "preset": "conventionalcommits",
-                  "presetConfig": {
-                    "types": [
-                      {"type": "feat", "section": "🚀 Features"},
-                      {"type": "fix", "section": "🐛 Bug Fixes"},
-                      {"type": "perf", "section": "⚡ Performance"},
-                      {"type": "revert", "section": "⏪ Reverts"},
-                      {"type": "docs", "section": "📚 Documentation"},
-                      {"type": "refactor", "section": "♻️ Refactoring"},
-                      {"type": "test", "section": "✅ Tests"},
-                      {"type": "build", "section": "🏗️ Build"},
-                      {"type": "ci", "section": "👷 CI/CD"}
-                    ]
-                  }
-                }
-              ],
-              [
-                "@semantic-release/changelog",
-                {
-                  "changelogFile": "CHANGELOG.md"
-                }
-              ],
-              "@semantic-release/github",
-              [
-                "@semantic-release/git",
-                {
-                  "assets": ["CHANGELOG.md"],
-                  "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
-                }
-              ]
-            ]
-          }
-          EOF
-
       - name: Run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
-
-      - name: Capture release version
-        id: release-version
-        run: |
-          VERSION=$(git describe --tags --abbrev=0 --match "v*.*.*" 2>/dev/null || true)
-          if [ -z "$VERSION" ]; then
-            echo "No release tag found"
-            exit 1
-          fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Release version: $VERSION"
-
-  manual-bump:
-    name: Manual Version Bump
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.version_bump != 'auto'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Get current version
-        id: current-version
-        run: |
-          # Try to get from git tags
-          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "current=$VERSION" >> $GITHUB_OUTPUT
-          echo "Current version: $VERSION"
-
-      - name: Bump version
-        id: bump
-        run: |
-          CURRENT="${{ steps.current-version.outputs.current }}"
-          BUMP_TYPE="${{ github.event.inputs.version_bump }}"
-          PRERELEASE="${{ github.event.inputs.prerelease }}"
-
-          # Remove 'v' prefix if present
-          CURRENT="${CURRENT#v}"
-
-          # Parse version
-          IFS='.' read -r -a parts <<< "$CURRENT"
-          MAJOR="${parts[0]}"
-          MINOR="${parts[1]}"
-          PATCH="${parts[2]%%-*}"
-
-          # Bump version
-          case "$BUMP_TYPE" in
-            major)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            minor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            patch)
-              PATCH=$((PATCH + 1))
-              ;;
-            premajor)
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              ;;
-            preminor)
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              ;;
-            prepatch)
-              PATCH=$((PATCH + 1))
-              ;;
-          esac
-
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-
-          # Add prerelease identifier if provided
-          if [ ! -z "$PRERELEASE" ]; then
-            NEW_VERSION="$NEW_VERSION-$PRERELEASE.1"
-          fi
-
-          echo "new=v$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: v$NEW_VERSION"
-
-      - name: Create tag and release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NEW_VERSION: ${{ steps.bump.outputs.new }}
-        run: |
-          # Create annotated tag
-          git tag -a "$NEW_VERSION" -m "Release $NEW_VERSION"
-          git push origin "$NEW_VERSION"
-
-          # Create GitHub release
-          gh release create "$NEW_VERSION" \
-            --title "Release $NEW_VERSION" \
-            --notes "Manually created release $NEW_VERSION" \
-            --draft=false \
-            --prerelease=${{ github.event.inputs.prerelease != '' }}
-
-  update-changelog:
-    name: Update Changelog
-    runs-on: ubuntu-latest
-    needs: [release]
-    if: always() && needs.release.result == 'success'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          fetch-depth: 0
-
-      - name: Generate changelog
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: .github/cliff.toml
-          args: --verbose --output CHANGELOG.md
-        env:
-          OUTPUT: CHANGELOG.md
-
-      - name: Commit changelog
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          if git diff --quiet CHANGELOG.md; then
-            echo "No changelog changes"
-          else
-            git add CHANGELOG.md
-            git commit -m "docs: update CHANGELOG.md"
-            git push
-          fi
