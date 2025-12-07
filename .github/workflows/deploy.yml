@@ -1,12 +1,24 @@
 name: Deploy
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: false
+        type: string
+      version:
+        description: 'Version being deployed'
+        required: false
+        type: string
+      image_tag:
+        description: 'Override image tag (optional)'
+        required: false
+        type: string
   push:
     branches:
-      - develop
       - main
-    tags:
-      - 'v*.*.*'
+      - release
   workflow_dispatch:
     inputs:
       environment:
@@ -61,6 +73,9 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           DISPATCH_ENV: ${{ github.event.inputs.environment }}
           DISPATCH_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          CALL_ENV: ${{ inputs.environment }}
+          CALL_VERSION: ${{ inputs.version }}
+          CALL_IMAGE_TAG: ${{ inputs.image_tag }}
           SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -72,6 +87,27 @@ jobs:
           SHOULD_DEPLOY="false"
 
           case "${EVENT_NAME}" in
+            workflow_call)
+              if [[ -z "${CALL_ENV:-}" || "${CALL_ENV}" == "production" ]]; then
+                TARGET_ENV="prod"
+                BUILD_TARGET="prod"
+                ENV_NAME="production"
+              else
+                TARGET_ENV="stg"
+                BUILD_TARGET="stg"
+                ENV_NAME="staging"
+              fi
+
+              if [[ -n "${CALL_IMAGE_TAG:-}" ]]; then
+                IMAGE_TAG="${CALL_IMAGE_TAG}"
+              elif [[ -n "${CALL_VERSION:-}" ]]; then
+                IMAGE_TAG="${CALL_VERSION}"
+              else
+                IMAGE_TAG="${SHA}"
+              fi
+
+              SHOULD_DEPLOY="true"
+              ;;
             workflow_dispatch)
               if [[ "${DISPATCH_ENV}" == "production" ]]; then
                 TARGET_ENV="prod"
@@ -94,14 +130,12 @@ jobs:
               ;;
             push)
               if [[ "${REF_TYPE}" == "tag" ]]; then
-                # Production deploy on version tag
                 TARGET_ENV="prod"
                 BUILD_TARGET="prod"
                 ENV_NAME="production"
                 IMAGE_TAG="${REF_NAME}"
                 SHOULD_DEPLOY="true"
-              elif [[ "${REF_TYPE}" == "branch" ]] && [[ "${REF_NAME}" == "main" || "${REF_NAME}" == "develop" ]]; then
-                # Staging deploy from main/develop
+              elif [[ "${REF_TYPE}" == "branch" ]] && [[ "${REF_NAME}" == "main" || "${REF_NAME}" == "release" ]]; then
                 TARGET_ENV="stg"
                 BUILD_TARGET="stg"
                 ENV_NAME="staging"

@@ -1,15 +1,11 @@
-# ============================================================================
-# PR Automation - Auto-labeling, Auto-assignment, Size tracking
-# ============================================================================
-# Automatically labels PRs based on file changes and conventional commits
-# Auto-assigns reviewers based on CODEOWNERS
-# Tracks PR size and complexity
-
 name: PR Automation
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+      - release
 
 permissions:
   contents: read
@@ -17,9 +13,6 @@ permissions:
   issues: write
 
 jobs:
-  # ============================================================================
-  # Auto-label based on file changes
-  # ============================================================================
   auto-label:
     name: Auto Label PR
     runs-on: ubuntu-latest
@@ -80,9 +73,6 @@ jobs:
               });
             }
 
-  # ============================================================================
-  # Calculate and label PR size
-  # ============================================================================
   pr-size:
     name: Label PR Size
     runs-on: ubuntu-latest
@@ -166,9 +156,6 @@ jobs:
               });
             }
 
-  # ============================================================================
-  # Auto-assign PR author
-  # ============================================================================
   auto-assign-author:
     name: Auto Assign PR Author
     runs-on: ubuntu-latest
@@ -194,9 +181,6 @@ jobs:
               console.error(`❌ Failed to assign author: ${error.message}`);
             }
 
-  # ============================================================================
-  # Check for linked issues
-  # ============================================================================
   check-linked-issues:
     name: Check Linked Issues
     runs-on: ubuntu-latest
@@ -236,9 +220,6 @@ jobs:
               });
             }
 
-  # ============================================================================
-  # Enforce PR template
-  # ============================================================================
   check-pr-template:
     name: Check PR Template
     runs-on: ubuntu-latest
