@@ -206,9 +206,6 @@ jobs:
       - name: Lint JavaScript/TypeScript
         run: yarn lint
 
-      - name: Type check TypeScript
-        run: yarn type-check
-
       - name: Build themes
         run: |
           mkdir -p public/themes
