@@ -179,56 +179,12 @@ jobs:
           echo "Deploying image: $FULL_IMAGE"
           sed -i "s|image: .*|image: $FULL_IMAGE|g" docker-compose.prod.yml
 
-      - name: Deploy stack via Portainer API
-        env:
-          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
-          PORTAINER_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
-          STACK_ID: ${{ needs.plan.outputs.target_env == 'prod' && secrets.PORTAINER_STACK_ID_PROD || secrets.PORTAINER_STACK_ID_STG }}
-          ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
-        run: |
-          set -euo pipefail
-          if [ -z "$PORTAINER_URL" ] || [ -z "$PORTAINER_TOKEN" ] || [ -z "$STACK_ID" ]; then
-            echo "Missing Portainer configuration for ${{ needs.plan.outputs.environment_name }}"
-            exit 1
-          fi
-
-          UPDATE_BODY=$(jq -Rs . < docker-compose.prod.yml)
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-            -H "X-API-Key: $PORTAINER_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "{\"stackFileContent\":$UPDATE_BODY,\"prune\":true,\"pullImage\":true}")
-
-          BODY=$(echo "$RESPONSE" | head -n -1)
-          STATUS=$(echo "$RESPONSE" | tail -n1)
-          echo "Portainer response code: $STATUS"
-          if [ "$STATUS" != "200" ]; then
-            echo "$BODY"
-            exit 1
-          fi
-          echo "Stack update accepted."
-
-      - name: Verify stack status
-        env:
-          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
-          PORTAINER_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
-          STACK_ID: ${{ needs.plan.outputs.target_env == 'prod' && secrets.PORTAINER_STACK_ID_PROD || secrets.PORTAINER_STACK_ID_STG }}
-          ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
-        run: |
-          sleep 20
-          RESPONSE=$(curl -s -w "\n%{http_code}" -X GET "$PORTAINER_URL/api/stacks/$STACK_ID?endpointId=$ENDPOINT_ID" \
-            -H "X-API-Key: $PORTAINER_TOKEN")
-          BODY=$(echo "$RESPONSE" | head -n -1)
-          STATUS=$(echo "$RESPONSE" | tail -n1)
-
-          if [ "$STATUS" != "200" ]; then
-            echo "Unable to verify stack ($STATUS)"
-            echo "$BODY"
-            exit 1
-          fi
-
-          CODE=$(echo "$BODY" | jq -r '.Status')
-          echo "Stack status: $CODE"
-          if [ "$CODE" != "1" ]; then
-            echo "$BODY"
-            exit 1
-          fi
+      - name: Deploy to Portainer
+        uses: dann41/portainer-stack-deploy@v1
+        with:
+          portainer-host: ${{ secrets.PORTAINER_URL }}
+          access-token: ${{ secrets.PORTAINER_API_TOKEN }}
+          stack-name: ${{ secrets.PORTAINER_STACK_NAME || 'efact-app' }}
+          endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
+          stack-definition: docker-compose.prod.yml
+          image: ${{ needs.build-and-push.outputs.image }}
