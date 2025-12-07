@@ -37,7 +37,7 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
           type: 'custom',
           options: {
             validationCallback: (e: any) => {
-              let doc = formRef?.getFieldValue('ruc');
+              const doc = formRef?.getFieldValue('ruc');
               if (doc.length === 8) {
                 return true;
               } else {

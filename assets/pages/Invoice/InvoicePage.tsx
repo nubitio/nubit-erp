@@ -30,7 +30,7 @@ export const InvoicePage = () => {
       text: 'Enviar a SUNAT',
       type: 'info',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
           notify(
             {
@@ -76,7 +76,7 @@ export const InvoicePage = () => {
       text: 'Enviar por correo',
       type: 'success',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
           notify(
             {
@@ -110,7 +110,7 @@ export const InvoicePage = () => {
       text: 'Ver',
       type: 'primary',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
           notify(
             {
@@ -122,11 +122,11 @@ export const InvoicePage = () => {
           );
           return;
         }
-        let payload = {
+        const payload = {
           type: selectedRow?.voucherTypeId,
           id: selectedRow?.saleId,
         };
-        let payloadEncoded = btoa(JSON.stringify(payload));
+        const payloadEncoded = btoa(JSON.stringify(payload));
         window.open('receipt/' + payloadEncoded, '_blank');
       },
     },
@@ -134,7 +134,7 @@ export const InvoicePage = () => {
       text: 'Consulta CDR',
       type: 'warning',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
           notify(
             {
@@ -167,7 +167,7 @@ export const InvoicePage = () => {
       text: 'Consulta CPE',
       type: 'success',
       onClick: () => {
-        let selectedRows = gridRef.current?.getSelectedRowKeys();
+        const selectedRows = gridRef.current?.getSelectedRowKeys();
         if (!selectedRows || selectedRows.length === 0) {
           notify(
             {

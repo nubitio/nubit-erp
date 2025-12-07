@@ -49,7 +49,7 @@ export const SalePage = () => {
 
   const setupObservers = () => {
     on<number>(DiscountDialogEvent.APPLY, (discountPercent: number) => {
-      let discount = Number(discountPercent * 100).toFixed(2);
+      const discount = Number(discountPercent * 100).toFixed(2);
       formRef.current?.setFieldValue('descuento', Number(discount));
     });
 
@@ -113,7 +113,7 @@ export const SalePage = () => {
   }, []);
 
   const voidSale = (saleId: string) => {
-    let reason = prompt('Motivo de anulación', '');
+    const reason = prompt('Motivo de anulación', '');
     if (reason === null) {
       return;
     }
@@ -144,7 +144,7 @@ export const SalePage = () => {
   };
 
   const print = (saleId: string) => {
-    let config = qz.configs.create(printerName);
+    const config = qz.configs.create(printerName);
     saleService.printInvoice(saleId).subscribe((response) => {
       qz.print(config, [response.data]).catch((err: any) => {
         console.error(err);
@@ -157,7 +157,7 @@ export const SalePage = () => {
       text: 'Vista previa',
       type: 'info',
       onClick: () => {
-        let saleId = gridRef.current?.getSelectedRowKey();
+        const saleId = gridRef.current?.getSelectedRowKey();
         if (saleId) {
           selectedSaleId.current = saleId;
           setIsPreviewVisible(true);
@@ -170,7 +170,7 @@ export const SalePage = () => {
       text: 'Imprimir',
       type: 'primary',
       onClick: () => {
-        let saleId = gridRef.current?.getSelectedRowKey();
+        const saleId = gridRef.current?.getSelectedRowKey();
         if (saleId) {
           print(saleId);
         } else {
@@ -183,7 +183,7 @@ export const SalePage = () => {
       text: 'Anular',
       type: 'danger',
       onClick: () => {
-        let saleId = gridRef.current?.getSelectedRowKey();
+        const saleId = gridRef.current?.getSelectedRowKey();
         if (saleId) {
           voidSale(saleId);
         } else {
@@ -195,7 +195,7 @@ export const SalePage = () => {
       text: 'Generar comprobante',
       type: 'warning',
       onClick: () => {
-        let saleId = gridRef.current?.getSelectedRowKey();
+        const saleId = gridRef.current?.getSelectedRowKey();
         if (saleId) {
           makeInvoice(saleId);
         } else {
@@ -208,7 +208,7 @@ export const SalePage = () => {
       type: 'info',
       onClick: () => {
         emit(FORM_EVENTS.LOADING, true);
-        let saleId = gridRef.current?.getSelectedRowKey();
+        const saleId = gridRef.current?.getSelectedRowKey();
         httpClient
           .get<any>(Constants.API_BASE_URL + 'movements/' + saleId)
           .pipe(
