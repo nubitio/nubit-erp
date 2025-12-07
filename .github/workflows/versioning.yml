@@ -1,14 +1,6 @@
-# ============================================================================
-# Semantic Versioning & Release Automation
-# ============================================================================
-# Automatically bumps version based on conventional commits
-# Creates releases and changelogs
-# Supports manual version promotion
-
 name: Versioning & Release
 
 on:
-  # Only trigger manually or when a version tag is pushed
   push:
     tags:
       - 'v*.*.*'
@@ -35,11 +27,13 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  packages: write
+
+concurrency:
+  group: versioning-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
-  # ============================================================================
-  # Analyze commits and determine version bump
-  # ============================================================================
   analyze-commits:
     name: Analyze Commits
     runs-on: ubuntu-latest
@@ -119,9 +113,6 @@ jobs:
             console.log(`Features: ${hasFeat}`);
             console.log(`Fixes: ${hasFix}`);
 
-  # ============================================================================
-  # Create release with semantic-release
-  # ============================================================================
   release:
     name: Create Release
     runs-on: ubuntu-latest
@@ -129,6 +120,8 @@ jobs:
     if: |
       needs.analyze-commits.outputs.should-release == 'true' ||
       github.event_name == 'workflow_dispatch'
+    outputs:
+      release-version: ${{ steps.release-version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -155,7 +148,7 @@ jobs:
         run: |
           cat > .releaserc.json << 'EOF'
           {
-            "branches": ["main", "master"],
+            "branches": ["main", "release"],
             "plugins": [
               [
                 "@semantic-release/commit-analyzer",
@@ -219,9 +212,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-  # ============================================================================
-  # Manual version bump (when triggered manually)
-  # ============================================================================
+      - name: Capture release version
+        id: release-version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 --match "v*.*.*" 2>/dev/null || true)
+          if [ -z "$VERSION" ]; then
+            echo "No release tag found"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release version: $VERSION"
+
   manual-bump:
     name: Manual Version Bump
     runs-on: ubuntu-latest
@@ -317,9 +318,6 @@ jobs:
             --draft=false \
             --prerelease=${{ github.event.inputs.prerelease != '' }}
 
-  # ============================================================================
-  # Update CHANGELOG
-  # ============================================================================
   update-changelog:
     name: Update Changelog
     runs-on: ubuntu-latest
@@ -330,7 +328,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
 
       - name: Generate changelog
@@ -354,3 +352,16 @@ jobs:
             git push
           fi
 
+  deploy-prod:
+    name: Deploy to Production
+    needs:
+      - release
+      - update-changelog
+    if: |
+      needs.release.result == 'success' &&
+      needs.update-changelog.result == 'success'
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      version: ${{ needs.release.outputs.release-version }}
+    secrets: inherit
