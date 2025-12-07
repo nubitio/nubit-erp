@@ -29,8 +29,8 @@ export const TransferFields = () => {
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
-  let session = StorageUtils.getItem('session');
-  let warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
+  const session = StorageUtils.getItem('session');
+  const warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)

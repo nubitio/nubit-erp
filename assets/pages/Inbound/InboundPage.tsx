@@ -30,7 +30,7 @@ export const InboundPage = () => {
   let alreadySetup = false;
 
   const setTotal = () => {
-    let rows = formRef.current?.getDetailData() ?? [];
+    const rows = formRef.current?.getDetailData() ?? [];
     let total = 0;
     rows.forEach((row: any) => {
       total += row.precio_total;

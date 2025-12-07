@@ -8,7 +8,7 @@ import NumberUtils from '../../../../core/utils/NumberUtils';
 
 const cashRegisterDashboardFields = () => {
   const navigate = useNavigate();
-  let fields: Field[] = [];
+  const fields: Field[] = [];
 
   fields.push(
     new FieldBuilder()

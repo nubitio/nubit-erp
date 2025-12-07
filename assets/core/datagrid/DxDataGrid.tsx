@@ -152,7 +152,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const onEditClick = () => {
-    let selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
+    const selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
     if (selectedRowsData && selectedRowsData.length > 0) {
       options.events?.EDIT && emit(options.events?.EDIT, { row: selectedRowsData[0] });
     } else {
@@ -161,7 +161,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const onDeleteClick = () => {
-    let selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
+    const selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
     if (selectedRowsData && selectedRowsData.length > 0) {
       options.events?.DELETE && emit(options.events?.DELETE, { row: selectedRowsData[0] });
     } else {
@@ -192,7 +192,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
 
   const renderDetail = useCallback(
     (e: any) => {
-      let detailUrl = options.detailUrl?.replace('{id}', e.key);
+      const detailUrl = options.detailUrl?.replace('{id}', e.key);
 
       return (
         <DxDetailDataGrid
@@ -243,7 +243,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const getFilter = () => {
-    let filter = gridRef.current?.instance().getCombinedFilter();
+    const filter = gridRef.current?.instance().getCombinedFilter();
 
     if (Array.isArray(filter) && filter.length === 3 && !(typeof filter[0] === 'object')) {
       return [filter];

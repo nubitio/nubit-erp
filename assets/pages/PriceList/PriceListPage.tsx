@@ -59,7 +59,7 @@ export const PriceListPage = () => {
       text: 'Precios',
       type: 'info',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
           notify(
             {
@@ -76,11 +76,11 @@ export const PriceListPage = () => {
     },
   ];
 
-  let alreadySetup = useRef(false);
+  const alreadySetup = useRef(false);
 
   const setupObservers = () => {
     on(PRICES_EVENT.ADD, () => {
-      let selectedRow = gridRef.current?.getSelectedRow();
+      const selectedRow = gridRef.current?.getSelectedRow();
       if (!selectedRow) {
         toast('Debe seleccionar una tarifa', 'warning');
       }
@@ -89,7 +89,7 @@ export const PriceListPage = () => {
         .subscribe((response) => {
           pricesRef.current?.instance().beginCustomLoading('Cargando precios...');
           pricesRef.current?.instance().option('dataSource', response.data);
-          let store = pricesData.current.store() as ArrayStore;
+          const store = pricesData.current.store() as ArrayStore;
           store.clear();
           response.data.forEach((item: any) => {
             store.insert(item);
@@ -100,9 +100,9 @@ export const PriceListPage = () => {
     });
 
     on(PRICES_EVENT.SAVE, () => {
-      let selectedRow = gridRef.current?.getSelectedRow();
-      let pricesData: any[] = [];
-      let updatedPrices = pricesRef.current?.instance().getDataSource().items();
+      const selectedRow = gridRef.current?.getSelectedRow();
+      const pricesData: any[] = [];
+      const updatedPrices = pricesRef.current?.instance().getDataSource().items();
       updatedPrices?.forEach((item: any) => {
         if (!item.updated) return;
         pricesData.push({
