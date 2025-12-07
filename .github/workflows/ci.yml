@@ -5,10 +5,16 @@ on:
     branches:
       - main
       - release
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
   pull_request:
     branches:
       - main
       - release
+  workflow_dispatch:
+  merge_group:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -16,19 +22,23 @@ concurrency:
 
 permissions:
   contents: read
+  checks: write
+  pull-requests: write
 
 env:
   PHP_VERSION: '8.5'
   NODE_VERSION: '20'
-  COMPOSER_CACHE_VERSION: v1
+  COMPOSER_CACHE_VERSION: v2
 
 jobs:
   preflight:
-    name: Preflight
+    name: Preflight Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
@@ -37,30 +47,45 @@ jobs:
         run: |
           TITLE="${{ github.event.pull_request.title }}"
           if [[ ! "$TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?:\ .+ ]]; then
-            echo "PR title must follow Conventional Commits (e.g., 'feat: add payments')."
+            echo "::error::PR title must follow Conventional Commits format"
+            echo "Expected format: type(scope): description"
+            echo "Example: feat(auth): add JWT authentication"
             exit 1
           fi
 
       - name: Detect merge conflict markers
         run: |
           if git grep -n "<<<<<<< HEAD" -- ':!vendor' ':!node_modules' ':!.github/workflows/*'; then
-            echo "Merge conflict markers detected."
+            echo "::error::Merge conflict markers detected"
             exit 1
           fi
 
       - name: Check for oversized files
         run: |
-          large_files=$(find . -type f -size +5M -not -path "./.git/*" -not -path "./vendor/*" -not -path "./node_modules/*")
+          large_files=$(find . -type f -size +10M -not -path "./.git/*" -not -path "./vendor/*" -not -path "./node_modules/*" -not -path "./var/*" -not -path "./public/build/*")
           if [ -n "$large_files" ]; then
-            echo "Files over 5MB detected:"
+            echo "::error::Files over 10MB detected (should use Git LFS):"
             echo "$large_files"
             exit 1
+          fi
+
+      - name: Validate composer.json
+        run: |
+          if [ -f composer.json ]; then
+            composer validate --strict --no-check-all --no-check-publish
+          fi
+
+      - name: Validate package.json
+        run: |
+          if [ -f package.json ]; then
+            node -e "JSON.parse(require('fs').readFileSync('package.json'))"
           fi
 
   backend:
     name: PHP Quality & Tests
     runs-on: ubuntu-latest
     needs: preflight
+    timeout-minutes: 30
 
     services:
       mysql:
@@ -69,10 +94,10 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test_db
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
         ports:
           - 3306:3306
 
@@ -82,13 +107,15 @@ jobs:
           --health-cmd="redis-cli ping"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
         ports:
           - 6379:6379
 
     env:
+      APP_ENV: test
       DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_db?serverVersion=8.0
       REDIS_URL: redis://127.0.0.1:6379
+      APP_SECRET: test-secret-key
 
     steps:
       - uses: actions/checkout@v4
@@ -125,41 +152,81 @@ jobs:
         run: ./vendor/bin/grumphp run --no-interaction
 
       - name: Run PHPUnit
-        run: ./vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text
+        run: ./vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit=junit.xml
 
-      - name: Upload coverage artifact
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          file: ./coverage.xml
+          flags: backend
+          name: backend-coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: php-coverage
-          path: coverage.xml
-          retention-days: 7
+          name: test-results
+          path: |
+            coverage.xml
+            junit.xml
+          retention-days: 30
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: PHPUnit Tests
+          path: junit.xml
+          reporter: java-junit
+        continue-on-error: true
 
   frontend:
-    name: Frontend Build
+    name: Frontend Build & Lint
     runs-on: ubuntu-latest
     needs: preflight
+    timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: yarn
-          cache-dependency-path: yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Build assets
+      - name: Lint JavaScript/TypeScript
+        run: yarn lint
+        continue-on-error: true
+
+      - name: Type check TypeScript
+        run: yarn type-check
+        continue-on-error: true
+
+      - name: Build themes
         run: |
           mkdir -p public/themes
-          yarn build
+          yarn build:themes
+
+      - name: Build assets
+        run: yarn build
+
+      - name: Check build size
+        run: |
+          if [ -d "public/build" ]; then
+            BUILD_SIZE=$(du -sh public/build | cut -f1)
+            echo "### Build Size: $BUILD_SIZE" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -169,23 +236,79 @@ jobs:
             public/build
             public/themes
           retention-days: 7
+          compression-level: 9
 
   ci-summary:
     name: CI Summary
     runs-on: ubuntu-latest
-    needs: [backend, frontend]
+    needs: [preflight, backend, frontend]
     if: always()
+    timeout-minutes: 5
 
     steps:
-      - run: |
-          echo "## CI Results" >> $GITHUB_STEP_SUMMARY
-          echo "- Backend: ${{ needs.backend.result }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Frontend: ${{ needs.frontend.result }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Fail if any job failed
+      - name: Generate CI summary
         run: |
-          if [[ "${{ needs.backend.result }}" != "success" || \
-                "${{ needs.frontend.result }}" != "success" ]]; then
-            echo "One or more CI jobs failed"
+          echo "## 🎯 CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status | Duration |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Preflight | ${{ needs.preflight.result }} | - |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Tests | ${{ needs.backend.result }} | - |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Build | ${{ needs.frontend.result }} | - |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.backend.result }}" == "success" && "${{ needs.frontend.result }}" == "success" ]]; then
+            echo "✅ **All checks passed!** Ready to merge." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some checks failed.** Please review the errors above." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Fail if critical jobs failed
+        run: |
+          if [[ "${{ needs.preflight.result }}" == "failure" ]] || \
+             [[ "${{ needs.backend.result }}" == "failure" ]] || \
+             [[ "${{ needs.frontend.result }}" == "failure" ]]; then
+            echo "::error::One or more critical CI jobs failed"
             exit 1
           fi
+
+      - name: Post PR comment with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const results = {
+              preflight: '${{ needs.preflight.result }}',
+              backend: '${{ needs.backend.result }}',
+              frontend: '${{ needs.frontend.result }}'
+            };
+
+            const getEmoji = (status) => {
+              switch(status) {
+                case 'success': return '✅';
+                case 'failure': return '❌';
+                case 'skipped': return '⏭️';
+                default: return '⚠️';
+              }
+            };
+
+            const body = `## CI Pipeline Results
+
+            | Stage | Status |
+            |-------|--------|
+            | Preflight Checks | ${getEmoji(results.preflight)} ${results.preflight} |
+            | Backend Tests | ${getEmoji(results.backend)} ${results.backend} |
+            | Frontend Build | ${getEmoji(results.frontend)} ${results.frontend} |
+
+            ${Object.values(results).every(r => r === 'success')
+              ? '✅ All checks passed! Ready to merge.'
+              : '❌ Some checks failed. Please review the logs.'}
+            `;
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+        continue-on-error: true

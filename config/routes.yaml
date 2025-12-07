@@ -1,3 +1,5 @@
 controllers:
   resource: ../src/
   type: attribute
+  exclude:
+    - ../src/DataFixtures/
