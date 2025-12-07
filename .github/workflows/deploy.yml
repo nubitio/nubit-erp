@@ -30,6 +30,7 @@ permissions:
   contents: read
   packages: write
   security-events: write
+  actions: read
 
 env:
   REGISTRY: ghcr.io
@@ -190,8 +191,8 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload Trivy results
+        if: always() && (github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository)
         uses: github/codeql-action/upload-sarif@v4
-        if: always()
         with:
           sarif_file: trivy-image.sarif
 
