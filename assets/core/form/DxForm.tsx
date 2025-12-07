@@ -567,3 +567,5 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
   return <React.Fragment>{renderForm()}</React.Fragment>;
 });
+
+DxForm.displayName = 'DxForm';

@@ -252,7 +252,7 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  contentRender(value: string | Function | null) {
+  contentRender(value: string | ((...args: unknown[]) => unknown) | null) {
     this._field.contentRender = value;
     return this;
   }

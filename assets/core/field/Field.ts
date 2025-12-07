@@ -46,7 +46,7 @@ export interface Field {
   formatter: any;
   itemFormatter: any;
   visible: boolean;
-  defaultValue: string | number | boolean | Date | null | undefined | Function;
+  defaultValue: string | number | boolean | Date | null | undefined | (() => unknown);
   onChange: any;
   onSelect: any;
   onClick: any;
