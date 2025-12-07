@@ -269,7 +269,6 @@ jobs:
     if: needs.plan.outputs.should_deploy == 'true'
     environment:
       name: ${{ needs.plan.outputs.environment_name }}
-      url: ${{ secrets.APP_URL }}
 
     steps:
       - name: Checkout repository
