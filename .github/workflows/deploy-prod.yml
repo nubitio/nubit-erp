@@ -1,0 +1,21 @@
+name: Deploy to Production
+
+# Se ejecuta cuando se crea un tag vX.Y.Z y despliega a producción.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy-production:
+    name: Deploy to Production
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+      security-events: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: production
+      version: ${{ github.ref_name }}
+    secrets: inherit
