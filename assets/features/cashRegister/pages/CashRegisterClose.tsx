@@ -43,12 +43,12 @@ export const CashRegisterClose = () => {
   };
 
   const closeCashRegister = () => {
-    let closureData = gridRef.current?.instance().getDataSource().items();
+    const closureData = gridRef.current?.instance().getDataSource().items();
     if (id === undefined || closureData === undefined) {
       toast('Error al cerrar la caja', 'error');
       return;
     }
-    let data = closureData.map((item: any) => {
+    const data = closureData.map((item: any) => {
       return {
         cashShift: Constants.API_BASE_URL + 'cash-shifts/' + id,
         paymentMethod: Constants.API_BASE_URL + 'payment-methods/' + item.paymentMethodId,
@@ -60,7 +60,7 @@ export const CashRegisterClose = () => {
       };
     });
 
-    let requiredFields = data.filter((item: any) => {
+    const requiredFields = data.filter((item: any) => {
       return item.countedAmount === undefined || item.difference === undefined;
     });
 
@@ -84,7 +84,7 @@ export const CashRegisterClose = () => {
       .subscribe((response) => {
         gridRef.current?.instance().beginCustomLoading('Cargando datos...');
         gridRef.current?.instance().option('dataSource', response.data);
-        let store = data.current.store() as ArrayStore;
+        const store = data.current.store() as ArrayStore;
         store.clear();
         response.data.forEach((item: any) => {
           store.insert(item);
@@ -136,10 +136,10 @@ export const CashRegisterClose = () => {
             format={{ type: 'currency', precision: 2 }}
             allowEditing={false}
             calculateCellValue={(row: any) => {
-              let diff = row.countedAmount - row.expectedAmount;
-              let paymentMethodId = row.paymentMethodId;
+              const diff = row.countedAmount - row.expectedAmount;
+              const paymentMethodId = row.paymentMethodId;
               if (differenceData) {
-                let diffData = differenceData.find(
+                const diffData = differenceData.find(
                   (diff) => diff.paymentMethodId === paymentMethodId,
                 );
                 if (diffData) {

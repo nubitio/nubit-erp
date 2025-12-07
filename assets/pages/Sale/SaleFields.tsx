@@ -116,10 +116,10 @@ export const SaleFields = (form: DxFormEvents | null) => {
         priceList = await lastValueFrom(
           httpClient.get<PriceListItemDto[]>(`price-list/${event.value}/get`),
         ).then((response) => response.data);
-        let detailData = form?.getDetailData() ?? [];
+        const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: any) => {
-          let actualPrice = item.precio_unitario;
-          let priceItem = priceList.find((p) => p.id === item.producto.producto_id);
+          const actualPrice = item.precio_unitario;
+          const priceItem = priceList.find((p) => p.id === item.producto.producto_id);
           if (priceItem && priceItem.price !== actualPrice) {
             item.precio_unitario = Number(priceItem.price);
             item.precio_total = item.cantidad * priceItem.price;
@@ -150,14 +150,14 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .label('Comprobante')
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value) {
-          let payload = {
+          const payload = {
             type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
             id: cell.data.id,
           };
-          let payloadEncoded = btoa(JSON.stringify(payload));
-          let url = `/receipt/${payloadEncoded}/pdf?preview=true`;
+          const payloadEncoded = btoa(JSON.stringify(payload));
+          const url = `/receipt/${payloadEncoded}/pdf?preview=true`;
           return (
-            <a href={url} className="text-reset" target="_blank">
+            <a href={url} className="text-reset" target="_blank" rel="noreferrer">
               <i className="ph ph-file-pdf text-primary" /> {cell.value}
             </a>
           );
@@ -188,7 +188,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .defaultValue(0)
       .readonly(true)
       .onClick((e: any) => {
-        let total = form?.getFieldValue('total');
+        const total = form?.getFieldValue('total');
         let discountPercent = form?.getFieldValue('descuento');
         discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
         dispatch(DiscountDialogEvent.OPEN, { total, discountPercent });
@@ -260,11 +260,11 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .valueField('id')
       .textField('name')
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
-        let product = (await productService.getOne(value, true)) as ProductDto;
+        const product = (await productService.getOne(value, true)) as ProductDto;
         let price = product.salePrice;
         console.log(priceList, value, product, price);
         if (priceList) {
-          let priceItem = priceList.find((item) => item.id === value);
+          const priceItem = priceList.find((item) => item.id === value);
           if (priceItem) {
             price = priceItem.price;
           }
@@ -298,7 +298,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
           }
-          let stockData = await GetStockUseCase(currentRow.producto.id, selectedWarehouseId);
+          const stockData = await GetStockUseCase(currentRow.producto.id, selectedWarehouseId);
           notify(
             {
               message: 'Stock actual: ' + stockData.stock,
@@ -369,7 +369,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
 };
 
 const getSubTotal = (form: DxFormEvents | null) => {
-  let rows = form?.getDetailData() ?? [];
+  const rows = form?.getDetailData() ?? [];
   let total = 0;
   rows.forEach((row) => {
     total += row.precio_total;
@@ -378,10 +378,10 @@ const getSubTotal = (form: DxFormEvents | null) => {
 };
 
 export const setTotal = (form: DxFormEvents | null) => {
-  let subTotal = getSubTotal(form);
-  let discountPercent = Number(form?.getFieldValue('descuento') ?? 0);
-  let discount = subTotal * (discountPercent / 100);
-  let total = Number(subTotal - discount).toFixed(2);
+  const subTotal = getSubTotal(form);
+  const discountPercent = Number(form?.getFieldValue('descuento') ?? 0);
+  const discount = subTotal * (discountPercent / 100);
+  const total = Number(subTotal - discount).toFixed(2);
 
   form?.setFieldValue('total', Number(total));
 };

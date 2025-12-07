@@ -126,12 +126,12 @@ const buildValidationRules = (field: Field) => {
 
 export const buildColumns = (fields: Field[], forceLookup = false) => {
   return fields.map((field: Field, index) => {
-    let clone = { ...field };
+    const clone = { ...field };
     clone.readonly = !field.filterable;
     if (!field.visible) return null;
     if (forceLookup && field.type === FieldType.NONE) return null;
     if (forceLookup) clone.filterable = true;
-    let editorOptions = buildEditorOptions(clone);
+    const editorOptions = buildEditorOptions(clone);
     return (
       <Column
         key={index}

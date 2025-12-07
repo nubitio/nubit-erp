@@ -8,7 +8,7 @@ import { ProductStockDto } from '../dto/product.stock.dto';
 
 class ProductService {
   getAll(loadOptions: any): Promise<GridData<ProductDto>> {
-    let subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
+    const subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
       params: loadOptions,
     });
 
@@ -31,7 +31,7 @@ class ProductService {
     return httpClient.get<ProductDto>(`${Constants.API_BASE_URL}products/${id}`);
   }
 
-  getProducts(warehouseId: String) {
+  getProducts(warehouseId: string) {
     //return httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}warehouses/${warehouseId}/product`);
     return httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products?rows=1000`);
   }

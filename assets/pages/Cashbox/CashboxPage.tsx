@@ -85,7 +85,7 @@ export const CashboxPage = () => {
       });
   };
 
-  const openCashbox = (balance: Number) => {
+  const openCashbox = (balance: number) => {
     prompt('Caja', 'Ingrese el monto inicial de la caja', 'number', balance).then((amount) => {
       if (amount !== null && amount !== '' && !isNaN(Number(amount)) && Number(amount) > 0) {
         const payload = {

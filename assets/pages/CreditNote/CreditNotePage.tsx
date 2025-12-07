@@ -30,7 +30,7 @@ export const CreditNotePage = () => {
       text: 'Enviar a SUNAT',
       type: 'info',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
         if (selectedRow) {
           if (selectedRow.envio_sunat === '0') {
             notify(
@@ -91,12 +91,12 @@ export const CreditNotePage = () => {
       text: 'Ver',
       type: 'primary',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
-        let payload = {
+        const selectedRow = gridRef.current?.getSelectedRow();
+        const payload = {
           type: selectedRow?.tipo_id,
           id: selectedRow?.nota_id,
         };
-        let payloadEncoded = btoa(JSON.stringify(payload));
+        const payloadEncoded = btoa(JSON.stringify(payload));
         if (selectedRow) {
           window.open('receipt/' + payloadEncoded, '_blank');
         } else {

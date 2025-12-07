@@ -31,7 +31,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
   const { isLarge } = useScreenSize();
 
   useEffect(() => {
-    let roleId = userInformation().currentUserRoleId;
+    const roleId = userInformation().currentUserRoleId;
     menuService.getMenuByRoleId(roleId).subscribe((response) => {
       const items = normalizePath(response.data);
       setItems(items);

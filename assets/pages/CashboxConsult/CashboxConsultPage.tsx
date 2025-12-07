@@ -20,7 +20,7 @@ export const CashboxConsultPage = () => {
       text: 'Reporte',
       type: 'default',
       onClick: () => {
-        let selectedRow = gridRef.current?.getSelectedRow();
+        const selectedRow = gridRef.current?.getSelectedRow();
 
         if (!selectedRow) {
           notify(

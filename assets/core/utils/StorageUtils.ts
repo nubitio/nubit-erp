@@ -1,6 +1,6 @@
 export class StorageUtils {
   static getItem(key: string): any {
-    let item = localStorage.getItem(key);
+    const item = localStorage.getItem(key);
     if (item) {
       return JSON.parse(item);
     }

@@ -9,7 +9,7 @@ import { LoadOption } from '../field/Field';
 
 class DxUtils {
   private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {
-    let subscription = httpClient.get<any[]>(url, { params: loadOptions });
+    const subscription = httpClient.get<any[]>(url, { params: loadOptions });
 
     return lastValueFrom(subscription).then((response: ApiResponse<any[]>) => {
       let data = response.data;
@@ -27,7 +27,7 @@ class DxUtils {
   }
 
   private async fetchById(url: string, id: any, loadOptions: any): Promise<any> {
-    let subscription = httpClient.get<any>(`${url}/${id}`);
+    const subscription = httpClient.get<any>(`${url}/${id}`);
 
     return lastValueFrom(subscription)
       .then((response: ApiResponse<any>) => {
@@ -45,7 +45,7 @@ class DxUtils {
     filterRules: FilterDescriptor[],
     defaultFilterRules: FilterDescriptor[],
   ): FilterDescriptor[] {
-    let filters: FilterDescriptor[] = [];
+    const filters: FilterDescriptor[] = [];
     defaultFilterRules.forEach((rule: DxFilterRule) => {
       filters.push([rule.field, rule.operator, rule.value]);
     });
@@ -76,9 +76,9 @@ class DxUtils {
     return new CustomStore({
       key: idField,
       load: (loadOptions) => {
-        let userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
+        const userFilter = (loadOptions.filter ?? []) as FilterDescriptor[];
         loadOptions.filter = this.normalizeFilterRules(userFilter, defaultFilterRules);
-        let userSort = (loadOptions.sort ?? []) as any[];
+        const userSort = (loadOptions.sort ?? []) as any[];
         if (
           userSort.length === 1 &&
           userSort[0].selector === idField &&
@@ -100,9 +100,9 @@ class DxUtils {
         return this.fetchAll(url, loadOptions);
       },
       byKey: (key) => {
-        let id = typeof key === 'object' ? key[idField] : key;
+        const id = typeof key === 'object' ? key[idField] : key;
         if (id === undefined) return Promise.resolve(null);
-        let loadOptions = {};
+        const loadOptions = {};
         options.forEach((option) => {
           for (const key in option) {
             if (option.hasOwnProperty(key)) {
