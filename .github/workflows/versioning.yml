@@ -351,17 +351,3 @@ jobs:
             git commit -m "docs: update CHANGELOG.md"
             git push
           fi
-
-  deploy-prod:
-    name: Deploy to Production
-    needs:
-      - release
-      - update-changelog
-    if: |
-      needs.release.result == 'success' &&
-      needs.update-changelog.result == 'success'
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: production
-      version: ${{ needs.release.outputs.release-version }}
-    secrets: inherit
