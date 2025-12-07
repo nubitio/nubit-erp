@@ -8,7 +8,7 @@ import { Constants } from '../../../../core/common/Constants';
 
 const cashMovementsFields = (cashShiftId: string | undefined) => {
   const navigate = useNavigate();
-  let fields: Field[] = [];
+  const fields: Field[] = [];
 
   fields.push(
     new FieldBuilder()

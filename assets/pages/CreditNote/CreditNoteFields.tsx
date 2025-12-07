@@ -20,7 +20,7 @@ export const CreditNoteFields = () => {
       .required(true)
       .build(),
   );
-  let saleFilter: FilterRule = {
+  const saleFilter: FilterRule = {
     field: 'invoice',
     value: '',
     op: 'isnotnull',

@@ -130,7 +130,7 @@ export const InboundDetailFields = () => {
       .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
-        let product = (await productService.getOne(value, true)) as ProductDto;
+        const product = (await productService.getOne(value, true)) as ProductDto;
         row.producto = product;
         row.precio_unitario = 0;
         this.defaultSetCellValue(row, product, currentRow);

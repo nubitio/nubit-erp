@@ -5,7 +5,7 @@ import { Constants } from '../core/common/Constants';
 
 class ConsultationService {
   getConsultationsByPatientId(patientId: number) {
-    let patientFilter: FilterRule = {
+    const patientFilter: FilterRule = {
       field: 'patient',
       op: 'equal',
       value: patientId,

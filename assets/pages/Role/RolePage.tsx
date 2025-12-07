@@ -67,13 +67,13 @@ export const RolePage = () => {
       text: 'Permisos',
       type: 'info',
       onClick: () => {
-        let row = gridRef.current?.getSelectedRow();
+        const row = gridRef.current?.getSelectedRow();
         if (row) {
           emit(PERMISSION_EVENTS.ADD, { title: 'Permisos de ' + row.name });
           httpClient
             .get<RoleMenu[]>(Constants.API_BASE_URL + `role-menu/${row.id}`)
             .subscribe((response) => {
-              let store = permissionsData.current.store() as ArrayStore;
+              const store = permissionsData.current.store() as ArrayStore;
               store.clear();
               response.data.forEach((item: any) => {
                 store.insert(item);
@@ -98,9 +98,9 @@ export const RolePage = () => {
 
   const setupEvents = () => {
     on(PERMISSION_EVENTS.SAVE, () => {
-      let row = gridRef.current?.getSelectedRow();
+      const row = gridRef.current?.getSelectedRow();
       if (row) {
-        let data = treeRef.current?.instance().getSelectedNodes();
+        const data = treeRef.current?.instance().getSelectedNodes();
         let permissions: any[] = [];
         data?.forEach((item) => {
           if (item.parent?.key) {
