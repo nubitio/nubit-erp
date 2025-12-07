@@ -1,0 +1,113 @@
+# Dependabot configuration for automated dependency updates
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
+
+version: 2
+updates:
+  # Composer dependencies
+  - package-ecosystem: "composer"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "johangm90"
+    assignees:
+      - "johangm90"
+    labels:
+      - "dependencies"
+      - "area: backend"
+      - "automerge"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      symfony:
+        patterns:
+          - "symfony/*"
+      doctrine:
+        patterns:
+          - "doctrine/*"
+      security:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # NPM dependencies (via Yarn)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "johangm90"
+    assignees:
+      - "johangm90"
+    labels:
+      - "dependencies"
+      - "area: frontend"
+      - "automerge"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      vite:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+      security:
+        patterns:
+          - "*"
+        update-types:
+          - "security"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "johangm90"
+    assignees:
+      - "johangm90"
+    labels:
+      - "dependencies"
+      - "area: ci/cd"
+      - "automerge"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Bogota"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "johangm90"
+    assignees:
+      - "johangm90"
+    labels:
+      - "dependencies"
+      - "area: ci/cd"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"

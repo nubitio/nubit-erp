@@ -102,11 +102,15 @@
   "autoload": {
     "psr-4": {
       "App\\": "src/"
-    }
+    },
+    "exclude-from-classmap": [
+      "src/DataFixtures/"
+    ]
   },
   "autoload-dev": {
     "psr-4": {
-      "App\\Tests\\": "tests/"
+      "App\\Tests\\": "tests/",
+      "App\\DataFixtures\\": "src/DataFixtures/"
     }
   },
   "replace": {
