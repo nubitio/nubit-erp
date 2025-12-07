@@ -56,6 +56,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Configure Supervisord
 COPY docker/frankenphp/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Create required log directories
 RUN mkdir -p /var/log/messenger /var/log/supervisor \
@@ -71,6 +73,9 @@ EXPOSE 80 443
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
     CMD curl -f http://localhost/ || exit 1
+
+# Common entrypoint (used by all stages)
+ENTRYPOINT ["/entrypoint.sh"]
 
 # -----------------------------------------------------------------------------
 # Frontend builder stage
