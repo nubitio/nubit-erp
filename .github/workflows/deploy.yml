@@ -23,7 +23,7 @@ on:
         type: string
 
 concurrency:
-  group: deploy-${{ github.ref }}
+  group: deploy-${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -36,10 +36,15 @@ env:
   PHP_VERSION: '8.5'
   NODE_VERSION: '20'
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   plan:
     name: Plan Deployment
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
       target_env: ${{ steps.detect.outputs.target_env }}
       build_target: ${{ steps.detect.outputs.build_target }}
@@ -48,18 +53,27 @@ jobs:
       should_deploy: ${{ steps.detect.outputs.should_deploy }}
 
     steps:
-      - id: detect
+      - name: Detect target env & image tag
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          DISPATCH_ENV: ${{ github.event.inputs.environment }}
+          DISPATCH_IMAGE_TAG: ${{ github.event.inputs.image_tag }}
+          SHA: ${{ github.sha }}
         run: |
+          set -euo pipefail
+
           TARGET_ENV=""
           BUILD_TARGET=""
           IMAGE_TAG=""
           ENV_NAME=""
           SHOULD_DEPLOY="false"
-          REF_NAME="${GITHUB_REF##*/}"
 
-          case "${GITHUB_EVENT_NAME}" in
+          case "${EVENT_NAME}" in
             workflow_dispatch)
-              if [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+              if [[ "${DISPATCH_ENV}" == "production" ]]; then
                 TARGET_ENV="prod"
                 BUILD_TARGET="prod"
                 ENV_NAME="production"
@@ -68,35 +82,45 @@ jobs:
                 BUILD_TARGET="stg"
                 ENV_NAME="staging"
               fi
-              IMAGE_TAG="${{ github.event.inputs.image_tag || github.sha }}"
+
+              # If image_tag is empty, use commit SHA
+              if [[ -n "${DISPATCH_IMAGE_TAG:-}" ]]; then
+                IMAGE_TAG="${DISPATCH_IMAGE_TAG}"
+              else
+                IMAGE_TAG="${SHA}"
+              fi
+
               SHOULD_DEPLOY="true"
               ;;
             push)
-              if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+              if [[ "${REF_TYPE}" == "tag" ]]; then
+                # Production deploy on version tag
                 TARGET_ENV="prod"
                 BUILD_TARGET="prod"
                 ENV_NAME="production"
-                IMAGE_TAG="$REF_NAME"
+                IMAGE_TAG="${REF_NAME}"
                 SHOULD_DEPLOY="true"
-              elif [[ "$REF_NAME" == "main" || "$REF_NAME" == "develop" ]]; then
+              elif [[ "${REF_TYPE}" == "branch" ]] && [[ "${REF_NAME}" == "main" || "${REF_NAME}" == "develop" ]]; then
+                # Staging deploy from main/develop
                 TARGET_ENV="stg"
                 BUILD_TARGET="stg"
                 ENV_NAME="staging"
-                IMAGE_TAG="$REF_NAME"
+                IMAGE_TAG="${REF_NAME}"
                 SHOULD_DEPLOY="true"
               fi
               ;;
           esac
 
-          echo "target_env=$TARGET_ENV" >> $GITHUB_OUTPUT
-          echo "build_target=$BUILD_TARGET" >> $GITHUB_OUTPUT
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "environment_name=$ENV_NAME" >> $GITHUB_OUTPUT
-          echo "should_deploy=$SHOULD_DEPLOY" >> $GITHUB_OUTPUT
+          echo "target_env=${TARGET_ENV}" >> "$GITHUB_OUTPUT"
+          echo "build_target=${BUILD_TARGET}" >> "$GITHUB_OUTPUT"
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+          echo "environment_name=${ENV_NAME}" >> "$GITHUB_OUTPUT"
+          echo "should_deploy=${SHOULD_DEPLOY}" >> "$GITHUB_OUTPUT"
 
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: plan
     if: needs.plan.outputs.should_deploy == 'true'
     permissions:
@@ -107,7 +131,8 @@ jobs:
       digest: ${{ steps.build.outputs.digest }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -125,12 +150,16 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            # primary tag from plan
             type=raw,value=${{ needs.plan.outputs.image_tag }}
+            # branch/tag-based tags
             type=ref,event=branch
             type=semver,pattern={{version}},enable=${{ github.ref_type == 'tag' }}
             type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
             type=semver,pattern={{major}},enable=${{ github.ref_type == 'tag' }}
+            # always add sha tag
             type=sha,prefix=sha-
+            # only tag latest for production
             type=raw,value=latest,enable=${{ needs.plan.outputs.target_env == 'prod' }}
           labels: |
             org.opencontainers.image.title=eFact
@@ -156,44 +185,26 @@ jobs:
       - name: Primary image tag
         id: primary-tag
         run: |
-          TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "image=$TAG" >> $GITHUB_OUTPUT
-          echo "Pushed $TAG"
+          # First line from metadata tags is the "primary" one
+          TAG="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
+          echo "image=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Pushed ${TAG}"
 
   deploy:
     name: Deploy to Portainer
     runs-on: ubuntu-latest
-    needs: [plan, build-and-push]
+    timeout-minutes: 10
+    needs:
+      - plan
+      - build-and-push
     if: needs.plan.outputs.should_deploy == 'true'
     environment: ${{ needs.plan.outputs.environment_name }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Verify Portainer configuration
-        run: |
-          echo "Environment: ${{ needs.plan.outputs.environment_name }}"
-          if [ -z "${{ secrets.PORTAINER_URL }}" ]; then
-            echo "❌ PORTAINER_URL is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.PORTAINER_API_TOKEN }}" ]; then
-            echo "❌ PORTAINER_API_TOKEN is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.PORTAINER_STACK_NAME }}" ]; then
-            echo "❌ PORTAINER_STACK_NAME is not set for environment: ${{ needs.plan.outputs.environment_name }}"
-            exit 1
-          fi
-          if [ -z "${{ secrets.PORTAINER_ENDPOINT_ID }}" ]; then
-            echo "❌ PORTAINER_ENDPOINT_ID is not set"
-            exit 1
-          fi
-          echo "✅ All Portainer secrets are configured"
-
-      - name: Deploy to Portainer
-        env:
-          IMAGE_WITH_DIGEST: ${{ needs.build-and-push.outputs.image }}@${{ needs.build-and-push.outputs.digest }}
+      - name: Deploy stack
         uses: dann41/portainer-stack-deploy@v1
         with:
           portainer-host: ${{ secrets.PORTAINER_URL }}
