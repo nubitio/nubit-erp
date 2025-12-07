@@ -184,7 +184,7 @@ jobs:
         with:
           portainer-host: ${{ secrets.PORTAINER_URL }}
           access-token: ${{ secrets.PORTAINER_API_TOKEN }}
-          stack-name: ${{ secrets.PORTAINER_STACK_NAME || 'efact-app' }}
-          endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID || '1' }}
+          stack-name: ${{ secrets.PORTAINER_STACK_NAME }}
+          endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           stack-definition: docker-compose.prod.yml
           image: ${{ needs.build-and-push.outputs.image }}
