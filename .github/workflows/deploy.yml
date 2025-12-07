@@ -163,6 +163,7 @@ jobs:
       contents: read
       packages: write
       security-events: write
+      actions: read
     outputs:
       image: ${{ steps.primary-tag.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
