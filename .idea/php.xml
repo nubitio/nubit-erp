@@ -268,6 +268,8 @@
       <path value="$PROJECT_DIR$/vendor/pontedilana/php-weasyprint" />
       <path value="$PROJECT_DIR$/vendor/doctrine/data-fixtures" />
       <path value="$PROJECT_DIR$/vendor/doctrine/doctrine-fixtures-bundle" />
+      <path value="$PROJECT_DIR$/vendor/symfony/doctrine-messenger" />
+      <path value="$PROJECT_DIR$/vendor/symfony/redis-messenger" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

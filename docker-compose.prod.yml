@@ -20,6 +20,9 @@ services:
       # Mailer
       MAILER_DSN: ${MAILER_DSN}
 
+      # Messenger
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+
       # FrankenPHP settings
       SERVER_NAME: ${SERVER_NAME}
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
@@ -53,6 +56,10 @@ services:
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
 
     networks:
       - default
