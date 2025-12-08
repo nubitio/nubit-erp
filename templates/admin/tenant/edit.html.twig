@@ -1,0 +1,55 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Edit tenant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+</head>
+<body>
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <p class="text-uppercase text-muted mb-1 small">Tenant management</p>
+            <h1 class="h4 mb-0">Edit tenant</h1>
+            <p class="text-muted mb-0">Update the tenant name or database connection.</p>
+        </div>
+        <a href="{{ url('admin_tenant_index') }}" class="btn btn-link">Back to list</a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mt-3" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Edit {{ tenant.name }}</h2>
+                    <form action="{{ url('admin_tenant_update', {'id': tenant.id}) }}" method="post" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ tenant.name }}"
+                                   placeholder="Tenant name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="connection" class="form-label">Connection</label>
+                            <input type="text" class="form-control" id="connection" name="connection"
+                                   value="{{ tenant.connection }}" placeholder="Database/schema" required>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ url('admin_tenant_index') }}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
