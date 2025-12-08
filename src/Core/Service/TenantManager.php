@@ -58,7 +58,7 @@ readonly class TenantManager
     {
         $data = $this->readTenants();
 
-        $data = array_values(array_filter($data, static fn(array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
+        $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
 
         $this->writeTenants(array_values($data));
     }
@@ -172,7 +172,7 @@ readonly class TenantManager
      */
     private function nextId(array $tenants): int
     {
-        $ids = array_map(static fn(array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
+        $ids = array_map(static fn (array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
 
         return (int)(max($ids ?: [0]) + 1);
     }
