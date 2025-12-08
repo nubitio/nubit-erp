@@ -33,6 +33,12 @@ readonly class TenantListener
         $parts = explode('.', $host);
         $subdomain = $parts[0] ?? '';
 
+        // Default/known infra hosts that should not trigger tenant switching.
+        $excludedSubdomains = ['localhost', 'demo'];
+        if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
+            return;
+        }
+
         try {
             $request->headers->set('tenant', $subdomain);
             $this->tenantConnectionSwitcher->switchConnection($subdomain);
