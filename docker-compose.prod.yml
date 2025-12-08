@@ -1,16 +1,14 @@
 services:
   web:
     image: ghcr.io/nubitio/efact:main
-    container_name: efact-web
     restart: unless-stopped
-    ports:
-      - '${HTTP_PORT}:80'
-      - '${HTTPS_PORT}:443'
+    expose:
+      - "80"
     environment:
       # Application settings
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
-      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
+      TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
 
       # Database
       DATABASE_URL: ${DATABASE_URL}
@@ -77,7 +75,6 @@ services:
 
   worker_async:
     image: ghcr.io/nubitio/efact:main
-    container_name: efact-worker-async
     restart: unless-stopped
     depends_on:
       - web
@@ -87,7 +84,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
-      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
+      TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
     volumes:
       - app-var:/app/var
     networks:
@@ -101,7 +98,6 @@ services:
 
   worker_scheduler:
     image: ghcr.io/nubitio/efact:main
-    container_name: efact-worker-scheduler
     restart: unless-stopped
     depends_on:
       - web
@@ -111,7 +107,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
-      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
+      TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
     volumes:
       - app-var:/app/var
     networks:
