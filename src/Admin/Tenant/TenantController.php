@@ -29,11 +29,18 @@ class TenantController extends AbstractController
     public function create(Request $request): Response
     {
         $tenant = [
-            'name' => $request->get('name'),
-            'connection' => $request->get('connection'),
+            'name' => trim((string) $request->request->get('name', '')),
+            'connection' => trim((string) $request->request->get('connection', '')),
         ];
 
-        $this->tenantManager->addTenant($tenant);
+        try {
+            $this->tenantManager->addTenant($tenant);
+            $this->addFlash('success', 'Tenant created');
+        } catch (\InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', 'Unable to save tenants: ' . $exception->getMessage());
+        }
 
         return $this->redirectToRoute('admin_tenant_index');
     }
@@ -42,6 +49,7 @@ class TenantController extends AbstractController
     public function delete(int $id): Response
     {
         $this->tenantManager->deleteTenant($id);
+        $this->addFlash('success', 'Tenant removed');
 
         return $this->redirectToRoute('admin_tenant_index');
     }

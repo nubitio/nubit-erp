@@ -6,6 +6,7 @@ use App\Core\Service\TenantConnectionSwitcher;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 #[AsEventListener(priority: 1024)]
 readonly class TenantListener
@@ -21,12 +22,25 @@ readonly class TenantListener
      */
     public function __invoke(RequestEvent $event): void
     {
-        $host = $event->getRequest()->getHost();
-        $subdomain = explode('.', $host)[0];
-        $excludedSubdomains = ['localhost', 'www', 'demo', 'api', 'app', 'admin'];
-        if ($subdomain && !in_array($subdomain, $excludedSubdomains)) {
-            $event->getRequest()->headers->set('tenant', $subdomain);
+        $request = $event->getRequest();
+        $path = $request->getPathInfo();
+
+        if (str_starts_with($path, '/admin/tenants')) {
+            return;
+        }
+
+        $host = $request->getHost();
+        $parts = explode('.', $host);
+        $subdomain = $parts[0] ?? '';
+
+        try {
+            $request->headers->set('tenant', $subdomain);
             $this->tenantConnectionSwitcher->switchConnection($subdomain);
+        } catch (\Throwable $exception) {
+            throw new BadRequestHttpException(
+                sprintf('Invalid tenant "%s": %s', $subdomain, $exception->getMessage()),
+                $exception
+            );
         }
     }
 }
