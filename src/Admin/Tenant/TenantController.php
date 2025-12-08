@@ -25,6 +25,22 @@ class TenantController extends AbstractController
         ]);
     }
 
+    #[Route('/admin/tenants/{id}/edit', name: 'admin_tenant_edit', methods: ['GET'])]
+    public function edit(int $id): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+
+        if (null === $tenant) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        return $this->render('admin/tenant/edit.html.twig', [
+            'tenant' => $tenant,
+        ]);
+    }
+
     #[Route('/admin/tenants/create', name: 'admin_tenant_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
@@ -36,6 +52,26 @@ class TenantController extends AbstractController
         try {
             $this->tenantManager->addTenant($tenant);
             $this->addFlash('success', 'Tenant created');
+        } catch (\InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', 'Unable to save tenants: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_index');
+    }
+
+    #[Route('/admin/tenants/{id}', name: 'admin_tenant_update', methods: ['POST'])]
+    public function update(int $id, Request $request): Response
+    {
+        $tenant = [
+            'name' => trim((string) $request->request->get('name', '')),
+            'connection' => trim((string) $request->request->get('connection', '')),
+        ];
+
+        try {
+            $this->tenantManager->updateTenant($id, $tenant);
+            $this->addFlash('success', 'Tenant updated');
         } catch (\InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
         } catch (\RuntimeException $exception) {

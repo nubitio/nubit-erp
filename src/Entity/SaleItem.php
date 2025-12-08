@@ -53,7 +53,7 @@ class SaleItem
     private ?float $descuento = null;
 
     #[Groups(['sale_item:read', 'sale:write'])]
-    #[ORM\Column(name: 'precio_total',nullable: true)]
+    #[ORM\Column(name: 'precio_total', nullable: true)]
     private ?float $precio_total = null;
 
     public function getId(): ?int

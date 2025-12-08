@@ -10,6 +10,7 @@ services:
       # Application settings
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
+      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
 
       # Database
       DATABASE_URL: ${DATABASE_URL}
@@ -86,6 +87,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
     volumes:
       - app-var:/app/var
     networks:
@@ -109,6 +111,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
     volumes:
       - app-var:/app/var
     networks:

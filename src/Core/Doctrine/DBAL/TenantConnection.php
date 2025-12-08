@@ -36,7 +36,7 @@ class TenantConnection extends Connection
     {
         /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
-        $tenantsConfigFilePath = dirname(__DIR__, 4) . '/config/tenants.yaml';
+        $tenantsConfigFilePath = $this->resolveConfigPath();
         if (file_exists($tenantsConfigFilePath)) {
             $configContent = file_get_contents($tenantsConfigFilePath);
 
@@ -103,5 +103,25 @@ class TenantConnection extends Connection
     {
         $this->isConnected = false;
         $this->_conn = null;
+    }
+
+    private function resolveConfigPath(): string
+    {
+        $envPath = (string) ($_ENV['TENANTS_CONFIG_PATH'] ?? getenv('TENANTS_CONFIG_PATH') ?: '');
+        if ('' !== $envPath) {
+            return $this->normalizePath($envPath);
+        }
+
+        // Base project dir from src/Core/Doctrine/DBAL => up 4 levels.
+        return dirname(__DIR__, 4) . '/config/tenants.yaml';
+    }
+
+    private function normalizePath(string $path): string
+    {
+        if (str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        return dirname(__DIR__, 4) . '/' . ltrim($path, '/');
     }
 }

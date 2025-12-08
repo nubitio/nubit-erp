@@ -79,6 +79,10 @@
                                         <td class="fw-semibold">{{ tenant.name }}</td>
                                         <td><code class="bg-light px-2 py-1 rounded">{{ tenant.connection }}</code></td>
                                         <td class="text-end">
+                                            <a href="{{ url('admin_tenant_edit', {'id': tenant.id}) }}"
+                                               class="btn btn-outline-secondary btn-sm me-2">
+                                                Edit
+                                            </a>
                                             <a href="{{ url('admin_tenant_delete', {'id': tenant.id}) }}"
                                                class="btn btn-outline-danger btn-sm"
                                                onclick="return confirm('Delete tenant {{ tenant.name }}? This cannot be undone.');">
