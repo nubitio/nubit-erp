@@ -1,6 +1,6 @@
 services:
   web:
-    image: ${IMAGE}
+    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     expose:
       - "80"
@@ -74,7 +74,7 @@ services:
         max-file: "3"
 
   worker_async:
-    image: ${IMAGE}
+    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
       - web
@@ -97,7 +97,7 @@ services:
       --no-interaction
 
   worker_scheduler:
-    image: ${IMAGE}
+    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
       - web
