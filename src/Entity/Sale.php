@@ -112,15 +112,15 @@ class Sale
     private ?int $tipo_tarjeta = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'serie', type: 'string')]
+    #[ORM\Column(name: 'serie', type: 'string', nullable: true)]
     private ?string $serie = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'numero', type: 'string')]
+    #[ORM\Column(name: 'numero', type: 'string', nullable: true)]
     private ?string $numero = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'descuento')]
+    #[ORM\Column(name: 'descuento', nullable: true)]
     private ?float $descuento = null;
 
     #[Groups([
@@ -145,7 +145,7 @@ class Sale
     private bool $is_consume = false;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'caja_id', type: 'integer')]
+    #[ORM\Column(name: 'caja_id', type: 'integer', nullable: true)]
     private ?int $caja_id = null;
 
     #[Groups([
@@ -174,11 +174,11 @@ class Sale
     private ?int $updated_by = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'igv', type: 'integer')]
+    #[ORM\Column(name: 'igv', type: 'integer', nullable: true)]
     private ?int $igv = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'recargo_consumo', type: 'integer')]
+    #[ORM\Column(name: 'recargo_consumo', type: 'integer', nullable: true)]
     private ?int $recargo_consumo = null;
 
     #[Groups(['sale:read', 'sale:write'])]

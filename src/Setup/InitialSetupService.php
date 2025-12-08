@@ -202,10 +202,10 @@ readonly class InitialSetupService
 
         // Logistic operations (tipo_id: 1 entrada, 2 salida)
         $operations = [
-            ['Venta', 1],
-            ['Compra', 2],
-            ['Devolución de compra', 1],
-            ['Devolución de venta', 2],
+            ['Venta', 2],
+            ['Devolución de venta', 1],
+            ['Compra', 1],
+            ['Devolución de compra', 2],
             ['Ajuste de inventario entrada', 1],
             ['Ajuste de inventario salida', 2],
             ['Transferencia entrada', 1],

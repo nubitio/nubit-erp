@@ -169,7 +169,6 @@ export const InboundDetailFields = () => {
       .align('right')
       .valueType('number')
       .sortable(false)
-      .valueType('number')
       .build(),
   );
   fields.push(
