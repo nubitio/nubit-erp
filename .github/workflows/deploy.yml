@@ -242,7 +242,7 @@ jobs:
           stack-name: ${{ secrets.PORTAINER_STACK_NAME }}
           endpoint-id: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           stack-definition: docker-compose.prod.yml
-          template-variables: '{"IMAGE": "${{ needs.build-and-push.outputs.image }}", "CONTAINER_NAME": "efact-${{ needs.plan.outputs.target_env }}"}'
+          template-variables: '{"IMAGE": "${{ needs.build-and-push.outputs.image }}"}'
           image: ${{ needs.build-and-push.outputs.image }}
 
       - name: Wait for deployment health check
