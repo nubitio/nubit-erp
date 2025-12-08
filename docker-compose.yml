@@ -12,7 +12,6 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
-      TENANTS_CONFIG_PATH: /app/var/tenants/tenants.yaml
       SERVER_NAME: ":80"
       CADDY_GLOBAL_OPTIONS: "auto_https off"
       # Worker mode disabled for development (enable for performance testing)
