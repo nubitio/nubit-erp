@@ -7,45 +7,92 @@
           integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 <body>
-<div class="container">
-    <h1>Tenants manager</h1>
-    <div class="row">
-        <div class="col">
-            <form action="{{ url('admin_tenant_create') }}" method="post">
-                <div class="form-group mt-2">
-                    <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter name">
-                </div>
-                <div class="form-group mt-2">
-                    <label for="connection">Connection</label>
-                    <input type="text" class="form-control" id="connection" name="connection"
-                           placeholder="Enter connection">
-                    <button type="submit" class="btn btn-primary mt-2">Save</button>
-                </div>
-            </form>
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <p class="text-uppercase text-muted mb-1 small">Tenant management</p>
+            <h1 class="h3 mb-0">Create and manage tenant connections</h1>
+            <p class="text-muted mb-0">Add a tenant with its database/schema name. Use short, memorable names.</p>
         </div>
-        <div class="col">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th scope="col">Name</th>
-                    <th scope="col">Connection</th>
-                    <th scope="col">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for tenant in tenants %}
-                    <tr>
-                        <td>{{ tenant.name }}</td>
-                        <td>{{ tenant.connection }}</td>
-                        <td class="d-flex">
-                            <a href="{{ url('admin_tenant_delete', {'id': tenant.id}) }}"
-                               class="btn btn-danger">Delete</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+        <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2">
+            {{ tenants|length }} active {{ tenants|length == 1 ? 'tenant' : 'tenants' }}
+        </span>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mt-3" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Add tenant</h2>
+                    <form action="{{ url('admin_tenant_create') }}" method="post" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="e.g. acme"
+                                   required>
+                            <div class="form-text">This is the tenant identifier used in commands and switching.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="connection" class="form-label">Connection</label>
+                            <input type="text" class="form-control" id="connection" name="connection"
+                                   placeholder="e.g. acme_db" required>
+                            <div class="form-text">Database/schema name. It must exist in your DB server.</div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Save tenant</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0">Tenants</h2>
+                        <span class="text-muted small">Latest first</span>
+                    </div>
+                    {% if tenants is empty %}
+                        <div class="border rounded p-4 text-center text-muted bg-light">
+                            No tenants yet. Create one on the left to get started.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Connection</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for tenant in tenants|reverse %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ tenant.name }}</td>
+                                        <td><code class="bg-light px-2 py-1 rounded">{{ tenant.connection }}</code></td>
+                                        <td class="text-end">
+                                            <a href="{{ url('admin_tenant_delete', {'id': tenant.id}) }}"
+                                               class="btn btn-outline-danger btn-sm"
+                                               onclick="return confirm('Delete tenant {{ tenant.name }}? This cannot be undone.');">
+                                                Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>

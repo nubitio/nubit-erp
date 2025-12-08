@@ -9,6 +9,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Exception;
 use Symfony\Component\Security\Core\Exception\RuntimeException;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class TenantConnection extends Connection
 {
@@ -34,7 +36,7 @@ class TenantConnection extends Connection
     {
         /** @var array<string, array<string, mixed>> $tenants */
         $tenants = [];
-        $tenantsConfigFilePath = dirname(__DIR__, 5) . '/config/tenants.json';
+        $tenantsConfigFilePath = dirname(__DIR__, 4) . '/config/tenants.yaml';
         if (file_exists($tenantsConfigFilePath)) {
             $configContent = file_get_contents($tenantsConfigFilePath);
 
@@ -42,8 +44,16 @@ class TenantConnection extends Connection
                 throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
             }
 
-            /** @var array<string, array<string, mixed>> $tenants */
-            $tenants = json_decode($configContent, true);
+            try {
+                /** @var array<string, array<string, mixed>>|null $tenants */
+                $tenants = Yaml::parse($configContent) ?? [];
+            } catch (ParseException $exception) {
+                throw new RuntimeException('Error al parsear el archivo de tenants', 0, $exception);
+            }
+
+            if (!is_array($tenants)) {
+                $tenants = [];
+            }
         }
 
         if (!in_array($tenantName, array_column($tenants, 'name'))) {
