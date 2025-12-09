@@ -89,7 +89,7 @@ readonly class MenuProvider implements ProviderInterface
                     FROM menu m
                         INNER JOIN menu_rol mr ON mr.menu_id = m.id
                     WHERE mr.role_id = ?
-                    ORDER BY menu_id, order_index
+                    ORDER BY m.id, order_index
                 ',
             [$roleId]
         );
