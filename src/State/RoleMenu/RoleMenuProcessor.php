@@ -35,19 +35,18 @@ readonly class RoleMenuProcessor implements ProcessorInterface
         $this->connection->beginTransaction();
         try {
             $this->connection->executeStatement(
-                'DELETE FROM menu_rol WHERE rol_id = :roleId',
+                'DELETE FROM menu_rol WHERE role_id = :roleId',
                 ['roleId' => $roleId]
             );
 
             $insertStmt = $this->connection->prepare(
-                'INSERT INTO menu_rol (menu_id, rol_id, estado) VALUES (:menuId, :roleId, :checked)'
+                'INSERT INTO menu_rol (menu_id, role_id) VALUES (:menuId, :roleId)'
             );
 
             foreach ($data->permissions as $menuId) {
                 $insertStmt->executeStatement([
                     'menuId' => $menuId,
                     'roleId' => $roleId,
-                    'checked' => true,
                 ]);
             }
 

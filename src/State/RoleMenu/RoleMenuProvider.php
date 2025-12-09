@@ -27,17 +27,16 @@ readonly class RoleMenuProvider implements ProviderInterface
 
         $result = $this->connection->fetchAllAssociative(
             'SELECT
-                m.menu_id,
-                m.descripcion,
+                m.id as menu_id,
+                m.key_name AS descripcion,
                 m.parent_id,
-                ifnull( mr.estado, 0 ) AS checked
+                IFNULL(mr.menu_id, 0) AS checked
             FROM
                 menu m
-                LEFT JOIN menu_rol mr ON m.menu_id = mr.menu_id
-                AND mr.rol_id = ?
+                LEFT JOIN menu_rol mr ON m.id = mr.menu_id AND mr.role_id = ?
             ORDER BY
-                m.menu_id,
-                m.orden',
+                m.id,
+                m.order_index',
             [$roleId]
         );
 
