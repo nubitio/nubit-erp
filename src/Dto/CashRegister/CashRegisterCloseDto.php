@@ -2,15 +2,13 @@
 
 namespace App\Dto\CashRegister;
 
-use App\Entity\CashClosure;
-
 class CashRegisterCloseDto
 {
     public function __construct(
-        /**
-         * @var CashClosure[]
-         */
-        public array $closureItems,
+        public float $expectedAmount,
+        public float $countedAmount,
+        public float $difference,
+        public float $note
     ) {
     }
 }

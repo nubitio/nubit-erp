@@ -9,7 +9,6 @@ use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Entity\CashMovement;
 use App\Entity\CashRegister;
 use App\Entity\CashShift;
-use App\Entity\PaymentMethod;
 use App\Entity\User;
 use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
@@ -53,7 +52,6 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashMovement->setCashShift($cashShift);
         $cashMovement->setType(CashMovementType::INCOME);
         $cashMovement->setAmount($data->openingBalance);
-        $cashMovement->setPaymentMethod($this->entityManager->getReference(PaymentMethod::class, PaymentMethod::CASH));
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new \DateTimeImmutable());
 
