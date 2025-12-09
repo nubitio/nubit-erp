@@ -10,6 +10,7 @@ use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
 use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use App\State\CashRegister\CashShiftMovementsProvider;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
@@ -75,6 +76,18 @@ class CashShift
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $closedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $expectedAmount = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $countedAmount = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $difference = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $note = null;
 
     public function getId(): ?int
     {
@@ -173,6 +186,54 @@ class CashShift
     public function setClosedAt(?\DateTimeImmutable $closedAt): static
     {
         $this->closedAt = $closedAt;
+
+        return $this;
+    }
+
+    public function getExpectedAmount(): ?float
+    {
+        return $this->expectedAmount;
+    }
+
+    public function setExpectedAmount(?float $expected_amount): static
+    {
+        $this->expectedAmount = $expected_amount;
+
+        return $this;
+    }
+
+    public function getCountedAmount(): ?float
+    {
+        return $this->countedAmount;
+    }
+
+    public function setCountedAmount(?float $counted_amount): static
+    {
+        $this->countedAmount = $counted_amount;
+
+        return $this;
+    }
+
+    public function getDifference(): ?float
+    {
+        return $this->difference;
+    }
+
+    public function setDifference(?float $difference): static
+    {
+        $this->difference = $difference;
+
+        return $this;
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): static
+    {
+        $this->note = $note;
 
         return $this;
     }

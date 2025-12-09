@@ -54,20 +54,6 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
   );
   fields.push(
     new FieldBuilder()
-      .type(FieldType.ENTITY)
-      .name('paymentMethod')
-      .label('Método de pago')
-      .url(Constants.API_BASE_URL + 'payment-methods')
-      .valueField('id')
-      .textField('name')
-      .valueType('number')
-      .defaultValue(1)
-      .required(true)
-      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
       .type(FieldType.TEXTAREA)
       .name('description')
       .label('Descripcion')

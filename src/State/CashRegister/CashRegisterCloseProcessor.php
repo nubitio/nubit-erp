@@ -43,16 +43,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 CashShift::class,
                 $uriVariables['id']
             );
-            $cashPaymentMethodIRI = 'api/v1/payment-methods/'
-                . PaymentMethod::CASH;
-            $cashClosureKey = array_search(
-                $cashPaymentMethodIRI,
-                array_column($data->closureItems, 'paymentMethod'),
-                true
-            );
-            $cashShift->setClosingBalance(
-                $data->closureItems[$cashClosureKey]->getCountedAmount()
-            );
+            $cashShift->setClosingBalance($data->countedAmount);
             $cashShift->setStatus(CashShiftStatus::CLOSED);
             $cashShift->setClosedBy(
                 $this->entityManager->getReference(
@@ -62,10 +53,6 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             );
             $cashShift->setClosedAt(new \DateTimeImmutable());
             $this->entityManager->persist($cashShift);
-
-            foreach ($data->closureItems as $cashClosure) {
-                $this->entityManager->persist($cashClosure);
-            }
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();

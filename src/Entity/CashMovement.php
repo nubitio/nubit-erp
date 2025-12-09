@@ -36,11 +36,6 @@ class CashMovement
     private ?float $amount = null;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?PaymentMethod $paymentMethod = null;
-
-    #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
     private ?string $description = null;
 
@@ -84,18 +79,6 @@ class CashMovement
     public function setAmount(float $amount): static
     {
         $this->amount = $amount;
-
-        return $this;
-    }
-
-    public function getPaymentMethod(): ?PaymentMethod
-    {
-        return $this->paymentMethod;
-    }
-
-    public function setPaymentMethod(?PaymentMethod $paymentMethod): static
-    {
-        $this->paymentMethod = $paymentMethod;
 
         return $this;
     }
