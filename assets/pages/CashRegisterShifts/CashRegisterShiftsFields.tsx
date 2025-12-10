@@ -85,9 +85,7 @@ export const CashRegisterShiftsFields = () => {
       .build(),
   );
 
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXTAREA).name('note').label('Nota').build(),
-  );
+  fields.push(new FieldBuilder().type(FieldType.TEXTAREA).name('note').label('Nota').build());
 
   fields.push(
     new FieldBuilder()

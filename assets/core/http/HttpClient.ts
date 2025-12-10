@@ -14,8 +14,6 @@ class HttpClient {
   private isRefreshing: boolean = false;
   private failedQueue: Array<(token: string) => void> = [];
 
-  private static readonly AUTH_HEADER = 'Authorization';
-  private static readonly BEARER_PREFIX = 'Bearer';
   private static readonly DEFAULT_MESSAGES = {
     error: 'Ocurrió un error',
     notFound: 'No se encontró el recurso',
@@ -63,7 +61,7 @@ class HttpClient {
         }
 
         if (status === HttpCode.UNAUTHORIZED) {
-          return this.handleUnauthorizedError(originalRequest, error);
+          return this.handleUnauthorizedError(originalRequest);
         }
 
         if (status === HttpCode.UNPROCESSABLE_ENTITY) {
@@ -80,9 +78,25 @@ class HttpClient {
     );
   };
 
-  private async handleUnauthorizedError(originalRequest: any, error: any) {
-    this.handleTokenRefreshError();
-    return Promise.reject(error);
+  private async handleUnauthorizedError(originalRequest: any) {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      try {
+        await this.axiosClient.post(`${Constants.API_BASE_URL}auth/refresh`);
+        return this.axiosClient(originalRequest);
+      } catch (refreshError) {
+        this.handleTokenRefreshError();
+        return Promise.reject(refreshError);
+      } finally {
+        this.isRefreshing = false;
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      this.failedQueue.push(() => {
+        resolve(this.axiosClient(originalRequest));
+      });
+    });
   }
 
   private processQueue(error: any, token: string | null) {

@@ -26,6 +26,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 {
     public const string AUTH_HEADER = 'Authorization';
     public const string AUTH_COOKIE = 'AUTH_TOKEN';
+    public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
 
     public const string LOGIN_ROUTE = '_api_/auth_post';
 
@@ -34,6 +35,8 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly UserProvider $userProvider,
         private readonly JWTManager $jwtManager,
         private readonly LoggerInterface $logger,
+        private readonly int $accessTokenTtl,
+        private readonly int $refreshTokenTtl,
     ) {
     }
 
@@ -55,12 +58,11 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $branchId = null;
 
         if (self::LOGIN_ROUTE === $request->attributes->get('_route')) {
-            /** @var array<string, string> $data */
             $data = json_decode($request->getContent(), true);
 
-            if ($data !== null) {
-                $username = $data['username'];
-                $password = $data['password'];
+            if (is_array($data)) {
+                $username = $data['username'] ?? '';
+                $password = $data['password'] ?? '';
                 $branchId = $data['branchId'] ?? null;
             }
         }
@@ -114,6 +116,10 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     {
         $user = $passport->getUser();
         $branchId = $passport->getAttribute('branchId') ?? null;
+        $now = new \DateTimeImmutable();
+        $nowTimestamp = $now->getTimestamp();
+        $accessTokenExpiresAt = $nowTimestamp + $this->accessTokenTtl;
+        $refreshTokenExpiresAt = $nowTimestamp + $this->refreshTokenTtl;
 
         $branch = null;
         if ($branchId) {
@@ -121,8 +127,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         }
 
         $payload = [
-            'exp' => new \DateTime('+1 day')->getTimestamp(),
-            'iat' => new \DateTime()->getTimestamp(),
+            'iat' => $nowTimestamp,
         ];
 
         if ($user instanceof User) {
@@ -134,16 +139,31 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             $payload['roles'] = $user->getRoles();
         }
 
+        $accessToken = $this->jwtManager->encode([
+            ...$payload,
+            'exp' => $accessTokenExpiresAt,
+        ]);
+
+        $refreshToken = $this->jwtManager->encode([
+            ...$payload,
+            'exp' => $refreshTokenExpiresAt,
+            'type' => 'refresh',
+        ]);
+
         $jwtToken = new JWTAuthenticationToken(
             $passport->getUser(),
             $firewallName,
             $passport->getUser()->getRoles(),
-            $passport->getAttribute('token') ?? $this->jwtManager->encode($payload)
+            $passport->getAttribute('token') ?? $accessToken
         );
 
         if ($branchId) {
             $jwtToken->setAttribute('branchId', $branchId);
         }
+
+        $jwtToken->setAttribute('refreshToken', $refreshToken);
+        $jwtToken->setAttribute('accessTokenExpiresAt', $accessTokenExpiresAt);
+        $jwtToken->setAttribute('refreshTokenExpiresAt', $refreshTokenExpiresAt);
 
         return $jwtToken;
     }
@@ -172,6 +192,20 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             } catch (\Throwable) {
                 $this->logger->error('Token does not have branchId attribute');
             }
+            $accessTokenExpiresAt = time() + $this->accessTokenTtl;
+            $refreshTokenExpiresAt = time() + $this->refreshTokenTtl;
+
+            try {
+                $accessTokenExpiresAt = $token->getAttribute('accessTokenExpiresAt');
+            } catch (\Throwable) {
+                $this->logger->error('Token does not have accessTokenExpiresAt attribute');
+            }
+
+            try {
+                $refreshTokenExpiresAt = $token->getAttribute('refreshTokenExpiresAt');
+            } catch (\Throwable) {
+                $this->logger->error('Token does not have refreshTokenExpiresAt attribute');
+            }
             $response = new JsonResponse([
                 'user' => [
                     'username' => $user->getUsername(),
@@ -182,16 +216,26 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
                 ],
             ]);
 
-            $cookie = Cookie::create(
+            $accessCookie = Cookie::create(
                 self::AUTH_COOKIE,
                 $token->getCredentials(),
-                new \DateTime('+1 day')->getTimestamp(),
+                $accessTokenExpiresAt,
                 '/',
                 null,
                 true
             );
 
-            $response->headers->setCookie($cookie);
+            $refreshCookie = Cookie::create(
+                self::REFRESH_COOKIE,
+                $token->getAttribute('refreshToken'),
+                $refreshTokenExpiresAt,
+                '/',
+                null,
+                true
+            );
+
+            $response->headers->setCookie($accessCookie);
+            $response->headers->setCookie($refreshCookie);
 
             return $response;
         }
