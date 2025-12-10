@@ -18,9 +18,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class SeedMenuCommand extends TenantAwareCommand
 {
-    protected static $defaultName = 'app:seed:menu';
-    protected static $defaultDescription = 'Seed menu items (idempotent).';
-
     public function __construct(
         private readonly MenuSeedService $menuSeedService,
         TenantManager $tenantManager,

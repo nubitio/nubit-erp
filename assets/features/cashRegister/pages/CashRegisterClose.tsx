@@ -111,8 +111,6 @@ export const CashRegisterClose = () => {
         >
           <Editing mode="cell" allowUpdating={true} />
           <Scrolling mode="virtual" />
-          <Column dataField="paymentMethodId" visible={false} />
-          <Column dataField="paymentMethod" caption="Metodo de pago" allowEditing={false} />
           <Column
             dataField="expectedAmount"
             caption="Monto esperado"
