@@ -9,7 +9,14 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Http\ApiResponse;
 use App\Core\Service\CompanyContext;
+use App\Entity\CashMovement;
+use App\Entity\CashMovementCategory;
+use App\Entity\CashShift;
+use App\Entity\PaymentMethod;
 use App\Entity\Sale;
+use App\Enum\CashMovementType;
+use App\Enum\CashShiftStatus;
+use App\Repository\CashMovementCategoryRepository;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -27,6 +34,7 @@ readonly class SaleVoidUseCase
         private FileManager $fileManager,
         private CompanyContext $companyContext,
         private LoggerInterface $logger,
+        private CashMovementCategoryRepository $cashMovementCategoryRepository,
     ) {
     }
 
@@ -73,6 +81,8 @@ readonly class SaleVoidUseCase
 
         $this->entityManager->persist($sale);
         $this->entityManager->flush();
+
+        $this->registerCashRefund($sale, $userId);
 
         if ($response instanceof SummaryResponse) {
             $sunatResponse = $response->sunatResponse;
@@ -176,5 +186,50 @@ readonly class SaleVoidUseCase
         $this->entityManager->flush();
 
         return $response;
+    }
+
+    private function registerCashRefund(Sale $sale, int $userId): void
+    {
+        if ($sale->getTipoPago()?->getId() !== PaymentMethod::CASH) {
+            return;
+        }
+
+        $cashShift = $this->entityManager->getRepository(CashShift::class)
+            ->findOneBy([
+                'status' => CashShiftStatus::OPEN,
+                'openedBy' => $userId,
+            ]);
+
+        if (!$cashShift instanceof CashShift) {
+            $this->logger->warning('No open cash shift for cash refund movement', [
+                'sale_id' => $sale->getId(),
+                'user_id' => $userId,
+            ]);
+
+            return;
+        }
+
+        $category = $this->cashMovementCategoryRepository->findOneBy([
+            'code' => CashMovementCategory::CUSTOMER_REFUND,
+        ]);
+
+        if (!$category instanceof CashMovementCategory) {
+            $this->logger->error('Cash refund category not found', [
+                'sale_id' => $sale->getId(),
+            ]);
+
+            return;
+        }
+
+        $movement = new CashMovement();
+        $movement->setCashShift($cashShift);
+        $movement->setCategory($category);
+        $movement->setType($category->getType() ?? CashMovementType::EXPENSE);
+        $movement->setAmount($sale->getTotal() ?? 0);
+        $movement->setDescription('Anulación de venta N° ' . $sale->getserie() . '-' . $sale->getNumero());
+        $movement->setCreatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->persist($movement);
+        $this->entityManager->flush();
     }
 }
