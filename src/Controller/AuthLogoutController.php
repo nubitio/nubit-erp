@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 
 class AuthLogoutController extends AbstractController
@@ -20,7 +19,6 @@ class AuthLogoutController extends AbstractController
     ) {
     }
 
-    #[Route('/api/v1/auth/logout', name: 'auth_logout', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
         $refreshToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);

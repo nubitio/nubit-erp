@@ -7,13 +7,12 @@ use App\Core\Security\Auth\JWTManager;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Repository\RefreshTokenRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Doctrine\ORM\EntityManagerInterface;
 
 class AuthRefreshController extends AbstractController
 {
@@ -26,7 +25,6 @@ class AuthRefreshController extends AbstractController
     ) {
     }
 
-    #[Route('/api/v1/auth/refresh', name: 'auth_refresh', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
         $refreshToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
