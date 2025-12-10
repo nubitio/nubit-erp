@@ -2,7 +2,7 @@ import { Field } from '../../core/field/Field';
 import { FieldBuilder } from '../../core/field/FieldBuilder';
 import { FieldType } from '../../core/field/FieldType';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import {SharedUtils} from "../../core/utils/SharedUtils";
+import { SharedUtils } from '../../core/utils/SharedUtils';
 
 export const CashMovementCategoryFields = () => {
   const fields: Field[] = [];
@@ -20,21 +20,11 @@ export const CashMovementCategoryFields = () => {
   );
 
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('code')
-      .label('Código')
-      .required(true)
-      .build(),
+    new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').required(true).build(),
   );
 
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('name')
-      .label('Nombre')
-      .required(true)
-      .build(),
+    new FieldBuilder().type(FieldType.TEXT).name('name').label('Nombre').required(true).build(),
   );
 
   fields.push(

@@ -12,6 +12,7 @@ use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use App\State\CashRegister\CashShiftMovementsProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashShiftRepository::class)]
 #[ApiResource(
@@ -45,47 +46,60 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 class CashShift
 {
+    #[Groups(['cash_shift:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?CashRegister $cashRegister = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(enumType: CashShiftStatus::class)]
     private ?CashShiftStatus $status = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column]
     private ?float $openingBalance = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
     private ?float $closingBalance = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
     private ?User $openedBy = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'closed_by', referencedColumnName: 'usuario_id')]
     private ?User $closedBy = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column]
     private ?\DateTimeImmutable $openedAt = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $closedAt = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
     private ?float $expectedAmount = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
     private ?float $countedAmount = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
     private ?float $difference = null;
 
+    #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 

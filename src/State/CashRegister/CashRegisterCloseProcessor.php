@@ -37,13 +37,41 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): ApiResponse {
+        $closureItems = $data->closureItems ?? [];
+        $expectedTotal = 0.0;
+        $countedTotal = 0.0;
+        $differenceTotal = 0.0;
+        $notes = [];
+
+        if (!empty($closureItems)) {
+            foreach ($closureItems as $item) {
+                $expectedTotal += (float) ($item['expectedAmount'] ?? 0);
+                $countedTotal += (float) ($item['countedAmount'] ?? 0);
+                $differenceTotal += (float) ($item['difference'] ?? 0);
+                if (!empty($item['note'])) {
+                    $notes[] = trim((string) $item['note']);
+                }
+            }
+        } else {
+            $expectedTotal = (float) ($data->expectedAmount ?? 0);
+            $countedTotal = (float) ($data->countedAmount ?? 0);
+            $differenceTotal = (float) (($data->difference ?? ($countedTotal - $expectedTotal)));
+            if (!empty($data->note)) {
+                $notes[] = trim((string) $data->note);
+            }
+        }
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
             $cashShift = $this->entityManager->find(
                 CashShift::class,
                 $uriVariables['id']
             );
-            $cashShift->setClosingBalance($data->countedAmount);
+            $cashShift->setClosingBalance($countedTotal);
+            $cashShift->setExpectedAmount($expectedTotal);
+            $cashShift->setCountedAmount($countedTotal);
+            $cashShift->setDifference($differenceTotal);
+            $cashShift->setNote($notes ? implode('; ', $notes) : null);
             $cashShift->setStatus(CashShiftStatus::CLOSED);
             $cashShift->setClosedBy(
                 $this->entityManager->getReference(

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
@@ -13,6 +14,7 @@ use App\Repository\CashRegisterRepository;
 use App\State\CashRegister\CashRegisterCloseProcessor;
 use App\State\CashRegister\CashRegisterDashboardProvider;
 use App\State\CashRegister\CashRegisterOpenProcessor;
+use App\State\CashRegister\CashRegisterShiftsProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -45,6 +47,24 @@ use Symfony\Component\Serializer\Attribute\Groups;
             processor: CashRegisterCloseProcessor::class,
         ),
     ],
+    paginationEnabled: false,
+)]
+#[ApiResource(
+    operations: [
+        new GetCollection(
+            uriTemplate: '/cash-registers/{id}/shifts',
+            uriVariables: [
+                'id' => new Link(
+                    fromProperty: 'id',
+                    fromClass: CashRegister::class,
+                ),
+            ],
+            normalizationContext: ['groups' => ['cash_shift:read']],
+            output: CashShift::class,
+            provider: CashRegisterShiftsProvider::class,
+        ),
+    ],
+    paginationEnabled: true,
 )]
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_register:read']],

@@ -4,11 +4,9 @@ namespace App\Dto\CashRegister;
 
 class CashRegisterCloseDto
 {
-    public function __construct(
-        public float $expectedAmount,
-        public float $countedAmount,
-        public float $difference,
-        public float $note
-    ) {
-    }
+    public ?float $expectedAmount = null;
+    public ?float $countedAmount = null;
+    public ?float $difference = null;
+    public ?string $note = null;
+    public array $closureItems = [];
 }

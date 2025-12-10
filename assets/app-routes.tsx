@@ -2,8 +2,6 @@ import { withNavigationWatcher } from './contexts/navigation';
 import { DashboardPage } from './pages/Dashboard/DashboardPage';
 import { ProductPage } from './pages/Product/ProductPage';
 import { BranchPage } from './pages/Branch/BranchPage';
-import { CashboxPage } from './pages/Cashbox/CashboxPage';
-import { CashboxConsultPage } from './pages/CashboxConsult/CashboxConsultPage';
 import { CategoryPage } from './pages/Category/CategoryPage';
 import { CompanyPage } from './pages/Company/CompanyPage';
 import { ConfigPage } from './pages/Config/ConfigPage';
@@ -36,6 +34,7 @@ import { PaymentMethodPage } from './pages/PaymentMethod/PaymentMethodPage';
 import Assistant from './features/assistant/Assistant';
 import { CashRegisterPage } from './pages/CashRegister/CashRegisterPage';
 import { CashMovementCategoryPage } from './pages/CashMovementCategory/CashMovementCategoryPage';
+import { CashRegisterShiftsPage } from './pages/CashRegisterShifts/CashRegisterShiftsPage';
 
 const routes = [
   {
@@ -71,12 +70,12 @@ const routes = [
     element: CashMovements,
   },
   {
-    path: '/cash-movement-category',
-    element: CashMovementCategoryPage,
+    path: '/cash-register/:id/shifts',
+    element: CashRegisterShiftsPage,
   },
   {
-    path: '/cashbox-consult',
-    element: CashboxConsultPage,
+    path: '/cash-movement-category',
+    element: CashMovementCategoryPage,
   },
   {
     path: '/category',

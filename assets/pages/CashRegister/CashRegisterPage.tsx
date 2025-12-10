@@ -4,8 +4,13 @@ import { DxForm } from '../../core/form/DxForm';
 import { DxDialog } from '../../core/dialog/DxDialog';
 import { Constants } from '../../core/common/Constants';
 import { CashRegisterFields } from './CashRegisterFields';
+import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
+import { DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
 
 export const CashRegisterPage = () => {
+  const navigate = useNavigate();
+  const gridRef = useRef<DxDataGridEvents>(null);
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'cash-registers';
   const fields = CashRegisterFields();
@@ -19,17 +24,32 @@ export const CashRegisterPage = () => {
     LOADING: 'cash-register:loading',
   };
 
+  const toolbar = [
+    {
+      text: 'Ver turnos',
+      type: 'info',
+      onClick: () => {
+        const row = gridRef.current?.getSelectedRow();
+        if (!row) return;
+        navigate(`/cash-register/${row.id}/shifts`);
+      },
+    },
+  ];
+
   return (
     <div id={container}>
       <DxDataGrid
+        ref={gridRef}
         id={'cash-register'}
         title={'Cajas'}
         url={API_URL}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
+        selectionMode="single"
         fields={fields}
         events={EVENTS}
+        toolbar={toolbar}
       />
       <DxDialog events={EVENTS}>
         <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
