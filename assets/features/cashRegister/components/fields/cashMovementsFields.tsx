@@ -1,9 +1,9 @@
-import { FieldBuilder } from '../../../../core/field/FieldBuilder';
-import { FieldType } from '../../../../core/field/FieldType';
-import { Field } from '../../../../core/field/Field';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import {FieldBuilder} from '../../../../core/field/FieldBuilder';
+import {FieldType} from '../../../../core/field/FieldType';
+import {Field} from '../../../../core/field/Field';
+import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
 import NumberUtils from '../../../../core/utils/NumberUtils';
-import { Constants } from '../../../../core/common/Constants';
+import {Constants} from '../../../../core/common/Constants';
 
 const cashMovementsFields = (cashShiftId: string | undefined) => {
   const fields: Field[] = [];
@@ -35,12 +35,24 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
   );
   fields.push(
     new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('category')
+      .label('Categoría')
+      .url(Constants.API_BASE_URL + 'cash-movement-categories')
+      .valueField('id')
+      .textField('name')
+      .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
+      .required(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
       .type(FieldType.ENUM)
       .name('type')
       .label('Tipo')
       .data([
-        { value: 'income', text: 'Ingreso' },
-        { value: 'expense', text: 'Egreso' },
+        {value: 'income', text: 'Ingreso'},
+        {value: 'expense', text: 'Egreso'},
       ])
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value === 'income') {
@@ -49,6 +61,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
           return <span className="badge badge-outlined rounded-pill text-bg-danger">Egreso</span>;
         }
       })
+      .visibleOnForm(false)
       .required(true)
       .build(),
   );

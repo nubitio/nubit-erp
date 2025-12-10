@@ -7,34 +7,34 @@ use App\Core\Util\Constants;
 use App\Dto\Setup\InitialSetupInput;
 use App\Dto\Setup\SetupStatusDto;
 use App\Entity\Branch;
-use App\Entity\Category;
 use App\Entity\CashMovementCategory;
+use App\Entity\Category;
 use App\Entity\Company;
 use App\Entity\Customer;
 use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Role;
-use App\Enum\CashMovementType;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
 use App\Entity\VoucherSeries;
 use App\Entity\VoucherType;
 use App\Entity\Warehouse;
-use App\Service\UbigeoImportService;
-use App\Service\TimeDimensionSeeder;
-use App\Service\MenuSeedService;
+use App\Enum\CashMovementType;
 use App\Repository\BranchRepository;
+use App\Repository\CashMovementCategoryRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
-use App\Repository\CashMovementCategoryRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\RoleRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
 use App\Repository\VoucherSeriesRepository;
 use App\Repository\VoucherTypeRepository;
+use App\Service\MenuSeedService;
+use App\Service\TimeDimensionSeeder;
+use App\Service\UbigeoImportService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -237,16 +237,16 @@ readonly class InitialSetupService
 
         // Cash movement categories
         $cashMovementCategories = [
-            ['cash_sale', 'Venta en efectivo', CashMovementType::INCOME],
-            ['credit_payment', 'Cobro de crédito', CashMovementType::INCOME],
-            ['cash_replenishment', 'Reposición de caja', CashMovementType::INCOME],
-            ['other_income', 'Otros ingresos', CashMovementType::INCOME],
-            ['overage_adjustment', 'Ajuste por sobrante', CashMovementType::INCOME],
-            ['petty_cash_expense', 'Gasto de caja chica', CashMovementType::EXPENSE],
-            ['customer_refund', 'Devolución al cliente', CashMovementType::EXPENSE],
-            ['manager_withdrawal', 'Retiro de efectivo', CashMovementType::EXPENSE],
-            ['bank_deposit', 'Depósito bancario', CashMovementType::EXPENSE],
-            ['shortage_adjustment', 'Ajuste por faltante', CashMovementType::EXPENSE],
+            [CashMovementCategory::CASH_SALE, 'Venta en efectivo', CashMovementType::INCOME],
+            [CashMovementCategory::CREDIT_PAYMENT, 'Cobro de crédito', CashMovementType::INCOME],
+            [CashMovementCategory::CASH_REPLENISHMENT, 'Reposición de caja', CashMovementType::INCOME],
+            [CashMovementCategory::OTHER_INCOME, 'Otros ingresos', CashMovementType::INCOME],
+            [CashMovementCategory::OVERAGE_ADJUSTMENT, 'Ajuste por sobrante', CashMovementType::INCOME],
+            [CashMovementCategory::PETTY_CASH_EXPENSE, 'Gasto de caja chica', CashMovementType::EXPENSE],
+            [CashMovementCategory::CUSTOMER_REFUND, 'Devolución al cliente', CashMovementType::EXPENSE],
+            [CashMovementCategory::MANAGER_WITHDRAWAL, 'Retiro de efectivo', CashMovementType::EXPENSE],
+            [CashMovementCategory::BANK_DEPOSIT, 'Depósito bancario', CashMovementType::EXPENSE],
+            [CashMovementCategory::SHORTAGE_ADJUSTMENT, 'Ajuste por faltante', CashMovementType::EXPENSE],
         ];
         foreach ($cashMovementCategories as [$code, $name, $type]) {
             $this->getOrCreateCashMovementCategory($code, $name, $type);
