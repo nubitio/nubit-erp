@@ -8,11 +8,13 @@ use App\Dto\Setup\InitialSetupInput;
 use App\Dto\Setup\SetupStatusDto;
 use App\Entity\Branch;
 use App\Entity\Category;
+use App\Entity\CashMovementCategory;
 use App\Entity\Company;
 use App\Entity\Customer;
 use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Role;
+use App\Enum\CashMovementType;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
 use App\Entity\VoucherSeries;
@@ -26,6 +28,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
+use App\Repository\CashMovementCategoryRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\RoleRepository;
 use App\Repository\UnitOfMeasureRepository;
@@ -49,6 +52,7 @@ readonly class InitialSetupService
         private RoleRepository $roleRepository,
         private LogisticOperationRepository $logisticOperationRepository,
         private PaymentMethodRepository $paymentMethodRepository,
+        private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private VoucherTypeRepository $voucherTypeRepository,
         private VoucherSeriesRepository $voucherSeriesRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
@@ -231,6 +235,23 @@ readonly class InitialSetupService
             $this->getOrCreatePaymentMethod($method);
         }
 
+        // Cash movement categories
+        $cashMovementCategories = [
+            ['cash_sale', 'Venta en efectivo', CashMovementType::INCOME],
+            ['credit_payment', 'Cobro de crédito', CashMovementType::INCOME],
+            ['cash_replenishment', 'Reposición de caja', CashMovementType::INCOME],
+            ['other_income', 'Otros ingresos', CashMovementType::INCOME],
+            ['overage_adjustment', 'Ajuste por sobrante', CashMovementType::INCOME],
+            ['petty_cash_expense', 'Gasto de caja chica', CashMovementType::EXPENSE],
+            ['customer_refund', 'Devolución al cliente', CashMovementType::EXPENSE],
+            ['manager_withdrawal', 'Retiro de efectivo', CashMovementType::EXPENSE],
+            ['bank_deposit', 'Depósito bancario', CashMovementType::EXPENSE],
+            ['shortage_adjustment', 'Ajuste por faltante', CashMovementType::EXPENSE],
+        ];
+        foreach ($cashMovementCategories as [$code, $name, $type]) {
+            $this->getOrCreateCashMovementCategory($code, $name, $type);
+        }
+
         // Voucher types (SUNAT)
         $voucherTypes = [
             ['00', 'Nota de Venta'],
@@ -274,6 +295,24 @@ readonly class InitialSetupService
 
         $paymentMethod = (new PaymentMethod())->setName($name);
         $this->entityManager->persist($paymentMethod);
+        $this->entityManager->flush();
+    }
+
+    private function getOrCreateCashMovementCategory(string $code, string $name, CashMovementType $type): void
+    {
+        $existing = $this->cashMovementCategoryRepository->findOneBy(['code' => $code]);
+        if ($existing) {
+            return;
+        }
+
+        $category = (new CashMovementCategory())
+            ->setCode($code)
+            ->setName($name)
+            ->setType($type)
+            ->setIsSystem(true)
+            ->setActive(true);
+
+        $this->entityManager->persist($category);
         $this->entityManager->flush();
     }
 
