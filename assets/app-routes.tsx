@@ -35,6 +35,7 @@ import { CashMovements } from './features/cashRegister/pages/CashMovements';
 import { PaymentMethodPage } from './pages/PaymentMethod/PaymentMethodPage';
 import Assistant from './features/assistant/Assistant';
 import { CashRegisterPage } from './pages/CashRegister/CashRegisterPage';
+import { CashMovementCategoryPage } from './pages/CashMovementCategory/CashMovementCategoryPage';
 
 const routes = [
   {
@@ -68,6 +69,10 @@ const routes = [
   {
     path: '/cash-shift/:id/movements',
     element: CashMovements,
+  },
+  {
+    path: '/cash-movement-category',
+    element: CashMovementCategoryPage,
   },
   {
     path: '/cashbox-consult',

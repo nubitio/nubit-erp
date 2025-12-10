@@ -207,6 +207,15 @@ class MenuSeedService
             'parent_id' => 300,
         ],
         [
+            'id' => 304,
+            'order_index' => 4,
+            'key_name' => 'Categorías de caja',
+            'type' => 'route',
+            'route' => 'cash-movement-category',
+            'icon' => '',
+            'parent_id' => 300,
+        ],
+        [
             'id' => 401,
             'order_index' => 1,
             'key_name' => 'Facturación',
