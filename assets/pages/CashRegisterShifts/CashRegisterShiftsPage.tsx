@@ -1,16 +1,16 @@
 import './CashRegisterShiftsPage.scss';
-import {useNavigate, useParams} from 'react-router-dom';
-import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
-import {CashRegisterShiftsFields} from './CashRegisterShiftsFields';
-import {Constants} from '../../core/common/Constants';
-import {useRef} from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
+import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
+import { Constants } from '../../core/common/Constants';
+import { useRef } from 'react';
 
 type CashRegisterShiftParams = {
   id: string;
 };
 
 export const CashRegisterShiftsPage = () => {
-  const {id} = useParams<CashRegisterShiftParams>();
+  const { id } = useParams<CashRegisterShiftParams>();
   const navigate = useNavigate();
   const gridRef = useRef<DxDataGridEvents>(null);
   const fields = CashRegisterShiftsFields();

@@ -15,15 +15,24 @@ class AuthLogoutController extends AbstractController
     public function __invoke(): Response
     {
         $response = new JsonResponse(['message' => 'ok']);
-        $expiredCookie = Cookie::create(
+        $expiredAccessCookie = Cookie::create(
             JWTAuthenticator::AUTH_COOKIE,
             '',
-            new \DateTime('-1 hour')->getTimestamp(),
+            (new \DateTimeImmutable('-1 hour'))->getTimestamp(),
             '/',
             null,
             true
         );
-        $response->headers->setCookie($expiredCookie);
+        $expiredRefreshCookie = Cookie::create(
+            JWTAuthenticator::REFRESH_COOKIE,
+            '',
+            (new \DateTimeImmutable('-1 hour'))->getTimestamp(),
+            '/',
+            null,
+            true
+        );
+        $response->headers->setCookie($expiredAccessCookie);
+        $response->headers->setCookie($expiredRefreshCookie);
 
         return $response;
     }
