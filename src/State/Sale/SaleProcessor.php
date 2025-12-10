@@ -210,8 +210,10 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($isNew && $data->getTipoPago()?->getId() === PaymentMethod::CASH &&
-            $cashShiftForMovement instanceof CashShift) {
+        if (
+            $isNew && $data->getTipoPago()?->getId() === PaymentMethod::CASH &&
+            $cashShiftForMovement instanceof CashShift
+        ) {
             $this->createCashMovementForSale($data, $cashShiftForMovement);
         }
 
