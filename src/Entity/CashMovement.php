@@ -5,11 +5,13 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
+use App\Entity\CashMovementCategory;
 use App\Repository\CashMovementRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: CashMovementRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_movement:read']],
     filters: [DevExtremeFilter::class],
@@ -26,6 +28,11 @@ class CashMovement
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?CashShift $cashShift = null;
+
+    #[Groups(['cash_movement:read'])]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?CashMovementCategory $category = null;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(enumType: CashMovementType::class)]
@@ -55,6 +62,21 @@ class CashMovement
     public function setCashShift(?CashShift $cashShift): static
     {
         $this->cashShift = $cashShift;
+
+        return $this;
+    }
+
+    public function getCategory(): ?CashMovementCategory
+    {
+        return $this->category;
+    }
+
+    public function setCategory(CashMovementCategory $category): static
+    {
+        $this->category = $category;
+        if ($category->getType()) {
+            $this->type = $category->getType();
+        }
 
         return $this;
     }
@@ -105,5 +127,13 @@ class CashMovement
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        if (null === $this->createdAt) {
+            $this->createdAt = new \DateTimeImmutable();
+        }
     }
 }

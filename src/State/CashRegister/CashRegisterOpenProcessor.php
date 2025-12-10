@@ -7,11 +7,13 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Entity\CashMovement;
+use App\Entity\CashMovementCategory;
 use App\Entity\CashRegister;
 use App\Entity\CashShift;
 use App\Entity\User;
 use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
+use App\Repository\CashMovementCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 
@@ -20,6 +22,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
+        private CashMovementCategoryRepository $cashMovementCategoryRepository,
     ) {
     }
 
@@ -48,9 +51,17 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
 
         $this->entityManager->persist($cashShift);
 
+        $category = $this->cashMovementCategoryRepository->findOneBy(
+            ['code' => CashMovementCategory::CASH_REPLENISHMENT]
+        );
+        if (!$category instanceof CashMovementCategory) {
+            throw new \RuntimeException('Categoría de reposición de fondo no encontrada.');
+        }
+
         $cashMovement = new CashMovement();
         $cashMovement->setCashShift($cashShift);
-        $cashMovement->setType(CashMovementType::INCOME);
+        $cashMovement->setCategory($category);
+        $cashMovement->setType($category->getType() ?? CashMovementType::INCOME);
         $cashMovement->setAmount($data->openingBalance);
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new \DateTimeImmutable());
