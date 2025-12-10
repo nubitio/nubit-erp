@@ -3,6 +3,7 @@
 namespace App\Core\Security\Auth;
 
 use App\Entity\Branch;
+use App\Entity\RefreshToken;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\ExpiredException;
@@ -126,8 +127,13 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
         }
 
+        if (!$user instanceof User) {
+            throw new AuthenticationException('Invalid user');
+        }
+
         $payload = [
             'iat' => $nowTimestamp,
+            'type' => 'access',
         ];
 
         if ($user instanceof User) {
@@ -144,11 +150,15 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             'exp' => $accessTokenExpiresAt,
         ]);
 
+        $refreshTokenJti = bin2hex(random_bytes(16));
         $refreshToken = $this->jwtManager->encode([
             ...$payload,
             'exp' => $refreshTokenExpiresAt,
             'type' => 'refresh',
+            'jti' => $refreshTokenJti,
         ]);
+
+        $this->storeRefreshToken($refreshTokenJti, $refreshToken, $user, $refreshTokenExpiresAt);
 
         $jwtToken = new JWTAuthenticationToken(
             $passport->getUser(),
@@ -278,5 +288,17 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $passport->setAttribute('branchId', $branchId);
 
         return $passport;
+    }
+
+    private function storeRefreshToken(string $jti, string $refreshToken, User $user, int $refreshTokenExpiresAt): void
+    {
+        $refreshTokenEntity = (new RefreshToken())
+            ->setJti($jti)
+            ->setTokenHash(hash('sha256', $refreshToken))
+            ->setUser($user)
+            ->setExpiresAt((new \DateTimeImmutable())->setTimestamp($refreshTokenExpiresAt));
+
+        $this->entityManager->persist($refreshTokenEntity);
+        $this->entityManager->flush();
     }
 }

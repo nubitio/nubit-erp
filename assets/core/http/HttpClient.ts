@@ -7,6 +7,7 @@ import { alert } from 'devextreme/ui/dialog';
 import toast from '../utils/SharedUtils';
 import { dispatch } from '../event/EventHook';
 import { Constants } from '../common/Constants';
+import {StorageUtils} from "../utils/StorageUtils";
 
 class HttpClient {
   private readonly axiosClient: AxiosInstance;
@@ -108,6 +109,7 @@ class HttpClient {
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
       alert(HttpClient.DEFAULT_MESSAGES.unauthorized, 'Error').then(() => {
+        StorageUtils.removeItem('user');
         window.location.href = Constants.BASE_URL;
       });
     }

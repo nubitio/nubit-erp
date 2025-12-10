@@ -32,6 +32,7 @@ services:
   App\Controller\AuthRefreshController:
     arguments:
       $accessTokenTtl: '%jwt_access_token_ttl%'
+      $refreshTokenTtl: '%jwt_refresh_token_ttl%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'
