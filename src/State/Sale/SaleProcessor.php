@@ -7,10 +7,15 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
+use App\Entity\CashMovement;
+use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
+use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
+use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
+use App\Repository\CashMovementCategoryRepository;
 use App\Service\ProductStockService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -28,6 +33,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleUtils $saleUtils,
         private ProductStockService $productStockService,
         private LoggerInterface $logger,
+        private CashMovementCategoryRepository $cashMovementCategoryRepository,
     ) {
     }
 
@@ -44,25 +50,28 @@ readonly class SaleProcessor implements ProcessorInterface
         $this->logger->info('Starting sale processing', [
             'sale_id' => $data->getId(),
             'operation_type' => $operation::class,
-            'context' => array_keys($context)
+            'context' => array_keys($context),
         ]);
 
+        $isNew = !$data->getId();
         if ($operation instanceof DeleteOperationInterface) {
             $this->logger->info('Processing sale deletion', [
-                'sale_id' => $data->getId()
+                'sale_id' => $data->getId(),
             ]);
+
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
         $user = $this->security->connectedUser();
+        $cashShiftForMovement = null;
 
-        if (!$data->getId() && $data->getTipoPago()) {
+        if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
-                'payment_method' => $data->getTipoPago()->getId()
+                'payment_method' => $data->getTipoPago()->getId(),
             ]);
 
             $this->logger->debug('Checking for open cash shift', [
-                'user_id' => $user->userId
+                'user_id' => $user->userId,
             ]);
 
             $cashShift = $this->entityManager->getRepository(CashShift::class)
@@ -73,13 +82,14 @@ readonly class SaleProcessor implements ProcessorInterface
 
             if (!$cashShift) {
                 $this->logger->warning('Sale processing failed: No open cash shift found', [
-                    'user_id' => $user->userId
+                    'user_id' => $user->userId,
                 ]);
                 throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
             }
+            $cashShiftForMovement = $cashShift;
 
             $this->logger->debug('Cash shift found, filling sale values', [
-                'cash_shift_id' => $cashShift->getId()
+                'cash_shift_id' => $cashShift->getId(),
             ]);
 
             $data = $this->saleUtils->fillSaleValues($data);
@@ -101,7 +111,7 @@ readonly class SaleProcessor implements ProcessorInterface
                 'product_id' => $item->getProducto()?->getId(),
                 'quantity' => $item->getCantidad(),
                 'price' => $item->getPrecioUnitario(),
-                'total' => $item->getPrecioTotal()
+                'total' => $item->getPrecioTotal(),
             ]);
         }
 
@@ -114,14 +124,14 @@ readonly class SaleProcessor implements ProcessorInterface
             'item_count' => $itemCount,
             'subtotal' => $subtotal,
             'discount_percentage' => $data->getDescuento(),
-            'total' => $total
+            'total' => $total,
         ]);
 
         // Update warehouse-specific stock
         if ($data->getAlmacen()) {
             $this->logger->info('Updating warehouse stock', [
                 'warehouse_id' => $data->getAlmacen()->getId(),
-                'sale_type_id' => $data->getTipoId()
+                'sale_type_id' => $data->getTipoId(),
             ]);
 
             /** @var SaleItem $item */
@@ -138,7 +148,7 @@ readonly class SaleProcessor implements ProcessorInterface
                     $this->logger->debug('Current stock for product', [
                         'product_id' => $productId,
                         'warehouse_id' => $warehouseId,
-                        'current_stock' => $currentStock
+                        'current_stock' => $currentStock,
                     ]);
 
                     if ($data->getTipoId() === 1) {
@@ -149,7 +159,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             'warehouse_id' => $warehouseId,
                             'current_stock' => $currentStock,
                             'quantity_added' => $item->getCantidad(),
-                            'new_stock' => $newStock
+                            'new_stock' => $newStock,
                         ]);
 
                         $this->productStockService->updateStockForProductInWarehouse(
@@ -165,7 +175,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             'warehouse_id' => $warehouseId,
                             'current_stock' => $currentStock,
                             'quantity_removed' => $item->getCantidad(),
-                            'new_stock' => $newStock
+                            'new_stock' => $newStock,
                         ]);
 
                         $this->productStockService->updateStockForProductInWarehouse(
@@ -179,13 +189,13 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if (!$data->getId()) {
+        if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new \DateTimeImmutable());
             $data->setCreatedBy($user->userId);
         } else {
             $this->logger->info('Updating existing sale record', [
-                'sale_id' => $data->getId()
+                'sale_id' => $data->getId(),
             ]);
             $data->setDateUpdated(new \DateTimeImmutable());
             $data->setUpdatedBy($user->userId);
@@ -195,15 +205,42 @@ readonly class SaleProcessor implements ProcessorInterface
             'sale_id' => $data->getId(),
             'customer_id' => $data->getCliente()?->getRuc(),
             'total' => $data->getTotal(),
-            'item_count' => count($data->getItems())
+            'item_count' => count($data->getItems()),
         ]);
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
+        if ($isNew && $data->getTipoPago()?->getId() === PaymentMethod::CASH &&
+            $cashShiftForMovement instanceof CashShift) {
+            $this->createCashMovementForSale($data, $cashShiftForMovement);
+        }
+
         $this->logger->info('Sale processing completed successfully', [
-            'sale_id' => $data->getId()
+            'sale_id' => $data->getId(),
         ]);
 
         return $result;
+    }
+
+    private function createCashMovementForSale(Sale $sale, CashShift $cashShift): void
+    {
+        $category = $this->cashMovementCategoryRepository->findOneBy([
+            'code' => CashMovementCategory::CASH_SALE,
+        ]);
+
+        if (!$category instanceof CashMovementCategory) {
+            throw new ServiceException('No se encontró la categoría de venta en efectivo.');
+        }
+
+        $movement = new CashMovement();
+        $movement->setCashShift($cashShift);
+        $movement->setCategory($category);
+        $movement->setType($category->getType() ?? CashMovementType::INCOME);
+        $movement->setAmount($sale->getTotal() ?? 0);
+        $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
+        $movement->setCreatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->persist($movement);
+        $this->entityManager->flush();
     }
 }
