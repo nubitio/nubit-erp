@@ -10,6 +10,10 @@ class AuthService {
       branchId,
     });
   }
+
+  logout() {
+    return httpClient.post(Constants.API_BASE_URL + 'auth/logout');
+  }
 }
 
 export const authService = new AuthService();

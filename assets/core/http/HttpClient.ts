@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { map, Observable } from 'rxjs';
-import { StorageUtils } from '../utils/StorageUtils';
 import ApiResponse from './ApiResponse';
 import { fromPromise } from 'rxjs/internal/observable/innerFrom';
 import { HttpCode } from './HttpCode';
@@ -8,7 +7,6 @@ import { alert } from 'devextreme/ui/dialog';
 import toast from '../utils/SharedUtils';
 import { dispatch } from '../event/EventHook';
 import { Constants } from '../common/Constants';
-import AuthResponse from './AuthResponse';
 
 class HttpClient {
   private readonly axiosClient: AxiosInstance;
@@ -32,6 +30,7 @@ class HttpClient {
     this.axiosClient = axios.create({
       baseURL: baseUrl,
       timeout: 30000,
+      withCredentials: true,
     });
 
     this.setupInterceptors();
@@ -39,12 +38,6 @@ class HttpClient {
 
   private setupInterceptors = () => {
     this.axiosClient.interceptors.request.use((config) => {
-      if (config.headers) {
-        const token = StorageUtils.getItem('token');
-        if (token) {
-          config.headers[HttpClient.AUTH_HEADER] = `${HttpClient.BEARER_PREFIX} ${token}`;
-        }
-      }
       if (config.params && 'skip' in config.params && 'take' in config.params) {
         config.params.page = config.params.skip / config.params.take + 1;
         config.params.itemsPerPage = config.params.take;
@@ -88,41 +81,8 @@ class HttpClient {
   };
 
   private async handleUnauthorizedError(originalRequest: any, error: any) {
-    if (!this.isRefreshing) {
-      const refreshToken = StorageUtils.getItem('refreshToken');
-
-      if (!refreshToken) {
-        this.handleTokenRefreshError();
-      }
-
-      this.isRefreshing = true;
-
-      try {
-        const { data } = await this.axiosClient.post<AuthResponse>(
-          `${Constants.API_BASE_URL}auth/refresh`,
-          {
-            refreshToken,
-          },
-        );
-        StorageUtils.setItem('token', data.token);
-        StorageUtils.setItem('refreshToken', data.refreshToken);
-        this.processQueue(null, data.token);
-        return this.axiosClient(originalRequest);
-      } catch (refreshError) {
-        this.processQueue(refreshError, null);
-        this.handleTokenRefreshError();
-        return Promise.reject(refreshError);
-      } finally {
-        this.isRefreshing = false;
-      }
-    }
-
-    return new Promise((resolve, reject) => {
-      this.failedQueue.push((token: string) => {
-        originalRequest.headers[HttpClient.AUTH_HEADER] = `${HttpClient.BEARER_PREFIX}${token}`;
-        resolve(this.axiosClient(originalRequest));
-      });
-    });
+    this.handleTokenRefreshError();
+    return Promise.reject(error);
   }
 
   private processQueue(error: any, token: string | null) {
@@ -131,9 +91,6 @@ class HttpClient {
   }
 
   private handleTokenRefreshError() {
-    StorageUtils.removeItem('user');
-    StorageUtils.removeItem('token');
-    StorageUtils.removeItem('refreshToken');
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
       alert(HttpClient.DEFAULT_MESSAGES.unauthorized, 'Error').then(() => {

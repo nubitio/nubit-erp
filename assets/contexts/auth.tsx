@@ -28,10 +28,10 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
   }, []);
 
   const signOut = useCallback(() => {
-    StorageUtils.removeItem('token');
-    StorageUtils.removeItem('refreshToken');
     StorageUtils.removeItem('user');
     setUser(undefined);
+    // best-effort logout to clear cookie
+    import('../service/auth.service').then(({ authService }) => authService.logout());
   }, []);
 
   return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;

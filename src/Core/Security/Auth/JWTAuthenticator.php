@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\ExpiredException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,7 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public const string AUTH_HEADER = 'Authorization';
+    public const string AUTH_COOKIE = 'AUTH_TOKEN';
 
     public const string LOGIN_ROUTE = '_api_/auth_post';
 
@@ -39,10 +41,11 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public function supports(Request $request): ?bool
     {
         $isAuthHeaderPresent = $request->headers->has(self::AUTH_HEADER);
+        $isAuthCookiePresent = $request->cookies->has(self::AUTH_COOKIE);
         $isLoginRoute = self::LOGIN_ROUTE === $request->attributes->get('_route');
         $isPostMethod = $request->isMethod('POST');
 
-        return ($isAuthHeaderPresent && !$isLoginRoute) || ($isPostMethod && $isLoginRoute);
+        return (($isAuthHeaderPresent || $isAuthCookiePresent) && !$isLoginRoute) || ($isPostMethod && $isLoginRoute);
     }
 
     public function getCredentials(Request $request): array
@@ -63,6 +66,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         }
 
         $jwtToken = $request->headers->get(self::AUTH_HEADER);
+        if (!$jwtToken) {
+            $jwtToken = $request->cookies->get(self::AUTH_COOKIE);
+        }
 
         return [
             'username' => $username,
@@ -115,25 +121,31 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         }
 
         $payload = [
-            'exp' => (new \DateTime('+1 day'))->getTimestamp(),
-            'iat' => (new \DateTime())->getTimestamp(),
+            'exp' => new \DateTime('+1 day')->getTimestamp(),
+            'iat' => new \DateTime()->getTimestamp(),
         ];
 
         if ($user instanceof User) {
             $payload['username'] = $user->getUsername();
             $payload['userId'] = $user->getId();
             $payload['role'] = $user->getRole()?->getId();
-            $payload['branchId'] = $branch ? $branch->getId() : null;
-            $payload['branchName'] = $branch ? $branch->getName() : null;
+            $payload['branchId'] = $branch?->getId();
+            $payload['branchName'] = $branch?->getName();
             $payload['roles'] = $user->getRoles();
         }
 
-        return new JWTAuthenticationToken(
+        $jwtToken = new JWTAuthenticationToken(
             $passport->getUser(),
             $firewallName,
             $passport->getUser()->getRoles(),
             $passport->getAttribute('token') ?? $this->jwtManager->encode($payload)
         );
+
+        if ($branchId) {
+            $jwtToken->setAttribute('branchId', $branchId);
+        }
+
+        return $jwtToken;
     }
 
     /**
@@ -143,7 +155,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $isLoginRoute = self::LOGIN_ROUTE === $request->attributes->get('_route');
-        if ($request->headers->has(self::AUTH_HEADER) && !$isLoginRoute) {
+        if (!$isLoginRoute) {
             return null;
         }
 
@@ -154,9 +166,34 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $user = $token->getUser();
 
         if ($user instanceof User) {
-            return new JsonResponse([
-                'token' => $token->getCredentials(),
+            $branchId = null;
+            try {
+                $branchId = $token->getAttribute('branchId');
+            } catch (\Throwable) {
+                $this->logger->error('Token does not have branchId attribute');
+            }
+            $response = new JsonResponse([
+                'user' => [
+                    'username' => $user->getUsername(),
+                    'userId' => $user->getId(),
+                    'role' => $user->getRole()?->getId(),
+                    'roles' => $user->getRoles(),
+                    'branchId' => $branchId,
+                ],
             ]);
+
+            $cookie = Cookie::create(
+                self::AUTH_COOKIE,
+                $token->getCredentials(),
+                new \DateTime('+1 day')->getTimestamp(),
+                '/',
+                null,
+                true
+            );
+
+            $response->headers->setCookie($cookie);
+
+            return $response;
         }
 
         return null;
