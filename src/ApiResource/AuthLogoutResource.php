@@ -13,7 +13,6 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
     operations: [
         new Post(
             uriTemplate: '/auth/logout',
-            routeName: 'auth_logout',
             controller: AuthLogoutController::class,
             openapi: new OpenApiOperation(
                 responses: [
@@ -22,7 +21,10 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
                 ],
                 summary: 'Logout and revoke refresh token',
             ),
+            input: false,
             read: false,
+            deserialize: false,
+            validate: false,
             write: false,
             name: 'auth_logout'
         ),

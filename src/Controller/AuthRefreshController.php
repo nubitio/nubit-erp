@@ -100,6 +100,7 @@ class AuthRefreshController extends AbstractController
                 'role' => $payload['role'] ?? null,
                 'roles' => $payload['roles'] ?? [],
                 'branchId' => $payload['branchId'] ?? null,
+                'branchName' => $payload['branchName'] ?? null,
             ],
         ]);
 

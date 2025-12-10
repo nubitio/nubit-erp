@@ -127,8 +127,8 @@ export const SideNavOuterToolbar = ({
         revealMode={isXSmall ? 'slide' : 'expand'}
         minSize={isXSmall ? 0 : 48}
         maxSize={250}
-        shading={isLarge ? false : true}
-        opened={getMenuOpenState(menuStatus) === MenuOpenState.Closed ? false : true}
+        shading={!isLarge}
+        opened={getMenuOpenState(menuStatus) !== MenuOpenState.Closed}
         template="menu"
       >
         <div className="content">

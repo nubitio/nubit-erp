@@ -4,17 +4,16 @@ namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
-use App\Auth\Api\AuthProcessor;
 use App\Controller\AuthController;
 use App\Dto\Auth\TokenDto;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 #[ApiResource(
-    uriTemplate: '/auth',
     shortName: 'Auth',
     operations: [
         new Post(
+            uriTemplate: '/auth/login',
             status: 200,
             controller: AuthController::class,
             exceptionToStatus: [
@@ -23,6 +22,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
             ],
             input: AuthResource::class,
             output: TokenDto::class,
+            name: 'auth_login'
         ),
     ]
 )]
