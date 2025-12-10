@@ -21,9 +21,9 @@ const NotificationPanel = (props: NotificationPanelProps) => {
   };
 
   useEffect(() => {
-    httpClient.get<any>(Constants.API_BASE_URL + 'messages').subscribe((response) => {
+    /*httpClient.get<any>(Constants.API_BASE_URL + 'messages').subscribe((response) => {
       setMessages(response.data);
-    });
+    });*/
   }, []);
 
   return (

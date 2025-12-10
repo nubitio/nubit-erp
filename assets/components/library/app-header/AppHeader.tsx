@@ -1,21 +1,20 @@
-import React, { useState } from 'react';
-import Toolbar, { Item } from 'devextreme-react/toolbar';
+import React, {useState} from 'react';
+import Toolbar, {Item} from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
 
-import { Template } from 'devextreme-react/core/template';
+import {Template} from 'devextreme-react/core/template';
 
-import { UserPanel } from '../user-panel/UserPanel';
-import { ThemeSwitcher } from '../theme-switcher/ThemeSwitcher';
+import {UserPanel} from '../user-panel/UserPanel';
+import {ThemeSwitcher} from '../theme-switcher/ThemeSwitcher';
 
-import type { AppHeaderProps } from '../../../types';
+import type {AppHeaderProps} from '../../../types';
 
 import './AppHeader.scss';
 import NotificationPanel from '../notification-panel/NotificationPanel';
-import { Popover } from 'devextreme-react';
-import TextBox from 'devextreme-react/text-box';
-import { useNavigate } from 'react-router-dom';
+import {Popover} from 'devextreme-react';
+import {useNavigate} from 'react-router-dom';
 
-export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: AppHeaderProps) => {
+export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -36,22 +35,15 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
           widget="dxButton"
           cssClass="menu-button"
         >
-          <Button icon="menu" stylingMode="text" onClick={toggleMenu} />
+          <Button icon="menu" stylingMode="text" onClick={toggleMenu}/>
         </Item>
-        <Item location="before" cssClass="header-title" text={title} visible={!!title} />
-        {/*<Item location='after' locateInMenu='auto' cssClass='global-search-box'>
-                    <TextBox placeholder='Buscar' width={200} mode='search' stylingMode='outlined'
-                             onEnterKey={handleSearch}/>
-                </Item>*/}
-        {/*<Item location='after' locateInMenu='never'>
-                    <Button icon='ph ph-basket' stylingMode='text' onClick={() => navigate('/pos')}/>
-                </Item>*/}
+        <Item location="before" cssClass="header-title" text={title} visible={!!title}/>
         <Item location="after" locateInMenu="never">
-          <ThemeSwitcher />
+          <ThemeSwitcher/>
         </Item>
         <Item location="after">
           <div className="messages" id="notification">
-            <Button icon="belloutline" stylingMode="text" onClick={toggleNotificationPanel} />
+            <Button icon="belloutline" stylingMode="text" onClick={toggleNotificationPanel}/>
             <div className="dx-badge"></div>
           </div>
           <Popover
@@ -69,10 +61,10 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
           </Popover>
         </Item>
         <Item location="after" locateInMenu="auto" menuItemTemplate="userPanelTemplate">
-          <UserPanel menuMode="context" />
+          <UserPanel menuMode="context"/>
         </Item>
         <Template name="userPanelTemplate">
-          <UserPanel menuMode="list" />
+          <UserPanel menuMode="list"/>
         </Template>
       </Toolbar>
     </header>

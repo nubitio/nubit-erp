@@ -13,7 +13,6 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
     operations: [
         new Post(
             uriTemplate: '/auth/refresh',
-            routeName: 'auth_refresh',
             controller: AuthRefreshController::class,
             openapi: new OpenApiOperation(
                 responses: [
@@ -22,7 +21,10 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
                 ],
                 summary: 'Refresh access token',
             ),
+            input: false,
             read: false,
+            deserialize: false,
+            validate: false,
             write: false,
             name: 'auth_refresh'
         ),

@@ -29,7 +29,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public const string AUTH_COOKIE = 'AUTH_TOKEN';
     public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
 
-    public const string LOGIN_ROUTE = '_api_/auth_post';
+    public const string LOGIN_ROUTE = 'auth_login';
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
@@ -100,11 +100,16 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
             $username = $tokenData['username'];
             $branchId = $tokenData['branchId'] ?? $credentials['branchId'];
+            $branch = null;
+            if ($branchId) {
+                $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
+            }
 
             $passport = new SelfValidatingPassport(
                 new UserBadge($username, $this->userProvider->loadUserByIdentifier(...))
             );
             $passport->setAttribute('branchId', $branchId);
+            $passport->setAttribute('branchName', $branch?->getName());
 
             return $passport;
         }
@@ -136,14 +141,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             'type' => 'access',
         ];
 
-        if ($user instanceof User) {
-            $payload['username'] = $user->getUsername();
-            $payload['userId'] = $user->getId();
-            $payload['role'] = $user->getRole()?->getId();
-            $payload['branchId'] = $branch?->getId();
-            $payload['branchName'] = $branch?->getName();
-            $payload['roles'] = $user->getRoles();
-        }
+        $payload['username'] = $user->getUsername();
+        $payload['userId'] = $user->getId();
+        $payload['role'] = $user->getRole()?->getId();
+        $payload['branchId'] = $branch?->getId();
+        $payload['branchName'] = $branch?->getName();
+        $payload['roles'] = $user->getRoles();
 
         $accessToken = $this->jwtManager->encode([
             ...$payload,
@@ -169,6 +172,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         if ($branchId) {
             $jwtToken->setAttribute('branchId', $branchId);
+            $jwtToken->setAttribute('branchName', $branch?->getName());
         }
 
         $jwtToken->setAttribute('refreshToken', $refreshToken);
@@ -197,10 +201,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         if ($user instanceof User) {
             $branchId = null;
+            $branchName = null;
             try {
                 $branchId = $token->getAttribute('branchId');
+                $branchName = $token->getAttribute('branchName');
             } catch (\Throwable) {
-                $this->logger->error('Token does not have branchId attribute');
+                $this->logger->error('Token does not have branchId or branchName attribute');
             }
             $accessTokenExpiresAt = time() + $this->accessTokenTtl;
             $refreshTokenExpiresAt = time() + $this->refreshTokenTtl;
@@ -223,6 +229,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
                     'role' => $user->getRole()?->getId(),
                     'roles' => $user->getRoles(),
                     'branchId' => $branchId,
+                    'branchName' => $branchName,
                 ],
             ]);
 
@@ -285,7 +292,13 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $passport = new Passport($userBadge, new PasswordCredentials($password), [new RememberMeBadge()]);
         $passport->addBadge($passwordUpgradeBadge);
 
+        $branch = null;
+        if ($branchId) {
+            $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
+        }
+
         $passport->setAttribute('branchId', $branchId);
+        $passport->setAttribute('branchName', $branch?->getName());
 
         return $passport;
     }
