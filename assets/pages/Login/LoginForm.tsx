@@ -4,7 +4,6 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
 import { authService } from '../../service/auth.service';
-import { StorageUtils } from '../../core/utils/StorageUtils';
 import { LocalPicker } from '../../components/utils/local-picker/LocalPicker';
 
 export const LoginForm = () => {
@@ -22,7 +21,6 @@ export const LoginForm = () => {
 
     authService.login(username, password).subscribe({
       next: (response) => {
-        StorageUtils.setItem('token', response.data.token);
         setShowLocalPicker(true);
         setLoading(false);
       },

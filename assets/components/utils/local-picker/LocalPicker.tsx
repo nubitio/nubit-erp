@@ -3,14 +3,13 @@ import { Popup, PopupRef, ToolbarItem } from 'devextreme-react/popup';
 import List from 'devextreme-react/list';
 import { Button } from 'devextreme-react';
 import { useEffect, useRef, useState } from 'react';
-import { StorageUtils } from '../../../core/utils/StorageUtils';
 import { useScreenSize } from '../../../utils/media-query';
 import ArrayStore from 'devextreme/data/array_store';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
 import { authService } from '../../../service/auth.service';
 import { branchService } from '../../../service/branch.service';
 import toast from '../../../core/utils/SharedUtils';
+import { StorageUtils } from '../../../core/utils/StorageUtils';
 
 export const LocalPicker = ({ visible, setVisible, username, password }) => {
   const ref = useRef<PopupRef>(null);
@@ -37,9 +36,9 @@ export const LocalPicker = ({ visible, setVisible, username, password }) => {
       return;
     }
     authService.login(username, password, selectedBranch).subscribe((response) => {
-      StorageUtils.setItem('token', response.data.token);
-      const decodedToken = jwtDecode(response.data.token);
-      StorageUtils.setItem('user', decodedToken);
+      if (response.data.user) {
+        StorageUtils.setItem('user', response.data.user);
+      }
       close();
       window.location.href = '/';
     });

@@ -1,7 +1,6 @@
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import { dxUtils } from '../common/DxUtils';
-import { StorageUtils } from '../utils/StorageUtils';
 import {
   CompareRule,
   CustomRule,
@@ -71,8 +70,6 @@ export const buildField = (
         uploadUrl: field.url,
         name: 'file',
         onBeforeSend: (e: any) => {
-          const token = StorageUtils.getItem('token');
-          e.request.setRequestHeader('Authorization', `Bearer ${token}`);
         },
         onUploaded: (e: any) => {
           const response = JSON.parse(e.request.response);
