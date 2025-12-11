@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Throwable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
@@ -15,7 +18,7 @@ readonly class UbigeoImportService
     /**
      * @param callable(int):void|null $progressCallback Callback invoked after each batch.
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function import(
         string $filePath,
@@ -26,13 +29,13 @@ readonly class UbigeoImportService
         ?callable $progressCallback = null,
     ): int {
         if (!is_readable($filePath)) {
-            throw new \InvalidArgumentException(sprintf('No se puede leer el archivo: %s', $filePath));
+            throw new InvalidArgumentException(sprintf('No se puede leer el archivo: %s', $filePath));
         }
 
         $batchSize = max(1, $batchSize);
         $handle = fopen($filePath, 'rb');
         if (!$handle) {
-            throw new \RuntimeException('No se pudo abrir el archivo CSV.');
+            throw new RuntimeException('No se pudo abrir el archivo CSV.');
         }
 
         $checksDisabled = false;
@@ -45,7 +48,7 @@ readonly class UbigeoImportService
             }
 
             if ($skipHeader) {
-                fgetcsv($handle, 0, $delimiter);
+                fgetcsv($handle, 0, $delimiter, escape: '\\');
             }
 
             $this->connection->beginTransaction();
@@ -53,7 +56,7 @@ readonly class UbigeoImportService
             $batch = [];
             $count = 0;
 
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
+            while (($row = fgetcsv($handle, 0, $delimiter, escape: '\\')) !== false) {
                 if (count($row) < 4) {
                     continue;
                 }
@@ -69,7 +72,7 @@ readonly class UbigeoImportService
                     $this->insertBatch($batch);
                     $count += count($batch);
 
-                    if ($progressCallback) {
+                    if ($progressCallback !== null) {
                         $progressCallback(count($batch));
                     }
 
@@ -81,7 +84,7 @@ readonly class UbigeoImportService
                 $this->insertBatch($batch);
                 $count += count($batch);
 
-                if ($progressCallback) {
+                if ($progressCallback !== null) {
                     $progressCallback(count($batch));
                 }
             }
@@ -89,10 +92,10 @@ readonly class UbigeoImportService
             $this->connection->commit();
 
             return $count;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             $this->connection->rollBack();
 
-            throw $exception;
+            throw $throwable;
         } finally {
             if ($checksDisabled) {
                 $this->connection->executeStatement('SET foreign_key_checks = 1');

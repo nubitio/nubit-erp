@@ -2,6 +2,8 @@
 
 namespace App\Core\Service;
 
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -34,14 +36,14 @@ readonly class TenantManager
         $connection = trim((string)($tenant['connection'] ?? ''));
 
         if ('' === $name || '' === $connection) {
-            throw new \InvalidArgumentException('Tenant name and connection are required');
+            throw new InvalidArgumentException('Tenant name and connection are required');
         }
 
         $data = $this->readTenants();
 
         foreach ($data as $existingTenant) {
             if (($existingTenant['name'] ?? '') === $name) {
-                throw new \InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
             }
         }
 
@@ -69,7 +71,7 @@ readonly class TenantManager
         $connection = trim((string)($tenant['connection'] ?? ''));
 
         if ('' === $name || '' === $connection) {
-            throw new \InvalidArgumentException('Tenant name and connection are required');
+            throw new InvalidArgumentException('Tenant name and connection are required');
         }
 
         $data = $this->readTenants();
@@ -85,13 +87,14 @@ readonly class TenantManager
             }
 
             if (($existingTenant['name'] ?? '') === $name) {
-                throw new \InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
             }
         }
+
         unset($existingTenant);
 
         if (!$found) {
-            throw new \InvalidArgumentException('Tenant not found');
+            throw new InvalidArgumentException('Tenant not found');
         }
 
         $this->writeTenants(array_values($data));
@@ -116,7 +119,7 @@ readonly class TenantManager
         $configContent = file_get_contents($this->tenantsConfigFilePath);
 
         if (false === $configContent) {
-            throw new \RuntimeException('Could not read tenants config file');
+            throw new RuntimeException('Could not read tenants config file');
         }
 
         if ('' === trim($configContent)) {
@@ -126,8 +129,8 @@ readonly class TenantManager
         try {
             /** @var array<int, array<string, mixed>>|null $tenants */
             $tenants = Yaml::parse($configContent);
-        } catch (ParseException $exception) {
-            throw new \RuntimeException('Could not parse tenants config file', 0, $exception);
+        } catch (ParseException $parseException) {
+            throw new RuntimeException('Could not parse tenants config file', 0, $parseException);
         }
 
         if (!is_array($tenants)) {
@@ -135,7 +138,7 @@ readonly class TenantManager
         }
 
         /** @var array<int, array<string, mixed>> $cleanTenants */
-        $cleanTenants = array_values(array_filter($tenants, 'is_array'));
+        $cleanTenants = array_values(array_filter($tenants, is_array(...)));
 
         return $cleanTenants;
     }

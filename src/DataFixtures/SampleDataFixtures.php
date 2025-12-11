@@ -35,52 +35,44 @@ final class SampleDataFixtures extends Fixture
             $manager,
             Company::class,
             ['ruc' => '20600000001'],
-            static function (): Company {
-                return (new Company())
-                    ->setRuc('20600000001')
-                    ->setBusinessName('Efact Demo SAC')
-                    ->setTradeName('Efact Demo')
-                    ->setFiscalAddress('Av. Demo 123 Lima')
-                    ->setPhone('012345678');
-            }
+            static fn (): Company => new Company()
+                ->setRuc('20600000001')
+                ->setBusinessName('Efact Demo SAC')
+                ->setTradeName('Efact Demo')
+                ->setFiscalAddress('Av. Demo 123 Lima')
+                ->setPhone('012345678')
         );
 
         $branch = $this->getOrCreate(
             $manager,
             Branch::class,
             ['name' => 'Local Central'],
-            static function () use ($company): Branch {
-                return (new Branch())
-                    ->setName('Local Central')
-                    ->setAddress('Av. Demo 123 Lima')
-                    ->setPhone('012345678')
-                    ->setCompany($company);
-            }
+            static fn (): Branch => new Branch()
+                ->setName('Local Central')
+                ->setAddress('Av. Demo 123 Lima')
+                ->setPhone('012345678')
+                ->setCompany($company)
         );
 
         $warehouse = $this->getOrCreate(
             $manager,
             Warehouse::class,
             ['name' => 'Almacén Principal'],
-            static function () use ($branch): Warehouse {
-                return (new Warehouse())
-                    ->setName('Almacén Principal')
-                    ->setBranch($branch);
-            }
+            static fn (): Warehouse => new Warehouse()
+                ->setName('Almacén Principal')
+                ->setBranch($branch)
         );
 
         $unit = $this->getOrCreate(
             $manager,
             UnitOfMeasure::class,
             ['code' => 'NIU'],
-            static function (): UnitOfMeasure {
-                return (new UnitOfMeasure())
-                    ->setName('Unidad')
-                    ->setCode('NIU')
-                    ->setType(1)
-                    ->setRatio(1.0)
-                    ->setReference(true);
-            }
+            static fn (): UnitOfMeasure => new UnitOfMeasure()
+                ->setName('Unidad')
+                ->setCode('NIU')
+                ->setType(1)
+                ->setRatio(1.0)
+                ->setReference(true)
         );
 
         $categories = [];
@@ -89,9 +81,7 @@ final class SampleDataFixtures extends Fixture
                 $manager,
                 Category::class,
                 ['name' => $categoryName],
-                static function () use ($categoryName): Category {
-                    return (new Category())->setName($categoryName);
-                }
+                static fn (): Category => new Category()->setName($categoryName)
             );
         }
 
@@ -99,29 +89,23 @@ final class SampleDataFixtures extends Fixture
             $manager,
             PaymentMethod::class,
             ['name' => 'Efectivo'],
-            static function (): PaymentMethod {
-                return (new PaymentMethod())->setName('Efectivo');
-            }
+            static fn (): PaymentMethod => new PaymentMethod()->setName('Efectivo')
         );
 
         $priceList = $this->getOrCreate(
             $manager,
             PriceList::class,
             ['name' => 'Lista General'],
-            static function (): PriceList {
-                return (new PriceList())->setName('Lista General');
-            }
+            static fn (): PriceList => new PriceList()->setName('Lista General')
         );
 
         $logisticOperation = $this->getOrCreate(
             $manager,
             LogisticOperation::class,
             ['name' => 'Venta'],
-            static function (): LogisticOperation {
-                return (new LogisticOperation())
-                    ->setName('Venta')
-                    ->setType(1);
-            }
+            static fn (): LogisticOperation => new LogisticOperation()
+                ->setName('Venta')
+                ->setType(1)
         );
 
         $suppliers = [
@@ -129,25 +113,21 @@ final class SampleDataFixtures extends Fixture
                 $manager,
                 Supplier::class,
                 ['ruc' => '20567890123'],
-                static function (): Supplier {
-                    return (new Supplier())
-                        ->setRuc('20567890123')
-                        ->setBusinessName('Distribuidora Peruana SAC')
-                        ->setFiscalAddress('Av. Industrial 456 Lima')
-                        ->setPhone('+51 912345678');
-                }
+                static fn (): Supplier => new Supplier()
+                    ->setRuc('20567890123')
+                    ->setBusinessName('Distribuidora Peruana SAC')
+                    ->setFiscalAddress('Av. Industrial 456 Lima')
+                    ->setPhone('+51 912345678')
             ),
             $this->getOrCreate(
                 $manager,
                 Supplier::class,
                 ['ruc' => '20456789012'],
-                static function (): Supplier {
-                    return (new Supplier())
-                        ->setRuc('20456789012')
-                        ->setBusinessName('Importaciones Andinas SRL')
-                        ->setFiscalAddress('Jr. Comercio 789 Arequipa')
-                        ->setPhone('+51 987654321');
-                }
+                static fn (): Supplier => new Supplier()
+                    ->setRuc('20456789012')
+                    ->setBusinessName('Importaciones Andinas SRL')
+                    ->setFiscalAddress('Jr. Comercio 789 Arequipa')
+                    ->setPhone('+51 987654321')
             ),
         ];
 
@@ -156,25 +136,21 @@ final class SampleDataFixtures extends Fixture
                 $manager,
                 Customer::class,
                 ['ruc' => '20123456789'],
-                static function (): Customer {
-                    return (new Customer())
-                        ->setRuc('20123456789')
-                        ->setBusinessName('Cliente Demostración SAC')
-                        ->setEmail('cliente+demo1@example.com')
-                        ->setFiscalAddress('Av. Siempre Viva 742');
-                }
+                static fn (): Customer => new Customer()
+                    ->setRuc('20123456789')
+                    ->setBusinessName('Cliente Demostración SAC')
+                    ->setEmail('cliente+demo1@example.com')
+                    ->setFiscalAddress('Av. Siempre Viva 742')
             ),
             $this->getOrCreate(
                 $manager,
                 Customer::class,
                 ['ruc' => '10987654321'],
-                static function (): Customer {
-                    return (new Customer())
-                        ->setRuc('10987654321')
-                        ->setBusinessName('Consumidor Final')
-                        ->setEmail('cliente+demo2@example.com')
-                        ->setFiscalAddress('Calle Principal 123');
-                }
+                static fn (): Customer => new Customer()
+                    ->setRuc('10987654321')
+                    ->setBusinessName('Consumidor Final')
+                    ->setEmail('cliente+demo2@example.com')
+                    ->setFiscalAddress('Calle Principal 123')
             ),
         ];
 
@@ -237,9 +213,7 @@ final class SampleDataFixtures extends Fixture
                     'product' => $product,
                     'warehouse' => $warehouse,
                 ],
-                static function () {
-                    return new ProductStock();
-                }
+                static fn (): ProductStock => new ProductStock()
             );
 
             $stock
@@ -258,7 +232,7 @@ final class SampleDataFixtures extends Fixture
                 continue;
             }
 
-            $saleDate = (new DateTimeImmutable())->sub(new DateInterval('PT' . (12 * $i) . 'H'));
+            $saleDate = new DateTimeImmutable()->sub(new DateInterval('PT' . (12 * $i) . 'H'));
             $customer = $customers[$i % count($customers)];
             $supplier = $suppliers[$i % count($suppliers)];
             $sale = new Sale();

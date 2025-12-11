@@ -2,6 +2,9 @@
 
 namespace App\Setup;
 
+use Throwable;
+use RuntimeException;
+use DateTimeImmutable;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Setup\InitialSetupInput;
@@ -81,7 +84,7 @@ readonly class InitialSetupService
     }
 
     /**
-     * @throws Exception|\Throwable
+     * @throws Exception|Throwable
      */
     public function configure(InitialSetupInput $input): SetupStatusDto
     {
@@ -94,7 +97,7 @@ readonly class InitialSetupService
         try {
             $superAdminRole = $this->ensureDefaultRoles();
 
-            $company = (new Company())
+            $company = new Company()
                 ->setRuc($input->companyRuc)
                 ->setBusinessName($input->companyBusinessName)
                 ->setTradeName($input->companyTradeName)
@@ -103,7 +106,7 @@ readonly class InitialSetupService
 
             $this->entityManager->persist($company);
 
-            $branch = (new Branch())
+            $branch = new Branch()
                 ->setName($input->branchName)
                 ->setAddress($input->branchAddress)
                 ->setPhone($input->branchPhone)
@@ -111,12 +114,12 @@ readonly class InitialSetupService
 
             $this->entityManager->persist($branch);
 
-            $warehouse = (new Warehouse())
+            $warehouse = new Warehouse()
                 ->setName('Almacén Principal')
                 ->setBranch($branch);
             $this->entityManager->persist($warehouse);
 
-            $user = (new User())
+            $user = new User()
                 ->setUsername($input->adminUsername)
                 ->setRole($superAdminRole);
             $hashedPassword = $this->passwordHasher->hashPassword($user, $input->adminPassword);
@@ -134,9 +137,9 @@ readonly class InitialSetupService
             $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
             $this->connection->commit();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             $this->connection->rollBack();
-            throw $exception;
+            throw $throwable;
         }
 
         return $this->status();
@@ -161,7 +164,7 @@ readonly class InitialSetupService
         $superAdmin = $this->roleRepository->find(1) ?? $this->roleRepository->findOneBy(['name' => $roles[1]]);
 
         if (null === $superAdmin) {
-            throw new \RuntimeException('No se pudo preparar el rol de super administrador.');
+            throw new RuntimeException('No se pudo preparar el rol de super administrador.');
         }
 
         return $superAdmin;
@@ -174,7 +177,7 @@ readonly class InitialSetupService
             $this->settingsService->set(Constants::CONSUMPTION_TAX, 'int', '0');
             $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
             $this->settingsService->set(Constants::CHECK_STOCK, 'bool', 'false');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to avoid blocking setup.
         }
     }
@@ -274,11 +277,11 @@ readonly class InitialSetupService
     private function getOrCreateLogisticOperation(string $name, int $type): void
     {
         $existing = $this->logisticOperationRepository->findOneBy(['name' => $name]);
-        if ($existing) {
+        if ($existing instanceof LogisticOperation) {
             return;
         }
 
-        $operation = (new LogisticOperation())
+        $operation = new LogisticOperation()
             ->setName($name)
             ->setType($type);
 
@@ -289,11 +292,11 @@ readonly class InitialSetupService
     private function getOrCreatePaymentMethod(string $name): void
     {
         $existing = $this->paymentMethodRepository->findOneBy(['name' => $name]);
-        if ($existing) {
+        if ($existing instanceof PaymentMethod) {
             return;
         }
 
-        $paymentMethod = (new PaymentMethod())->setName($name);
+        $paymentMethod = new PaymentMethod()->setName($name);
         $this->entityManager->persist($paymentMethod);
         $this->entityManager->flush();
     }
@@ -301,11 +304,11 @@ readonly class InitialSetupService
     private function getOrCreateCashMovementCategory(string $code, string $name, CashMovementType $type): void
     {
         $existing = $this->cashMovementCategoryRepository->findOneBy(['code' => $code]);
-        if ($existing) {
+        if ($existing instanceof CashMovementCategory) {
             return;
         }
 
-        $category = (new CashMovementCategory())
+        $category = new CashMovementCategory()
             ->setCode($code)
             ->setName($name)
             ->setType($type)
@@ -319,11 +322,11 @@ readonly class InitialSetupService
     private function getOrCreateVoucherType(string $code, string $name): void
     {
         $existing = $this->voucherTypeRepository->find($code);
-        if ($existing) {
+        if ($existing instanceof VoucherType) {
             return;
         }
 
-        $voucherType = (new VoucherType())
+        $voucherType = new VoucherType()
             ->setCode($code)
             ->setName($name);
         $this->entityManager->persist($voucherType);
@@ -338,11 +341,11 @@ readonly class InitialSetupService
         bool $reference
     ): void {
         $existing = $this->unitOfMeasureRepository->findOneBy(['code' => $code]);
-        if ($existing) {
+        if ($existing instanceof UnitOfMeasure) {
             return;
         }
 
-        $unit = (new UnitOfMeasure())
+        $unit = new UnitOfMeasure()
             ->setName($name)
             ->setCode($code)
             ->setType($type)
@@ -356,11 +359,11 @@ readonly class InitialSetupService
     private function getOrCreateCategory(string $name): void
     {
         $existing = $this->categoryRepository->findOneBy(['name' => $name]);
-        if ($existing) {
+        if ($existing instanceof Category) {
             return;
         }
 
-        $category = (new Category())->setName($name);
+        $category = new Category()->setName($name);
         $this->entityManager->persist($category);
         $this->entityManager->flush();
     }
@@ -368,11 +371,11 @@ readonly class InitialSetupService
     private function getOrCreateCustomer(string $ruc, string $businessName): void
     {
         $existing = $this->customerRepository->find($ruc);
-        if ($existing) {
+        if ($existing instanceof Customer) {
             return;
         }
 
-        $customer = (new Customer())
+        $customer = new Customer()
             ->setRuc($ruc)
             ->setBusinessName($businessName)
             ->setFiscalAddress('N/A');
@@ -400,8 +403,8 @@ readonly class InitialSetupService
     private function seedTimeDimension(): void
     {
         $this->timeDimensionSeeder->seed(
-            startDate: new \DateTimeImmutable('2020-01-01'),
-            endDate: new \DateTimeImmutable('2040-01-01'),
+            startDate: new DateTimeImmutable('2020-01-01'),
+            endDate: new DateTimeImmutable('2040-01-01'),
             batchSize: 500,
         );
     }
@@ -427,11 +430,11 @@ readonly class InitialSetupService
                 'series' => $definition['series'],
             ]);
 
-            if ($existing) {
+            if ($existing instanceof VoucherSeries) {
                 continue;
             }
 
-            $voucherSeries = (new VoucherSeries())
+            $voucherSeries = new VoucherSeries()
                 ->setBranch($branch)
                 ->setVoucherType($voucherType)
                 ->setSeries($definition['series']);

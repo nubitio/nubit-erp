@@ -2,9 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\CashMovement;
 use App\Core\Service\PdfExporter;
 use App\Entity\CashShift;
-use App\Entity\User;
 use App\Repository\CashMovementRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -70,15 +70,13 @@ class CashRegisterReportController extends AbstractController
             'countedAmount' => $countedAmount,
             'difference' => $difference,
             'note' => $cashShift->getNote(),
-            'movements' => array_map(static function ($movement): array {
-                return [
-                    'createdAt' => $movement->getCreatedAt(),
-                    'category' => $movement->getCategory()?->getName(),
-                    'type' => $movement->getType()?->value,
-                    'description' => $movement->getDescription(),
-                    'amount' => $movement->getAmount(),
-                ];
-            }, $movements),
+            'movements' => array_map(static fn (CashMovement $movement): array => [
+                'createdAt' => $movement->getCreatedAt(),
+                'category' => $movement->getCategory()?->getName(),
+                'type' => $movement->getType()?->value,
+                'description' => $movement->getDescription(),
+                'amount' => $movement->getAmount(),
+            ], $movements),
         ]);
 
         $pdfExporter = new PdfExporter();

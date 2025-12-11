@@ -2,6 +2,8 @@
 
 namespace App\Core\Application\Command;
 
+use Override;
+use Exception;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -28,7 +30,7 @@ abstract class TenantAwareCommand extends Command
         $this->tenants = $this->tenantManager->getTenants();
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         $this->setHelp('This command allows you to execute tenant command');
@@ -40,7 +42,7 @@ abstract class TenantAwareCommand extends Command
         );
     }
 
-    #[\Override]
+    #[Override]
     protected function execute(
         InputInterface $input,
         OutputInterface $output,
@@ -94,7 +96,7 @@ abstract class TenantAwareCommand extends Command
                 $io->title('Tenant: ' . $tenantName);
 
                 $this->executeTenantCommand($input, $output);
-            } catch (ServiceException | \Doctrine\DBAL\Driver\Exception | \Doctrine\DBAL\Exception | \Exception $e) {
+            } catch (ServiceException | \Doctrine\DBAL\Driver\Exception | \Doctrine\DBAL\Exception | Exception $e) {
                 $this->logger->error(
                     'An error occurred while executing command for tenant '
                     . $tenantName,

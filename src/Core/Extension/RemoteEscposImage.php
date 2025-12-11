@@ -2,6 +2,9 @@
 
 namespace App\Core\Extension;
 
+use Imagick;
+use Throwable;
+use Exception;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\GdEscposImage;
 use Mike42\Escpos\ImagickEscposImage;
@@ -13,7 +16,7 @@ class RemoteEscposImage extends EscposImage
      * Prefer Imagick if available, otherwise fall back to GD.
      * If neither extension is available or the image is empty, return null.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public static function loadImage(string $imageUrl): ?EscposImage
     {
@@ -34,10 +37,10 @@ class RemoteEscposImage extends EscposImage
         }
 
         // Try Imagick first if available
-        if (class_exists(\Imagick::class)) {
+        if (class_exists(Imagick::class)) {
             try {
                 return new ImagickEscposImage($tempPath);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 // Fall through to GD
             }
         }
@@ -46,7 +49,7 @@ class RemoteEscposImage extends EscposImage
         if (extension_loaded('gd')) {
             try {
                 return GdEscposImage::load($tempPath);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 return null;
             }
         }

@@ -2,6 +2,9 @@
 
 namespace App\Core\Security\Auth;
 
+use Override;
+use Throwable;
+use DateTimeImmutable;
 use App\Entity\Branch;
 use App\Entity\RefreshToken;
 use App\Entity\User;
@@ -26,7 +29,9 @@ use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface
 class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public const string AUTH_HEADER = 'Authorization';
+
     public const string AUTH_COOKIE = 'AUTH_TOKEN';
+
     public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
 
     public const string LOGIN_ROUTE = 'auth_login';
@@ -41,7 +46,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     ) {
     }
 
-    #[\Override]
+    #[Override]
     public function supports(Request $request): ?bool
     {
         $isAuthHeaderPresent = $request->headers->has(self::AUTH_HEADER);
@@ -81,7 +86,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         ];
     }
 
-    #[\Override]
+    #[Override]
     public function authenticate(Request $request): Passport
     {
         $credentials = $this->getCredentials($request);
@@ -93,7 +98,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
                 $tokenData = $this->jwtManager->decode($jwtToken);
             } catch (ExpiredException) {
                 throw new AuthenticationException('Su sesión ha expirado', Response::HTTP_UNAUTHORIZED);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->logger->error('Error decoding JWT token', ['exception' => $e]);
                 throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
             }
@@ -117,12 +122,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return $this->getPassport($credentials);
     }
 
-    #[\Override]
+    #[Override]
     public function createToken(Passport $passport, string $firewallName): TokenInterface
     {
         $user = $passport->getUser();
         $branchId = $passport->getAttribute('branchId') ?? null;
-        $now = new \DateTimeImmutable();
+        $now = new DateTimeImmutable();
         $nowTimestamp = $now->getTimestamp();
         $accessTokenExpiresAt = $nowTimestamp + $this->accessTokenTtl;
         $refreshTokenExpiresAt = $nowTimestamp + $this->refreshTokenTtl;
@@ -185,7 +190,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
         $isLoginRoute = self::LOGIN_ROUTE === $request->attributes->get('_route');
@@ -205,23 +210,25 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             try {
                 $branchId = $token->getAttribute('branchId');
                 $branchName = $token->getAttribute('branchName');
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $this->logger->error('Token does not have branchId or branchName attribute');
             }
+
             $accessTokenExpiresAt = time() + $this->accessTokenTtl;
             $refreshTokenExpiresAt = time() + $this->refreshTokenTtl;
 
             try {
                 $accessTokenExpiresAt = $token->getAttribute('accessTokenExpiresAt');
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $this->logger->error('Token does not have accessTokenExpiresAt attribute');
             }
 
             try {
                 $refreshTokenExpiresAt = $token->getAttribute('refreshTokenExpiresAt');
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 $this->logger->error('Token does not have refreshTokenExpiresAt attribute');
             }
+
             $response = new JsonResponse([
                 'user' => [
                     'username' => $user->getUsername(),
@@ -263,7 +270,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
         throw $exception;
@@ -272,7 +279,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
         return new JsonResponse([
@@ -305,11 +312,11 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     private function storeRefreshToken(string $jti, string $refreshToken, User $user, int $refreshTokenExpiresAt): void
     {
-        $refreshTokenEntity = (new RefreshToken())
+        $refreshTokenEntity = new RefreshToken()
             ->setJti($jti)
             ->setTokenHash(hash('sha256', $refreshToken))
             ->setUser($user)
-            ->setExpiresAt((new \DateTimeImmutable())->setTimestamp($refreshTokenExpiresAt));
+            ->setExpiresAt(new DateTimeImmutable()->setTimestamp($refreshTokenExpiresAt));
 
         $this->entityManager->persist($refreshTokenEntity);
         $this->entityManager->flush();

@@ -2,6 +2,9 @@
 
 namespace App\State\CashRegister;
 
+use Override;
+use DateTimeImmutable;
+use RuntimeException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
@@ -33,7 +36,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
      *
      * @throws ORMException
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -47,7 +50,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashShift->setStatus(CashShiftStatus::OPEN);
         $cashShift->setOpeningBalance($data->openingBalance);
         $cashShift->setOpenedBy($this->entityManager->getReference(User::class, $user->userId));
-        $cashShift->setOpenedAt(new \DateTimeImmutable());
+        $cashShift->setOpenedAt(new DateTimeImmutable());
 
         $this->entityManager->persist($cashShift);
 
@@ -55,7 +58,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             ['code' => CashMovementCategory::CASH_REPLENISHMENT]
         );
         if (!$category instanceof CashMovementCategory) {
-            throw new \RuntimeException('Categoría de reposición de fondo no encontrada.');
+            throw new RuntimeException('Categoría de reposición de fondo no encontrada.');
         }
 
         $cashMovement = new CashMovement();
@@ -64,7 +67,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashMovement->setType($category->getType() ?? CashMovementType::INCOME);
         $cashMovement->setAmount($data->openingBalance);
         $cashMovement->setDescription('Saldo inicial');
-        $cashMovement->setCreatedAt(new \DateTimeImmutable());
+        $cashMovement->setCreatedAt(new DateTimeImmutable());
 
         $this->entityManager->persist($cashMovement);
 

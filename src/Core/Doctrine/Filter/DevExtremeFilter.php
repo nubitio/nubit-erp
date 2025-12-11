@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Doctrine\Filter;
 
+use Override;
 use ApiPlatform\Doctrine\Orm\Filter\AbstractFilter;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
@@ -14,7 +15,7 @@ class DevExtremeFilter extends AbstractFilter
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function getDescription(string $resourceClass): array
     {
         return [
@@ -42,7 +43,7 @@ class DevExtremeFilter extends AbstractFilter
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     protected function filterProperty(
         string $property,
         $value,
@@ -70,6 +71,7 @@ class DevExtremeFilter extends AbstractFilter
                     $orX->add(sprintf('o.%s LIKE :%s', $field, $param));
                     $queryBuilder->setParameter($param, sprintf('%%%s%%', $value));
                 }
+
                 $queryBuilder->andWhere($orX);
             } else {
                 $filter = [];

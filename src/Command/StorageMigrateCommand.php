@@ -2,37 +2,24 @@
 
 namespace App\Command;
 
+use Exception;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\CompanyContext;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:storage:migrate',
-    description: 'Mueve los archivos de los comprobantes a la nueva ubicación',
-)]
-class StorageMigrateCommand extends Command
+#[AsCommand(name: 'app:storage:migrate', description: 'Mueve los archivos de los comprobantes a la nueva ubicación', help: <<<'TXT'
+Mueve los archivos de los comprobantes a la nueva ubicación
+TXT)]
+class StorageMigrateCommand
 {
-    public function __construct(
-        private readonly FileManager $fileManager,
-        private readonly CompanyContext $companyContext,
-    ) {
-        parent::__construct();
+    public function __construct(private readonly FileManager $fileManager, private readonly CompanyContext $companyContext)
+    {
     }
 
-    #[\Override]
-    protected function configure(): void
+    public function __invoke(SymfonyStyle $io): int
     {
-        $this->setHelp('Mueve los archivos de los comprobantes a la nueva ubicación');
-    }
-
-    #[\Override]
-    protected function execute(InputInterface $input, OutputInterface $output): int
-    {
-        $io = new SymfonyStyle($input, $output);
         try {
             $io->title('Migrando archivos de comprobantes');
             $currentPath = dirname(__DIR__, 4) . '/public/' . $_ENV['EFACT_DIR'];
@@ -57,7 +44,7 @@ class StorageMigrateCommand extends Command
                 $data = file_get_contents($currentPath . '/' . $file);
 
                 if (!$data) {
-                    throw new \Exception('Error al leer el archivo: ' . $file);
+                    throw new Exception('Error al leer el archivo: ' . $file);
                 }
 
                 $this->fileManager->write($newPath . '/' . $file, $data);
@@ -65,7 +52,7 @@ class StorageMigrateCommand extends Command
                     $progressBar->setMessage('Archivo migrado: ' . $file);
                     unlink($currentPath . '/' . $file);
                 } else {
-                    throw new \Exception('Error al migrar el archivo: ' . $file);
+                    throw new Exception('Error al migrar el archivo: ' . $file);
                 }
 
                 $progressBar->advance();
@@ -74,7 +61,7 @@ class StorageMigrateCommand extends Command
             $progressBar->finish();
 
             return Command::SUCCESS;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;

@@ -2,6 +2,9 @@
 
 namespace App\Sale\Domain;
 
+use DateTime;
+use DateTimeImmutable;
+use DateMalformedStringException;
 use App\Billing\Domain\SummaryCreateUseCase;
 use App\Billing\Domain\VoidedCreateUseCase;
 use App\Billing\Model\Response\SummaryResponse;
@@ -42,7 +45,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws SaleException
      * @throws Exception
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      * @throws ExceptionInterface
      */
     public function __invoke(
@@ -77,7 +80,7 @@ readonly class SaleVoidUseCase
         $sale->setGlosa($reason);
         $sale->setEstado(2);
         $sale->setUpdatedBy($userId);
-        $sale->setDateUpdated(new \DateTime());
+        $sale->setDateUpdated(new DateTime());
 
         $this->entityManager->persist($sale);
         $this->entityManager->flush();
@@ -106,7 +109,7 @@ readonly class SaleVoidUseCase
      * @throws FilesystemException
      * @throws SaleException
      * @throws Exception
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      */
     private function voidInvoice(
         string $saleId,
@@ -122,7 +125,7 @@ readonly class SaleVoidUseCase
 
         $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
         $invoice->setVoidCorrelation(explode('-', $response->name)[3]);
-        $invoice->setUpdatedAt(new \DateTime());
+        $invoice->setUpdatedAt(new DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
                 $this->companyContext->getId() . '/' . $response->name
@@ -162,7 +165,7 @@ readonly class SaleVoidUseCase
 
         $response = $this->summaryCreateUseCase->__invoke($saleId);
         $invoice->setVoidCorrelation(explode('-', $response->name)[3]);
-        $invoice->setUpdatedAt(new \DateTime());
+        $invoice->setUpdatedAt(new DateTime());
         if ($response->sunatResponse->isSuccess()) {
             $this->fileManager->write(
                 $this->companyContext->getId() . '/' . $response->name
@@ -227,7 +230,7 @@ readonly class SaleVoidUseCase
         $movement->setType($category->getType() ?? CashMovementType::EXPENSE);
         $movement->setAmount($sale->getTotal() ?? 0);
         $movement->setDescription('Anulación de venta N° ' . $sale->getserie() . '-' . $sale->getNumero());
-        $movement->setCreatedAt(new \DateTimeImmutable());
+        $movement->setCreatedAt(new DateTimeImmutable());
 
         $this->entityManager->persist($movement);
         $this->entityManager->flush();

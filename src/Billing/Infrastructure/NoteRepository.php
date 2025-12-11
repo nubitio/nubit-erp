@@ -2,6 +2,7 @@
 
 namespace App\Billing\Infrastructure;
 
+use Override;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Domain\NoteRepositoryInterface;
 use App\Billing\Model\Response\DocumentResponse;
@@ -27,7 +28,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function send(Note $note): DocumentResponse
     {
         $httpClient = HttpClient::create();
@@ -52,7 +53,7 @@ readonly class NoteRepository implements NoteRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function pdf(Note $note): string
     {
         $httpClient = HttpClient::create();

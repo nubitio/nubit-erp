@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
@@ -55,7 +56,7 @@ class Invoice
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'fecha', type: 'datetime')]
-    private ?\DateTimeInterface $issuedAt = null;
+    private ?DateTimeInterface $issuedAt = null;
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'serie', type: 'string')]
@@ -123,11 +124,11 @@ class Invoice
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'created_at', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?DateTimeInterface $createdAt = null;
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true, options: ['default' => null])]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt = null;
 
     public function getId(): ?string
     {
@@ -188,12 +189,12 @@ class Invoice
         return $this;
     }
 
-    public function getIssuedAt(): ?\DateTimeInterface
+    public function getIssuedAt(): ?DateTimeInterface
     {
         return $this->issuedAt;
     }
 
-    public function setIssuedAt(?\DateTimeInterface $issuedAt): self
+    public function setIssuedAt(?DateTimeInterface $issuedAt): self
     {
         $this->issuedAt = $issuedAt;
 
@@ -392,24 +393,24 @@ class Invoice
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $createdAt): self
+    public function setCreatedAt(?DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 

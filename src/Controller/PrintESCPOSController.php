@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use Mike42\Escpos\EscposImage;
 use App\Core\Extension\RemoteEscposImage;
 use App\Core\Service\LogoProvider;
 use App\Core\Service\SettingsService;
@@ -58,7 +59,7 @@ class PrintESCPOSController extends AbstractController
         $app_option_logo = $this->settingsService->get(
             'app_option_printing_logo'
         );
-        if ('true' == $app_option_logo && $logo !== null) {
+        if ('true' == $app_option_logo && $logo instanceof EscposImage) {
             $printer->graphics($logo);
             $printer->feed();
         }

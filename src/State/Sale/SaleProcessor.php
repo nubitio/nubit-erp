@@ -2,6 +2,8 @@
 
 namespace App\State\Sale;
 
+use Override;
+use DateTimeImmutable;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
@@ -44,7 +46,7 @@ readonly class SaleProcessor implements ProcessorInterface
      *
      * @throws ServiceException
      */
-    #[\Override]
+    #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         $this->logger->info('Starting sale processing', [
@@ -80,12 +82,13 @@ readonly class SaleProcessor implements ProcessorInterface
                     'openedBy' => $user->userId,
                 ]);
 
-            if (!$cashShift) {
+            if (!$cashShift instanceof CashShift) {
                 $this->logger->warning('Sale processing failed: No open cash shift found', [
                     'user_id' => $user->userId,
                 ]);
                 throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
             }
+
             $cashShiftForMovement = $cashShift;
 
             $this->logger->debug('Cash shift found, filling sale values', [
@@ -185,19 +188,20 @@ readonly class SaleProcessor implements ProcessorInterface
                         );
                     }
                 }
+
                 $item->setDescuento($item->getDescuento() ?? 0);
             }
         }
 
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
-            $data->setDateCreated(new \DateTimeImmutable());
+            $data->setDateCreated(new DateTimeImmutable());
             $data->setCreatedBy($user->userId);
         } else {
             $this->logger->info('Updating existing sale record', [
                 'sale_id' => $data->getId(),
             ]);
-            $data->setDateUpdated(new \DateTimeImmutable());
+            $data->setDateUpdated(new DateTimeImmutable());
             $data->setUpdatedBy($user->userId);
         }
 
@@ -240,7 +244,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $movement->setType($category->getType() ?? CashMovementType::INCOME);
         $movement->setAmount($sale->getTotal() ?? 0);
         $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
-        $movement->setCreatedAt(new \DateTimeImmutable());
+        $movement->setCreatedAt(new DateTimeImmutable());
 
         $this->entityManager->persist($movement);
         $this->entityManager->flush();

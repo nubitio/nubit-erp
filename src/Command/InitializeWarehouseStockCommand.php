@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use Override;
+use Exception;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -32,7 +34,7 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
@@ -42,14 +44,10 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
                 null,
                 InputOption::VALUE_NONE,
                 'Show what would be done without actually making changes'
-            )
-            ->setHelp(
-                'This command initializes warehouse-specific stock based on current global stock. ' .
-                'It distributes the existing global stock evenly across all warehouses.'
             );
     }
 
-    #[\Override]
+    #[Override]
     protected function executeTenantCommand(
         InputInterface $input,
         OutputInterface $output,
@@ -68,7 +66,7 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
 
         $products = $this->entityManager->getRepository(Product::class)->findAll();
 
-        if (empty($products)) {
+        if ($products === []) {
             $io->warning('No products found. Skipping initialization.');
             return Command::SUCCESS;
         }
@@ -93,7 +91,7 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
                         )
                     );
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error(
                     'An error occurred while initializing stock for product ' . $product->getId(),
                     ['exception' => $e]

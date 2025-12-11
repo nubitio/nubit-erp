@@ -2,6 +2,7 @@
 
 namespace App\State\CashRegister;
 
+use Override;
 use ApiPlatform\Doctrine\Orm\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
@@ -18,7 +19,7 @@ readonly class CashRegisterShiftsProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): Paginator
     {
         $cashRegisterId = $uriVariables['id'] ?? null;
@@ -31,6 +32,7 @@ readonly class CashRegisterShiftsProvider implements ProviderInterface
         if (isset($filters['take'])) {
             $itemsPerPage = (int)$filters['take'];
         }
+
         if (isset($filters['skip']) && $itemsPerPage > 0) {
             $page = (int)floor(((int)$filters['skip']) / $itemsPerPage) + 1;
         }

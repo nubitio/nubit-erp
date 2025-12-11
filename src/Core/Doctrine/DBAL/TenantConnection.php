@@ -2,6 +2,7 @@
 
 namespace App\Core\Doctrine\DBAL;
 
+use Override;
 use App\Core\Exception\ServiceException;
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
@@ -60,7 +61,7 @@ class TenantConnection extends Connection
             throw new ServiceException('Tenant not found');
         }
 
-        $tenant = array_values(array_filter($tenants, fn ($item): bool => $item['name'] === $tenantName))[0];
+        $tenant = array_values(array_filter($tenants, fn (array $item): bool => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
@@ -75,8 +76,8 @@ class TenantConnection extends Connection
      * @throws Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    #[\Override]
-    public function connect(): Driver\Connection
+    #[Override]
+    protected function connect(): Driver\Connection
     {
         if ($this->isConnected) {
             return $this->_conn;
@@ -92,13 +93,13 @@ class TenantConnection extends Connection
         return $this->_conn;
     }
 
-    #[\Override]
+    #[Override]
     public function getParams(): array
     {
         return $this->tenantParams;
     }
 
-    #[\Override]
+    #[Override]
     public function close(): void
     {
         $this->isConnected = false;

@@ -2,6 +2,9 @@
 
 namespace App\State\CashRegister;
 
+use Override;
+use DateTimeImmutable;
+use DateMalformedStringException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Application\Session\Security;
@@ -19,9 +22,9 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
 
     /**
      * @inheritdoc
-     * @throws Exception|\DateMalformedStringException
+     * @throws Exception|DateMalformedStringException
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $user = $this->security->connectedUser();
@@ -51,12 +54,12 @@ SQL;
 
         $data = $this->connection->fetchAllAssociative($sql, [$branchId]);
 
-        return array_map(fn ($row): \App\Dto\CashRegister\CashRegisterDashboardDto => new CashRegisterDashboardDto(
+        return array_map(fn (array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
             id: (int)$row['id'],
             name: $row['name'],
             cashShiftId: $row['cashShiftId'] ? (int)$row['cashShiftId'] : null,
-            openedAt: $row['openedAt'] ? new \DateTimeImmutable($row['openedAt']) : null,
-            closedAt: $row['closedAt'] ? new \DateTimeImmutable($row['closedAt']) : null,
+            openedAt: $row['openedAt'] ? new DateTimeImmutable($row['openedAt']) : null,
+            closedAt: $row['closedAt'] ? new DateTimeImmutable($row['closedAt']) : null,
             cashier: $row['cashier'],
             balance: (float)$row['balance'],
             status: $row['status'],

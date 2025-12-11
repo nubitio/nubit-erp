@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use Throwable;
+use DateTimeImmutable;
 use App\Core\Security\Auth\JWTAuthenticator;
 use App\Core\Security\Auth\JWTManager;
 use App\Entity\RefreshToken;
@@ -34,7 +36,7 @@ class AuthRefreshController extends AbstractController
 
         try {
             $payload = $this->jwtManager->decode($refreshToken);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -42,13 +44,13 @@ class AuthRefreshController extends AbstractController
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $now = new \DateTimeImmutable();
+        $now = new DateTimeImmutable();
         if (isset($payload['exp']) && $payload['exp'] < $now->getTimestamp()) {
             return new JsonResponse(['message' => 'Expired refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
         $storedToken = $this->refreshTokenRepository->findActiveByHash(hash('sha256', $refreshToken));
-        if (null === $storedToken) {
+        if (!$storedToken instanceof RefreshToken) {
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -84,11 +86,11 @@ class AuthRefreshController extends AbstractController
             'iat' => $now->getTimestamp(),
         ]);
 
-        $newRefreshTokenEntity = (new RefreshToken())
+        $newRefreshTokenEntity = new RefreshToken()
             ->setJti($refreshTokenJti)
             ->setTokenHash(hash('sha256', $newRefreshToken))
             ->setUser($user)
-            ->setExpiresAt((new \DateTimeImmutable())->setTimestamp($now->getTimestamp() + $this->refreshTokenTtl));
+            ->setExpiresAt(new DateTimeImmutable()->setTimestamp($now->getTimestamp() + $this->refreshTokenTtl));
 
         $this->entityManager->persist($newRefreshTokenEntity);
         $this->entityManager->flush();

@@ -2,6 +2,7 @@
 
 namespace App\State\PriceList;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\PriceList\PriceListDto;
@@ -19,7 +20,7 @@ readonly class PriceListProvider implements ProviderInterface
      * @inheritdoc
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $id = $uriVariables['id'];
@@ -37,7 +38,7 @@ readonly class PriceListProvider implements ProviderInterface
         $data = $this->connection->fetchAllAssociative($sql, ['id' => $id]);
 
         return array_map(
-            fn ($item): \App\Dto\PriceList\PriceListDto => new PriceListDto(
+            fn (array $item): PriceListDto => new PriceListDto(
                 id: (int)$item['id'],
                 name: $item['name'],
                 price: (float)$item['price'],

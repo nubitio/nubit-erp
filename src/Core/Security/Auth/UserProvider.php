@@ -2,6 +2,7 @@
 
 namespace App\Core\Security\Auth;
 
+use Override;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -18,14 +19,14 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
     ) {
     }
 
-    #[\Override]
+    #[Override]
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
         $user = $this->entityManager->getRepository(User::class)->findOneBy([
             'username' => $identifier,
         ]);
 
-        if (!$user) {
+        if (!$user instanceof User) {
             throw new UserNotFoundException(
                 sprintf('User "%s" does not exist.', $identifier)
             );
@@ -34,7 +35,7 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
         return $user;
     }
 
-    #[\Override]
+    #[Override]
     public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$user instanceof User) {
@@ -49,13 +50,13 @@ readonly class UserProvider implements UserProviderInterface, PasswordUpgraderIn
         return $this->loadUserByIdentifier($user->getUserIdentifier());
     }
 
-    #[\Override]
+    #[Override]
     public function supportsClass(string $class): bool
     {
         return User::class === $class || is_subclass_of($class, User::class);
     }
 
-    #[\Override]
+    #[Override]
     public function upgradePassword(
         PasswordAuthenticatedUserInterface $user,
         string $newHashedPassword

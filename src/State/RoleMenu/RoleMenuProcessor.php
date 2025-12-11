@@ -2,6 +2,7 @@
 
 namespace App\State\RoleMenu;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\ApiResource\RoleMenuResource;
@@ -23,7 +24,7 @@ readonly class RoleMenuProcessor implements ProcessorInterface
      *
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -44,10 +45,7 @@ readonly class RoleMenuProcessor implements ProcessorInterface
             );
 
             foreach ($data->permissions as $menuId) {
-                $insertStmt->executeStatement([
-                    'menuId' => $menuId,
-                    'roleId' => $roleId,
-                ]);
+                $insertStmt->executeStatement();
             }
 
             $this->connection->commit();

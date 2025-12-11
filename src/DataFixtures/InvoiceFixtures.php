@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\DataFixtures;
 
+use App\Entity\Product;
+use App\Entity\UnitOfMeasure;
+use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\Invoice;
 use App\Entity\Branch;
@@ -24,12 +27,12 @@ use Doctrine\Persistence\ObjectManager;
 
 final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
 {
-    private const VOUCHER_TYPES = [
+    private const array VOUCHER_TYPES = [
         '01' => 'Factura',
         '03' => 'Boleta',
     ];
 
-    private const SAMPLE_CUSTOMERS = [
+    private const array SAMPLE_CUSTOMERS = [
         [
             'ruc' => '20123456789',
             'businessName' => 'Acme SAC',
@@ -47,7 +50,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
         foreach (self::VOUCHER_TYPES as $code => $name) {
             $voucherType = $manager->getRepository(VoucherType::class)->findOneBy(['code' => $code]);
             if (!$voucherType instanceof VoucherType) {
-                $voucherType = (new VoucherType())
+                $voucherType = new VoucherType()
                     ->setCode($code)
                     ->setName($name);
                 $manager->persist($voucherType);
@@ -58,7 +61,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
         foreach (self::SAMPLE_CUSTOMERS as $customerData) {
             $customer = $manager->getRepository(Customer::class)->find($customerData['ruc']);
             if (!$customer instanceof Customer) {
-                $customer = (new Customer())
+                $customer = new Customer()
                     ->setRuc($customerData['ruc'])
                     ->setBusinessName($customerData['businessName'])
                     ->setEmail($customerData['email'])
@@ -67,6 +70,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
 
                 $manager->persist($customer);
             }
+
             $customers[] = $customer;
         }
 
@@ -75,32 +79,28 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
         $existingCount = $invoiceRepository->count([]);
 
         // Ensure fixtures product exists once to avoid duplicates on append.
-        $fixturesProduct = $manager->getRepository(\App\Entity\Product::class)->findOneBy(['code' => 'FIXTURE']);
-        if (!$fixturesProduct instanceof \App\Entity\Product) {
+        $fixturesProduct = $manager->getRepository(Product::class)->findOneBy(['code' => 'FIXTURE']);
+        if (!$fixturesProduct instanceof Product) {
             $unit = $this->getOrCreate(
                 $manager,
-                \App\Entity\UnitOfMeasure::class,
+                UnitOfMeasure::class,
                 ['code' => 'NIU'],
-                static function (): \App\Entity\UnitOfMeasure {
-                    return (new \App\Entity\UnitOfMeasure())
-                        ->setName('Unidad')
-                        ->setCode('NIU')
-                        ->setType(1)
-                        ->setRatio(1.0)
-                        ->setReference(true);
-                }
+                static fn (): UnitOfMeasure => new UnitOfMeasure()
+                    ->setName('Unidad')
+                    ->setCode('NIU')
+                    ->setType(1)
+                    ->setRatio(1.0)
+                    ->setReference(true)
             );
 
             $category = $this->getOrCreate(
                 $manager,
-                \App\Entity\Category::class,
+                Category::class,
                 ['name' => 'Fixtures'],
-                static function (): \App\Entity\Category {
-                    return (new \App\Entity\Category())->setName('Fixtures');
-                }
+                static fn (): Category => new Category()->setName('Fixtures')
             );
 
-            $fixturesProduct = (new \App\Entity\Product())
+            $fixturesProduct = new Product()
                 ->setCode('FIXTURE')
                 ->setName('Fixture item')
                 ->setType(1)
@@ -124,6 +124,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             if ($sale->getId() === null) {
                 $manager->flush();
             }
+
             $existingInvoice = $manager->getRepository(Invoice::class)->findOneBy([
                 'sale' => $sale,
             ]);
@@ -166,8 +167,8 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
     private function createSale(
         ObjectManager $manager,
         Customer $customer,
-        \App\Entity\Product $product,
-        \DateTimeImmutable $issuedAt,
+        Product $product,
+        DateTimeImmutable $issuedAt,
         int $index,
         string $series,
         string $number
@@ -176,11 +177,9 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             $manager,
             LogisticOperation::class,
             ['name' => 'Venta'],
-            static function (): LogisticOperation {
-                return (new LogisticOperation())
-                    ->setName('Venta')
-                    ->setType(1);
-            }
+            static fn (): LogisticOperation => new LogisticOperation()
+                ->setName('Venta')
+                ->setType(1)
         );
 
         $warehouse = $this->getOrCreate(
@@ -194,17 +193,15 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
                         $manager,
                         Company::class,
                         ['ruc' => '20600000001'],
-                        static function (): Company {
-                            return (new Company())
-                                ->setRuc('20600000001')
-                                ->setBusinessName('Efact Demo SAC')
-                                ->setTradeName('Efact Demo')
-                                ->setFiscalAddress('Av. Demo 123 Lima')
-                                ->setPhone('012345678');
-                        }
+                        static fn (): Company => new Company()
+                            ->setRuc('20600000001')
+                            ->setBusinessName('Efact Demo SAC')
+                            ->setTradeName('Efact Demo')
+                            ->setFiscalAddress('Av. Demo 123 Lima')
+                            ->setPhone('012345678')
                     );
 
-                    $branch = (new Branch())
+                    $branch = new Branch()
                         ->setName('Local Fixtures')
                         ->setAddress('Av. Demo 123 Lima')
                         ->setPhone('012345678')
@@ -212,7 +209,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
                     $manager->persist($branch);
                 }
 
-                return (new Warehouse())
+                return new Warehouse()
                     ->setName('Almacén Fixtures')
                     ->setBranch($branch);
             }
@@ -228,31 +225,25 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             $manager,
             PriceList::class,
             ['name' => 'Lista Fixtures'],
-            static function (): PriceList {
-                return (new PriceList())->setName('Lista Fixtures');
-            }
+            static fn (): PriceList => new PriceList()->setName('Lista Fixtures')
         );
 
         $paymentMethod = $this->getOrCreate(
             $manager,
             PaymentMethod::class,
             ['name' => 'Efectivo'],
-            static function (): PaymentMethod {
-                return (new PaymentMethod())->setName('Efectivo');
-            }
+            static fn (): PaymentMethod => new PaymentMethod()->setName('Efectivo')
         );
 
         $supplier = $this->getOrCreate(
             $manager,
             Supplier::class,
             ['ruc' => '20567890123'],
-            static function (): Supplier {
-                return (new Supplier())
-                    ->setRuc('20567890123')
-                    ->setBusinessName('Proveedor Fixtures SAC')
-                    ->setFiscalAddress('Av. Industrial 456 Lima')
-                    ->setPhone('+51 912345678');
-            }
+            static fn (): Supplier => new Supplier()
+                ->setRuc('20567890123')
+                ->setBusinessName('Proveedor Fixtures SAC')
+                ->setFiscalAddress('Av. Industrial 456 Lima')
+                ->setPhone('+51 912345678')
         );
 
         $sale = new Sale();
@@ -285,8 +276,8 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             ->setInvoice('PENDING');
 
         $qty = 1;
-        $unitPrice = (float) ($product->getSalePrice() ?? 12.0);
-        $lineTotal = round($unitPrice * $qty, 2);
+        $unitPrice = $product->getSalePrice() ?? 12.0;
+        $lineTotal = round($unitPrice, 2);
         $igvAmount = round($lineTotal * 0.18, 2);
 
         $saleItem = new SaleItem();
@@ -296,6 +287,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
         $saleItem->setPrecioUnitario($unitPrice);
         $saleItem->setDescuento(0.0);
         $saleItem->setPrecioTotal($lineTotal);
+
         $manager->persist($saleItem);
         $sale->addItem($saleItem);
 

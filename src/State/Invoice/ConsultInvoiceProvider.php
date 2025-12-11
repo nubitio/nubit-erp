@@ -2,6 +2,8 @@
 
 namespace App\State\Invoice;
 
+use Override;
+use Exception;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Http\ApiResponse;
@@ -18,7 +20,7 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function provide(
         Operation $operation,
         array $uriVariables = [],
@@ -35,13 +37,14 @@ readonly class ConsultInvoiceProvider implements ProviderInterface
                         $result->getCdrResponse()?->getDescription() ?: ''
                     );
             }
+
             return
                 new ApiResponse(
                     false,
                     $result->getError()?->getMessage() ?: '',
                     $result
                 );
-        } catch (\Exception | FilesystemException $e) {
+        } catch (Exception | FilesystemException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }
     }

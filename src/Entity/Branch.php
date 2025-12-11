@@ -56,7 +56,7 @@ class Branch
     /**
      * @var Collection<int, Warehouse>
      */
-    #[ORM\OneToMany(mappedBy: 'branch', targetEntity: Warehouse::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Warehouse::class, mappedBy: 'branch', orphanRemoval: true)]
     private Collection $warehouses;
 
     public function __construct()

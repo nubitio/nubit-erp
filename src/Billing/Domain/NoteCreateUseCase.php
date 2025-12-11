@@ -2,6 +2,7 @@
 
 namespace App\Billing\Domain;
 
+use NumberFormatter;
 use App\Core\Exception\ServiceException;
 use App\Entity\CreditNote;
 use App\Invoice\Domain\Voucher;
@@ -73,7 +74,7 @@ readonly class NoteCreateUseCase
 
         $items = [];
         foreach ($voucher->voucher_items as $item) {
-            $item = (new SaleDetail())
+            $item = new SaleDetail()
                 ->setCodProducto(strval($item->product_code))
                 ->setUnidad('NIU')
                 ->setCantidad(floatval($item->quantity))
@@ -89,7 +90,7 @@ readonly class NoteCreateUseCase
             $items[] = $item;
         }
 
-        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
+        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
         $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');

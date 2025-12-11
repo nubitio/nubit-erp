@@ -2,6 +2,9 @@
 
 namespace App\Service;
 
+use DateTimeImmutable;
+use IntlDateFormatter;
+use Throwable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
@@ -13,17 +16,18 @@ readonly class TimeDimensionSeeder
     }
 
     public function seed(
-        \DateTimeImmutable $startDate,
-        \DateTimeImmutable $endDate,
+        DateTimeImmutable $startDate,
+        DateTimeImmutable $endDate,
         int $batchSize = 500,
         string $locale = 'es_PE',
         ?callable $progressCallback = null,
     ): int {
         $batchSize = max(1, $batchSize);
 
-        $dayFormatter = new \IntlDateFormatter($locale, \IntlDateFormatter::FULL, \IntlDateFormatter::NONE);
+        $dayFormatter = new IntlDateFormatter($locale, IntlDateFormatter::FULL, IntlDateFormatter::NONE);
         $dayFormatter->setPattern('EEEE');
-        $monthFormatter = new \IntlDateFormatter($locale, \IntlDateFormatter::FULL, \IntlDateFormatter::NONE);
+
+        $monthFormatter = new IntlDateFormatter($locale, IntlDateFormatter::FULL, IntlDateFormatter::NONE);
         $monthFormatter->setPattern('LLLL');
 
         $current = $startDate;
@@ -54,7 +58,7 @@ readonly class TimeDimensionSeeder
                     $this->insertBatch($batch);
                     $count += count($batch);
 
-                    if ($progressCallback) {
+                    if ($progressCallback !== null) {
                         $progressCallback(count($batch));
                     }
 
@@ -68,7 +72,7 @@ readonly class TimeDimensionSeeder
                 $this->insertBatch($batch);
                 $count += count($batch);
 
-                if ($progressCallback) {
+                if ($progressCallback !== null) {
                     $progressCallback(count($batch));
                 }
             }
@@ -76,9 +80,9 @@ readonly class TimeDimensionSeeder
             $this->connection->commit();
 
             return $count;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             $this->connection->rollBack();
-            throw $exception;
+            throw $throwable;
         }
     }
 

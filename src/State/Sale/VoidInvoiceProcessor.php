@@ -2,6 +2,7 @@
 
 namespace App\State\Sale;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
@@ -25,7 +26,7 @@ readonly class VoidInvoiceProcessor implements ProcessorInterface
      *
      * @param VoidSaleDto $data
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,

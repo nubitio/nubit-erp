@@ -15,6 +15,8 @@ use Psr\Log\LoggerInterface;
  */
 class MediaRepository extends ServiceEntityRepository
 {
+    public $_em;
+
     public function __construct(
         ManagerRegistry $registry,
         private readonly FilesystemOperator $uploadsFilesystem,

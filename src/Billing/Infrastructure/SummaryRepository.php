@@ -2,6 +2,7 @@
 
 namespace App\Billing\Infrastructure;
 
+use Override;
 use App\Billing\Domain\SummaryRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
 use Doctrine\DBAL\Connection;
@@ -25,7 +26,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
     /**
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function getLastCorrelativeByDate(string $date): int
     {
         $sql = 'select ifnull(max(right(correlative, 1)), 0) as correlative from summary where date = ?';
@@ -46,7 +47,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function createSummary(Summary $summary): SummaryResponse
     {
         $httpClient = HttpClient::create();
@@ -71,7 +72,7 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
         $httpClient = HttpClient::create();

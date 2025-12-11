@@ -2,6 +2,8 @@
 
 namespace App\Serializer;
 
+use Override;
+use ArrayObject;
 use App\Core\Util\Constants;
 use App\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -25,12 +27,12 @@ final readonly class MediaNormalizer implements NormalizerInterface
      *
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function normalize(
         $data,
         ?string $format = null,
         array $context = [],
-    ): array | \ArrayObject | bool | float | int | string | null {
+    ): array | ArrayObject | bool | float | int | string | null {
         $context[self::ALREADY_CALLED] = true;
 
         $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
@@ -45,7 +47,7 @@ final readonly class MediaNormalizer implements NormalizerInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function supportsNormalization(
         $data,
         ?string $format = null,
@@ -61,7 +63,7 @@ final readonly class MediaNormalizer implements NormalizerInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function getSupportedTypes(?string $format): array
     {
         return [Media::class => true];

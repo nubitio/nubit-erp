@@ -5,7 +5,6 @@ namespace App\State\Product;
 use App\Entity\Product;
 use App\Entity\Warehouse;
 use App\Service\ProductStockService;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,7 +29,7 @@ class ProductStockController extends AbstractController
 
         $product = $this->entityManager->getRepository(Product::class)->find($productId);
 
-        if (!$product) {
+        if (!$product instanceof Product) {
             return new Response('Product not found', Response::HTTP_NOT_FOUND);
         }
 
@@ -46,7 +45,7 @@ class ProductStockController extends AbstractController
 
         $warehouse = $this->entityManager->getRepository(Warehouse::class)->find($warehouseId);
 
-        if (!$warehouse) {
+        if (!$warehouse instanceof Warehouse) {
             return new Response('Warehouse not found', Response::HTTP_NOT_FOUND);
         }
 

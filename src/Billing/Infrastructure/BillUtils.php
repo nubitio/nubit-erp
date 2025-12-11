@@ -2,6 +2,8 @@
 
 namespace App\Billing\Infrastructure;
 
+use Override;
+use RuntimeException;
 use App\Billing\Domain\BillUtilsInterface;
 use App\Repository\CompanyRepository;
 use Greenter\Model\Company\Address;
@@ -14,12 +16,12 @@ readonly class BillUtils implements BillUtilsInterface
     ) {
     }
 
-    #[\Override]
+    #[Override]
     public function getCompany(): Company
     {
         $companyEntity = $this->companyRepository->findOneBy([]);
         if (null == $companyEntity) {
-            throw new \RuntimeException('Company not found');
+            throw new RuntimeException('Company not found');
         }
 
         $address = new Address();

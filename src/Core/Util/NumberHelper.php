@@ -61,13 +61,13 @@ final class NumberHelper
 
     public static function ceil(float $value, int $precision = 0): float
     {
-        $multiplier = pow(10, $precision);
+        $multiplier = 10 ** $precision;
         return ceil($value * $multiplier) / $multiplier;
     }
 
     public static function floor(float $value, int $precision = 0): float
     {
-        $multiplier = pow(10, $precision);
+        $multiplier = 10 ** $precision;
         return floor($value * $multiplier) / $multiplier;
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\CreditNote;
 use App\Core\Http\ApiResponse;
 use App\Repository\CreditNoteRepository;
 use App\Service\CreditNoteService;
@@ -31,7 +32,7 @@ class CreditNoteController extends AbstractController
     {
         $creditNote = $this->creditNoteRepository->find($id);
 
-        if (!$creditNote) {
+        if (!$creditNote instanceof CreditNote) {
             return $this->json(
                 new ApiResponse(false, 'Nota de crédito no encontrada'),
                 Response::HTTP_NOT_FOUND
@@ -56,7 +57,7 @@ class CreditNoteController extends AbstractController
                 new ApiResponse(false, $e->getMessage()),
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
-        } catch (FilesystemException $e) {
+        } catch (FilesystemException) {
             return $this->json(
                 new ApiResponse(false, 'Error al guardar el archivo XML'),
                 Response::HTTP_INTERNAL_SERVER_ERROR
@@ -69,7 +70,7 @@ class CreditNoteController extends AbstractController
     {
         $creditNote = $this->creditNoteRepository->find($id);
 
-        if (!$creditNote) {
+        if (!$creditNote instanceof CreditNote) {
             throw $this->createNotFoundException('Nota de crédito no encontrada');
         }
 
@@ -97,7 +98,7 @@ class CreditNoteController extends AbstractController
     {
         $creditNote = $this->creditNoteRepository->find($id);
 
-        if (!$creditNote) {
+        if (!$creditNote instanceof CreditNote) {
             throw $this->createNotFoundException('Nota de crédito no encontrada');
         }
 

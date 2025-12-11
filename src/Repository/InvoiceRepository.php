@@ -18,6 +18,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
  */
 class InvoiceRepository extends ServiceEntityRepository
 {
+    public $_em;
+
     public function __construct(
         ManagerRegistry $registry,
         private readonly DenormalizerInterface $denormalizer
@@ -45,9 +47,7 @@ class InvoiceRepository extends ServiceEntityRepository
 
         $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
 
-        $voucher['voucher_items'] = array_map(function (array $item) use ($context) {
-            return $this->denormalizer->denormalize($item, VoucherItem::class, null, $context);
-        }, $items);
+        $voucher['voucher_items'] = array_map(fn (array $item): mixed => $this->denormalizer->denormalize($item, VoucherItem::class, null, $context), $items);
 
         return $this->denormalizer->denormalize($voucher, Voucher::class, null, $context);
     }

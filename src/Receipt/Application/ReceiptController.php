@@ -57,7 +57,7 @@ class ReceiptController extends BaseController
         $voucher = $invoiceRepository->getVoucher($id);
         $qr = '';
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $qr = (new QRCode())->render(strval($voucher->voucher_qr_data));
+            $qr = new QRCode()->render(strval($voucher->voucher_qr_data));
         }
 
         $template = 'sale/report/invoice.html.twig';
@@ -171,7 +171,7 @@ class ReceiptController extends BaseController
 
         $receiptType = ReceiptType::tryFrom($decoded['type']);
 
-        if (!$receiptType instanceof \App\Receipt\Domain\ReceiptType) {
+        if (!$receiptType instanceof ReceiptType) {
             throw new ServiceException('Invalid receipt type');
         }
 

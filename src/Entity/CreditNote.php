@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
+use DateTime;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -50,7 +52,7 @@ class CreditNote
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'fecha', type: Types::DATE_MUTABLE, nullable: false)]
-    private ?\DateTimeInterface $fecha = null;
+    private ?DateTimeInterface $fecha = null;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'tipo_id', type: Types::STRING, length: 10)]
@@ -104,22 +106,22 @@ class CreditNote
 
     #[Groups(['creditnote:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $createdAt = null;
+    private ?DateTimeInterface $createdAt = null;
 
     #[Groups(['creditnote:read'])]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt = null;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     #[ORM\PreUpdate]
     public function preUpdate(): void
     {
-        $this->updatedAt = new \DateTime();
+        $this->updatedAt = new DateTime();
     }
 
     // Getters and Setters
@@ -153,12 +155,12 @@ class CreditNote
         return $this;
     }
 
-    public function getFecha(): ?\DateTimeInterface
+    public function getFecha(): ?DateTimeInterface
     {
         return $this->fecha;
     }
 
-    public function setFecha(?\DateTimeInterface $fecha): self
+    public function setFecha(?DateTimeInterface $fecha): self
     {
         $this->fecha = $fecha;
 
@@ -309,24 +311,24 @@ class CreditNote
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?\DateTimeInterface $createdAt): self
+    public function setCreatedAt(?DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(?DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
@@ -346,7 +348,7 @@ class CreditNote
      */
     public function isSentToSunat(): bool
     {
-        return !empty($this->envioSunat) && $this->envioSunat !== 'pendiente';
+        return !in_array($this->envioSunat, [null, '', '0', 'pendiente'], true);
     }
 
     /**

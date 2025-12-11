@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\RefreshToken;
+use DateTimeImmutable;
 use App\Core\Security\Auth\JWTAuthenticator;
 use App\Repository\RefreshTokenRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,8 +26,8 @@ class AuthLogoutController extends AbstractController
         $refreshToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
         if ($refreshToken) {
             $storedToken = $this->refreshTokenRepository->findActiveByHash(hash('sha256', $refreshToken));
-            if ($storedToken) {
-                $storedToken->revoke(new \DateTimeImmutable());
+            if ($storedToken instanceof RefreshToken) {
+                $storedToken->revoke(new DateTimeImmutable());
                 $this->entityManager->flush();
             }
         }
@@ -34,7 +36,7 @@ class AuthLogoutController extends AbstractController
         $expiredAccessCookie = Cookie::create(
             JWTAuthenticator::AUTH_COOKIE,
             '',
-            (new \DateTimeImmutable('-1 hour'))->getTimestamp(),
+            new DateTimeImmutable('-1 hour')->getTimestamp(),
             '/',
             null,
             true
@@ -42,7 +44,7 @@ class AuthLogoutController extends AbstractController
         $expiredRefreshCookie = Cookie::create(
             JWTAuthenticator::REFRESH_COOKIE,
             '',
-            (new \DateTimeImmutable('-1 hour'))->getTimestamp(),
+            new DateTimeImmutable('-1 hour')->getTimestamp(),
             '/',
             null,
             true

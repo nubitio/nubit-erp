@@ -2,6 +2,8 @@
 
 namespace App\State\Invoice;
 
+use Override;
+use Exception;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
@@ -20,7 +22,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -49,7 +51,7 @@ readonly class SendInvoiceProcessor implements ProcessorInterface
                 false,
                 $result->sunatResponse->getError()?->getMessage() ?: ''
             );
-        } catch (\Exception | FilesystemException $e) {
+        } catch (Exception | FilesystemException $e) {
             $this->logger->error('Error sending invoice', [
                 'exception' => $e,
             ]);

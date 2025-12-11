@@ -2,6 +2,7 @@
 
 namespace App\State\Menu;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\Menu\MenuDto;
@@ -20,7 +21,7 @@ readonly class MenuProvider implements ProviderInterface
      * @inheritdoc
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         return $this->buildMenuForRole(intval($uriVariables['roleId']));
@@ -71,7 +72,7 @@ readonly class MenuProvider implements ProviderInterface
      */
     public function getMenuForRole(int $roleId): array
     {
-        if (0 == $roleId) {
+        if (0 === $roleId) {
             return $this->connection->fetchAllAssociative(
                 '
                     SELECT

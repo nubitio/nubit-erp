@@ -2,7 +2,10 @@
 
 namespace App\Dto\Sale;
 
-class SaleItemDto implements \Stringable
+use Stringable;
+use Override;
+
+class SaleItemDto implements Stringable
 {
     public function __construct(
         private string $name = '',
@@ -11,7 +14,7 @@ class SaleItemDto implements \Stringable
     ) {
     }
 
-    #[\Override]
+    #[Override]
     public function __toString(): string
     {
         $line_width = $_ENV['PRINTER_LINE_WIDTH'];

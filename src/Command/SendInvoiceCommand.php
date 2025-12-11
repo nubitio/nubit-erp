@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use Override;
+use Throwable;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -16,10 +18,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'invoice:send',
-    description: 'Send invoice',
-)]
+#[AsCommand(name: 'invoice:send', description: 'Send invoice', help: <<<'TXT'
+Send pending invoices to SUNAT
+TXT)]
 #[AsCronTask('*/5 * * * *')]
 class SendInvoiceCommand extends TenantAwareCommand
 {
@@ -35,11 +36,10 @@ class SendInvoiceCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp('Send pending invoices to SUNAT');
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -89,7 +89,7 @@ class SendInvoiceCommand extends TenantAwareCommand
                 ]
             );
 
-            if (!is_array($pendingIds) || $pendingIds === []) {
+            if ($pendingIds === []) {
                 break;
             }
 
@@ -110,7 +110,7 @@ class SendInvoiceCommand extends TenantAwareCommand
                             'message' => $message,
                         ]);
                     }
-                } catch (\Throwable $exception) {
+                } catch (Throwable $exception) {
                     $errors[] = [
                         'movimiento_id' => (int) $movimientoId,
                         'error' => $exception->getMessage(),

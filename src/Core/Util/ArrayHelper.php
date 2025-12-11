@@ -23,6 +23,7 @@ final class ArrayHelper
             if (!is_array($current) || !array_key_exists($segment, $current)) {
                 return $default;
             }
+
             $current = $current[$segment];
         }
 
@@ -46,6 +47,7 @@ final class ArrayHelper
                 if (!isset($current[$segment]) || !is_array($current[$segment])) {
                     $current[$segment] = [];
                 }
+
                 $current = &$current[$segment];
             }
         }

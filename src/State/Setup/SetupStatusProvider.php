@@ -2,6 +2,7 @@
 
 namespace App\State\Setup;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\Setup\SetupStatusDto;
@@ -16,7 +17,7 @@ readonly class SetupStatusProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): SetupStatusDto
     {
         return $this->service->status();

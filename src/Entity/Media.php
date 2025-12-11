@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ArrayObject;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -25,7 +26,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: MediaController::class,
             openapi: new Operation(
                 requestBody: new RequestBody(
-                    content: new \ArrayObject([
+                    content: new ArrayObject([
                         'multipart/form-data' => [
                             'schema' => [
                                 'type' => 'object',

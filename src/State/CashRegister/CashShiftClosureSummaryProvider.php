@@ -2,6 +2,7 @@
 
 namespace App\State\CashRegister;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\CashRegister\CashShiftClosureSummaryDto;
@@ -20,7 +21,7 @@ readonly class CashShiftClosureSummaryProvider implements ProviderInterface
      * @inheritdoc
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $cashShiftId = $uriVariables['id'];

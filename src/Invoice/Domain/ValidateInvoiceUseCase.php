@@ -49,7 +49,7 @@ readonly class ValidateInvoiceUseCase
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));
         $customerId = $this->companyContext->getId();
 
-        $cpeFilter = (new CpeFilter())
+        $cpeFilter = new CpeFilter()
             ->setNumRuc(strval($customerId))
             ->setCodComp(strval($invoice?->getVoucherTypeId()))
             ->setNumeroSerie(strval($invoice?->getSeries()))

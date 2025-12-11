@@ -2,6 +2,8 @@
 
 namespace App\State\Invoice;
 
+use Override;
+use Exception;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
@@ -18,7 +20,7 @@ readonly class ValidateInvoiceProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -36,12 +38,13 @@ readonly class ValidateInvoiceProcessor implements ProcessorInterface
                     $result
                 );
             }
+
             return new ApiResponse(
                 false,
                 $result->getMessage() ?? '',
                 $result
             );
-        } catch (\Exception | InvalidArgumentException $e) {
+        } catch (Exception | InvalidArgumentException $e) {
             return new ApiResponse(false, $e->getMessage(), $e);
         }
     }

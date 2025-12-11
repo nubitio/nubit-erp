@@ -2,6 +2,7 @@
 
 namespace App\Invoice\Api;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Repository\InvoiceRepository;
@@ -18,7 +19,7 @@ readonly class VoucherProvider implements ProviderInterface
      * @inheritdoc
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         return $this->invoiceRepository->getVoucher(strval($uriVariables['sale_id']));

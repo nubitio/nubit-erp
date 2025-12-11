@@ -2,6 +2,7 @@
 
 namespace App\State\RoleMenu;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Dto\RoleMenu\RoleMenuDto;
@@ -20,7 +21,7 @@ readonly class RoleMenuProvider implements ProviderInterface
      * @inheritdoc
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $roleId = $uriVariables['role_id'];
