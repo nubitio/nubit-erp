@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Report\Parameters;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\State\CashRegister;
 
 use Override;
@@ -14,7 +16,6 @@ use App\Entity\CashMovementCategory;
 use App\Entity\CashRegister;
 use App\Entity\CashShift;
 use App\Entity\User;
-use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;

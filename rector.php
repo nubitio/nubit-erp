@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\Config\RectorConfig;
 use Rector\Set\ValueObject\LevelSetList;
+use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
 use Rector\ValueObject\PhpVersion;
 
 return RectorConfig::configure()
@@ -32,6 +33,13 @@ return RectorConfig::configure()
     ->withSets([
         LevelSetList::UP_TO_PHP_85,
     ])
+    ->withRules([
+        DeclareStrictTypesRector::class,
+    ])
+    ->withAttributesSets(
+        symfony: true,
+        doctrine: true,
+    )
     ->withSkip([
         __DIR__ . '/src/Command/ImportUbigeoCommand.php',
         __DIR__ . '/src/Command/FillTimeDimensionCommand.php',

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use Override;
@@ -126,7 +128,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[Override]
     public function getUserIdentifier(): string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     /**

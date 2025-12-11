@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Invoice\Api;
 
 use ApiPlatform\Metadata\ApiProperty;

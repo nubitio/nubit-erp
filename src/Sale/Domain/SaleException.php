@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Sale\Domain;
 
 use App\Core\Exception\ServiceException;
