@@ -14,6 +14,7 @@ use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CreditNoteRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
@@ -37,7 +38,7 @@ class CreditNote
     #[Groups(['creditnote:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[ORM\Column(name: 'nota_id', type: Types::STRING, length: 36)]
     private ?string $id = null;
 

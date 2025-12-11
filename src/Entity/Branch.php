@@ -38,7 +38,7 @@ class Branch
         'cash_register:read',
     ])]
     #[ORM\Column(name: 'descripcion', length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     #[Groups(['branch:read'])]
     #[ORM\Column(name: 'direccion', length: 255, nullable: true)]
@@ -51,7 +51,7 @@ class Branch
     #[Groups(['branch:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'empresa_id', referencedColumnName: 'empresa_id', nullable: false)]
-    private ?Company $company = null;
+    private Company $company;
 
     /**
      * @var Collection<int, Warehouse>

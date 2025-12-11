@@ -34,11 +34,11 @@ class ProductStock
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column]
-    private ?int $stock = 0;
+    private int $stock = 0;
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'min_stock')]
-    private ?int $minStock = 0;
+    private int $minStock = 0;
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'created_at')]
@@ -82,7 +82,7 @@ class ProductStock
         return $this;
     }
 
-    public function getStock(): ?int
+    public function getStock(): int
     {
         return $this->stock;
     }
@@ -94,7 +94,7 @@ class ProductStock
         return $this;
     }
 
-    public function getMinStock(): ?int
+    public function getMinStock(): int
     {
         return $this->minStock;
     }

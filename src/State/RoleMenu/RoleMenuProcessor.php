@@ -40,15 +40,14 @@ readonly class RoleMenuProcessor implements ProcessorInterface
                 ['roleId' => $roleId]
             );
 
-            $insertStmt = $this->connection->prepare(
-                'INSERT INTO menu_rol (menu_id, role_id) VALUES (:menuId, :roleId)'
-            );
-
             foreach ($data->permissions as $menuId) {
-                $insertStmt->executeStatement([
-                    'menuId' => $menuId,
-                    'roleId' => $roleId,
-                ]);
+                $this->connection->executeStatement(
+                    'INSERT INTO menu_rol (menu_id, role_id) VALUES (:menuId, :roleId)',
+                    [
+                        'menuId' => $menuId,
+                        'roleId' => $roleId,
+                    ]
+                );
             }
 
             $this->connection->commit();

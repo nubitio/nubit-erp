@@ -270,7 +270,7 @@ readonly class DashboardRepository
                 'total' => (float) $row['total'],
             ], $paymentMethodShare),
             'paymentMethodTrend' => [
-                'methods' => array_values(array_keys($methods)),
+                'methods' => array_keys($methods),
                 'points' => array_values($paymentTrendPivot),
             ],
             'topProducts' => array_map(static fn (array $row): array => [

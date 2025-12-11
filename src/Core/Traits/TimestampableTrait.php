@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Core\Traits;
 
-use DateTimeInterface;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 trait TimestampableTrait
 {
     #[ORM\Column(name: 'created_at', type: 'datetime')]
-    private ?DateTimeInterface $createdAt = null;
+    private DateTimeInterface $createdAt;
 
-    #[ORM\Column(name: 'updated_at', type: 'datetime')]
+    #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?DateTimeInterface $updatedAt = null;
 
     public function getCreatedAt(): ?DateTimeInterface
@@ -43,13 +43,7 @@ trait TimestampableTrait
     #[ORM\PrePersist]
     public function updateTimestampsOnPersist(): void
     {
-        if ($this->createdAt === null) {
-            $this->createdAt = new DateTime();
-        }
-
-        if ($this->updatedAt === null) {
-            $this->updatedAt = new DateTime();
-        }
+        $this->createdAt = new DateTime();
     }
 
     #[ORM\PreUpdate]

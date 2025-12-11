@@ -26,16 +26,16 @@ class VoucherSeries
     #[Groups(['voucher_series:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id', nullable: false)]
-    private ?Branch $branch = null;
+    private Branch $branch;
 
     #[Groups(['voucher_series:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'codigo', nullable: false)]
-    private ?VoucherType $voucherType = null;
+    private VoucherType $voucherType;
 
     #[Groups(['voucher_series:read'])]
     #[ORM\Column(name: 'serie', length: 6)]
-    private ?string $series = null;
+    private string $series;
 
     #[Groups(['voucher_series:read'])]
     #[ORM\Column(name: 'serie_asociada', length: 6, nullable: true)]
@@ -46,31 +46,31 @@ class VoucherSeries
         return $this->id;
     }
 
-    public function getBranch(): ?Branch
+    public function getBranch(): Branch
     {
         return $this->branch;
     }
 
-    public function setBranch(?Branch $branch): static
+    public function setBranch(Branch $branch): static
     {
         $this->branch = $branch;
 
         return $this;
     }
 
-    public function getVoucherType(): ?VoucherType
+    public function getVoucherType(): VoucherType
     {
         return $this->voucherType;
     }
 
-    public function setVoucherType(?VoucherType $voucherType): static
+    public function setVoucherType(VoucherType $voucherType): static
     {
         $this->voucherType = $voucherType;
 
         return $this;
     }
 
-    public function getSeries(): ?string
+    public function getSeries(): string
     {
         return $this->series;
     }

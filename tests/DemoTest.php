@@ -8,6 +8,6 @@ class DemoTest extends TestCase
 {
     public function testDemo(): void
     {
-        $this->assertTrue(true);
+        self::assertDirectoryExists(__DIR__ . '/../src');
     }
 }

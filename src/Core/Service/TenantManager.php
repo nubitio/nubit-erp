@@ -62,7 +62,7 @@ readonly class TenantManager
 
         $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
 
-        $this->writeTenants(array_values($data));
+        $this->writeTenants($data);
     }
 
     public function updateTenant(int $id, array $tenant): void
