@@ -2,6 +2,9 @@
 
 namespace App\Billing\Domain;
 
+use DateTime;
+use NumberFormatter;
+use DateMalformedStringException;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
@@ -24,29 +27,29 @@ readonly class BillCreateUseCase
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      * @throws Exception
      * @throws ExceptionInterface
      */
     public function __invoke(string $saleId): Invoice
     {
         $voucher = $this->invoiceRepository->getVoucher($saleId);
-        $customerAddress = (new Address())
+        $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
 
-        $customer = (new Client())
+        $customer = new Client()
             ->setTipoDoc(strval($voucher->customer_doc_type))
             ->setNumDoc(strval($voucher->customer_doc_number))
             ->setRznSocial(strval($voucher->customer_name))
             ->setAddress($customerAddress);
 
-        $bill = (new Invoice())
+        $bill = new Invoice()
             ->setUblVersion('2.1')
             ->setTipoOperacion('0101')
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerie(strval($voucher->voucher_series))
             ->setCorrelativo(strval($voucher->voucher_number))
-            ->setFechaEmision(new \DateTime(strval($voucher->voucher_date)))
+            ->setFechaEmision(new DateTime(strval($voucher->voucher_date)))
             ->setFormaPago(
                 2 == $voucher->voucher_payment_method ? new FormaPagoCredito(
                     $voucher->voucher_sale_amount
@@ -64,17 +67,17 @@ readonly class BillCreateUseCase
             ->setCompany($this->billUtils->getCompany());
 
         if (2 == $voucher->voucher_payment_method) {
-            $paymentDate = (new \DateTime(strval($voucher->voucher_date)))->modify('+1 month');
+            $paymentDate = new DateTime(strval($voucher->voucher_date))->modify('+1 month');
 
             $bill->setCuotas([
-                (new Cuota())
+                new Cuota()
                     ->setFechaPago($paymentDate)
                     ->setMonto(floatval($voucher->voucher_sale_amount)),
             ]);
         }
 
         if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
-            $charge = (new Charge())
+            $charge = new Charge()
                 ->setCodTipo('46')
                 ->setMontoBase(floatval($voucher->voucher_consumption_surcharge_amount))
                 ->setFactor(1)
@@ -83,7 +86,7 @@ readonly class BillCreateUseCase
         }
 
         if (floatval($voucher->voucher_discount_amount) > 0) {
-            $charge = (new Charge())
+            $charge = new Charge()
                 ->setCodTipo('02')
                 ->setMontoBase(floatval($voucher->voucher_discount_amount))
                 ->setFactor(1)
@@ -94,7 +97,7 @@ readonly class BillCreateUseCase
         $details = [];
 
         foreach ($voucher->voucher_items as $item) {
-            $detail = (new SaleDetail())
+            $detail = new SaleDetail()
                 ->setCodProducto(strval($item->product_code))
                 ->setUnidad($item->product_uom ?? 'NIU')
                 ->setCantidad(floatval($item->quantity))
@@ -110,12 +113,12 @@ readonly class BillCreateUseCase
             $details[] = $detail;
         }
 
-        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
+        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
         $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
-        $legend = (new Legend())
+        $legend = new Legend()
             ->setCode('1000')
             ->setValue($strTotal);
 

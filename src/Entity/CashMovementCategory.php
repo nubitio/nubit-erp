@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use RuntimeException;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementCategoryRepository;
@@ -12,21 +13,30 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'cash_movement_category', uniqueConstraints: [new ORM\UniqueConstraint(columns: ['code'])])]
 #[ApiResource(
     exceptionToStatus: [
-        \RuntimeException::class => 400,
+        RuntimeException::class => 400,
     ],
 )]
 #[ORM\HasLifecycleCallbacks]
 class CashMovementCategory
 {
     public const CASH_SALE = 'cash_sale';
+
     public const CREDIT_PAYMENT = 'credit_payment';
+
     public const CASH_REPLENISHMENT = 'cash_replenishment';
+
     public const OTHER_INCOME = 'other_income';
+
     public const OVERAGE_ADJUSTMENT = 'overage_adjustment';
+
     public const PETTY_CASH_EXPENSE = 'petty_cash_expense';
+
     public const CUSTOMER_REFUND = 'customer_refund';
+
     public const MANAGER_WITHDRAWAL = 'manager_withdrawal';
+
     public const BANK_DEPOSIT = 'bank_deposit';
+
     public const SHORTAGE_ADJUSTMENT = 'shortage_adjustment';
 
     #[ORM\Id]
@@ -122,7 +132,7 @@ class CashMovementCategory
     public function preventDeletionForSystem(): void
     {
         if ($this->isSystem) {
-            throw new \RuntimeException('No se puede eliminar una categoría del sistema.');
+            throw new RuntimeException('No se puede eliminar una categoría del sistema.');
         }
     }
 
@@ -130,7 +140,7 @@ class CashMovementCategory
     public function preventUpdateForSystem(): void
     {
         if ($this->isSystem) {
-            throw new \RuntimeException('No se puede modificar una categoría del sistema.');
+            throw new RuntimeException('No se puede modificar una categoría del sistema.');
         }
     }
 }

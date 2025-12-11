@@ -2,7 +2,8 @@
 
 namespace App\Repository;
 
-use App\Dashboard\Domain\DashboardRepositoryInterface;
+use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\DBAL\Connection;
 
 readonly class DashboardRepository
@@ -17,7 +18,7 @@ readonly class DashboardRepository
      */
     public function getOverview(string $branchId): array
     {
-        $today = new \DateTimeImmutable('now', new \DateTimeZone('America/Lima'));
+        $today = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
         $currentYear = (int) $today->format('Y');
         $currentMonth = (int) $today->format('n');
         $previousMonthDate = $today->modify('first day of last month');
@@ -249,55 +250,44 @@ readonly class DashboardRepository
                     'date' => $row['date_value'],
                 ];
             }
+
             $paymentTrendPivot[$key][$row['method']] = (float) $row['total'];
         }
 
         return [
             'summary' => $summaryData,
-            'salesByDay' => array_map(static function (array $row): array {
-                return [
-                    'day' => (int) $row['day'],
-                    'label' => $row['day_name'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $salesByDay),
-            'salesByMonth' => array_map(static function (array $row): array {
-                return [
-                    'label' => $row['label'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $salesByMonth),
-            'paymentMethods' => array_map(static function (array $row): array {
-                return [
-                    'method' => $row['method'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $paymentMethodShare),
+            'salesByDay' => array_map(static fn (array $row): array => [
+                'day' => (int) $row['day'],
+                'label' => $row['day_name'],
+                'total' => (float) $row['total'],
+            ], $salesByDay),
+            'salesByMonth' => array_map(static fn (array $row): array => [
+                'label' => $row['label'],
+                'total' => (float) $row['total'],
+            ], $salesByMonth),
+            'paymentMethods' => array_map(static fn (array $row): array => [
+                'method' => $row['method'],
+                'total' => (float) $row['total'],
+            ], $paymentMethodShare),
             'paymentMethodTrend' => [
                 'methods' => array_values(array_keys($methods)),
                 'points' => array_values($paymentTrendPivot),
             ],
-            'topProducts' => array_map(static function (array $row): array {
-                return [
-                    'product' => $row['product'],
-                    'quantity' => (float) $row['quantity'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $topProducts),
-            'topCustomers' => array_map(static function (array $row): array {
-                return [
-                    'customer' => $row['customer'],
-                    'invoices' => (int) $row['invoices'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $topCustomers),
-            'voucherTypes' => array_map(static function (array $row): array {
-                return [
-                    'type' => $row['voucher_type'],
-                    'count' => (int) $row['count'],
-                    'total' => (float) $row['total'],
-                ];
-            }, $voucherTypeStats),
+            'topProducts' => array_map(static fn (array $row): array => [
+                'product' => $row['product'],
+                'quantity' => (float) $row['quantity'],
+                'total' => (float) $row['total'],
+            ], $topProducts),
+            'topCustomers' => array_map(static fn (array $row): array => [
+                'customer' => $row['customer'],
+                'invoices' => (int) $row['invoices'],
+                'total' => (float) $row['total'],
+            ], $topCustomers),
+            'voucherTypes' => array_map(static fn (array $row): array => [
+                'type' => $row['voucher_type'],
+                'count' => (int) $row['count'],
+                'total' => (float) $row['total'],
+            ], $voucherTypeStats),
             'lowStockProducts' => array_map(static function (array $row): array {
                 $fallbackMin = $row['min_stock'] > 0 ? $row['min_stock'] : 5;
                 return [

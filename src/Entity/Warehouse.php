@@ -61,7 +61,7 @@ class Warehouse
      * @var Collection<int, ProductStock>
      */
     #[Groups(['warehouse:read'])]
-    #[ORM\OneToMany(mappedBy: 'warehouse', targetEntity: ProductStock::class, cascade: [
+    #[ORM\OneToMany(targetEntity: ProductStock::class, mappedBy: 'warehouse', cascade: [
         'persist',
         'remove',
     ], orphanRemoval: true)]
@@ -121,11 +121,9 @@ class Warehouse
 
     public function removeProductStock(ProductStock $productStock): static
     {
-        if ($this->productStocks->removeElement($productStock)) {
-            // set the owning side to null (unless already changed)
-            if ($productStock->getWarehouse() === $this) {
-                $productStock->setWarehouse(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->productStocks->removeElement($productStock) && $productStock->getWarehouse() === $this) {
+            $productStock->setWarehouse(null);
         }
 
         return $this;

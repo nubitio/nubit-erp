@@ -2,13 +2,14 @@
 
 namespace App\State\CashRegister;
 
+use Override;
+use DateTimeImmutable;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Entity\CashShift;
-use App\Entity\PaymentMethod;
 use App\Entity\User;
 use App\Enum\CashShiftStatus;
 use Doctrine\DBAL\Exception;
@@ -30,7 +31,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
      *
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
@@ -71,7 +72,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             $cashShift->setExpectedAmount($expectedTotal);
             $cashShift->setCountedAmount($countedTotal);
             $cashShift->setDifference($differenceTotal);
-            $cashShift->setNote($notes ? implode('; ', $notes) : null);
+            $cashShift->setNote($notes !== [] ? implode('; ', $notes) : null);
             $cashShift->setStatus(CashShiftStatus::CLOSED);
             $cashShift->setClosedBy(
                 $this->entityManager->getReference(
@@ -79,7 +80,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                     $this->security->connectedUser()->userId
                 )
             );
-            $cashShift->setClosedAt(new \DateTimeImmutable());
+            $cashShift->setClosedAt(new DateTimeImmutable());
             $this->entityManager->persist($cashShift);
 
             $this->entityManager->flush();

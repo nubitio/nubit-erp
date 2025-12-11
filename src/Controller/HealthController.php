@@ -34,7 +34,7 @@ class HealthController extends BaseController
                 'checks' => [
                     'database' => $dbStatus,
                 ],
-                'timestamp' => (new DateTimeImmutable())->format(DATE_ATOM),
+                'timestamp' => new DateTimeImmutable()->format(DATE_ATOM),
             ],
             $statusCode
         );

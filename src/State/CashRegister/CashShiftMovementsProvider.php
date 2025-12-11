@@ -2,6 +2,7 @@
 
 namespace App\State\CashRegister;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\CashMovement;
@@ -17,7 +18,7 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $cashShiftId = $uriVariables['id'];

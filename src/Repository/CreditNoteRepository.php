@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use DateTimeInterface;
 use App\Entity\CreditNote;
 use App\Entity\Sale;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -55,7 +56,7 @@ class CreditNoteRepository extends ServiceEntityRepository
      *
      * @return CreditNote[]
      */
-    public function findByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
+    public function findByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): array
     {
         return $this->createQueryBuilder('cn')
             ->where('cn.fecha BETWEEN :startDate AND :endDate')
@@ -99,7 +100,7 @@ class CreditNoteRepository extends ServiceEntityRepository
     /**
      * Get total amount of credit notes in a date range
      */
-    public function getTotalByDateRange(\DateTimeInterface $startDate, \DateTimeInterface $endDate): float
+    public function getTotalByDateRange(DateTimeInterface $startDate, DateTimeInterface $endDate): float
     {
         $result = $this->createQueryBuilder('cn')
             ->select('SUM(cn.total)')

@@ -2,6 +2,9 @@
 
 namespace App\Command;
 
+use Override;
+use Exception;
+use RuntimeException;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -18,10 +21,9 @@ use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
-#[AsCommand(
-    name: 'notify:daily-summary',
-    description: 'Send daily summary to all customers'
-)]
+#[AsCommand(name: 'notify:daily-summary', description: 'Send daily summary to all customers', help: <<<'TXT'
+Send daily summary to all customers
+TXT)]
 class SendDailySummaryCommand extends TenantAwareCommand
 {
     public function __construct(
@@ -33,11 +35,10 @@ class SendDailySummaryCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp('Send daily summary to all customers');
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -93,11 +94,11 @@ class SendDailySummaryCommand extends TenantAwareCommand
             $io->success('Daily summary sent successfully');
 
             return Command::SUCCESS;
-        } catch (\Exception $e) {
+        } catch (Exception $exception) {
             $this->logger->error('Error sending daily summary', [
-                'exception' => $e,
+                'exception' => $exception,
             ]);
-            $io->error('Error sending daily summary: ' . $e->getMessage());
+            $io->error('Error sending daily summary: ' . $exception->getMessage());
 
             return Command::FAILURE;
         }
@@ -133,7 +134,7 @@ class SendDailySummaryCommand extends TenantAwareCommand
 
         $dateString = date('d de MMMM de Y');
 
-        $url = "https://api.bird.com/workspaces/{$workspaceId}/channels/{$channelId}/messages";
+        $url = sprintf('https://api.bird.com/workspaces/%s/channels/%s/messages', $workspaceId, $channelId);
 
         $data = [
             'receiver' => [
@@ -205,8 +206,8 @@ class SendDailySummaryCommand extends TenantAwareCommand
             $statusCode = $response->getStatusCode();
             $content = $response->getContent();
 
-            $io->note("Bird API response: Status {$statusCode}");
-            $io->note("Response content: {$content}");
+            $io->note('Bird API response: Status ' . $statusCode);
+            $io->note('Response content: ' . $content);
 
             if ($statusCode >= 200 && $statusCode < 300) {
                 $this->logger->info('Daily summary sent successfully to Bird API', [
@@ -228,7 +229,7 @@ class SendDailySummaryCommand extends TenantAwareCommand
             $this->logger->error('Error sending request to Bird API', [
                 'exception' => $e,
             ]);
-            throw new \RuntimeException('Error sending request to Bird API: ' . $e->getMessage(), 0, $e);
+            throw new RuntimeException('Error sending request to Bird API: ' . $e->getMessage(), 0, $e);
         }
     }
 }

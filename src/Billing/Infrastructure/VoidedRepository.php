@@ -2,6 +2,7 @@
 
 namespace App\Billing\Infrastructure;
 
+use Override;
 use App\Billing\Domain\VoidedRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
 use Doctrine\DBAL\Connection;
@@ -25,7 +26,7 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
     /**
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function getLastCorrelativeByDate(string $date): int
     {
         $sql = 'SELECT COUNT(*) AS correlative FROM vw_movimiento WHERE estado = 2 AND fecha = ?';
@@ -46,7 +47,7 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function voidInvoice(Voided $voided): SummaryResponse
     {
         $httpClient = HttpClient::create();
@@ -71,7 +72,7 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
      * @throws ClientExceptionInterface
      * @throws ExceptionInterface
      */
-    #[\Override]
+    #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
         $httpClient = HttpClient::create();

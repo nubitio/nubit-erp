@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
@@ -81,11 +82,11 @@ class CashShift
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column]
-    private ?\DateTimeImmutable $openedAt = null;
+    private ?DateTimeImmutable $openedAt = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $closedAt = null;
+    private ?DateTimeImmutable $closedAt = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
@@ -180,24 +181,24 @@ class CashShift
         return $this;
     }
 
-    public function getOpenedAt(): ?\DateTimeImmutable
+    public function getOpenedAt(): ?DateTimeImmutable
     {
         return $this->openedAt;
     }
 
-    public function setOpenedAt(\DateTimeImmutable $openedAt): static
+    public function setOpenedAt(DateTimeImmutable $openedAt): static
     {
         $this->openedAt = $openedAt;
 
         return $this;
     }
 
-    public function getClosedAt(): ?\DateTimeImmutable
+    public function getClosedAt(): ?DateTimeImmutable
     {
         return $this->closedAt;
     }
 
-    public function setClosedAt(?\DateTimeImmutable $closedAt): static
+    public function setClosedAt(?DateTimeImmutable $closedAt): static
     {
         $this->closedAt = $closedAt;
 

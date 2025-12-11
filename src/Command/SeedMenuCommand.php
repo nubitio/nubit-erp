@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Override;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -12,10 +13,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:seed:menu',
-    description: 'Seed menu items (idempotent).'
-)]
+#[AsCommand(name: 'app:seed:menu', description: 'Seed menu items (idempotent).', help: <<<'TXT'
+Seed menu items (idempotent).
+TXT)]
 class SeedMenuCommand extends TenantAwareCommand
 {
     public function __construct(
@@ -27,13 +27,13 @@ class SeedMenuCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp('Seed menu items (idempotent).');
     }
 
-    #[\Override]
+    #[Override]
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);

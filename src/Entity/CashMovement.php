@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
@@ -47,7 +48,7 @@ class CashMovement
     private ?string $description = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     public function getId(): ?int
     {
@@ -74,7 +75,7 @@ class CashMovement
     public function setCategory(CashMovementCategory $category): static
     {
         $this->category = $category;
-        if ($category->getType()) {
+        if ($category->getType() instanceof CashMovementType) {
             $this->type = $category->getType();
         }
 
@@ -117,12 +118,12 @@ class CashMovement
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
@@ -132,8 +133,8 @@ class CashMovement
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        if (null === $this->createdAt) {
-            $this->createdAt = new \DateTimeImmutable();
+        if (!$this->createdAt instanceof DateTimeImmutable) {
+            $this->createdAt = new DateTimeImmutable();
         }
     }
 }

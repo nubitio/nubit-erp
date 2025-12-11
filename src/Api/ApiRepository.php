@@ -2,6 +2,7 @@
 
 namespace App\Api;
 
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\Uid\Uuid;
@@ -139,6 +140,7 @@ class ApiRepository
         if ($data !== []) {
             return $data[0];
         }
+
         return null;
     }
 
@@ -213,6 +215,7 @@ class ApiRepository
         if ($data !== []) {
             return $data[0];
         }
+
         return null;
     }
 
@@ -291,6 +294,7 @@ class ApiRepository
         if ($data !== []) {
             return $data[0];
         }
+
         return null;
     }
 
@@ -393,6 +397,7 @@ SQL;
 
             return $data[0];
         }
+
         return null;
     }
 
@@ -438,7 +443,7 @@ SQL;
             [$series[0]['serie']]
         );
         $sale['movimiento_id'] = $uuid;
-        $sale['fecha'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $sale['fecha'] = new DateTimeImmutable()->format('Y-m-d H:i:s');
         $sale['tipo_id'] = 2;
         $sale['operacion_id'] = $operation[0]['operacion_id'];
         $sale['almacen_id'] = $warehouse[0]['almacen_id'];
@@ -526,6 +531,7 @@ SQL;
         if ($data !== []) {
             return $data[0];
         }
+
         return null;
     }
 

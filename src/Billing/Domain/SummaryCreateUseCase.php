@@ -2,6 +2,8 @@
 
 namespace App\Billing\Domain;
 
+use DateTime;
+use Exception;
 use App\Billing\Model\Response\SummaryResponse;
 use App\Repository\InvoiceRepository;
 use Greenter\Model\Summary\Summary;
@@ -18,13 +20,13 @@ readonly class SummaryCreateUseCase
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      * @throws ExceptionInterface
      */
     public function __invoke(string $saleId): SummaryResponse
     {
         $voucher = $this->invoiceRepository->getVoucher($saleId);
-        $summaryDetail = (new SummaryDetail())
+        $summaryDetail = new SummaryDetail()
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerieNro($voucher->voucher_series . '-' . $voucher->voucher_number)
             ->setEstado('3')
@@ -39,10 +41,10 @@ readonly class SummaryCreateUseCase
 
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
 
-        $summary = (new Summary())
+        $summary = new Summary()
             ->setCorrelativo((string)($lastCorrelative + 1))
-            ->setFecGeneracion(new \DateTime(strval($voucher->voucher_date)))
-            ->setFecResumen(new \DateTime(strval($voucher->voucher_date)))
+            ->setFecGeneracion(new DateTime(strval($voucher->voucher_date)))
+            ->setFecResumen(new DateTime(strval($voucher->voucher_date)))
             ->setCompany($this->invoiceUtils->getCompany())
             ->setDetails([$summaryDetail]);
         $response = $this->summaryRepository->createSummary($summary);

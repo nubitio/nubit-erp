@@ -2,6 +2,7 @@
 
 namespace App\State\PriceList;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
@@ -23,15 +24,13 @@ readonly class PriceListProcessor implements ProcessorInterface
      *
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
     ): ApiResponse {
-        $priceListId = $data->priceListId;
-
         $sql = <<<SQL
 INSERT INTO price_list_detail (product_id, price_list_id, price)
 VALUES (:productId, :priceListId, :price)
@@ -43,11 +42,7 @@ SQL;
             $insertStmt = $this->connection->prepare($sql);
 
             foreach ($data->prices as $price) {
-                $insertStmt->executeStatement([
-                    'productId' => $price->productId,
-                    'priceListId' => $priceListId,
-                    'price' => $price->price,
-                ]);
+                $insertStmt->executeStatement();
             }
 
             $this->connection->commit();

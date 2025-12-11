@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
+use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-final class JWTManager
+final readonly class JWTManager
 {
     private const string JWT_ALGORITHM = 'HS256';
 
     public function __construct(
-        private readonly string $secret,
+        private string $secret,
     ) {
     }
 
@@ -35,7 +36,7 @@ final class JWTManager
         try {
             $this->decode($token);
             return true;
-        } catch (\Exception) {
+        } catch (Exception) {
             return false;
         }
     }
@@ -50,7 +51,7 @@ final class JWTManager
             }
 
             return time() > $payload['exp'];
-        } catch (\Exception) {
+        } catch (Exception) {
             return true;
         }
     }

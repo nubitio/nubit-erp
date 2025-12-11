@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeImmutable;
 use App\Repository\RefreshTokenRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -27,17 +28,17 @@ class RefreshToken
     private User $user;
 
     #[ORM\Column(name: 'expires_at', type: 'datetime_immutable')]
-    private \DateTimeImmutable $expiresAt;
+    private DateTimeImmutable $expiresAt;
 
     #[ORM\Column(name: 'revoked_at', type: 'datetime_immutable', nullable: true)]
-    private ?\DateTimeImmutable $revokedAt = null;
+    private ?DateTimeImmutable $revokedAt = null;
 
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
-    private \DateTimeImmutable $createdAt;
+    private DateTimeImmutable $createdAt;
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
+        $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -81,38 +82,38 @@ class RefreshToken
         return $this;
     }
 
-    public function getExpiresAt(): \DateTimeImmutable
+    public function getExpiresAt(): DateTimeImmutable
     {
         return $this->expiresAt;
     }
 
-    public function setExpiresAt(\DateTimeImmutable $expiresAt): self
+    public function setExpiresAt(DateTimeImmutable $expiresAt): self
     {
         $this->expiresAt = $expiresAt;
 
         return $this;
     }
 
-    public function getRevokedAt(): ?\DateTimeImmutable
+    public function getRevokedAt(): ?DateTimeImmutable
     {
         return $this->revokedAt;
     }
 
-    public function setRevokedAt(?\DateTimeImmutable $revokedAt): self
+    public function setRevokedAt(?DateTimeImmutable $revokedAt): self
     {
         $this->revokedAt = $revokedAt;
 
         return $this;
     }
 
-    public function revoke(\DateTimeImmutable $revokedAt): self
+    public function revoke(DateTimeImmutable $revokedAt): self
     {
         $this->revokedAt = $revokedAt;
 
         return $this;
     }
 
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

@@ -24,7 +24,7 @@ readonly class InvoiceCalculator
         $discountAmount = $subtotal * $this->discountPercentage / 100;
         $total = $taxedAmount + $tax + $chargesAmount;
 
-        return (new InvoiceAmounts())
+        return new InvoiceAmounts()
             ->setSubtotal($subtotal)
             ->setTaxedAmount($taxedAmount)
             ->setDiscountAmount($discountAmount)

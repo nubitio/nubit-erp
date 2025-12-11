@@ -2,6 +2,7 @@
 
 namespace App\Core\EventListener;
 
+use Throwable;
 use App\Core\Service\TenantConnectionSwitcher;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -42,10 +43,10 @@ readonly class TenantListener
         try {
             $request->headers->set('tenant', $subdomain);
             $this->tenantConnectionSwitcher->switchConnection($subdomain);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             throw new BadRequestHttpException(
-                sprintf('Invalid tenant "%s": %s', $subdomain, $exception->getMessage()),
-                $exception
+                sprintf('Invalid tenant "%s": %s', $subdomain, $throwable->getMessage()),
+                $throwable
             );
         }
     }

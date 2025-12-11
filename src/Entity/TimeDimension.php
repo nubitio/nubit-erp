@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use App\Repository\TimeDimensionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -14,7 +15,7 @@ class TimeDimension
     private ?int $id = null;
 
     #[ORM\Column(type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date = null;
+    private ?DateTimeInterface $date = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $year = null;
@@ -58,12 +59,12 @@ class TimeDimension
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?DateTimeInterface
     {
         return $this->date;
     }
 
-    public function setDate(?\DateTimeInterface $date): static
+    public function setDate(?DateTimeInterface $date): static
     {
         $this->date = $date;
 

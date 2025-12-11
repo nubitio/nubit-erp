@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\Sale;
+use DateTime;
 use App\Billing\Domain\NoteCreateUseCase;
 use App\Billing\Domain\NotePdfUseCase;
 use App\Billing\Domain\NoteSendUseCase;
@@ -42,7 +44,7 @@ readonly class CreditNoteService
     {
         // Validate credit note before sending
         $errors = $this->validate($creditNote);
-        if (!empty($errors)) {
+        if ($errors !== []) {
             throw new ServiceException('Validation errors: ' . implode(', ', $errors));
         }
 
@@ -58,7 +60,7 @@ readonly class CreditNoteService
         $creditNote->setDigest($response->hash ?? null);
 
         // Save XML file
-        if (!empty($response->xml)) {
+        if (isset($response->xml) && ($response->xml !== '' && $response->xml !== '0')) {
             $companyId = $this->companyContext->getId();
             $this->fileManager->write(
                 $companyId . '/' . $response->name . '.xml',
@@ -72,7 +74,7 @@ readonly class CreditNoteService
             $creditNote->setMensajeSunat($response->sunatResponse->getCdrResponse()?->getDescription() ?? 'Aceptado');
 
             // Save CDR (Constancia de Recepción)
-            if (!empty($response->sunatResponse->getCdrZip())) {
+            if (!in_array($response->sunatResponse->getCdrZip(), [null, '', '0'], true)) {
                 $cdr = base64_decode($response->sunatResponse->getCdrZip());
                 $companyId = $this->companyContext->getId();
                 $this->fileManager->write(
@@ -135,11 +137,11 @@ readonly class CreditNoteService
     /**
      * Create a credit note from sale
      */
-    public function createFromSale($sale, array $data): CreditNote
+    public function createFromSale(?Sale $sale, array $data): CreditNote
     {
         $creditNote = new CreditNote();
         $creditNote->setSale($sale);
-        $creditNote->setFecha($data['fecha'] ?? new \DateTime());
+        $creditNote->setFecha($data['fecha'] ?? new DateTime());
         $creditNote->setTipoId($data['tipo_id'] ?? '07'); // 07 = Nota de crédito
         $creditNote->setCodigoMotivo($data['codigo_motivo'] ?? '01');
         $creditNote->setDescripcionMotivo($data['descripcion_motivo'] ?? '');
@@ -160,7 +162,7 @@ readonly class CreditNoteService
     {
         $errors = [];
 
-        if (!$creditNote->getSale()) {
+        if (!$creditNote->getSale() instanceof Sale) {
             $errors[] = 'La nota de crédito debe estar asociada a una venta';
         }
 

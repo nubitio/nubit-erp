@@ -2,25 +2,17 @@
 
 namespace App\Core\Extension;
 
+use Twig\Attribute\AsTwigFunction;
 use App\Core\Service\SettingsService;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
 
-class SettingsExtension extends AbstractExtension
+class SettingsExtension
 {
     public function __construct(
         private readonly SettingsService $settingsService,
     ) {
     }
 
-    #[\Override]
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('setting', $this->getSetting(...)),
-        ];
-    }
-
+    #[AsTwigFunction('setting')]
     public function getSetting(string $settingName): mixed
     {
         $version = 'dev';

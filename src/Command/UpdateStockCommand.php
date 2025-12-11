@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use Override;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -18,10 +19,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(
-    name: 'app:update-stock',
-    description: 'Update stock for all products'
-)]
+#[AsCommand(name: 'app:update-stock', description: 'Update stock for all products', help: <<<'TXT'
+This command allows you to update stock for all products
+TXT)]
 #[AsCronTask(expression: '0 0 * * *')]
 class UpdateStockCommand extends TenantAwareCommand
 {
@@ -35,16 +35,13 @@ class UpdateStockCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp(
-            'This command allows you to update stock for all products'
-        );
     }
 
-    #[\Override]
+    #[Override]
     protected function executeTenantCommand(
         InputInterface $input,
         OutputInterface $output,
@@ -59,7 +56,7 @@ class UpdateStockCommand extends TenantAwareCommand
         $products = $this->entityManager->getRepository(Product::class)->findAll();
         $warehouses = $this->entityManager->getRepository(Warehouse::class)->findAll();
 
-        if (empty($warehouses)) {
+        if ($warehouses === []) {
             $io->warning('No warehouses found. Skipping stock update.');
             return Command::SUCCESS;
         }

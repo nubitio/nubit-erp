@@ -2,6 +2,7 @@
 
 namespace App\Receipt\Domain;
 
+use Doctrine\DBAL\Exception;
 use App\Billing\Domain\FileResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
@@ -23,7 +24,7 @@ readonly class ReceiptXmlUseCase
 
     /**
      * @throws ServiceException
-     * @throws FilesystemException|\Doctrine\DBAL\Exception
+     * @throws FilesystemException|Exception
      * @throws ExceptionInterface
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
@@ -35,7 +36,7 @@ readonly class ReceiptXmlUseCase
     }
 
     /**
-     * @throws FilesystemException|\Doctrine\DBAL\Exception
+     * @throws FilesystemException|Exception
      * @throws ExceptionInterface
      */
     public function getXmlForInvoice(string $id): FileResponse
@@ -54,7 +55,7 @@ readonly class ReceiptXmlUseCase
 
     /**
      * @throws ServiceException
-     * @throws FilesystemException|\Doctrine\DBAL\Exception
+     * @throws FilesystemException|Exception
      */
     public function getXmlForNote(string $id): FileResponse
     {

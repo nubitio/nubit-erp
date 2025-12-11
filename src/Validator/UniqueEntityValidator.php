@@ -26,7 +26,7 @@ final class UniqueEntityValidator extends ConstraintValidator
 
         $fields = $constraint->fields;
 
-        $entityClass = get_class($value);
+        $entityClass = $value::class;
 
         $qb = $this->entityManager->createQueryBuilder();
         $qb->select('e')
@@ -35,7 +35,7 @@ final class UniqueEntityValidator extends ConstraintValidator
         $propertyAccessor = new PropertyAccessor();
 
         foreach ($fields as $field) {
-            $qb->andWhere("e.$field = :$field")
+            $qb->andWhere(sprintf('e.%s = :%s', $field, $field))
                 ->setParameter($field, $propertyAccessor->getValue($value, $field));
         }
 
@@ -47,11 +47,11 @@ final class UniqueEntityValidator extends ConstraintValidator
         $metadata = $this->entityManager->getClassMetadata($entityClass);
         $identifierValues = $metadata->getIdentifierValues($value);
 
-        if (!empty($identifierValues)) {
+        if ($identifierValues !== []) {
             $identifierField = $metadata->getSingleIdentifierFieldName();
             $identifierValue = reset($identifierValues);
 
-            $qb->andWhere("e.$identifierField != :entityId")
+            $qb->andWhere(sprintf('e.%s != :entityId', $identifierField))
                 ->setParameter('entityId', $identifierValue);
         }
 

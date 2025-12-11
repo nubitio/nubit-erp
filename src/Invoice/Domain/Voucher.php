@@ -2,6 +2,7 @@
 
 namespace App\Invoice\Domain;
 
+use NumberFormatter;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
 class Voucher
@@ -47,7 +48,7 @@ class Voucher
     #[SerializedName('voucher_sale_amount_text')]
     public function getVoucherTotalText(): string
     {
-        $formatter = new \NumberFormatter('es', \NumberFormatter::SPELLOUT);
+        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
         $parts = explode('.', number_format($this->voucher_sale_amount ?? 0, 2, '.', ''));
         $amount = $formatter->format((int) $parts[0]);
 

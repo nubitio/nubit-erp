@@ -2,6 +2,8 @@
 
 namespace App\Admin\Tenant;
 
+use InvalidArgumentException;
+use RuntimeException;
 use App\Core\Service\TenantManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,9 +54,9 @@ class TenantController extends AbstractController
         try {
             $this->tenantManager->addTenant($tenant);
             $this->addFlash('success', 'Tenant created');
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             $this->addFlash('error', 'Unable to save tenants: ' . $exception->getMessage());
         }
 
@@ -72,9 +74,9 @@ class TenantController extends AbstractController
         try {
             $this->tenantManager->updateTenant($id, $tenant);
             $this->addFlash('success', 'Tenant updated');
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
-        } catch (\RuntimeException $exception) {
+        } catch (RuntimeException $exception) {
             $this->addFlash('error', 'Unable to save tenants: ' . $exception->getMessage());
         }
 

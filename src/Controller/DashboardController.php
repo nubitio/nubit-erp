@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Dto\Auth\AuthUserDTO;
 use App\Core\Application\Session\Security;
 use App\Repository\DashboardRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,7 +21,7 @@ class DashboardController extends AbstractController
         $type = $request->attributes->get('type');
         $user = $security->connectedUser();
 
-        if (!$user) {
+        if (!$user instanceof AuthUserDTO) {
             return $this->json([]);
         }
 

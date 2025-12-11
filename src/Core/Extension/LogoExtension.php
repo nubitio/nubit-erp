@@ -2,29 +2,21 @@
 
 namespace App\Core\Extension;
 
+use Twig\Attribute\AsTwigFunction;
 use App\Core\Service\LogoProvider;
 use Doctrine\DBAL\Exception;
-use Twig\Extension\AbstractExtension;
-use Twig\TwigFunction;
 
-class LogoExtension extends AbstractExtension
+class LogoExtension
 {
     public function __construct(
         private readonly LogoProvider $logoProvider,
     ) {
     }
 
-    #[\Override]
-    public function getFunctions(): array
-    {
-        return [
-            new TwigFunction('logo', $this->getLogo(...)),
-        ];
-    }
-
     /**
      * @throws Exception
      */
+    #[AsTwigFunction('logo')]
     public function getLogo(): string
     {
         return $this->logoProvider->__invoke();

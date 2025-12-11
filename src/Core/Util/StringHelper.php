@@ -46,9 +46,9 @@ final class StringHelper
     {
         $value = mb_strtolower($value);
         $value = preg_replace('/[^a-z0-9\s-]/', '', $value);
-        $value = preg_replace('/[\s-]+/', $separator, $value);
+        $value = preg_replace('/[\s-]+/', $separator, (string) $value);
 
-        return trim($value, $separator);
+        return trim((string) $value, $separator);
     }
 
     public static function camelCase(string $value): string
@@ -67,9 +67,9 @@ final class StringHelper
     public static function snakeCase(string $value): string
     {
         $value = preg_replace('/\s+/', '', ucwords($value));
-        $value = preg_replace('/(.)(?=[A-Z])/u', '$1_', $value);
+        $value = preg_replace('/(.)(?=[A-Z])/u', '$1_', (string) $value);
 
-        return mb_strtolower($value);
+        return mb_strtolower((string) $value);
     }
 
     public static function kebabCase(string $value): string

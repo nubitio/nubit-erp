@@ -2,6 +2,7 @@
 
 namespace App\State\Setup;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Dto\Setup\InitialSetupInput;
@@ -22,7 +23,7 @@ readonly class SetupProcessor implements ProcessorInterface
      *
      * @throws Exception
      */
-    #[\Override]
+    #[Override]
     public function process(
         mixed $data,
         Operation $operation,

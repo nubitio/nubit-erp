@@ -2,6 +2,7 @@
 
 namespace App\State\Sale;
 
+use Override;
 use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
@@ -20,7 +21,7 @@ readonly class SaleProvider implements ProviderInterface
     /**
      * @inheritdoc
      */
-    #[\Override]
+    #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         if ($operation instanceof CollectionOperationInterface) {

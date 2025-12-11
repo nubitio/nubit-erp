@@ -27,7 +27,7 @@ readonly class ProductStockService
     {
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
-        return $productStock ? $productStock->getStock() : 0;
+        return $productStock instanceof ProductStock ? $productStock->getStock() : 0;
     }
 
     /**
@@ -40,7 +40,7 @@ readonly class ProductStockService
     ): ProductStock {
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
-        if (!$productStock) {
+        if (!$productStock instanceof ProductStock) {
             $productStock = new ProductStock();
             $productStock->setProduct($product);
             $productStock->setWarehouse($warehouse);

@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use Override;
+use Exception;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
@@ -13,10 +15,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(
-    name: 'app:sale:migrate',
-    description: 'Migrate sales',
-)]
+#[AsCommand(name: 'app:sale:migrate', description: 'Migrate sales', help: <<<'TXT'
+Actualiza valores de las ventas
+TXT)]
 class SaleMigrateCommand extends TenantAwareCommand
 {
     public function __construct(
@@ -28,11 +29,10 @@ class SaleMigrateCommand extends TenantAwareCommand
         parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
-    #[\Override]
+    #[Override]
     protected function configure(): void
     {
         parent::configure();
-        $this->setHelp('Actualiza valores de las ventas');
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -45,7 +45,7 @@ class SaleMigrateCommand extends TenantAwareCommand
             $io->success('Success');
 
             return Command::SUCCESS;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             $io->error('Error: ' . $exception->getMessage());
 
             return Command::FAILURE;

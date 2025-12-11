@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Customer
 {
     #[Assert\NotBlank]
-    #[Assert\Regex(pattern: '/^[0-9]{8,11}$/', message: 'El RUC/DNI debe contener entre 8 y 11 dígitos.')]
+    #[Assert\Regex(pattern: '/^\d{8,11}$/', message: 'El RUC/DNI debe contener entre 8 y 11 dígitos.')]
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]

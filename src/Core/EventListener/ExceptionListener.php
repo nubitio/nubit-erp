@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
+use Throwable;
 use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
 use App\Core\Exception\ValidationException;
@@ -59,7 +60,7 @@ final readonly class ExceptionListener
         $event->setResponse($response);
     }
 
-    private function getStatusCode(\Throwable $exception): int
+    private function getStatusCode(Throwable $exception): int
     {
         if ($exception instanceof NotFoundException) {
             return Response::HTTP_NOT_FOUND;

@@ -88,7 +88,7 @@ class Product
      * @var Collection<int, ProductStock>
      */
     #[Groups(['product:read'])]
-    #[ORM\OneToMany(mappedBy: 'product', targetEntity: ProductStock::class, cascade: [
+    #[ORM\OneToMany(targetEntity: ProductStock::class, mappedBy: 'product', cascade: [
         'persist',
         'remove',
     ], orphanRemoval: true)]
@@ -249,11 +249,9 @@ class Product
 
     public function removeStock(ProductStock $stock): static
     {
-        if ($this->stocks->removeElement($stock)) {
-            // set the owning side to null (unless already changed)
-            if ($stock->getProduct() === $this) {
-                $stock->setProduct(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->stocks->removeElement($stock) && $stock->getProduct() === $this) {
+            $stock->setProduct(null);
         }
 
         return $this;

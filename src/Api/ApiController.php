@@ -2,6 +2,13 @@
 
 namespace App\Api;
 
+use Exception;
+use App\Entity\Sale;
+use App\Service\InvoiceCalculator;
+use Symfony\Component\Uid\Uuid;
+use DateTimeImmutable;
+use DateTimeZone;
+use Throwable;
 use App\Repository\InvoiceRepository;
 use App\Repository\SaleRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,6 +52,7 @@ class ApiController extends AbstractController
         if (!$user) {
             return $this->json(['error' => 'Authentication failed'], Response::HTTP_FORBIDDEN);
         }
+
         if (1 == $user['estado'] && password_verify(strval($this->body['password']), strval($user['password']))) {
             $data = [
                 'iat' => time(),
@@ -252,7 +260,7 @@ class ApiController extends AbstractController
     {
         try {
             $data = $this->json($this->apiRepository->getAllSales($local_id));
-        } catch (\Exception) {
+        } catch (Exception) {
             $data = $this->json([]);
         }
 
@@ -264,9 +272,10 @@ class ApiController extends AbstractController
     {
         try {
             $result = $this->apiRepository->getOneSale($id);
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $result = null;
         }
+
         if ($result) {
             return $this->json($result);
         }
@@ -297,7 +306,7 @@ class ApiController extends AbstractController
                     } else {
                         $data['invoice_error'] = $invoiceResult['error'];
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $data['invoice_created'] = false;
                     $data['invoice_error'] = $e->getMessage();
                 }
@@ -314,7 +323,7 @@ class ApiController extends AbstractController
     {
         try {
             $data = $this->apiRepository->getImageProduct($id);
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $data = [['nombre' => 'No image']];
         }
 
@@ -333,7 +342,7 @@ class ApiController extends AbstractController
     {
         $sale = $this->saleRepository->find($saleId);
 
-        if (!$sale) {
+        if (!$sale instanceof Sale) {
             return ['success' => false, 'error' => 'Venta no encontrada.'];
         }
 
@@ -346,7 +355,7 @@ class ApiController extends AbstractController
             [$sale->getAlmacen()?->getId()]
         );
 
-        $invoiceCalculator = new \App\Service\InvoiceCalculator(
+        $invoiceCalculator = new InvoiceCalculator(
             floatval($sale->getSubtotal()),
             $sale->getDescuento() ?? 0.0,
             floatval($sale->getIgv()),
@@ -390,10 +399,10 @@ class ApiController extends AbstractController
             );
 
             $connection->insert('comprobante', [
-                'comprobante_id' => \Symfony\Component\Uid\Uuid::v4()->toRfc4122(),
+                'comprobante_id' => Uuid::v4()->toRfc4122(),
                 'raw_document_id' => null,
                 'movimiento_id' => $sale->getId(),
-                'fecha' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s'),
+                'fecha' => new DateTimeImmutable('now', new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
                 'tipo_comprobante_id' => $voucherType,
                 'serie' => $series,
                 'numero' => $nextNumber,
@@ -411,9 +420,9 @@ class ApiController extends AbstractController
             ]);
 
             $connection->commit();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             $connection->rollBack();
-            throw $exception;
+            throw $throwable;
         }
 
         $invoice = $this->invoiceRepository->findOneBy(['sale' => $saleId]);
@@ -422,6 +431,7 @@ class ApiController extends AbstractController
         $invoiceName = ($invoice?->getSeries() ?? '') . '-' . ($invoice?->getNumber() ?? '');
         $sale->setInvoice($invoiceName);
         $sale->setTotal($invoice?->getTotal());
+
         $this->entityManager->persist($sale);
         $this->entityManager->flush();
 

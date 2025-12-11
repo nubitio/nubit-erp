@@ -27,7 +27,7 @@ class Supplier
     private ?string $id = null;
 
     #[Assert\NotBlank]
-    #[Assert\Regex(pattern: '/^[0-9]{11}$/', message: 'El RUC debe contener 11 dígitos.')]
+    #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe contener 11 dígitos.')]
     #[ORM\Column(length: 11)]
     private ?string $ruc = null;
 

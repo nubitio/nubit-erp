@@ -2,6 +2,7 @@
 
 namespace App\Core\Symfony\Security;
 
+use Override;
 use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
@@ -17,13 +18,13 @@ final readonly class SecurityService implements Security
     ) {
     }
 
-    #[\Override]
+    #[Override]
     public function isAuthenticated(): bool
     {
         return $this->connectedUser() instanceof AuthUserDTO;
     }
 
-    #[\Override]
+    #[Override]
     public function connectedUser(): ?AuthUserDTO
     {
         $authenticatedUser = $this->security->getUser();

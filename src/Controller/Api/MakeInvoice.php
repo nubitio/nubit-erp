@@ -2,6 +2,9 @@
 
 namespace App\Controller\Api;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Throwable;
 use App\Core\Http\ApiResponse;
 use App\Repository\InvoiceRepository;
 use App\Repository\SaleRepository;
@@ -87,7 +90,7 @@ class MakeInvoice extends AbstractController
                 'comprobante_id' => Uuid::v4()->toRfc4122(),
                 'raw_document_id' => null,
                 'movimiento_id' => $sale->getId(),
-                'fecha' => (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y-m-d H:i:s'),
+                'fecha' => new DateTimeImmutable('now', new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
                 'tipo_comprobante_id' => $voucherType,
                 'serie' => $series,
                 'numero' => $nextNumber,
@@ -105,9 +108,9 @@ class MakeInvoice extends AbstractController
             ]);
 
             $connection->commit();
-        } catch (\Throwable $exception) {
+        } catch (Throwable $throwable) {
             $connection->rollBack();
-            throw $exception;
+            throw $throwable;
         }
 
         $invoice = $invoiceRepository->findOneBy(
@@ -117,6 +120,7 @@ class MakeInvoice extends AbstractController
         $sale->setHasInvoice(true);
         $sale->setInvoice(($invoice?->getSeries() ?? '') . '-' . ($invoice?->getNumber() ?? ''));
         $sale->setTotal($invoice?->getTotal());
+
         $entityManager->persist($sale);
         $entityManager->flush();
 

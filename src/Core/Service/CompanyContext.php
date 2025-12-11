@@ -2,6 +2,7 @@
 
 namespace App\Core\Service;
 
+use RuntimeException;
 use App\Entity\Company;
 use App\Repository\CompanyRepository;
 
@@ -22,7 +23,7 @@ class CompanyContext
 
         $company = $this->companyRepository->findOneBy([]);
         if (!$company instanceof Company) {
-            throw new \RuntimeException('Company is not configured');
+            throw new RuntimeException('Company is not configured');
         }
 
         $this->cached = $company;

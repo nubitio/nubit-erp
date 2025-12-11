@@ -85,7 +85,7 @@ readonly class InvoiceEmailUseCase
             'company_address' => $voucher->company_address,
         ]);
 
-        $email = (new Email())
+        $email = new Email()
             ->from('noreply@efact.app')
             ->to($voucher->customer_email ?: 'johangm90@gmail.com')
             ->cc(strval($this->settings->get('email_accounting') ?: 'johangm90@gmail.com'))

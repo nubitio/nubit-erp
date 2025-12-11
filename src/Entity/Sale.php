@@ -212,7 +212,7 @@ class Sale
     /**
      * @var Collection<int, SaleItem> $items
      */
-    #[ORM\OneToMany(mappedBy: 'movimiento', targetEntity: SaleItem::class, cascade: [
+    #[ORM\OneToMany(targetEntity: SaleItem::class, mappedBy: 'movimiento', cascade: [
         'persist',
         'remove',
     ], orphanRemoval: true)]
@@ -235,11 +235,9 @@ class Sale
 
     public function removeItem(SaleItem $item): static
     {
-        if ($this->items->removeElement($item)) {
-            // set the owning side to null (unless already changed)
-            if ($item->getMovimiento() === $this) {
-                $item->setMovimiento(null);
-            }
+        // set the owning side to null (unless already changed)
+        if ($this->items->removeElement($item) && $item->getMovimiento() === $this) {
+            $item->setMovimiento(null);
         }
 
         return $this;

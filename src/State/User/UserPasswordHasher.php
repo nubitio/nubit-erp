@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\State\User;
 
+use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\User;
@@ -22,7 +23,7 @@ final readonly class UserPasswordHasher implements ProcessorInterface
     /**
      * @param User $data
      */
-    #[\Override]
+    #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
         if (!$data->getPlainPassword()) {

@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Core\Base\BaseController;
 use App\Core\Service\XlsExporter;
 use App\Core\Symfony\Security\SecurityService;
 use Doctrine\DBAL\Connection;

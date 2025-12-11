@@ -2,6 +2,8 @@
 
 namespace App\Billing\Domain;
 
+use DateTime;
+use DateMalformedStringException;
 use App\Billing\Model\Response\SummaryResponse;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
@@ -18,14 +20,14 @@ readonly class VoidedCreateUseCase
     }
 
     /**
-     * @throws \DateMalformedStringException
+     * @throws DateMalformedStringException
      * @throws Exception
      */
     public function __invoke(string $saleId, string $reason): SummaryResponse
     {
         $voucher = $this->invoiceRepository->getVoucher($saleId);
 
-        $voidedDetail = (new VoidedDetail())
+        $voidedDetail = new VoidedDetail()
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerie(strval($voucher->voucher_series))
             ->setCorrelativo(strval($voucher->voucher_number))
@@ -33,10 +35,10 @@ readonly class VoidedCreateUseCase
 
         $lastCorrelative = $this->voidedRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
 
-        $voided = (new Voided())
+        $voided = new Voided()
             ->setCorrelativo((string)($lastCorrelative + 1))
-            ->setFecGeneracion(new \DateTime(strval($voucher->voucher_date)))
-            ->setFecComunicacion(new \DateTime(strval($voucher->voucher_date)))
+            ->setFecGeneracion(new DateTime(strval($voucher->voucher_date)))
+            ->setFecComunicacion(new DateTime(strval($voucher->voucher_date)))
             ->setCompany($this->invoiceUtils->getCompany())
             ->setDetails([$voidedDetail]);
         $response = $this->voidedRepository->voidInvoice($voided);
