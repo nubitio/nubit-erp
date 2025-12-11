@@ -76,20 +76,20 @@ class TenantConnection extends Connection
      * @throws \Doctrine\DBAL\Exception
      */
     #[\Override]
-    public function connect(): bool
+    public function connect(): Driver\Connection
     {
         if ($this->isConnected) {
-            return false;
+            return $this->_conn;
         }
 
-        $this->_conn = $this->_driver->connect($this->tenantParams);
+        $this->_conn = $this->getDriver()->connect($this->tenantParams);
         $this->isConnected = true;
 
         if (!$this->autoCommit) {
             $this->beginTransaction();
         }
 
-        return true;
+        return $this->_conn;
     }
 
     #[\Override]
