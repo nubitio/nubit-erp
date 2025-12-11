@@ -40,8 +40,8 @@ security:
         - { path: ^/api/v1/setup, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/branches, roles: PUBLIC_ACCESS }
         - { path: ^/api/v1/sales/report, roles: PUBLIC_ACCESS }
-        - { path: ^/receipt/[ \w- ]+$, roles: PUBLIC_ACCESS }
-        - { path: ^/receipt/[ \w- ]+/(ticket|pdf|xml|cdr), roles: PUBLIC_ACCESS }
+        - { path: ^/receipt/[-\w ]+$, roles: PUBLIC_ACCESS }
+        - { path: ^/receipt/[-\w ]+/(ticket|pdf|xml|cdr), roles: PUBLIC_ACCESS }
         - { path: ^/sale/consult, roles: PUBLIC_ACCESS }
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/$, roles: PUBLIC_ACCESS }
