@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Sale\Domain;
 
 use DateTime;
@@ -17,7 +19,6 @@ use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
 use App\Entity\Sale;
-use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\InvoiceRepository;

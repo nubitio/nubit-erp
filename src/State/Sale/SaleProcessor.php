@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\State\Sale;
 
 use Override;
@@ -15,7 +17,6 @@ use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
-use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
 use App\Service\ProductStockService;

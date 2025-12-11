@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Sale;
@@ -163,15 +165,15 @@ readonly class CreditNoteService
     {
         $errors = [];
 
-        if (!$creditNote->getSerie()) {
+        if ($creditNote->getSerie() === '' || $creditNote->getSerie() === '0') {
             $errors[] = 'La serie es requerida';
         }
 
-        if (!$creditNote->getCodigoMotivo()) {
+        if ($creditNote->getCodigoMotivo() === '' || $creditNote->getCodigoMotivo() === '0') {
             $errors[] = 'El código de motivo es requerido';
         }
 
-        if (!$creditNote->getDescripcionMotivo()) {
+        if ($creditNote->getDescripcionMotivo() === '' || $creditNote->getDescripcionMotivo() === '0') {
             $errors[] = 'La descripción del motivo es requerida';
         }
 

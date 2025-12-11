@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Core\Util\Constants;
@@ -33,7 +35,7 @@ class MediaRepository extends ServiceEntityRepository
     {
         $entity = $this->getEntityManager()->find(Media::class, $id);
 
-        if (!$entity) {
+        if (!$entity instanceof Media) {
             return;
         }
 
