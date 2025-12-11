@@ -72,7 +72,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'tipo_id', type: 'integer')]
-    private ?int $tipo_id = null;
+    private int $tipo_id;
 
     #[Assert\NotBlank]
     #[Groups([
@@ -82,7 +82,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'fecha', type: 'datetime')]
-    private ?DateTimeInterface $fecha = null;
+    private DateTimeInterface $fecha;
 
     #[Groups([
         'sale:write',
@@ -159,7 +159,7 @@ class Sale
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'date_created', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private ?DateTimeInterface $date_created = null;
+    private DateTimeInterface $date_created;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'date_updated', type: 'datetime', nullable: true)]
@@ -167,7 +167,7 @@ class Sale
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'created_by', type: 'integer')]
-    private ?int $created_by = null;
+    private int $created_by;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'updated_by', type: 'integer', nullable: true)]
@@ -192,7 +192,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'subtotal')]
-    private ?float $subtotal = null;
+    private float $subtotal = 0;
 
     #[Groups([
         'sale:read',
@@ -201,7 +201,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'total')]
-    private ?float $total = null;
+    private float $total = 0;
 
     #[Groups([
         'sale:read',
@@ -209,13 +209,13 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    /**
-     * @var Collection<int, SaleItem> $items
-     */
     #[ORM\OneToMany(targetEntity: SaleItem::class, mappedBy: 'movimiento', cascade: [
         'persist',
         'remove',
     ], orphanRemoval: true)]
+    /**
+     * @var Collection<int, SaleItem> $items
+     */
     private Collection $items;
 
     public function __construct()

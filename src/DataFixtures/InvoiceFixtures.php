@@ -74,8 +74,8 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             $customers[] = $customer;
         }
 
+        /** @var InvoiceRepository $invoiceRepository */
         $invoiceRepository = $manager->getRepository(Invoice::class);
-        \assert($invoiceRepository instanceof InvoiceRepository);
         $existingCount = $invoiceRepository->count([]);
 
         // Ensure fixtures product exists once to avoid duplicates on append.

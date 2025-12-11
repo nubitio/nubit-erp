@@ -32,7 +32,7 @@ readonly class TenantListener
 
         $host = $request->getHost();
         $parts = explode('.', $host);
-        $subdomain = $parts[0] ?? '';
+        $subdomain = $parts[0];
 
         // Default/known infra hosts that should not trigger tenant switching.
         $excludedSubdomains = ['localhost', 'demo'];
