@@ -41,8 +41,12 @@ SQL;
         try {
             $insertStmt = $this->connection->prepare($sql);
 
-            foreach ($data->prices as $ignored) {
-                $insertStmt->executeStatement();
+            foreach ($data->prices as $price) {
+                $insertStmt->executeStatement([
+                    'productId' => $price->productId,
+                    'priceListId' => $data->priceListId,
+                    'price' => $price->price,
+                ]);
             }
 
             $this->connection->commit();
