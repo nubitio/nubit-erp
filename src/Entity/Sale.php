@@ -203,6 +203,9 @@ class Sale
     #[ORM\Column(name: 'total')]
     private float $total = 0;
 
+    /**
+     * @var Collection<int, SaleItem>&iterable<SaleItem> $items
+     */
     #[Groups([
         'sale:read',
         'sale:write',
@@ -213,9 +216,6 @@ class Sale
         'persist',
         'remove',
     ], orphanRemoval: true)]
-    /**
-     * @var Collection<int, SaleItem> $items
-     */
     private Collection $items;
 
     public function __construct()

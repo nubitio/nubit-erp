@@ -31,14 +31,14 @@ class Company
     #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe tener 11 dígitos')]
     #[Groups(['company:read'])]
     #[ORM\Column(length: 11)]
-    private ?string $ruc = null;
+    private string $ruc;
 
     #[Groups([
         'company:read',
         'branch:read',
     ])]
     #[ORM\Column(name: 'razon_social', length: 255)]
-    private ?string $businessName = null;
+    private string $businessName;
 
     #[Groups(['company:read'])]
     #[ORM\Column(name: 'nombre_comercial', length: 255, nullable: true)]
@@ -47,7 +47,7 @@ class Company
     #[Assert\NotBlank]
     #[Groups(['company:read'])]
     #[ORM\Column(name: 'domicilio_fiscal', length: 255)]
-    private ?string $fiscalAddress = null;
+    private string $fiscalAddress;
 
     #[Groups(['company:read'])]
     #[ORM\Column(name: 'telefono', length: 10, nullable: true)]
@@ -79,7 +79,7 @@ class Company
         return $this->id;
     }
 
-    public function getRuc(): ?string
+    public function getRuc(): string
     {
         return $this->ruc;
     }
@@ -91,7 +91,7 @@ class Company
         return $this;
     }
 
-    public function getBusinessName(): ?string
+    public function getBusinessName(): string
     {
         return $this->businessName;
     }
@@ -115,7 +115,7 @@ class Company
         return $this;
     }
 
-    public function getFiscalAddress(): ?string
+    public function getFiscalAddress(): string
     {
         return $this->fiscalAddress;
     }

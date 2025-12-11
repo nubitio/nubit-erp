@@ -23,14 +23,14 @@ class Role
 
     #[Groups(['user:read'])]
     #[ORM\Column(name: 'descripcion')]
-    private ?string $name = null;
+    private string $name;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

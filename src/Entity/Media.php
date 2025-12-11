@@ -66,14 +66,14 @@ class Media
         'product:read',
     ])]
     #[ORM\Column(length: 255)]
-    private ?string $path = null;
+    private string $path;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getPath(): ?string
+    public function getPath(): string
     {
         return $this->path;
     }

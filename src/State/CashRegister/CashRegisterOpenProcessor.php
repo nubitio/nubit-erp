@@ -64,7 +64,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashMovement = new CashMovement();
         $cashMovement->setCashShift($cashShift);
         $cashMovement->setCategory($category);
-        $cashMovement->setType($category->getType() ?? CashMovementType::INCOME);
+        $cashMovement->setType($category->getType());
         $cashMovement->setAmount($data->openingBalance);
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new DateTimeImmutable());

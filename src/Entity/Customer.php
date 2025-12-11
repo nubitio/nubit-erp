@@ -23,12 +23,12 @@ class Customer
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Id]
     #[ORM\Column(length: 11)]
-    private ?string $ruc = null;
+    private string $ruc;
 
     #[Assert\NotBlank]
     #[Groups(['sale:read', 'invoice:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
-    private ?string $businessName = null;
+    private string $businessName;
 
     #[ORM\Column(name: 'domicilio_fiscal', nullable: true)]
     private ?string $fiscalAddress = null;
@@ -45,7 +45,7 @@ class Customer
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
     private ?PriceList $priceList = null;
 
-    public function getRuc(): ?string
+    public function getRuc(): string
     {
         return $this->ruc;
     }
@@ -57,7 +57,7 @@ class Customer
         return $this;
     }
 
-    public function getBusinessName(): ?string
+    public function getBusinessName(): string
     {
         return $this->businessName;
     }

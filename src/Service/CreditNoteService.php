@@ -100,6 +100,7 @@ readonly class CreditNoteService
     public function generatePdf(CreditNote $creditNote): string
     {
         $fileResponse = $this->notePdfUseCase->__invoke($creditNote->getId());
+
         return $fileResponse->file;
     }
 
@@ -162,10 +163,6 @@ readonly class CreditNoteService
     {
         $errors = [];
 
-        if (!$creditNote->getSale() instanceof Sale) {
-            $errors[] = 'La nota de crédito debe estar asociada a una venta';
-        }
-
         if (!$creditNote->getSerie()) {
             $errors[] = 'La serie es requerida';
         }
@@ -176,10 +173,6 @@ readonly class CreditNoteService
 
         if (!$creditNote->getDescripcionMotivo()) {
             $errors[] = 'La descripción del motivo es requerida';
-        }
-
-        if ($creditNote->getTotal() === null || $creditNote->getTotal() <= 0) {
-            $errors[] = 'El total debe ser mayor a 0';
         }
 
         return $errors;

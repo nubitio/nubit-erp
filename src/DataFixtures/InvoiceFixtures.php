@@ -276,7 +276,7 @@ final class InvoiceFixtures extends Fixture implements DependentFixtureInterface
             ->setInvoice('PENDING');
 
         $qty = 1;
-        $unitPrice = $product->getSalePrice() ?? 12.0;
+        $unitPrice = $product->getSalePrice();
         $lineTotal = round($unitPrice, 2);
         $igvAmount = round($lineTotal * 0.18, 2);
 

@@ -272,7 +272,7 @@ final class SampleDataFixtures extends Fixture
             foreach ($items as $itemData) {
                 $product = $itemData['product'];
                 $qty = $itemData['qty'];
-                $unitPrice = $product->getSalePrice() ?? 0.0;
+                $unitPrice = $product->getSalePrice();
                 $lineTotal = round($unitPrice * $qty, 2);
                 $subtotal += $lineTotal;
 

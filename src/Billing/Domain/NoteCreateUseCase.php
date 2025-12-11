@@ -14,6 +14,7 @@ use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class NoteCreateUseCase
 {
@@ -27,17 +28,12 @@ readonly class NoteCreateUseCase
     /**
      * @throws ServiceException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(string $noteId): Note
     {
         $creditNote = $this->creditNoteRepository->find($noteId);
-        if (null !== $creditNote->getSale()?->getId()) {
-            $voucher = $this->invoiceRepository->getVoucher($creditNote->getSale()->getId());
-        }
-
-        if (!isset($voucher)) {
-            throw new ServiceException('No se encontró el comprobante asociado a la nota de crédito.');
-        }
+        $voucher = $this->invoiceRepository->getVoucher($creditNote->getSale()->getId());
 
         return $this->getNote($creditNote, $voucher);
     }

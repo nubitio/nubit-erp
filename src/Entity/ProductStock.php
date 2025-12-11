@@ -25,12 +25,12 @@ class ProductStock
     #[Groups(['product_stock:read'])]
     #[ORM\ManyToOne(inversedBy: 'stocks')]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: false)]
-    private ?Product $product = null;
+    private Product $product;
 
     #[Groups(['product_stock:read'])]
     #[ORM\ManyToOne(inversedBy: 'productStocks')]
     #[ORM\JoinColumn(name: 'warehouse_id', referencedColumnName: 'almacen_id', nullable: false)]
-    private ?Warehouse $warehouse = null;
+    private Warehouse $warehouse;
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column]
@@ -42,7 +42,7 @@ class ProductStock
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'created_at')]
-    private ?DateTimeImmutable $createdAt = null;
+    private DateTimeImmutable $createdAt;
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'updated_at', nullable: true)]
@@ -58,24 +58,24 @@ class ProductStock
         return $this->id;
     }
 
-    public function getProduct(): ?Product
+    public function getProduct(): Product
     {
         return $this->product;
     }
 
-    public function setProduct(?Product $product): static
+    public function setProduct(Product $product): static
     {
         $this->product = $product;
 
         return $this;
     }
 
-    public function getWarehouse(): ?Warehouse
+    public function getWarehouse(): Warehouse
     {
         return $this->warehouse;
     }
 
-    public function setWarehouse(?Warehouse $warehouse): static
+    public function setWarehouse(Warehouse $warehouse): static
     {
         $this->warehouse = $warehouse;
 
@@ -106,7 +106,7 @@ class ProductStock
         return $this;
     }
 
-    public function getCreatedAt(): ?DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }

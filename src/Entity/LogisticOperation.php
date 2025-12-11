@@ -25,17 +25,17 @@ class LogisticOperation
 
     #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'descripcion')]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(name: 'tipo_id')]
-    private ?int $type = null;
+    private int $type;
 
     public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -47,7 +47,7 @@ class LogisticOperation
         return $this;
     }
 
-    public function getType(): ?int
+    public function getType(): int
     {
         return $this->type;
     }

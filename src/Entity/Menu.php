@@ -25,10 +25,10 @@ class Menu
     private Collection $children;
 
     #[ORM\Column(length: 255)]
-    private ?string $keyName = null;
+    private string $keyName;
 
     #[ORM\Column(length: 255)]
-    private ?string $type = null;
+    private string $type;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $icon = null;
@@ -40,7 +40,7 @@ class Menu
     private ?string $externalUrl = null;
 
     #[ORM\Column]
-    private ?int $orderIndex = null;
+    private int $orderIndex = 0;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $isActive = true;
@@ -95,7 +95,7 @@ class Menu
         return $this;
     }
 
-    public function getKeyName(): ?string
+    public function getKeyName(): string
     {
         return $this->keyName;
     }
@@ -107,7 +107,7 @@ class Menu
         return $this;
     }
 
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -155,7 +155,7 @@ class Menu
         return $this;
     }
 
-    public function getOrderIndex(): ?int
+    public function getOrderIndex(): int
     {
         return $this->orderIndex;
     }

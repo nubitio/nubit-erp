@@ -28,7 +28,7 @@ class CashMovement
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?CashShift $cashShift = null;
+    private CashShift $cashShift;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
@@ -37,30 +37,30 @@ class CashMovement
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(enumType: CashMovementType::class)]
-    private ?CashMovementType $type = null;
+    private CashMovementType $type;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column]
-    private ?float $amount = null;
+    private float $amount = 0;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    private string $description;
 
     #[ORM\Column]
-    private ?DateTimeImmutable $createdAt = null;
+    private DateTimeImmutable $createdAt;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCashShift(): ?CashShift
+    public function getCashShift(): CashShift
     {
         return $this->cashShift;
     }
 
-    public function setCashShift(?CashShift $cashShift): static
+    public function setCashShift(CashShift $cashShift): static
     {
         $this->cashShift = $cashShift;
 
@@ -75,14 +75,12 @@ class CashMovement
     public function setCategory(CashMovementCategory $category): static
     {
         $this->category = $category;
-        if ($category->getType() instanceof CashMovementType) {
-            $this->type = $category->getType();
-        }
+        $this->type = $category->getType();
 
         return $this;
     }
 
-    public function getType(): ?CashMovementType
+    public function getType(): CashMovementType
     {
         return $this->type;
     }
@@ -106,7 +104,7 @@ class CashMovement
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
@@ -118,7 +116,7 @@ class CashMovement
         return $this;
     }
 
-    public function getCreatedAt(): ?DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }
@@ -133,8 +131,6 @@ class CashMovement
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        if (!$this->createdAt instanceof DateTimeImmutable) {
-            $this->createdAt = new DateTimeImmutable();
-        }
+        $this->createdAt = new DateTimeImmutable();
     }
 }

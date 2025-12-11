@@ -48,24 +48,24 @@ class Product
     #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'tipo_id')]
-    private ?int $type = null;
+    private int $type;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'sale_item:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id', nullable: false)]
-    private ?Category $category = null;
+    private Category $category;
 
     #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id', nullable: false)]
-    private ?UnitOfMeasure $unitOfMeasure = null;
+    private UnitOfMeasure $unitOfMeasure;
 
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'precio_compra', nullable: true)]
@@ -74,7 +74,7 @@ class Product
     #[Assert\NotBlank]
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'precio')]
-    private ?float $salePrice = null;
+    private float $salePrice = 0;
 
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'stock', nullable: true)]
@@ -116,7 +116,7 @@ class Product
         return $this;
     }
 
-    public function getType(): ?int
+    public function getType(): int
     {
         return $this->type;
     }
@@ -128,7 +128,7 @@ class Product
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -140,24 +140,24 @@ class Product
         return $this;
     }
 
-    public function getCategory(): ?Category
+    public function getCategory(): Category
     {
         return $this->category;
     }
 
-    public function setCategory(?Category $category): static
+    public function setCategory(Category $category): static
     {
         $this->category = $category;
 
         return $this;
     }
 
-    public function getUnitOfMeasure(): ?UnitOfMeasure
+    public function getUnitOfMeasure(): UnitOfMeasure
     {
         return $this->unitOfMeasure;
     }
 
-    public function setUnitOfMeasure(?UnitOfMeasure $unitOfMeasure): static
+    public function setUnitOfMeasure(UnitOfMeasure $unitOfMeasure): static
     {
         $this->unitOfMeasure = $unitOfMeasure;
 
@@ -176,7 +176,7 @@ class Product
         return $this;
     }
 
-    public function getSalePrice(): ?float
+    public function getSalePrice(): float
     {
         return $this->salePrice;
     }
@@ -250,9 +250,7 @@ class Product
     public function removeStock(ProductStock $stock): static
     {
         // set the owning side to null (unless already changed)
-        if ($this->stocks->removeElement($stock) && $stock->getProduct() === $this) {
-            $stock->setProduct(null);
-        }
+        $this->stocks->removeElement($stock);
 
         return $this;
     }

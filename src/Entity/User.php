@@ -56,10 +56,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:update',
     ])]
     #[ORM\Column(length: 255)]
-    private ?string $username = null;
+    private string $username;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
+    private string $password;
 
     #[Groups([
         'user:create',
@@ -74,14 +74,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     ])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
-    private ?Role $role = null;
+    private Role $role;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUsername(): ?string
+    public function getUsername(): string
     {
         return $this->username;
     }
@@ -94,7 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     }
 
     #[Override]
-    public function getPassword(): ?string
+    public function getPassword(): string
     {
         return $this->password;
     }

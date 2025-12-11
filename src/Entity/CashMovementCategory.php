@@ -19,25 +19,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 class CashMovementCategory
 {
-    public const CASH_SALE = 'cash_sale';
+    public const string CASH_SALE = 'cash_sale';
 
-    public const CREDIT_PAYMENT = 'credit_payment';
+    public const string CREDIT_PAYMENT = 'credit_payment';
 
-    public const CASH_REPLENISHMENT = 'cash_replenishment';
+    public const string CASH_REPLENISHMENT = 'cash_replenishment';
 
-    public const OTHER_INCOME = 'other_income';
+    public const string OTHER_INCOME = 'other_income';
 
-    public const OVERAGE_ADJUSTMENT = 'overage_adjustment';
+    public const string OVERAGE_ADJUSTMENT = 'overage_adjustment';
 
-    public const PETTY_CASH_EXPENSE = 'petty_cash_expense';
+    public const string PETTY_CASH_EXPENSE = 'petty_cash_expense';
 
-    public const CUSTOMER_REFUND = 'customer_refund';
+    public const string CUSTOMER_REFUND = 'customer_refund';
 
-    public const MANAGER_WITHDRAWAL = 'manager_withdrawal';
+    public const string MANAGER_WITHDRAWAL = 'manager_withdrawal';
 
-    public const BANK_DEPOSIT = 'bank_deposit';
+    public const string BANK_DEPOSIT = 'bank_deposit';
 
-    public const SHORTAGE_ADJUSTMENT = 'shortage_adjustment';
+    public const string SHORTAGE_ADJUSTMENT = 'shortage_adjustment';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -47,15 +47,15 @@ class CashMovementCategory
 
     #[ORM\Column(length: 50, unique: true)]
     #[Groups(['Default', 'cash_movement:read'])]
-    private ?string $code = null;
+    private string $code;
 
     #[ORM\Column(length: 255)]
     #[Groups(['Default', 'cash_movement:read'])]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 20, enumType: CashMovementType::class)]
     #[Groups(['Default', 'cash_movement:read'])]
-    private ?CashMovementType $type = null;
+    private CashMovementType $type;
 
     #[ORM\Column(name: 'is_system', options: ['default' => true])]
     private bool $isSystem = true;
@@ -68,7 +68,7 @@ class CashMovementCategory
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -80,7 +80,7 @@ class CashMovementCategory
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -92,7 +92,7 @@ class CashMovementCategory
         return $this;
     }
 
-    public function getType(): ?CashMovementType
+    public function getType(): CashMovementType
     {
         return $this->type;
     }

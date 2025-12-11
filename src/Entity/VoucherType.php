@@ -18,13 +18,13 @@ class VoucherType
     #[Groups(['voucher_series:read'])]
     #[ORM\Id]
     #[ORM\Column(name: 'codigo', length: 2)]
-    private ?string $code = null;
+    private string $code;
 
     #[Groups(['voucher_series:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
-    private ?string $name = null;
+    private string $name;
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -36,7 +36,7 @@ class VoucherType
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
