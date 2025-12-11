@@ -108,21 +108,21 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($divider);
         $printer->setEmphasis();
-        $printer->text(new SaleItemDto('# Descripcion', 'S/'));
+        $printer->text((string) new SaleItemDto('# Descripcion', 'S/'));
         $printer->setEmphasis(false);
         $printer->text($divider);
 
         foreach ($voucher->voucher_items as $item) {
             $str_left = $item->quantity . ' ' . $item->product_name;
             $saleItem = new SaleItemDto($str_left, $item->total);
-            $printer->text($saleItem);
+            $printer->text((string) $saleItem);
         }
 
         $printer->text($divider);
 
         if ($voucher->voucher_discount_percentage > 0) {
             $printer->text(
-                new SaleItemDto('DTO.:', '-' . $voucher->voucher_discount_amount)
+                (string) new SaleItemDto('DTO.:', '-' . $voucher->voucher_discount_amount)
             );
         }
 
@@ -133,19 +133,19 @@ class PrintESCPOSController extends AbstractController
 
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $printer->text(
-                new SaleItemDto('OP. GRAVADA:', $voucher->voucher_taxed_amount)
+                (string) new SaleItemDto('OP. GRAVADA:', $voucher->voucher_taxed_amount)
             );
-            $printer->text(new SaleItemDto('OP. INAFECTA:', '0.00'));
-            $printer->text(new SaleItemDto('OP. EXONERADA:', '0.00'));
+            $printer->text((string) new SaleItemDto('OP. INAFECTA:', '0.00'));
+            $printer->text((string) new SaleItemDto('OP. EXONERADA:', '0.00'));
             $printer->text(
-                new SaleItemDto(
+                (string) new SaleItemDto(
                     'IGV (' . $app_option_igv_get . '%):',
                     $voucher->voucher_tax_amount
                 )
             );
             if ($app_option_rc_get >= 1) {
                 $printer->text(
-                    new SaleItemDto(
+                    (string) new SaleItemDto(
                         'RC (' . $app_option_rc_get . '%):',
                         $voucher->voucher_consumption_surcharge_amount
                     )
@@ -154,7 +154,7 @@ class PrintESCPOSController extends AbstractController
         }
 
         $printer->text(
-            new SaleItemDto('TOTAL:', $voucher->voucher_sale_amount)
+            (string) new SaleItemDto('TOTAL:', $voucher->voucher_sale_amount)
         );
 
         $printer->text($divider);
