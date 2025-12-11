@@ -44,7 +44,7 @@ readonly class RoleMenuProcessor implements ProcessorInterface
                 'INSERT INTO menu_rol (menu_id, role_id) VALUES (:menuId, :roleId)'
             );
 
-            foreach ($data->permissions as $menuId) {
+            foreach ($data->permissions as $ignored) {
                 $insertStmt->executeStatement();
             }
 

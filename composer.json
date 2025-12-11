@@ -77,7 +77,8 @@
   "require-dev": {
     "doctrine/doctrine-fixtures-bundle": "^4.0",
     "friendsofphp/php-cs-fixer": "^3.57",
-    "phpmd/phpmd": "^2.15",
+    "pdepend/pdepend": "^3@dev",
+    "phpmd/phpmd": "^3@dev",
     "phpro/grumphp": "^2.10",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^12.0",

@@ -2,13 +2,12 @@
 
 namespace App\Core\Doctrine\DBAL;
 
-use Override;
 use App\Core\Exception\ServiceException;
-use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Driver\Exception;
+use Override;
 use Symfony\Component\Security\Core\Exception\RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
@@ -23,9 +22,8 @@ class TenantConnection extends Connection
         protected array $tenantParams,
         Driver $driver,
         ?Configuration $config = null,
-        ?EventManager $eventManager = null
     ) {
-        parent::__construct($this->tenantParams, $driver, $config, $eventManager);
+        parent::__construct($this->tenantParams, $driver, $config);
     }
 
     /**
@@ -108,7 +106,7 @@ class TenantConnection extends Connection
 
     private function resolveConfigPath(): string
     {
-        $envPath = (string) ($_ENV['TENANTS_CONFIG_PATH'] ?? getenv('TENANTS_CONFIG_PATH') ?: '');
+        $envPath = (string)($_ENV['TENANTS_CONFIG_PATH'] ?? getenv('TENANTS_CONFIG_PATH') ?: '');
         if ('' !== $envPath) {
             return $this->normalizePath($envPath);
         }

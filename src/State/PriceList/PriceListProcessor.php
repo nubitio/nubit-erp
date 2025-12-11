@@ -41,7 +41,7 @@ SQL;
         try {
             $insertStmt = $this->connection->prepare($sql);
 
-            foreach ($data->prices as $price) {
+            foreach ($data->prices as $ignored) {
                 $insertStmt->executeStatement();
             }
 

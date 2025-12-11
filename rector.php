@@ -31,4 +31,8 @@ return RectorConfig::configure()
     )
     ->withSets([
         LevelSetList::UP_TO_PHP_85,
+    ])
+    ->withSkip([
+        __DIR__ . '/src/Command/ImportUbigeoCommand.php',
+        __DIR__ . '/src/Command/FillTimeDimensionCommand.php',
     ]);
