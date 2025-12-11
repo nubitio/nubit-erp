@@ -19,20 +19,20 @@ class Config
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 255)]
-    private ?string $value = null;
+    private string $value;
 
     #[ORM\Column(enumType: ConfigType::class)]
-    private ?ConfigType $type = null;
+    private ConfigType $type;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -44,7 +44,7 @@ class Config
         return $this;
     }
 
-    public function getValue(): ?string
+    public function getValue(): string
     {
         return $this->value;
     }
@@ -56,7 +56,7 @@ class Config
         return $this;
     }
 
-    public function getType(): ?ConfigType
+    public function getType(): ConfigType
     {
         return $this->type;
     }

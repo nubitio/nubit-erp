@@ -50,7 +50,7 @@ class Warehouse
         'outbound:read',
     ])]
     #[ORM\Column(name: 'descripcion', length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     #[Groups(['warehouse:read'])]
     #[ORM\ManyToOne(inversedBy: 'warehouses')]
@@ -72,7 +72,7 @@ class Warehouse
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -122,9 +122,7 @@ class Warehouse
     public function removeProductStock(ProductStock $productStock): static
     {
         // set the owning side to null (unless already changed)
-        if ($this->productStocks->removeElement($productStock) && $productStock->getWarehouse() === $this) {
-            $productStock->setWarehouse(null);
-        }
+        $this->productStocks->removeElement($productStock);
 
         return $this;
     }

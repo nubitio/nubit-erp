@@ -42,7 +42,7 @@ class SaleItem
 
     #[Groups(['sale_item:read', 'sale:write'])]
     #[ORM\Column(name: 'cantidad')]
-    private ?float $cantidad = null;
+    private float $cantidad;
 
     #[Groups(['sale_item:read', 'sale:write'])]
     #[ORM\Column(name: 'precio_unitario', nullable: true)]
@@ -50,7 +50,7 @@ class SaleItem
 
     #[Groups(['sale_item:read', 'sale:write'])]
     #[ORM\Column(name: 'descuento')]
-    private ?float $descuento = null;
+    private float $descuento = 0;
 
     #[Groups(['sale_item:read', 'sale:write'])]
     #[ORM\Column(name: 'precio_total', nullable: true)]
@@ -85,12 +85,12 @@ class SaleItem
         return $this;
     }
 
-    public function getCantidad(): ?float
+    public function getCantidad(): float
     {
         return $this->cantidad;
     }
 
-    public function setCantidad(?float $cantidad): static
+    public function setCantidad(float $cantidad): static
     {
         $this->cantidad = $cantidad;
 
@@ -109,12 +109,12 @@ class SaleItem
         return $this;
     }
 
-    public function getDescuento(): ?float
+    public function getDescuento(): float
     {
         return $this->descuento;
     }
 
-    public function setDescuento(?float $descuento): static
+    public function setDescuento(float $descuento): static
     {
         $this->descuento = $descuento;
 

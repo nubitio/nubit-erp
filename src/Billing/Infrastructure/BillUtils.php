@@ -30,11 +30,11 @@ readonly class BillUtils implements BillUtilsInterface
             ->setDepartamento($companyEntity->getDepartment() ?? '')
             ->setProvincia($companyEntity->getProvince() ?? '')
             ->setDistrito($companyEntity->getDistrict() ?? '')
-            ->setDireccion($companyEntity->getFiscalAddress() ?? '');
+            ->setDireccion($companyEntity->getFiscalAddress());
 
         $company = new Company();
-        $company->setRuc($companyEntity->getRuc() ?? '')
-            ->setRazonSocial($companyEntity->getBusinessName() ?? '')
+        $company->setRuc($companyEntity->getRuc())
+            ->setRazonSocial($companyEntity->getBusinessName())
             ->setNombreComercial($companyEntity->getTradeName() ?? '')
             ->setAddress($address);
 

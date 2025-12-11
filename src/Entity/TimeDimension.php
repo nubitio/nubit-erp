@@ -12,7 +12,7 @@ class TimeDimension
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
-    private ?int $id = null;
+    private int $id;
 
     #[ORM\Column(type: 'date', nullable: true)]
     private ?DateTimeInterface $date = null;

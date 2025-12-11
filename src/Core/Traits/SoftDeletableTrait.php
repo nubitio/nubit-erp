@@ -8,6 +8,7 @@ use DateTimeInterface;
 use DateTime;
 use Doctrine\ORM\Mapping as ORM;
 
+/** @phpstan-ignore-next-line trait.unused */
 trait SoftDeletableTrait
 {
     #[ORM\Column(name: 'deleted_at', type: 'datetime', nullable: true)]

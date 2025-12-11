@@ -56,15 +56,15 @@ class CashShift
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?CashRegister $cashRegister = null;
+    private CashRegister $cashRegister;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(enumType: CashShiftStatus::class)]
-    private ?CashShiftStatus $status = null;
+    private CashShiftStatus $status;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column]
-    private ?float $openingBalance = null;
+    private float $openingBalance = 0;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
@@ -73,7 +73,7 @@ class CashShift
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
-    private ?User $openedBy = null;
+    private User $openedBy;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
@@ -82,7 +82,7 @@ class CashShift
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column]
-    private ?DateTimeImmutable $openedAt = null;
+    private DateTimeImmutable $openedAt;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(nullable: true)]
@@ -109,19 +109,19 @@ class CashShift
         return $this->id;
     }
 
-    public function getCashRegister(): ?CashRegister
+    public function getCashRegister(): CashRegister
     {
         return $this->cashRegister;
     }
 
-    public function setCashRegister(?CashRegister $cashRegister): static
+    public function setCashRegister(CashRegister $cashRegister): static
     {
         $this->cashRegister = $cashRegister;
 
         return $this;
     }
 
-    public function getStatus(): ?CashShiftStatus
+    public function getStatus(): CashShiftStatus
     {
         return $this->status;
     }
@@ -133,7 +133,7 @@ class CashShift
         return $this;
     }
 
-    public function getOpeningBalance(): ?float
+    public function getOpeningBalance(): float
     {
         return $this->openingBalance;
     }
@@ -150,19 +150,19 @@ class CashShift
         return $this->closingBalance;
     }
 
-    public function setClosingBalance(?float $closingBalance): static
+    public function setClosingBalance(float $closingBalance): static
     {
         $this->closingBalance = $closingBalance;
 
         return $this;
     }
 
-    public function getOpenedBy(): ?User
+    public function getOpenedBy(): User
     {
         return $this->openedBy;
     }
 
-    public function setOpenedBy(?User $openedBy): static
+    public function setOpenedBy(User $openedBy): static
     {
         $this->openedBy = $openedBy;
 
@@ -174,14 +174,14 @@ class CashShift
         return $this->closedBy;
     }
 
-    public function setClosedBy(?User $closedBy): static
+    public function setClosedBy(User $closedBy): static
     {
         $this->closedBy = $closedBy;
 
         return $this;
     }
 
-    public function getOpenedAt(): ?DateTimeImmutable
+    public function getOpenedAt(): DateTimeImmutable
     {
         return $this->openedAt;
     }
@@ -198,7 +198,7 @@ class CashShift
         return $this->closedAt;
     }
 
-    public function setClosedAt(?DateTimeImmutable $closedAt): static
+    public function setClosedAt(DateTimeImmutable $closedAt): static
     {
         $this->closedAt = $closedAt;
 

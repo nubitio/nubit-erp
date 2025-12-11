@@ -29,12 +29,12 @@ class Supplier
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^\d{11}$/', message: 'El RUC debe contener 11 dígitos.')]
     #[ORM\Column(length: 11)]
-    private ?string $ruc = null;
+    private string $ruc;
 
     #[Assert\NotBlank]
     #[Groups(['inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'razon_social', length: 255)]
-    private ?string $businessName = null;
+    private string $businessName;
 
     #[ORM\Column(name: 'domicilio_fiscal', length: 255, nullable: true)]
     private ?string $fiscalAddress = null;
@@ -48,7 +48,7 @@ class Supplier
         return $this->id;
     }
 
-    public function getRuc(): ?string
+    public function getRuc(): string
     {
         return $this->ruc;
     }
@@ -60,7 +60,7 @@ class Supplier
         return $this;
     }
 
-    public function getBusinessName(): ?string
+    public function getBusinessName(): string
     {
         return $this->businessName;
     }

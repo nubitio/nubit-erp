@@ -40,28 +40,28 @@ class CashRegisterReportController extends AbstractController
         $income = 0.0;
         $expense = 0.0;
         foreach ($movements as $movement) {
-            if ($movement->getType()?->value === 'income') {
+            if ($movement->getType()->value === 'income') {
                 $income += $movement->getAmount() ?? 0;
             } else {
                 $expense += $movement->getAmount() ?? 0;
             }
         }
 
-        $openingBalance = $cashShift->getOpeningBalance() ?? 0;
+        $openingBalance = $cashShift->getOpeningBalance();
         $expectedAmount = $cashShift->getExpectedAmount() ?? ($openingBalance + $income - $expense);
         $countedAmount = $cashShift->getCountedAmount() ?? $expectedAmount;
         $difference = $cashShift->getDifference() ?? ($countedAmount - $expectedAmount);
 
         $content = $this->twig->render('cash_register/closure_report.html.twig', [
             'cashRegister' => [
-                'id' => $cashRegister?->getId(),
-                'name' => $cashRegister?->getName(),
+                'id' => $cashRegister->getId(),
+                'name' => $cashRegister->getName(),
             ],
             'cashShift' => [
                 'id' => $cashShift->getId(),
                 'openedAt' => $cashShift->getOpenedAt(),
                 'closedAt' => $cashShift->getClosedAt(),
-                'openedBy' => $cashShift->getOpenedBy()?->getUsername() ?? '',
+                'openedBy' => $cashShift->getOpenedBy()->getUsername(),
             ],
             'openingBalance' => $openingBalance,
             'income' => $income,
@@ -73,7 +73,7 @@ class CashRegisterReportController extends AbstractController
             'movements' => array_map(static fn (CashMovement $movement): array => [
                 'createdAt' => $movement->getCreatedAt(),
                 'category' => $movement->getCategory()?->getName(),
-                'type' => $movement->getType()?->value,
+                'type' => $movement->getType()->value,
                 'description' => $movement->getDescription(),
                 'amount' => $movement->getAmount(),
             ], $movements),

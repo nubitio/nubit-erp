@@ -33,16 +33,15 @@ class CompanyContext
 
     public function getId(): string
     {
-        // Prefer RUC when available, fallback to internal ID.
         $company = $this->getCompany();
 
-        return (string) ($company->getRuc() ?? $company->getId());
+        return $company->getRuc();
     }
 
     public function getName(): string
     {
         $company = $this->getCompany();
 
-        return $company->getBusinessName() ?? $company->getTradeName() ?? 'Empresa';
+        return $company->getBusinessName();
     }
 }

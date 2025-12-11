@@ -21,7 +21,7 @@ class Ubigeo
     #[Groups(['ubigeo:read'])]
     #[ORM\Id]
     #[ORM\Column(name: 'codigo', length: 10)]
-    private ?string $code = null;
+    private string $code;
 
     #[Groups(['ubigeo:read'])]
     #[ORM\Column(name: 'departamento', length: 255, nullable: true)]
@@ -48,7 +48,7 @@ class Ubigeo
         return sprintf('%s (%s)', implode(' / ', $parts), $this->code);
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }

@@ -45,7 +45,7 @@ class CreditNote
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\ManyToOne(targetEntity: Sale::class)]
     #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id', nullable: false)]
-    private ?Sale $sale = null;
+    private Sale $sale;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'raw_document_id', type: Types::INTEGER, nullable: true)]
@@ -53,27 +53,27 @@ class CreditNote
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'fecha', type: Types::DATE_MUTABLE, nullable: false)]
-    private ?DateTimeInterface $fecha = null;
+    private DateTimeInterface $fecha;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'tipo_id', type: Types::STRING, length: 10)]
-    private ?string $tipoId = null;
+    private string $tipoId;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'codigo_motivo', type: Types::STRING, length: 10)]
-    private ?string $codigoMotivo = null;
+    private string $codigoMotivo;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'descripcion_motivo', type: Types::STRING, length: 255)]
-    private ?string $descripcionMotivo = null;
+    private string $descripcionMotivo;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'serie', type: Types::STRING, length: 10)]
-    private ?string $serie = null;
+    private string $serie;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'correlativo', type: Types::INTEGER)]
-    private ?int $correlativo = null;
+    private int $correlativo;
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'doc_afectado', type: Types::STRING, length: 50, nullable: true)]
@@ -93,7 +93,7 @@ class CreditNote
 
     #[Groups(['creditnote:read', 'creditnote:write'])]
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $total = '0.00';
+    private string $total = '0.00';
 
     #[Groups(['creditnote:read'])]
     #[ORM\ManyToOne(targetEntity: User::class)]
@@ -107,10 +107,10 @@ class CreditNote
 
     #[Groups(['creditnote:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
-    private ?DateTimeInterface $createdAt = null;
+    private DateTimeInterface $createdAt;
 
     #[Groups(['creditnote:read'])]
-    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $updatedAt = null;
 
     public function __construct()
@@ -132,12 +132,12 @@ class CreditNote
         return $this->id;
     }
 
-    public function getSale(): ?Sale
+    public function getSale(): Sale
     {
         return $this->sale;
     }
 
-    public function setSale(?Sale $sale): self
+    public function setSale(Sale $sale): self
     {
         $this->sale = $sale;
 
@@ -156,72 +156,72 @@ class CreditNote
         return $this;
     }
 
-    public function getFecha(): ?DateTimeInterface
+    public function getFecha(): DateTimeInterface
     {
         return $this->fecha;
     }
 
-    public function setFecha(?DateTimeInterface $fecha): self
+    public function setFecha(DateTimeInterface $fecha): self
     {
         $this->fecha = $fecha;
 
         return $this;
     }
 
-    public function getTipoId(): ?string
+    public function getTipoId(): string
     {
         return $this->tipoId;
     }
 
-    public function setTipoId(?string $tipoId): self
+    public function setTipoId(string $tipoId): self
     {
         $this->tipoId = $tipoId;
 
         return $this;
     }
 
-    public function getCodigoMotivo(): ?string
+    public function getCodigoMotivo(): string
     {
         return $this->codigoMotivo;
     }
 
-    public function setCodigoMotivo(?string $codigoMotivo): self
+    public function setCodigoMotivo(string $codigoMotivo): self
     {
         $this->codigoMotivo = $codigoMotivo;
 
         return $this;
     }
 
-    public function getDescripcionMotivo(): ?string
+    public function getDescripcionMotivo(): string
     {
         return $this->descripcionMotivo;
     }
 
-    public function setDescripcionMotivo(?string $descripcionMotivo): self
+    public function setDescripcionMotivo(string $descripcionMotivo): self
     {
         $this->descripcionMotivo = $descripcionMotivo;
 
         return $this;
     }
 
-    public function getSerie(): ?string
+    public function getSerie(): string
     {
         return $this->serie;
     }
 
-    public function setSerie(?string $serie): self
+    public function setSerie(string $serie): self
     {
         $this->serie = $serie;
 
         return $this;
     }
 
-    public function getCorrelativo(): ?int
+    public function getCorrelativo(): int
     {
         return $this->correlativo;
     }
 
-    public function setCorrelativo(?int $correlativo): self
+    public function setCorrelativo(int $correlativo): self
     {
         $this->correlativo = $correlativo;
 
@@ -276,12 +276,12 @@ class CreditNote
         return $this;
     }
 
-    public function getTotal(): ?string
+    public function getTotal(): string
     {
         return $this->total;
     }
 
-    public function setTotal(?string $total): self
+    public function setTotal(string $total): self
     {
         $this->total = $total;
 
@@ -312,12 +312,12 @@ class CreditNote
         return $this;
     }
 
-    public function getCreatedAt(): ?DateTimeInterface
+    public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(?DateTimeInterface $createdAt): self
+    public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 

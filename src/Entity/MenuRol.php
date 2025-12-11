@@ -15,35 +15,35 @@ class MenuRol
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Menu $menu = null;
+    private Menu $menu;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(referencedColumnName: 'rol_id', nullable: false)]
-    private ?Role $role = null;
+    private Role $role;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getMenu(): ?Menu
+    public function getMenu(): Menu
     {
         return $this->menu;
     }
 
-    public function setMenu(?Menu $menu): static
+    public function setMenu(Menu $menu): static
     {
         $this->menu = $menu;
 
         return $this;
     }
 
-    public function getRole(): ?Role
+    public function getRole(): Role
     {
         return $this->role;
     }
 
-    public function setRole(?Role $role): static
+    public function setRole(Role $role): static
     {
         $this->role = $role;
 

@@ -227,7 +227,7 @@ readonly class SaleVoidUseCase
         $movement = new CashMovement();
         $movement->setCashShift($cashShift);
         $movement->setCategory($category);
-        $movement->setType($category->getType() ?? CashMovementType::EXPENSE);
+        $movement->setType($category->getType());
         $movement->setAmount($sale->getTotal() ?? 0);
         $movement->setDescription('Anulación de venta N° ' . $sale->getserie() . '-' . $sale->getNumero());
         $movement->setCreatedAt(new DateTimeImmutable());

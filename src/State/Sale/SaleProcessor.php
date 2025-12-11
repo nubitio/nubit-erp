@@ -168,7 +168,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         $this->productStockService->updateStockForProductInWarehouse(
                             $item->getProducto(),
                             $data->getAlmacen(),
-                            $newStock
+                            (int)$newStock
                         );
                     } elseif ($data->getTipoId() === 2) {
                         // Reduce stock for sales (tipo_id = 2)
@@ -189,7 +189,7 @@ readonly class SaleProcessor implements ProcessorInterface
                     }
                 }
 
-                $item->setDescuento($item->getDescuento() ?? 0);
+                $item->setDescuento($item->getDescuento());
             }
         }
 
@@ -241,7 +241,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $movement = new CashMovement();
         $movement->setCashShift($cashShift);
         $movement->setCategory($category);
-        $movement->setType($category->getType() ?? CashMovementType::INCOME);
+        $movement->setType($category->getType());
         $movement->setAmount($sale->getTotal() ?? 0);
         $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
         $movement->setCreatedAt(new DateTimeImmutable());

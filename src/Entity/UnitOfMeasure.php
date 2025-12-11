@@ -23,26 +23,26 @@ class UnitOfMeasure
 
     #[Groups(['product:read'])]
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 255)]
-    private ?string $code = null;
+    private string $code;
 
     #[ORM\Column(name: 'type_id')]
-    private ?int $type = null;
+    private int $type;
 
     #[ORM\Column]
-    private ?float $ratio = null;
+    private float $ratio = 0;
 
     #[ORM\Column(name: 'is_reference')]
-    private ?bool $reference = null;
+    private bool $reference = false;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
@@ -54,7 +54,7 @@ class UnitOfMeasure
         return $this;
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -66,7 +66,7 @@ class UnitOfMeasure
         return $this;
     }
 
-    public function getType(): ?int
+    public function getType(): int
     {
         return $this->type;
     }
@@ -78,7 +78,7 @@ class UnitOfMeasure
         return $this;
     }
 
-    public function getRatio(): ?float
+    public function getRatio(): float
     {
         return $this->ratio;
     }
@@ -90,7 +90,7 @@ class UnitOfMeasure
         return $this;
     }
 
-    public function isReference(): ?bool
+    public function isReference(): bool
     {
         return $this->reference;
     }

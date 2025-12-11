@@ -63,7 +63,7 @@ readonly class ReceiptShowUseCase
             type: ($note->getTipoId()) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
             series: strval($note->getSerie()),
             number: strval($note->getCorrelativo()),
-            date: strval($note->getFecha()?->format('Y-m-d')),
+            date: strval($note->getFecha()->format('Y-m-d')),
             total: floatval($note->getTotal())
         );
     }

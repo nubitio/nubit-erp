@@ -81,30 +81,30 @@ class CashRegister
     #[Groups(['cash_register:read'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: false)]
-    private ?Branch $branch = null;
+    private Branch $branch;
 
     #[Groups(['cash_register:read'])]
     #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    private string $name;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getBranch(): ?Branch
+    public function getBranch(): Branch
     {
         return $this->branch;
     }
 
-    public function setBranch(?Branch $branch): static
+    public function setBranch(Branch $branch): static
     {
         $this->branch = $branch;
 
         return $this;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

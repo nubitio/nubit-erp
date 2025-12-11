@@ -34,7 +34,7 @@ class Category
         'product:read',
     ])]
     #[ORM\Column(name: 'descripcion')]
-    private ?string $name = null;
+    private string $name;
 
     #[Groups(['category:read'])]
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
@@ -57,7 +57,7 @@ class Category
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
