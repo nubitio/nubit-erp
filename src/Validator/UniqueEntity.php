@@ -13,8 +13,12 @@ final class UniqueEntity extends Constraint
 {
     public string $message = 'This value is already used.';
 
-    public function __construct(public array $fields, ?string $message = null, ?array $groups = null, mixed $payload = null)
-    {
+    public function __construct(
+        public array $fields,
+        ?string $message = null,
+        ?array $groups = null,
+        mixed $payload = null
+    ) {
         parent::__construct([], $groups, $payload);
         $this->message = $message ?? $this->message;
     }

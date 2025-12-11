@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Core\Util\Constants;
 use App\Entity\Media;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Doctrine\Persistence\ManagerRegistry;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
@@ -15,8 +17,6 @@ use Psr\Log\LoggerInterface;
  */
 class MediaRepository extends ServiceEntityRepository
 {
-    public $_em;
-
     public function __construct(
         ManagerRegistry $registry,
         private readonly FilesystemOperator $uploadsFilesystem,
@@ -25,9 +25,13 @@ class MediaRepository extends ServiceEntityRepository
         parent::__construct($registry, Media::class);
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function delete(string $id): void
     {
-        $entity = $this->_em->find(Media::class, $id);
+        $entity = $this->getEntityManager()->find(Media::class, $id);
 
         if (!$entity) {
             return;
@@ -39,7 +43,7 @@ class MediaRepository extends ServiceEntityRepository
             $this->logger->alert($filesystemException->getMessage());
         }
 
-        $this->_em->remove($entity);
-        $this->_em->flush();
+        $this->getEntityManager()->remove($entity);
+        $this->getEntityManager()->flush();
     }
 }
