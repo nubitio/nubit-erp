@@ -21,7 +21,7 @@ export const CategoryFields = () => {
     new FieldBuilder()
       .type(FieldType.TEXT)
       .name('name')
-      .label('Descripcion')
+      .label('Nombre')
       .sortable(true)
       .build(),
   );
@@ -29,11 +29,11 @@ export const CategoryFields = () => {
     new FieldBuilder()
       .type(FieldType.ENTITY)
       .name('parent')
-      .label('Categoria padre')
+      .label('Categoría Padre')
       .url(Constants.API_BASE_URL + 'categories')
-      .valueField('categoria_id')
-      .textField('descripcion')
-      .formatter((cell: ColumnCellTemplateData) => cell.data.parent?.descripcion)
+      .valueField('id')
+      .textField('name')
+      .formatter((cell: ColumnCellTemplateData) => cell.value?.name || '')
       .build(),
   );
 
