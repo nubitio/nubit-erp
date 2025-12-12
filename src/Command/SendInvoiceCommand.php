@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use Override;
-use Throwable;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
 use App\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
+use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -19,10 +18,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
+use Throwable;
 
-#[AsCommand(name: 'invoice:send', description: 'Send invoice', help: <<<'TXT'
-Send pending invoices to SUNAT
-TXT)]
+#[AsCommand(
+    name: 'invoice:send',
+    description: 'Send pending invoices to SUNAT',
+)]
 #[AsCronTask('*/5 * * * *')]
 class SendInvoiceCommand extends TenantAwareCommand
 {
@@ -49,7 +50,7 @@ class SendInvoiceCommand extends TenantAwareCommand
         $io = new SymfonyStyle($input, $output);
         $startedAt = microtime(true);
 
-        $pendingTotal = (int) $this->connection->fetchOne(
+        $pendingTotal = (int)$this->connection->fetchOne(
             "
             SELECT COUNT(1) AS total
             FROM comprobante
@@ -97,14 +98,14 @@ class SendInvoiceCommand extends TenantAwareCommand
 
             foreach ($pendingIds as $movimientoId) {
                 try {
-                    $response = $this->invoiceSendUseCase->__invoke((string) $movimientoId);
+                    $response = $this->invoiceSendUseCase->__invoke((string)$movimientoId);
 
                     if ($response->sunatResponse->isSuccess()) {
                         $sent++;
                     } else {
                         $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
                         $errors[] = [
-                            'movimiento_id' => (int) $movimientoId,
+                            'movimiento_id' => (int)$movimientoId,
                             'error' => $message,
                         ];
                         $this->logger->warning('Invoice sending warning', [
@@ -114,7 +115,7 @@ class SendInvoiceCommand extends TenantAwareCommand
                     }
                 } catch (Throwable $exception) {
                     $errors[] = [
-                        'movimiento_id' => (int) $movimientoId,
+                        'movimiento_id' => (int)$movimientoId,
                         'error' => $exception->getMessage(),
                     ];
                     $this->logger->error('Error sending invoice', [
@@ -136,7 +137,7 @@ class SendInvoiceCommand extends TenantAwareCommand
             $io->table(['Invoice ID', 'Error'], $errors);
         }
 
-        $durationMs = (int) ((microtime(true) - $startedAt) * 1000);
+        $durationMs = (int)((microtime(true) - $startedAt) * 1000);
 
         $io->success(
             sprintf(
