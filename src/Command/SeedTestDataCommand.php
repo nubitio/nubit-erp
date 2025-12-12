@@ -72,20 +72,21 @@ HELP
     {
         $io = new SymfonyStyle($input, $output);
 
-        $customerCount = (int) $input->getOption('customers');
-        $productCount = (int) $input->getOption('products');
-        $supplierCount = (int) $input->getOption('suppliers');
-        $saleCount = (int) $input->getOption('sales');
-        $batchSize = (int) $input->getOption('batch-size');
-        $purge = (bool) $input->getOption('purge');
+        $customerCount = (int)$input->getOption('customers');
+        $productCount = (int)$input->getOption('products');
+        $supplierCount = (int)$input->getOption('suppliers');
+        $saleCount = (int)$input->getOption('sales');
+        $batchSize = (int)$input->getOption('batch-size');
+        $purge = (bool)$input->getOption('purge');
 
         $io->title('Seeding Test Data');
 
         if ($purge) {
-            $io->warning('⚠️  PURGE MODE: All existing test data will be deleted!');
-            
+            $io->warning('PURGE MODE: All existing test data will be deleted!');
+
             if (!$io->confirm('Are you sure you want to continue?', false)) {
                 $io->note('Operation cancelled.');
+
                 return Command::SUCCESS;
             }
 
@@ -95,17 +96,20 @@ HELP
                 $io->success('Test data purged successfully!');
             } catch (\Throwable $e) {
                 $io->error('Failed to purge test data: ' . $e->getMessage());
+
                 return Command::FAILURE;
             }
         }
 
-        $io->info(sprintf(
-            'Creating: %d customers, %d products, %d suppliers, %d sales',
-            $customerCount,
-            $productCount,
-            $supplierCount,
-            $saleCount
-        ));
+        $io->info(
+            sprintf(
+                'Creating: %d customers, %d products, %d suppliers, %d sales',
+                $customerCount,
+                $productCount,
+                $supplierCount,
+                $saleCount
+            )
+        );
 
         try {
             $io->section('Starting seed process...');
@@ -129,6 +133,7 @@ HELP
                     ['Customers', $stats['customers_created']],
                     ['Products', $stats['products_created']],
                     ['Sales', $stats['sales_created']],
+                    ['Invoices', $stats['invoices_created']],
                 ]
             );
 
@@ -152,8 +157,9 @@ HELP
         // Disable foreign key checks
         $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
 
-        // Truncate sales and related tables
-        $io->text('Truncating sales...');
+        // Truncate invoices and sales (invoices must be deleted first due to FK)
+        $io->text('Truncating invoices and sales...');
+        $this->connection->executeStatement('TRUNCATE TABLE comprobante');
         $this->connection->executeStatement('TRUNCATE TABLE movimiento_detalle');
         $this->connection->executeStatement('TRUNCATE TABLE movimiento');
         $io->progressAdvance();
