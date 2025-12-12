@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Branch;
 use App\Entity\Category;
 use App\Entity\Customer;
+use App\Entity\Invoice;
 use App\Entity\LogisticOperation;
 use App\Entity\Product;
 use App\Entity\ProductStock;
@@ -15,12 +15,10 @@ use App\Entity\SaleItem;
 use App\Entity\Supplier;
 use App\Entity\UnitOfMeasure;
 use App\Entity\Warehouse;
-use App\Repository\BranchRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
-use App\Repository\PriceListRepository;
 use App\Repository\ProductRepository;
 use App\Repository\SaleRepository;
 use App\Repository\SupplierRepository;
@@ -206,12 +204,10 @@ final readonly class TestDataSeeder
 
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
         private CategoryRepository $categoryRepository,
         private PaymentMethodRepository $paymentMethodRepository,
-        private PriceListRepository $priceListRepository,
         private LogisticOperationRepository $logisticOperationRepository,
         private SupplierRepository $supplierRepository,
         private CustomerRepository $customerRepository,
@@ -234,9 +230,9 @@ final readonly class TestDataSeeder
             'customers_created' => 0,
             'products_created' => 0,
             'sales_created' => 0,
+            'invoices_created' => 0,
         ];
 
-        $branch = $this->getFirstBranch();
         $warehouse = $this->getFirstWarehouse();
 
         $stats['categories_created'] = $this->seedCategories();
@@ -266,17 +262,10 @@ final readonly class TestDataSeeder
             $batchSize
         );
 
+        // Invoices are created with sales, so they're the same count
+        $stats['invoices_created'] = $stats['sales_created'];
+
         return $stats;
-    }
-
-    private function getFirstBranch(): Branch
-    {
-        $branch = $this->branchRepository->findOneBy([]);
-        if (!$branch instanceof Branch) {
-            throw new \RuntimeException('No branch found. Run initial setup first.');
-        }
-
-        return $branch;
     }
 
     private function getFirstWarehouse(): Warehouse
@@ -345,7 +334,7 @@ final readonly class TestDataSeeder
         return array_values(
             array_filter(
                 $this->categoryRepository->findAll(),
-                static fn(Category $cat) => $cat->getParent() !== null
+                static fn (Category $cat) => $cat->getParent() !== null
             )
         );
     }
@@ -394,13 +383,13 @@ final readonly class TestDataSeeder
 
                 if (0 === $created % $batchSize) {
                     $this->entityManager->flush();
-                    $this->entityManager->clear(Supplier::class);
+                    $this->entityManager->clear();
                 }
             }
         }
 
         $this->entityManager->flush();
-        $this->entityManager->clear(Supplier::class);
+        $this->entityManager->clear();
 
         return $created;
     }
@@ -412,7 +401,7 @@ final readonly class TestDataSeeder
             $isCompany = $i % 3 !== 0;
             $ruc = $isCompany
                 ? '20' . str_pad((string)(100000000 + $i), 9, '0', STR_PAD_LEFT)
-                : '10' . str_pad((string)(10000000 + $i), 8, '0', STR_PAD_LEFT);
+                : '10' . str_pad((string)(100000 + $i), 6, '0', STR_PAD_LEFT);
 
             $existing = $this->customerRepository->find($ruc);
 
@@ -443,13 +432,13 @@ final readonly class TestDataSeeder
 
                 if (0 === $created % $batchSize) {
                     $this->entityManager->flush();
-                    $this->entityManager->clear(Customer::class);
+                    $this->entityManager->clear();
                 }
             }
         }
 
         $this->entityManager->flush();
-        $this->entityManager->clear(Customer::class);
+        $this->entityManager->clear();
 
         return $created;
     }
@@ -465,8 +454,8 @@ final readonly class TestDataSeeder
         $warehouseId = $warehouse->getId();
 
         // Get IDs to reload entities after clearing
-        $categoryIds = array_map(fn($c) => $c->getId(), $categories);
-        $unitIds = array_map(fn($u) => $u->getId(), $units);
+        $categoryIds = array_map(fn ($c) => $c->getId(), $categories);
+        $unitIds = array_map(fn ($u) => $u->getId(), $units);
 
         for ($i = 1; $i <= $count; ++$i) {
             $code = 'PROD-' . str_pad((string)$i, 6, '0', STR_PAD_LEFT);
@@ -509,15 +498,13 @@ final readonly class TestDataSeeder
 
                 if (0 === $created % $batchSize) {
                     $this->entityManager->flush();
-                    $this->entityManager->clear(Product::class);
-                    $this->entityManager->clear(ProductStock::class);
+                    $this->entityManager->clear();
                 }
             }
         }
 
         $this->entityManager->flush();
-        $this->entityManager->clear(Product::class);
-        $this->entityManager->clear(ProductStock::class);
+        $this->entityManager->clear();
 
         return $created;
     }
@@ -534,14 +521,13 @@ final readonly class TestDataSeeder
     ): int {
         $created = 0;
         $warehouseId = $warehouse->getId();
-        //$priceListId = $priceList->getId();
         $logisticOperationId = $logisticOperation->getId();
 
         // Get IDs for all entities to avoid detachment issues
-        $customerIds = array_map(fn($c) => $c->getRuc(), $customers);
-        $supplierIds = array_map(fn($s) => $s->getId(), $suppliers);
-        $paymentMethodIds = array_map(fn($p) => $p->getId(), $paymentMethods);
-        $productIds = array_map(fn($p) => $p->getId(), $products);
+        $customerIds = array_map(fn ($c) => $c->getRuc(), $customers);
+        $supplierIds = array_map(fn ($s) => $s->getId(), $suppliers);
+        $paymentMethodIds = array_map(fn ($p) => $p->getId(), $paymentMethods);
+        $productIds = array_map(fn ($p) => $p->getId(), $products);
 
         for ($i = 1; $i <= $count; ++$i) {
             $glosa = 'Venta Test #' . $i;
@@ -551,7 +537,7 @@ final readonly class TestDataSeeder
                 continue;
             }
 
-            $daysAgo = random_int(1, 180);
+            $daysAgo = random_int(1, 30);
             $saleDate = new DateTime("-$daysAgo days");
 
             // Reload entities from database to avoid detached entities
@@ -560,6 +546,12 @@ final readonly class TestDataSeeder
             $paymentMethod = $this->paymentMethodRepository->find($paymentMethodIds[array_rand($paymentMethodIds)]);
             $warehouse = $this->warehouseRepository->find($warehouseId);
             $logisticOperation = $this->logisticOperationRepository->find($logisticOperationId);
+
+            if ($customer->getRuc()[0] === '1') {
+                $series = 'B001';
+            } else {
+                $series = 'F001';
+            }
 
             $sale = new Sale();
             $sale->setOperacion($logisticOperation);
@@ -574,8 +566,9 @@ final readonly class TestDataSeeder
             $sale->setNumero(sprintf('%08d', 1000 + $i));
             $sale->setDescuento(0.0);
             $sale->setGlosa($glosa);
-            $sale->setHasInvoice(false);
+            $sale->setHasInvoice(true);
             $sale->setIsConsume(false);
+            $sale->setInvoice($series . '-' . $sale->getNumero());
             $sale->setCajaId(1);
             $sale->setEstado(1);
             $sale->setDateCreated($saleDate);
@@ -590,8 +583,7 @@ final readonly class TestDataSeeder
                 $product = $this->productRepository->find($productIds[array_rand($productIds)]);
                 $qty = random_int(1, 10);
                 $unitPrice = $product->getSalePrice();
-                $discount = random_int(0, 1) === 1 ? round($unitPrice * random_int(5, 15) / 100, 2) : 0;
-                $lineTotal = round(($unitPrice - $discount) * $qty, 2);
+                $lineTotal = round($unitPrice * $qty, 2);
                 $subtotal += $lineTotal;
 
                 $saleItem = new SaleItem();
@@ -599,30 +591,56 @@ final readonly class TestDataSeeder
                 $saleItem->setProducto($product);
                 $saleItem->setCantidad($qty);
                 $saleItem->setPrecioUnitario($unitPrice);
-                $saleItem->setDescuento($discount);
+                $saleItem->setDescuento(0);
                 $saleItem->setPrecioTotal($lineTotal);
 
                 $this->entityManager->persist($saleItem);
                 $sale->addItem($saleItem);
             }
 
-            $total = round($subtotal * 1.18, 2);
+            $total = $subtotal - ($subtotal * ($sale->getDescuento() / 100));
             $sale->setSubtotal($subtotal);
             $sale->setTotal($total);
 
             $this->entityManager->persist($sale);
+
+            $invoiceAmounts = new InvoiceCalculator(
+                total: $total,
+                discountPercentage: 0,
+                taxPercentage: 18,
+                chargesPercentage: 0
+            )->calculate();
+
+            // Create corresponding invoice
+            $invoice = new Invoice();
+            $invoice->setSale($sale);
+            $invoice->setCustomer($customer);
+            $invoice->setVoucherTypeId(($customer->getRuc()[0] === '1') ? '03' : '01');
+            $invoice->setIssuedAt($saleDate);
+            $invoice->setSeries($series);
+            $invoice->setNumber($sale->getNumero());
+            $invoice->setUnaffected(false);
+            $invoice->setSubTotal($invoiceAmounts->getSubtotal());
+            $invoice->setTaxableAmount($invoiceAmounts->getTaxedAmount());
+            $invoice->setIgv($invoiceAmounts->getTax());
+            $invoice->setRc(0);
+            $invoice->setTotal($invoiceAmounts->getTotal());
+            $invoice->setDiscountPercent(0);
+            $invoice->setDiscountAmount(0);
+            $invoice->setVoided(0);
+            $invoice->setCreatedAt($saleDate);
+
+            $this->entityManager->persist($invoice);
             ++$created;
 
             if (0 === $created % $batchSize) {
                 $this->entityManager->flush();
-                $this->entityManager->clear(Sale::class);
-                $this->entityManager->clear(SaleItem::class);
+                $this->entityManager->clear();
             }
         }
 
         $this->entityManager->flush();
-        $this->entityManager->clear(Sale::class);
-        $this->entityManager->clear(SaleItem::class);
+        $this->entityManager->clear();
 
         return $created;
     }

@@ -48,11 +48,11 @@ class PrintESCPOSController extends AbstractController
     public function printCommands(string $saleId): string
     {
         $divider = str_pad(
-                '',
-                (int)$_ENV['PRINTER_LINE_WIDTH'],
-                '-',
-                STR_PAD_BOTH
-            ) . "\n";
+            '',
+            (int)$_ENV['PRINTER_LINE_WIDTH'],
+            '-',
+            STR_PAD_BOTH
+        ) . "\n";
 
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
