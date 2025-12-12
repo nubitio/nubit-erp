@@ -193,6 +193,7 @@ jobs:
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
