@@ -14,8 +14,6 @@ final readonly class TokenPairDTO
         public int $accessTokenExpiresAt,
         public int $refreshTokenExpiresAt,
         public User $user,
-        public ?string $branchId = null,
-        public ?string $branchName = null,
     ) {
     }
 
@@ -27,8 +25,6 @@ final readonly class TokenPairDTO
                 'userId' => $this->user->getId(),
                 'role' => $this->user->getRole()?->getId(),
                 'roles' => $this->user->getRoles(),
-                'branchId' => $this->branchId,
-                'branchName' => $this->branchName,
             ],
         ];
 

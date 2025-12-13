@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\XlsExporter;
 use App\Core\Symfony\Security\SecurityService;
 use Doctrine\DBAL\Connection;
@@ -24,12 +25,12 @@ class SaleReportController extends AbstractController
      * @throws Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function __invoke(Request $request, SecurityService $securityService): StreamedResponse
+    public function __invoke(Request $request, SecurityService $securityService, BranchContextService $branchContext): StreamedResponse
     {
         $report = $request->query->get('report');
         $dateFrom = $request->query->get('date-from');
         $dateTo = $request->query->get('date-to');
-        $localId = $securityService->connectedUser()?->branchId;
+        $localId = $branchContext->getCurrentBranchId();
 
         $params = [
             'local_id' => $localId,

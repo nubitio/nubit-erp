@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Dto\Auth\AuthUserDTO;
 use App\Core\Application\Session\Security;
+use App\Core\Security\Auth\BranchContextService;
 use App\Repository\DashboardRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly DashboardRepository $repository,
+        private readonly BranchContextService $branchContext,
     ) {
     }
 
@@ -27,10 +29,10 @@ class DashboardController extends AbstractController
             return $this->json([]);
         }
 
-        $localId = $user->branchId;
+        $localId = $this->branchContext->getCurrentBranchId();
 
         if ($type == 'overview') {
-            $data = $this->repository->getOverview($localId);
+            $data = $this->repository->getOverview((string) $localId);
         }
 
         return $this->json($data ?? []);

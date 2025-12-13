@@ -34,8 +34,6 @@ export interface User {
   name: string;
   role: number;
   roles: string[];
-  branchId: number;
-  branchName: string;
   warehouseId: number;
   avatarUrl: string;
 }

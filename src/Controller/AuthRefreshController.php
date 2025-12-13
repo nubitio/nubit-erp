@@ -85,10 +85,7 @@ class AuthRefreshController extends AbstractController
         $storedToken->revoke(new DateTimeImmutable());
 
         try {
-            $branch = $payload['branchId'] ? $this->entityManager->getRepository(\App\Entity\Branch::class)->find(
-                $payload['branchId']
-            ) : null;
-            $tokenPair = $this->tokenGenerator->generateTokenPair($user, $branch);
+            $tokenPair = $this->tokenGenerator->generateTokenPair($user);
 
             $this->logger->info('Token refreshed successfully', [
                 'user_id' => $user->getId(),
