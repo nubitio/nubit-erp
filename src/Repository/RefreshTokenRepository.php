@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\RefreshToken;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -23,8 +24,54 @@ class RefreshTokenRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('rt')
             ->andWhere('rt.tokenHash = :hash')
             ->andWhere('rt.revokedAt IS NULL')
+            ->andWhere('rt.expiresAt > :now')
             ->setParameter('hash', $tokenHash)
+            ->setParameter('now', new \DateTimeImmutable())
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    public function findActiveByJti(string $jti): ?RefreshToken
+    {
+        return $this->createQueryBuilder('rt')
+            ->andWhere('rt.jti = :jti')
+            ->andWhere('rt.revokedAt IS NULL')
+            ->andWhere('rt.expiresAt > :now')
+            ->setParameter('jti', $jti)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function countActiveTokensForUser(User $user): int
+    {
+        return (int) $this->createQueryBuilder('rt')
+            ->select('COUNT(rt.id)')
+            ->andWhere('rt.user = :user')
+            ->andWhere('rt.revokedAt IS NULL')
+            ->andWhere('rt.expiresAt > :now')
+            ->setParameter('user', $user)
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function findExpiredTokens(): array
+    {
+        return $this->createQueryBuilder('rt')
+            ->andWhere('rt.expiresAt < :now')
+            ->setParameter('now', new \DateTimeImmutable())
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findRevokedTokensOlderThan(\DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('rt')
+            ->andWhere('rt.revokedAt IS NOT NULL')
+            ->andWhere('rt.revokedAt < :date')
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getResult();
     }
 }

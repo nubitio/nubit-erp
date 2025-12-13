@@ -4,55 +4,56 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\RefreshToken;
-use DateTimeImmutable;
+use App\Core\Security\Auth\ClientDetectorService;
+use App\Core\Security\Auth\CookieFactoryService;
 use App\Core\Security\Auth\JWTAuthenticator;
-use App\Repository\RefreshTokenRepository;
+use App\Core\Security\Auth\RefreshTokenService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Doctrine\ORM\EntityManagerInterface;
 
 class AuthLogoutController extends AbstractController
 {
     public function __construct(
-        private readonly RefreshTokenRepository $refreshTokenRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly RefreshTokenService $refreshTokenService,
+        private readonly ClientDetectorService $clientDetector,
+        private readonly CookieFactoryService $cookieFactory,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        $refreshToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+        $refreshToken = $request->headers->get(JWTAuthenticator::REFRESH_HEADER)
+            ?? $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+
         if ($refreshToken) {
-            $storedToken = $this->refreshTokenRepository->findActiveByHash(hash('sha256', $refreshToken));
-            if ($storedToken instanceof RefreshToken) {
-                $storedToken->revoke(new DateTimeImmutable());
-                $this->entityManager->flush();
+            try {
+                $this->refreshTokenService->revokeByToken($refreshToken);
+
+                $this->logger->info('User logged out successfully', [
+                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                ]);
+            } catch (\Throwable $e) {
+                $this->logger->error('Error revoking refresh token on logout', [
+                    'exception' => $e->getMessage(),
+                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                ]);
             }
         }
 
         $response = new JsonResponse(['message' => 'ok']);
-        $expiredAccessCookie = Cookie::create(
-            JWTAuthenticator::AUTH_COOKIE,
-            '',
-            new DateTimeImmutable('-1 hour')->getTimestamp(),
-            '/',
-            null,
-            true
-        );
-        $expiredRefreshCookie = Cookie::create(
-            JWTAuthenticator::REFRESH_COOKIE,
-            '',
-            new DateTimeImmutable('-1 hour')->getTimestamp(),
-            '/',
-            null,
-            true
-        );
-        $response->headers->setCookie($expiredAccessCookie);
-        $response->headers->setCookie($expiredRefreshCookie);
+
+        if (!$this->clientDetector->isMobileClient($request)) {
+            $response->headers->setCookie(
+                $this->cookieFactory->createExpiredCookie(JWTAuthenticator::AUTH_COOKIE)
+            );
+            $response->headers->setCookie(
+                $this->cookieFactory->createExpiredCookie(JWTAuthenticator::REFRESH_COOKIE)
+            );
+        }
 
         return $response;
     }

@@ -1,0 +1,49 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Security\Auth;
+
+use Symfony\Component\HttpFoundation\Cookie;
+
+final readonly class CookieFactoryService
+{
+    public function createSecureCookie(
+        string $name,
+        string $value,
+        int $expiresAt,
+        string $path = '/',
+        ?string $domain = null,
+        string $sameSite = Cookie::SAMESITE_STRICT
+    ): Cookie {
+        return Cookie::create(
+            $name,
+            $value,
+            $expiresAt,
+            $path,
+            $domain,
+            true,  // secure
+            true,  // httpOnly
+            false, // raw
+            $sameSite
+        );
+    }
+
+    public function createExpiredCookie(
+        string $name,
+        string $path = '/',
+        ?string $domain = null
+    ): Cookie {
+        return Cookie::create(
+            $name,
+            '',
+            time() - 3600,
+            $path,
+            $domain,
+            true,  // secure
+            true,  // httpOnly
+            false, // raw
+            Cookie::SAMESITE_STRICT
+        );
+    }
+}
