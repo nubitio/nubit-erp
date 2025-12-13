@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
-use Override;
-use Throwable;
-use DateTimeImmutable;
 use App\Entity\Branch;
-use App\Entity\RefreshToken;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\ExpiredException;
+use Override;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,6 +23,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use Throwable;
 
 class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
@@ -36,6 +33,8 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
     public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
 
+    public const string REFRESH_HEADER = 'X-Refresh-Token';
+
     public const string LOGIN_ROUTE = 'auth_login';
 
     public function __construct(
@@ -43,8 +42,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly UserProvider $userProvider,
         private readonly JWTManager $jwtManager,
         private readonly LoggerInterface $logger,
-        private readonly int $accessTokenTtl,
-        private readonly int $refreshTokenTtl,
+        private readonly TokenGeneratorService $tokenGenerator,
+        private readonly ClientDetectorService $clientDetector,
+        private readonly CookieFactoryService $cookieFactory,
     ) {
     }
 
@@ -95,33 +95,81 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $jwtToken = $credentials['token'];
 
         if ($jwtToken) {
-            try {
-                $jwtToken = str_replace('Bearer ', '', $jwtToken);
-                $tokenData = $this->jwtManager->decode($jwtToken);
-            } catch (ExpiredException) {
-                throw new AuthenticationException('Su sesión ha expirado', Response::HTTP_UNAUTHORIZED);
-            } catch (Throwable $e) {
-                $this->logger->error('Error decoding JWT token', ['exception' => $e]);
-                throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
-            }
-
-            $username = $tokenData['username'];
-            $branchId = $tokenData['branchId'] ?? $credentials['branchId'];
-            $branch = null;
-            if ($branchId) {
-                $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
-            }
-
-            $passport = new SelfValidatingPassport(
-                new UserBadge($username, $this->userProvider->loadUserByIdentifier(...))
-            );
-            $passport->setAttribute('branchId', $branchId);
-            $passport->setAttribute('branchName', $branch?->getName());
-
-            return $passport;
+            return $this->authenticateWithJWT($jwtToken, $credentials);
         }
 
-        return $this->getPassport($credentials);
+        return $this->authenticateWithCredentials($credentials);
+    }
+
+    private function authenticateWithJWT(string $jwtToken, array $credentials): SelfValidatingPassport
+    {
+        try {
+            $jwtToken = str_replace('Bearer ', '', $jwtToken);
+            $tokenData = $this->jwtManager->decode($jwtToken);
+        } catch (ExpiredException $e) {
+            $this->logger->warning('JWT token expired', [
+                'exception' => $e->getMessage(),
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            ]);
+            throw new AuthenticationException('Su sesión ha expirado', Response::HTTP_UNAUTHORIZED);
+        } catch (Throwable $e) {
+            $this->logger->error('Error decoding JWT token', [
+                'exception' => $e->getMessage(),
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
+        }
+
+        $username = $tokenData['username'] ?? null;
+        if (!$username) {
+            $this->logger->error('JWT token missing username claim');
+            throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
+        }
+
+        $branchId = $tokenData['branchId'] ?? $credentials['branchId'] ?? null;
+        $branch = $branchId ? $this->entityManager->getRepository(Branch::class)->find($branchId) : null;
+
+        $passport = new SelfValidatingPassport(
+            new UserBadge($username, $this->userProvider->loadUserByIdentifier(...))
+        );
+        $passport->setAttribute('is_login', false);
+        $passport->setAttribute('token', $jwtToken);
+        $passport->setAttribute('branchId', $branchId);
+        $passport->setAttribute('branchName', $branch?->getName());
+
+        $this->logger->info('User authenticated with JWT', [
+            'username' => $username,
+            'user_id' => $tokenData['userId'] ?? null,
+        ]);
+
+        return $passport;
+    }
+
+    private function authenticateWithCredentials(array $credentials): Passport
+    {
+        $username = $credentials['username'];
+        $password = $credentials['password'];
+        $branchId = $credentials['branchId'];
+
+        if (empty($username) || empty($password)) {
+            $this->logger->warning('Login attempt with empty credentials');
+            throw new AuthenticationException('Credenciales inválidas', Response::HTTP_UNAUTHORIZED);
+        }
+
+        $userBadge = new UserBadge($username, $this->userProvider->loadUserByIdentifier(...));
+        $passwordUpgradeBadge = new PasswordUpgradeBadge($password, $this->userProvider);
+        $passport = new Passport($userBadge, new PasswordCredentials($password), [new RememberMeBadge()]);
+        $passport->addBadge($passwordUpgradeBadge);
+
+        $branch = $branchId ? $this->entityManager->getRepository(Branch::class)->find($branchId) : null;
+
+        $passport->setAttribute('is_login', true);
+        $passport->setAttribute('branchId', $branchId);
+        $passport->setAttribute('branchName', $branch?->getName());
+        $passport->setAttribute('branch', $branch);
+
+        return $passport;
     }
 
     #[Override]
@@ -129,69 +177,90 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     {
         $user = $passport->getUser();
         $branchId = $passport->getAttribute('branchId') ?? null;
-        $now = new DateTimeImmutable();
-        $nowTimestamp = $now->getTimestamp();
-        $accessTokenExpiresAt = $nowTimestamp + $this->accessTokenTtl;
-        $refreshTokenExpiresAt = $nowTimestamp + $this->refreshTokenTtl;
-
-        $branch = null;
-        if ($branchId) {
-            $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
-        }
+        $branchName = $passport->getAttribute('branchName');
+        $isLogin = $passport->getAttribute('is_login') ?? true;
 
         if (!$user instanceof User) {
+            $this->logger->error('Invalid user type in passport', [
+                'user_class' => get_class($user),
+            ]);
             throw new AuthenticationException('Invalid user');
         }
 
-        $payload = [
-            'iat' => $nowTimestamp,
-            'type' => 'access',
-        ];
+        if (!$isLogin) {
+            return $this->createTokenFromExisting($user, $passport, $firewallName, $branchId, $branchName);
+        }
 
-        $payload['username'] = $user->getUsername();
-        $payload['userId'] = $user->getId();
-        $payload['role'] = $user->getRole()?->getId();
-        $payload['branchId'] = $branch?->getId();
-        $payload['branchName'] = $branch?->getName();
-        $payload['roles'] = $user->getRoles();
+        return $this->createTokenFromLogin($user, $passport, $firewallName);
+    }
 
-        $accessToken = $this->jwtManager->encode([
-            ...$payload,
-            'exp' => $accessTokenExpiresAt,
-        ]);
-
-        $refreshTokenJti = bin2hex(random_bytes(16));
-        $refreshToken = $this->jwtManager->encode([
-            ...$payload,
-            'exp' => $refreshTokenExpiresAt,
-            'type' => 'refresh',
-            'jti' => $refreshTokenJti,
-        ]);
-
-        $this->storeRefreshToken($refreshTokenJti, $refreshToken, $user, $refreshTokenExpiresAt);
+    private function createTokenFromExisting(
+        User $user,
+        Passport $passport,
+        string $firewallName,
+        ?string $branchId,
+        ?string $branchName
+    ): JWTAuthenticationToken {
+        $existingToken = $passport->getAttribute('token');
 
         $jwtToken = new JWTAuthenticationToken(
-            $passport->getUser(),
+            $user,
             $firewallName,
-            $passport->getUser()->getRoles(),
-            $passport->getAttribute('token') ?? $accessToken
+            $user->getRoles(),
+            $existingToken
         );
 
         if ($branchId) {
             $jwtToken->setAttribute('branchId', $branchId);
-            $jwtToken->setAttribute('branchName', $branch?->getName());
+            $jwtToken->setAttribute('branchName', $branchName);
         }
-
-        $jwtToken->setAttribute('refreshToken', $refreshToken);
-        $jwtToken->setAttribute('accessTokenExpiresAt', $accessTokenExpiresAt);
-        $jwtToken->setAttribute('refreshTokenExpiresAt', $refreshTokenExpiresAt);
 
         return $jwtToken;
     }
 
-    /**
-     * @inheritdoc
-     */
+    private function createTokenFromLogin(
+        User $user,
+        Passport $passport,
+        string $firewallName
+    ): JWTAuthenticationToken {
+        $branch = $passport->getAttribute('branch');
+
+        try {
+            $tokenPair = $this->tokenGenerator->generateTokenPair($user, $branch);
+        } catch (Throwable $e) {
+            $this->logger->error('Failed to generate token pair', [
+                'user_id' => $user->getId(),
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new AuthenticationException('Error al generar tokens');
+        }
+
+        $jwtToken = new JWTAuthenticationToken(
+            $user,
+            $firewallName,
+            $user->getRoles(),
+            $tokenPair->accessToken
+        );
+
+        if ($tokenPair->branchId) {
+            $jwtToken->setAttribute('branchId', $tokenPair->branchId);
+            $jwtToken->setAttribute('branchName', $tokenPair->branchName);
+        }
+
+        $jwtToken->setAttribute('refreshToken', $tokenPair->refreshToken);
+        $jwtToken->setAttribute('accessTokenExpiresAt', $tokenPair->accessTokenExpiresAt);
+        $jwtToken->setAttribute('refreshTokenExpiresAt', $tokenPair->refreshTokenExpiresAt);
+
+        $this->logger->info('Token pair generated for user', [
+            'user_id' => $user->getId(),
+            'username' => $user->getUsername(),
+            'expires_at' => date('Y-m-d H:i:s', $tokenPair->accessTokenExpiresAt),
+        ]);
+
+        return $jwtToken;
+    }
+
     #[Override]
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
@@ -205,68 +274,91 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         }
 
         $user = $token->getUser();
+        if (!$user instanceof User) {
+            return null;
+        }
 
-        if ($user instanceof User) {
-            $branchId = null;
-            $branchName = null;
-            try {
-                $branchId = $token->getAttribute('branchId');
-                $branchName = $token->getAttribute('branchName');
-            } catch (Throwable) {
-                $this->logger->error('Token does not have branchId or branchName attribute');
-            }
+        $isMobileClient = $this->clientDetector->isMobileClient($request);
+        $responseData = $this->buildResponseData($token, $user);
 
-            $accessTokenExpiresAt = time() + $this->accessTokenTtl;
-            $refreshTokenExpiresAt = time() + $this->refreshTokenTtl;
+        if ($isMobileClient) {
+            return $this->createMobileResponse($token, $responseData);
+        }
 
-            try {
-                $accessTokenExpiresAt = $token->getAttribute('accessTokenExpiresAt');
-            } catch (Throwable) {
-                $this->logger->error('Token does not have accessTokenExpiresAt attribute');
-            }
+        return $this->createWebResponse($token, $responseData);
+    }
 
-            try {
-                $refreshTokenExpiresAt = $token->getAttribute('refreshTokenExpiresAt');
-            } catch (Throwable) {
-                $this->logger->error('Token does not have refreshTokenExpiresAt attribute');
-            }
+    private function buildResponseData(JWTAuthenticationToken $token, User $user): array
+    {
+        $branchId = $this->getTokenAttributeSafely($token, 'branchId');
+        $branchName = $this->getTokenAttributeSafely($token, 'branchName');
 
-            $response = new JsonResponse([
-                'user' => [
-                    'username' => $user->getUsername(),
-                    'userId' => $user->getId(),
-                    'role' => $user->getRole()?->getId(),
-                    'roles' => $user->getRoles(),
-                    'branchId' => $branchId,
-                    'branchName' => $branchName,
-                ],
-            ]);
+        return [
+            'user' => [
+                'username' => $user->getUsername(),
+                'userId' => $user->getId(),
+                'role' => $user->getRole()?->getId(),
+                'roles' => $user->getRoles(),
+                'branchId' => $branchId,
+                'branchName' => $branchName,
+            ],
+        ];
+    }
 
-            $accessCookie = Cookie::create(
+    private function createMobileResponse(JWTAuthenticationToken $token, array $responseData): JsonResponse
+    {
+        $refreshToken = $this->getTokenAttributeSafely($token, 'refreshToken');
+        $accessTokenExpiresAt = $this->getTokenAttributeSafely($token, 'accessTokenExpiresAt');
+
+        if ($refreshToken && $accessTokenExpiresAt) {
+            $responseData['token'] = $token->getCredentials();
+            $responseData['refreshToken'] = $refreshToken;
+            $responseData['expiresAt'] = $accessTokenExpiresAt;
+        }
+
+        return new JsonResponse($responseData);
+    }
+
+    private function createWebResponse(JWTAuthenticationToken $token, array $responseData): JsonResponse
+    {
+        $response = new JsonResponse($responseData);
+
+        $refreshToken = $this->getTokenAttributeSafely($token, 'refreshToken');
+        $accessTokenExpiresAt = $this->getTokenAttributeSafely($token, 'accessTokenExpiresAt');
+        $refreshTokenExpiresAt = $this->getTokenAttributeSafely($token, 'refreshTokenExpiresAt');
+
+        if ($refreshToken && $accessTokenExpiresAt && $refreshTokenExpiresAt) {
+            $accessCookie = $this->cookieFactory->createSecureCookie(
                 self::AUTH_COOKIE,
                 $token->getCredentials(),
-                $accessTokenExpiresAt,
-                '/',
-                null,
-                true
+                $accessTokenExpiresAt
             );
 
-            $refreshCookie = Cookie::create(
+            $refreshCookie = $this->cookieFactory->createSecureCookie(
                 self::REFRESH_COOKIE,
-                $token->getAttribute('refreshToken'),
-                $refreshTokenExpiresAt,
-                '/',
-                null,
-                true
+                $refreshToken,
+                $refreshTokenExpiresAt
             );
 
             $response->headers->setCookie($accessCookie);
             $response->headers->setCookie($refreshCookie);
-
-            return $response;
         }
 
-        return null;
+        return $response;
+    }
+
+    private function getTokenAttributeSafely(JWTAuthenticationToken $token, string $attribute): mixed
+    {
+        try {
+            return $token->getAttribute($attribute);
+        } catch (Throwable $e) {
+            $this->logger->warning('Token attribute not found', [
+                'attribute' => $attribute,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**
@@ -275,6 +367,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     #[Override]
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        $this->logger->warning('Authentication failure', [
+            'exception' => $exception->getMessage(),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'route' => $request->attributes->get('_route'),
+        ]);
+
         throw $exception;
     }
 
@@ -284,43 +382,16 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     #[Override]
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
+        $message = $authException?->getMessage() ?? 'Authentication Required';
+
+        $this->logger->info('Authentication required', [
+            'message' => $message,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'route' => $request->attributes->get('_route'),
+        ]);
+
         return new JsonResponse([
-            'message' => $authException instanceof AuthenticationException ? $authException->getMessage(
-            ) : 'Authentication Required',
+            'message' => $message,
         ], Response::HTTP_UNAUTHORIZED);
-    }
-
-    private function getPassport(array $credentials): Passport
-    {
-        $username = $credentials['username'];
-        $password = $credentials['password'];
-        $branchId = $credentials['branchId'];
-
-        $userBadge = new UserBadge($username, $this->userProvider->loadUserByIdentifier(...));
-        $passwordUpgradeBadge = new PasswordUpgradeBadge($password, $this->userProvider);
-        $passport = new Passport($userBadge, new PasswordCredentials($password), [new RememberMeBadge()]);
-        $passport->addBadge($passwordUpgradeBadge);
-
-        $branch = null;
-        if ($branchId) {
-            $branch = $this->entityManager->getRepository(Branch::class)->find($branchId);
-        }
-
-        $passport->setAttribute('branchId', $branchId);
-        $passport->setAttribute('branchName', $branch?->getName());
-
-        return $passport;
-    }
-
-    private function storeRefreshToken(string $jti, string $refreshToken, User $user, int $refreshTokenExpiresAt): void
-    {
-        $refreshTokenEntity = new RefreshToken()
-            ->setJti($jti)
-            ->setTokenHash(hash('sha256', $refreshToken))
-            ->setUser($user)
-            ->setExpiresAt(new DateTimeImmutable()->setTimestamp($refreshTokenExpiresAt));
-
-        $this->entityManager->persist($refreshTokenEntity);
-        $this->entityManager->flush();
     }
 }

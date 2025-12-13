@@ -7,6 +7,7 @@ namespace App\Core\Security\Auth;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Psr\Log\LoggerInterface;
 
 final readonly class JWTManager
 {
@@ -14,6 +15,7 @@ final readonly class JWTManager
 
     public function __construct(
         private string $secret,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -36,7 +38,8 @@ final readonly class JWTManager
         try {
             $this->decode($token);
             return true;
-        } catch (Exception) {
+        } catch (Exception $e) {
+            $this->logger->error('Invalid JWT token', ['exception' => $e]);
             return false;
         }
     }
@@ -51,7 +54,8 @@ final readonly class JWTManager
             }
 
             return time() > $payload['exp'];
-        } catch (Exception) {
+        } catch (Exception $e) {
+            $this->logger->error('Invalid JWT token', ['exception' => $e]);
             return true;
         }
     }

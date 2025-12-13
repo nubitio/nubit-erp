@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use Throwable;
-use DateTimeImmutable;
+use App\Core\Security\Auth\ClientDetectorService;
+use App\Core\Security\Auth\CookieFactoryService;
 use App\Core\Security\Auth\JWTAuthenticator;
 use App\Core\Security\Auth\JWTManager;
+use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Repository\RefreshTokenRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class AuthRefreshController extends AbstractController
 {
@@ -24,110 +27,132 @@ class AuthRefreshController extends AbstractController
         private readonly JWTManager $jwtManager,
         private readonly RefreshTokenRepository $refreshTokenRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly int $accessTokenTtl,
-        private readonly int $refreshTokenTtl,
+        private readonly TokenGeneratorService $tokenGenerator,
+        private readonly ClientDetectorService $clientDetector,
+        private readonly CookieFactoryService $cookieFactory,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        $refreshToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+        $refreshToken = $request->headers->get(JWTAuthenticator::REFRESH_HEADER)
+            ?? $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+
         if (!$refreshToken) {
+            $this->logger->warning('Refresh token missing in request', [
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            ]);
+
             return new JsonResponse(['message' => 'No refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
             $payload = $this->jwtManager->decode($refreshToken);
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            $this->logger->warning('Invalid refresh token', [
+                'exception' => $e->getMessage(),
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            ]);
+
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
-        if (($payload['type'] ?? null) !== 'refresh') {
-            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $now = new DateTimeImmutable();
-        if (isset($payload['exp']) && $payload['exp'] < $now->getTimestamp()) {
-            return new JsonResponse(['message' => 'Expired refresh token'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $storedToken = $this->refreshTokenRepository->findActiveByHash(hash('sha256', $refreshToken));
-        if (!$storedToken instanceof RefreshToken) {
-            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        if ($storedToken->getJti() !== ($payload['jti'] ?? null)) {
-            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        if ($storedToken->getExpiresAt() < $now) {
-            return new JsonResponse(['message' => 'Expired refresh token'], Response::HTTP_UNAUTHORIZED);
+        $validationError = $this->validateRefreshToken($payload);
+        if ($validationError) {
+            return $validationError;
         }
 
         /** @var User|null $user */
         $user = $this->entityManager->getRepository(User::class)->find($payload['userId'] ?? 0);
         if (!$user instanceof User) {
+            $this->logger->error('User not found for refresh token', [
+                'user_id' => $payload['userId'] ?? null,
+            ]);
+
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $storedToken->revoke($now);
+        $storedToken = $this->refreshTokenRepository->findActiveByHash(hash('sha256', $refreshToken));
+        if (!$storedToken instanceof RefreshToken) {
+            $this->logger->warning('Refresh token not found in database', [
+                'user_id' => $user->getId(),
+            ]);
 
-        $accessToken = $this->jwtManager->encode([
-            ...$payload,
-            'type' => 'access',
-            'exp' => $now->getTimestamp() + $this->accessTokenTtl,
-            'iat' => $now->getTimestamp(),
-        ]);
+            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
+        }
 
-        $refreshTokenJti = bin2hex(random_bytes(16));
-        $newRefreshToken = $this->jwtManager->encode([
-            ...$payload,
-            'type' => 'refresh',
-            'exp' => $now->getTimestamp() + $this->refreshTokenTtl,
-            'jti' => $refreshTokenJti,
-            'iat' => $now->getTimestamp(),
-        ]);
+        $storedToken->revoke(new DateTimeImmutable());
 
-        $newRefreshTokenEntity = new RefreshToken()
-            ->setJti($refreshTokenJti)
-            ->setTokenHash(hash('sha256', $newRefreshToken))
-            ->setUser($user)
-            ->setExpiresAt(new DateTimeImmutable()->setTimestamp($now->getTimestamp() + $this->refreshTokenTtl));
+        try {
+            $branch = $payload['branchId'] ? $this->entityManager->getRepository(\App\Entity\Branch::class)->find(
+                $payload['branchId']
+            ) : null;
+            $tokenPair = $this->tokenGenerator->generateTokenPair($user, $branch);
 
-        $this->entityManager->persist($newRefreshTokenEntity);
-        $this->entityManager->flush();
+            $this->logger->info('Token refreshed successfully', [
+                'user_id' => $user->getId(),
+                'old_jti' => $storedToken->getJti(),
+            ]);
+        } catch (Throwable $e) {
+            $this->logger->error('Failed to generate new token pair during refresh', [
+                'user_id' => $user->getId(),
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
-        $response = new JsonResponse([
-            'user' => [
-                'username' => $payload['username'] ?? '',
-                'userId' => $payload['userId'] ?? null,
-                'role' => $payload['role'] ?? null,
-                'roles' => $payload['roles'] ?? [],
-                'branchId' => $payload['branchId'] ?? null,
-                'branchName' => $payload['branchName'] ?? null,
-            ],
-        ]);
+            return new JsonResponse(['message' => 'Error generating tokens'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
-        $accessCookie = Cookie::create(
-            JWTAuthenticator::AUTH_COOKIE,
-            $accessToken,
-            $now->getTimestamp() + $this->accessTokenTtl,
-            '/',
-            null,
-            true
-        );
-        $refreshCookie = Cookie::create(
-            JWTAuthenticator::REFRESH_COOKIE,
-            $newRefreshToken,
-            $newRefreshTokenEntity->getExpiresAt()->getTimestamp(),
-            '/',
-            null,
-            true
-        );
+        $isMobileClient = $this->clientDetector->isMobileClient($request);
+        $responseData = $tokenPair->toArray($isMobileClient);
+        $response = new JsonResponse($responseData);
 
-        $response->headers->setCookie($accessCookie);
-        $response->headers->setCookie($refreshCookie);
+        if (!$isMobileClient) {
+            $response->headers->setCookie(
+                $this->cookieFactory->createSecureCookie(
+                    JWTAuthenticator::AUTH_COOKIE,
+                    $tokenPair->accessToken,
+                    $tokenPair->accessTokenExpiresAt
+                )
+            );
+            $response->headers->setCookie(
+                $this->cookieFactory->createSecureCookie(
+                    JWTAuthenticator::REFRESH_COOKIE,
+                    $tokenPair->refreshToken,
+                    $tokenPair->refreshTokenExpiresAt
+                )
+            );
+        }
 
         return $response;
+    }
+
+    private function validateRefreshToken(array $payload): ?JsonResponse
+    {
+        if (($payload['type'] ?? null) !== 'refresh') {
+            $this->logger->warning('Token is not a refresh token', [
+                'type' => $payload['type'] ?? 'null',
+            ]);
+
+            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $now = new DateTimeImmutable();
+        if (isset($payload['exp']) && $payload['exp'] < $now->getTimestamp()) {
+            $this->logger->info('Refresh token expired', [
+                'exp' => date('Y-m-d H:i:s', $payload['exp']),
+            ]);
+
+            return new JsonResponse(['message' => 'Expired refresh token'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if (!isset($payload['jti'])) {
+            $this->logger->error('Refresh token missing JTI claim');
+
+            return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return null;
     }
 }
