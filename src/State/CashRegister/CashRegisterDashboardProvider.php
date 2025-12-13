@@ -10,6 +10,7 @@ use DateMalformedStringException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Application\Session\Security;
+use App\Core\Security\Auth\BranchContextService;
 use App\Dto\CashRegister\CashRegisterDashboardDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -19,6 +20,7 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private Security $security,
+        private BranchContextService $branchContext,
     ) {
     }
 
@@ -30,7 +32,7 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $user = $this->security->connectedUser();
-        $branchId = $user->branchId;
+        $branchId = $this->branchContext->getCurrentBranchId();
 
         $sql = <<<SQL
 SELECT

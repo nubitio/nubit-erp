@@ -19,10 +19,6 @@ readonly class TenantListener
     ) {
     }
 
-    /**
-     * @throws Exception
-     * @throws \Doctrine\DBAL\Driver\Exception
-     */
     public function __invoke(RequestEvent $event): void
     {
         $request = $event->getRequest();
@@ -33,11 +29,27 @@ readonly class TenantListener
         }
 
         $host = $request->getHost();
+
+        // Exclude requests coming from IP addresses that are local/reserved (loopback, private ranges)
+        // FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE returns false for private/reserved IPs,
+        // so we invert the result to detect such addresses.
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $isPublicIp = (bool) filter_var(
+                $host,
+                FILTER_VALIDATE_IP,
+                FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+            );
+
+            if (!$isPublicIp) {
+                return;
+            }
+        }
+
         $parts = explode('.', $host);
         $subdomain = $parts[0];
 
         // Default/known infra hosts that should not trigger tenant switching.
-        $excludedSubdomains = ['localhost', 'demo'];
+        $excludedSubdomains = ['localhost', 'demo', 'dev', 'test'];
         if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
             return;
         }

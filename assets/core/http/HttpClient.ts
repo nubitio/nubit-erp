@@ -37,6 +37,12 @@ class HttpClient {
 
   private setupInterceptors = () => {
     this.axiosClient.interceptors.request.use((config) => {
+      // Add X-Branch-Id header from storage
+      const branchId = StorageUtils.getItem('selectedBranchId');
+      if (branchId) {
+        config.headers['X-Branch-Id'] = branchId;
+      }
+
       if (config.params && 'skip' in config.params && 'take' in config.params) {
         config.params.page = config.params.skip / config.params.take + 1;
         config.params.itemsPerPage = config.params.take;

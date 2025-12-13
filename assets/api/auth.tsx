@@ -10,8 +10,6 @@ export async function signIn(email: string, password: string) {
     name: 'Admin',
     role: 0,
     roles: ['admin'],
-    branchId: 1,
-    branchName: 'Main Branch',
     warehouseId: 1,
     avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/01.png',
   };

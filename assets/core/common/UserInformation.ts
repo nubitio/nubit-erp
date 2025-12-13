@@ -1,19 +1,18 @@
 import { StorageUtils } from '../utils/StorageUtils';
 import { User } from '../../types';
+import { branchService } from '../../service/branch.service';
 
 export const userInformation = () => {
   const user = StorageUtils.getItem('user') as User;
   const currentUserId = user.userId;
   const currentUserName = user.username;
   const currentUserRoleId = user.role;
-  const currentBranchId = user.branchId;
-  const currentBranchName = user.branchName;
+  const currentBranchId = branchService.getSelectedBranchId();
 
   return {
     currentUserId,
     currentUserName,
     currentUserRoleId,
     currentBranchId,
-    currentBranchName,
   };
 };
