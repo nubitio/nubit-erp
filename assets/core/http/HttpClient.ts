@@ -19,6 +19,8 @@ class HttpClient {
     reject: (reason?: any) => void;
     request: any;
   }> = [];
+  private readonly locale: string =
+    (typeof navigator !== 'undefined' && navigator.language?.split('-')[0]) || 'es';
 
   private static readonly DEFAULT_MESSAGES = {
     error: 'Ocurrió un error',
@@ -47,6 +49,7 @@ class HttpClient {
       if (branchId) {
         config.headers['X-Branch-Id'] = branchId;
       }
+      config.headers['Accept-Language'] = this.locale;
 
       if (config.params && 'skip' in config.params && 'take' in config.params) {
         config.params.page = config.params.skip / config.params.take + 1;
@@ -154,7 +157,6 @@ class HttpClient {
     };
 
     const errorMessage = message || messageMap[status] || HttpClient.DEFAULT_MESSAGES.error;
-
     if (status === HttpCode.BAD_REQUEST || status === HttpCode.INTERNAL_SERVER_ERROR) {
       toast(errorMessage, 'error');
     }
