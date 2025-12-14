@@ -47,10 +47,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
                                 'sale-by-product',
                                 'detailed-sales',
                                 'accounting-report',
-                                'airport-report',
                                 'voided-sales',
                                 'credit-notes',
-                                'sale-notes'
+                                'payment-method-daily',
+                                'daily-summary'
                             ]
                         ],
                         'description' => 'Type of report to generate'

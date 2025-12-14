@@ -91,13 +91,13 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $jwtToken = $credentials['token'];
 
         if ($jwtToken) {
-            return $this->authenticateWithJWT($jwtToken, $credentials);
+            return $this->authenticateWithJWT($jwtToken);
         }
 
         return $this->authenticateWithCredentials($credentials);
     }
 
-    private function authenticateWithJWT(string $jwtToken, array $credentials): SelfValidatingPassport
+    private function authenticateWithJWT(string $jwtToken): SelfValidatingPassport
     {
         try {
             $jwtToken = str_replace('Bearer ', '', $jwtToken);
