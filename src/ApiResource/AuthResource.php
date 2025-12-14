@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use App\Controller\AuthController;
 use App\Dto\Auth\TokenDto;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
+use Symfony\Component\Security\Core\Exception\BadCredentialsException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 #[ApiResource(
@@ -21,6 +22,7 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
             exceptionToStatus: [
                 UserNotFoundException::class => 404,
                 AuthenticationException::class => 401,
+                BadCredentialsException::class => 401,
             ],
             input: AuthResource::class,
             output: TokenDto::class,

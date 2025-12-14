@@ -21,6 +21,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
 class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
@@ -42,6 +43,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly TokenGeneratorService $tokenGenerator,
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -332,7 +334,15 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             'route' => $request->attributes->get('_route'),
         ]);
 
-        throw $exception;
+        $translatedMessage = $this->translator->trans(
+            $exception->getMessageKey(),
+            $exception->getMessageData(),
+            'security'
+        );
+
+        return new JsonResponse([
+            'message' => $translatedMessage,
+        ], Response::HTTP_UNAUTHORIZED);
     }
 
     /**
