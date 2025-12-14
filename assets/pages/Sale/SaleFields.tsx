@@ -61,6 +61,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       ])
       .valueField('id')
       .textField('name')
+      .autoSelectIfSingle(true)
       .onChange((e: any) => {
         selectedWarehouseId = e;
       })

@@ -38,6 +38,7 @@ export class FieldBuilder {
       itemFormatter: null,
       visible: true,
       defaultValue: undefined,
+      autoSelectIfSingle: false,
       onChange: undefined,
       onSelect: undefined,
       onClick: undefined,
@@ -240,6 +241,11 @@ export class FieldBuilder {
 
   onClick(onClick: any): FieldBuilder {
     this._field.onClick = onClick;
+    return this;
+  }
+
+  autoSelectIfSingle(value: boolean): FieldBuilder {
+    this._field.autoSelectIfSingle = value;
     return this;
   }
 
