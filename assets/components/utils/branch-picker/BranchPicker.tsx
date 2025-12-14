@@ -1,12 +1,12 @@
 import './BranchPicker.scss';
 import {Popup, PopupRef, ToolbarItem} from 'devextreme-react/popup';
-import List from 'devextreme-react/list';
 import {Button} from 'devextreme-react';
 import {useEffect, useRef, useState} from 'react';
 import {useScreenSize} from '../../../utils/media-query';
 import ArrayStore from 'devextreme/data/array_store';
 import {branchService} from '../../../service/branch.service';
 import toast from '../../../core/utils/SharedUtils';
+import List from "devextreme-react/list";
 
 export const BranchPicker = ({visible, setVisible}) => {
   const ref = useRef<PopupRef>(null);
@@ -40,20 +40,22 @@ export const BranchPicker = ({visible, setVisible}) => {
     window.location.href = '/';
   };
 
-  let alreadySetup = false;
-
   useEffect(() => {
-    if (!alreadySetup) {
-      branchService.getAll().subscribe((response) => {
-        setDataSource(
-          new ArrayStore({
-            key: 'id',
-            data: response.data,
-          }),
-        );
-      });
-      alreadySetup = true;
-    }
+    // Load branches once on mount
+    branchService.getAll().subscribe((response) => {
+      const data = response?.data ?? [];
+      setDataSource(
+        new ArrayStore({
+          key: 'id',
+          data: data,
+        }),
+      );
+
+      // If there's exactly one branch, auto-select it
+      if (Array.isArray(data) && data.length === 1) {
+        setSelectedBranch(data[0]);
+      }
+    });
   }, []);
 
   return (
@@ -75,9 +77,13 @@ export const BranchPicker = ({visible, setVisible}) => {
       </ToolbarItem>
       <List
         dataSource={dataSource}
+        showSelectionControls={true}
+        selectionMode={'single'}
         displayExpr={'name'}
         selectByClick={true}
         onItemClick={onItemClick}
+        // Reflect controlled selection so the single item appears selected when auto-set
+        selectedItemKeys={selectedBranch ? [selectedBranch.id] : []}
       />
     </Popup>
   );
