@@ -35,7 +35,6 @@ export const BranchPicker = ({visible, setVisible}) => {
     branchService.setSelectedBranchId(selectedBranch.id);
     branchService.setSelectedBranchName(selectedBranch.name);
 
-    toast('Sucursal seleccionada correctamente', 'success');
     close();
     window.location.href = '/';
   };
