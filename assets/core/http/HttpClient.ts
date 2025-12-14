@@ -13,7 +13,12 @@ class HttpClient {
   private readonly axiosClient: AxiosInstance;
   private tokenExpiredModalShown: boolean = false;
   private isRefreshing: boolean = false;
-  private failedQueue: Array<(token: string) => void> = [];
+  private refreshPromise: Promise<void> | null = null;
+  private failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (reason?: any) => void;
+    request: any;
+  }> = [];
 
   private static readonly DEFAULT_MESSAGES = {
     error: 'Ocurrió un error',
@@ -62,7 +67,7 @@ class HttpClient {
 
         if (status === HttpCode.UNAUTHORIZED && originalRequest.url?.endsWith('auth/refresh')) {
           this.failedQueue = [];
-          this.processQueue(error, null);
+          this.processQueue(error);
           this.handleTokenRefreshError();
           return Promise.reject(error);
         }
@@ -88,26 +93,36 @@ class HttpClient {
   private async handleUnauthorizedError(originalRequest: any) {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
-      try {
-        await this.axiosClient.post(`${Constants.API_BASE_URL}auth/refresh`);
-        return this.axiosClient(originalRequest);
-      } catch (refreshError) {
-        this.handleTokenRefreshError();
-        return Promise.reject(refreshError);
-      } finally {
-        this.isRefreshing = false;
-      }
+      this.refreshPromise = this.axiosClient
+        .post(`${Constants.API_BASE_URL}auth/refresh`)
+        .then(() => {
+          this.processQueue();
+        })
+        .catch((refreshError) => {
+          this.processQueue(refreshError);
+          this.handleTokenRefreshError();
+          throw refreshError;
+        })
+        .finally(() => {
+          this.isRefreshing = false;
+          this.refreshPromise = null;
+        });
     }
 
     return new Promise((resolve, reject) => {
-      this.failedQueue.push(() => {
-        resolve(this.axiosClient(originalRequest));
-      });
+      this.failedQueue.push({ resolve, reject, request: originalRequest });
+      this.refreshPromise?.catch((error) => reject(error));
     });
   }
 
-  private processQueue(error: any, token: string | null) {
-    this.failedQueue.forEach((callback) => callback(token!));
+  private processQueue(error?: any) {
+    this.failedQueue.forEach(({ resolve, reject, request }) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(this.axiosClient(request));
+      }
+    });
     this.failedQueue = [];
   }
 
