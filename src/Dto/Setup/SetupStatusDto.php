@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Dto\Setup;
 
-class SetupStatusDto
+readonly class SetupStatusDto
 {
     public function __construct(
-        public readonly bool $configured,
-        public readonly int $userCount,
-        public readonly int $companyCount,
-        public readonly int $branchCount,
+        public bool $configured,
+        public int $userCount,
+        public int $companyCount,
+        public int $branchCount,
     ) {
     }
 }

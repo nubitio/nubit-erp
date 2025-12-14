@@ -21,7 +21,7 @@ final readonly class BranchContextService
     /**
      * Get the branch ID from the current request header
      */
-    public function getCurrentBranchId(): ?int
+    public function getCurrentBranchId(): ?string
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -31,7 +31,7 @@ final readonly class BranchContextService
 
         $branchId = $request->headers->get(self::BRANCH_HEADER);
 
-        return $branchId ? (int)$branchId : null;
+        return $branchId !== null ? (string)$branchId : null;
     }
 
     /**
