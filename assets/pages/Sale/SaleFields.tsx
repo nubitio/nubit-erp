@@ -62,12 +62,10 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .valueField('id')
       .textField('name')
       .onChange((e: any) => {
-        console.log(e);
         selectedWarehouseId = e;
       })
       .visible(false)
       .required(true)
-      //.defaultValue(session['warehouse_id'])
       .build(),
   );
   fields.push(
