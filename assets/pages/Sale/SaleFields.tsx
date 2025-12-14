@@ -261,7 +261,6 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
         let price = product.salePrice;
-        console.log(priceList, value, product, price);
         if (priceList) {
           const priceItem = priceList.find((item) => item.id === value);
           if (priceItem) {
@@ -269,6 +268,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
           }
         }
         row.producto = product;
+        row.cantidad = 1;
         row.precio_unitario = price;
         row.precio_total = price;
         this.defaultSetCellValue(row, product, currentRow);
