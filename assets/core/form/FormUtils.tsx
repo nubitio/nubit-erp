@@ -28,16 +28,19 @@ export const buildField = (
   if (field.type === FieldType.NONE) return null;
   let editorOptions: any = {};
   if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
+    // Create a store instance so we can query a small page to decide auto-selection
+    const store = dxUtils.getDataStore(
+      field.url ?? '',
+      field.valueField,
+      field.byKeyUrl,
+      field.filters,
+      [],
+      field.loadOptions,
+    );
+
     editorOptions = {
       dataSource: {
-        store: dxUtils.getDataStore(
-          field.url ?? '',
-          field.valueField,
-          field.byKeyUrl,
-          field.filters,
-          [],
-          field.loadOptions,
-        ),
+        store: store,
         paginate: true,
         pageSize: 10,
       },
@@ -49,6 +52,42 @@ export const buildField = (
       selectionMode: field.multiple ? 'multiple' : 'single',
       buttons: ['clear', 'dropDown'],
     };
+
+    // Auto-select logic: only when the field opts in, and no explicit defaultValue has been provided
+    try {
+      if (field.autoSelectIfSingle === true && field.defaultValue === undefined) {
+        // Case: local data already present on the field (mode !== 'remote')
+        if (field.mode !== 'remote' && Array.isArray(field.data) && field.data.length === 1) {
+          const single = field.data[0];
+          const v = field.multiple ? [single[field.valueField]] : single[field.valueField];
+          field.defaultValue = v;
+          formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
+        } else if (field.url) {
+          // For remote stores, load up to 2 items (so we can detect "exactly 1" without fetching all)
+          // Respect any filters embedded in the store.
+          // The CustomStore.load may return either an array or an object with .data
+          // We deliberately request a small page: skip=0, take=2
+          (store as any)
+            .load({ skip: 0, take: 2 })
+            .then((result: any) => {
+              const items = result?.data ?? result;
+              if (Array.isArray(items) && items.length === 1) {
+                const single = items[0];
+                const v = field.multiple ? [single[field.valueField]] : single[field.valueField];
+                field.defaultValue = v;
+                // If the form is already mounted, set the editor value immediately
+                formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
+              }
+            })
+            .catch((err: any) => {
+              // Non-blocking: just log for debugging
+              console.debug('auto-select single entity failed for', field.name, err);
+            });
+        }
+      }
+    } catch (e) {
+      console.debug('auto-select logic error for field', field.name, e);
+    }
   }
   if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
     editorOptions = {

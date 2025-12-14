@@ -1,6 +1,6 @@
-import { FieldType } from './FieldType';
-import { Field } from './Field';
-import { ValidationRule } from './ValidationRule';
+import {FieldType} from './FieldType';
+import {Field} from './Field';
+import {ValidationRule} from './ValidationRule';
 
 export class BaseFieldBuilder {
   protected _field: Field;
@@ -58,6 +58,7 @@ export class BaseFieldBuilder {
       visibleOnForm: true,
       maxLength: undefined,
       multiple: false,
+      autoSelectIfSingle: false,
       editorOptions: undefined,
     };
   }
@@ -264,6 +265,11 @@ export class BaseFieldBuilder {
 
   onKeyPress(param: (e) => void) {
     this._field.onKeyPress = param;
+    return this;
+  }
+
+  autoSelectIfSingle(value: boolean): this {
+    this._field.autoSelectIfSingle = value;
     return this;
   }
 

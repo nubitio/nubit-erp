@@ -47,6 +47,9 @@ export interface Field {
   itemFormatter: any;
   visible: boolean;
   defaultValue: string | number | boolean | Date | null | undefined | (() => unknown);
+  // When true, form building logic may auto-select the single available option
+  // for ENTITY/TAGS fields (only applied if defaultValue is undefined).
+  autoSelectIfSingle?: boolean;
   onChange: any;
   onSelect: any;
   onClick: any;
