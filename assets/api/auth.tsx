@@ -1,5 +1,6 @@
-import { User } from '../types';
-import { StorageUtils } from '../core/utils/StorageUtils';
+import {User} from '../types';
+import {StorageUtils} from '../core/utils/StorageUtils';
+import {branchService} from "../service/branch.service";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export async function signIn(email: string, password: string) {
@@ -17,7 +18,7 @@ export async function signIn(email: string, password: string) {
     // Send request
     return {
       isOk: true,
-      data: { ...defaultUser, email },
+      data: {...defaultUser, email},
     };
   } catch {
     return {
@@ -28,6 +29,9 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function getUser() {
+  if (!branchService.hasSelectedBranch()) {
+    return undefined;
+  }
   return StorageUtils.getItem('user') as User;
 }
 
@@ -50,7 +54,7 @@ export async function changePassword(email: string, recoveryCode?: string) {
     // Send request
     return {
       isOk: true,
-      data: { email },
+      data: {email},
     };
   } catch {
     return {

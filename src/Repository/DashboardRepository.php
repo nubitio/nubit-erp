@@ -7,6 +7,7 @@ namespace App\Repository;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 readonly class DashboardRepository
 {
@@ -17,6 +18,9 @@ readonly class DashboardRepository
 
     /**
      * Returns a consolidated dataset for the dashboard with KPIs and chart series.
+     *
+     * @throws \DateMalformedStringException
+     * @throws Exception
      */
     public function getOverview(string $branchId): array
     {
@@ -80,7 +84,7 @@ readonly class DashboardRepository
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             WHERE td.year = :currentYear
               AND td.month = :currentMonth
-            GROUP BY td.id
+            GROUP BY td.id, td.day
             ORDER BY td.day
         ", $params);
 

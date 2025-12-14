@@ -5,7 +5,7 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
 import { authService } from '../../../service/auth.service';
-import { LocalPicker } from '../../utils/local-picker/LocalPicker';
+import { BranchPicker } from '../../utils/branch-picker/BranchPicker';
 
 export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -77,7 +77,7 @@ export const LoginForm = () => {
           </ButtonOptions>
         </ButtonItem>
       </Form>
-      <LocalPicker
+      <BranchPicker
         visible={showLocalPicker}
         setVisible={setShowLocalPicker}
         username={user}

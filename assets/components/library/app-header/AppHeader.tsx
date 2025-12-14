@@ -12,18 +12,12 @@ import type {AppHeaderProps} from '../../../types';
 import './AppHeader.scss';
 import NotificationPanel from '../notification-panel/NotificationPanel';
 import {Popover} from 'devextreme-react';
-import {useNavigate} from 'react-router-dom';
 
 export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
-  const navigate = useNavigate();
 
   const toggleNotificationPanel = () => {
     setNotificationPanelVisible(!notificationPanelVisible);
-  };
-
-  const handleSearch = (e: any) => {
-    navigate(`/search/${e.component.option('value')}`);
   };
 
   return (

@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace App\State\CashRegister;
 
-use Override;
-use DateTimeImmutable;
-use DateMalformedStringException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\BranchContextService;
 use App\Dto\CashRegister\CashRegisterDashboardDto;
+use DateMalformedStringException;
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Override;
 
 readonly class CashRegisterDashboardProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-        private Security $security,
         private BranchContextService $branchContext,
     ) {
     }
@@ -31,7 +29,6 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
-        $user = $this->security->connectedUser();
         $branchId = $this->branchContext->getCurrentBranchId();
 
         $sql = <<<SQL
@@ -58,7 +55,7 @@ SQL;
 
         $data = $this->connection->fetchAllAssociative($sql, [$branchId]);
 
-        return array_map(fn (array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
+        return array_map(fn(array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
             id: (int)$row['id'],
             name: $row['name'],
             cashShiftId: $row['cashShiftId'] ? (int)$row['cashShiftId'] : null,

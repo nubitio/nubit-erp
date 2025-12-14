@@ -1,7 +1,9 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { getUser, signIn as sendSignInRequest } from '../api/auth';
-import type { AuthContextType, User } from '../types';
-import { StorageUtils } from '../core/utils/StorageUtils';
+import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
+import {getUser, signIn as sendSignInRequest} from '../api/auth';
+import type {AuthContextType, User} from '../types';
+import {StorageUtils} from '../core/utils/StorageUtils';
+import {branchService} from "../service/branch.service";
+import {authService} from "../service/auth.service";
 
 function AuthProvider(props: React.PropsWithChildren<unknown>) {
   const [user, setUser] = useState<User>();
@@ -29,15 +31,17 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
 
   const signOut = useCallback(() => {
     StorageUtils.removeItem('user');
+    branchService.clearSelectedBranchId();
+    branchService.clearSelectedBranchName();
     setUser(undefined);
     // best-effort logout to clear cookie
-    import('../service/auth.service').then(({ authService }) => authService.logout());
+    authService.logout();
   }, []);
 
-  return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;
+  return <AuthContext.Provider value={{user, signIn, signOut, loading}} {...props} />;
 }
 
-const AuthContext = createContext<AuthContextType>({ loading: false } as AuthContextType);
+const AuthContext = createContext<AuthContextType>({loading: false} as AuthContextType);
 const useAuth = () => useContext(AuthContext);
 
-export { AuthProvider, useAuth };
+export {AuthProvider, useAuth};
