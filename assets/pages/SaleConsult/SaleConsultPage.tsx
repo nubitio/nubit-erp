@@ -10,10 +10,11 @@ import { DateUtils } from '../../core/utils/DateUtils';
 const reportTypes = [
   { value: 'sale-by-product', text: 'Ventas por producto' },
   { value: 'detailed-sales', text: 'Ventas detalladas' },
-  { value: 'accounting-report', text: 'Ventas contable' },
-  { value: 'voided-sales', text: 'Comunicaciones de baja' },
-  { value: 'credit-notes', text: 'Notas de credito valorizado' },
-  { value: 'sale-notes', text: 'Reporte de notas de venta' },
+  { value: 'accounting-report', text: 'Reporte contable' },
+  { value: 'payment-method-daily', text: 'Pagos diarios por método' },
+  { value: 'daily-summary', text: 'Resumen diario de ventas' },
+  { value: 'voided-sales', text: 'Documentos anulados' },
+  { value: 'credit-notes', text: 'Notas de crédito' },
 ];
 
 export const SaleConsultPage = () => {

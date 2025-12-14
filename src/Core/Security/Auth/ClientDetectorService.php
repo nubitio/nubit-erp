@@ -24,6 +24,6 @@ final readonly class ClientDetectorService
 
         $userAgent = strtolower($request->headers->get('User-Agent', ''));
 
-        return array_any(self::MOBILE_USER_AGENT_KEYWORDS, fn($keyword) => str_contains($userAgent, $keyword));
+        return array_any(self::MOBILE_USER_AGENT_KEYWORDS, fn ($keyword) => str_contains($userAgent, $keyword));
     }
 }

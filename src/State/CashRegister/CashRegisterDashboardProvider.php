@@ -55,7 +55,7 @@ SQL;
 
         $data = $this->connection->fetchAllAssociative($sql, [$branchId]);
 
-        return array_map(fn(array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
+        return array_map(fn (array $row): CashRegisterDashboardDto => new CashRegisterDashboardDto(
             id: (int)$row['id'],
             name: $row['name'],
             cashShiftId: $row['cashShiftId'] ? (int)$row['cashShiftId'] : null,
