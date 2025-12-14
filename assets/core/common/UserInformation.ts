@@ -7,8 +7,8 @@ export const userInformation = () => {
   const currentUserId = user.userId;
   const currentUserName = user.username;
   const currentUserRoleId = user.role;
-  const currentBranchId = branchService.getSelectedBranchId();
-  const currentBranchName = branchService.getSelectedBranchName();
+  const currentBranchId = branchService.getSelectedBranchId() ?? '';
+  const currentBranchName = branchService.getSelectedBranchName() ?? '';
 
   return {
     currentUserId,
