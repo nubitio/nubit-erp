@@ -20,4 +20,6 @@ abstract class Constants
     public const string CPE_CLIENT_ID = 'cpe_client_id';
 
     public const string CPE_CLIENT_SECRET = 'cpe_client_secret';
+
+    public const string PRINT_LOGO = 'app_option_print_logo';
 }

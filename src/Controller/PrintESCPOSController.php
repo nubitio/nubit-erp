@@ -63,10 +63,11 @@ class PrintESCPOSController extends AbstractController
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
 
-        $app_option_logo = $this->settingsService->get(
-            'app_option_printing_logo'
+        $shouldPrintLogo = 'true' === strval(
+            $this->settingsService->get(Constants::PRINT_LOGO, 'true')
         );
-        if ('true' == $app_option_logo && $logo instanceof EscposImage) {
+
+        if ($shouldPrintLogo && $logo instanceof EscposImage) {
             $printer->graphics($logo);
             $printer->feed();
         }
