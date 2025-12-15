@@ -669,7 +669,6 @@ Browser DevTools + React DevTools
 
 - **OpenTelemetry**: Tracing distribuido configurado
 - **Monolog**: Logging estructurado
-- **Sentry**: Error tracking (configurar SENTRY_DSN)
 
 ---
 
