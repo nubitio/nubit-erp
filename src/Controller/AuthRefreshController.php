@@ -11,6 +11,7 @@ use App\Core\Security\Auth\JWTManager;
 use App\Core\Security\Auth\TokenGeneratorService;
 use App\Entity\RefreshToken;
 use App\Entity\User;
+use App\Repository\BranchRepository;
 use App\Repository\RefreshTokenRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -31,6 +32,7 @@ class AuthRefreshController extends AbstractController
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
         private readonly LoggerInterface $logger,
+        private readonly BranchRepository $branchRepository,
     ) {
     }
 
@@ -84,8 +86,16 @@ class AuthRefreshController extends AbstractController
 
         $storedToken->revoke(new DateTimeImmutable());
 
+        $branch = null;
+        if (!empty($payload['branchId'])) {
+            $branch = $this->branchRepository->find($payload['branchId']);
+            if ($branch === null) {
+                return new JsonResponse(['message' => 'Invalid branch'], Response::HTTP_BAD_REQUEST);
+            }
+        }
+
         try {
-            $tokenPair = $this->tokenGenerator->generateTokenPair($user);
+            $tokenPair = $this->tokenGenerator->generateTokenPair($user, $branch);
 
             $this->logger->info('Token refreshed successfully', [
                 'user_id' => $user->getId(),

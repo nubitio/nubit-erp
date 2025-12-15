@@ -18,8 +18,7 @@ class BranchService {
   }
 
   /**
-   * Set the selected branch ID
-   * This will be automatically included in all HTTP requests via the X-Branch-Id header
+   * Set the selected branch ID (kept for UI context only)
    */
   setSelectedBranchId(branchId: string): void {
     StorageUtils.setItem(BranchService.SELECTED_BRANCH_ID, branchId.toString());

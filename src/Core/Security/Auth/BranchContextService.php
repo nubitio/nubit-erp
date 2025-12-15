@@ -4,32 +4,37 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
-use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
+use Throwable;
 
 /**
- * Service to get the current branch ID from the request header
+ * Service to get the current branch ID from the authenticated JWT token
  */
 final readonly class BranchContextService
 {
-    public const string BRANCH_HEADER = 'X-Branch-Id';
-
     public function __construct(
-        private RequestStack $requestStack,
+        private SecurityComponent $security,
+        private JWTManager $jwtManager,
     ) {
     }
 
     /**
-     * Get the branch ID from the current request header
+     * Get the branch ID from the current JWT token
      */
     public function getCurrentBranchId(): ?string
     {
-        $request = $this->requestStack->getCurrentRequest();
-
-        if (!$request) {
+        $token = $this->security->getToken();
+        if (!$token instanceof JWTAuthenticationToken) {
             return null;
         }
 
-        $branchId = $request->headers->get(self::BRANCH_HEADER);
+        try {
+            $payload = $this->jwtManager->decode($token->getCredentials());
+        } catch (Throwable) {
+            return null;
+        }
+
+        $branchId = $payload['branchId'] ?? null;
 
         return $branchId !== null ? (string)$branchId : null;
     }

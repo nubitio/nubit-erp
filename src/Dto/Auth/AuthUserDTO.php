@@ -10,6 +10,8 @@ final readonly class AuthUserDTO
         public int $userId,
         public string $username,
         public ?int $roleId = null,
+        public ?string $branchId = null,
+        public ?string $branchName = null,
     ) {
     }
 
@@ -19,6 +21,8 @@ final readonly class AuthUserDTO
             userId: $jwtPayload['userId'],
             username: $jwtPayload['username'],
             roleId: $jwtPayload['role'],
+            branchId: $jwtPayload['branchId'] ?? null,
+            branchName: $jwtPayload['branchName'] ?? null,
         );
     }
 }

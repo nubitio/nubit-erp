@@ -14,6 +14,8 @@ final readonly class TokenPairDTO
         public int $accessTokenExpiresAt,
         public int $refreshTokenExpiresAt,
         public User $user,
+        public ?string $branchId = null,
+        public ?string $branchName = null,
     ) {
     }
 
@@ -27,6 +29,13 @@ final readonly class TokenPairDTO
                 'roles' => $this->user->getRoles(),
             ],
         ];
+
+        if ($this->branchId !== null) {
+            $data['branch'] = [
+                'id' => $this->branchId,
+                'name' => $this->branchName,
+            ];
+        }
 
         if ($includeTokens) {
             $data['token'] = $this->accessToken;
