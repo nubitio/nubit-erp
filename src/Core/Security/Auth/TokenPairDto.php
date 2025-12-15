@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
+use App\Dto\Auth\AuthResponseDto;
 use App\Entity\User;
 
-final readonly class TokenPairDTO
+final readonly class TokenPairDto
 {
     public function __construct(
         public string $accessToken,
@@ -17,6 +18,11 @@ final readonly class TokenPairDTO
         public ?string $branchId = null,
         public ?string $branchName = null,
     ) {
+    }
+
+    public function toAuthResponseDto(): AuthResponseDto
+    {
+        return AuthResponseDto::createFromTokenPair($this);
     }
 
     public function toArray(bool $includeTokens = true): array
