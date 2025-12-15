@@ -169,11 +169,11 @@ readonly class SaleProcessor implements ProcessorInterface
                         $this->productStockService->updateStockForProductInWarehouse(
                             $item->getProducto(),
                             $data->getAlmacen(),
-                            (int)$newStock
+                            $newStock
                         );
                     } elseif ($data->getTipoId() === 2) {
                         // Reduce stock for sales (tipo_id = 2)
-                        $newStock = max(0, $currentStock - $item->getCantidad());
+                        $newStock = max(0.0, $currentStock - $item->getCantidad());
                         $this->logger->info('Decreasing stock for sale', [
                             'product_id' => $productId,
                             'warehouse_id' => $warehouseId,

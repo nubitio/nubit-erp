@@ -78,7 +78,7 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
                 if ($dryRun) {
                     $io->text(
                         sprintf(
-                            'Would distribute global stock %d for product %s across warehouses',
+                            'Would distribute global stock %s for product %s across warehouses',
                             $product->getStock(),
                             $product->getName()
                         )
@@ -87,7 +87,7 @@ class InitializeWarehouseStockCommand extends TenantAwareCommand
                     $this->productStockService->distributeGlobalStockToWarehouses($product);
                     $io->text(
                         sprintf(
-                            'Distributed global stock %d for product %s across warehouses',
+                            'Distributed global stock %s for product %s across warehouses',
                             $product->getStock(),
                             $product->getName()
                         )

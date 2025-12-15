@@ -17,6 +17,7 @@ use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class PrintESCPOSController extends AbstractController
 {
@@ -43,7 +44,7 @@ class PrintESCPOSController extends AbstractController
 
     /**
      * @throws Exception
-     * @throws \Exception
+     * @throws \Exception|ExceptionInterface
      */
     public function printCommands(string $saleId): string
     {

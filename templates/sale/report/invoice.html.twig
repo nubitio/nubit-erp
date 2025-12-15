@@ -98,7 +98,7 @@
                     <tbody>
                     {% for item in voucher.voucher_items %}
                         <tr>
-                            <td class="left">{{ item.quantity|round }} {{ item.product_name }}</td>
+                            <td class="left">{{ item.quantity }} {{ item.product_name }}</td>
                             <td class="text-right text-end">{{ item.total|number_format(2, '.', '') }}</td>
                         </tr>
                     {% endfor %}

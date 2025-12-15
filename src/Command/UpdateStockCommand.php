@@ -85,7 +85,7 @@ class UpdateStockCommand extends TenantAwareCommand
                     );
                     $io->text(
                         sprintf(
-                            'Updated stock for product %s in warehouse %s to %d',
+                            'Updated stock for product %s in warehouse %s to %s',
                             $product->getId(),
                             $warehouse->getName(),
                             $warehouseStock
@@ -108,7 +108,7 @@ class UpdateStockCommand extends TenantAwareCommand
                     );
                     $io->text(
                         sprintf(
-                            'Updated global stock for product %s to %d',
+                            'Updated global stock for product %s to %s',
                             $product->getId(),
                             $globalStock
                         )
@@ -149,7 +149,7 @@ class UpdateStockCommand extends TenantAwareCommand
     /**
      * @throws Exception
      */
-    private function calculateStock(string $productId, ?string $warehouseId = null): int
+    private function calculateStock(string $productId, ?string $warehouseId = null): float
     {
         $connection = $this->entityManager->getConnection();
 
@@ -176,6 +176,6 @@ SQL;
         $result = $connection->executeQuery($sql, $params);
         $stockValue = $result->fetchOne();
 
-        return $stockValue ? (int) $stockValue : 0;
+        return $stockValue ? (float) $stockValue : 0.0;
     }
 }

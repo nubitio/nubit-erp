@@ -25,7 +25,7 @@ readonly class ProductStockService
     /**
      * Get stock for a product in a specific warehouse
      */
-    public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): int
+    public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
     {
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
@@ -38,7 +38,7 @@ readonly class ProductStockService
     public function updateStockForProductInWarehouse(
         Product $product,
         Warehouse $warehouse,
-        int $newStock
+        float $newStock
     ): ProductStock {
         $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
 
@@ -68,7 +68,7 @@ readonly class ProductStockService
         Product $product,
         Warehouse $sourceWarehouse,
         Warehouse $targetWarehouse,
-        int $quantity
+        float $quantity
     ): bool {
         if ($quantity <= 0) {
             $this->logger->error('Cannot transfer non-positive quantity', [
@@ -122,7 +122,7 @@ readonly class ProductStockService
     /**
      * Initialize stock for a product in all warehouses
      */
-    public function initializeStockForProduct(Product $product, int $initialStock = 0): void
+    public function initializeStockForProduct(Product $product, float $initialStock = 0): void
     {
         $warehouses = $this->warehouseRepository->findAll();
 
@@ -145,8 +145,8 @@ readonly class ProductStockService
         }
 
         // Calculate base stock per warehouse
-        $baseStock = (int)floor($globalStock / $warehouseCount);
-        $remainder = $globalStock % $warehouseCount;
+        $baseStock = (float)floor($globalStock / $warehouseCount);
+        $remainder = fmod($globalStock, $warehouseCount);
 
         foreach ($warehouses as $index => $warehouse) {
             $stockForWarehouse = $baseStock;

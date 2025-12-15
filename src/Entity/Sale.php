@@ -83,7 +83,7 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\Column(name: 'fecha', type: 'datetime')]
+    #[ORM\Column(name: 'fecha', type: 'datetime_immutable')]
     private DateTimeInterface $fecha;
 
     #[Groups([
@@ -160,11 +160,11 @@ class Sale
     private int $estado = 1;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'date_created', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_created', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTimeInterface $date_created;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    #[ORM\Column(name: 'date_updated', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_updated', type: 'datetime_immutable', nullable: true)]
     private ?DateTimeInterface $date_updated = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
