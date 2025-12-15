@@ -1,10 +1,7 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Core\Service;
 
-use App\Core\Color\ColorUtils;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -14,12 +11,8 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-readonly class XlsExporter
+class XlsExporter
 {
-    public function __construct(private SettingsService $settingsService)
-    {
-    }
-
     /**
      * @param array<int, array<string, mixed>> $data
      *
@@ -45,7 +38,6 @@ readonly class XlsExporter
      *
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
-     * @throws \Doctrine\DBAL\Exception
      */
     public function save(array $data, string $filename): void
     {
@@ -59,24 +51,19 @@ readonly class XlsExporter
      * @param array<int, array<string, mixed>> $data
      *
      * @throws Exception
-     * @throws \Doctrine\DBAL\Exception
      */
     private function makeSpreadsheet(array $data): Spreadsheet
     {
-        $accentColor = $this->settingsService->get('app_theme_accent_color');
-        $arr = explode(' ', strval($accentColor));
-        $accentColor = dechex((int) $arr[0]) . dechex((int) $arr[1]) . dechex((int) $arr[2]);
-        $lightenAccentColor = ColorUtils::lightenColor($accentColor, 60);
-        $lightenAccentColor = str_replace('#', '', $lightenAccentColor);
-
-        $contrastColor = ColorUtils::contrastColor($accentColor);
-        $contrastColor = str_replace('#', '', $contrastColor);
+        $headerFillColor = 'FFF2F2F2'; // light gray header
+        $headerFontColor = 'FF000000'; // black text
+        $borderColor = 'FFBFBFBF';     // subtle gray borders
+        $zebraFillColor = 'FFF9F9F9';  // very light row shading for readability
 
         $headers = [];
         if (isset($data[0])) {
             $properties = array_keys($data[0]);
             foreach ($properties as $property) {
-                $headers[$property] = ucfirst($property);
+                $headers[$property] = ucfirst(str_replace('_', ' ', $property));
             }
 
             array_unshift($data, $headers);
@@ -87,21 +74,25 @@ readonly class XlsExporter
             'font' => [
                 'bold' => true,
                 'color' => [
-                    'rgb' => $contrastColor,
+                    'argb' => $headerFontColor,
                 ],
             ],
             'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'horizontal' => Alignment::HORIZONTAL_LEFT,
+                'vertical' => Alignment::VERTICAL_CENTER,
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
                 'startColor' => [
-                    'argb' => 'FF' . $accentColor,
+                    'argb' => $headerFillColor,
                 ],
             ],
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
+                    'color' => [
+                        'argb' => $borderColor,
+                    ],
                 ],
             ],
         ];
@@ -111,7 +102,7 @@ readonly class XlsExporter
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
                     'color' => [
-                        'argb' => 'FF' . $accentColor,
+                        'argb' => $borderColor,
                     ],
                 ],
             ],
@@ -122,12 +113,17 @@ readonly class XlsExporter
         $zebraStyle->setOperatorType(Conditional::OPERATOR_EQUAL);
         $zebraStyle->addCondition('MOD(ROW(),2)=0');
         $zebraStyle->getStyle()->getFill()->setFillType(Fill::FILL_SOLID);
-        $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB('FF' . $lightenAccentColor);
+        $zebraStyle->getStyle()->getFill()->getStartColor()->setARGB($zebraFillColor);
+        $zebraBorders = $zebraStyle->getStyle()->getBorders();
+        $zebraBorders->getTop()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB($borderColor);
+        $zebraBorders->getBottom()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB($borderColor);
+        $zebraBorders->getLeft()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB($borderColor);
+        $zebraBorders->getRight()->setBorderStyle(Border::BORDER_THIN)->getColor()->setARGB($borderColor);
 
         $spreadsheet = new Spreadsheet();
         $spreadsheet->getProperties()
-            ->setCreator('Efact')
-            ->setTitle('Efact export');
+            ->setCreator('Nubit')
+            ->setTitle('Nubit export');
 
         $spreadsheet->setActiveSheetIndex(0);
         if ($data !== []) {
@@ -142,14 +138,21 @@ readonly class XlsExporter
                 ->setAutoSize(true);
         }
 
-        $spreadsheet->getActiveSheet()->getStyle('A1:' . $lastColumn . '1')
+        // Freeze the header row and add auto-filter for business-ready usability
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->freezePane('A2');
+        $sheet->setAutoFilter('A1:' . $lastColumn . '1');
+
+        // Apply header style
+        $sheet->getStyle('A1:' . $lastColumn . '1')
             ->applyFromArray($headerStyle);
 
-        $spreadsheet->getActiveSheet()->getStyle('A2:' . $lastColumn . count($data))
-            ->setConditionalStyles([$zebraStyle]);
-
-        $spreadsheet->getActiveSheet()->getStyle('A2:' . $lastColumn . count($data))
-            ->applyFromArray($borderStyle);
+        // Apply zebra striping and borders only if there are data rows
+        if (count($data) > 1) {
+            $range = 'A2:' . $lastColumn . count($data);
+            $sheet->getStyle($range)->setConditionalStyles([$zebraStyle]);
+            $sheet->getStyle($range)->applyFromArray($borderStyle);
+        }
 
         return $spreadsheet;
     }
