@@ -76,7 +76,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     ])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
-    private Role $role;
+    private ?Role $role = null;
 
     public function getId(): ?int
     {
