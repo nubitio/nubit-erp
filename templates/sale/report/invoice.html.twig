@@ -38,13 +38,13 @@
     <div class="container-fluid p-0">
         <div class="receipt" style="background: #fff">
             <table class="table table-sm table-borderless table-nm">
-                <tr>
-                    <td class="text-center" style="width: 50%">
-                        {% if print_logo|default(true) %}
+                {% if printLogo is defined and printLogo == true %}
+                    <tr>
+                        <td class="text-center" style="width: 50%">
                             <img src="{{ logo() }}" alt="Logo" style="position: relative; max-height: 100px">
-                        {% endif %}
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
+                {% endif %}
                 <tr class="row-border">
                     <td class="text-center">
                         <b>{{ voucher.company_name }}</b><br>

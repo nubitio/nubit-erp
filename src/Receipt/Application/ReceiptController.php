@@ -74,7 +74,7 @@ class ReceiptController extends BaseController
             'qr' => $qr,
             'voucher' => $voucher,
             'extraData' => null,
-            'print_logo' => $shouldPrintLogo,
+            'printLogo' => $shouldPrintLogo,
         ]);
 
         $preview = $request->get('preview');

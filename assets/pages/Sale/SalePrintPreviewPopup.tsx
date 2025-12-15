@@ -20,7 +20,7 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
       title={'Vista previa'}
       showTitle={true}
       fullScreen={isXSmall}
-      width="96mm"
+      width="100mm"
       height={600}
       visible={props.visible}
       wrapperAttr={{ class: `form-popup` }}
