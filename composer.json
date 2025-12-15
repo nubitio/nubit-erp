@@ -46,7 +46,6 @@
     "phpoffice/phpword": "^1.1",
     "pontedilana/php-weasyprint": "^2.2",
     "runtime/frankenphp-symfony": "^0.2.0",
-    "sentry/sentry-symfony": "^5.0",
     "symfony/asset": "7.4.*",
     "symfony/console": "7.4.*",
     "symfony/doctrine-messenger": "7.4.*",
