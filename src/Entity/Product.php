@@ -79,12 +79,12 @@ class Product
     private float $salePrice = 0;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock', nullable: true)]
-    private ?int $stock = null;
+    #[ORM\Column(name: 'stock', type: 'decimal', precision: 12, scale: 3, nullable: true)]
+    private ?float $stock = null;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock_minimo', nullable: true)]
-    private ?int $minStock = null;
+    #[ORM\Column(name: 'stock_minimo', type: 'decimal', precision: 12, scale: 3, nullable: true)]
+    private ?float $minStock = null;
 
     /**
      * @var Collection<int, ProductStock>
@@ -190,24 +190,24 @@ class Product
         return $this;
     }
 
-    public function getStock(): ?int
+    public function getStock(): ?float
     {
         return $this->stock;
     }
 
-    public function setStock(?int $stock): static
+    public function setStock(?float $stock): static
     {
         $this->stock = $stock;
 
         return $this;
     }
 
-    public function getMinStock(): ?int
+    public function getMinStock(): ?float
     {
         return $this->minStock;
     }
 
-    public function setMinStock(?int $minStock): static
+    public function setMinStock(?float $minStock): static
     {
         $this->minStock = $minStock;
 
@@ -257,7 +257,7 @@ class Product
         return $this;
     }
 
-    public function getStockByWarehouse(Warehouse $warehouse): ?int
+    public function getStockByWarehouse(Warehouse $warehouse): ?float
     {
         foreach ($this->stocks as $stock) {
             if ($stock->getWarehouse() === $warehouse) {

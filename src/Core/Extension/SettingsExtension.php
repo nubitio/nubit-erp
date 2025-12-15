@@ -7,10 +7,10 @@ namespace App\Core\Extension;
 use Twig\Attribute\AsTwigFunction;
 use App\Core\Service\SettingsService;
 
-class SettingsExtension
+readonly class SettingsExtension
 {
     public function __construct(
-        private readonly SettingsService $settingsService,
+        private SettingsService $settingsService,
     ) {
     }
 

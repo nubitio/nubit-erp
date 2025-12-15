@@ -87,7 +87,7 @@ class ProductStockRepository extends ServiceEntityRepository
     /**
      * Get total stock for a product across all warehouses
      */
-    public function getTotalStockForProduct(Product $product): int
+    public function getTotalStockForProduct(Product $product): float
     {
         $result = $this->createQueryBuilder('ps')
             ->select('SUM(ps.stock) as totalStock')
@@ -96,6 +96,6 @@ class ProductStockRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
 
-        return (int) $result;
+        return $result !== null ? (float) $result : 0.0;
     }
 }
