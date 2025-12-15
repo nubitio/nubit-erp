@@ -15,6 +15,7 @@ export const BranchPicker = ({visible, setVisible}) => {
   const [dataSource, setDataSource] = useState<ArrayStore | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
   const [selecting, setSelecting] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const onItemClick = (e: any) => {
     setSelectedBranch(e.itemData);
@@ -52,22 +53,35 @@ export const BranchPicker = ({visible, setVisible}) => {
   };
 
   useEffect(() => {
-    // Load branches once on mount
-    branchService.getAll().subscribe((response) => {
-      const data = response?.data ?? [];
-      setDataSource(
-        new ArrayStore({
-          key: 'id',
-          data: data,
-        }),
-      );
+    if (!visible || hasLoaded) {
+      return;
+    }
 
-      // If there's exactly one branch, auto-select it
-      if (Array.isArray(data) && data.length === 1) {
-        setSelectedBranch(data[0]);
-      }
+    const subscription = branchService.getAll().subscribe({
+      next: (response) => {
+        const data = response?.data ?? [];
+        setDataSource(
+          new ArrayStore({
+            key: 'id',
+            data: data,
+          }),
+        );
+
+        if (Array.isArray(data) && data.length === 1) {
+          setSelectedBranch(data[0]);
+        }
+
+        setHasLoaded(true);
+      },
+      error: () => {
+        setHasLoaded(false);
+      },
     });
-  }, []);
+
+    return () => {
+      subscription?.unsubscribe?.();
+    };
+  }, [visible, hasLoaded]);
 
   return (
     <Popup

@@ -1,6 +1,7 @@
 services:
   web:
     container_name: efact-web
+    restart: unless-stopped
     build:
       context: .
       target: dev

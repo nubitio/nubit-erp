@@ -20,9 +20,9 @@ final readonly class TokenPairDto
     ) {
     }
 
-    public function toAuthResponseDto(): AuthResponseDto
+    public function toAuthResponseDto(bool $includeTokens = true): AuthResponseDto
     {
-        return AuthResponseDto::createFromTokenPair($this);
+        return AuthResponseDto::createFromTokenPair($this, $includeTokens);
     }
 
     public function toArray(bool $includeTokens = true): array
