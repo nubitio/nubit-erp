@@ -29,7 +29,7 @@ class PrintESCPOSController extends AbstractController
     }
 
     /**
-     * @throws Exception
+     * @throws Exception|ExceptionInterface
      */
     public function __invoke(string $id): Response
     {
@@ -113,13 +113,14 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($divider);
         $printer->setEmphasis();
-        $printer->text((string)new SaleItemDto('# Descripcion', 'S/'));
+        // Header with columns: description, unit price, total
+        $printer->text((string)new SaleItemDto('# Descripcion', 'P.Unit', 'S/'));
         $printer->setEmphasis(false);
         $printer->text($divider);
 
         foreach ($voucher->voucher_items as $item) {
             $str_left = $item->quantity . ' ' . $item->product_name;
-            $saleItem = new SaleItemDto($str_left, $item->total);
+            $saleItem = new SaleItemDto($str_left, $item->unit_price, $item->total);
             $printer->text((string)$saleItem);
         }
 
@@ -138,28 +139,28 @@ class PrintESCPOSController extends AbstractController
 
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $printer->text(
-                (string)new SaleItemDto('OP. GRAVADA:', $voucher->voucher_taxed_amount)
+                (string)new SaleItemDto(name: 'OP. GRAVADA:', total: $voucher->voucher_taxed_amount)
             );
-            $printer->text((string)new SaleItemDto('OP. INAFECTA:', '0.00'));
-            $printer->text((string)new SaleItemDto('OP. EXONERADA:', '0.00'));
+            $printer->text((string)new SaleItemDto(name: 'OP. INAFECTA:', total: '0.00'));
+            $printer->text((string)new SaleItemDto(name: 'OP. EXONERADA:', total: '0.00'));
             $printer->text(
                 (string)new SaleItemDto(
-                    'IGV (' . $app_option_igv_get . '%):',
-                    $voucher->voucher_tax_amount
+                    name: 'IGV (' . $app_option_igv_get . '%):',
+                    total: $voucher->voucher_tax_amount
                 )
             );
             if ($app_option_rc_get >= 1) {
                 $printer->text(
                     (string)new SaleItemDto(
-                        'RC (' . $app_option_rc_get . '%):',
-                        $voucher->voucher_consumption_surcharge_amount
+                        name: 'RC (' . $app_option_rc_get . '%):',
+                        total: $voucher->voucher_consumption_surcharge_amount
                     )
                 );
             }
         }
 
         $printer->text(
-            (string)new SaleItemDto('TOTAL:', $voucher->voucher_sale_amount)
+            (string)new SaleItemDto(name: 'TOTAL:', total: $voucher->voucher_sale_amount)
         );
 
         $printer->text($divider);

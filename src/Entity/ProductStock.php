@@ -35,12 +35,12 @@ class ProductStock
     private Warehouse $warehouse;
 
     #[Groups(['product_stock:read'])]
-    #[ORM\Column(type: 'decimal', precision: 12, scale: 3)]
-    private float $stock = 0.0;
+    #[ORM\Column(type: 'decimal', precision: 12, scale: 3, options: ['comment' => 'float'])]
+    private string $stock = '0.000';
 
     #[Groups(['product_stock:read'])]
-    #[ORM\Column(name: 'min_stock', type: 'decimal', precision: 12, scale: 3)]
-    private float $minStock = 0.0;
+    #[ORM\Column(name: 'min_stock', type: 'decimal', precision: 12, scale: 3, options: ['comment' => 'float'])]
+    private string $minStock = '0.000';
 
     #[Groups(['product_stock:read'])]
     #[ORM\Column(name: 'created_at')]
@@ -86,24 +86,24 @@ class ProductStock
 
     public function getStock(): float
     {
-        return $this->stock;
+        return (float)$this->stock;
     }
 
     public function setStock(float $stock): static
     {
-        $this->stock = $stock;
+        $this->stock = (string)$stock;
 
         return $this;
     }
 
     public function getMinStock(): float
     {
-        return $this->minStock;
+        return (float)$this->minStock;
     }
 
     public function setMinStock(float $minStock): static
     {
-        $this->minStock = $minStock;
+        $this->minStock = (string)$minStock;
 
         return $this;
     }

@@ -9,6 +9,7 @@ use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\SaleRepository;
 use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleProvider;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -84,7 +85,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'fecha', type: 'datetime_immutable')]
-    private DateTimeInterface $fecha;
+    private DateTimeImmutable $fecha;
 
     #[Groups([
         'sale:write',
@@ -161,11 +162,11 @@ class Sale
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'date_created', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
-    private DateTimeInterface $date_created;
+    private DateTimeImmutable $date_created;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'date_updated', type: 'datetime_immutable', nullable: true)]
-    private ?DateTimeInterface $date_updated = null;
+    private ?DateTimeImmutable $date_updated = null;
 
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'created_by', type: 'integer')]
@@ -310,14 +311,18 @@ class Sale
         return $this;
     }
 
-    public function getFecha(): ?DateTimeInterface
+    public function getFecha(): ?DateTimeImmutable
     {
         return $this->fecha;
     }
 
     public function setFecha(?DateTimeInterface $fecha): static
     {
-        $this->fecha = $fecha;
+        $this->fecha = $fecha instanceof DateTimeImmutable
+            ? $fecha
+            : ($fecha
+                ? DateTimeImmutable::createFromInterface($fecha)
+                : null);
 
         return $this;
     }
@@ -478,26 +483,34 @@ class Sale
         return $this;
     }
 
-    public function getDateCreated(): ?DateTimeInterface
+    public function getDateCreated(): ?DateTimeImmutable
     {
         return $this->date_created;
     }
 
     public function setDateCreated(?DateTimeInterface $date_created): static
     {
-        $this->date_created = $date_created;
+        $this->date_created = $date_created instanceof DateTimeImmutable
+            ? $date_created
+            : ($date_created
+                ? DateTimeImmutable::createFromInterface($date_created)
+                : null);
 
         return $this;
     }
 
-    public function getDateUpdated(): ?DateTimeInterface
+    public function getDateUpdated(): ?DateTimeImmutable
     {
         return $this->date_updated;
     }
 
     public function setDateUpdated(?DateTimeInterface $date_updated): static
     {
-        $this->date_updated = $date_updated;
+        $this->date_updated = $date_updated instanceof DateTimeImmutable
+            ? $date_updated
+            : ($date_updated
+                ? DateTimeImmutable::createFromInterface($date_updated)
+                : null);
 
         return $this;
     }

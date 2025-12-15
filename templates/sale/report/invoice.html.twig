@@ -92,6 +92,7 @@
                     <thead>
                     <tr class="row-bt row-bb">
                         <th># Descripcion</th>
+                        <th class="text-right text-end">P. Unit.</th>
                         <th class="text-right text-end">S/</th>
                     </tr>
                     </thead>
@@ -99,16 +100,19 @@
                     {% for item in voucher.voucher_items %}
                         <tr>
                             <td class="left">{{ item.quantity }} {{ item.product_name }}</td>
+                            <td class="text-right text-end">{{ item.unit_price|number_format(2, '.', '') }}</td>
                             <td class="text-right text-end">{{ item.total|number_format(2, '.', '') }}</td>
                         </tr>
                     {% endfor %}
                     <tr class="row-bt">
                         <td></td>
                         <td></td>
+                        <td></td>
                     </tr>
                     {% if voucher.voucher_discount_percentage > 0 %}
                         <tr>
                             <td class="left">DTO.:</td>
+                            <td></td>
                             <td class="text-right text-end">
                                 -{{ voucher.voucher_discount_amount|number_format(2, '.', '') }}</td>
                         </tr>
@@ -116,23 +120,28 @@
                     {% if voucher.voucher_type != '00' %}
                         <tr>
                             <td class="left">OP. GRAVADA:</td>
+                            <td></td>
                             <td class="text-right text-end">{{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td>
                         </tr>
                         <tr>
                             <td class="left">OP. INAFECTA:</td>
+                            <td></td>
                             <td class="text-right text-end">0.00</td>
                         </tr>
                         <tr>
                             <td class="left">OP. EXONERADA:</td>
+                            <td></td>
                             <td class="text-right text-end">0.00</td>
                         </tr>
                         <tr>
                             <td class="left">IGV ({{ voucher.voucher_tax_percentage }}%):</td>
+                            <td></td>
                             <td class="text-right text-end">{{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td>
                         </tr>
                         {% if voucher.voucher_consumption_surcharge_amount > 0 %}
                             <tr>
                                 <td class="left">RC ({{ voucher.voucher_consumption_surcharge_percentage }}%):</td>
+                                <td></td>
                                 <td class="text-right text-end">
                                     {{ voucher.voucher_consumption_surcharge_amount|number_format(2, '.', '') }}
                                 </td>
@@ -142,6 +151,7 @@
                     <tr>
                         <td class="left">
                             <strong>TOTAL:</strong></td>
+                        <td></td>
                         <td class="text-right text-end">
                             <strong>{{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</strong>
                         </td>
