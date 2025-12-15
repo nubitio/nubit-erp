@@ -6,11 +6,12 @@ namespace App\Dto\Auth;
 
 final readonly class AuthUserDto
 {
-    private function __construct(
+    public function __construct(
         public int $userId,
         public string $username,
         public ?int $role = null,
-        public ?string $roles = null,
+        /** @var array<string>|null */
+        public ?array $roles = null,
     ) {
     }
 
