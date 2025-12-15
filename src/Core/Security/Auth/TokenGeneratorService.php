@@ -20,7 +20,7 @@ final readonly class TokenGeneratorService
     ) {
     }
 
-    public function generateTokenPair(User $user, ?Branch $branch = null): TokenPairDTO
+    public function generateTokenPair(User $user, ?Branch $branch = null): TokenPairDto
     {
         $now = new DateTimeImmutable();
         $nowTimestamp = $now->getTimestamp();
@@ -51,7 +51,7 @@ final readonly class TokenGeneratorService
         $this->entityManager->persist($refreshTokenEntity);
         $this->entityManager->flush();
 
-        return new TokenPairDTO(
+        return new TokenPairDto(
             accessToken: $accessToken,
             refreshToken: $refreshToken,
             accessTokenExpiresAt: $accessTokenExpiresAt,

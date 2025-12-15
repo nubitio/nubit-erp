@@ -8,7 +8,7 @@ use Override;
 use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
-use App\Dto\Auth\AuthUserDTO;
+use App\Dto\Auth\AuthUserDto;
 use App\Entity\User;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
@@ -23,11 +23,11 @@ final readonly class SecurityService implements Security
     #[Override]
     public function isAuthenticated(): bool
     {
-        return $this->connectedUser() instanceof AuthUserDTO;
+        return $this->connectedUser() instanceof AuthUserDto;
     }
 
     #[Override]
-    public function connectedUser(): ?AuthUserDTO
+    public function connectedUser(): ?AuthUserDto
     {
         $authenticatedUser = $this->security->getUser();
 
@@ -43,6 +43,6 @@ final readonly class SecurityService implements Security
 
         $jwtPayload = $this->jwtManager->decode($token->getCredentials());
 
-        return AuthUserDTO::createFromJWTPayload($jwtPayload);
+        return AuthUserDto::createFromJWTPayload($jwtPayload);
     }
 }

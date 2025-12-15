@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\Auth\AuthUserDTO;
-use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\BranchContextService;
 use App\Repository\DashboardRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,19 +18,18 @@ class DashboardController extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request, Security $security): Response
+    public function __invoke(Request $request): Response
     {
         $type = $request->attributes->get('type');
-        $user = $security->connectedUser();
 
-        if (!$user instanceof AuthUserDTO) {
+        $branchId = $this->branchContext->getCurrentBranchId();
+
+        if (!$branchId) {
             return $this->json([]);
         }
 
-        $localId = $this->branchContext->getCurrentBranchId();
-
         if ($type == 'overview') {
-            $data = $this->repository->getOverview((string) $localId);
+            $data = $this->repository->getOverview($branchId);
         }
 
         return $this->json($data ?? []);
