@@ -18,7 +18,7 @@ services:
       # Worker mode disabled for development (enable for performance testing)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
       OTEL_PHP_AUTOLOAD_ENABLED: "true"
-      OTEL_SERVICE_NAME: "efact"
+      OTEL_SERVICE_NAME: "efact-dev"
       OTEL_TRACES_EXPORTER: "otlp"
       OTEL_LOGS_EXPORTER: "otlp"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
