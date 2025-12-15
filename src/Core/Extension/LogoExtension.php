@@ -8,10 +8,10 @@ use Twig\Attribute\AsTwigFunction;
 use App\Core\Service\LogoProvider;
 use Doctrine\DBAL\Exception;
 
-class LogoExtension
+readonly class LogoExtension
 {
     public function __construct(
-        private readonly LogoProvider $logoProvider,
+        private LogoProvider $logoProvider,
     ) {
     }
 
