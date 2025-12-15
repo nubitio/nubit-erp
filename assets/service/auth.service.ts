@@ -10,6 +10,12 @@ class AuthService {
     });
   }
 
+  selectBranch(branchId: string) {
+    return httpClient.post<AuthResponse>(Constants.API_BASE_URL + 'auth/select-branch', {
+      branchId,
+    });
+  }
+
   logout() {
     return httpClient.post(Constants.API_BASE_URL + 'auth/logout');
   }

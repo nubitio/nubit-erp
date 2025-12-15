@@ -6,13 +6,15 @@ import {useScreenSize} from '../../../utils/media-query';
 import ArrayStore from 'devextreme/data/array_store';
 import {branchService} from '../../../service/branch.service';
 import toast from '../../../core/utils/SharedUtils';
-import List from "devextreme-react/list";
+import List from 'devextreme-react/list';
+import {authService} from '../../../service/auth.service';
 
 export const BranchPicker = ({visible, setVisible}) => {
   const ref = useRef<PopupRef>(null);
   const {isXSmall} = useScreenSize();
   const [dataSource, setDataSource] = useState<ArrayStore | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [selecting, setSelecting] = useState(false);
 
   const onItemClick = (e: any) => {
     setSelectedBranch(e.itemData);
@@ -32,11 +34,21 @@ export const BranchPicker = ({visible, setVisible}) => {
       return;
     }
 
-    branchService.setSelectedBranchId(selectedBranch.id);
-    branchService.setSelectedBranchName(selectedBranch.name);
-
-    close();
-    window.location.href = '/';
+    setSelecting(true);
+    authService.selectBranch(selectedBranch.id).subscribe({
+      next: () => {
+        branchService.setSelectedBranchId(selectedBranch.id);
+        branchService.setSelectedBranchName(selectedBranch.name);
+        close();
+        window.location.href = '/';
+      },
+      error: () => {
+        setSelecting(false);
+      },
+      complete: () => {
+        setSelecting(false);
+      }
+    });
   };
 
   useEffect(() => {
@@ -70,8 +82,8 @@ export const BranchPicker = ({visible, setVisible}) => {
     >
       <ToolbarItem toolbar="bottom" location="after">
         <div className={`picker-popup-buttons-container`}>
-          <Button text="Cancelar" stylingMode="outlined" onClick={onCancelClick}/>
-          <Button text="Aceptar" stylingMode="outlined" type="default" onClick={onAcceptClick}/>
+          <Button text="Cancelar" stylingMode="outlined" onClick={onCancelClick} disabled={selecting}/>
+          <Button text="Aceptar" stylingMode="outlined" type="default" onClick={onAcceptClick} disabled={selecting}/>
         </div>
       </ToolbarItem>
       <List

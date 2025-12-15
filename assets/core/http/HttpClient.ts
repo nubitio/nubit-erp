@@ -7,7 +7,6 @@ import { alert } from 'devextreme/ui/dialog';
 import toast from '../utils/SharedUtils';
 import { dispatch } from '../event/EventHook';
 import { Constants } from '../common/Constants';
-import {StorageUtils} from "../utils/StorageUtils";
 
 class HttpClient {
   private readonly axiosClient: AxiosInstance;
@@ -44,11 +43,6 @@ class HttpClient {
 
   private setupInterceptors = () => {
     this.axiosClient.interceptors.request.use((config) => {
-      // Add X-Branch-Id header from storage
-      const branchId = StorageUtils.getItem('selectedBranchId');
-      if (branchId) {
-        config.headers['X-Branch-Id'] = branchId;
-      }
       config.headers['Accept-Language'] = this.locale;
 
       if (config.params && 'skip' in config.params && 'take' in config.params) {

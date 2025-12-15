@@ -20,14 +20,14 @@ final readonly class TokenGeneratorService
     ) {
     }
 
-    public function generateTokenPair(User $user): TokenPairDTO
+    public function generateTokenPair(User $user, ?Branch $branch = null): TokenPairDTO
     {
         $now = new DateTimeImmutable();
         $nowTimestamp = $now->getTimestamp();
         $accessTokenExpiresAt = $nowTimestamp + $this->accessTokenTtl;
         $refreshTokenExpiresAt = $nowTimestamp + $this->refreshTokenTtl;
 
-        $payload = $this->buildPayload($user, $nowTimestamp);
+        $payload = $this->buildPayload($user, $nowTimestamp, $branch);
 
         $accessToken = $this->jwtManager->encode([
             ...$payload,
@@ -57,10 +57,12 @@ final readonly class TokenGeneratorService
             accessTokenExpiresAt: $accessTokenExpiresAt,
             refreshTokenExpiresAt: $refreshTokenExpiresAt,
             user: $user,
+            branchId: $branch?->getId(),
+            branchName: $branch?->getName(),
         );
     }
 
-    private function buildPayload(User $user, int $timestamp): array
+    private function buildPayload(User $user, int $timestamp, ?Branch $branch = null): array
     {
         return [
             'iat' => $timestamp,
@@ -69,6 +71,8 @@ final readonly class TokenGeneratorService
             'userId' => $user->getId(),
             'role' => $user->getRole()?->getId(),
             'roles' => $user->getRoles(),
+            'branchId' => $branch?->getId(),
+            'branchName' => $branch?->getName(),
         ];
     }
 
