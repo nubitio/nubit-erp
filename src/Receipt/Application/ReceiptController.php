@@ -13,6 +13,8 @@ use App\Receipt\Domain\ReceiptRequest;
 use App\Receipt\Domain\ReceiptShowUseCase;
 use App\Receipt\Domain\ReceiptType;
 use App\Receipt\Domain\ReceiptXmlUseCase;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Repository\InvoiceRepository;
 use App\Sale\Domain\DocType;
 use chillerlan\QRCode\QRCode;
@@ -55,6 +57,7 @@ class ReceiptController extends BaseController
         Request $request,
         string $id,
         InvoiceRepository $invoiceRepository,
+        SettingsService $settingsService,
     ): Response {
         $voucher = $invoiceRepository->getVoucher($id);
         $qr = '';
@@ -62,11 +65,16 @@ class ReceiptController extends BaseController
             $qr = new QRCode()->render(strval($voucher->voucher_qr_data));
         }
 
+        $shouldPrintLogo = 'true' === strval(
+            $settingsService->get(Constants::PRINT_LOGO, 'true')
+        );
+
         $template = 'sale/report/invoice.html.twig';
         $content = $this->renderView($template, [
             'qr' => $qr,
             'voucher' => $voucher,
             'extraData' => null,
+            'print_logo' => $shouldPrintLogo,
         ]);
 
         $preview = $request->get('preview');
