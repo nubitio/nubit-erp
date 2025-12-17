@@ -31,7 +31,6 @@ import { CashRegisterOpen } from './features/cashRegister/pages/CashRegisterOpen
 import { CashRegisterClose } from './features/cashRegister/pages/CashRegisterClose';
 import { CashMovements } from './features/cashRegister/pages/CashMovements';
 import { PaymentMethodPage } from './pages/PaymentMethod/PaymentMethodPage';
-import Assistant from './features/assistant/Assistant';
 import { CashRegisterPage } from './pages/CashRegister/CashRegisterPage';
 import { CashMovementCategoryPage } from './pages/CashMovementCategory/CashMovementCategoryPage';
 import { CashRegisterShiftsPage } from './pages/CashRegisterShifts/CashRegisterShiftsPage';
@@ -176,10 +175,6 @@ const routes = [
   {
     path: '/unit-of-measure',
     element: UnitOfMeasurePage,
-  },
-  {
-    path: '/assistant',
-    element: Assistant,
   },
 ];
 

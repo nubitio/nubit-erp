@@ -12,9 +12,11 @@ import type {AppHeaderProps} from '../../../types';
 import './AppHeader.scss';
 import NotificationPanel from '../notification-panel/NotificationPanel';
 import {Popover} from 'devextreme-react';
+import Assistant from '../../../features/assistant/Assistant';
 
 export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
+  const [assistantVisible, setAssistantVisible] = useState(false);
 
   const toggleNotificationPanel = () => {
     setNotificationPanelVisible(!notificationPanelVisible);
@@ -52,6 +54,28 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
               visible={notificationPanelVisible}
               onHiding={toggleNotificationPanel}
             />
+          </Popover>
+        </Item>
+        <Item location="after">
+          <div id="assistant-trigger">
+            <Button
+              icon="ph ph-question"
+              stylingMode="text"
+              hint="Assistant"
+              onClick={() => setAssistantVisible((prev) => !prev)}
+            />
+          </div>
+          <Popover
+            target="#assistant-trigger"
+            position="bottom"
+            width={520}
+            height={650}
+            visible={assistantVisible}
+            onHiding={() => setAssistantVisible(false)}
+            shading={false}
+            hideOnOutsideClick
+          >
+            <Assistant showToolbar={false}/>
           </Popover>
         </Item>
         <Item location="after" locateInMenu="auto" menuItemTemplate="userPanelTemplate">

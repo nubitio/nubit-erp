@@ -8,13 +8,15 @@ type AppToolbarProps = {
   additionalToolbarContent?: ReactNode;
   showRefreshButton?: boolean | undefined;
   onRefresh?: () => void;
+  icon?: string;
 };
 
 export const AppToolbar = (props: AppToolbarProps & React.PropsWithChildren) => {
   return (
     <div className="view-wrapper view-wrapper-dashboard">
       <Toolbar className="theme-dependent">
-        <Item location="before">
+        <Item location="before" cssClass="toolbar-title">
+          {props.icon && <i className={props.icon} aria-hidden="true" />}
           <span className="toolbar-header">{props.title}</span>
         </Item>
         {props.additionalToolbarContent}
