@@ -32,6 +32,8 @@ class AssistantController extends AbstractController
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
+            'message_preview' => array_slice(array_map(static fn ($m) => $m['content'] ?? '', $data->messages), 0, 3),
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         try {
@@ -60,6 +62,8 @@ class AssistantController extends AbstractController
 
         $this->logger->info('Assistant response generated', [
             'chars' => \strlen($content),
+            'preview' => mb_substr($content, 0, 120),
+            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
         return new AssistantResponse($content);
