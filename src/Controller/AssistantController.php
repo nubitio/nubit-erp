@@ -48,11 +48,11 @@ class AssistantController extends AbstractController
             );
         }
 
-        $content = $result->getContent();
-        if (!\is_string($content)) {
+        $content = $this->normalizeContent($result->getContent());
+        if ('' === $content) {
             $this->logger->warning('Assistant response is not text', [
-                'type' => gettype($content),
-                'content' => $content,
+                'type' => gettype($result->getContent()),
+                'content' => $result->getContent(),
             ]);
 
             throw ServiceException::create('La respuesta del asistente no es válida.');
@@ -76,5 +76,39 @@ class AssistantController extends AbstractController
         }
 
         return Message::ofUser($content);
+    }
+
+    private function normalizeContent(mixed $content): string
+    {
+        if (\is_string($content)) {
+            return trim($content);
+        }
+
+        if (\is_iterable($content)) {
+            $parts = [];
+            foreach ($content as $item) {
+                if (\is_string($item)) {
+                    $parts[] = $item;
+                    continue;
+                }
+
+                if (\is_object($item) && method_exists($item, 'getContent')) {
+                    $normalized = $item->getContent();
+                    if (\is_string($normalized)) {
+                        $parts[] = $normalized;
+                    }
+                }
+            }
+
+            return trim(implode("\n\n", array_filter($parts)));
+        }
+
+        if (\is_object($content) && method_exists($content, 'getContent')) {
+            $normalized = $content->getContent();
+
+            return \is_string($normalized) ? trim($normalized) : '';
+        }
+
+        return '';
     }
 }

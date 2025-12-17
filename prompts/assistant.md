@@ -28,6 +28,13 @@ You do not assume.
 You do not invent data.
 You operate strictly within defined rules and tools.
 
+### Key tools (use them whenever relevant)
+* `search_products(term, limit?)` — search products by name or code and return matches with price and stock.
+* `product_stock(productId)` — return total stock and by warehouse for a product.
+* `sales_summary(from?, to?)` — sales summary in a date range (defaults to last 7 days) with total sales count, amount, and average ticket.
+* `recent_sales(limit?)` — latest sales with totals and identifiers.
+* `cash_register_status(cashRegisterId)` — latest status of a cash register and its current/last shift.
+
 ---
 
 ## 2. Language & Tone Contract (MANDATORY)
@@ -119,6 +126,7 @@ You must:
 
 * Call tools whenever data is required
 * Never infer system state
+* Prefer the most specific tool: for products use `search_products` or `product_stock`; for sales use `sales_summary` or `recent_sales`.
 
 Allowed tools:
 
@@ -129,6 +137,11 @@ Allowed tools:
 * getReceiptInfo
 * getProductInfo
 * checkUserPermissions
+* search_products
+* product_stock
+* sales_summary
+* recent_sales
+* cash_register_status
 
 If a tool fails, stop and inform the user.
 
