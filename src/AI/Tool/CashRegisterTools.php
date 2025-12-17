@@ -26,7 +26,7 @@ final readonly class CashRegisterTools
     ) {
     }
 
-    public function __invoke(int $cashRegisterId): CashRegisterStatusDto
+    public function cashRegisterStatus(int $cashRegisterId): CashRegisterStatusDto
     {
         /** @var CashRegister|null $register */
         $register = $this->cashRegisterRepository->find($cashRegisterId);

@@ -1,21 +1,26 @@
 .chat-container {
   display: flex;
   justify-content: center;
-  height: calc(100% - 1.5rem); /* Subtract the margin-top (mt-6) from the height */
-  flex-grow: 1;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
 }
 
 .dx-chat {
   max-width: 900px;
-  height: 100%;
+  flex: 1 1 auto;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .dx-chat-messagelist {
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .dx-chat-messagelist-empty-image {
@@ -70,4 +75,7 @@
 .chat-disabled .dx-chat-messagebox {
   opacity: 0.5;
   pointer-events: none;
+}
+.assistant-panel {
+  height: 100%;
 }

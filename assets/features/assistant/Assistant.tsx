@@ -1,21 +1,25 @@
-import React, { useCallback, useState } from 'react';
-import Chat, { type ChatTypes } from 'devextreme-react/chat';
-import { loadMessages } from 'devextreme-react/common/core/localization';
-import { user, assistant, CHAT_DISABLED_CLASS } from './data';
+import React, {useCallback, useState} from 'react';
+import Chat, {type ChatTypes} from 'devextreme-react/chat';
+import {loadMessages} from 'devextreme-react/common/core/localization';
+import {assistant, CHAT_DISABLED_CLASS, user} from './data';
 import Message from './Message';
-import { dataSource, useApi } from './useApi';
-import { AppToolbar } from '../../components/utils/toolbar/AppToolbar';
+import {dataSource, useApi} from './useApi';
+import {AppToolbar} from '../../components/utils/toolbar/AppToolbar';
 
 loadMessages({
-  en: {
-    'dxChat-emptyListMessage': 'Chat is Empty',
-    'dxChat-emptyListPrompt': 'AI Assistant is ready to answer your questions.',
-    'dxChat-textareaPlaceholder': 'Ask AI Assistant...',
-  },
+  es: {
+    'dxChat-emptyListMessage': 'El chat está vacío',
+    'dxChat-emptyListPrompt': 'El Asistente de IA está listo para responder tus preguntas.',
+    'dxChat-textareaPlaceholder': 'Pregunta al Asistente de IA...',
+  }
 });
 
-export default function Assistant() {
-  const { alerts, insertMessage, fetchAIResponse, regenerateLastAIResponse } = useApi();
+type AssistantProps = {
+  showToolbar?: boolean;
+};
+
+export default function Assistant({showToolbar = true}: AssistantProps) {
+  const {alerts, insertMessage, fetchAIResponse, regenerateLastAIResponse} = useApi();
 
   const [typingUsers, setTypingUsers] = useState<ChatTypes.User[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -34,8 +38,8 @@ export default function Assistant() {
   );
 
   const onMessageEntered = useCallback(
-    async ({ message, event }: ChatTypes.MessageEnteredEvent): Promise<void> => {
-      insertMessage({ id: Date.now(), ...message });
+    async ({message, event}: ChatTypes.MessageEnteredEvent): Promise<void> => {
+      insertMessage({id: Date.now(), ...message});
 
       if (!alerts.length) {
         (event?.target as HTMLElement).blur();
@@ -57,29 +61,37 @@ export default function Assistant() {
   }, [regenerateLastAIResponse]);
 
   const messageRender = useCallback(
-    ({ message }: { message: ChatTypes.Message }) => (
-      <Message text={message.text} onRegenerateButtonClick={onRegenerateButtonClick} />
+    ({message}: { message: ChatTypes.Message }) => (
+      <Message text={message.text} onRegenerateButtonClick={onRegenerateButtonClick}/>
     ),
     [onRegenerateButtonClick],
   );
 
+  const chat = (
+    <div className="chat-container mt-4">
+      <Chat
+        className={isProcessing ? CHAT_DISABLED_CLASS : ''}
+        dataSource={dataSource}
+        reloadOnChange={false}
+        showAvatar={false}
+        showDayHeaders={false}
+        user={user}
+        height={580}
+        onMessageEntered={onMessageEntered}
+        alerts={alerts}
+        typingUsers={typingUsers}
+        messageRender={messageRender}
+      />
+    </div>
+  );
+
+  if (!showToolbar) {
+    return <div className="assistant-panel">{chat}</div>;
+  }
+
   return (
     <AppToolbar title="Asistente" showRefreshButton={false}>
-      <div className="chat-container mt-6">
-        <Chat
-          className={isProcessing ? CHAT_DISABLED_CLASS : ''}
-          dataSource={dataSource}
-          reloadOnChange={false}
-          showAvatar={false}
-          showDayHeaders={false}
-          user={user}
-          height={500}
-          onMessageEntered={onMessageEntered}
-          alerts={alerts}
-          typingUsers={typingUsers}
-          messageRender={messageRender}
-        />
-      </div>
+      {chat}
     </AppToolbar>
   );
 }
