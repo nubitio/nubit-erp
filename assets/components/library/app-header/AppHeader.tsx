@@ -68,14 +68,18 @@ export const AppHeader = ({menuToggleEnabled, title, toggleMenu, className}: App
           <Popover
             target="#assistant-trigger"
             position="bottom"
-            width={520}
-            height={650}
+            width="calc(100vw - 32px)"
+            height="calc(100vh - 120px)"
+            maxWidth={520}
+            maxHeight={650}
             visible={assistantVisible}
             onHiding={() => setAssistantVisible(false)}
             shading={false}
             hideOnOutsideClick
           >
-            <Assistant showToolbar={false}/>
+            <div className="assistant-popover">
+              <Assistant showToolbar={false}/>
+            </div>
           </Popover>
         </Item>
         <Item location="after" locateInMenu="auto" menuItemTemplate="userPanelTemplate">
