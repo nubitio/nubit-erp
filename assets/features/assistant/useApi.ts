@@ -1,49 +1,22 @@
 import { useCallback, useState } from 'react';
-import { OpenAI } from 'openai';
 import { type ChatTypes } from 'devextreme-react/chat';
 import { CustomStore, DataSource } from 'devextreme-react/common/data';
-import { ALERT_TIMEOUT, assistant, OpenAIConfig, REGENERATION_TEXT } from './data';
-import { systemPrompt } from './systemPrompt';
-
-type Message = (
-  | OpenAI.ChatCompletionUserMessageParam
-  | OpenAI.ChatCompletionAssistantMessageParam
-  | OpenAI.ChatCompletionSystemMessageParam
-) & {
-  content: string;
-};
-
-const chatService = new OpenAI(OpenAIConfig);
+import { ALERT_TIMEOUT, assistant, REGENERATION_TEXT } from './data';
+import { assistantService, type AssistantChatMessage } from '../../service/assistant.service';
 
 const wait = (delay: number): Promise<void> =>
   new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
 
-export async function getAIResponse(messages: Message[], delay?: number): Promise<string> {
-  // Add system prompt as the first message
-  const systemMessage: Message = {
-    role: 'system',
-    content: systemPrompt,
-  };
-
-  const allMessages = [systemMessage, ...messages];
-
-  const params = {
-    messages: allMessages,
-    model: 'deepseek-chat',
-    max_tokens: 1000,
-    temperature: 0.7,
-  };
-
-  const response = await chatService.chat.completions.create(params);
-  const data = { choices: response.choices };
+export async function getAIResponse(messages: AssistantChatMessage[], delay?: number): Promise<string> {
+  const response = await assistantService.chat(messages);
 
   if (delay) {
     await wait(delay);
   }
 
-  return data.choices[0].message?.content ?? '';
+  return response.message;
 }
 
 const store: ChatTypes.Message[] = [];
@@ -70,12 +43,17 @@ export const dataSource = new DataSource({
   paginate: false,
 });
 
-const dataItemToMessage = (item: ChatTypes.Message): Message => ({
-  role: item.author?.id as Message['role'],
-  content: item.text,
-});
+const dataItemToMessage = (item: ChatTypes.Message): AssistantChatMessage => {
+  const authorId = item.author?.id;
+  const role: AssistantChatMessage['role'] = authorId === assistant.id ? 'assistant' : 'user';
 
-const getMessageHistory = (): Message[] => [...dataSource.items()].map(dataItemToMessage);
+  return {
+    role,
+    content: item.text,
+  };
+};
+
+const getMessageHistory = (): AssistantChatMessage[] => [...dataSource.items()].map(dataItemToMessage);
 
 export const useApi = () => {
   const [alerts, setAlerts] = useState<ChatTypes.Alert[]>([]);
@@ -96,10 +74,10 @@ export const useApi = () => {
     ]);
   }, []);
 
-  const alertLimitReached = useCallback((): void => {
+  const alertWithMessage = useCallback((message?: string): void => {
     setAlerts([
       {
-        message: 'Request limit reached, try again in a minute.',
+        message: message || 'No se pudo obtener respuesta del asistente. Inténtalo nuevamente.',
       },
     ]);
 
@@ -121,11 +99,11 @@ export const useApi = () => {
           author: assistant,
           text: aiResponse,
         });
-      } catch {
-        alertLimitReached();
+      } catch (error: any) {
+        alertWithMessage(error?.response?.data?.message);
       }
     },
-    [alertLimitReached, insertMessage],
+    [alertWithMessage, insertMessage],
   );
 
   const regenerateLastAIResponse = useCallback(async (): Promise<void> => {
@@ -136,11 +114,11 @@ export const useApi = () => {
       const aiResponse = await getAIResponse(messageHistory.slice(0, -1));
 
       updateLastMessageContent(aiResponse);
-    } catch {
+    } catch (error: any) {
       updateLastMessageContent(messageHistory.at(-1)?.content ?? '');
-      alertLimitReached();
+      alertWithMessage(error?.response?.data?.message);
     }
-  }, [alertLimitReached, updateLastMessageContent]);
+  }, [alertWithMessage, updateLastMessageContent]);
 
   return {
     alerts,

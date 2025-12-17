@@ -145,6 +145,18 @@
             "phpcs.xml.dist"
         ]
     },
+    "symfony/ai-bundle": {
+        "version": "0.9999999",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "main",
+            "version": "0.1",
+            "ref": "39bb71a39860be3a261f5b527ed57e952366943d"
+        },
+        "files": [
+            "config/packages/ai.yaml"
+        ]
+    },
     "symfony/console": {
         "version": "7.0",
         "recipe": {
@@ -234,6 +246,9 @@
             "version": "1.0",
             "ref": "fadbfe33303a76e25cb63401050439aa9b1a9c7f"
         }
+    },
+    "symfony/mcp-bundle": {
+        "version": "dev-main"
     },
     "symfony/messenger": {
         "version": "7.4",

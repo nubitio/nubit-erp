@@ -261,6 +261,18 @@
       <path value="$PROJECT_DIR$/vendor/runtime/frankenphp-symfony" />
       <path value="$PROJECT_DIR$/vendor/staabm/side-effects-detector" />
       <path value="$PROJECT_DIR$/vendor/phpstan/phpstan-doctrine" />
+      <path value="$PROJECT_DIR$/vendor/symfony/psr-http-message-bridge" />
+      <path value="$PROJECT_DIR$/vendor/symfony/mcp-bundle" />
+      <path value="$PROJECT_DIR$/vendor/mcp/sdk" />
+      <path value="$PROJECT_DIR$/vendor/opis/uri" />
+      <path value="$PROJECT_DIR$/vendor/opis/json-schema" />
+      <path value="$PROJECT_DIR$/vendor/opis/string" />
+      <path value="$PROJECT_DIR$/vendor/symfony/ai-agent" />
+      <path value="$PROJECT_DIR$/vendor/symfony/ai-bundle" />
+      <path value="$PROJECT_DIR$/vendor/symfony/ai-chat" />
+      <path value="$PROJECT_DIR$/vendor/oskarstark/enum-helper" />
+      <path value="$PROJECT_DIR$/vendor/symfony/ai-platform" />
+      <path value="$PROJECT_DIR$/vendor/symfony/ai-store" />
     </include_path>
   </component>
   <component name="PhpInterpreters">
