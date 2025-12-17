@@ -12,9 +12,9 @@ use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Message\MessageInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Throwable;
 
 class AssistantController extends AbstractController
@@ -32,7 +32,14 @@ class AssistantController extends AbstractController
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
-            'message_preview' => array_slice(array_map(static fn ($m) => $m['content'] ?? '', $data->messages), 0, 3),
+            'message_preview' => array_slice(
+                array_map(
+                    static fn($m) => is_array($m) ? ($m['content'] ?? '') : (is_object($m) ? ($m->content ?? '') : ''),
+                    $data->messages
+                ),
+                0,
+                3
+            ),
             'user' => $this->getUser()?->getUserIdentifier(),
         ]);
 
@@ -73,7 +80,7 @@ class AssistantController extends AbstractController
     {
         $role = \is_array($message) ? ($message['role'] ?? '') : ($message->role ?? '');
         $content = \is_array($message) ? ($message['content'] ?? '') : ($message->content ?? '');
-        $content = trim((string) $content);
+        $content = trim((string)$content);
 
         if ('assistant' === $role) {
             return Message::ofAssistant($content);
