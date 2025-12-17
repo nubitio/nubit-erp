@@ -284,16 +284,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.367.2",
+            "version": "3.368.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3dc26d6f26a4d6380d82b2be4d8ae80fefb23d71"
+                "reference": "c1189f8e4ba3268d6306e515f6f65611c671d033"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3dc26d6f26a4d6380d82b2be4d8ae80fefb23d71",
-                "reference": "3dc26d6f26a4d6380d82b2be4d8ae80fefb23d71",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c1189f8e4ba3268d6306e515f6f65611c671d033",
+                "reference": "c1189f8e4ba3268d6306e515f6f65611c671d033",
                 "shasum": ""
             },
             "require": {
@@ -375,9 +375,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.367.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.368.0"
             },
-            "time": "2025-12-12T19:14:10+00:00"
+            "time": "2025-12-16T20:11:32+00:00"
         },
         {
             "name": "brick/math",
@@ -5987,12 +5987,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ai-bundle.git",
-                "reference": "9293c298519654cd4e4ad60e87bb4de447c6c9e2"
+                "reference": "aea4917065749076e5ee1d2a3871cd8239dd5406"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ai-bundle/zipball/9293c298519654cd4e4ad60e87bb4de447c6c9e2",
-                "reference": "9293c298519654cd4e4ad60e87bb4de447c6c9e2",
+                "url": "https://api.github.com/repos/symfony/ai-bundle/zipball/aea4917065749076e5ee1d2a3871cd8239dd5406",
+                "reference": "aea4917065749076e5ee1d2a3871cd8239dd5406",
                 "shasum": ""
             },
             "require": {
@@ -6094,7 +6094,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-16T22:46:09+00:00"
+            "time": "2025-12-17T12:23:27+00:00"
         },
         {
             "name": "symfony/ai-chat",
@@ -6102,12 +6102,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ai-chat.git",
-                "reference": "08d7099df5441bdc3b679478f4185e0f13c02088"
+                "reference": "1f692b18231c88fad13283794b2ff8ac6dda476a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ai-chat/zipball/08d7099df5441bdc3b679478f4185e0f13c02088",
-                "reference": "08d7099df5441bdc3b679478f4185e0f13c02088",
+                "url": "https://api.github.com/repos/symfony/ai-chat/zipball/1f692b18231c88fad13283794b2ff8ac6dda476a",
+                "reference": "1f692b18231c88fad13283794b2ff8ac6dda476a",
                 "shasum": ""
             },
             "require": {
@@ -6194,7 +6194,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-16T22:17:34+00:00"
+            "time": "2025-12-17T10:51:17+00:00"
         },
         {
             "name": "symfony/ai-platform",
@@ -6202,12 +6202,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/ai-platform.git",
-                "reference": "1afe3597391aa0ae4af7feb6ebb1e6b1f9dab78d"
+                "reference": "29072a99990995785478a99f0f15a09f90bc7a00"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/ai-platform/zipball/1afe3597391aa0ae4af7feb6ebb1e6b1f9dab78d",
-                "reference": "1afe3597391aa0ae4af7feb6ebb1e6b1f9dab78d",
+                "url": "https://api.github.com/repos/symfony/ai-platform/zipball/29072a99990995785478a99f0f15a09f90bc7a00",
+                "reference": "29072a99990995785478a99f0f15a09f90bc7a00",
                 "shasum": ""
             },
             "require": {
@@ -6219,7 +6219,6 @@
                 "psr/log": "^3.0",
                 "symfony/clock": "^7.3|^8.0",
                 "symfony/event-dispatcher": "^7.3|^8.0",
-                "symfony/http-client": "^7.3|^8.0",
                 "symfony/property-access": "^7.3|^8.0",
                 "symfony/property-info": "^7.3|^8.0",
                 "symfony/serializer": "^7.3|^8.0",
@@ -6227,19 +6226,16 @@
                 "symfony/uid": "^7.3|^8.0"
             },
             "require-dev": {
-                "async-aws/bedrock-runtime": "^0.1|^1.0",
-                "codewithkyrian/transformers": "^0.6.2",
-                "google/auth": "^1.47",
                 "phpstan/phpstan": "^2.1.17",
                 "phpstan/phpstan-strict-rules": "^2.0",
-                "phpstan/phpstan-symfony": "^2.0.6",
                 "phpunit/phpunit": "^11.5.46",
-                "symfony/ai-agent": "@dev",
                 "symfony/cache": "^7.3|^8.0",
                 "symfony/console": "^7.3|^8.0",
                 "symfony/dotenv": "^7.3|^8.0",
                 "symfony/expression-language": "^7.3|^8.0",
                 "symfony/finder": "^7.3|^8.0",
+                "symfony/http-client": "^7.3|^8.0",
+                "symfony/http-client-contracts": "^3.5",
                 "symfony/process": "^7.3|^8.0",
                 "symfony/var-dumper": "^7.3|^8.0"
             },
@@ -6327,7 +6323,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-16T22:54:50+00:00"
+            "time": "2025-12-17T09:51:06+00:00"
         },
         {
             "name": "symfony/ai-store",
@@ -8599,12 +8595,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/mcp-bundle.git",
-                "reference": "edc3078fda675f3bf0fba05822f96fd0bd20f5f7"
+                "reference": "3ee2669c412a04b6e63d8191be308a8454d0d200"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/mcp-bundle/zipball/edc3078fda675f3bf0fba05822f96fd0bd20f5f7",
-                "reference": "edc3078fda675f3bf0fba05822f96fd0bd20f5f7",
+                "url": "https://api.github.com/repos/symfony/mcp-bundle/zipball/3ee2669c412a04b6e63d8191be308a8454d0d200",
+                "reference": "3ee2669c412a04b6e63d8191be308a8454d0d200",
                 "shasum": ""
             },
             "require": {
@@ -8622,7 +8618,8 @@
             "require-dev": {
                 "phpstan/phpstan": "^2.1",
                 "phpstan/phpstan-strict-rules": "^2.0",
-                "phpunit/phpunit": "^11.5.46"
+                "phpunit/phpunit": "^11.5.46",
+                "symfony/monolog-bundle": "^3.10 || ^4.0"
             },
             "default-branch": true,
             "type": "symfony-bundle",
@@ -8676,7 +8673,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-12-16T22:46:09+00:00"
+            "time": "2025-12-17T13:26:49+00:00"
         },
         {
             "name": "symfony/messenger",
@@ -13533,16 +13530,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.92.0",
+            "version": "v3.92.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "5646c2cd99b7cb4b658ff681fe27069ba86c7280"
+                "reference": "64fab3553dce507ce247f7d1a7d65f74ef658c3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/5646c2cd99b7cb4b658ff681fe27069ba86c7280",
-                "reference": "5646c2cd99b7cb4b658ff681fe27069ba86c7280",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/64fab3553dce507ce247f7d1a7d65f74ef658c3f",
+                "reference": "64fab3553dce507ce247f7d1a7d65f74ef658c3f",
                 "shasum": ""
             },
             "require": {
@@ -13582,6 +13579,7 @@
                 "php-cs-fixer/phpunit-constraint-isidenticalstring": "^1.6",
                 "php-cs-fixer/phpunit-constraint-xmlmatchesxsd": "^1.6",
                 "phpunit/phpunit": "^9.6.25 || ^10.5.53 || ^11.5.34",
+                "symfony/polyfill-php85": "^1.33",
                 "symfony/var-dumper": "^5.4.48 || ^6.4.24 || ^7.3.2 || ^8.0",
                 "symfony/yaml": "^5.4.45 || ^6.4.24 || ^7.3.2 || ^8.0"
             },
@@ -13624,7 +13622,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.92.0"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.92.2"
             },
             "funding": [
                 {
@@ -13632,7 +13630,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-12-12T10:29:19+00:00"
+            "time": "2025-12-17T00:04:16+00:00"
         },
         {
             "name": "gitonomy/gitlib",
