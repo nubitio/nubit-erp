@@ -73,7 +73,7 @@ export default function Assistant() {
           showAvatar={false}
           showDayHeaders={false}
           user={user}
-          height="100%"
+          height={500}
           onMessageEntered={onMessageEntered}
           alerts={alerts}
           typingUsers={typingUsers}
