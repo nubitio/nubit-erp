@@ -29,11 +29,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     public const string AUTH_HEADER = 'Authorization';
 
     public const string AUTH_COOKIE = 'AUTH_TOKEN';
-
     public const string REFRESH_COOKIE = 'REFRESH_TOKEN';
-
-    public const string REFRESH_HEADER = 'X-Refresh-Token';
-
     public const string LOGIN_ROUTE = 'auth_login';
 
     public function __construct(
