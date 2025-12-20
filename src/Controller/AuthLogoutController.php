@@ -26,8 +26,8 @@ class AuthLogoutController extends AbstractController
 
     public function __invoke(Request $request): Response
     {
-        $refreshToken = $request->headers->get(JWTAuthenticator::REFRESH_HEADER)
-            ?? $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+        $body = json_decode($request->getContent(), true);
+        $refreshToken = $body['refreshToken'] ?? $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
 
         if ($refreshToken) {
             try {
