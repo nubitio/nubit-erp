@@ -24,6 +24,7 @@ use App\Entity\User;
 use App\Entity\VoucherSeries;
 use App\Entity\VoucherType;
 use App\Entity\Warehouse;
+use App\Entity\SunatCatalog;
 use App\Enum\CashMovementType;
 use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
@@ -37,6 +38,7 @@ use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
 use App\Repository\VoucherSeriesRepository;
 use App\Repository\VoucherTypeRepository;
+use App\Repository\SunatCatalogRepository;
 use App\Service\MenuSeedService;
 use App\Service\TimeDimensionSeeder;
 use App\Service\UbigeoImportService;
@@ -63,6 +65,7 @@ readonly class InitialSetupService
         private UnitOfMeasureRepository $unitOfMeasureRepository,
         private CategoryRepository $categoryRepository,
         private CustomerRepository $customerRepository,
+        private SunatCatalogRepository $sunatCatalogRepository,
         private Connection $connection,
         private SettingsService $settingsService,
         private UbigeoImportService $ubigeoImportService,
@@ -270,6 +273,103 @@ readonly class InitialSetupService
             $this->getOrCreateVoucherType($code, $name);
         }
 
+        // SUNAT catalog 51 (Tipo de operación)
+        $operationTypes = [
+            ['0101', 'Venta Interna'],
+            ['0200', 'Exportación de bienes'],
+            [
+                '1001',
+                'Operación sujeta al Sistema de Pago de Obligaciones Tributarias con el Gobierno Central',
+            ],
+            ['1004', 'Operación Sujeta a Detracción- Servicios de Transporte Carga'],
+        ];
+        foreach ($operationTypes as [$code, $name]) {
+            $this->getOrCreateSunatCatalog(51, $code, $name);
+        }
+
+        // SUNAT catalog 59 (Medios de pago)
+        $paymentMethods = [
+            ['001', 'Depósito en cuenta'],
+            ['002', 'Giro'],
+            ['003', 'Transferencia de fondos'],
+            ['004', 'Orden de pago'],
+            ['005', 'Tarjeta de débito'],
+            [
+                '006',
+                'Tarjeta de crédito emitida en el país por una empresa del sistema financiero',
+            ],
+            [
+                '007',
+                'Cheques con la cláusula de "NO NEGOCIABLE", "INTRANSFERIBLES", "NO A LA ORDEN" '
+                    . 'u otra equivalente, a que se refiere el inciso g) del artículo 5° de la ley',
+            ],
+            ['008', 'Efectivo, por operaciones en las que no existe obligación de utilizar medio de pago'],
+            ['009', 'Efectivo, en los demás casos'],
+            ['010', 'Medios de pago usados en comercio exterior'],
+            [
+                '011',
+                'Documentos emitidos por las EDPYMES y las cooperativas de ahorro y crédito '
+                    . 'no autorizadas a captar depósitos del público',
+            ],
+            [
+                '012',
+                'Tarjeta de crédito emitida en el país o en el exterior por una empresa no '
+                    . 'perteneciente al sistema financiero, cuyo objeto principal sea la emisión '
+                    . 'y administración de tarjetas de crédito',
+            ],
+            ['013', 'Tarjetas de crédito emitidas en el exterior por empresas bancarias o financieras no domiciliadas'],
+            ['101', 'Transferencias – Comercio exterior'],
+            ['102', 'Cheques bancarios - Comercio exterior'],
+            ['103', 'Orden de pago simple - Comercio exterior'],
+            ['104', 'Orden de pago documentario - Comercio exterior'],
+            ['105', 'Remesa simple - Comercio exterior'],
+            ['106', 'Remesa documentaria - Comercio exterior'],
+            ['107', 'Carta de crédito simple - Comercio exterior'],
+            ['108', 'Carta de crédito documentario - Comercio exterior'],
+            ['999', 'Otros medios de pago'],
+        ];
+        foreach ($paymentMethods as [$code, $name]) {
+            $this->getOrCreateSunatCatalog(59, $code, $name);
+        }
+
+        // SUNAT catalog 54 (Detraccion bienes/servicios)
+        $detractionCatalog = [
+            ['001', 'Azúcar y melaza de caña', 10.0],
+            ['003', 'Alcohol etílico', 10.0],
+            ['004', 'Recursos hidrobiológicos', 4.0],
+            ['005', 'Maíz amarillo duro', 4.0],
+            ['007', 'Caña de azúcar', 10.0],
+            ['008', 'Madera', 4.0],
+            ['009', 'Arena y piedra.', 10.0],
+            ['010', 'Residuos, subproductos, desechos, recortes y desperdicios', 15.0],
+            ['012', 'Intermediación laboral y tercerización', 12.0],
+            ['014', 'Carnes y despojos comestibles', 4.0],
+            ['016', 'Aceite de pescado', 10.0],
+            ['017', 'Harina, polvo y “pellets” de pescado, crustáceos, moluscos y demás invertebrados acuáticos', 4.0],
+            ['019', 'Arrendamiento de bienes muebles', 10.0],
+            ['020', 'Mantenimiento y reparación de bienes muebles', 12.0],
+            ['021', 'Movimiento de carga', 10.0],
+            ['022', 'Otros servicios empresariales', 12.0],
+            ['023', 'Leche', 4.0],
+            ['024', 'Comisión mercantil', 10.0],
+            ['025', 'Fabricación de bienes por encargo', 10.0],
+            ['026', 'Servicio de transporte de personas', 10.0],
+            ['027', 'Servicio de transporte de carga', 4.0],
+            ['028', 'Transporte de pasajeros', 10.0],
+            ['030', 'Contratos de construcción', 4.0],
+            ['031', 'Oro gravado con el IGV', 10.0],
+            ['032', 'Paprika y otros frutos de los generos capsicum o pimienta', 10.0],
+            ['034', 'Minerales metálicos no auríferos', 10.0],
+            ['035', 'Bienes exonerados del IGV', 1.5],
+            ['036', 'Oro y demás minerales metálicos exonerados del IGV', 1.5],
+            ['037', 'Demás servicios gravados con el IGV', 12.0],
+            ['039', 'Minerales no metálicos', 10.0],
+            ['041', 'Plomo', 15.0],
+        ];
+        foreach ($detractionCatalog as [$code, $name, $percentage]) {
+            $this->getOrCreateSunatCatalog(54, $code, $name, $percentage);
+        }
+
         // Default category
         $this->getOrCreateCategory('General');
 
@@ -333,6 +433,31 @@ readonly class InitialSetupService
             ->setCode($code)
             ->setName($name);
         $this->entityManager->persist($voucherType);
+        $this->entityManager->flush();
+    }
+
+    private function getOrCreateSunatCatalog(
+        int $catalog,
+        string $code,
+        string $name,
+        ?float $percentage = null
+    ): void {
+        $existing = $this->sunatCatalogRepository->findOneBy([
+            'catalog' => $catalog,
+            'code' => $code,
+        ]);
+        if ($existing instanceof SunatCatalog) {
+            return;
+        }
+
+        $entry = (new SunatCatalog())
+            ->setCatalog($catalog)
+            ->setCode($code)
+            ->setDescription($name)
+            ->setPercentage($percentage)
+            ->setActive(true);
+
+        $this->entityManager->persist($entry);
         $this->entityManager->flush();
     }
 

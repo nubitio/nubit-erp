@@ -1,0 +1,467 @@
+{% extends 'base_report.html.twig' %}
+
+{% block title %}{{ voucher.voucher_series }} - {{ voucher.voucher_number }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        @page {
+            size: A4;
+            margin: 12mm 10mm 14mm 10mm;
+        }
+
+        :root {
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --line-2: #d1d5db;
+            --soft: #f8fafc;
+            --soft-2: #f3f4f6;
+            --accent: #111827;
+        }
+
+        body {
+            background: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--ink);
+            font-size: 12px;
+        }
+
+        .invoice {
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .card {
+            border: 1px solid var(--line-2);
+            border-radius: 12px;
+            padding: 12px 14px;
+            background: #fff;
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: .2px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .small {
+            font-size: 11px;
+        }
+
+        .xs {
+            font-size: 10.5px;
+        }
+
+        .doc-card {
+            text-align: center;
+            border: 1.5px solid var(--accent);
+            background: #fff;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .doc-title {
+            font-size: 18px;
+            letter-spacing: 1px;
+            font-weight: 800;
+            line-height: 1.05;
+            margin-bottom: 6px;
+        }
+
+        .doc-number {
+            font-weight: 800;
+            font-size: 15px;
+            letter-spacing: .6px;
+            padding-top: 6px;
+            border-top: 1px dashed var(--line-2);
+            margin-top: 8px;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+            font-size: 10.5px;
+            letter-spacing: .9px;
+            color: var(--accent);
+            margin: 0 0 8px;
+            font-weight: 700;
+        }
+
+        .kv {
+            display: flex;
+            gap: 8px;
+            margin: 2px 0;
+        }
+
+        .kv .k {
+            min-width: 120px;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .kv .v {
+            flex: 1;
+        }
+
+        /* Tabla items */
+        .table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border: 1px solid var(--line-2);
+            border-radius: 12px;
+        }
+
+        .table thead th {
+            background: var(--soft-2);
+            border-bottom: 1px solid var(--line-2);
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: .7px;
+            color: #374151;
+            padding: 10px 10px;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            padding: 9px 10px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: top;
+            font-size: 12px;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        /* Totales */
+        .totals {
+            border: 1px solid var(--line-2);
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: #fff;
+        }
+
+        .totals table {
+            width: 100%;
+        }
+
+        .totals td {
+            padding: 4px 0;
+        }
+
+        .totals .label {
+            color: var(--muted);
+            font-weight: 700;
+            text-align: right;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+
+        .totals .value {
+            text-align: right;
+            font-weight: 700;
+            min-width: 120px;
+        }
+
+        .totals .grand {
+            border-top: 1px solid var(--line-2);
+            padding-top: 8px;
+            margin-top: 6px;
+        }
+
+        .totals .grand .label,
+        .totals .grand .value {
+            color: var(--accent);
+            font-weight: 900;
+            font-size: 13px;
+        }
+
+        /* card  */
+        .card-soft {
+            border: 1px solid var(--line-2);
+            background: var(--soft);
+            border-radius: 12px;
+            padding: 10px 12px;
+        }
+
+        /* Ajustes impresión */
+        .container-fluid {
+            padding: 0 !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 12px !important;
+        }
+
+        .g-3 {
+            --bs-gutter-x: 12px;
+            --bs-gutter-y: 12px;
+        }
+
+        .logo-wrap {
+            text-align: center;
+        }
+
+        .logo-wrap img {
+            display: inline-block;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="invoice">
+
+            {# HEADER #}
+            <div class="row align-items-stretch g-3 mb-3">
+                <div class="col-7">
+                    <div class="logo-wrap mb-2">
+                        <img src="{{ logo() }}" alt="Logo" style="max-height: 64px">
+                    </div>
+
+                    <div class="card">
+                        <div class="brand-name text-center">{{ voucher.company_name }}</div>
+                        <div class="small muted mt-1">
+                            <strong class="muted">Dirección:</strong> {{ voucher.company_address|default('-') }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-5">
+                    <div class="card doc-card">
+                        {% if voucher.voucher_type == '01' %}
+                            <div class="doc-title">FACTURA<br>ELECTRÓNICA</div>
+                        {% elseif voucher.voucher_type == '03' %}
+                            <div class="doc-title">BOLETA<br>ELECTRÓNICA</div>
+                        {% else %}
+                            <div class="doc-title">NOTA<br>DE VENTA</div>
+                        {% endif %}
+
+                        {% if voucher.voucher_type != '00' %}
+                            <div class="small muted">R.U.C.: <strong>{{ voucher.company_id }}</strong></div>
+                        {% endif %}
+
+                        <div class="doc-number">{{ voucher.voucher_series }}-{{ voucher.voucher_number }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {# CLIENTE / INFO DOC #}
+            <div class="card-soft mb-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="kv">
+                            <div class="k">Razón social</div>
+                            <div class="v"><strong>{{ voucher.customer_name }}</strong></div>
+                        </div>
+                        <div class="kv">
+                            <div
+                                class="k">{% if voucher.customer_doc_type == '6' %}RUC{% elseif voucher.customer_doc_type == '1' %}DNI{% else %}Doc. Identidad{% endif %}</div>
+                            <div class="v"><strong>{{ voucher.customer_doc_number|default('-') }}</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="kv">
+                            <div class="k">Fecha emisión</div>
+                            <div class="v">{{ voucher.voucher_date|date('d/m/Y', 'America/Lima') }}</div>
+                        </div>
+                        <div class="kv">
+                            <div class="k">Moneda</div>
+                            <div class="v">{{ voucher.voucher_currency|default('PEN') }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="col-12">
+                        <div class="kv">
+                            <div class="k">Dirección</div>
+                            <div class="v">{{ voucher.customer_address|default('-') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ITEMS #}
+            <div class="mb-3">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th style="width: 14%">Cantidad</th>
+                        <th style="width: 18%">Código</th>
+                        <th>Descripción</th>
+                        <th class="text-end" style="width: 16%">V. Unit</th>
+                        <th class="text-end" style="width: 16%">V. Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in voucher.voucher_items %}
+                        <tr>
+                            <td class="nowrap">{{ item.quantity }} {{ item.product_uom|default('') }}</td>
+                            <td class="nowrap">{{ item.product_code|default('-') }}</td>
+                            <td>
+                                <strong>{{ item.product_name }}</strong>
+                            </td>
+                            <td class="text-end nowrap">{{ item.unit_price|number_format(2, '.', '') }}</td>
+                            <td class="text-end nowrap">{{ item.total|number_format(2, '.', '') }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# TOTALES #}
+            <div class="row g-3 mb-3 align-items-start">
+                <div class="col-7">
+                    <div class="card">
+                        <div><strong>{{ voucher.voucherTotalText }}</strong></div>
+                        <div class="xs muted mt-1">
+                            Forma de pago:
+                            <strong>{% if voucher.voucher_payment_method == 2 %}CRÉDITO{% else %}CONTADO{% endif %}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-5 text-end">
+                    <div class="totals">
+                        <table>
+                            <tbody>
+                            {% if voucher.voucher_type != '00' %}
+                                <tr>
+                                    <td class="label">Op. Gravadas</td>
+                                    <td class="value">
+                                        S/ {{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="label">I.G.V.</td>
+                                    <td class="value">
+                                        S/ {{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td>
+                                </tr>
+                            {% endif %}
+
+                            {% if voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
+                                <tr>
+                                    <td class="label">Detracción ({{ voucher.voucher_detraction_percent|default(0) }}
+                                        %)
+                                    </td>
+                                    <td class="value">
+                                        S/ {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td>
+                                </tr>
+                            {% endif %}
+
+                            <tr class="grand">
+                                <td class="label">TOTAL</td>
+                                <td class="value">S/ {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {# INFO ADICIONAL + QR #}
+            <div class="row g-3 mb-3">
+                <div class="col-7">
+                    <div class="section-title">Información adicional</div>
+                    <div style="height: 8px; border-top: 1px dashed var(--line-2); margin: 8px 0;"></div>
+                    {% set has_detraction = voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
+
+                    {% if has_detraction %}
+                        <div class="kv">
+                            <div class="k">Leyenda</div>
+                            <div class="v">Operación sujeta a detracción</div>
+                        </div>
+                        <div class="kv">
+                            <div class="k">Tipo detracción</div>
+                            <div class="v">
+                                {% if voucher.voucher_detraction_code %}
+                                    {{ voucher.voucher_detraction_code }}{% if voucher.voucher_detraction_description %} - {{ voucher.voucher_detraction_description }}{% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="kv">
+                            <div class="k">Medio de pago</div>
+                            <div class="v">
+                                {% if voucher.voucher_detraction_payment_method %}
+                                    {{ voucher.voucher_detraction_payment_method }}{% if voucher.voucher_detraction_payment_description %} - {{ voucher.voucher_detraction_payment_description }}{% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if voucher.voucher_detraction_account %}
+                            <div class="kv">
+                                <div class="k">CTA Banco Nación</div>
+                                <div class="v">{{ voucher.voucher_detraction_account }}</div>
+                            </div>
+                        {% endif %}
+                        <div style="height: 8px; border-top: 1px dashed var(--line-2); margin: 8px 0;"></div>
+                    {% endif %}
+
+                    {% if voucher.voucher_bank_name or voucher.voucher_bank_account or voucher.voucher_bank_cci %}
+                        <div class="muted small">Datos bancarios para depósito / transferencia</div>
+                        <div class="kv">
+                            <div class="k">Banco</div>
+                            <div class="v">{{ voucher.voucher_bank_name|default('-') }}</div>
+                        </div>
+                        {% if voucher.voucher_bank_account %}
+                            <div class="kv">
+                                <div class="k">Cuenta</div>
+                                <div class="v">{{ voucher.voucher_bank_account }}</div>
+                            </div>
+                        {% endif %}
+                        {% if voucher.voucher_bank_cci %}
+                            <div class="kv">
+                                <div class="k">CCI</div>
+                                <div class="v">{{ voucher.voucher_bank_cci }}</div>
+                            </div>
+                        {% endif %}
+                        <div style="height: 8px; border-top: 1px dashed var(--line-2); margin: 8px 0;"></div>
+                    {% endif %}
+
+                    <div class="kv">
+                        <div class="k">Observación</div>
+                        <div class="v">{{ voucher.voucher_note|default('-') }}</div>
+                    </div>
+                </div>
+
+                <div class="col-5 text-end">
+                    {% if voucher.voucher_type != '00' %}
+                        <img src="{{ qr|default('') }}" alt="QR" style="max-height: 130px">
+                    {% endif %}
+                </div>
+            </div>
+
+            {# FOOTER HASH #}
+            {% if voucher.voucher_type != '00' %}
+                <div class="card-soft xs">
+                    <div><strong>Resumen:</strong> {{ voucher.voucher_hash }}</div>
+                    <div class="muted">Representación impresa del comprobante electrónico.</div>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+{% endblock %}

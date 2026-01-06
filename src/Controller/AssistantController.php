@@ -34,7 +34,7 @@ class AssistantController extends AbstractController
             'messages_count' => \count($data->messages),
             'message_preview' => array_slice(
                 array_map(
-                    static fn($m) => is_array($m) ? ($m['content'] ?? '') : (is_object($m) ? ($m->content ?? '') : ''),
+                    static fn ($m) => $m->content,
                     $data->messages
                 ),
                 0,

@@ -16,8 +16,7 @@ final class KnowledgeIndex
     public function __construct(
         #[Autowire(param: 'kernel.project_dir')]
         private readonly string $projectDir,
-    )
-    {
+    ) {
     }
 
     public function build(): array
@@ -256,8 +255,12 @@ final class KnowledgeIndex
     private function stopWords(): array
     {
         $words = [
-            'the','and','for','with','from','this','that','para','por','con','los','las','una','uno','del','de','la','el','en','un','una','sin','sobre','segun',
-            'al','a','lo','sus','su','mis','tus','como','cuando','donde','que','qué','cuál','cual','cuáles','cuales','ser','estar','haber','hay',
+            'the', 'and', 'for', 'with', 'from', 'this', 'that',
+            'para', 'por', 'con', 'los', 'las', 'una', 'uno', 'del',
+            'de', 'la', 'el', 'en', 'un', 'una', 'sin', 'sobre', 'segun',
+            'al', 'a', 'lo', 'sus', 'su', 'mis', 'tus', 'como', 'cuando',
+            'donde', 'que', 'qué', 'cuál', 'cual', 'cuáles', 'cuales',
+            'ser', 'estar', 'haber', 'hay',
         ];
         return array_fill_keys($words, true);
     }

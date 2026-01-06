@@ -185,6 +185,30 @@ class Sale
     private ?int $recargo_consumo = null;
 
     #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'tipo_operacion', type: 'string', length: 4, nullable: true)]
+    private ?string $tipo_operacion = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'detraccion_codigo', type: 'string', length: 10, nullable: true)]
+    private ?string $detraccion_codigo = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'detraccion_porcentaje', type: 'float', nullable: true)]
+    private ?float $detraccion_porcentaje = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'detraccion_monto', type: 'float', nullable: true)]
+    private ?float $detraccion_monto = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'detraccion_medio_pago', type: 'string', length: 10, nullable: true)]
+    private ?string $detraccion_medio_pago = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    #[ORM\Column(name: 'detraccion_valor_referencial', type: 'float', nullable: true)]
+    private ?float $detraccion_valor_referencial = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
     #[ORM\Column(name: 'invoice', type: 'string', nullable: true)]
     private ?string $invoice = null;
 
@@ -559,6 +583,78 @@ class Sale
     public function setRecargoConsumo(?int $recargo_consumo): static
     {
         $this->recargo_consumo = $recargo_consumo;
+
+        return $this;
+    }
+
+    public function getTipoOperacion(): ?string
+    {
+        return $this->tipo_operacion;
+    }
+
+    public function setTipoOperacion(?string $tipo_operacion): static
+    {
+        $this->tipo_operacion = $tipo_operacion;
+
+        return $this;
+    }
+
+    public function getDetraccionCodigo(): ?string
+    {
+        return $this->detraccion_codigo;
+    }
+
+    public function setDetraccionCodigo(?string $detraccion_codigo): static
+    {
+        $this->detraccion_codigo = $detraccion_codigo;
+
+        return $this;
+    }
+
+    public function getDetraccionPorcentaje(): ?float
+    {
+        return $this->detraccion_porcentaje;
+    }
+
+    public function setDetraccionPorcentaje(?float $detraccion_porcentaje): static
+    {
+        $this->detraccion_porcentaje = $detraccion_porcentaje;
+
+        return $this;
+    }
+
+    public function getDetraccionMonto(): ?float
+    {
+        return $this->detraccion_monto;
+    }
+
+    public function setDetraccionMonto(?float $detraccion_monto): static
+    {
+        $this->detraccion_monto = $detraccion_monto;
+
+        return $this;
+    }
+
+    public function getDetraccionMedioPago(): ?string
+    {
+        return $this->detraccion_medio_pago;
+    }
+
+    public function setDetraccionMedioPago(?string $detraccion_medio_pago): static
+    {
+        $this->detraccion_medio_pago = $detraccion_medio_pago;
+
+        return $this;
+    }
+
+    public function getDetraccionValorReferencial(): ?float
+    {
+        return $this->detraccion_valor_referencial;
+    }
+
+    public function setDetraccionValorReferencial(?float $detraccion_valor_referencial): static
+    {
+        $this->detraccion_valor_referencial = $detraccion_valor_referencial;
 
         return $this;
     }
