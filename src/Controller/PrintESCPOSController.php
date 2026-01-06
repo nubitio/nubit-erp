@@ -95,8 +95,8 @@ class PrintESCPOSController extends AbstractController
         $printer->text($divider);
 
         $docDate = date('d/m/Y', strtotime((string)$voucher->voucher_date));
-        $printer->text('Fecha emision: ' . $docDate . "\n");
-        $printer->text("Moneda: Soles\n");
+        $printer->text('Fecha: ' . $docDate . "\n");
+        $printer->text('Moneda: ' . ($voucher->voucher_currency ?: 'PEN') . "\n");
         $printer->text($divider);
         $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
         if ($voucher->voucher_type == DocType::FACTURA->value) {
@@ -105,24 +105,26 @@ class PrintESCPOSController extends AbstractController
             $printer->text('DNI: ' . $voucher->customer_doc_number . "\n");
         }
 
-        $printer->text('DIRECCION: ' . $voucher->customer_address . "\n");
+        $printer->text('Direccion: ' . $voucher->customer_address . "\n");
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $paymentMethod = 2 == $voucher->voucher_payment_method ? 'CREDITO'
                 : 'CONTADO';
-            $printer->text(sprintf('FORMA DE PAGO: %s%s', $paymentMethod, PHP_EOL));
+            $printer->text(sprintf('Pago: %s%s', $paymentMethod, PHP_EOL));
         }
 
         $printer->text($divider);
         $printer->setEmphasis();
         // Header with columns: description, unit price, total
-        $printer->text((string)new SaleItemDto('# Descripcion', 'P.Unit', 'S/'));
+        $printer->text((string)new SaleItemDto('DESCRIPCION', 'P. UNIT', 'IMPORTE'));
         $printer->setEmphasis(false);
         $printer->text($divider);
 
         foreach ($voucher->voucher_items as $item) {
-            $str_left = $item->quantity . ' ' . $item->product_name;
-            $saleItem = new SaleItemDto($str_left, $item->unit_price, $item->total);
+            $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total);
             $printer->text((string)$saleItem);
+            $qty = $this->formatQuantity((float)$item->quantity);
+            $uom = $item->product_uom ?? '';
+            $printer->text('  ' . trim($qty . ' ' . $uom) . "\n");
         }
 
         $printer->text($divider);
@@ -164,6 +166,48 @@ class PrintESCPOSController extends AbstractController
             (string)new SaleItemDto(name: 'TOTAL:', total: $voucher->voucher_sale_amount)
         );
 
+        $hasDetraction = $voucher->voucher_detraction_amount
+            && $voucher->voucher_detraction_amount > 0;
+        if ($hasDetraction) {
+            $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
+            $printer->text(
+                (string)new SaleItemDto(
+                    name: sprintf('DETRACCION (%s%%):', $detractionPercent),
+                    total: $voucher->voucher_detraction_amount
+                )
+            );
+
+            $detractionType = trim(
+                (string)($voucher->voucher_detraction_code ?? '') .
+                ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
+            );
+            $detractionPayment = trim(
+                (string)($voucher->voucher_detraction_payment_method ?? '') .
+                ($voucher->voucher_detraction_payment_description ? ' - ' . $voucher->voucher_detraction_payment_description : '')
+            );
+
+            $printer->text('TIPO DETRACCION: ' . ($detractionType !== '' ? $detractionType : '-') . "\n");
+            $printer->text('MEDIO PAGO: ' . ($detractionPayment !== '' ? $detractionPayment : '-') . "\n");
+
+            if (!empty($voucher->voucher_detraction_account)) {
+                $printer->text('CTA DETRACCION: ' . $voucher->voucher_detraction_account . "\n");
+            }
+
+            if (
+                !empty($voucher->voucher_bank_name) ||
+                !empty($voucher->voucher_bank_account) ||
+                !empty($voucher->voucher_bank_cci)
+            ) {
+                $printer->text('BANCO: ' . ($voucher->voucher_bank_name ?: '-') . "\n");
+                if (!empty($voucher->voucher_bank_account)) {
+                    $printer->text('CUENTA: ' . $voucher->voucher_bank_account . "\n");
+                }
+                if (!empty($voucher->voucher_bank_cci)) {
+                    $printer->text('CCI: ' . $voucher->voucher_bank_cci . "\n");
+                }
+            }
+        }
+
         $printer->text($divider);
         $printer->text($voucher->getVoucherTotalText() . "\n");
         $printer->text($divider);
@@ -196,5 +240,10 @@ class PrintESCPOSController extends AbstractController
         $printer->close();
 
         return $commands;
+    }
+
+    private function formatQuantity(float $quantity): string
+    {
+        return number_format($quantity, 2, '.', '');
     }
 }
