@@ -91,38 +91,49 @@ export const SalePage = () => {
 
   const setupPrinter = () => {
     qz.security.setSignatureAlgorithm('SHA256');
-    qz.security.setCertificatePromise(() => {
-      return fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
+    qz.security.setCertificatePromise((resolve: (value: string) => void, reject: (reason?: any) => void) => {
+      fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
         .then((response) => {
           if (!response.ok) {
             throw new Error('No se pudo cargar el certificado de QZ Tray.');
           }
           return response.text();
-        });
+        })
+        .then(resolve)
+        .catch(reject);
     });
     qz.security.setSignaturePromise((toSign: string) => {
-      return fetch(`${Constants.API_BASE_URL}qz/sign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: toSign }),
-      }).then((response) => {
-        if (!response.ok) {
-          throw new Error('No se pudo firmar el mensaje de QZ Tray.');
-        }
-        return response.text();
-      });
+      return (resolve: (value: string) => void, reject: (reason?: any) => void) => {
+        fetch(`${Constants.API_BASE_URL}qz/sign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: toSign }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('No se pudo firmar el mensaje de QZ Tray.');
+            }
+            return response.text();
+          })
+          .then(resolve)
+          .catch(reject);
+      };
     });
 
-    qz.websocket
-      .connect()
-      .then(() => {
-        qz.printers.getDefault().then((data: string) => {
-          setPrinterName(data);
-        });
-      })
-      .catch((err: any) => {
-        console.error(err);
-      });
+    ensureQzConnection().catch((err: any) => {
+      console.error(err);
+    });
+  };
+
+  const ensureQzConnection = async (): Promise<string> => {
+    if (!qz.websocket.isActive()) {
+      await qz.websocket.connect();
+    }
+    const activePrinter = printerName ?? (await qz.printers.getDefault());
+    if (!printerName) {
+      setPrinterName(activePrinter);
+    }
+    return activePrinter;
   };
 
   let alreadySetup = false;
@@ -167,12 +178,18 @@ export const SalePage = () => {
   };
 
   const print = (saleId: string) => {
-    const config = qz.configs.create(printerName);
-    saleService.printInvoice(saleId).subscribe((response) => {
-      qz.print(config, [response.data]).catch((err: any) => {
+    ensureQzConnection()
+      .then((activePrinter) => {
+        const config = qz.configs.create(activePrinter);
+        saleService.printInvoice(saleId).subscribe((response) => {
+          qz.print(config, [response.data]).catch((err: any) => {
+            console.error(err);
+          });
+        });
+      })
+      .catch((err: any) => {
         console.error(err);
       });
-    });
   };
 
   const toolbar = [
