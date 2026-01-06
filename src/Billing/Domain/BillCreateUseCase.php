@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Domain;
 
-use DateTime;
-use NumberFormatter;
-use DateMalformedStringException;
+use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
+use DateMalformedStringException;
+use DateTime;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
@@ -18,6 +18,7 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
+use NumberFormatter;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class BillCreateUseCase
@@ -25,6 +26,7 @@ readonly class BillCreateUseCase
     public function __construct(
         private InvoiceRepository $invoiceRepository,
         private BillUtilsInterface $billUtils,
+        private CompanyRepository $companyRepository,
     ) {
     }
 
@@ -35,6 +37,7 @@ readonly class BillCreateUseCase
      */
     public function __invoke(string $saleId): Invoice
     {
+        $company = $this->companyRepository->findOneBy([]);
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
@@ -124,8 +127,18 @@ readonly class BillCreateUseCase
             ->setCode('1000')
             ->setValue($strTotal);
 
+        $bankName = new Legend()
+            ->setCode('')
+            ->setValue('Banco: ' . $company->getBankName());
+        $bankAccount = new Legend()
+            ->setCode('')
+            ->setValue('Cuenta: ' . $company->getBankAccount());
+        $bankCci = new Legend()
+            ->setCode('')
+            ->setValue('CCI: ' . $company->getBankCci());
+
         $bill->setDetails($details);
-        $bill->setLegends([$legend]);
+        $bill->setLegends([$legend, $bankName, $bankAccount, $bankCci]);
         $bill->setObservacion(strval($voucher->voucher_note ?? null));
 
         return $bill;

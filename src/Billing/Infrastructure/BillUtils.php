@@ -37,7 +37,8 @@ readonly class BillUtils implements BillUtilsInterface
         $company = new Company();
         $company->setRuc($companyEntity->getRuc())
             ->setRazonSocial($companyEntity->getBusinessName())
-            ->setNombreComercial($companyEntity->getTradeName() ?? '')
+            ->setNombreComercial($companyEntity->getTradeName())
+            ->setTelephone($companyEntity->getPhone())
             ->setAddress($address);
 
         return $company;
