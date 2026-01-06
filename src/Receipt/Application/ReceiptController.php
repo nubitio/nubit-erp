@@ -69,7 +69,10 @@ class ReceiptController extends BaseController
             $settingsService->get(Constants::PRINT_LOGO, 'true')
         );
 
-        $template = 'sale/report/invoice.html.twig';
+        $format = strval($request->get('format', 'ticket'));
+        $template = $format === 'a4'
+            ? 'sale/report/invoice_a4.html.twig'
+            : 'sale/report/invoice.html.twig';
         $content = $this->renderView($template, [
             'qr' => $qr,
             'voucher' => $voucher,

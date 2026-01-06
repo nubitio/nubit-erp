@@ -76,6 +76,22 @@ class Company
     #[ORM\Column(name: 'distrito', length: 255, nullable: true)]
     private ?string $district = null;
 
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'bank_name', length: 255, nullable: true)]
+    private ?string $bankName = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'bank_account', length: 50, nullable: true)]
+    private ?string $bankAccount = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'bank_cci', length: 50, nullable: true)]
+    private ?string $bankCci = null;
+
+    #[Groups(['company:read'])]
+    #[ORM\Column(name: 'detraccion_account', length: 50, nullable: true)]
+    private ?string $detraccionAccount = null;
+
     public function getId(): ?string
     {
         return $this->id;
@@ -197,6 +213,54 @@ class Company
     public function setDistrict(?string $district): static
     {
         $this->district = $district;
+
+        return $this;
+    }
+
+    public function getBankName(): ?string
+    {
+        return $this->bankName;
+    }
+
+    public function setBankName(?string $bankName): static
+    {
+        $this->bankName = $bankName;
+
+        return $this;
+    }
+
+    public function getBankAccount(): ?string
+    {
+        return $this->bankAccount;
+    }
+
+    public function setBankAccount(?string $bankAccount): static
+    {
+        $this->bankAccount = $bankAccount;
+
+        return $this;
+    }
+
+    public function getBankCci(): ?string
+    {
+        return $this->bankCci;
+    }
+
+    public function setBankCci(?string $bankCci): static
+    {
+        $this->bankCci = $bankCci;
+
+        return $this;
+    }
+
+    public function getDetraccionAccount(): ?string
+    {
+        return $this->detraccionAccount;
+    }
+
+    public function setDetraccionAccount(?string $detraccionAccount): static
+    {
+        $this->detraccionAccount = $detraccionAccount;
 
         return $this;
     }
