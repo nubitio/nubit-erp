@@ -12,6 +12,7 @@ use App\Dto\Sale\SaleItemDto;
 use App\Repository\InvoiceRepository;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
+use InvalidArgumentException;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
@@ -46,14 +47,13 @@ class PrintESCPOSController extends AbstractController
      * @throws Exception
      * @throws \Exception|ExceptionInterface
      */
+
     public function printCommands(string $saleId): string
     {
-        $divider = str_pad(
-            '',
-            (int)$_ENV['PRINTER_LINE_WIDTH'],
-            '-',
-            STR_PAD_BOTH
-        ) . "\n";
+        $width = max(32, (int)($_ENV['PRINTER_LINE_WIDTH'] ?? 42)); // 42 típico 80mm, 32 típico 58mm
+
+        $hrDashed = $this->hr('-', $width);
+        $hrSolid = $this->hr('=', $width);
 
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
@@ -61,11 +61,12 @@ class PrintESCPOSController extends AbstractController
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
 
-        $printer->setJustification(Printer::JUSTIFY_CENTER);
-
         $shouldPrintLogo = 'true' === strval(
             $this->settingsService->get(Constants::PRINT_LOGO, 'true')
         );
+
+        // HEADER (logo + empresa)
+        $printer->setJustification(Printer::JUSTIFY_CENTER);
 
         if ($shouldPrintLogo && $logo instanceof EscposImage) {
             $printer->graphics($logo);
@@ -73,166 +74,192 @@ class PrintESCPOSController extends AbstractController
         }
 
         $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
-        $printer->text($voucher->company_name . "\n");
+        $printer->text($this->wrap($voucher->company_name, $width));
         $printer->selectPrintMode();
-        $printer->text('RUC: ' . $voucher->company_id . "\n");
-        $printer->text($voucher->company_address . "\n");
-        $printer->text('Tel.: ' . $voucher->company_phone . "\n");
 
+        if ($voucher->voucher_type !== '00') {
+            $printer->text('RUC: ' . ($voucher->company_id ?? '-') . "\n");
+        }
+
+        $printer->text($this->wrap($voucher->company_address ?? '-', $width));
+        if (!empty($voucher->company_phone)) {
+            $printer->text('Tel.: ' . $voucher->company_phone . "\n");
+        }
+
+        $printer->text($hrDashed);
+
+        // DOCUMENTO (tipo + serie-num)
         $docType = match ($voucher->voucher_type) {
             DocType::FACTURA->value => 'FACTURA ELECTRONICA',
             DocType::BOLETA->value => 'BOLETA ELECTRONICA',
             DocType::NOTA_VENTA->value => 'NOTA DE VENTA',
             default => 'TICKET',
         };
-        $ticket = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $printer->text($divider);
+
+        $ticket = $voucher->voucher_series . ' - ' . $voucher->voucher_number;
+
         $printer->setEmphasis();
         $printer->text($docType . "\n");
         $printer->text($ticket . "\n");
         $printer->setEmphasis(false);
-        $printer->setJustification();
-        $printer->text($divider);
 
-        $docDate = date('d/m/Y', strtotime((string)$voucher->voucher_date));
-        $printer->text('Fecha: ' . $docDate . "\n");
-        $printer->text('Moneda: ' . ($voucher->voucher_currency ?: 'PEN') . "\n");
-        $printer->text($divider);
-        $printer->text('CLIENTE: ' . $voucher->customer_name . "\n");
-        if ($voucher->voucher_type == DocType::FACTURA->value) {
-            $printer->text('RUC: ' . $voucher->customer_doc_number . "\n");
-        } elseif ($voucher->voucher_type == DocType::BOLETA->value) {
-            $printer->text('DNI: ' . $voucher->customer_doc_number . "\n");
+        $printer->text($hrSolid);
+
+        // DATOS BÁSICOS (2 columnas: label izquierda, valor derecha)
+        $tz = new \DateTimeZone('America/Lima');
+        $date = $voucher->voucher_date ? new \DateTime((string)$voucher->voucher_date, $tz) : new \DateTime('now', $tz);
+
+        $printer->setJustification(Printer::JUSTIFY_LEFT);
+        $printer->text($this->lr('Fecha:', $date->format('d/m/Y'), $width));
+        $printer->text($this->lr('Moneda:', $voucher->voucher_currency ?: 'PEN', $width));
+
+        if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
+            $paymentMethod = ((int)$voucher->voucher_payment_method === 2) ? 'CREDITO' : 'CONTADO';
+            $printer->text($this->lr('Pago:', $paymentMethod, $width));
         }
 
-        $printer->text('Direccion: ' . $voucher->customer_address . "\n");
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            $paymentMethod = 2 == $voucher->voucher_payment_method ? 'CREDITO'
-                : 'CONTADO';
-            $printer->text(sprintf('Pago: %s%s', $paymentMethod, PHP_EOL));
-        }
+        $printer->text($hrDashed);
 
-        $printer->text($divider);
-        $printer->setEmphasis();
-        // Header with columns: description, unit price, total
-        $printer->text((string)new SaleItemDto('DESCRIPCION', 'P. UNIT', 'IMPORTE'));
+        // CLIENTE
+        $printer->text('CLIENTE: ' . ($voucher->customer_name ?? '-') . "\n");
+        if (!empty($voucher->customer_doc_number)) {
+            if ($voucher->voucher_type === DocType::FACTURA->value) {
+                $printer->text('RUC: ' . $voucher->customer_doc_number . "\n");
+            } elseif ($voucher->voucher_type === DocType::BOLETA->value) {
+                $printer->text('DNI: ' . $voucher->customer_doc_number . "\n");
+            } else {
+                $printer->text('DOC: ' . $voucher->customer_doc_number . "\n");
+            }
+        }
+        $printer->text($this->wrap('Direccion: ' . ($voucher->customer_address ?? '-'), $width));
+
+        $printer->text($hrSolid);
+
+        // ITEMS (cabecera)
+        $printer->setEmphasis(true);
+        $printer->text((string)new SaleItemDto('DESCRIPCION', 'P.UNIT', 'IMPORTE'));
         $printer->setEmphasis(false);
-        $printer->text($divider);
+        $printer->text($hrDashed);
 
         foreach ($voucher->voucher_items as $item) {
+            // Línea principal: nombre + columnas
             $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total);
+
+            // (Opcional) enfatizar el nombre: si tu SaleItemDto imprime el nombre dentro de la columna,
+            // el modo emphasis aplica a toda la línea. Si no te gusta, quítalo.
             $printer->text((string)$saleItem);
+
+            // Línea secundaria: cantidad + uom (alineada a la izquierda)
             $qty = $this->formatQuantity((float)$item->quantity);
             $uom = $item->product_uom ?? '';
             $printer->text('  ' . trim($qty . ' ' . $uom) . "\n");
         }
 
-        $printer->text($divider);
+        $printer->text($hrDashed);
 
-        if ($voucher->voucher_discount_percentage > 0) {
-            $printer->text(
-                (string)new SaleItemDto('DTO.:', '-' . $voucher->voucher_discount_amount)
-            );
+        // TOTALES
+        if ((float)$voucher->voucher_discount_percentage > 0) {
+            $printer->text((string)new SaleItemDto('DESCUENTO', '', '-' . $voucher->voucher_discount_amount));
         }
 
-        $app_option_rc_get = (int)$this->settingsService->get(
-            Constants::CONSUMPTION_TAX
-        );
+        $app_option_rc_get = (int)$this->settingsService->get(Constants::CONSUMPTION_TAX);
         $app_option_igv_get = (int)$this->settingsService->get(Constants::TAX);
+        $hasDetraction = $voucher->voucher_detraction_amount && $voucher->voucher_detraction_amount > 0;
 
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
+        if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
+            $printer->text((string)new SaleItemDto('OP. GRAVADA', '', $voucher->voucher_taxed_amount));
             $printer->text(
-                (string)new SaleItemDto(name: 'OP. GRAVADA:', total: $voucher->voucher_taxed_amount)
+                (string)new SaleItemDto('IGV (' . $app_option_igv_get . '%)', '', $voucher->voucher_tax_amount)
             );
-            $printer->text((string)new SaleItemDto(name: 'OP. INAFECTA:', total: '0.00'));
-            $printer->text((string)new SaleItemDto(name: 'OP. EXONERADA:', total: '0.00'));
-            $printer->text(
-                (string)new SaleItemDto(
-                    name: 'IGV (' . $app_option_igv_get . '%):',
-                    total: $voucher->voucher_tax_amount
-                )
-            );
-            if ($app_option_rc_get >= 1) {
+            if ($app_option_rc_get >= 1 && (float)$voucher->voucher_consumption_surcharge_amount > 0) {
                 $printer->text(
                     (string)new SaleItemDto(
-                        name: 'RC (' . $app_option_rc_get . '%):',
-                        total: $voucher->voucher_consumption_surcharge_amount
+                        'RC (' . $app_option_rc_get . '%)',
+                        '',
+                        $voucher->voucher_consumption_surcharge_amount
+                    )
+                );
+            }
+            if ($hasDetraction) {
+                $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
+                $printer->text(
+                    (string)new SaleItemDto(
+                        'DETRACCION (' . $detractionPercent . '%)',
+                        '',
+                        $voucher->voucher_detraction_amount
                     )
                 );
             }
         }
 
-        $printer->text(
-            (string)new SaleItemDto(name: 'TOTAL:', total: $voucher->voucher_sale_amount)
-        );
+        // TOTAL destacado: línea sólida + emphasis
+        $printer->text($hrSolid);
+        $printer->setEmphasis(true);
+        $printer->text((string)new SaleItemDto('TOTAL', '', $voucher->voucher_sale_amount));
+        $printer->setEmphasis(false);
+        $printer->text($hrDashed);
 
-        $hasDetraction = $voucher->voucher_detraction_amount
-            && $voucher->voucher_detraction_amount > 0;
+        // DETRACCIÓN (si aplica)
         if ($hasDetraction) {
-            $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
-            $printer->text(
-                (string)new SaleItemDto(
-                    name: sprintf('DETRACCION (%s%%):', $detractionPercent),
-                    total: $voucher->voucher_detraction_amount
-                )
-            );
-
             $detractionType = trim(
                 ($voucher->voucher_detraction_code ?? '') .
                 ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
             );
             $detractionPayment = trim(
                 ($voucher->voucher_detraction_payment_method ?? '') .
-                ($voucher->voucher_detraction_payment_description ? ' - ' .
-                    $voucher->voucher_detraction_payment_description : '')
+                ($voucher->voucher_detraction_payment_description ? ' - ' . $voucher->voucher_detraction_payment_description : '')
             );
 
-            $printer->text('TIPO DETRACCION: ' . ($detractionType !== '' ? $detractionType : '-') . "\n");
-            $printer->text('MEDIO PAGO: ' . ($detractionPayment !== '' ? $detractionPayment : '-') . "\n");
+            $printer->text($this->wrap('Tipo detraccion: ' . ($detractionType !== '' ? $detractionType : '-'), $width));
+            $printer->text(
+                $this->wrap('Medio pago: ' . ($detractionPayment !== '' ? $detractionPayment : '-'), $width)
+            );
 
             if (!empty($voucher->voucher_detraction_account)) {
-                $printer->text('CTA DETRACCION: ' . $voucher->voucher_detraction_account . "\n");
+                $printer->text($this->wrap('CTA detraccion: ' . $voucher->voucher_detraction_account, $width));
             }
 
-            if (
-                !empty($voucher->voucher_bank_name) ||
-                !empty($voucher->voucher_bank_account) ||
-                !empty($voucher->voucher_bank_cci)
-            ) {
-                $printer->text('BANCO: ' . ($voucher->voucher_bank_name ?: '-') . "\n");
-                if (!empty($voucher->voucher_bank_account)) {
-                    $printer->text('CUENTA: ' . $voucher->voucher_bank_account . "\n");
-                }
-                if (!empty($voucher->voucher_bank_cci)) {
-                    $printer->text('CCI: ' . $voucher->voucher_bank_cci . "\n");
-                }
+            $printer->text($hrDashed);
+        }
+
+        if (!empty($voucher->voucher_bank_name) || !empty($voucher->voucher_bank_account) || !empty($voucher->voucher_bank_cci)) {
+            $printer->text('Datos bancarios para depósito / transferencia:' . "\n");
+            $printer->text('Banco: ' . ($voucher->voucher_bank_name ?: '-') . "\n");
+            if (!empty($voucher->voucher_bank_account)) {
+                $printer->text('Cuenta: ' . $voucher->voucher_bank_account . "\n");
+            }
+            if (!empty($voucher->voucher_bank_cci)) {
+                $printer->text('CCI: ' . $voucher->voucher_bank_cci . "\n");
             }
         }
 
-        $printer->text($divider);
-        $printer->text($voucher->getVoucherTotalText() . "\n");
-        $printer->text($divider);
+        $printer->text($hrSolid);
+
+        // MONTO EN LETRAS (centrado)
         $printer->setJustification(Printer::JUSTIFY_CENTER);
-        if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
-            if ('true' == $_ENV['PRINTER_PRINT_QR']) {
-                $printer->qrCode(
-                    $voucher->voucher_qr_data,
-                    Printer::QR_ECLEVEL_L,
-                    8
-                );
+        $printer->text($this->wrap($voucher->getVoucherTotalText(), $width));
+
+        // QR + HASH + texto legal
+        if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
+            if ('true' === (string)($_ENV['PRINTER_PRINT_QR'] ?? 'false')) {
+                $printer->feed();
+                $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 8);
             }
 
             $printer->feed();
-            $printer->text('Resumen: ' . $voucher->voucher_hash . "\n");
+            $printer->text("Resumen:\n");
+            $printer->text($this->wrap($voucher->voucher_hash ?? '', $width));
+
             $printer->feed();
-            $printer->text('Representacion impresa del' . "\n");
-            $printer->text('comprobante electronico, consulte en' . "\n");
-            $printer->text($_ENV['EFACT_URL'] . "\n");
+            $printer->text($this->wrap('Representacion impresa del comprobante electronico.', $width));
+            $printer->text($this->wrap('Consulte en: ' . ($_ENV['EFACT_URL'] ?? ''), $width));
         }
 
+        // FOOTER
         $printer->feed();
-        $printer->text(date('d/m/Y H:i:s') . "\n");
-        $printer->text('** Gracias por su preferencia **' . "\n");
+        $printer->text((new \DateTime('now', $tz))->format('d/m/Y H:i:s') . "\n");
+        $printer->text('Gracias por su preferencia' . "\n");
+
         $printer->feed();
         $printer->cut();
         $printer->pulse();
@@ -242,6 +269,42 @@ class PrintESCPOSController extends AbstractController
 
         return $commands;
     }
+
+    private function hr(string $char, int $width): string
+    {
+        return str_repeat($char, $width) . "\n";
+    }
+
+    /**
+     * Left/Right line within printer width.
+     */
+    private function lr(string $left, string $right, int $width): string
+    {
+        $left = rtrim($left);
+        $right = ltrim($right);
+
+        $space = $width - mb_strlen($left) - mb_strlen($right);
+        if ($space < 1) {
+            // Si no entra, hacemos wrap en dos líneas
+            return $left . "\n" . str_pad($right, $width, ' ', STR_PAD_LEFT) . "\n";
+        }
+
+        return $left . str_repeat(' ', $space) . $right . "\n";
+    }
+
+    /**
+     * Word wrap that respects printer width.
+     */
+    private function wrap(string $text, int $width): string
+    {
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+        if ($text === '') {
+            return "-\n";
+        }
+
+        return wordwrap($text, $width, "\n", true) . "\n";
+    }
+
 
     private function formatQuantity(float $quantity): string
     {
