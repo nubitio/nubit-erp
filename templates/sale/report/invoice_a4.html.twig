@@ -315,7 +315,7 @@
                     <tbody>
                     {% for item in voucher.voucher_items %}
                         <tr>
-                            <td class="nowrap">{{ item.quantity }} {{ item.product_uom|default('') }}</td>
+                            <td class="nowrap">{{ item.quantity|number_format(2, '.', '') }} {{ item.product_uom|default('') }}</td>
                             <td class="nowrap">{{ item.product_code|default('-') }}</td>
                             <td>
                                 <strong>{{ item.product_name }}</strong>
