@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
@@ -100,6 +101,12 @@ class Product
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'imagen', referencedColumnName: 'id')]
     private ?Media $photo = null;
+
+    #[ApiProperty(readableLink: true)]
+    #[Groups(['product:read'])]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'detraccion_catalog_id', referencedColumnName: 'id', nullable: true)]
+    private ?SunatCatalog $detractionCatalog = null;
 
     public function getId(): ?string
     {
@@ -198,6 +205,18 @@ class Product
     public function setStock(?float $stock): static
     {
         $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getDetractionCatalog(): ?SunatCatalog
+    {
+        return $this->detractionCatalog;
+    }
+
+    public function setDetractionCatalog(?SunatCatalog $detractionCatalog): static
+    {
+        $this->detractionCatalog = $detractionCatalog;
 
         return $this;
     }

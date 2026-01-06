@@ -13,6 +13,7 @@ use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Charge;
 use Greenter\Model\Sale\Cuota;
+use Greenter\Model\Sale\Detraction;
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
@@ -41,6 +42,25 @@ readonly class BillCreateUseCase
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
+        $operationType = $voucher->voucher_operation_type ?: '0101';
+        $detractionPercent = $voucher->voucher_detraction_percent;
+        $detractionAmount = $voucher->voucher_detraction_amount;
+        $hasDetraction = $voucher->voucher_detraction_code
+            || $detractionPercent !== null
+            || $detractionAmount !== null
+            || $voucher->voucher_detraction_payment_method
+            || $voucher->voucher_detraction_value_ref !== null;
+
+        if ($hasDetraction && !$voucher->voucher_operation_type) {
+            $operationType = '1001';
+        }
+
+        if ($detractionAmount === null && $detractionPercent !== null) {
+            $detractionAmount = round(
+                floatval($voucher->voucher_sale_amount) * $detractionPercent / 100,
+                2
+            );
+        }
 
         $customer = new Client()
             ->setTipoDoc(strval($voucher->customer_doc_type))
@@ -50,7 +70,7 @@ readonly class BillCreateUseCase
 
         $bill = new Invoice()
             ->setUblVersion('2.1')
-            ->setTipoOperacion('0101')
+            ->setTipoOperacion($operationType)
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerie(strval($voucher->voucher_series))
             ->setCorrelativo(strval($voucher->voucher_number))
@@ -70,6 +90,18 @@ readonly class BillCreateUseCase
             ->setSubTotal(floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
             ->setMtoImpVenta(floatval($voucher->voucher_sale_amount))
             ->setCompany($this->billUtils->getCompany());
+
+        if ($hasDetraction) {
+            $detractionAccount = $company->getDetraccionAccount() ?: $voucher->voucher_detraction_account;
+            $detraction = (new Detraction())
+                ->setPercent($detractionPercent)
+                ->setMount($detractionAmount)
+                ->setCtaBanco($detractionAccount)
+                ->setCodMedioPago($voucher->voucher_detraction_payment_method)
+                ->setCodBienDetraccion($voucher->voucher_detraction_code)
+                ->setValueRef($voucher->voucher_detraction_value_ref);
+            $bill->setDetraccion($detraction);
+        }
 
         if (2 == $voucher->voucher_payment_method) {
             $paymentDate = new DateTime(strval($voucher->voucher_date))->modify('+1 month');
@@ -127,18 +159,14 @@ readonly class BillCreateUseCase
             ->setCode('1000')
             ->setValue($strTotal);
 
-        $bankName = new Legend()
-            ->setCode('')
-            ->setValue('Banco: ' . $company->getBankName());
-        $bankAccount = new Legend()
-            ->setCode('')
-            ->setValue('Cuenta: ' . $company->getBankAccount());
-        $bankCci = new Legend()
-            ->setCode('')
-            ->setValue('CCI: ' . $company->getBankCci());
-
         $bill->setDetails($details);
-        $bill->setLegends([$legend, $bankName, $bankAccount, $bankCci]);
+        $legends = [$legend];
+        if ($hasDetraction) {
+            $legends[] = (new Legend())
+                ->setCode('2006')
+                ->setValue('Operación sujeta a detracción');
+        }
+        $bill->setLegends($legends);
         $bill->setObservacion(strval($voucher->voucher_note ?? null));
 
         return $bill;

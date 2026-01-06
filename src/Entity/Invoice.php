@@ -87,6 +87,30 @@ class Invoice
     private float $rc = 0;
 
     #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'tipo_operacion', type: 'string', length: 4, nullable: true)]
+    private ?string $operationType = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'detraccion_codigo', type: 'string', length: 10, nullable: true)]
+    private ?string $detractionCode = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'detraccion_porcentaje', type: 'float', nullable: true)]
+    private ?float $detractionPercent = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'detraccion_monto', type: 'float', nullable: true)]
+    private ?float $detractionAmount = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'detraccion_medio_pago', type: 'string', length: 10, nullable: true)]
+    private ?string $detractionPaymentMethod = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\Column(name: 'detraccion_valor_referencial', type: 'float', nullable: true)]
+    private ?float $detractionValueRef = null;
+
+    #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'total', type: 'float')]
     private float $total = 0;
 
@@ -281,6 +305,78 @@ class Invoice
     public function setRc(float $rc): self
     {
         $this->rc = $rc;
+
+        return $this;
+    }
+
+    public function getOperationType(): ?string
+    {
+        return $this->operationType;
+    }
+
+    public function setOperationType(?string $operationType): self
+    {
+        $this->operationType = $operationType;
+
+        return $this;
+    }
+
+    public function getDetractionCode(): ?string
+    {
+        return $this->detractionCode;
+    }
+
+    public function setDetractionCode(?string $detractionCode): self
+    {
+        $this->detractionCode = $detractionCode;
+
+        return $this;
+    }
+
+    public function getDetractionPercent(): ?float
+    {
+        return $this->detractionPercent;
+    }
+
+    public function setDetractionPercent(?float $detractionPercent): self
+    {
+        $this->detractionPercent = $detractionPercent;
+
+        return $this;
+    }
+
+    public function getDetractionAmount(): ?float
+    {
+        return $this->detractionAmount;
+    }
+
+    public function setDetractionAmount(?float $detractionAmount): self
+    {
+        $this->detractionAmount = $detractionAmount;
+
+        return $this;
+    }
+
+    public function getDetractionPaymentMethod(): ?string
+    {
+        return $this->detractionPaymentMethod;
+    }
+
+    public function setDetractionPaymentMethod(?string $detractionPaymentMethod): self
+    {
+        $this->detractionPaymentMethod = $detractionPaymentMethod;
+
+        return $this;
+    }
+
+    public function getDetractionValueRef(): ?float
+    {
+        return $this->detractionValueRef;
+    }
+
+    public function setDetractionValueRef(?float $detractionValueRef): self
+    {
+        $this->detractionValueRef = $detractionValueRef;
 
         return $this;
     }

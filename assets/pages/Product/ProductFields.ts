@@ -85,6 +85,44 @@ export const ProductFields = () => {
   );
   fields.push(
     new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('detractionCatalog')
+      .label('Detracción (Bien/Servicio)')
+      .url(Constants.API_BASE_URL + 'sunat-catalogs')
+      .filters([
+        {
+          field: 'catalog',
+          operator: '=',
+          value: 54,
+        },
+      ])
+      .valueField('id')
+      .textField('description')
+      .itemFormatter((item: any) => {
+        if (!item) {
+          return '';
+        }
+        const percent = item.percentage !== null ? ` ${item.percentage}%` : '';
+        return `${item.code} - ${item.description}${percent}`;
+      })
+      .formatter((cell: ColumnCellTemplateData) => {
+        const item = cell.value ?? cell.data?.detractionCatalog;
+        if (!item) {
+          return '';
+        }
+        if (typeof item === 'string') {
+          return item;
+        }
+        const percent = item.percentage !== null ? ` ${item.percentage}%` : '';
+        if (!item.code && !item.description) {
+          return '';
+        }
+        return `${item.code ?? ''} - ${item.description ?? ''}${percent}`.trim();
+      })
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
       .type(FieldType.CURRENCY)
       .name('salePrice')
       .label('Precio')

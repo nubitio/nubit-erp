@@ -91,6 +91,18 @@ SELECT
     IFNULL(i.igv, detail.tax_amount) AS voucher_total_taxes,
     IFNULL(i.subtotal, detail.taxed_amount) AS voucher_sale_value,
     IFNULL(i.total, detail.sale_amount) AS voucher_sale_amount,
+    IFNULL(i.tipo_operacion, m.tipo_operacion) AS voucher_operation_type,
+    IFNULL(i.detraccion_codigo, m.detraccion_codigo) AS voucher_detraction_code,
+    IFNULL(i.detraccion_porcentaje, m.detraccion_porcentaje) AS voucher_detraction_percent,
+    IFNULL(i.detraccion_monto, m.detraccion_monto) AS voucher_detraction_amount,
+    IFNULL(i.detraccion_medio_pago, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
+    sc_pay.description AS voucher_detraction_payment_description,
+    IFNULL(i.detraccion_valor_referencial, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
+    e.detraccion_account AS voucher_detraction_account,
+    sc_det.description AS voucher_detraction_description,
+    e.bank_name AS voucher_bank_name,
+    e.bank_account AS voucher_bank_account,
+    e.bank_cci AS voucher_bank_cci,
     m.glosa AS voucher_note,
     i.created_at AS date_comprobante,
     i.digest AS voucher_hash,
@@ -123,6 +135,12 @@ FROM
     INNER JOIN `local` l ON l.local_id = a.local_id
     INNER JOIN empresa e ON e.empresa_id = l.empresa_id
     INNER JOIN cliente c ON c.ruc = m.cliente_id
+    LEFT JOIN sunat_catalog sc_det
+        ON sc_det.catalog = 54
+        AND sc_det.code = IFNULL(i.detraccion_codigo, m.detraccion_codigo)
+    LEFT JOIN sunat_catalog sc_pay
+        ON sc_pay.catalog = 59
+        AND sc_pay.code = IFNULL(i.detraccion_medio_pago, m.detraccion_medio_pago)
     LEFT JOIN (
         SELECT
             md.movimiento_id,

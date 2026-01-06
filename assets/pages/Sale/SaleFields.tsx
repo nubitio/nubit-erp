@@ -149,12 +149,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .label('Comprobante')
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value) {
-          const payload = {
-            type: cell.data.cliente.ruc.length === 11 ? '01' : '03',
-            id: cell.data.id,
-          };
-          const payloadEncoded = btoa(JSON.stringify(payload));
-          const url = `/receipt/${payloadEncoded}/pdf?preview=true`;
+          const url = `/receipt/${cell.data.id}/ticket?format=a4`;
           return (
             <a href={url} className="text-reset" target="_blank" rel="noreferrer">
               <i className="ph ph-file-pdf text-primary" /> {cell.value}

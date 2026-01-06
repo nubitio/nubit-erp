@@ -316,6 +316,15 @@ class MenuSeedService
             'icon' => '',
             'parent_id' => 2000,
         ],
+        [
+            'id' => 2002,
+            'order_index' => 2,
+            'key_name' => 'Catálogos SUNAT',
+            'type' => 'route',
+            'route' => 'sunat-catalog',
+            'icon' => '',
+            'parent_id' => 2000,
+        ],
     ];
 
     public function __construct(private readonly Connection $connection)

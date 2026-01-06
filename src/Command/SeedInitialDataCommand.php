@@ -8,20 +8,24 @@ use Override;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
-use App\Service\MenuSeedService;
+use App\Service\InitialDataSeeder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:seed:menu', description: 'Seed menu items (idempotent).', help: <<<'TXT'
-Seed menu items (idempotent).
-TXT)]
-class SeedMenuCommand extends TenantAwareCommand
+#[AsCommand(
+    name: 'app:seed:initial-data',
+    description: 'Seed initial reference data (idempotent).',
+    help: <<<'TXT'
+Seed initial reference data (idempotent).
+TXT
+)]
+class SeedInitialDataCommand extends TenantAwareCommand
 {
     public function __construct(
-        private readonly MenuSeedService $menuSeedService,
+        private readonly InitialDataSeeder $initialDataSeeder,
         TenantManager $tenantManager,
         TenantConnectionSwitcher $tenantConnectionSwitcher,
         LoggerInterface $logger,
@@ -39,8 +43,8 @@ class SeedMenuCommand extends TenantAwareCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $this->menuSeedService->seed();
-        $io->success('Menu seeded successfully.');
+        $this->initialDataSeeder->seed();
+        $io->success('Initial data seeded successfully.');
 
         return self::SUCCESS;
     }

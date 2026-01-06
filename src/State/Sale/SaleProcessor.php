@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\State\Sale;
 
-use Override;
-use DateTimeImmutable;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
@@ -19,13 +17,18 @@ use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
+use App\Repository\SunatCatalogRepository;
 use App\Service\ProductStockService;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 readonly class SaleProcessor implements ProcessorInterface
 {
+    private const string DETRACTION_PAYMENT_METHOD = '001';
+
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
@@ -37,6 +40,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private ProductStockService $productStockService,
         private LoggerInterface $logger,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
+        private SunatCatalogRepository $sunatCatalogRepository,
     ) {
     }
 
@@ -123,6 +127,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $total = $subtotal - ($subtotal * $data->getDescuento() / 100);
         $data->setTotal($total);
         $data->setEstado(1);
+        $this->applyDetractionFromItems($data);
 
         $this->logger->info('Sale totals calculated', [
             'item_count' => $itemCount,
@@ -227,6 +232,73 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $result;
+    }
+
+    private function applyDetractionFromItems(Sale $sale): void
+    {
+        $customerDoc = $sale->getCliente()?->getRuc() ?? '';
+        if (strlen($customerDoc) !== 11) {
+            $sale->setDetraccionCodigo(null);
+            $sale->setDetraccionPorcentaje(null);
+            $sale->setDetraccionMonto(null);
+            $sale->setDetraccionMedioPago(null);
+            $sale->setDetraccionValorReferencial(null);
+            if ($sale->getTipoOperacion() === '1001') {
+                $sale->setTipoOperacion(null);
+            }
+            return;
+        }
+
+        $detractionCatalog = null;
+
+        foreach ($sale->getItems() as $item) {
+            $catalog = $item->getProducto()?->getDetractionCatalog();
+            if (!$catalog) {
+                continue;
+            }
+
+            if ($detractionCatalog && $catalog->getId() !== $detractionCatalog->getId()) {
+                throw new ServiceException(
+                    'Los productos tienen diferentes códigos de detracción. Separe la venta en comprobantes distintos.'
+                );
+            }
+
+            $detractionCatalog = $catalog;
+        }
+
+        if (!$detractionCatalog) {
+            $sale->setDetraccionCodigo(null);
+            $sale->setDetraccionPorcentaje(null);
+            $sale->setDetraccionMonto(null);
+            $sale->setDetraccionMedioPago(null);
+            $sale->setDetraccionValorReferencial(null);
+            if ($sale->getTipoOperacion() === '1001') {
+                $sale->setTipoOperacion(null);
+            }
+
+            return;
+        }
+
+        $sale->setDetraccionCodigo($detractionCatalog->getCode());
+        $sale->setDetraccionPorcentaje($detractionCatalog->getPercentage());
+        $amount = $sale->getDetraccionPorcentaje() !== null
+            ? round($sale->getTotal() * $sale->getDetraccionPorcentaje() / 100, 2)
+            : null;
+        $sale->setDetraccionMonto($amount);
+
+        $paymentMethod = $this->sunatCatalogRepository->findOneBy([
+            'catalog' => 59,
+            'code' => self::DETRACTION_PAYMENT_METHOD,
+            'active' => true,
+        ]);
+        if (!$paymentMethod) {
+            throw new ServiceException('No se encontró el medio de pago para detracción (catálogo 59).');
+        }
+        $sale->setDetraccionMedioPago(self::DETRACTION_PAYMENT_METHOD);
+
+        if ($sale->getTipoOperacion() === null) {
+            $sale->setTipoOperacion('1001');
+        }
     }
 
     private function createCashMovementForSale(Sale $sale, CashShift $cashShift): void

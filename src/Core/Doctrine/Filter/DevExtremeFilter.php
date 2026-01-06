@@ -112,11 +112,19 @@ class DevExtremeFilter extends AbstractFilter
                 continue;
             }
 
+            if (!array_key_exists(1, $filterParam)) {
+                continue;
+            }
+
+            if (!array_key_exists(2, $filterParam) && !in_array($filterParam[1], ['isnull', 'isnotnull'], true)) {
+                continue;
+            }
+
             $field = $filterParam[0];
             $operator = $this->getOperator($filterParam[1]);
             $value = $this->getValueForOperator(
                 $filterParam[1],
-                $filterParam[2]
+                $filterParam[2] ?? null
             );
 
             if ('isnull' === $filterParam[1] || 'isnotnull' === $filterParam[1]) {

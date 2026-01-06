@@ -26,6 +26,7 @@ final class BuildKnowledgeIndexCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $input->getArguments();
         $this->index->build();
         $output->writeln('<info>Knowledge index rebuilt successfully.</info>');
 
