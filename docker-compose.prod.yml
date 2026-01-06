@@ -38,10 +38,15 @@ services:
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       # OPENAI
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # QZ Tray signing
+      QZ_CERT_PATH: ${QZ_CERT_PATH:-/app/config/qz/qz_cert.pem}
+      QZ_PRIVATE_KEY_PATH: ${QZ_PRIVATE_KEY_PATH:-/app/config/qz/qz_private.key}
+      QZ_PRIVATE_KEY_PASSPHRASE: ${QZ_PRIVATE_KEY_PASSPHRASE}
 
     volumes:
       - app-var:/app/var
       - app-public-uploads:/app/public/uploads
+      - ./config/qz:/app/config/qz:ro
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

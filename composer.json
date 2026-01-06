@@ -22,6 +22,7 @@
         "ext-pdo": "*",
         "ext-soap": "*",
         "ext-zip": "*",
+        "ext-openssl": "*",
         "api-platform/core": "^4.1",
         "aws/aws-sdk-php": "^3.279",
         "chillerlan/php-qrcode": "^5.0",

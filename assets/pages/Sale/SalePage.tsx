@@ -90,6 +90,29 @@ export const SalePage = () => {
   };
 
   const setupPrinter = () => {
+    qz.security.setSignatureAlgorithm('SHA256');
+    qz.security.setCertificatePromise(() => {
+      return fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('No se pudo cargar el certificado de QZ Tray.');
+          }
+          return response.text();
+        });
+    });
+    qz.security.setSignaturePromise((toSign: string) => {
+      return fetch(`${Constants.API_BASE_URL}qz/sign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: toSign }),
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error('No se pudo firmar el mensaje de QZ Tray.');
+        }
+        return response.text();
+      });
+    });
+
     qz.websocket
       .connect()
       .then(() => {
