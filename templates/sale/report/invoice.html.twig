@@ -269,7 +269,7 @@
                         <td class="desc">
                             <div class="item-name">{{ item.product_name }}</div>
                             <div
-                                class="item-meta xs muted">{{ item.quantity }}{% if item.product_uom %} {{ item.product_uom }}{% endif %}</div>
+                                class="item-meta xs muted">{{ item.quantity|number_format(2, '.', '') }}{% if item.product_uom %} {{ item.product_uom }}{% endif %}</div>
                         </td>
                         <td class="unit">{{ item.unit_price|number_format(2, '.', '') }}</td>
                         <td class="total">{{ item.total|number_format(2, '.', '') }}</td>
