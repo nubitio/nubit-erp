@@ -178,12 +178,13 @@ class PrintESCPOSController extends AbstractController
             );
 
             $detractionType = trim(
-                (string)($voucher->voucher_detraction_code ?? '') .
+                ($voucher->voucher_detraction_code ?? '') .
                 ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
             );
             $detractionPayment = trim(
-                (string)($voucher->voucher_detraction_payment_method ?? '') .
-                ($voucher->voucher_detraction_payment_description ? ' - ' . $voucher->voucher_detraction_payment_description : '')
+                ($voucher->voucher_detraction_payment_method ?? '') .
+                ($voucher->voucher_detraction_payment_description ? ' - ' .
+                    $voucher->voucher_detraction_payment_description : '')
             );
 
             $printer->text('TIPO DETRACCION: ' . ($detractionType !== '' ? $detractionType : '-') . "\n");

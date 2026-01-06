@@ -76,3 +76,9 @@ phpstan.neon
 /public/themes/*.css
 /public/themes/*.css.map
 ###< compiled themes ###
+
+###> qz tray ###
+/config/qz/qz_private.key
+/config/qz/qz_cert.pem
+/config/qz/qz.csr
+###< qz tray ###
