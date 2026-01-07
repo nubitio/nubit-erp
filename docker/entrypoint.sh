@@ -19,8 +19,8 @@ if [ "${APP_ENV}" = "prod" ] || [ "${APP_ENV}" = "staging" ]; then
         sleep 1
     done
     
-    # Run migrations
-    php /app/bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || {
+    # Run tenant-aware migrations
+    php /app/bin/console app:tenants:migrate --no-interaction || {
         echo "Migration failed, but continuing startup..."
     }
     
