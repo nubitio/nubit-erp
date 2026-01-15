@@ -27,7 +27,6 @@ readonly class InvoiceSendUseCase
     /**
      * @throws FilesystemException
      * @throws ServiceException
-     * @throws Exception
      */
     public function __invoke(string $saleId): DocumentResponse
     {

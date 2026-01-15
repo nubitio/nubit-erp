@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+# Clear stale caches so we don't boot with a container compiled against old dependencies
+rm -rf /app/var/cache/${APP_ENV:-prod}
+
 # Ensure runtime directories exist and are writable for the web user.
 mkdir -p /app/var/cache/${APP_ENV:-prod} /app/var/log /app/public/uploads
 chown -R www-data:www-data /app/var /app/public/uploads
@@ -11,7 +14,7 @@ if [ "${APP_ENV}" = "prod" ] || [ "${APP_ENV}" = "staging" ]; then
     
     # Wait for database to be ready (max 30 seconds)
     for i in $(seq 1 30); do
-        if php /app/bin/console doctrine:query:sql "SELECT 1" > /dev/null 2>&1; then
+        if php /app/bin/console dbal:run-sql "SELECT 1" > /dev/null 2>&1; then
             echo "Database is ready"
             break
         fi

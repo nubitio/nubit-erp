@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Billing\Domain;
 
 use App\Billing\Model\Response\DocumentResponse;
+use Doctrine\DBAL\Exception;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class BillSendUseCase
 {
@@ -14,6 +16,11 @@ readonly class BillSendUseCase
     ) {
     }
 
+    /**
+     * @throws \DateMalformedStringException
+     * @throws ExceptionInterface
+     * @throws Exception
+     */
     public function __invoke(string $saleId): DocumentResponse
     {
         $bill = $this->billCreateUseCase->__invoke($saleId);
