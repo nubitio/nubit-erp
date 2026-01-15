@@ -20,6 +20,7 @@ use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\ProductStockService;
 use DateTimeImmutable;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Psr\Log\LoggerInterface;
@@ -57,6 +58,7 @@ readonly class SaleProcessor implements ProcessorInterface
      * @param Sale $data
      *
      * @throws ServiceException
+     * @throws Exception
      */
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])

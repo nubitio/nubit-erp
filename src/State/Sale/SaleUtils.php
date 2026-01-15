@@ -74,15 +74,25 @@ readonly class SaleUtils
         return strval($number);
     }
 
+    /**
+     * @throws Exception
+     */
     public function fillSaleValues(
         Sale $sale,
         DocType $docType = DocType::NOTA_VENTA,
     ): Sale {
         $sale->setTipoId(2);
-        $sale->setSerie($this->getSaleSeries(
-            $docType->value,
-            $sale->getAlmacen()?->getId() ?: ''
-        ));
+        if ($sale->getTipoPago()->getId() === 2) {
+            $sale->setFormaPago(2);
+        } else {
+            $sale->setFormaPago(1);
+        }
+        $sale->setSerie(
+            $this->getSaleSeries(
+                $docType->value,
+                $sale->getAlmacen()?->getId() ?: ''
+            )
+        );
         $sale->setNumero($this->getSaleNumber($sale->getSerie()));
 
         if ($sale->getCajaId() === null) {
@@ -90,9 +100,11 @@ readonly class SaleUtils
         }
 
         $sale->setIgv(intval($this->settings->get(Constants::TAX)));
-        $sale->setRecargoConsumo(intval(
-            $this->settings->get(Constants::CONSUMPTION_TAX)
-        ));
+        $sale->setRecargoConsumo(
+            intval(
+                $this->settings->get(Constants::CONSUMPTION_TAX)
+            )
+        );
 
         return $sale;
     }
