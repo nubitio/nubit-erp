@@ -31,7 +31,7 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
     #[Override]
     public function getLastCorrelativeByDate(string $date): int
     {
-        $sql = 'SELECT COUNT(*) AS correlative FROM vw_movimiento WHERE estado = 2 AND fecha = ?';
+        $sql = 'SELECT COUNT(*) AS correlative FROM movimiento WHERE estado = 2 AND fecha = ?';
         /** @var false|array<string, bool|float|int|string|null> $result */
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
 
