@@ -11,6 +11,7 @@ use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Voided\Voided;
 use Greenter\Model\Voided\VoidedDetail;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class VoidedCreateUseCase
 {
@@ -24,6 +25,7 @@ readonly class VoidedCreateUseCase
     /**
      * @throws DateMalformedStringException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     public function __invoke(string $saleId, string $reason): SummaryResponse
     {
