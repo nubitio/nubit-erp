@@ -111,6 +111,7 @@ readonly class SaleVoidUseCase
      * @throws SaleException
      * @throws Exception
      * @throws DateMalformedStringException
+     * @throws ExceptionInterface
      */
     private function voidInvoice(
         string $saleId,
