@@ -16,6 +16,7 @@ use App\Repository\SaleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\JWT;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -34,6 +35,8 @@ class ApiController extends AbstractController
         private readonly SaleRepository $saleRepository,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly EntityManagerInterface $entityManager,
+        #[Autowire('%env(APP_SECRET)%')]
+        private readonly string $jwtSecret,
     ) {
         /** @var array<string, string|bool|int|float|null>|null $body */
         $body = json_decode($this->request->getCurrentRequest()?->getContent() ?? '[]', true);
@@ -48,7 +51,6 @@ class ApiController extends AbstractController
     #[Route('/api/auth/login', name: 'api_login', methods: ['POST'])]
     public function login(): Response
     {
-        $key = 'YSFEeBPAo1MyOsOleKoVtasDl';
         $user = $this->apiRepository->getUserByName(strval($this->body['username']));
 
         if (!$user) {
@@ -63,7 +65,7 @@ class ApiController extends AbstractController
                 'name' => $user['username'],
                 'role' => $user['rol_id'],
             ];
-            $token = JWT::encode($data, $key, 'HS256');
+            $token = JWT::encode($data, $this->jwtSecret, 'HS256');
 
             return $this->json(['token' => $token]);
         }

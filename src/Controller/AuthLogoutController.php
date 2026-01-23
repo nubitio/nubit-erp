@@ -34,12 +34,12 @@ class AuthLogoutController extends AbstractController
                 $this->refreshTokenService->revokeByToken($refreshToken);
 
                 $this->logger->info('User logged out successfully', [
-                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                    'ip' => $request->getClientIp() ?? 'unknown',
                 ]);
             } catch (\Throwable $e) {
                 $this->logger->error('Error revoking refresh token on logout', [
                     'exception' => $e->getMessage(),
-                    'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                    'ip' => $request->getClientIp() ?? 'unknown',
                 ]);
             }
         }

@@ -101,13 +101,11 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         } catch (ExpiredException $e) {
             $this->logger->warning('JWT token expired', [
                 'exception' => $e->getMessage(),
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
             ]);
             throw new AuthenticationException('Su sesión ha expirado', Response::HTTP_UNAUTHORIZED);
         } catch (Throwable $e) {
             $this->logger->error('Error decoding JWT token', [
                 'exception' => $e->getMessage(),
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
                 'trace' => $e->getTraceAsString(),
             ]);
             throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
@@ -326,7 +324,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     {
         $this->logger->warning('Authentication failure', [
             'exception' => $exception->getMessage(),
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'ip' => $request->getClientIp() ?? 'unknown',
             'route' => $request->attributes->get('_route'),
         ]);
 
@@ -351,7 +349,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
 
         $this->logger->info('Authentication required', [
             'message' => $message,
-            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'ip' => $request->getClientIp() ?? 'unknown',
             'route' => $request->attributes->get('_route'),
         ]);
 

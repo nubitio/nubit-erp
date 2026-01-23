@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Billing\Infrastructure;
 
 use Override;
-use App\Billing\Domain\BillConstants;
 use App\Billing\Domain\BillRepositoryInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Model\Report\Extra;
 use App\Billing\Model\Report\Parameters;
@@ -28,7 +28,11 @@ readonly class BillRepository implements BillRepositoryInterface
 {
     public function __construct(
         private SerializerInterface $serializer,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        #[Autowire('%env(BILL_API_BASE_URL)%')]
+        private string $apiBaseUrl,
+        #[Autowire('%env(BILL_API_TOKEN)%')]
+        private string $apiToken,
     ) {
     }
 
@@ -44,7 +48,7 @@ readonly class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = BillConstants::BILL_API_BASE_URL . 'invoice/send?token=' . BillConstants::BILL_API_TOKEN;
+        $url = $this->apiBaseUrl . 'invoice/send?token=' . $this->apiToken;
 
         $this->logger->info('Enviando factura a Bill', ['invoice' => $invoice]);
         $this->logger->info('Request Body', ['requestBody' => $requestBody]);
@@ -77,7 +81,7 @@ readonly class BillRepository implements BillRepositoryInterface
     {
         $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
-        $url = BillConstants::BILL_API_BASE_URL . 'invoice/xml?token=' . BillConstants::BILL_API_TOKEN;
+        $url = $this->apiBaseUrl . 'invoice/xml?token=' . $this->apiToken;
 
         $response = $httpClient->request('POST', $url, [
             'headers' => [
@@ -117,7 +121,7 @@ readonly class BillRepository implements BillRepositoryInterface
         );
 
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
-        $url = BillConstants::BILL_API_BASE_URL . 'invoice/pdf?token=' . BillConstants::BILL_API_TOKEN;
+        $url = $this->apiBaseUrl . 'invoice/pdf?token=' . $this->apiToken;
 
         $response = $httpClient->request('POST', $url, [
             'headers' => [
@@ -149,7 +153,7 @@ readonly class BillRepository implements BillRepositoryInterface
         ];
 
         $urlParams = http_build_query($params);
-        $baseUrl = BillConstants::BILL_API_BASE_URL . 'invoice/status?token=' . BillConstants::BILL_API_TOKEN;
+        $baseUrl = $this->apiBaseUrl . 'invoice/status?token=' . $this->apiToken;
         $url = $baseUrl . ('&' . $urlParams);
 
         $response = $httpClient->request('GET', $url);
