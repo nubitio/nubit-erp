@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Api;
 
+use App\Enum\EntityStatus;
+use App\Enum\MovementType;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -154,7 +156,7 @@ class ApiRepository
     public function createCategory(array $category): array
     {
         $category['categoria_id'] = Uuid::v4();
-        $category['estado'] = 1;
+        $category['estado'] = EntityStatus::ACTIVE->value;
         try {
             $filteredCategory = array_intersect_key($category, $this->categoryColumns);
             $this->db->insert('categoria', $filteredCategory);
@@ -228,7 +230,7 @@ class ApiRepository
      */
     public function createCustomer(array $customer): array
     {
-        $customer['estado'] = 1;
+        $customer['estado'] = EntityStatus::ACTIVE->value;
         try {
             $filteredCustomer = array_intersect_key($customer, $this->customerColumns);
             $this->db->insert('cliente', $filteredCustomer);
@@ -308,8 +310,8 @@ class ApiRepository
     public function createProduct(array $product): array
     {
         $product['producto_id'] = Uuid::v4();
-        $product['tipo_id'] = 2;
-        $product['estado'] = 1;
+        $product['tipo_id'] = MovementType::SALE->value;
+        $product['estado'] = EntityStatus::ACTIVE->value;
         try {
             $filteredProduct = array_intersect_key($product, $this->productColumns);
             $this->db->insert('producto', $filteredProduct);
@@ -358,28 +360,36 @@ class ApiRepository
      */
     public function getAllSales(string $local_id): array
     {
-        $result = [];
         $sql = <<<SQL
-select
-    *
-from vw_movimiento
-where
-    operacion like 'VENTA%'
-  and local_id = ?
-order by date_created
-desc limit 50
+SELECT *
+FROM vw_movimiento
+WHERE operacion LIKE 'VENTA%'
+  AND local_id = ?
+ORDER BY date_created DESC
+LIMIT 50
 SQL;
         $sales = $this->db->fetchAllAssociative($sql, [$local_id]);
-        foreach ($sales as $sale) {
-            $detail = $this->db->fetchAllAssociative(
-                'select * from vw_movimiento_detalle where movimiento_id = ?',
-                [$sale['movimiento_id']]
-            );
-            $sale['detail'] = $detail;
-            $result[] = $sale;
+
+        if ($sales === []) {
+            return [];
         }
 
-        return $result;
+        $saleIds = array_column($sales, 'movimiento_id');
+        $placeholders = implode(',', array_fill(0, count($saleIds), '?'));
+
+        $detailsSql = "SELECT * FROM vw_movimiento_detalle WHERE movimiento_id IN ($placeholders)";
+        $allDetails = $this->db->fetchAllAssociative($detailsSql, $saleIds);
+
+        $detailsBySale = [];
+        foreach ($allDetails as $detail) {
+            $detailsBySale[$detail['movimiento_id']][] = $detail;
+        }
+
+        foreach ($sales as &$sale) {
+            $sale['detail'] = $detailsBySale[$sale['movimiento_id']] ?? [];
+        }
+
+        return $sales;
     }
 
     /**
@@ -446,7 +456,7 @@ SQL;
         );
         $sale['movimiento_id'] = $uuid;
         $sale['fecha'] = new DateTimeImmutable()->format('Y-m-d H:i:s');
-        $sale['tipo_id'] = 2;
+        $sale['tipo_id'] = MovementType::SALE->value;
         $sale['operacion_id'] = $operation[0]['operacion_id'];
         $sale['almacen_id'] = $warehouse[0]['almacen_id'];
         $sale['serie'] = $series[0]['serie'];
@@ -454,7 +464,7 @@ SQL;
         $sale['has_invoice'] = (1 == $sale['has_invoice']) ? 1 : 0;
         $sale['is_consume'] = (1 == $sale['is_consume']) ? 1 : 0;
         $sale['tipo_pago'] = 1;
-        $sale['estado'] = 1;
+        $sale['estado'] = EntityStatus::ACTIVE->value;
         $sale['igv'] = (int)$this->getOption('app_option_igv');
         $sale['recargo_consumo'] = (int)$this->getOption('app_option_rc');
         /** @var array<int, array<string, mixed>> $saleDetail */
@@ -489,7 +499,7 @@ SQL;
     {
         $sale['has_invoice'] = (1 == $sale['has_invoice']) ? 1 : 0;
         $sale['is_consume'] = (1 == $sale['is_consume']) ? 1 : 0;
-        $sale['estado'] = 1;
+        $sale['estado'] = EntityStatus::ACTIVE->value;
         try {
             $filteredSale = array_intersect_key($sale, $this->saleColumns);
             $this->db->update('movimiento', $filteredSale, ['movimiento_id' => $id]);
