@@ -15,6 +15,7 @@ use App\Repository\InvoiceRepository;
 use App\Repository\SaleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Firebase\JWT\JWT;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -35,6 +36,7 @@ class ApiController extends AbstractController
         private readonly SaleRepository $saleRepository,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly LoggerInterface $logger,
         #[Autowire('%env(APP_SECRET)%')]
         private readonly string $jwtSecret,
     ) {
@@ -263,12 +265,16 @@ class ApiController extends AbstractController
     public function getAllSales(string $local_id): Response
     {
         try {
-            $data = $this->json($this->apiRepository->getAllSales($local_id));
-        } catch (Exception) {
-            $data = $this->json([]);
-        }
+            return $this->json($this->apiRepository->getAllSales($local_id));
+        } catch (Exception $e) {
+            $this->logger->error('Error fetching sales', [
+                'local_id' => $local_id,
+                'exception' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
 
-        return $data;
+            return $this->json(['error' => 'Error fetching sales'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/api/sale/{id}', name: 'api_getOneSale', methods: ['GET'])]
@@ -276,15 +282,20 @@ class ApiController extends AbstractController
     {
         try {
             $result = $this->apiRepository->getOneSale($id);
-        } catch (Exception) {
-            $result = null;
-        }
 
-        if ($result) {
-            return $this->json($result);
-        }
+            if ($result) {
+                return $this->json($result);
+            }
 
-        return $this->json(['error' => 'Sale not found'], Response::HTTP_NOT_FOUND);
+            return $this->json(['error' => 'Sale not found'], Response::HTTP_NOT_FOUND);
+        } catch (Exception $e) {
+            $this->logger->error('Error fetching sale', [
+                'sale_id' => $id,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return $this->json(['error' => 'Error fetching sale'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/api/sales', name: 'api_createSale', methods: ['POST'])]
@@ -327,11 +338,16 @@ class ApiController extends AbstractController
     {
         try {
             $data = $this->apiRepository->getImageProduct($id);
-        } catch (Exception) {
-            $data = [['nombre' => 'No image']];
+            $nombre = $data[0]['nombre'] ?? 'Product';
+        } catch (Exception $e) {
+            $this->logger->warning('Error fetching product image', [
+                'product_id' => $id,
+                'exception' => $e->getMessage(),
+            ]);
+            $nombre = 'Product';
         }
 
-        $imageUrl = 'https://ui-avatars.com/api/?name=' . $data[0]['nombre'];
+        $imageUrl = 'https://ui-avatars.com/api/?name=' . urlencode($nombre);
 
         return new StreamedResponse(function () use ($imageUrl): void {
             readfile($imageUrl);
