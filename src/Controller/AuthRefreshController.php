@@ -43,7 +43,7 @@ class AuthRefreshController extends AbstractController
 
         if (!$refreshToken) {
             $this->logger->warning('Refresh token missing in request', [
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                'ip' => $request->getClientIp() ?? 'unknown',
             ]);
 
             return new JsonResponse(['message' => 'No refresh token'], Response::HTTP_UNAUTHORIZED);
@@ -54,7 +54,7 @@ class AuthRefreshController extends AbstractController
         } catch (Throwable $e) {
             $this->logger->warning('Invalid refresh token', [
                 'exception' => $e->getMessage(),
-                'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+                'ip' => $request->getClientIp() ?? 'unknown',
             ]);
 
             return new JsonResponse(['message' => 'Invalid refresh token'], Response::HTTP_UNAUTHORIZED);
