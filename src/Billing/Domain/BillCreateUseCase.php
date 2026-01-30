@@ -38,6 +38,9 @@ readonly class BillCreateUseCase
      */
     public function __invoke(string $saleId): Invoice
     {
+        // Helper para redondear montos a 2 decimales (requerido por SUNAT)
+        $round2 = static fn (?float $value): float => round(floatval($value), 2);
+
         $company = $this->companyRepository->findOneBy([]);
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $customerAddress = new Address()
@@ -77,18 +80,18 @@ readonly class BillCreateUseCase
             ->setFechaEmision(new DateTime(strval($voucher->voucher_date)))
             ->setFormaPago(
                 2 == $voucher->voucher_payment_method ? new FormaPagoCredito(
-                    $voucher->voucher_sale_amount
+                    $round2($voucher->voucher_sale_amount)
                 ) : new FormaPagoContado()
             )
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setClient($customer)
-            ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
-            ->setMtoIGV(floatval($voucher->voucher_tax_amount))
-            ->setTotalImpuestos(floatval($voucher->voucher_total_taxes))
-            ->setSumOtrosCargos(floatval($voucher->voucher_consumption_surcharge_amount ?? null))
-            ->setValorVenta(floatval($voucher->voucher_sale_value - $voucher->voucher_discount_amount))
-            ->setSubTotal(floatval($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
-            ->setMtoImpVenta(floatval($voucher->voucher_sale_amount))
+            ->setMtoOperGravadas($round2($voucher->voucher_taxed_amount))
+            ->setMtoIGV($round2($voucher->voucher_tax_amount))
+            ->setTotalImpuestos($round2($voucher->voucher_total_taxes))
+            ->setSumOtrosCargos($round2($voucher->voucher_consumption_surcharge_amount ?? 0))
+            ->setValorVenta($round2($voucher->voucher_sale_value - $voucher->voucher_discount_amount))
+            ->setSubTotal($round2($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
+            ->setMtoImpVenta($round2($voucher->voucher_sale_amount))
             ->setCompany($this->billUtils->getCompany());
 
         if ($hasDetraction) {
@@ -109,25 +112,27 @@ readonly class BillCreateUseCase
             $bill->setCuotas([
                 new Cuota()
                     ->setFechaPago($paymentDate)
-                    ->setMonto(floatval($voucher->voucher_sale_amount)),
+                    ->setMonto($round2($voucher->voucher_sale_amount)),
             ]);
         }
 
         if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
+            $surchargeAmount = $round2($voucher->voucher_consumption_surcharge_amount);
             $charge = new Charge()
                 ->setCodTipo('46')
-                ->setMontoBase(floatval($voucher->voucher_consumption_surcharge_amount))
+                ->setMontoBase($surchargeAmount)
                 ->setFactor(1)
-                ->setMonto(floatval($voucher->voucher_consumption_surcharge_amount));
+                ->setMonto($surchargeAmount);
             $bill->setCargos([$charge]);
         }
 
         if (floatval($voucher->voucher_discount_amount) > 0) {
+            $discountAmount = $round2($voucher->voucher_discount_amount);
             $charge = new Charge()
                 ->setCodTipo('02')
-                ->setMontoBase(floatval($voucher->voucher_discount_amount))
+                ->setMontoBase($discountAmount)
                 ->setFactor(1)
-                ->setMonto(floatval($voucher->voucher_discount_amount));
+                ->setMonto($discountAmount);
             $bill->setDescuentos([$charge]);
         }
 
@@ -139,14 +144,14 @@ readonly class BillCreateUseCase
                 ->setUnidad($item->product_uom ?? 'NIU')
                 ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
-                ->setMtoValorUnitario(floatval($item->unit_value))
-                ->setMtoBaseIgv(floatval($item->taxed_amount))
+                ->setMtoValorUnitario($round2($item->unit_value))
+                ->setMtoBaseIgv($round2($item->taxed_amount))
                 ->setPorcentajeIgv(floatval($item->tax_percentage))
-                ->setIgv(floatval($item->tax_amount))
+                ->setIgv($round2($item->tax_amount))
                 ->setTipAfeIgv(strval($item->tax_type))
-                ->setTotalImpuestos(floatval($item->tax_amount))
-                ->setMtoValorVenta(floatval($item->taxed_amount))
-                ->setMtoPrecioUnitario(floatval($item->unit_price));
+                ->setTotalImpuestos($round2($item->tax_amount))
+                ->setMtoValorVenta($round2($item->taxed_amount))
+                ->setMtoPrecioUnitario($round2($item->unit_price));
             $details[] = $detail;
         }
 

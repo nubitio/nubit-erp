@@ -12,7 +12,6 @@ use App\Dto\Sale\SaleItemDto;
 use App\Repository\InvoiceRepository;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
-use InvalidArgumentException;
 use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
@@ -205,9 +204,10 @@ class PrintESCPOSController extends AbstractController
                 ($voucher->voucher_detraction_code ?? '') .
                 ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
             );
+            $description = $voucher->voucher_detraction_description;
             $detractionPayment = trim(
                 ($voucher->voucher_detraction_payment_method ?? '') .
-                ($voucher->voucher_detraction_payment_description ? ' - ' . $voucher->voucher_detraction_payment_description : '')
+                ($description ? ' - ' . $description : '')
             );
 
             $printer->text($this->wrap('Tipo detraccion: ' . ($detractionType !== '' ? $detractionType : '-'), $width));
@@ -222,7 +222,11 @@ class PrintESCPOSController extends AbstractController
             $printer->text($hrDashed);
         }
 
-        if (!empty($voucher->voucher_bank_name) || !empty($voucher->voucher_bank_account) || !empty($voucher->voucher_bank_cci)) {
+        if (
+            !empty($voucher->voucher_bank_name) ||
+            !empty($voucher->voucher_bank_account) ||
+            !empty($voucher->voucher_bank_cci)
+        ) {
             $printer->text('Datos bancarios para depósito / transferencia:' . "\n");
             $printer->text('Banco: ' . ($voucher->voucher_bank_name ?: '-') . "\n");
             if (!empty($voucher->voucher_bank_account)) {

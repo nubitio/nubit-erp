@@ -100,6 +100,7 @@ export const InboundFields = () => {
       .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
+      .sendAsString(true)
       .build(),
   );
 
@@ -167,7 +168,7 @@ export const InboundDetailFields = () => {
         this.defaultSetCellValue(row, value, currentRow);
       })
       .align('right')
-      .valueType('number')
+      .sendAsString(true)
       .sortable(false)
       .build(),
   );
@@ -180,7 +181,7 @@ export const InboundDetailFields = () => {
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)
       .filterable(false)
-      .valueType('number')
+      .sendAsString(true)
       .build(),
   );
 

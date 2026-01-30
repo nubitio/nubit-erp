@@ -49,7 +49,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
 
         $cashShift->setCashRegister($this->entityManager->getReference(CashRegister::class, $data->id));
         $cashShift->setStatus(CashShiftStatus::OPEN);
-        $cashShift->setOpeningBalance($data->openingBalance);
+        $cashShift->setOpeningBalance(number_format($data->openingBalance, 2, '.', ''));
         $cashShift->setOpenedBy($this->entityManager->getReference(User::class, $user->userId));
         $cashShift->setOpenedAt(new DateTimeImmutable());
 
@@ -66,7 +66,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashMovement->setCashShift($cashShift);
         $cashMovement->setCategory($category);
         $cashMovement->setType($category->getType());
-        $cashMovement->setAmount($data->openingBalance);
+        $cashMovement->setAmount(number_format($data->openingBalance, 2, '.', ''));
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new DateTimeImmutable());
 

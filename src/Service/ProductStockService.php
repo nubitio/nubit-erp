@@ -114,7 +114,7 @@ readonly class ProductStockService
     {
         $totalStock = $this->productStockRepository->getTotalStockForProduct($product);
 
-        $product->setStock($totalStock);
+        $product->setStock(number_format($totalStock, 2, '.', ''));
         $this->entityManager->persist($product);
         $this->entityManager->flush();
     }
@@ -136,7 +136,7 @@ readonly class ProductStockService
      */
     public function distributeGlobalStockToWarehouses(Product $product): void
     {
-        $globalStock = $product->getStock();
+        $globalStock = (float) $product->getStock();
         $warehouses = $this->warehouseRepository->findAll();
         $warehouseCount = count($warehouses);
 
@@ -145,7 +145,7 @@ readonly class ProductStockService
         }
 
         // Calculate base stock per warehouse
-        $baseStock = (float)floor($globalStock / $warehouseCount);
+        $baseStock = floor($globalStock / $warehouseCount);
         $remainder = fmod($globalStock, $warehouseCount);
 
         foreach ($warehouses as $index => $warehouse) {

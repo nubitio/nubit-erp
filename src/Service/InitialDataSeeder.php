@@ -296,7 +296,7 @@ readonly class InitialDataSeeder
             ->setName($name)
             ->setCode($code)
             ->setType($type)
-            ->setRatio($ratio)
+            ->setRatio((string) $ratio)
             ->setReference($reference);
 
         $this->entityManager->persist($unit);

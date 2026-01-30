@@ -17,7 +17,7 @@ services:
       CADDY_GLOBAL_OPTIONS: "auto_https off"
       QZ_CERT_PATH: "/app/config/qz/qz_cert.pem"
       QZ_PRIVATE_KEY_PATH: "/app/config/qz/qz_private.key"
-      QZ_PRIVATE_KEY_PASSPHRASE: "your-passphrase"
+      QZ_PRIVATE_KEY_PASSPHRASE: "Admin.3000"
       # Worker mode disabled for development (enable for performance testing)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
       OTEL_PHP_AUTOLOAD_ENABLED: "true"

@@ -140,6 +140,7 @@ export const UnitOfMeasureFields = () => {
       .precision(5)
       .defaultValue(1)
       .required(true)
+      .sendAsString(true)
       .build(),
   );
   fields.push(

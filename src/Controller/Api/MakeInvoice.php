@@ -42,9 +42,9 @@ class MakeInvoice extends AbstractController
         );
         $invoiceCalculator = new InvoiceCalculator(
             floatval($sale->getSubtotal()),
-            $sale->getDescuento() ?? 0.0,
+            floatval($sale->getDescuento()),
             floatval($sale->getIgv()),
-            $sale->getRecargoConsumo() ?? 0.0
+            floatval($sale->getRecargoConsumo())
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
         $connection = $entityManager->getConnection();

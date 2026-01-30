@@ -95,10 +95,11 @@ class UpdateStockCommand extends TenantAwareCommand
 
                 // Update global stock (sum of all warehouse stocks)
                 $globalStock = $this->calculateStock($product->getId());
+                $globalStockStr = number_format($globalStock, 2, '.', '');
                 $currentStock = $product->getStock();
 
-                if ($globalStock !== $currentStock) {
-                    $product->setStock($globalStock);
+                if ($globalStockStr !== $currentStock) {
+                    $product->setStock($globalStockStr);
                     $this->logger->info(
                         'Updated global stock for product',
                         [

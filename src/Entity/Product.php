@@ -13,6 +13,7 @@ use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -71,21 +72,21 @@ class Product
     private UnitOfMeasure $unitOfMeasure;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'precio_compra', nullable: true)]
-    private ?float $purchasePrice = null;
+    #[ORM\Column(name: 'precio_compra', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $purchasePrice = null;
 
     #[Assert\NotBlank]
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'precio')]
-    private float $salePrice = 0;
+    #[ORM\Column(name: 'precio', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $salePrice = '0.00';
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock', type: 'float', nullable: true)]
-    private ?float $stock = null;
+    #[ORM\Column(name: 'stock', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
+    private ?string $stock = null;
 
     #[Groups(['product:read'])]
-    #[ORM\Column(name: 'stock_minimo', type: 'float', nullable: true)]
-    private ?float $minStock = null;
+    #[ORM\Column(name: 'stock_minimo', type: Types::DECIMAL, precision: 12, scale: 3, nullable: true)]
+    private ?string $minStock = null;
 
     /**
      * @var Collection<int, ProductStock>
@@ -173,36 +174,36 @@ class Product
         return $this;
     }
 
-    public function getPurchasePrice(): ?float
+    public function getPurchasePrice(): ?string
     {
         return $this->purchasePrice;
     }
 
-    public function setPurchasePrice(float $purchasePrice): static
+    public function setPurchasePrice(?string $purchasePrice): static
     {
         $this->purchasePrice = $purchasePrice;
 
         return $this;
     }
 
-    public function getSalePrice(): float
+    public function getSalePrice(): string
     {
         return $this->salePrice;
     }
 
-    public function setSalePrice(float $salePrice): static
+    public function setSalePrice(string $salePrice): static
     {
         $this->salePrice = $salePrice;
 
         return $this;
     }
 
-    public function getStock(): ?float
+    public function getStock(): ?string
     {
         return $this->stock;
     }
 
-    public function setStock(?float $stock): static
+    public function setStock(?string $stock): static
     {
         $this->stock = $stock;
 
@@ -221,12 +222,12 @@ class Product
         return $this;
     }
 
-    public function getMinStock(): ?float
+    public function getMinStock(): ?string
     {
         return $this->minStock;
     }
 
-    public function setMinStock(?float $minStock): static
+    public function setMinStock(?string $minStock): static
     {
         $this->minStock = $minStock;
 

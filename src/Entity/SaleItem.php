@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Repository\SaleItemRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -47,16 +48,16 @@ class SaleItem
     private float $cantidad;
 
     #[Groups(['sale_item:read', 'sale:write'])]
-    #[ORM\Column(name: 'precio_unitario', nullable: true)]
-    private ?float $precio_unitario = null;
+    #[ORM\Column(name: 'precio_unitario', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $precio_unitario = null;
 
     #[Groups(['sale_item:read', 'sale:write'])]
-    #[ORM\Column(name: 'descuento')]
-    private float $descuento = 0;
+    #[ORM\Column(name: 'descuento', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $descuento = null;
 
     #[Groups(['sale_item:read', 'sale:write'])]
-    #[ORM\Column(name: 'precio_total', nullable: true)]
-    private ?float $precio_total = null;
+    #[ORM\Column(name: 'precio_total', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $precio_total = null;
 
     public function getId(): ?int
     {
@@ -99,36 +100,38 @@ class SaleItem
         return $this;
     }
 
-    public function getPrecioUnitario(): ?float
+    public function getPrecioUnitario(): ?string
     {
         return $this->precio_unitario;
     }
 
-    public function setPrecioUnitario(?float $precio_unitario): static
+    public function setPrecioUnitario(null|string|float $precio_unitario): static
     {
-        $this->precio_unitario = $precio_unitario;
+        $this->precio_unitario = is_float($precio_unitario)
+            ? number_format($precio_unitario, 2, '.', '')
+            : $precio_unitario;
 
         return $this;
     }
 
-    public function getDescuento(): float
+    public function getDescuento(): ?string
     {
         return $this->descuento;
     }
 
-    public function setDescuento(float $descuento): static
+    public function setDescuento(?string $descuento): static
     {
         $this->descuento = $descuento;
 
         return $this;
     }
 
-    public function getPrecioTotal(): ?float
+    public function getPrecioTotal(): ?string
     {
         return $this->precio_total;
     }
 
-    public function setPrecioTotal(?float $precio_total): static
+    public function setPrecioTotal(?string $precio_total): static
     {
         $this->precio_total = $precio_total;
 

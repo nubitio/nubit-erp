@@ -10,6 +10,7 @@ use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Entity\CashMovementCategory;
 use App\Repository\CashMovementRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -42,8 +43,8 @@ class CashMovement
     private CashMovementType $type;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\Column]
-    private float $amount = 0;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $amount = '0.00';
 
     #[Groups(['cash_movement:read'])]
     #[ORM\Column(length: 255)]
@@ -94,12 +95,12 @@ class CashMovement
         return $this;
     }
 
-    public function getAmount(): ?float
+    public function getAmount(): ?string
     {
         return $this->amount;
     }
 
-    public function setAmount(float $amount): static
+    public function setAmount(string $amount): static
     {
         $this->amount = $amount;
 

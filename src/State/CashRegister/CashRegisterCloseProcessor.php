@@ -70,10 +70,10 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 CashShift::class,
                 $uriVariables['id']
             );
-            $cashShift->setClosingBalance($countedTotal);
-            $cashShift->setExpectedAmount($expectedTotal);
-            $cashShift->setCountedAmount($countedTotal);
-            $cashShift->setDifference($differenceTotal);
+            $cashShift->setClosingBalance(number_format($countedTotal, 2, '.', ''));
+            $cashShift->setExpectedAmount(number_format($expectedTotal, 2, '.', ''));
+            $cashShift->setCountedAmount(number_format($countedTotal, 2, '.', ''));
+            $cashShift->setDifference(number_format($differenceTotal, 2, '.', ''));
             $cashShift->setNote($notes !== [] ? implode('; ', $notes) : null);
             $cashShift->setStatus(CashShiftStatus::CLOSED);
             $cashShift->setClosedBy(

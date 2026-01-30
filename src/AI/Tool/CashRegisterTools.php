@@ -47,6 +47,11 @@ final readonly class CashRegisterTools
 
         $status = $latestShift?->getStatus()->value ?? CashShiftStatus::CLOSED->value;
 
+        $openingBalance = $latestShift?->getOpeningBalance();
+        $expectedAmount = $latestShift?->getExpectedAmount();
+        $countedAmount = $latestShift?->getCountedAmount();
+        $difference = $latestShift?->getDifference();
+
         return new CashRegisterStatusDto(
             $register->getId() ?? 0,
             $register->getName(),
@@ -55,10 +60,10 @@ final readonly class CashRegisterTools
             $latestShift?->getOpenedAt()?->format(\DateTimeInterface::ATOM),
             $latestShift?->getOpenedBy()?->getUsername(),
             $latestShift?->getClosedAt()?->format(\DateTimeInterface::ATOM),
-            $latestShift?->getOpeningBalance(),
-            $latestShift?->getExpectedAmount(),
-            $latestShift?->getCountedAmount(),
-            $latestShift?->getDifference(),
+            $openingBalance !== null ? (float) $openingBalance : null,
+            $expectedAmount !== null ? (float) $expectedAmount : null,
+            $countedAmount !== null ? (float) $countedAmount : null,
+            $difference !== null ? (float) $difference : null,
         );
     }
 }

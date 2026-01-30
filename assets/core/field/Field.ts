@@ -72,4 +72,5 @@ export interface Field {
   maxLength: number | undefined;
   multiple: boolean;
   editorOptions: any | undefined;
+  sendAsString: boolean;
 }

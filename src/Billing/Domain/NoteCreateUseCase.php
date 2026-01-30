@@ -42,6 +42,9 @@ readonly class NoteCreateUseCase
 
     private function getNote(CreditNote $creditNote, Voucher $voucher): Note
     {
+        // Helper para redondear montos a 2 decimales (requerido por SUNAT)
+        $round2 = static fn (?float $value): float => round(floatval($value), 2);
+
         $customerAddress = new Address();
         $customerAddress->setDireccion(strval($voucher->customer_address));
 
@@ -52,7 +55,6 @@ readonly class NoteCreateUseCase
             ->setAddress($customerAddress);
 
         $note = new Note();
-        // TODO: review setMtoOperGravadas and setMtoImpVenta
         $note->setUblVersion('2.1')
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
@@ -65,27 +67,27 @@ readonly class NoteCreateUseCase
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
             ->setClient($client)
-            ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount) + floatval($voucher->voucher_discount_amount))
-            ->setMtoIGV(floatval($voucher->voucher_tax_amount))
-            ->setTotalImpuestos(floatval($voucher->voucher_total_taxes))
-            ->setMtoImpVenta(floatval($voucher->voucher_sale_amount) + floatval($voucher->voucher_discount_amount));
+            ->setMtoOperGravadas($round2($voucher->voucher_taxed_amount + $voucher->voucher_discount_amount))
+            ->setMtoIGV($round2($voucher->voucher_tax_amount))
+            ->setTotalImpuestos($round2($voucher->voucher_total_taxes))
+            ->setMtoImpVenta($round2($voucher->voucher_sale_amount + $voucher->voucher_discount_amount));
 
         $items = [];
         foreach ($voucher->voucher_items as $item) {
-            $item = new SaleDetail()
+            $detail = new SaleDetail()
                 ->setCodProducto(strval($item->product_code))
                 ->setUnidad('NIU')
                 ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
-                ->setMtoBaseIgv(floatval($item->taxed_amount))
+                ->setMtoBaseIgv($round2($item->taxed_amount))
                 ->setPorcentajeIgv(floatval($item->tax_percentage))
-                ->setIgv(floatval($item->tax_amount))
+                ->setIgv($round2($item->tax_amount))
                 ->setTipAfeIgv(strval($item->tax_type))
-                ->setTotalImpuestos(floatval($item->tax_amount))
-                ->setMtoValorVenta(floatval($item->taxed_amount))
-                ->setMtoValorUnitario(floatval($item->unit_value))
-                ->setMtoPrecioUnitario(floatval($item->unit_price));
-            $items[] = $item;
+                ->setTotalImpuestos($round2($item->tax_amount))
+                ->setMtoValorVenta($round2($item->taxed_amount))
+                ->setMtoValorUnitario($round2($item->unit_value))
+                ->setMtoPrecioUnitario($round2($item->unit_price));
+            $items[] = $detail;
         }
 
         $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);

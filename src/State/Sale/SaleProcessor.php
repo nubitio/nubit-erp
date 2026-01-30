@@ -132,9 +132,9 @@ readonly class SaleProcessor implements ProcessorInterface
             ]);
         }
 
-        $data->setSubtotal($subtotal);
+        $data->setSubtotal(number_format($subtotal, 2, '.', ''));
         $total = $subtotal - ($subtotal * $data->getDescuento() / 100);
-        $data->setTotal($total);
+        $data->setTotal(number_format($total, 2, '.', ''));
         $data->setEstado(1);
         $this->applyDetractionFromItems($data);
 

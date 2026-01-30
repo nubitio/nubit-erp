@@ -1,10 +1,10 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import { Constants } from '../../core/common/Constants';
+import {Field} from '../../core/field/Field';
+import {FieldBuilder} from '../../core/field/FieldBuilder';
+import {FieldType} from '../../core/field/FieldType';
+import {Constants} from '../../core/common/Constants';
 import NumberUtils from '../../core/utils/NumberUtils';
-import { SharedUtils } from '../../core/utils/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import {SharedUtils} from '../../core/utils/SharedUtils';
+import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
 
 export const ProductFields = () => {
   const fields: Field[] = [];
@@ -39,8 +39,8 @@ export const ProductFields = () => {
       .name('type')
       .label('Tipo')
       .data([
-        { value: 1, text: 'Fisico' },
-        { value: 2, text: 'Servicio' },
+        {value: 1, text: 'Fisico'},
+        {value: 2, text: 'Servicio'},
       ])
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => {
@@ -127,6 +127,7 @@ export const ProductFields = () => {
       .name('salePrice')
       .label('Precio')
       .align('right')
+      .sendAsString(true)
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
       .build(),
