@@ -65,12 +65,12 @@ class CashShift
     private CashShiftStatus $status;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column]
-    private float $openingBalance = 0;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $openingBalance = '0.00';
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(nullable: true)]
-    private ?float $closingBalance = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $closingBalance = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\ManyToOne]
@@ -91,16 +91,16 @@ class CashShift
     private ?DateTimeImmutable $closedAt = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(nullable: true)]
-    private ?float $expectedAmount = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $expectedAmount = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(nullable: true)]
-    private ?float $countedAmount = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $countedAmount = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(nullable: true)]
-    private ?float $difference = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $difference = null;
 
     #[Groups(['cash_shift:read'])]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -135,24 +135,24 @@ class CashShift
         return $this;
     }
 
-    public function getOpeningBalance(): float
+    public function getOpeningBalance(): string
     {
         return $this->openingBalance;
     }
 
-    public function setOpeningBalance(float $openingBalance): static
+    public function setOpeningBalance(string $openingBalance): static
     {
         $this->openingBalance = $openingBalance;
 
         return $this;
     }
 
-    public function getClosingBalance(): ?float
+    public function getClosingBalance(): ?string
     {
         return $this->closingBalance;
     }
 
-    public function setClosingBalance(float $closingBalance): static
+    public function setClosingBalance(string $closingBalance): static
     {
         $this->closingBalance = $closingBalance;
 
@@ -207,36 +207,36 @@ class CashShift
         return $this;
     }
 
-    public function getExpectedAmount(): ?float
+    public function getExpectedAmount(): ?string
     {
         return $this->expectedAmount;
     }
 
-    public function setExpectedAmount(?float $expected_amount): static
+    public function setExpectedAmount(?string $expected_amount): static
     {
         $this->expectedAmount = $expected_amount;
 
         return $this;
     }
 
-    public function getCountedAmount(): ?float
+    public function getCountedAmount(): ?string
     {
         return $this->countedAmount;
     }
 
-    public function setCountedAmount(?float $counted_amount): static
+    public function setCountedAmount(?string $counted_amount): static
     {
         $this->countedAmount = $counted_amount;
 
         return $this;
     }
 
-    public function getDifference(): ?float
+    public function getDifference(): ?string
     {
         return $this->difference;
     }
 
-    public function setDifference(?float $difference): static
+    public function setDifference(?string $difference): static
     {
         $this->difference = $difference;
 

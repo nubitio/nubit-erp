@@ -317,7 +317,7 @@ final readonly class TestDataSeeder
                     ->setName($unitData['name'])
                     ->setCode($unitData['code'])
                     ->setType($unitData['type'])
-                    ->setRatio(1.0)
+                    ->setRatio('1.00')
                     ->setReference(false);
                 $this->entityManager->persist($unit);
                 ++$count;
@@ -468,9 +468,10 @@ final readonly class TestDataSeeder
                 $warehouse = $this->warehouseRepository->find($warehouseId);
 
                 $name = self::PRODUCT_NAMES[($i - 1) % count(self::PRODUCT_NAMES)] . ' #' . $i;
-                $purchasePrice = round(random_int(10, 1000) / 10, 2);
-                $salePrice = round($purchasePrice * (1 + (random_int(20, 80) / 100)), 2);
-                $stock = random_int(0, 500);
+                $purchasePrice = number_format(random_int(10, 1000) / 10, 2, '.', '');
+                $salePrice = number_format((float) $purchasePrice * (1 + (random_int(20, 80) / 100)), 2, '.', '');
+                $stock = (string) random_int(0, 500);
+                $minStock = (string) random_int(5, 20);
 
                 $product = new Product();
                 $product
@@ -482,7 +483,7 @@ final readonly class TestDataSeeder
                     ->setPurchasePrice($purchasePrice)
                     ->setSalePrice($salePrice)
                     ->setStock($stock)
-                    ->setMinStock(random_int(5, 20));
+                    ->setMinStock($minStock);
 
                 $this->entityManager->persist($product);
 
@@ -490,8 +491,8 @@ final readonly class TestDataSeeder
                 $productStock
                     ->setProduct($product)
                     ->setWarehouse($warehouse)
-                    ->setStock($stock)
-                    ->setMinStock(random_int(5, 20));
+                    ->setStock((float) $stock)
+                    ->setMinStock((float) $minStock);
 
                 $this->entityManager->persist($productStock);
                 ++$created;
@@ -564,7 +565,7 @@ final readonly class TestDataSeeder
             $sale->setTipoPago($paymentMethod);
             $sale->setSerie('NV01');
             $sale->setNumero(sprintf('%08d', 1000 + $i));
-            $sale->setDescuento(0.0);
+            $sale->setDescuento('0.00');
             $sale->setGlosa($glosa);
             $sale->setHasInvoice(true);
             $sale->setIsConsume(false);
@@ -582,7 +583,7 @@ final readonly class TestDataSeeder
             for ($j = 0; $j < $itemCount; ++$j) {
                 $product = $this->productRepository->find($productIds[array_rand($productIds)]);
                 $qty = random_int(1, 10);
-                $unitPrice = $product->getSalePrice();
+                $unitPrice = (float) $product->getSalePrice();
                 $lineTotal = round($unitPrice * $qty, 2);
                 $subtotal += $lineTotal;
 
@@ -591,16 +592,16 @@ final readonly class TestDataSeeder
                 $saleItem->setProducto($product);
                 $saleItem->setCantidad($qty);
                 $saleItem->setPrecioUnitario($unitPrice);
-                $saleItem->setDescuento(0);
-                $saleItem->setPrecioTotal($lineTotal);
+                $saleItem->setDescuento('0');
+                $saleItem->setPrecioTotal(number_format($lineTotal, 2, '.', ''));
 
                 $this->entityManager->persist($saleItem);
                 $sale->addItem($saleItem);
             }
 
             $total = $subtotal - ($subtotal * ($sale->getDescuento() / 100));
-            $sale->setSubtotal($subtotal);
-            $sale->setTotal($total);
+            $sale->setSubtotal(number_format($subtotal, 2, '.', ''));
+            $sale->setTotal(number_format($total, 2, '.', ''));
 
             $this->entityManager->persist($sale);
 

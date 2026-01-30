@@ -13,6 +13,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -123,8 +124,8 @@ class Sale
     private ?string $numero = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'descuento', nullable: true)]
-    private ?float $descuento = null;
+    #[ORM\Column(name: 'descuento', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $descuento = null;
 
     #[Groups([
         'sale:read',
@@ -218,8 +219,8 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\Column(name: 'subtotal')]
-    private float $subtotal = 0;
+    #[ORM\Column(name: 'subtotal', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $subtotal = '0.00';
 
     #[Groups([
         'sale:read',
@@ -227,8 +228,8 @@ class Sale
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\Column(name: 'total')]
-    private float $total = 0;
+    #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $total = '0.00';
 
     /**
      * @var Collection<int, SaleItem>&iterable<SaleItem> $items
@@ -423,12 +424,12 @@ class Sale
         return $this;
     }
 
-    public function getDescuento(): ?float
+    public function getDescuento(): ?string
     {
         return $this->descuento;
     }
 
-    public function setDescuento(?float $descuento): static
+    public function setDescuento(?string $descuento): static
     {
         $this->descuento = $descuento;
 
@@ -671,24 +672,24 @@ class Sale
         return $this;
     }
 
-    public function getSubtotal(): ?float
+    public function getSubtotal(): ?string
     {
         return $this->subtotal;
     }
 
-    public function setSubtotal(?float $subtotal): static
+    public function setSubtotal(?string $subtotal): static
     {
         $this->subtotal = $subtotal;
 
         return $this;
     }
 
-    public function getTotal(): ?float
+    public function getTotal(): ?string
     {
         return $this->total;
     }
 
-    public function setTotal(?float $total): static
+    public function setTotal(?string $total): static
     {
         $this->total = $total;
 

@@ -61,6 +61,7 @@ export class FieldBuilder {
       maxLength: undefined,
       multiple: false,
       editorOptions: undefined,
+      sendAsString: false,
     };
   }
 
@@ -336,6 +337,11 @@ export class FieldBuilder {
 
   editorOptions(param: any) {
     this._field.editorOptions = param;
+    return this;
+  }
+
+  sendAsString(value: boolean): FieldBuilder {
+    this._field.sendAsString = value;
     return this;
   }
 

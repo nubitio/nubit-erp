@@ -162,15 +162,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
-      .name('total')
-      .label('Total')
-      .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
-      .build(),
-  );
-  fields.push(
     new FieldBuilder().type(FieldType.TEXTAREA).name('glosa').label('Nota').visible(false).build(),
   );
   fields.push(
@@ -191,6 +182,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         setTotal(form);
       })
       .visible(false)
+      .sendAsString(true)
       .build(),
   );
   fields.push(
@@ -201,6 +193,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .label('Total')
       .visible(false)
       .disabled(true)
+      .sendAsString(true)
       .build(),
   );
   fields.push(
@@ -327,7 +320,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .name('precio_unitario')
       .label('Precio')
       .align('right')
-      .valueType('number')
+      .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
         row.precio_total = currentRow.cantidad * value;
@@ -336,7 +329,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
       .sortable(false)
-      .valueType('number')
+      .sendAsString(true)
       .build(),
   );
   fields.push(
@@ -345,8 +338,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .name('precio_total')
       .label('Total')
       .align('right')
-      .valueType('number')
-      .readonly(true)
+      .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
         this.defaultSetCellValue(row, value, currentRow);
@@ -355,7 +347,9 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
       .filterable(false)
+      .disabled(true)
       .sortable(false)
+      .sendAsString(true)
       .build(),
   );
 

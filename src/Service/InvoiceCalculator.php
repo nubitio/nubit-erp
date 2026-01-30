@@ -19,12 +19,12 @@ readonly class InvoiceCalculator
 
     public function calculate(): InvoiceAmounts
     {
-        $subtotal = $this->total / (1 + $this->taxPercentage / 100 + $this->chargesPercentage / 100);
-        $taxedAmount = $subtotal - $subtotal * $this->discountPercentage / 100;
-        $chargesAmount = $taxedAmount * $this->chargesPercentage / 100;
-        $tax = $taxedAmount * $this->taxPercentage / 100;
-        $discountAmount = $subtotal * $this->discountPercentage / 100;
-        $total = $taxedAmount + $tax + $chargesAmount;
+        $subtotal = round($this->total / (1 + $this->taxPercentage / 100 + $this->chargesPercentage / 100), 2);
+        $discountAmount = round($subtotal * $this->discountPercentage / 100, 2);
+        $taxedAmount = round($subtotal - $discountAmount, 2);
+        $chargesAmount = round($taxedAmount * $this->chargesPercentage / 100, 2);
+        $tax = round($taxedAmount * $this->taxPercentage / 100, 2);
+        $total = round($taxedAmount + $tax + $chargesAmount, 2);
 
         return new InvoiceAmounts()
             ->setSubtotal($subtotal)

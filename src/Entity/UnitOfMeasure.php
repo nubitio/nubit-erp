@@ -7,6 +7,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\UnitOfMeasureRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -33,8 +34,8 @@ class UnitOfMeasure
     #[ORM\Column(name: 'type_id')]
     private int $type;
 
-    #[ORM\Column]
-    private float $ratio = 0;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $ratio = '1.00';
 
     #[ORM\Column(name: 'is_reference')]
     private bool $reference = false;
@@ -80,12 +81,12 @@ class UnitOfMeasure
         return $this;
     }
 
-    public function getRatio(): float
+    public function getRatio(): string
     {
         return $this->ratio;
     }
 
-    public function setRatio(float $ratio): static
+    public function setRatio(string $ratio): static
     {
         $this->ratio = $ratio;
 

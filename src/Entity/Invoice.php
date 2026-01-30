@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\InvoiceRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -71,20 +72,20 @@ class Invoice
     private bool $unaffected = false;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'subtotal', type: 'float')]
-    private float $subTotal = 0;
+    #[ORM\Column(name: 'subtotal', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $subTotal = '0.00';
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'gravada', type: 'float')]
-    private float $taxableAmount = 0;
+    #[ORM\Column(name: 'gravada', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $taxableAmount = '0.00';
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'igv', type: 'float')]
-    private float $igv = 0;
+    #[ORM\Column(name: 'igv', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $igv = '0.00';
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'rc', type: 'float')]
-    private float $rc = 0;
+    #[ORM\Column(name: 'rc', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $rc = '0.00';
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'tipo_operacion', type: 'string', length: 4, nullable: true)]
@@ -99,28 +100,28 @@ class Invoice
     private ?float $detractionPercent = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'detraccion_monto', type: 'float', nullable: true)]
-    private ?float $detractionAmount = null;
+    #[ORM\Column(name: 'detraccion_monto', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $detractionAmount = null;
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'detraccion_medio_pago', type: 'string', length: 10, nullable: true)]
     private ?string $detractionPaymentMethod = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'detraccion_valor_referencial', type: 'float', nullable: true)]
-    private ?float $detractionValueRef = null;
+    #[ORM\Column(name: 'detraccion_valor_referencial', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $detractionValueRef = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'total', type: 'float')]
-    private float $total = 0;
+    #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $total = '0.00';
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'discount_percent', type: 'integer')]
     private int $discountPercent = 0;
 
     #[Groups(['invoice:read'])]
-    #[ORM\Column(name: 'discount_amount', type: 'float')]
-    private float $discountAmount = 0;
+    #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 10, scale: 2)]
+    private string $discountAmount = '0.00';
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'voided', type: 'integer')]
@@ -261,50 +262,50 @@ class Invoice
         return $this;
     }
 
-    public function getSubTotal(): float
+    public function getSubTotal(): string
     {
         return $this->subTotal;
     }
 
-    public function setSubTotal(float $subTotal): self
+    public function setSubTotal(string|float $subTotal): self
     {
-        $this->subTotal = $subTotal;
+        $this->subTotal = is_float($subTotal) ? number_format($subTotal, 2, '.', '') : $subTotal;
 
         return $this;
     }
 
-    public function getTaxableAmount(): float
+    public function getTaxableAmount(): string
     {
         return $this->taxableAmount;
     }
 
-    public function setTaxableAmount(float $taxableAmount): self
+    public function setTaxableAmount(string|float $taxableAmount): self
     {
-        $this->taxableAmount = $taxableAmount;
+        $this->taxableAmount = is_float($taxableAmount) ? number_format($taxableAmount, 2, '.', '') : $taxableAmount;
 
         return $this;
     }
 
-    public function getIgv(): float
+    public function getIgv(): string
     {
         return $this->igv;
     }
 
-    public function setIgv(float $igv): self
+    public function setIgv(string|float $igv): self
     {
-        $this->igv = $igv;
+        $this->igv = is_float($igv) ? number_format($igv, 2, '.', '') : $igv;
 
         return $this;
     }
 
-    public function getRc(): float
+    public function getRc(): string
     {
         return $this->rc;
     }
 
-    public function setRc(float $rc): self
+    public function setRc(string|float $rc): self
     {
-        $this->rc = $rc;
+        $this->rc = is_float($rc) ? number_format($rc, 2, '.', '') : $rc;
 
         return $this;
     }
@@ -345,14 +346,16 @@ class Invoice
         return $this;
     }
 
-    public function getDetractionAmount(): ?float
+    public function getDetractionAmount(): ?string
     {
         return $this->detractionAmount;
     }
 
-    public function setDetractionAmount(?float $detractionAmount): self
+    public function setDetractionAmount(null|string|float $detractionAmount): self
     {
-        $this->detractionAmount = $detractionAmount;
+        $this->detractionAmount = is_float($detractionAmount)
+            ? number_format($detractionAmount, 2, '.', '')
+            : $detractionAmount;
 
         return $this;
     }
@@ -369,26 +372,28 @@ class Invoice
         return $this;
     }
 
-    public function getDetractionValueRef(): ?float
+    public function getDetractionValueRef(): ?string
     {
         return $this->detractionValueRef;
     }
 
-    public function setDetractionValueRef(?float $detractionValueRef): self
+    public function setDetractionValueRef(null|string|float $detractionValueRef): self
     {
-        $this->detractionValueRef = $detractionValueRef;
+        $this->detractionValueRef = is_float($detractionValueRef)
+            ? number_format($detractionValueRef, 2, '.', '')
+            : $detractionValueRef;
 
         return $this;
     }
 
-    public function getTotal(): float
+    public function getTotal(): string
     {
         return $this->total;
     }
 
-    public function setTotal(float $total): self
+    public function setTotal(string|float $total): self
     {
-        $this->total = $total;
+        $this->total = is_float($total) ? number_format($total, 2, '.', '') : $total;
 
         return $this;
     }
@@ -405,14 +410,16 @@ class Invoice
         return $this;
     }
 
-    public function getDiscountAmount(): float
+    public function getDiscountAmount(): string
     {
         return $this->discountAmount;
     }
 
-    public function setDiscountAmount(float $discountAmount): self
+    public function setDiscountAmount(string|float $discountAmount): self
     {
-        $this->discountAmount = $discountAmount;
+        $this->discountAmount = is_float($discountAmount)
+            ? number_format($discountAmount, 2, '.', '')
+            : $discountAmount;
 
         return $this;
     }
