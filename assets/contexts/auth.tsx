@@ -1,9 +1,9 @@
-import React, {createContext, useCallback, useContext, useEffect, useState} from 'react';
-import {getUser, signIn as sendSignInRequest} from '../api/auth';
-import type {AuthContextType, User} from '../types';
-import {StorageUtils} from '../core/utils/StorageUtils';
-import {branchService} from "../service/branch.service";
-import {authService} from "../service/auth.service";
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { getUser, signIn as sendSignInRequest } from '../api/auth';
+import type { AuthContextType, User } from '../types';
+import { StorageUtils } from '../core/utils/StorageUtils';
+import { branchService } from '../service/branch.service';
+import { authService } from '../service/auth.service';
 
 function AuthProvider(props: React.PropsWithChildren<unknown>) {
   const [user, setUser] = useState<User>();
@@ -38,10 +38,10 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     authService.logout();
   }, []);
 
-  return <AuthContext.Provider value={{user, signIn, signOut, loading}} {...props} />;
+  return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;
 }
 
-const AuthContext = createContext<AuthContextType>({loading: false} as AuthContextType);
+const AuthContext = createContext<AuthContextType>({ loading: false } as AuthContextType);
 const useAuth = () => useContext(AuthContext);
 
-export {AuthProvider, useAuth};
+export { AuthProvider, useAuth };

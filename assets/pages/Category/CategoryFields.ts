@@ -18,12 +18,7 @@ export const CategoryFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('name')
-      .label('Nombre')
-      .sortable(true)
-      .build(),
+    new FieldBuilder().type(FieldType.TEXT).name('name').label('Nombre').sortable(true).build(),
   );
   fields.push(
     new FieldBuilder()

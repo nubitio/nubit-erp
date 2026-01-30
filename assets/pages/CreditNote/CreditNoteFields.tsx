@@ -1,10 +1,9 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import FilterRule from '../../core/common/FilterRule';
-import { Constants } from '../../core/common/Constants';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { SharedUtils } from '../../core/utils/SharedUtils';
+import {Field} from '../../core/field/Field';
+import {FieldBuilder} from '../../core/field/FieldBuilder';
+import {FieldType} from '../../core/field/FieldType';
+import {Constants} from '../../core/common/Constants';
+import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
+import {SharedUtils} from '../../core/utils/SharedUtils';
 import NumberUtils from '../../core/utils/NumberUtils';
 
 export const CreditNoteFields = () => {
@@ -15,31 +14,32 @@ export const CreditNoteFields = () => {
       .isIdentity(true)
       .visible(false)
       .type(FieldType.NONE)
-      .name('nota_id')
-      .label('Nota id')
+      .name('id')
+      .label('ID')
       .required(true)
       .build(),
   );
-  const saleFilter: FilterRule = {
-    field: 'invoice',
-    value: '',
-    op: 'isnotnull',
-  };
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
       .name('sale')
       .label('Comprobante')
       .visible(false)
-      .mode('remote')
-      .url(Constants.API_BASE_URL + 'movements?filterRules=[' + JSON.stringify(saleFilter) + ']')
+      .url(Constants.API_BASE_URL + 'movements')
+      .filters([
+        {
+          field: 'invoice',
+          operator: 'isnotnull',
+          value: '',
+        }
+      ])
       .textField('invoice')
-      .valueField('movimiento_id')
+      .valueField('id')
       .itemFormatter((data: any) => {
         return (
           <div>
-            <b>C.P:</b> {data.invoice ?? ''}
-            <br />
+            <b>Factura:</b> {data.invoice ?? ''}
+            <br/>
             <b>Total:</b> {NumberUtils.formatCurrency(data.total)}
           </div>
         );
@@ -57,11 +57,11 @@ export const CreditNoteFields = () => {
       .required(true)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('tipo_id').label('Tipo').build());
+  fields.push(new FieldBuilder().type(FieldType.NONE).name('tipoId').label('Tipo').build());
   fields.push(
     new FieldBuilder()
       .type(FieldType.SELECT)
-      .name('codigo_motivo')
+      .name('codigoMotivo')
       .label('Código')
       .data([
         {
@@ -111,7 +111,7 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.TEXTAREA)
-      .name('descripcion_motivo')
+      .name('descripcionMotivo')
       .label('Motivo Descripción')
       .required(true)
       .build(),
@@ -121,7 +121,7 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('doc_afectado')
+      .name('docAfectado')
       .label('Doc. afectado')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => cell.value ?? cell.data.sale?.invoice ?? '')
@@ -130,10 +130,10 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('envio_sunat')
+      .name('envioSunat')
       .label('Envio sunat')
       .align('center')
-      //.formatter(SharedUtils.dxBillStatusFormatter)
+      .formatter((cell: ColumnCellTemplateData) => SharedUtils.billStatusFormatter(cell.value))
       .build(),
   );
   fields.push(

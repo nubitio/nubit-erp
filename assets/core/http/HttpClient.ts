@@ -1,13 +1,13 @@
-import axios, {AxiosInstance, AxiosRequestConfig} from 'axios';
-import {map, Observable} from 'rxjs';
+import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { map, Observable } from 'rxjs';
 import ApiResponse from './ApiResponse';
-import {fromPromise} from 'rxjs/internal/observable/innerFrom';
-import {HttpCode} from './HttpCode';
-import {alert} from 'devextreme/ui/dialog';
+import { fromPromise } from 'rxjs/internal/observable/innerFrom';
+import { HttpCode } from './HttpCode';
+import { alert } from 'devextreme/ui/dialog';
 import toast from '../utils/SharedUtils';
-import {dispatch} from '../event/EventHook';
-import {Constants} from '../common/Constants';
-import {StorageUtils} from "../utils/StorageUtils";
+import { dispatch } from '../event/EventHook';
+import { Constants } from '../common/Constants';
+import { StorageUtils } from '../utils/StorageUtils';
 
 class HttpClient {
   private readonly axiosClient: AxiosInstance;
@@ -115,13 +115,13 @@ class HttpClient {
     }
 
     return new Promise((resolve, reject) => {
-      this.failedQueue.push({resolve, reject, request: originalRequest});
+      this.failedQueue.push({ resolve, reject, request: originalRequest });
       this.refreshPromise?.catch((error) => reject(error));
     });
   }
 
   private processQueue(error?: any) {
-    this.failedQueue.forEach(({resolve, reject, request}) => {
+    this.failedQueue.forEach(({ resolve, reject, request }) => {
       if (error) {
         reject(error);
       } else {

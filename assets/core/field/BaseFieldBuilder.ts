@@ -1,6 +1,6 @@
-import {FieldType} from './FieldType';
-import {Field} from './Field';
-import {ValidationRule} from './ValidationRule';
+import { FieldType } from './FieldType';
+import { Field } from './Field';
+import { ValidationRule } from './ValidationRule';
 
 export class BaseFieldBuilder {
   protected _field: Field;

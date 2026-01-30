@@ -1,25 +1,25 @@
-import React, {useCallback, useState} from 'react';
-import Chat, {type ChatTypes} from 'devextreme-react/chat';
-import {loadMessages} from 'devextreme-react/common/core/localization';
-import {assistant, CHAT_DISABLED_CLASS, user} from './data';
+import React, { useCallback, useState } from 'react';
+import Chat, { type ChatTypes } from 'devextreme-react/chat';
+import { loadMessages } from 'devextreme-react/common/core/localization';
+import { assistant, CHAT_DISABLED_CLASS, user } from './data';
 import Message from './Message';
-import {dataSource, useApi} from './useApi';
-import {AppToolbar} from '../../components/utils/toolbar/AppToolbar';
+import { dataSource, useApi } from './useApi';
+import { AppToolbar } from '../../components/utils/toolbar/AppToolbar';
 
 loadMessages({
   es: {
     'dxChat-emptyListMessage': 'El chat está vacío',
     'dxChat-emptyListPrompt': 'El Asistente de IA está listo para responder tus preguntas.',
     'dxChat-textareaPlaceholder': 'Pregunta al Asistente de IA...',
-  }
+  },
 });
 
 type AssistantProps = {
   showToolbar?: boolean;
 };
 
-export default function Assistant({showToolbar = true}: AssistantProps) {
-  const {alerts, insertMessage, fetchAIResponse, regenerateLastAIResponse} = useApi();
+export default function Assistant({ showToolbar = true }: AssistantProps) {
+  const { alerts, insertMessage, fetchAIResponse, regenerateLastAIResponse } = useApi();
 
   const [typingUsers, setTypingUsers] = useState<ChatTypes.User[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,8 +38,8 @@ export default function Assistant({showToolbar = true}: AssistantProps) {
   );
 
   const onMessageEntered = useCallback(
-    async ({message, event}: ChatTypes.MessageEnteredEvent): Promise<void> => {
-      insertMessage({id: Date.now(), ...message});
+    async ({ message, event }: ChatTypes.MessageEnteredEvent): Promise<void> => {
+      insertMessage({ id: Date.now(), ...message });
 
       if (!alerts.length) {
         (event?.target as HTMLElement).blur();
@@ -61,8 +61,8 @@ export default function Assistant({showToolbar = true}: AssistantProps) {
   }, [regenerateLastAIResponse]);
 
   const messageRender = useCallback(
-    ({message}: { message: ChatTypes.Message }) => (
-      <Message text={message.text} onRegenerateButtonClick={onRegenerateButtonClick}/>
+    ({ message }: { message: ChatTypes.Message }) => (
+      <Message text={message.text} onRegenerateButtonClick={onRegenerateButtonClick} />
     ),
     [onRegenerateButtonClick],
   );

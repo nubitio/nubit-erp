@@ -9,7 +9,10 @@ const wait = (delay: number): Promise<void> =>
     setTimeout(resolve, delay);
   });
 
-export async function getAIResponse(messages: AssistantChatMessage[], delay?: number): Promise<string> {
+export async function getAIResponse(
+  messages: AssistantChatMessage[],
+  delay?: number,
+): Promise<string> {
   const response = await assistantService.chat(messages);
 
   if (delay) {
@@ -53,7 +56,8 @@ const dataItemToMessage = (item: ChatTypes.Message): AssistantChatMessage => {
   };
 };
 
-const getMessageHistory = (): AssistantChatMessage[] => [...dataSource.items()].map(dataItemToMessage);
+const getMessageHistory = (): AssistantChatMessage[] =>
+  [...dataSource.items()].map(dataItemToMessage);
 
 export const useApi = () => {
   const [alerts, setAlerts] = useState<ChatTypes.Alert[]>([]);

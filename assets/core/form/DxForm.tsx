@@ -1,18 +1,24 @@
 import './DxForm.scss';
-import Form, {FormRef, GroupItem, Item} from 'devextreme-react/form';
-import {Field} from '../field/Field';
-import {FieldType} from '../field/FieldType';
-import React, {forwardRef, useEffect, useImperativeHandle, useRef} from 'react';
-import {FORM_ERRORS_EVENT, httpClient} from '../http/HttpClient';
-import {confirm} from 'devextreme/ui/dialog';
-import DataGrid, {DataGridRef, Editing, KeyboardNavigation, LoadPanel, Paging,} from 'devextreme-react/data-grid';
-import {buildColumns} from '../datagrid/DxDataGridUtils';
+import Form, { FormRef, GroupItem, Item } from 'devextreme-react/form';
+import { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { FORM_ERRORS_EVENT, httpClient } from '../http/HttpClient';
+import { confirm } from 'devextreme/ui/dialog';
+import DataGrid, {
+  DataGridRef,
+  Editing,
+  KeyboardNavigation,
+  LoadPanel,
+  Paging,
+} from 'devextreme-react/data-grid';
+import { buildColumns } from '../datagrid/DxDataGridUtils';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
-import {useEvents} from '../event/EventHook';
-import {buildField} from './FormUtils';
-import {DateUtils} from '../utils/DateUtils';
-import toast, {getIRI} from '../utils/SharedUtils';
+import { useEvents } from '../event/EventHook';
+import { buildField } from './FormUtils';
+import { DateUtils } from '../utils/DateUtils';
+import toast, { getIRI } from '../utils/SharedUtils';
 
 export interface DxFormOptions {
   className?: string;
@@ -124,7 +130,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   };
 
   const getData = (data: any) => {
-    const row = {...data};
+    const row = { ...data };
     options.fields.forEach((field: Field) => {
       if (field.type === FieldType.FILE) {
         delete row[field.name];
@@ -146,7 +152,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         const type = typeof row[field.name];
         if (type === 'string') {
           const value = row[field.name].split('/').pop();
-          row[field.name] = {id: value};
+          row[field.name] = { id: value };
         }
         if (row[field.name] === null || row[field.name] === undefined) {
           row[field.name] = field.loadOptions[0]?.prependData[0] ?? null;
@@ -245,7 +251,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       if (!validate()) return;
       emit(options.events?.LOADING, true);
       const _formData = formRef.current?.instance().option('formData');
-      let formData = {..._formData};
+      let formData = { ..._formData };
       console.log(uploadedFiles.current);
       uploadedFiles.current.forEach((file) => {
         formData[file.name] = file.iri;
@@ -324,7 +330,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
           if (field.sendAsString) {
             const value = formData[field.name];
-            formData[field.name] = value != null ? Number(value).toFixed(field.precision || 2) : null;
+            formData[field.name] =
+              value != null ? Number(value).toFixed(field.precision || 2) : null;
           } else {
             formData[field.name] = Number(formData[field.name]);
           }
@@ -350,7 +357,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             formData[detailPropertyName].forEach((detail: any) => {
               if (field.sendAsString) {
                 const value = detail[field.name];
-                detail[field.name] = value != null ? Number(value).toFixed(field.precision || 2) : null;
+                detail[field.name] =
+                  value != null ? Number(value).toFixed(field.precision || 2) : null;
               } else {
                 detail[field.name] = Number(detail[field.name]);
               }
@@ -542,7 +550,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                   emit(FORM_EVENTS.ROW_UPDATED, e.data);
                 }}
               >
-                <LoadPanel showPane={false}/>
+                <LoadPanel showPane={false} />
                 <KeyboardNavigation
                   editOnKeyPress={true}
                   enterKeyAction="moveFocus"
@@ -556,7 +564,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                   startEditAction="click"
                   confirmDelete={false}
                 />
-                <Paging enabled={false}/>
+                <Paging enabled={false} />
                 {buildColumns(options.detailFields, true)}
               </DataGrid>
             </GroupItem>

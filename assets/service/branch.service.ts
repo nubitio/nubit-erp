@@ -1,6 +1,6 @@
-import {httpClient} from '../core/http/HttpClient';
-import {Constants} from '../core/common/Constants';
-import {StorageUtils} from '../core/utils/StorageUtils';
+import { httpClient } from '../core/http/HttpClient';
+import { Constants } from '../core/common/Constants';
+import { StorageUtils } from '../core/utils/StorageUtils';
 
 class BranchService {
   private static readonly SELECTED_BRANCH_ID = 'selectedBranchId';

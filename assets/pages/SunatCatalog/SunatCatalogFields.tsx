@@ -24,12 +24,7 @@ export const SunatCatalogFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('code')
-      .label('Código')
-      .required(true)
-      .build(),
+    new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').required(true).build(),
   );
   fields.push(
     new FieldBuilder()

@@ -17,6 +17,7 @@ import { dispatch } from '../event/EventHook';
 import { FORM_EVENTS, UploadedFile } from './DxForm';
 import { ValidationRule } from '../field/ValidationRule';
 import { getIRI } from '../utils/SharedUtils';
+import { Template } from 'devextreme-react/core/template';
 
 export const buildField = (
   field: Field,
@@ -108,8 +109,7 @@ export const buildField = (
         accept: field.accept,
         uploadUrl: field.url,
         name: 'file',
-        onBeforeSend: (e: any) => {
-        },
+        onBeforeSend: (e: any) => {},
         onUploaded: (e: any) => {
           const response = JSON.parse(e.request.response);
           uploadedFiles.current.push({
@@ -213,6 +213,7 @@ export const buildField = (
     onKeyPress: field.onKeyPress,
     onItemClick: field.onSelect,
     itemRender: field.itemFormatter,
+    itemTemplate: field.itemFormatter ? field.name : 'item',
     stylingMode: 'outlined',
     ...field.editorOptions,
   };
@@ -237,9 +238,16 @@ export const buildField = (
       render={field.contentRender}
       cssClass={className}
     >
+      {buildTemplate(field)}
       {buildValidationRules(field)}
     </SimpleItem>
   );
+};
+
+const buildTemplate = (field: Field) => {
+  if (field.itemFormatter) {
+    return <Template name={field.name} render={field.itemFormatter} />;
+  }
 };
 
 const buildValidationRules = (field: Field) => {
