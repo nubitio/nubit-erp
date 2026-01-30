@@ -32,7 +32,7 @@ export const CreditNoteFields = () => {
       .label('Comprobante')
       .visible(false)
       .mode('remote')
-      .url(Constants.API_BASE_URL + 'sales?filterRules=[' + JSON.stringify(saleFilter) + ']')
+      .url(Constants.API_BASE_URL + 'movements?filterRules=[' + JSON.stringify(saleFilter) + ']')
       .textField('invoice')
       .valueField('movimiento_id')
       .itemFormatter((data: any) => {
