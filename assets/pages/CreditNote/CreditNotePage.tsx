@@ -1,12 +1,13 @@
 import './CreditNotePage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
-import { CreditNoteFields } from './CreditNoteFields';
-import { useRef } from 'react';
-import { saleService } from '../../service/sale.service';
+import {Constants} from '../../core/common/Constants';
+import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
+import {DxDialog} from '../../core/dialog/DxDialog';
+import {DxForm} from '../../core/form/DxForm';
+import {CreditNoteFields} from './CreditNoteFields';
+import {useRef} from 'react';
+import {saleService} from '../../service/sale.service';
 import notify from 'devextreme/ui/notify';
+import toast from "../../core/utils/SharedUtils";
 
 export const CreditNotePage = () => {
   const container = 'wrapper';
@@ -33,43 +34,31 @@ export const CreditNotePage = () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (selectedRow) {
           if (selectedRow.envio_sunat === '0') {
-            notify(
-              {
-                message: 'El comprobante ya fue enviado a SUNAT',
-                type: 'warning',
-                displayTime: 3000,
-              },
-              { position: 'top right' },
-            );
+            toast(
+              "El comprobante ya fue enviado a SUNAT",
+              "warning",
+            )
             return;
           }
 
           gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
           saleService
-            .makeNote(selectedRow.nota_id)
+            .makeNote(selectedRow.id)
             .subscribe((response) => {
-              notify(
-                {
-                  message: response.data.message,
-                  type: response.data.success ? 'success' : 'error',
-                  displayTime: 3000,
-                },
-                { position: 'top right' },
-              );
+              toast(
+                response.data.message,
+                response.data.success ? "success" : "error"
+              )
               gridRef.current?.refresh();
             })
             .add(() => {
               gridRef.current?.hideLoading();
             });
         } else {
-          notify(
-            {
-              message: 'Debe seleccionar una nota',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            { position: 'top right' },
-          );
+          toast(
+            "Debe seleccionar una nota",
+            "warning",
+          )
         }
       },
     },
@@ -83,7 +72,7 @@ export const CreditNotePage = () => {
             type: 'warning',
             displayTime: 3000,
           },
-          { position: 'top right' },
+          {position: 'top right'},
         );
       },
     },
@@ -106,7 +95,7 @@ export const CreditNotePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
         }
       },
@@ -128,7 +117,7 @@ export const CreditNotePage = () => {
         events={EVENTS}
       />
       <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+        <DxForm url={API_URL} fields={fields} events={EVENTS}/>
       </DxDialog>
     </div>
   );

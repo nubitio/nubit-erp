@@ -20,7 +20,7 @@ export class SharedUtils {
             <img
               src={imageUrl}
               className="object-cover"
-              style={{ width: '30px', height: '30px' }}
+              style={{width: '30px', height: '30px'}}
               alt={alt}
             />
           </a>
@@ -34,7 +34,7 @@ export class SharedUtils {
           <img
             src={url}
             className="object-cover"
-            style={{ width: '30px', height: '30px' }}
+            style={{width: '30px', height: '30px'}}
             alt={alt ?? 'No image'}
           />
         </div>
@@ -45,7 +45,7 @@ export class SharedUtils {
   static dateFormatter(value: Date | string | null | undefined) {
     if (value === null || value === undefined || value === '') return '';
     if (value instanceof Date) {
-      return value.toLocaleDateString('es-PE', { timeZone: 'UTC' });
+      return value.toLocaleDateString('es-PE', {timeZone: 'UTC'});
     }
     const dateStr = value.trim();
     if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
@@ -65,7 +65,7 @@ export class SharedUtils {
 
   static timeFormatter(value: string) {
     const time = new Date(value);
-    return time.toLocaleTimeString('es-PE', { timeZone: 'UTC' });
+    return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
   }
 
   static dateTimeFormatter(value: string) {
@@ -128,12 +128,35 @@ export class SharedUtils {
   static htmlFormatter(value: any) {
     if (value) {
       return (
-        <div className="text-truncate" style={{ maxWidth: '200px' }}>
-          <span dangerouslySetInnerHTML={{ __html: value }} />
+        <div className="text-truncate" style={{maxWidth: '200px'}}>
+          <span dangerouslySetInnerHTML={{__html: value}}/>
         </div>
       );
     } else {
       return '';
+    }
+  }
+
+  static billStatusFormatter(value: any) {
+    if (value === null || value === undefined || value === '') {
+      value = -1;
+    } else {
+      value = Number(value);
+    }
+    if (value === -1) {
+      return (
+        <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>
+      );
+    } else if (value === 0) {
+      return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>;
+    } else if (value < 2000) {
+      return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
+    } else if (value >= 2000 && value < 4000) {
+      return (
+        <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>
+      );
+    } else if (value >= 4000) {
+      return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
     }
   }
 }
@@ -150,7 +173,7 @@ export default function toast(
       type: type,
       displayTime: time,
     },
-    { position: position },
+    {position: position},
   );
 }
 

@@ -102,7 +102,7 @@ export const DATA_GRID_EVENTS = {
   TOOLBAR_EVENT: 'datagrid:toolbar.event',
 };
 
-export const  DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
+export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
   const gridRef = useRef<DataGridRef | null>(null);
   const [data, setData] = useState<Store | null>(null);
   const exportFormats = ['xlsx', 'pdf'];

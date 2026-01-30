@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\CreditNoteRepository;
+use App\State\CreditNote\CreditNoteProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -31,6 +32,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['creditnote:read']],
     denormalizationContext: ['groups' => ['creditnote:write']],
     filters: [DevExtremeFilter::class],
+    processor: CreditNoteProcessor::class,
 )]
 #[ORM\Entity(repositoryClass: CreditNoteRepository::class)]
 #[ORM\Table(name: 'nota')]
@@ -113,7 +115,7 @@ class CreditNote
 
     #[Groups(['creditnote:read'])]
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $updatedAt = null;
+    private ?DateTimeInterface $updatedAt;
 
     public function __construct()
     {

@@ -5,7 +5,7 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 import './LoginForm.scss';
 import { authService } from '../../service/auth.service';
 import { BranchPicker } from '../../components/utils/branch-picker/BranchPicker';
-import {StorageUtils} from "../../core/utils/StorageUtils";
+import { StorageUtils } from '../../core/utils/StorageUtils';
 
 export const LoginForm = () => {
   const [loading, setLoading] = useState(false);

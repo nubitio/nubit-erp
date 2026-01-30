@@ -91,17 +91,19 @@ export const SalePage = () => {
 
   const setupPrinter = () => {
     qz.security.setSignatureAlgorithm('SHA256');
-    qz.security.setCertificatePromise((resolve: (value: string) => void, reject: (reason?: any) => void) => {
-      fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('No se pudo cargar el certificado de QZ Tray.');
-          }
-          return response.text();
-        })
-        .then(resolve)
-        .catch(reject);
-    });
+    qz.security.setCertificatePromise(
+      (resolve: (value: string) => void, reject: (reason?: any) => void) => {
+        fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('No se pudo cargar el certificado de QZ Tray.');
+            }
+            return response.text();
+          })
+          .then(resolve)
+          .catch(reject);
+      },
+    );
     qz.security.setSignaturePromise((toSign: string) => {
       return (resolve: (value: string) => void, reject: (reason?: any) => void) => {
         fetch(`${Constants.API_BASE_URL}qz/sign`, {

@@ -1,11 +1,11 @@
-import React, {useMemo, useState} from 'react';
-import {useAuth} from '../../../contexts/auth';
+import React, { useMemo, useState } from 'react';
+import { useAuth } from '../../../contexts/auth';
 import List from 'devextreme-react/list';
 
 import './UserMenuSection.scss';
-import type {UserMenuSectionProps} from '../../../types';
-import {BranchPicker} from '../../utils/branch-picker/BranchPicker';
-import {useNavigate} from 'react-router-dom';
+import type { UserMenuSectionProps } from '../../../types';
+import { BranchPicker } from '../../utils/branch-picker/BranchPicker';
+import { useNavigate } from 'react-router-dom';
 
 type MenuItem = {
   text: string;
@@ -13,8 +13,8 @@ type MenuItem = {
   onClick: () => void;
 };
 
-export const UserMenuSection = ({showAvatar, listRef}: UserMenuSectionProps) => {
-  const {user, signOut} = useAuth();
+export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) => {
+  const { user, signOut } = useAuth();
   const [visible, setVisible] = useState(false);
   const navigate = useNavigate();
 
@@ -62,11 +62,8 @@ export const UserMenuSection = ({showAvatar, listRef}: UserMenuSectionProps) => 
         )}
         <div className="user-name">{user?.username}</div>
       </div>
-      <List ref={listRef} elementAttr={listElementAttr} items={menuItems}/>
-      <BranchPicker
-        visible={visible}
-        setVisible={setVisible}
-      />
+      <List ref={listRef} elementAttr={listElementAttr} items={menuItems} />
+      <BranchPicker visible={visible} setVisible={setVisible} />
     </>
   );
 };

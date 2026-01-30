@@ -1,12 +1,12 @@
-import {Field} from '../../core/field/Field';
-import {FieldBuilder} from '../../core/field/FieldBuilder';
-import {FieldType} from '../../core/field/FieldType';
-import toast, {SharedUtils} from '../../core/utils/SharedUtils';
-import {Constants} from '../../core/common/Constants';
-import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
-import {textField} from '../../core/field/TextFieldBuilder';
-import {DxFormEvents} from '../../core/form/DxForm';
-import {consultService} from '../../service/consult.service';
+import { Field } from '../../core/field/Field';
+import { FieldBuilder } from '../../core/field/FieldBuilder';
+import { FieldType } from '../../core/field/FieldType';
+import toast, { SharedUtils } from '../../core/utils/SharedUtils';
+import { Constants } from '../../core/common/Constants';
+import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import { textField } from '../../core/field/TextFieldBuilder';
+import { DxFormEvents } from '../../core/form/DxForm';
+import { consultService } from '../../service/consult.service';
 
 export const CompanyFields = (formRef: DxFormEvents | null) => {
   const fields: Field[] = [];
@@ -29,11 +29,11 @@ export const CompanyFields = (formRef: DxFormEvents | null) => {
       .validators([
         {
           type: 'stringLength',
-          options: {min: 11, max: 11, message: 'El RUC debe tener 11 dígitos'},
+          options: { min: 11, max: 11, message: 'El RUC debe tener 11 dígitos' },
         },
         {
           type: 'pattern',
-          options: {pattern: '^[0-9]+$', message: 'El RUC solo debe contener números'},
+          options: { pattern: '^[0-9]+$', message: 'El RUC solo debe contener números' },
         },
         {
           type: 'custom',
@@ -148,10 +148,10 @@ export const CompanyFields = (formRef: DxFormEvents | null) => {
       .name('bankName')
       .label('Banco')
       .data([
-        {value: 'BCP', text: 'BCP'},
-        {value: 'BBVA', text: 'BBVA'},
-        {value: 'INTERBANK', text: 'INTERBANK'},
-        {value: 'SCOTIABANK', text: 'SCOTIABANK'},
+        { value: 'BCP', text: 'BCP' },
+        { value: 'BBVA', text: 'BBVA' },
+        { value: 'INTERBANK', text: 'INTERBANK' },
+        { value: 'SCOTIABANK', text: 'SCOTIABANK' },
       ])
       .build(),
   );
