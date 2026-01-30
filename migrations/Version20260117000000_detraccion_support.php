@@ -7,7 +7,7 @@ namespace DoctrineMigrations;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class Version20260317000000_detraccion_support extends AbstractMigration
+final class Version20260117000000_detraccion_support extends AbstractMigration
 {
     public function getDescription(): string
     {
