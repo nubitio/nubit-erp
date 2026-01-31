@@ -44,7 +44,7 @@ services:
       QZ_PRIVATE_KEY_PASSPHRASE: ${QZ_PRIVATE_KEY_PASSPHRASE}
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
-      BILL_API_TOKEN: ${BILL_API_KEY}
+      BILL_API_TOKEN: ${BILL_API_TOKEN}
 
     volumes:
       - app-var:/app/var

@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace App\Billing\Infrastructure;
 
-use Override;
 use App\Billing\Domain\VoidedRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Voided\Voided;
-use Symfony\Component\HttpClient\HttpClient;
+use Override;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class VoidedRepository implements VoidedRepositoryInterface
 {
-    public function __construct(private Connection $connection, private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private Connection $connection,
+        private SerializerInterface $serializer,
+        private HttpClientInterface $httpClient,
+        #[Autowire('%env(BILL_API_BASE_URL)%')]
+        private string $apiBaseUrl,
+        #[Autowire('%env(BILL_API_TOKEN)%')]
+        private string $apiToken,
+    ) {
     }
 
     /**
@@ -52,9 +60,9 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
     #[Override]
     public function voidInvoice(Voided $voided): SummaryResponse
     {
-        $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($voided, 'json');
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/voided/send?token=123456', [
+        $url = $this->apiBaseUrl . 'voided/send?token=' . $this->apiToken;
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -77,11 +85,8 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
     #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
-        $httpClient = HttpClient::create();
-        $response = $httpClient->request(
-            'GET',
-            'https://api.efact.app/api/v1/voided/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc
-        );
+        $url = $this->apiBaseUrl . 'voided/status?token=' . $this->apiToken . '&ticket=' . $ticket . '&ruc=' . $ruc;
+        $response = $this->httpClient->request('GET', $url);
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');

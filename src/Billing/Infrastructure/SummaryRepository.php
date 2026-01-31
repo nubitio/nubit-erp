@@ -4,25 +4,33 @@ declare(strict_types=1);
 
 namespace App\Billing\Infrastructure;
 
-use Override;
 use App\Billing\Domain\SummaryRepositoryInterface;
 use App\Billing\Model\Response\SummaryResponse;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Summary\Summary;
-use Symfony\Component\HttpClient\HttpClient;
+use Override;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class SummaryRepository implements SummaryRepositoryInterface
 {
-    public function __construct(private Connection $connection, private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private Connection $connection,
+        private SerializerInterface $serializer,
+        private HttpClientInterface $httpClient,
+        #[Autowire('%env(BILL_API_BASE_URL)%')]
+        private string $apiBaseUrl,
+        #[Autowire('%env(BILL_API_TOKEN)%')]
+        private string $apiToken,
+    ) {
     }
 
     /**
@@ -52,9 +60,9 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
     #[Override]
     public function createSummary(Summary $summary): SummaryResponse
     {
-        $httpClient = HttpClient::create();
+        $url = $this->apiBaseUrl . 'summary/send?token=' . $this->apiToken;
         $requestBody = $this->serializer->serialize($summary, 'json');
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/summary/send?token=123456', [
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -77,11 +85,8 @@ readonly class SummaryRepository implements SummaryRepositoryInterface
     #[Override]
     public function getStatus(string $ticket, string $ruc): StatusCdrResult
     {
-        $httpClient = HttpClient::create();
-        $response = $httpClient->request(
-            'GET',
-            'https://api.efact.app/api/v1/summary/status?token=123456&ticket=' . $ticket . '&ruc=' . $ruc
-        );
+        $url = $this->apiBaseUrl . 'summary/status?token=' . $this->apiToken . '&ticket=' . $ticket . '&ruc=' . $ruc;
+        $response = $this->httpClient->request('GET', $url);
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */
         $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');
