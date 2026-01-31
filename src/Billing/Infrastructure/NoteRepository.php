@@ -4,23 +4,30 @@ declare(strict_types=1);
 
 namespace App\Billing\Infrastructure;
 
-use Override;
 use App\Billing\Domain\FileRequest;
 use App\Billing\Domain\NoteRepositoryInterface;
 use App\Billing\Model\Response\DocumentResponse;
 use Greenter\Model\Sale\Note;
-use Symfony\Component\HttpClient\HttpClient;
+use Override;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class NoteRepository implements NoteRepositoryInterface
 {
-    public function __construct(private SerializerInterface $serializer)
-    {
+    public function __construct(
+        private SerializerInterface $serializer,
+        private HttpClientInterface $httpClient,
+        #[Autowire('%env(BILL_API_BASE_URL)%')]
+        private string $apiBaseUrl,
+        #[Autowire('%env(BILL_API_TOKEN)%')]
+        private string $apiToken,
+    ) {
     }
 
     /**
@@ -33,9 +40,9 @@ readonly class NoteRepository implements NoteRepositoryInterface
     #[Override]
     public function send(Note $note): DocumentResponse
     {
-        $httpClient = HttpClient::create();
+        $url = $this->apiBaseUrl . 'note/send?token=' . $this->apiToken;
         $requestBody = $this->serializer->serialize($note, 'json');
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/note/send?token=123456', [
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -58,11 +65,10 @@ readonly class NoteRepository implements NoteRepositoryInterface
     #[Override]
     public function pdf(Note $note): string
     {
-        $httpClient = HttpClient::create();
         $fileRequest = new FileRequest($note);
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
-
-        $response = $httpClient->request('POST', 'https://api.efact.app/api/v1/note/pdf?token=123456', [
+        $url = $this->apiBaseUrl . 'note/pdf?token=' . $this->apiToken;
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
