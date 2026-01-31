@@ -81,6 +81,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
+      .sendAsString(true)
       .build(),
   );
 
