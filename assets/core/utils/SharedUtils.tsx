@@ -159,6 +159,42 @@ export class SharedUtils {
       return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
     }
   }
+
+  static saleStatusFormatter(sale: any) {
+    const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2;
+    if (isVoided) {
+      return <span className="badge badge-outlined rounded-pill text-bg-danger">ANULADO</span>;
+    }
+
+    const hasInvoice = !!sale?.invoice;
+    if (!hasInvoice) {
+      return <span className="badge badge-outlined rounded-pill text-bg-success">ACEPTADO</span>;
+    }
+
+    const rawStatus = sale?.invoiceSunatStatus;
+    if (rawStatus === null || rawStatus === undefined || rawStatus === '') {
+      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
+    }
+
+    const statusNumber = Number(rawStatus);
+    if (Number.isNaN(statusNumber)) {
+      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
+    }
+
+    if (statusNumber === 0) {
+      return <span className="badge badge-outlined rounded-pill text-bg-success">ACEPTADO</span>;
+    }
+
+    if (statusNumber < 2000) {
+      return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
+    }
+
+    if (statusNumber < 4000) {
+      return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
+    }
+
+    return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
+  }
 }
 
 export default function toast(

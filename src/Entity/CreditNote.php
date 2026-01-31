@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use DateTimeInterface;
-use DateTime;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
+use App\Controller\Api\SendCreditNote;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Exception\ServiceException;
 use App\Repository\CreditNoteRepository;
 use App\State\CreditNote\CreditNoteProcessor;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -22,17 +21,28 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ApiResource(
     shortName: 'CreditNote',
-    operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Put(),
-        new Delete(),
-    ],
     normalizationContext: ['groups' => ['creditnote:read']],
     denormalizationContext: ['groups' => ['creditnote:write']],
     filters: [DevExtremeFilter::class],
+    exceptionToStatus: [
+        ServiceException::class => 400,
+    ],
     processor: CreditNoteProcessor::class,
+)]
+#[ApiResource(
+    shortName: 'CreditNote',
+    operations: [
+        new Post(
+            uriTemplate: '/credit-notes/{id}/send',
+            controller: SendCreditNote::class,
+        ),
+    ],
+    uriVariables: [
+        'id' => new Link(
+            fromProperty: 'id',
+            fromClass: CreditNote::class,
+        ),
+    ],
 )]
 #[ORM\Entity(repositoryClass: CreditNoteRepository::class)]
 #[ORM\Table(name: 'nota')]

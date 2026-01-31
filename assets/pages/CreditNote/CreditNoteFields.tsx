@@ -31,6 +31,10 @@ export const CreditNoteFields = () => {
           field: 'invoice',
           operator: 'isnotnull',
           value: '',
+        }, {
+          field: 'estado',
+          operator: '=',
+          value: 1
         }
       ])
       .textField('invoice')

@@ -4,15 +4,17 @@ import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
 import {DxDialog} from '../../core/dialog/DxDialog';
 import {DxForm} from '../../core/form/DxForm';
 import {CreditNoteFields} from './CreditNoteFields';
-import {useRef} from 'react';
-import {saleService} from '../../service/sale.service';
+import {useRef, useState} from 'react';
 import notify from 'devextreme/ui/notify';
 import toast from "../../core/utils/SharedUtils";
+import {httpClient} from "../../core/http/HttpClient";
 
 export const CreditNotePage = () => {
   const container = 'wrapper';
   const fields = CreditNoteFields();
   const gridRef = useRef<DxDataGridEvents>(null);
+  const [editDisabled, setEditDisabled] = useState<boolean>(true);
+  const [deleteDisabled, setDeleteDisabled] = useState<boolean>(true);
 
   const API_URL = Constants.API_BASE_URL + 'credit-notes';
 
@@ -24,6 +26,11 @@ export const CreditNotePage = () => {
     CANCEL: 'credit-note:cancel',
     SUCCESS: 'credit-note:success',
     LOADING: 'credit-note:loading',
+  };
+
+  const isPending = (row: any): boolean => {
+    const status = row?.envioSunat ?? row?.envio_sunat;
+    return status === null || status === undefined || status === '' || status === '0' || status === 'pendiente';
   };
 
   const toolbar = [
@@ -42,8 +49,7 @@ export const CreditNotePage = () => {
           }
 
           gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-          saleService
-            .makeNote(selectedRow.id)
+          httpClient.post<any>(Constants.API_BASE_URL + 'credit-notes/' + selectedRow.id + '/send')
             .subscribe((response) => {
               toast(
                 response.data.message,
@@ -113,8 +119,16 @@ export const CreditNotePage = () => {
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
+        editDisabled={editDisabled}
+        deleteDisabled={deleteDisabled}
         fields={fields}
         events={EVENTS}
+        onSelectionChanged={(e) => {
+          const row = e.selectedRowsData?.[0];
+          const pending = row ? isPending(row) : false;
+          setEditDisabled(!pending);
+          setDeleteDisabled(!pending);
+        }}
       />
       <DxDialog events={EVENTS}>
         <DxForm url={API_URL} fields={fields} events={EVENTS}/>

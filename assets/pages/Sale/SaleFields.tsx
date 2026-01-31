@@ -170,6 +170,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .col(6)
       .name('descuento')
       .label('Descuento %')
+      .align('right')
       .defaultValue(0)
       .readonly(true)
       .onClick((e: any) => {
@@ -181,7 +182,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .onChange((e: any) => {
         setTotal(form);
       })
-      .visible(false)
       .sendAsString(true)
       .build(),
   );
@@ -191,7 +191,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .col(6)
       .name('total')
       .label('Total')
-      .visible(false)
+      .align('right')
       .disabled(true)
       .sendAsString(true)
       .build(),
@@ -200,13 +200,10 @@ export const SaleFields = (form: DxFormEvents | null) => {
     new FieldBuilder()
       .type(FieldType.NONE)
       .name('estado')
-      .label('Anulado')
+      .label('Estado')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => {
-        if (cell.value === 2) {
-          return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>;
-        }
-        return '';
+        return SharedUtils.saleStatusFormatter(cell.data);
       })
       .build(),
   );
@@ -360,7 +357,7 @@ const getSubTotal = (form: DxFormEvents | null) => {
   const rows = form?.getDetailData() ?? [];
   let total = 0;
   rows.forEach((row) => {
-    total += row.precio_total;
+    total += Number(row.precio_total);
   });
   return total;
 };
