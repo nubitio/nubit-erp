@@ -213,6 +213,9 @@ class Sale
     #[ORM\Column(name: 'invoice', type: 'string', nullable: true)]
     private ?string $invoice = null;
 
+    #[ORM\OneToOne(mappedBy: 'sale', targetEntity: Invoice::class)]
+    private ?Invoice $invoiceEntity = null;
+
     #[Groups([
         'sale:read',
         'sale:write',
@@ -269,6 +272,11 @@ class Sale
         }
 
         return $this;
+    }
+
+    public function getInvoiceEntity(): ?Invoice
+    {
+        return $this->invoiceEntity;
     }
 
     public function getId(): ?string
@@ -670,6 +678,18 @@ class Sale
         $this->invoice = $invoice;
 
         return $this;
+    }
+
+    #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
+    public function getInvoiceSunatStatus(): ?string
+    {
+        return $this->invoiceEntity?->getSunatStatus();
+    }
+
+    #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
+    public function getInvoiceVoided(): ?int
+    {
+        return $this->invoiceEntity?->getVoided();
     }
 
     public function getSubtotal(): ?string

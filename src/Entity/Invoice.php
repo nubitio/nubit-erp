@@ -34,7 +34,7 @@ class Invoice
     private ?string $id = null;
 
     #[Groups(['invoice:read'])]
-    #[ORM\ManyToOne(targetEntity: Sale::class)]
+    #[ORM\OneToOne(targetEntity: Sale::class, inversedBy: 'invoiceEntity')]
     #[ORM\JoinColumn(
         name: 'movimiento_id',
         referencedColumnName: 'movimiento_id',
