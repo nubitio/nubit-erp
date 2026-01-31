@@ -42,6 +42,9 @@ services:
       QZ_CERT_PATH: ${QZ_CERT_PATH:-/app/config/qz/qz_cert.pem}
       QZ_PRIVATE_KEY_PATH: ${QZ_PRIVATE_KEY_PATH:-/app/config/qz/qz_private.key}
       QZ_PRIVATE_KEY_PASSPHRASE: ${QZ_PRIVATE_KEY_PASSPHRASE}
+      # Billing
+      BILL_API_BASE_URL: ${BILL_API_BASE_URL}
+      BILL_API_TOKEN: ${BILL_API_KEY}
 
     volumes:
       - app-var:/app/var
