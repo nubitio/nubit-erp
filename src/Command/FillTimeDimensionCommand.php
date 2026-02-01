@@ -2,7 +2,11 @@
 
 namespace App\Command;
 
+use App\Core\Application\Command\TenantAwareCommand;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use App\Service\TimeDimensionSeeder;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,12 +19,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:fill-time-dimension',
     description: 'Rellena la tabla time_dimension (date dimension) entre dos fechas.',
 )]
-class FillTimeDimensionCommand extends Command
+class FillTimeDimensionCommand extends TenantAwareCommand
 {
     public function __construct(
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        LoggerInterface $logger,
         private readonly TimeDimensionSeeder $timeDimensionSeeder,
     ) {
-        parent::__construct();
+        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
     protected function configure(): void
@@ -30,9 +37,11 @@ class FillTimeDimensionCommand extends Command
             ->addArgument('end', InputArgument::OPTIONAL, 'Fecha fin (exclusiva, Y-m-d)', null)
             ->addOption('locale', null, InputOption::VALUE_OPTIONAL, 'Locale para nombres de día/mes', 'es_PE')
             ->addOption('batch-size', null, InputOption::VALUE_OPTIONAL, 'Tamaño del lote (filas por INSERT)', 500);
+
+        parent::configure();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $startInput = (string)$input->getArgument('start');

@@ -22,4 +22,6 @@ abstract class Constants
     public const string CPE_CLIENT_SECRET = 'cpe_client_secret';
 
     public const string PRINT_LOGO = 'app_option_print_logo';
+
+    public const string REQUIRE_CASH_REGISTER = 'app_option_require_cash_register';
 }

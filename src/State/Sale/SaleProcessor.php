@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
@@ -46,6 +48,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
         private ProductStockService $productStockService,
+        private SettingsService $settings,
         private LoggerInterface $logger,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
@@ -86,6 +89,11 @@ readonly class SaleProcessor implements ProcessorInterface
                 'payment_method' => $data->getTipoPago()->getId(),
             ]);
 
+            $requireCashShift = filter_var(
+                $this->settings->get(Constants::REQUIRE_CASH_REGISTER, 'true'),
+                FILTER_VALIDATE_BOOLEAN
+            );
+
             $this->logger->debug('Checking for open cash shift', [
                 'user_id' => $user->userId,
             ]);
@@ -96,18 +104,16 @@ readonly class SaleProcessor implements ProcessorInterface
                     'openedBy' => $user->userId,
                 ]);
 
-            if (!$cashShift instanceof CashShift) {
+            if ($requireCashShift && !$cashShift instanceof CashShift) {
                 $this->logger->warning('Sale processing failed: No open cash shift found', [
                     'user_id' => $user->userId,
                 ]);
                 throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
             }
 
-            $cashShiftForMovement = $cashShift;
-
-            $this->logger->debug('Cash shift found, filling sale values', [
-                'cash_shift_id' => $cashShift->getId(),
-            ]);
+            if ($cashShift instanceof CashShift) {
+                $cashShiftForMovement = $cashShift;
+            }
 
             $data = $this->saleUtils->fillSaleValues($data);
             $this->logger->debug('Sale values filled');

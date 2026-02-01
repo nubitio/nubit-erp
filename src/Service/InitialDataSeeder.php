@@ -58,6 +58,7 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
             $this->settingsService->set(Constants::CHECK_STOCK, 'bool', 'false');
             $this->settingsService->set(Constants::PRINT_LOGO, 'bool', 'true');
+            $this->settingsService->set(Constants::REQUIRE_CASH_REGISTER, 'bool', 'true');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to keep seeding idempotent.
         }
