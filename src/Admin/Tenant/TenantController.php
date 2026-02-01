@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Admin\Tenant;
 
+use App\Core\Service\TenantManager;
 use InvalidArgumentException;
 use RuntimeException;
-use App\Core\Service\TenantManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class TenantController extends AbstractController
 {
@@ -49,8 +49,8 @@ class TenantController extends AbstractController
     public function create(Request $request): Response
     {
         $tenant = [
-            'name' => trim((string) $request->request->get('name', '')),
-            'connection' => trim((string) $request->request->get('connection', '')),
+            'name' => trim((string)$request->request->get('name', '')),
+            'connection' => trim((string)$request->request->get('connection', '')),
         ];
 
         try {
@@ -69,8 +69,8 @@ class TenantController extends AbstractController
     public function update(int $id, Request $request): Response
     {
         $tenant = [
-            'name' => trim((string) $request->request->get('name', '')),
-            'connection' => trim((string) $request->request->get('connection', '')),
+            'name' => trim((string)$request->request->get('name', '')),
+            'connection' => trim((string)$request->request->get('connection', '')),
         ];
 
         try {
