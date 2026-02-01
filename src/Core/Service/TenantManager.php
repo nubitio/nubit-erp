@@ -6,18 +6,20 @@ namespace App\Core\Service;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 readonly class TenantManager
 {
-    private const string ENV_CONFIG_PATH = 'TENANTS_CONFIG_PATH';
+    public function __construct(
+        #[Autowire('%env(TENANTS_CONFIG_PATH)%')]
+        private string $tenantsConfigFilePath,
+    ) {
+        if ('' === trim($this->tenantsConfigFilePath)) {
+            throw new RuntimeException('Tenants config path is required');
+        }
 
-    private string $tenantsConfigFilePath;
-
-    public function __construct()
-    {
-        $this->tenantsConfigFilePath = $this->resolveConfigPath();
         $this->ensureConfigFile();
     }
 
@@ -62,7 +64,7 @@ readonly class TenantManager
     {
         $data = $this->readTenants();
 
-        $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
+        $data = array_values(array_filter($data, static fn(array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
 
         $this->writeTenants($data);
     }
@@ -104,13 +106,7 @@ readonly class TenantManager
 
     public function getTenant(int $id): ?array
     {
-        foreach ($this->readTenants() as $tenant) {
-            if ((int)($tenant['id'] ?? 0) === $id) {
-                return $tenant;
-            }
-        }
-
-        return null;
+        return array_find($this->readTenants(), fn($tenant) => (int)($tenant['id'] ?? 0) === $id);
     }
 
     /**
@@ -177,28 +173,8 @@ readonly class TenantManager
      */
     private function nextId(array $tenants): int
     {
-        $ids = array_map(static fn (array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
+        $ids = array_map(static fn(array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
 
         return (int)(max($ids ?: [0]) + 1);
-    }
-
-    private function resolveConfigPath(): string
-    {
-        $envPath = (string)($_ENV[self::ENV_CONFIG_PATH] ?? getenv(self::ENV_CONFIG_PATH) ?: '');
-        if ('' !== $envPath) {
-            return $this->normalizePath($envPath);
-        }
-
-        // Base project dir from src/Core/Service => up 3 levels.
-        return dirname(__DIR__, 3) . '/config/tenants.yaml';
-    }
-
-    private function normalizePath(string $path): string
-    {
-        if (str_starts_with($path, '/')) {
-            return $path;
-        }
-
-        return dirname(__DIR__, 3) . '/' . ltrim($path, '/');
     }
 }
