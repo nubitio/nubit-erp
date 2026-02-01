@@ -2,7 +2,11 @@
 
 namespace App\Command;
 
+use App\Core\Application\Command\TenantAwareCommand;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use App\Service\UbigeoImportService;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,12 +19,15 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:import-ubigeo',
     description: 'Importa los códigos de ubigeo (INEI) desde un CSV y los guarda en la tabla ubigeo.',
 )]
-class ImportUbigeoCommand extends Command
+class ImportUbigeoCommand extends TenantAwareCommand
 {
     public function __construct(
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        LoggerInterface $logger,
         private readonly UbigeoImportService $ubigeoImportService,
     ) {
-        parent::__construct();
+        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
     protected function configure(): void
@@ -30,9 +37,11 @@ class ImportUbigeoCommand extends Command
             ->addOption('delimiter', null, InputOption::VALUE_OPTIONAL, 'Delimitador del CSV', ',')
             ->addOption('skip-header', null, InputOption::VALUE_NONE, 'Indica si el CSV incluye cabecera')
             ->addOption('batch-size', null, InputOption::VALUE_OPTIONAL, 'Tamaño del lote (filas por INSERT)', 200);
+
+        parent::configure();
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $filePath = (string) $input->getArgument('file');

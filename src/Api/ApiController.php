@@ -173,7 +173,7 @@ class ApiController extends AbstractController
         return $this->json(['error' => $result['msg']], Response::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    #[Route('/api/customers/{id} ', name: 'api-updateCustomer', methods: ['PUT'])]
+    #[Route('/api/customers/{id}', name: 'api-updateCustomer', methods: ['PUT'])]
     public function updateCustomer(string $id): Response
     {
         $result = $this->apiRepository->updateCustomer($id, $this->body);
