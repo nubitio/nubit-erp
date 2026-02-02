@@ -5,7 +5,6 @@ import {DxDialog} from '../../core/dialog/DxDialog';
 import {DxForm} from '../../core/form/DxForm';
 import {CreditNoteFields} from './CreditNoteFields';
 import {useRef, useState} from 'react';
-import notify from 'devextreme/ui/notify';
 import toast from "../../core/utils/SharedUtils";
 import {httpClient} from "../../core/http/HttpClient";
 
@@ -72,14 +71,10 @@ export const CreditNotePage = () => {
       text: 'Enviar por correo',
       type: 'success',
       onClick: () => {
-        notify(
-          {
-            message: 'Funcionalidad no implementada',
-            type: 'warning',
-            displayTime: 3000,
-          },
-          {position: 'top right'},
-        );
+        toast(
+          "Funcionalidad no implementada",
+          "warning",
+        )
       },
     },
     {
@@ -87,23 +82,19 @@ export const CreditNotePage = () => {
       type: 'primary',
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
+        if (!selectedRow) {
+          toast(
+            "Debe seleccionar una nota",
+            "warning"
+          )
+          return;
+        }
         const payload = {
-          type: selectedRow?.tipo_id,
-          id: selectedRow?.nota_id,
+          type: selectedRow?.tipoId ?? selectedRow?.tipo_id,
+          id: selectedRow?.id ?? selectedRow?.nota_id,
         };
         const payloadEncoded = btoa(JSON.stringify(payload));
-        if (selectedRow) {
-          window.open('receipt/' + payloadEncoded, '_blank');
-        } else {
-          notify(
-            {
-              message: 'Debe seleccionar una nota',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
-        }
+        window.open('receipt/' + payloadEncoded, '_blank');
       },
     },
   ];
