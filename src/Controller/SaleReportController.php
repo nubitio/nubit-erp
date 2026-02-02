@@ -163,7 +163,14 @@ select
     i.igv,
     i.rc as service_charge,
     i.total,
-    case when i.voided = 1 then 'Anulado' else 'Vigente' end as status
+    case
+        when i.voided = 2 then 'Anulado'
+        when i.envio_sunat is null or i.envio_sunat = '' then 'Pendiente'
+        when cast(i.envio_sunat as unsigned) = 0 then 'Aceptado'
+        when cast(i.envio_sunat as unsigned) < 2000 then 'Erroneo'
+        when cast(i.envio_sunat as unsigned) < 4000 then 'Rechazado'
+        else 'Observado'
+    end as status
 from comprobante i
     inner join movimiento m on m.movimiento_id = i.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id

@@ -39,7 +39,7 @@ readonly class CreditNoteProcessor implements ProcessorInterface
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
-        if ($data instanceof CreditNote && $data->getId() && $data->isSentToSunat()) {
+        if ($data->getId() && $data->isSentToSunat()) {
             if ($operation instanceof DeleteOperationInterface) {
                 throw new ServiceException('No se puede eliminar una nota de crédito enviada a SUNAT.');
             }
