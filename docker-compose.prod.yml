@@ -84,6 +84,9 @@ services:
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
+      # Billing
+      BILL_API_BASE_URL: ${BILL_API_BASE_URL}
+      BILL_API_TOKEN: ${BILL_API_TOKEN}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -110,6 +113,9 @@ services:
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
+      # Billing
+      BILL_API_BASE_URL: ${BILL_API_BASE_URL}
+      BILL_API_TOKEN: ${BILL_API_TOKEN}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
