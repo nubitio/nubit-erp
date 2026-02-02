@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Billing\Domain;
 
-use NumberFormatter;
 use App\Core\Exception\ServiceException;
 use App\Entity\CreditNote;
 use App\Invoice\Domain\Voucher;
@@ -16,6 +15,7 @@ use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
+use NumberFormatter;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class NoteCreateUseCase
@@ -42,8 +42,8 @@ readonly class NoteCreateUseCase
 
     private function getNote(CreditNote $creditNote, Voucher $voucher): Note
     {
-        // Helper para redondear montos a 2 decimales (requerido por SUNAT)
-        $round2 = static fn (?float $value): float => round(floatval($value), 2);
+        // Helper to round to 2 decimals (required for billing)
+        $round2 = static fn(?float $value): float => round(floatval($value), 2);
 
         $customerAddress = new Address();
         $customerAddress->setDireccion(strval($voucher->customer_address));
@@ -59,10 +59,10 @@ readonly class NoteCreateUseCase
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
             ->setFechaEmision($creditNote->getFecha())
-            ->setCodMotivo(strval($creditNote->getCodigoMotivo()))
-            ->setDesMotivo(strval($creditNote->getDescripcionMotivo()))
-            ->setTipoDoc(strval($creditNote->getTipoId()))
-            ->setSerie(strval($creditNote->getSerie()))
+            ->setCodMotivo($creditNote->getCodigoMotivo())
+            ->setDesMotivo($creditNote->getDescripcionMotivo())
+            ->setTipoDoc($creditNote->getTipoId())
+            ->setSerie($creditNote->getSerie())
             ->setCorrelativo(strval($creditNote->getCorrelativo()))
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
