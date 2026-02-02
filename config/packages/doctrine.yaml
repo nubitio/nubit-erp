@@ -25,6 +25,10 @@ doctrine:
                 alias: App
         controller_resolver:
             auto_mapping: false
+        filters:
+            branch_filter:
+                class: App\Core\Doctrine\Filter\BranchFilter
+                enabled: false
 
 when@test:
     doctrine:

@@ -10,6 +10,7 @@ use RuntimeException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
+use App\Core\Security\Auth\BranchContextService;
 use App\Dto\CashRegister\CashRegisterOpenDto;
 use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
@@ -17,6 +18,7 @@ use App\Entity\CashRegister;
 use App\Entity\CashShift;
 use App\Entity\User;
 use App\Enum\CashShiftStatus;
+use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -27,6 +29,8 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
+        private BranchContextService $branchContextService,
+        private BranchRepository $branchRepository,
     ) {
     }
 
@@ -53,6 +57,11 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashShift->setOpenedBy($this->entityManager->getReference(User::class, $user->userId));
         $cashShift->setOpenedAt(new DateTimeImmutable());
 
+        // Set branch from current context
+        $branchId = $this->branchContextService->getCurrentBranchId();
+        $branch = $branchId !== null ? $this->branchRepository->find($branchId) : null;
+        $cashShift->setBranch($branch);
+
         $this->entityManager->persist($cashShift);
 
         $category = $this->cashMovementCategoryRepository->findOneBy(
@@ -69,6 +78,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         $cashMovement->setAmount(number_format($data->openingBalance, 2, '.', ''));
         $cashMovement->setDescription('Saldo inicial');
         $cashMovement->setCreatedAt(new DateTimeImmutable());
+        $cashMovement->setBranch($branch);
 
         $this->entityManager->persist($cashMovement);
 

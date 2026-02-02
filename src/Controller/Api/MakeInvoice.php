@@ -113,6 +113,7 @@ class MakeInvoice extends AbstractController
                 'discount_amount' => $invoiceAmounts->getDiscountAmount(),
                 'voided' => $sale->getEstado(),
                 'created_at' => $sale->getDateCreated()?->format('Y-m-d H:i:s'),
+                'branch_id' => $sale->getBranch()?->getId(),
             ]);
 
             $connection->commit();

@@ -45,10 +45,8 @@ readonly class SaleProvider implements ProviderInterface
      */
     private function buildContextForInbound(array $context): array
     {
-        // Add sort: date_created DESC
         $context = $this->addSort($context, 'date_created', 'desc');
 
-        // Add filters: numero IS NULL AND tipo_id = 1
         $context = $this->addFilters($context, [
             ['numero', 'isnull', null],
             'and',
@@ -63,10 +61,8 @@ readonly class SaleProvider implements ProviderInterface
      */
     private function buildContextForOutbound(array $context): array
     {
-        // Add sort: date_created DESC
         $context = $this->addSort($context, 'date_created', 'desc');
 
-        // Add filters: numero IS NULL AND tipo_id = 2
         $context = $this->addFilters($context, [
             ['numero', 'isnull', null],
             'and',
@@ -81,10 +77,8 @@ readonly class SaleProvider implements ProviderInterface
      */
     private function buildContextForSale(array $context): array
     {
-        // Add sort: date_created DESC
         $context = $this->addSort($context, 'date_created', 'desc');
 
-        // Add filters: numero > 0 AND tipo_id = 2
         $context = $this->addFilters($context, [
             ['numero', '>', 0],
             'and',
@@ -120,7 +114,6 @@ readonly class SaleProvider implements ProviderInterface
             $context['filters']['filter'] = [];
         }
 
-        // If existing filters, combine with AND
         if (!empty($context['filters']['filter'])) {
             $context['filters']['filter'] = [
                 $context['filters']['filter'],
