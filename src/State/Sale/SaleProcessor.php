@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
+use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\CashMovement;
@@ -18,6 +19,7 @@ use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
+use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\ProductStockService;
@@ -52,6 +54,8 @@ readonly class SaleProcessor implements ProcessorInterface
         private LoggerInterface $logger,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
+        private BranchContextService $branchContextService,
+        private BranchRepository $branchRepository,
     ) {
     }
 
@@ -218,6 +222,14 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new DateTimeImmutable());
             $data->setCreatedBy($user->userId);
+
+            // Set the branch from the current user's session
+            $branchId = $this->branchContextService->getCurrentBranchId();
+            if ($branchId !== null) {
+                $branch = $this->branchRepository->find($branchId);
+                $data->setBranch($branch);
+                $this->logger->debug('Branch set for sale', ['branch_id' => $branchId]);
+            }
         } else {
             $this->logger->info('Updating existing sale record', [
                 'sale_id' => $data->getId(),
@@ -359,6 +371,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $movement->setAmount($sale->getTotal() ?? 0);
         $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
         $movement->setCreatedAt(new DateTimeImmutable());
+        $movement->setBranch($sale->getBranch());
 
         $this->entityManager->persist($movement);
         $this->entityManager->flush();

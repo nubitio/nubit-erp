@@ -53,6 +53,11 @@ class CashMovement
     #[ORM\Column]
     private DateTimeImmutable $createdAt;
 
+    #[Groups(['cash_movement:read'])]
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -135,5 +140,17 @@ class CashMovement
     public function setCreatedAtValue(): void
     {
         $this->createdAt = new DateTimeImmutable();
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): static
+    {
+        $this->branch = $branch;
+
+        return $this;
     }
 }

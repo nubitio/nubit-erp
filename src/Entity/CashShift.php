@@ -106,6 +106,11 @@ class CashShift
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 
+    #[Groups(['cash_shift:read'])]
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -251,6 +256,18 @@ class CashShift
     public function setNote(?string $note): static
     {
         $this->note = $note;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): static
+    {
+        $this->branch = $branch;
 
         return $this;
     }

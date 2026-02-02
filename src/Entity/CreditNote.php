@@ -120,6 +120,11 @@ class CreditNote
     private ?User $updatedBy = null;
 
     #[Groups(['creditnote:read'])]
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
+
+    #[Groups(['creditnote:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $createdAt;
 
@@ -346,6 +351,18 @@ class CreditNote
     public function setUpdatedAt(?DateTimeInterface $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): self
+    {
+        $this->branch = $branch;
 
         return $this;
     }

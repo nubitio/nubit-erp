@@ -121,17 +121,25 @@ class DevExtremeFilter extends AbstractFilter
             }
 
             $field = $filterParam[0];
-            $operator = $this->getOperator($filterParam[1]);
-            $value = $this->getValueForOperator(
-                $filterParam[1],
-                $filterParam[2] ?? null
-            );
+            $op = $filterParam[1];
 
-            if ('isnull' === $filterParam[1] || 'isnotnull' === $filterParam[1]) {
+            if ('isnull' === $op || 'isnotnull' === $op) {
+                $operator = $this->getOperator($op);
                 $queryBuilder->andWhere(
                     sprintf('o.%s %s', $field, $operator)
                 );
+            } elseif ('in' === $op) {
+                $uniqueParameterName = $this->getUniqueParameterName(
+                    $queryBuilder,
+                    $field
+                );
+                $queryBuilder->andWhere(
+                    sprintf('o.%s IN (:%s)', $field, $uniqueParameterName)
+                )
+                    ->setParameter($uniqueParameterName, $filterParam[2]);
             } else {
+                $operator = $this->getOperator($op);
+                $value = $this->getValueForOperator($op, $filterParam[2] ?? null);
                 $uniqueParameterName = $this->getUniqueParameterName(
                     $queryBuilder,
                     $field

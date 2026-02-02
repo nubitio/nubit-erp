@@ -59,6 +59,11 @@ class Sale
     #[ORM\JoinColumn(name: 'almacen_id', referencedColumnName: 'almacen_id')]
     private ?Warehouse $almacen = null;
 
+    #[Groups(['sale:read'])]
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
+
     #[Groups(['sale:read', 'sale:write'])]
     #[ORM\ManyToOne(targetEntity: Customer::class)]
     #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
@@ -304,6 +309,18 @@ class Sale
     public function setAlmacen(?Warehouse $almacen): static
     {
         $this->almacen = $almacen;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): static
+    {
+        $this->branch = $branch;
 
         return $this;
     }

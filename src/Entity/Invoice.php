@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Repository\InvoiceRepository;
+use App\State\Invoice\InvoiceProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
@@ -21,6 +22,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['invoice:read']],
     filters: [DevExtremeFilter::class],
+    provider: InvoiceProvider::class,
 )]
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 #[ORM\Table(name: 'comprobante')]
@@ -50,6 +52,11 @@ class Invoice
     #[ORM\ManyToOne(targetEntity: Customer::class)]
     #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
     private ?Customer $customer = null;
+
+    #[Groups(['invoice:read'])]
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
 
     #[Groups(['invoice:read'])]
     #[ORM\Column(name: 'tipo_comprobante_id', type: 'string')]
@@ -198,6 +205,18 @@ class Invoice
     public function setCustomer(?Customer $customer): self
     {
         $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): self
+    {
+        $this->branch = $branch;
 
         return $this;
     }

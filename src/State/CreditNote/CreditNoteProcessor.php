@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Exception\ServiceException;
+use App\Core\Security\Auth\BranchContextService;
 use App\Entity\CreditNote;
+use App\Repository\BranchRepository;
 use App\Service\CreditNoteService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,6 +26,8 @@ readonly class CreditNoteProcessor implements ProcessorInterface
         private ProcessorInterface $removeProcessor,
         private EntityManagerInterface $entityManager,
         private CreditNoteService $creditNoteService,
+        private BranchContextService $branchContextService,
+        private BranchRepository $branchRepository,
     ) {
     }
 
@@ -64,6 +68,13 @@ readonly class CreditNoteProcessor implements ProcessorInterface
         );
         $creditNote->setDocAfectado($creditNote->getSale()->getInvoice());
         $creditNote->setTotal($creditNote->getSale()->getTotal());
+
+        // Set branch from current context
+        $branchId = $this->branchContextService->getCurrentBranchId();
+        if ($branchId !== null) {
+            $branch = $this->branchRepository->find($branchId);
+            $creditNote->setBranch($branch);
+        }
     }
 
     private function resolveSeries(CreditNote $creditNote): string
