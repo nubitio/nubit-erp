@@ -134,7 +134,7 @@ export const ProductFields = () => {
   );
   fields.push(
     new FieldBuilder()
-      .type(FieldType.NUMBER)
+      .type(FieldType.NONE)
       .name('stock')
       .label('Stock')
       .align('center')
