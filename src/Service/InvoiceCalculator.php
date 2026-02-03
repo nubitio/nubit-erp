@@ -6,7 +6,6 @@ namespace App\Service;
 
 use App\Core\Annotation\IgnoreAutowire;
 use App\Core\Util\Money;
-use App\Entity\Sale;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 
@@ -14,37 +13,18 @@ use Brick\Math\RoundingMode;
 readonly class InvoiceCalculator
 {
     public function __construct(
-        /** @var array<int, array{quantity: mixed, unit_price: mixed}> */
+        /** @var InvoiceLineInput[] */
         private array $lines,
-        private mixed $discountPercentage,
-        private mixed $taxPercentage,
-        private mixed $chargesPercentage,
-        private mixed $expectedTotal = null,
+        private string $discountPercentage,
+        private string $taxPercentage,
+        private string $chargesPercentage,
+        private ?string $expectedTotal = null,
     ) {
     }
 
     /**
      * @return static
      */
-    public static function fromSale(Sale $sale): self
-    {
-        $lines = [];
-        foreach ($sale->getItems() as $item) {
-            $lines[] = [
-                'quantity' => $item->getCantidad(),
-                'unit_price' => $item->getPrecioUnitario(),
-            ];
-        }
-
-        return new self(
-            $lines,
-            $sale->getDescuento(),
-            $sale->getIgv(),
-            $sale->getRecargoConsumo(),
-            $sale->getTotal(),
-        );
-    }
-
     public function calculate(): InvoiceAmounts
     {
         if ($this->lines === []) {
@@ -65,8 +45,8 @@ readonly class InvoiceCalculator
         $total = BigDecimal::zero();
 
         foreach ($this->lines as $line) {
-            $qty = Money::of($line['quantity']);
-            $unitPrice = Money::money($line['unit_price']);
+            $qty = Money::of($line->quantity);
+            $unitPrice = Money::money($line->unitPrice);
             $unitValue = Money::div($unitPrice, $divisor, 6);
 
             $baseAmount = Money::money($unitValue->multipliedBy($qty));

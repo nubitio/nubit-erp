@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Service\InvoiceCalculator;
+use App\Service\InvoiceLineInput;
+
 use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\Invoice;
@@ -605,7 +608,21 @@ final readonly class TestDataSeeder
 
             $this->entityManager->persist($sale);
 
-            $invoiceAmounts = InvoiceCalculator::fromSale($sale)->calculate();
+            $lines = [];
+            foreach ($sale->getItems() as $item) {
+                $lines[] = new InvoiceLineInput(
+                    quantity: (string) $item->getCantidad(),
+                    unitPrice: (string) ($item->getPrecioUnitario() ?? '0')
+                );
+            }
+
+            $invoiceAmounts = new InvoiceCalculator(
+                $lines,
+                $sale->getDescuento() ?? '0',
+                (string) ($sale->getIgv() ?? '0'),
+                (string) ($sale->getRecargoConsumo() ?? '0'),
+                $sale->getTotal() !== null ? (string) $sale->getTotal() : null
+            )->calculate();
 
             // Create corresponding invoice
             $invoice = new Invoice();

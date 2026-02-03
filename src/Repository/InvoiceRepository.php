@@ -12,6 +12,7 @@ use App\Invoice\Domain\Voucher;
 use App\Invoice\Domain\VoucherItem;
 use App\Service\InvoiceCalculator;
 use App\Service\InvoiceLineAmounts;
+use App\Service\InvoiceLineInput;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
@@ -49,15 +50,15 @@ class InvoiceRepository extends ServiceEntityRepository
 
         $calculator = new InvoiceCalculator(
             array_map(
-                static fn (VoucherLineDto $line): array => [
-                    'quantity' => $line->quantity ?? 0,
-                    'unit_price' => $line->unitPrice ?? 0,
-                ],
+                static fn (VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
+                    quantity: $line->quantity ?? '0',
+                    unitPrice: $line->unitPrice ?? '0'
+                ),
                 $lines
             ),
-            $header->voucherDiscountPercentage ?? 0,
-            $header->voucherTaxPercentage ?? 0,
-            $header->voucherConsumptionSurchargePercentage ?? 0,
+            $header->voucherDiscountPercentage ?? '0',
+            $header->voucherTaxPercentage ?? '0',
+            $header->voucherConsumptionSurchargePercentage ?? '0',
             $header->voucherSaleAmount ?? null
         );
 
