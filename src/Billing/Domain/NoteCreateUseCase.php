@@ -43,7 +43,7 @@ readonly class NoteCreateUseCase
     private function getNote(CreditNote $creditNote, Voucher $voucher): Note
     {
         // Helper to round to 2 decimals (required for billing)
-        $round2 = static fn(?float $value): float => round(floatval($value), 2);
+        $round2 = static fn (?float $value): float => round(floatval($value), 2);
 
         $customerAddress = new Address();
         $customerAddress->setDireccion(strval($voucher->customer_address));

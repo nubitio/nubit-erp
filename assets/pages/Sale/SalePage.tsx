@@ -13,7 +13,6 @@ import { saleService } from '../../service/sale.service';
 import * as qz from 'qz-tray';
 import { CustomerPage } from '../Customer/CustomerPage';
 import { CustomerFields } from '../Customer/CustomerFields';
-import { Setting, settings } from '../../Settings';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { useEvents } from '../../core/event/EventHook';
 import { httpClient } from '../../core/http/HttpClient';
@@ -73,15 +72,6 @@ export const SalePage = () => {
         setPrintEnabled(false);
         setCloneEnabled(false);
       }
-    });
-
-    on(EVENTS.SUCCESS, (payload: any) => {
-      settings.get(Setting.AUTO_INVOICE).then((setting) => {
-        console.log(setting);
-        if (setting?.value === 'true') {
-          makeInvoice(payload.data.id);
-        }
-      });
     });
 
     on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
