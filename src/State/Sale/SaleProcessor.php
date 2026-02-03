@@ -19,17 +19,19 @@ use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
+use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
-use App\Service\ProductStockService;
 use App\Service\InvoiceCreationService;
+use App\Service\ProductStockService;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 readonly class SaleProcessor implements ProcessorInterface
 {
@@ -58,6 +60,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SunatCatalogRepository $sunatCatalogRepository,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
+        private MessageBusInterface $messageBus,
     ) {
     }
 
@@ -268,6 +271,8 @@ readonly class SaleProcessor implements ProcessorInterface
                         'sale_id' => $data->getId(),
                         'message' => $result['message'],
                     ]);
+                } else {
+                    $this->messageBus->dispatch(new SendInvoiceMessage($data->getId()));
                 }
             } catch (\Throwable $throwable) {
                 $this->logger->error('Auto invoice failed', [
@@ -296,6 +301,7 @@ readonly class SaleProcessor implements ProcessorInterface
             if ($sale->getTipoOperacion() === '1001') {
                 $sale->setTipoOperacion(null);
             }
+
             return;
         }
 
