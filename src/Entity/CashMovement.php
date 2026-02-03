@@ -142,6 +142,15 @@ class CashMovement
         $this->createdAt = new DateTimeImmutable();
     }
 
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function syncBranchFromCashShift(): void
+    {
+        if ($this->branch === null && isset($this->cashShift)) {
+            $this->branch = $this->cashShift->getBranch();
+        }
+    }
+
     public function getBranch(): ?Branch
     {
         return $this->branch;

@@ -46,7 +46,7 @@ export const CashMovements = () => {
       ?.load()
       .then((response: any) => {
         response.data.forEach((item: any) => {
-          balance += item.type === 'income' ? item.amount : -item.amount;
+          balance += item.type === 'income' ? Number(item.amount) : -Number(item.amount);
         });
         setBalance(balance);
       });
