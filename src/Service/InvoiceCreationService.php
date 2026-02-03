@@ -35,6 +35,23 @@ final readonly class InvoiceCreationService
             ];
         }
 
+        $saleDate = $sale->getFecha();
+        if (!$saleDate) {
+            return [
+                'success' => false,
+                'message' => 'La venta no tiene fecha válida.',
+            ];
+        }
+
+        $saleDateUtc = (clone $saleDate)->setTimezone(new DateTimeZone('UTC'));
+        $nowUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        if ($saleDateUtc < $nowUtc->modify('-3 days')) {
+            return [
+                'success' => false,
+                'message' => 'La fecha de la venta excede el límite permitido para emisión (3 días).',
+            ];
+        }
+
         $connection = $this->entityManager->getConnection();
         $localId = $connection->fetchOne(
             'select local_id from almacen where almacen_id = ?',
@@ -94,7 +111,7 @@ final readonly class InvoiceCreationService
                 'comprobante_id' => Uuid::v4()->toRfc4122(),
                 'raw_document_id' => null,
                 'movimiento_id' => $sale->getId(),
-                'fecha' => new DateTimeImmutable('now', new DateTimeZone('UTC'))->format('Y-m-d H:i:s'),
+                'fecha' => $saleDateUtc->format('Y-m-d H:i:s'),
                 'tipo_comprobante_id' => $voucherType,
                 'serie' => $series,
                 'numero' => $nextNumber,
