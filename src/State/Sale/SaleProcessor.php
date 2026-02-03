@@ -12,6 +12,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
+use App\Core\Util\Money;
 use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
@@ -25,6 +26,7 @@ use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\InvoiceCreationService;
 use App\Service\ProductStockService;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -129,14 +131,14 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $this->logger->info('Calculating sale totals');
-        $subtotal = 0;
+        $subtotal = BigDecimal::zero();
         $itemCount = 0;
 
         /** @var SaleItem $item */
         foreach ($data->getItems() as $item) {
             $itemCount++;
             $item->setMovimiento($data);
-            $subtotal += $item->getPrecioTotal();
+            $subtotal = $subtotal->plus(Money::money($item->getPrecioTotal() ?? '0'));
 
             $this->logger->debug('Processed sale item', [
                 'item_number' => $itemCount,
@@ -147,17 +149,19 @@ readonly class SaleProcessor implements ProcessorInterface
             ]);
         }
 
-        $data->setSubtotal(number_format($subtotal, 2, '.', ''));
-        $total = $subtotal - ($subtotal * $data->getDescuento() / 100);
-        $data->setTotal(number_format($total, 2, '.', ''));
+        $data->setSubtotal(Money::toString($subtotal));
+        $discountRate = Money::rate($data->getDescuento());
+        $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
+        $total = Money::money($subtotal->minus($discountAmount));
+        $data->setTotal(Money::toString($total));
         $data->setEstado(1);
         $this->applyDetractionFromItems($data);
 
         $this->logger->info('Sale totals calculated', [
             'item_count' => $itemCount,
-            'subtotal' => $subtotal,
+            'subtotal' => Money::toString($subtotal),
             'discount_percentage' => $data->getDescuento(),
-            'total' => $total,
+            'total' => Money::toString($total),
         ]);
 
         // Update warehouse-specific stock

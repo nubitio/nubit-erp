@@ -7,6 +7,7 @@ namespace App\Billing\Domain;
 use DateTime;
 use Exception;
 use App\Billing\Model\Response\SummaryResponse;
+use App\Core\Util\Money;
 use App\Repository\InvoiceRepository;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
@@ -34,12 +35,12 @@ readonly class SummaryCreateUseCase
             ->setEstado('3')
             ->setClienteTipo(strval($voucher->customer_doc_type))
             ->setClienteNro(strval($voucher->customer_doc_number))
-            ->setTotal(floatval($voucher->voucher_sale_amount))
-            ->setMtoOperGravadas(floatval($voucher->voucher_taxed_amount))
+            ->setTotal(Money::toFloat(Money::money($voucher->voucher_sale_amount)))
+            ->setMtoOperGravadas(Money::toFloat(Money::money($voucher->voucher_taxed_amount)))
             ->setMtoOperInafectas(0)
             ->setMtoOperExoneradas(0)
             ->setMtoOtrosCargos(0)
-            ->setMtoIgv(floatval($voucher->voucher_tax_amount));
+            ->setMtoIgv(Money::toFloat(Money::money($voucher->voucher_tax_amount)));
 
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
 

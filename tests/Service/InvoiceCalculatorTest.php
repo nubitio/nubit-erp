@@ -1,0 +1,211 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Service;
+
+use App\Service\InvoiceCalculator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+
+final class InvoiceCalculatorTest extends TestCase
+{
+    /**
+     * @return array<string, array{lines: array<int, array{quantity: mixed, unit_price: mixed}>, discount: mixed, tax: mixed, charges: mixed, expectedTotal: mixed, expected: array<string, string>}>
+     */
+    public static function calculationProvider(): array
+    {
+        return [
+            'single_line_basic' => [
+                'lines' => [
+                    ['quantity' => 1, 'unit_price' => '1.18'],
+                ],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '1.00',
+                    'discount' => '0.00',
+                    'taxable' => '1.00',
+                    'tax' => '0.18',
+                    'charges' => '0.00',
+                    'total' => '1.18',
+                ],
+            ],
+            'multi_line_no_discount' => [
+                'lines' => [
+                    ['quantity' => 1, 'unit_price' => '1.18'],
+                    ['quantity' => 2, 'unit_price' => '1.18'],
+                ],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '3.00',
+                    'discount' => '0.00',
+                    'taxable' => '3.00',
+                    'tax' => '0.54',
+                    'charges' => '0.00',
+                    'total' => '3.54',
+                ],
+            ],
+            'discount_10_percent' => [
+                'lines' => [
+                    ['quantity' => 1, 'unit_price' => '1.18'],
+                    ['quantity' => 1, 'unit_price' => '2.36'],
+                ],
+                'discount' => 10,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '3.00',
+                    'discount' => '0.30',
+                    'taxable' => '2.70',
+                    'tax' => '0.48',
+                    'charges' => '0.00',
+                    'total' => '3.18',
+                ],
+            ],
+            'charges_10_percent' => [
+                'lines' => [
+                    ['quantity' => 1, 'unit_price' => '1.28'],
+                ],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 10,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '1.00',
+                    'discount' => '0.00',
+                    'taxable' => '1.00',
+                    'tax' => '0.18',
+                    'charges' => '0.10',
+                    'total' => '1.28',
+                ],
+            ],
+            'quantity_decimals' => [
+                'lines' => [
+                    ['quantity' => 1.25, 'unit_price' => '1.18'],
+                ],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '1.25',
+                    'discount' => '0.00',
+                    'taxable' => '1.25',
+                    'tax' => '0.23',
+                    'charges' => '0.00',
+                    'total' => '1.48',
+                ],
+            ],
+            'unit_price_099_qty3' => [
+                'lines' => [
+                    ['quantity' => 3, 'unit_price' => '0.99'],
+                ],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '2.52',
+                    'discount' => '0.00',
+                    'taxable' => '2.52',
+                    'tax' => '0.45',
+                    'charges' => '0.00',
+                    'total' => '2.97',
+                ],
+            ],
+            'discount_qty_decimal' => [
+                'lines' => [
+                    ['quantity' => 2.5, 'unit_price' => '1.18'],
+                ],
+                'discount' => 5,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '2.50',
+                    'discount' => '0.13',
+                    'taxable' => '2.37',
+                    'tax' => '0.43',
+                    'charges' => '0.00',
+                    'total' => '2.80',
+                ],
+            ],
+            'fallback_document_level' => [
+                'lines' => [],
+                'discount' => 0,
+                'tax' => 18,
+                'charges' => 0,
+                'expectedTotal' => '118.00',
+                'expected' => [
+                    'subtotal' => '100.00',
+                    'discount' => '0.00',
+                    'taxable' => '100.00',
+                    'tax' => '18.00',
+                    'charges' => '0.00',
+                    'total' => '118.00',
+                ],
+            ],
+        ];
+    }
+
+    #[DataProvider('calculationProvider')]
+    public function testCalculations(
+        array $lines,
+        mixed $discount,
+        mixed $tax,
+        mixed $charges,
+        mixed $expectedTotal,
+        array $expected
+    ): void {
+        $calculator = new InvoiceCalculator($lines, $discount, $tax, $charges, $expectedTotal);
+        $amounts = $calculator->calculate();
+
+        $this->assertSame($expected['subtotal'], $amounts->getSubtotal());
+        $this->assertSame($expected['discount'], $amounts->getDiscountAmount());
+        $this->assertSame($expected['taxable'], $amounts->getTaxedAmount());
+        $this->assertSame($expected['tax'], $amounts->getTax());
+        $this->assertSame($expected['charges'], $amounts->getChargesAmount());
+        $this->assertSame($expected['total'], $amounts->getTotal());
+    }
+
+    public function testRoundingAdjustmentPositive(): void
+    {
+        $lines = [
+            ['quantity' => 1, 'unit_price' => '1.18'],
+            ['quantity' => 1, 'unit_price' => '1.18'],
+        ];
+
+        $calculator = new InvoiceCalculator($lines, 0, 18, 0, '2.37');
+        $amounts = $calculator->calculate();
+        $items = $amounts->getLines();
+
+        $this->assertSame('2.37', $amounts->getTotal());
+        $this->assertSame('0.18', $items[0]->taxAmount);
+        $this->assertSame('0.19', $items[1]->taxAmount);
+        $this->assertSame('1.19', $items[1]->totalAmount);
+    }
+
+    public function testRoundingAdjustmentNegative(): void
+    {
+        $lines = [
+            ['quantity' => 1, 'unit_price' => '1.18'],
+            ['quantity' => 1, 'unit_price' => '1.18'],
+        ];
+
+        $calculator = new InvoiceCalculator($lines, 0, 18, 0, '2.35');
+        $amounts = $calculator->calculate();
+        $items = $amounts->getLines();
+
+        $this->assertSame('2.35', $amounts->getTotal());
+        $this->assertSame('0.18', $items[0]->taxAmount);
+        $this->assertSame('0.17', $items[1]->taxAmount);
+        $this->assertSame('1.17', $items[1]->totalAmount);
+    }
+}

@@ -605,12 +605,7 @@ final readonly class TestDataSeeder
 
             $this->entityManager->persist($sale);
 
-            $invoiceAmounts = new InvoiceCalculator(
-                total: $total,
-                discountPercentage: 0,
-                taxPercentage: 18,
-                chargesPercentage: 0
-            )->calculate();
+            $invoiceAmounts = InvoiceCalculator::fromSale($sale)->calculate();
 
             // Create corresponding invoice
             $invoice = new Invoice();

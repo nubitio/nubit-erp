@@ -9,86 +9,106 @@ use App\Core\Annotation\IgnoreAutowire;
 #[IgnoreAutowire]
 class InvoiceAmounts
 {
-    private float $subtotal;
+    /** @var InvoiceLineAmounts[] */
+    private array $lines = [];
+    private string $subtotal;
 
-    private float $taxedAmount;
+    private string $taxedAmount;
 
-    private float $discountAmount;
+    private string $discountAmount;
 
-    private float $chargesAmount;
+    private string $chargesAmount;
 
-    private float $tax;
+    private string $tax;
 
-    private float $total;
+    private string $total;
 
-    public function getSubtotal(): float
+    public function getSubtotal(): string
     {
         return $this->subtotal;
     }
 
-    public function setSubtotal(float $subtotal): InvoiceAmounts
+    public function setSubtotal(string $subtotal): InvoiceAmounts
     {
         $this->subtotal = $subtotal;
 
         return $this;
     }
 
-    public function getTaxedAmount(): float
+    public function getTaxedAmount(): string
     {
         return $this->taxedAmount;
     }
 
-    public function setTaxedAmount(float $taxedAmount): InvoiceAmounts
+    public function setTaxedAmount(string $taxedAmount): InvoiceAmounts
     {
         $this->taxedAmount = $taxedAmount;
 
         return $this;
     }
 
-    public function getDiscountAmount(): float
+    public function getDiscountAmount(): string
     {
         return $this->discountAmount;
     }
 
-    public function setDiscountAmount(float $discountAmount): InvoiceAmounts
+    public function setDiscountAmount(string $discountAmount): InvoiceAmounts
     {
         $this->discountAmount = $discountAmount;
 
         return $this;
     }
 
-    public function getChargesAmount(): float
+    public function getChargesAmount(): string
     {
         return $this->chargesAmount;
     }
 
-    public function setChargesAmount(float $chargesAmount): InvoiceAmounts
+    public function setChargesAmount(string $chargesAmount): InvoiceAmounts
     {
         $this->chargesAmount = $chargesAmount;
 
         return $this;
     }
 
-    public function getTax(): float
+    public function getTax(): string
     {
         return $this->tax;
     }
 
-    public function setTax(float $tax): InvoiceAmounts
+    public function setTax(string $tax): InvoiceAmounts
     {
         $this->tax = $tax;
 
         return $this;
     }
 
-    public function getTotal(): float
+    public function getTotal(): string
     {
         return $this->total;
     }
 
-    public function setTotal(float $total): InvoiceAmounts
+    public function setTotal(string $total): InvoiceAmounts
     {
         $this->total = $total;
+
+        return $this;
+    }
+
+    /**
+     * @return InvoiceLineAmounts[]
+     */
+    public function getLines(): array
+    {
+        return $this->lines;
+    }
+
+    /**
+     * @param InvoiceLineAmounts[] $lines
+     */
+    public function setLines(array $lines): InvoiceAmounts
+    {
+        $this->lines = $lines;
 
         return $this;
     }

@@ -7,6 +7,7 @@ namespace App\Billing\Domain;
 use App\Core\Exception\ServiceException;
 use App\Entity\CreditNote;
 use App\Invoice\Domain\Voucher;
+use App\Core\Util\Money;
 use App\Repository\CreditNoteRepository;
 use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
@@ -42,8 +43,7 @@ readonly class NoteCreateUseCase
 
     private function getNote(CreditNote $creditNote, Voucher $voucher): Note
     {
-        // Helper to round to 2 decimals (required for billing)
-        $round2 = static fn (?float $value): float => round(floatval($value), 2);
+        $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
 
         $customerAddress = new Address();
         $customerAddress->setDireccion(strval($voucher->customer_address));
@@ -67,10 +67,10 @@ readonly class NoteCreateUseCase
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
             ->setClient($client)
-            ->setMtoOperGravadas($round2($voucher->voucher_taxed_amount + $voucher->voucher_discount_amount))
-            ->setMtoIGV($round2($voucher->voucher_tax_amount))
-            ->setTotalImpuestos($round2($voucher->voucher_total_taxes))
-            ->setMtoImpVenta($round2($voucher->voucher_sale_amount + $voucher->voucher_discount_amount));
+            ->setMtoOperGravadas($money(Money::of($voucher->voucher_taxed_amount)->plus(Money::of($voucher->voucher_discount_amount))))
+            ->setMtoIGV($money($voucher->voucher_tax_amount))
+            ->setTotalImpuestos($money($voucher->voucher_total_taxes))
+            ->setMtoImpVenta($money(Money::of($voucher->voucher_sale_amount)->plus(Money::of($voucher->voucher_discount_amount))));
 
         $items = [];
         foreach ($voucher->voucher_items as $item) {
@@ -79,19 +79,20 @@ readonly class NoteCreateUseCase
                 ->setUnidad('NIU')
                 ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
-                ->setMtoBaseIgv($round2($item->taxed_amount))
+                ->setMtoBaseIgv($money($item->taxed_amount))
                 ->setPorcentajeIgv(floatval($item->tax_percentage))
-                ->setIgv($round2($item->tax_amount))
+                ->setIgv($money($item->tax_amount))
                 ->setTipAfeIgv(strval($item->tax_type))
-                ->setTotalImpuestos($round2($item->tax_amount))
-                ->setMtoValorVenta($round2($item->taxed_amount))
-                ->setMtoValorUnitario($round2($item->unit_value))
-                ->setMtoPrecioUnitario($round2($item->unit_price));
+                ->setTotalImpuestos($money($item->tax_amount))
+                ->setMtoValorVenta($money($item->taxed_amount))
+                ->setMtoValorUnitario($money($item->unit_value))
+                ->setMtoPrecioUnitario($money($item->unit_price));
             $items[] = $detail;
         }
 
         $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-        $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
+        $amountString = Money::toString(Money::money($voucher->voucher_sale_amount));
+        $parts = explode('.', $amountString);
         $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 

@@ -6,6 +6,7 @@ namespace App\Billing\Domain;
 
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
+use App\Core\Util\Money;
 use DateMalformedStringException;
 use DateTime;
 use Doctrine\DBAL\Exception;
@@ -38,11 +39,11 @@ readonly class BillCreateUseCase
      */
     public function __invoke(string $saleId): Invoice
     {
-        // Helper para redondear montos a 2 decimales (requerido por SUNAT)
-        $round2 = static fn (?float $value): float => round(floatval($value), 2);
+        $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
 
         $company = $this->companyRepository->findOneBy([]);
         $voucher = $this->invoiceRepository->getVoucher($saleId);
+        dump($voucher);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
         $operationType = $voucher->voucher_operation_type ?: '0101';
@@ -59,9 +60,8 @@ readonly class BillCreateUseCase
         }
 
         if ($detractionAmount === null && $detractionPercent !== null) {
-            $detractionAmount = round(
-                floatval($voucher->voucher_sale_amount) * $detractionPercent / 100,
-                2
+            $detractionAmount = $money(
+                Money::of($voucher->voucher_sale_amount)->multipliedBy(Money::rate($detractionPercent))
             );
         }
 
@@ -80,18 +80,18 @@ readonly class BillCreateUseCase
             ->setFechaEmision(new DateTime(strval($voucher->voucher_date)))
             ->setFormaPago(
                 2 == $voucher->voucher_payment_method ? new FormaPagoCredito(
-                    $round2($voucher->voucher_sale_amount)
+                    $money($voucher->voucher_sale_amount)
                 ) : new FormaPagoContado()
             )
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setClient($customer)
-            ->setMtoOperGravadas($round2($voucher->voucher_taxed_amount))
-            ->setMtoIGV($round2($voucher->voucher_tax_amount))
-            ->setTotalImpuestos($round2($voucher->voucher_total_taxes))
-            ->setSumOtrosCargos($round2($voucher->voucher_consumption_surcharge_amount ?? 0))
-            ->setValorVenta($round2($voucher->voucher_sale_value - $voucher->voucher_discount_amount))
-            ->setSubTotal($round2($voucher->voucher_sale_amount - $voucher->voucher_consumption_surcharge_amount))
-            ->setMtoImpVenta($round2($voucher->voucher_sale_amount))
+            ->setMtoOperGravadas($money($voucher->voucher_taxed_amount))
+            ->setMtoIGV($money($voucher->voucher_tax_amount))
+            ->setTotalImpuestos($money($voucher->voucher_total_taxes))
+            ->setSumOtrosCargos($money($voucher->voucher_consumption_surcharge_amount ?? 0))
+            ->setValorVenta($money(Money::of($voucher->voucher_sale_value)->minus(Money::of($voucher->voucher_discount_amount))))
+            ->setSubTotal($money(Money::of($voucher->voucher_sale_amount)->minus(Money::of($voucher->voucher_consumption_surcharge_amount))))
+            ->setMtoImpVenta($money($voucher->voucher_sale_amount))
             ->setCompany($this->billUtils->getCompany());
 
         if ($hasDetraction) {
@@ -112,12 +112,12 @@ readonly class BillCreateUseCase
             $bill->setCuotas([
                 new Cuota()
                     ->setFechaPago($paymentDate)
-                    ->setMonto($round2($voucher->voucher_sale_amount)),
+                    ->setMonto($money($voucher->voucher_sale_amount)),
             ]);
         }
 
         if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
-            $surchargeAmount = $round2($voucher->voucher_consumption_surcharge_amount);
+            $surchargeAmount = $money($voucher->voucher_consumption_surcharge_amount);
             $charge = new Charge()
                 ->setCodTipo('46')
                 ->setMontoBase($surchargeAmount)
@@ -127,7 +127,7 @@ readonly class BillCreateUseCase
         }
 
         if (floatval($voucher->voucher_discount_amount) > 0) {
-            $discountAmount = $round2($voucher->voucher_discount_amount);
+            $discountAmount = $money($voucher->voucher_discount_amount);
             $charge = new Charge()
                 ->setCodTipo('02')
                 ->setMontoBase($discountAmount)
@@ -144,19 +144,20 @@ readonly class BillCreateUseCase
                 ->setUnidad($item->product_uom ?? 'NIU')
                 ->setCantidad(floatval($item->quantity))
                 ->setDescripcion(strval($item->product_name))
-                ->setMtoValorUnitario($round2($item->unit_value))
-                ->setMtoBaseIgv($round2($item->taxed_amount))
+                ->setMtoValorUnitario($money($item->unit_value))
+                ->setMtoBaseIgv($money($item->taxed_amount))
                 ->setPorcentajeIgv(floatval($item->tax_percentage))
-                ->setIgv($round2($item->tax_amount))
+                ->setIgv($money($item->tax_amount))
                 ->setTipAfeIgv(strval($item->tax_type))
-                ->setTotalImpuestos($round2($item->tax_amount))
-                ->setMtoValorVenta($round2($item->taxed_amount))
-                ->setMtoPrecioUnitario($round2($item->unit_price));
+                ->setTotalImpuestos($money($item->tax_amount))
+                ->setMtoValorVenta($money($item->taxed_amount))
+                ->setMtoPrecioUnitario($money($item->unit_price));
             $details[] = $detail;
         }
 
         $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-        $parts = explode('.', number_format(floatval($voucher->voucher_sale_amount), 2, '.', ''));
+        $amountString = Money::toString(Money::money($voucher->voucher_sale_amount));
+        $parts = explode('.', $amountString);
         $amount = $formatter->format((int)$parts[0]);
         $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
 
