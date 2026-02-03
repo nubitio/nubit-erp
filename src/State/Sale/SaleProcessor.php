@@ -265,11 +265,11 @@ readonly class SaleProcessor implements ProcessorInterface
         );
         if ($isNew && $data->getTipoId() === 2 && $autoInvoiceEnabled) {
             try {
-                $result = $this->invoiceCreationService->createForSale($data);
-                if (!$result['success']) {
+                $invoiceResult = $this->invoiceCreationService->createForSale($data);
+                if (!$invoiceResult['success']) {
                     $this->logger->warning('Auto invoice skipped', [
                         'sale_id' => $data->getId(),
-                        'message' => $result['message'],
+                        'message' => $invoiceResult['message'],
                     ]);
                 } else {
                     $this->messageBus->dispatch(new SendInvoiceMessage($data->getId()));
