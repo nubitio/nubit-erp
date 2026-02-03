@@ -133,7 +133,7 @@ select
     m.total,
     m.descuento as discount,
     case
-        when coalesce(i.voided, 0) = 1 or m.estado = 0 then 'Anulado'
+        when coalesce(i.voided, m.estado) = 2 then 'Anulado'
         else 'Vigente'
     end as status
 from movimiento m
@@ -195,8 +195,7 @@ select
     coalesce(c.ruc, '-') as customer_ruc,
     m.total,
     case
-        when coalesce(i.voided, 0) = 1 then 'Anulado (comprobante)'
-        when m.estado = 0 then 'Anulado (movimiento)'
+        when coalesce(i.voided, m.estado) = 2 then 'Anulado'
         else 'Vigente'
     end as status
 from movimiento m
