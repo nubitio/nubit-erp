@@ -1,12 +1,13 @@
 import './InvoicePage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
-import { InvoiceFields } from './InvoiceFields';
-import { useRef } from 'react';
-import { invoiceService } from '../../service/invoice.service';
+import {Constants} from '../../core/common/Constants';
+import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
+import {DxDialog} from '../../core/dialog/DxDialog';
+import {DxForm} from '../../core/form/DxForm';
+import {InvoiceFields} from './InvoiceFields';
+import {useRef} from 'react';
+import {invoiceService} from '../../service/invoice.service';
 import notify from 'devextreme/ui/notify';
+import toast from "../../core/utils/SharedUtils";
 
 export const InvoicePage = () => {
   const container = 'wrapper';
@@ -38,7 +39,7 @@ export const InvoicePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
           return;
         }
@@ -50,7 +51,7 @@ export const InvoicePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
           return;
         }
@@ -65,7 +66,7 @@ export const InvoicePage = () => {
                 type: response.data.success ? 'success' : 'error',
                 displayTime: 3000,
               },
-              { position: 'top right' },
+              {position: 'top right'},
             );
             gridRef.current?.refresh();
           })
@@ -84,7 +85,7 @@ export const InvoicePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
           return;
         }
@@ -99,7 +100,7 @@ export const InvoicePage = () => {
                 type: 'success',
                 displayTime: 3000,
               },
-              { position: 'top right' },
+              {position: 'top right'},
             );
             gridRef.current?.refresh();
           })
@@ -112,22 +113,13 @@ export const InvoicePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
-          notify(
-            {
-              message: 'Seleccione un comprobante',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            { position: 'top right' },
-          );
+          toast(
+            "Debe seleccionar un comprobante",
+            "warning",
+          )
           return;
         }
-        const payload = {
-          type: selectedRow?.voucherTypeId,
-          id: selectedRow?.saleId,
-        };
-        const payloadEncoded = btoa(JSON.stringify(payload));
-        window.open('receipt/' + payloadEncoded, '_blank');
+        window.open(selectedRow.publicReceiptUrl, '_blank');
       },
     },
     {
@@ -142,7 +134,7 @@ export const InvoicePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
           return;
         }
@@ -156,7 +148,7 @@ export const InvoicePage = () => {
                 type: 'success',
                 displayTime: 3000,
               },
-              { position: 'top right' },
+              {position: 'top right'},
             );
             gridRef.current?.refresh();
           })
@@ -175,7 +167,7 @@ export const InvoicePage = () => {
               type: 'warning',
               displayTime: 3000,
             },
-            { position: 'top right' },
+            {position: 'top right'},
           );
           return;
         }
@@ -205,10 +197,10 @@ export const InvoicePage = () => {
         url={API_URL}
         fields={fields}
         events={EVENTS}
-        sort={[{ selector: 'createdAt', desc: true }]}
+        sort={[{selector: 'createdAt', desc: true}]}
       />
       <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+        <DxForm url={API_URL} fields={fields} events={EVENTS}/>
       </DxDialog>
     </div>
   );

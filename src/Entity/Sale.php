@@ -17,6 +17,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use App\Core\Util\ReceiptPayload;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SaleRepository::class)]
@@ -707,6 +708,19 @@ class Sale
     public function getInvoiceVoided(): ?int
     {
         return $this->invoiceEntity?->getVoided();
+    }
+
+    #[Groups(['sale:read'])]
+    public function getPublicReceiptUrl(): ?string
+    {
+        if (!$this->invoiceEntity) {
+            return null;
+        }
+
+        return ReceiptPayload::publicUrl(
+            $this->invoiceEntity->getVoucherTypeId(),
+            $this->invoiceEntity->getSaleId()
+        );
     }
 
     public function getSubtotal(): ?string

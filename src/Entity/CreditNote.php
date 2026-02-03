@@ -18,6 +18,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use App\Core\Util\ReceiptPayload;
 
 #[ApiResource(
     shortName: 'CreditNote',
@@ -149,6 +150,16 @@ class CreditNote
     public function getId(): ?string
     {
         return $this->id;
+    }
+
+    #[Groups(['creditnote:read'])]
+    public function getPublicReceiptUrl(): ?string
+    {
+        if ($this->id === null) {
+            return null;
+        }
+
+        return ReceiptPayload::publicUrl($this->tipoId, $this->id);
     }
 
     public function getSale(): Sale
