@@ -8,6 +8,8 @@ use App\Core\Exception\ServiceException;
 use App\Entity\Invoice;
 use App\Invoice\Domain\Voucher;
 use App\Invoice\Domain\VoucherItem;
+use App\Service\InvoiceCalculator;
+use App\Service\InvoiceLineAmounts;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
@@ -46,6 +48,46 @@ class InvoiceRepository extends ServiceEntityRepository
         }
 
         $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
+
+        $calculator = new InvoiceCalculator(
+            array_map(
+                static fn (array $item): array => [
+                    'quantity' => $item['quantity'] ?? 0,
+                    'unit_price' => $item['unit_price'] ?? 0,
+                ],
+                $items
+            ),
+            $voucher['voucher_discount_percentage'] ?? 0,
+            $voucher['voucher_tax_percentage'] ?? 0,
+            $voucher['voucher_consumption_surcharge_percentage'] ?? 0,
+            $voucher['voucher_sale_amount'] ?? null
+        );
+
+        $amounts = $calculator->calculate();
+        $lines = $amounts->getLines();
+
+        foreach ($items as $index => $item) {
+            $line = $lines[$index] ?? null;
+            if (!$line instanceof InvoiceLineAmounts) {
+                continue;
+            }
+
+            $item['unit_value'] = (float) $line->unitValue;
+            $item['unit_price'] = (float) $line->unitPrice;
+            $item['taxed_amount'] = (float) $line->taxableAmount;
+            $item['tax_amount'] = (float) $line->taxAmount;
+            $item['total'] = (float) $line->totalAmount;
+            $item['discount_amount'] = (float) $line->discountAmount;
+            $items[$index] = $item;
+        }
+
+        $voucher['voucher_taxed_amount'] = (float) $amounts->getTaxedAmount();
+        $voucher['voucher_tax_amount'] = (float) $amounts->getTax();
+        $voucher['voucher_total_taxes'] = (float) $amounts->getTax();
+        $voucher['voucher_consumption_surcharge_amount'] = (float) $amounts->getChargesAmount();
+        $voucher['voucher_discount_amount'] = (float) $amounts->getDiscountAmount();
+        $voucher['voucher_sale_value'] = (float) $amounts->getSubtotal();
+        $voucher['voucher_sale_amount'] = (float) $amounts->getTotal();
 
         $voucher['voucher_items'] = array_map(
             fn (array $item): mixed => $this->denormalizer->denormalize(
@@ -175,31 +217,22 @@ SQL;
     {
         return <<<SQL
 SELECT
+    md.id AS line_id,
     p.producto_id AS product_id,
     p.codigo AS product_code,
     u.`code` AS product_uom,
     p.descripcion AS product_name,
     md.cantidad AS quantity,
-    ROUND(md.precio_unitario, 2) AS price,
-    ROUND(md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)), 6) AS unit_value,
-    ROUND((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100))) * md.cantidad, 2) AS taxed_amount,
-    ROUND(
-        (md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) * m.igv / 100) * md.cantidad,
-        2
-    ) AS tax_amount,
-    ROUND(
-        md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100)) +
-        ((md.precio_unitario / (1 + (m.igv / 100 + m.recargo_consumo / 100))) * m.igv / 100),
-        2
-    ) AS unit_price,
+    md.precio_unitario AS unit_price,
     m.igv AS tax_percentage,
-    ROUND(md.precio_total, 2) AS total,
+    md.precio_total AS total,
     '10' AS tax_type
 FROM movimiento m
 INNER JOIN movimiento_detalle md ON md.movimiento_id = m.movimiento_id
 INNER JOIN producto p ON p.producto_id = md.producto_id
 LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
 WHERE m.movimiento_id = :saleId
+ORDER BY md.id ASC
 SQL;
     }
 }

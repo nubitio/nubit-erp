@@ -273,6 +273,9 @@
       <path value="$PROJECT_DIR$/vendor/oskarstark/enum-helper" />
       <path value="$PROJECT_DIR$/vendor/symfony/ai-platform" />
       <path value="$PROJECT_DIR$/vendor/symfony/ai-store" />
+      <path value="$PROJECT_DIR$/vendor/sentry/sentry" />
+      <path value="$PROJECT_DIR$/vendor/jean85/pretty-package-versions" />
+      <path value="$PROJECT_DIR$/vendor/sentry/sentry-symfony" />
     </include_path>
   </component>
   <component name="PhpInterpreters">

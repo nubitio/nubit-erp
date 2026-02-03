@@ -41,12 +41,7 @@ final readonly class InvoiceCreationService
             [$sale->getAlmacen()?->getId()]
         );
 
-        $invoiceCalculator = new InvoiceCalculator(
-            floatval($sale->getSubtotal()),
-            floatval($sale->getDescuento()),
-            floatval($sale->getIgv()),
-            floatval($sale->getRecargoConsumo())
-        );
+        $invoiceCalculator = InvoiceCalculator::fromSale($sale);
         $invoiceAmounts = $invoiceCalculator->calculate();
 
         $connection->beginTransaction();
