@@ -14,6 +14,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use App\Core\Util\ReceiptPayload;
 
 #[ApiResource(
     shortName: 'Invoice',
@@ -171,6 +172,12 @@ class Invoice
     public function getSaleId(): string
     {
         return $this->sale->getId();
+    }
+
+    #[Groups(['invoice:read'])]
+    public function getPublicReceiptUrl(): string
+    {
+        return ReceiptPayload::publicUrl($this->getVoucherTypeId(), $this->getSaleId());
     }
 
     public function getSale(): Sale

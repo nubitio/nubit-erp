@@ -89,12 +89,7 @@ export const CreditNotePage = () => {
           )
           return;
         }
-        const payload = {
-          type: selectedRow?.tipoId ?? selectedRow?.tipo_id,
-          id: selectedRow?.id ?? selectedRow?.nota_id,
-        };
-        const payloadEncoded = btoa(JSON.stringify(payload));
-        window.open('receipt/' + payloadEncoded, '_blank');
+        window.open(selectedRow.publicReceiptUrl, '_blank');
       },
     },
   ];
