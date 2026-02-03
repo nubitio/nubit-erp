@@ -43,7 +43,6 @@ readonly class BillCreateUseCase
 
         $company = $this->companyRepository->findOneBy([]);
         $voucher = $this->invoiceRepository->getVoucher($saleId);
-        dump($voucher);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
         $operationType = $voucher->voucher_operation_type ?: '0101';
