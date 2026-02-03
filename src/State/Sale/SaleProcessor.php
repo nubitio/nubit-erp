@@ -23,6 +23,7 @@ use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\ProductStockService;
+use App\Service\InvoiceCreationService;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleUtils $saleUtils,
         private ProductStockService $productStockService,
         private SettingsService $settings,
+        private InvoiceCreationService $invoiceCreationService,
         private LoggerInterface $logger,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
@@ -252,6 +254,27 @@ readonly class SaleProcessor implements ProcessorInterface
             $cashShiftForMovement instanceof CashShift
         ) {
             $this->createCashMovementForSale($data, $cashShiftForMovement);
+        }
+
+        $autoInvoiceEnabled = filter_var(
+            $this->settings->get(Constants::AUTO_INVOICE, 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
+        if ($isNew && $data->getTipoId() === 2 && $autoInvoiceEnabled) {
+            try {
+                $result = $this->invoiceCreationService->createForSale($data);
+                if (!$result['success']) {
+                    $this->logger->warning('Auto invoice skipped', [
+                        'sale_id' => $data->getId(),
+                        'message' => $result['message'],
+                    ]);
+                }
+            } catch (\Throwable $throwable) {
+                $this->logger->error('Auto invoice failed', [
+                    'sale_id' => $data->getId(),
+                    'error' => $throwable->getMessage(),
+                ]);
+            }
         }
 
         $this->logger->info('Sale processing completed successfully', [
