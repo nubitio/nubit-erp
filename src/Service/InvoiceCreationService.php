@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Sale;
 use App\Repository\InvoiceRepository;
+use App\Service\InvoiceLineInput;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Exception;
@@ -58,7 +59,21 @@ final readonly class InvoiceCreationService
             [$sale->getAlmacen()?->getId()]
         );
 
-        $invoiceCalculator = InvoiceCalculator::fromSale($sale);
+        $lines = [];
+        foreach ($sale->getItems() as $item) {
+            $lines[] = new InvoiceLineInput(
+                quantity: (string) $item->getCantidad(),
+                unitPrice: $item->getPrecioUnitario() ?? '0'
+            );
+        }
+
+        $invoiceCalculator = new InvoiceCalculator(
+            $lines,
+            $sale->getDescuento() ?? '0',
+            (string) ($sale->getIgv() ?? '0'),
+            (string) ($sale->getRecargoConsumo() ?? '0'),
+            $sale->getTotal() !== null ? (string) $sale->getTotal() : null,
+        );
         $invoiceAmounts = $invoiceCalculator->calculate();
 
         $connection->beginTransaction();

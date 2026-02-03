@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Service\InvoiceCalculator;
+use App\Service\InvoiceLineInput;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -18,11 +19,11 @@ final class InvoiceCalculatorTest extends TestCase
         return [
             'single_line_basic' => [
                 'lines' => [
-                    ['quantity' => 1, 'unit_price' => '1.18'],
+                    new InvoiceLineInput('1', '1.18'),
                 ],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '1.00',
@@ -35,12 +36,12 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'multi_line_no_discount' => [
                 'lines' => [
-                    ['quantity' => 1, 'unit_price' => '1.18'],
-                    ['quantity' => 2, 'unit_price' => '1.18'],
+                    new InvoiceLineInput('1', '1.18'),
+                    new InvoiceLineInput('2', '1.18'),
                 ],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '3.00',
@@ -53,12 +54,12 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'discount_10_percent' => [
                 'lines' => [
-                    ['quantity' => 1, 'unit_price' => '1.18'],
-                    ['quantity' => 1, 'unit_price' => '2.36'],
+                    new InvoiceLineInput('1', '1.18'),
+                    new InvoiceLineInput('1', '2.36'),
                 ],
-                'discount' => 10,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '10',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '3.00',
@@ -71,11 +72,11 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'charges_10_percent' => [
                 'lines' => [
-                    ['quantity' => 1, 'unit_price' => '1.28'],
+                    new InvoiceLineInput('1', '1.28'),
                 ],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 10,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '10',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '1.00',
@@ -88,11 +89,11 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'quantity_decimals' => [
                 'lines' => [
-                    ['quantity' => 1.25, 'unit_price' => '1.18'],
+                    new InvoiceLineInput('1.25', '1.18'),
                 ],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '1.25',
@@ -105,11 +106,11 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'unit_price_099_qty3' => [
                 'lines' => [
-                    ['quantity' => 3, 'unit_price' => '0.99'],
+                    new InvoiceLineInput('3', '0.99'),
                 ],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '2.52',
@@ -122,11 +123,11 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'discount_qty_decimal' => [
                 'lines' => [
-                    ['quantity' => 2.5, 'unit_price' => '1.18'],
+                    new InvoiceLineInput('2.5', '1.18'),
                 ],
-                'discount' => 5,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '5',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
                     'subtotal' => '2.50',
@@ -139,9 +140,9 @@ final class InvoiceCalculatorTest extends TestCase
             ],
             'fallback_document_level' => [
                 'lines' => [],
-                'discount' => 0,
-                'tax' => 18,
-                'charges' => 0,
+                'discount' => '0',
+                'tax' => '18',
+                'charges' => '0',
                 'expectedTotal' => '118.00',
                 'expected' => [
                     'subtotal' => '100.00',
@@ -158,10 +159,10 @@ final class InvoiceCalculatorTest extends TestCase
     #[DataProvider('calculationProvider')]
     public function testCalculations(
         array $lines,
-        mixed $discount,
-        mixed $tax,
-        mixed $charges,
-        mixed $expectedTotal,
+        string $discount,
+        string $tax,
+        string $charges,
+        ?string $expectedTotal,
         array $expected
     ): void {
         $calculator = new InvoiceCalculator($lines, $discount, $tax, $charges, $expectedTotal);
@@ -178,11 +179,11 @@ final class InvoiceCalculatorTest extends TestCase
     public function testRoundingAdjustmentPositive(): void
     {
         $lines = [
-            ['quantity' => 1, 'unit_price' => '1.18'],
-            ['quantity' => 1, 'unit_price' => '1.18'],
+            new InvoiceLineInput('1', '1.18'),
+            new InvoiceLineInput('1', '1.18'),
         ];
 
-        $calculator = new InvoiceCalculator($lines, 0, 18, 0, '2.37');
+        $calculator = new InvoiceCalculator($lines, '0', '18', '0', '2.37');
         $amounts = $calculator->calculate();
         $items = $amounts->getLines();
 
@@ -195,11 +196,11 @@ final class InvoiceCalculatorTest extends TestCase
     public function testRoundingAdjustmentNegative(): void
     {
         $lines = [
-            ['quantity' => 1, 'unit_price' => '1.18'],
-            ['quantity' => 1, 'unit_price' => '1.18'],
+            new InvoiceLineInput('1', '1.18'),
+            new InvoiceLineInput('1', '1.18'),
         ];
 
-        $calculator = new InvoiceCalculator($lines, 0, 18, 0, '2.35');
+        $calculator = new InvoiceCalculator($lines, '0', '18', '0', '2.35');
         $amounts = $calculator->calculate();
         $items = $amounts->getLines();
 
