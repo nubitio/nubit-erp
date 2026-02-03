@@ -6,6 +6,8 @@ namespace App\Repository;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\Invoice;
+use App\Dto\Invoice\VoucherHeaderDto;
+use App\Dto\Invoice\VoucherLineDto;
 use App\Invoice\Domain\Voucher;
 use App\Invoice\Domain\VoucherItem;
 use App\Service\InvoiceCalculator;
@@ -13,9 +15,6 @@ use App\Service\InvoiceLineAmounts;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * @extends ServiceEntityRepository<Invoice>
@@ -23,15 +22,13 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 class InvoiceRepository extends ServiceEntityRepository
 {
     public function __construct(
-        ManagerRegistry $registry,
-        private readonly DenormalizerInterface $denormalizer
+        ManagerRegistry $registry
     ) {
         parent::__construct($registry, Invoice::class);
     }
 
     /**
      * @throws Exception
-     * @throws ExceptionInterface
      */
     public function getVoucher(string $saleId): Voucher
     {
@@ -47,59 +44,41 @@ class InvoiceRepository extends ServiceEntityRepository
             throw new ServiceException('La venta no existe');
         }
 
-        $context = [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true];
+        $header = VoucherHeaderDto::fromArray($voucher);
+        $lines = array_map(static fn (array $row): VoucherLineDto => VoucherLineDto::fromArray($row), $items);
 
         $calculator = new InvoiceCalculator(
             array_map(
-                static fn (array $item): array => [
-                    'quantity' => $item['quantity'] ?? 0,
-                    'unit_price' => $item['unit_price'] ?? 0,
+                static fn (VoucherLineDto $line): array => [
+                    'quantity' => $line->quantity ?? 0,
+                    'unit_price' => $line->unitPrice ?? 0,
                 ],
-                $items
+                $lines
             ),
-            $voucher['voucher_discount_percentage'] ?? 0,
-            $voucher['voucher_tax_percentage'] ?? 0,
-            $voucher['voucher_consumption_surcharge_percentage'] ?? 0,
-            $voucher['voucher_sale_amount'] ?? null
+            $header->voucherDiscountPercentage ?? 0,
+            $header->voucherTaxPercentage ?? 0,
+            $header->voucherConsumptionSurchargePercentage ?? 0,
+            $header->voucherSaleAmount ?? null
         );
 
         $amounts = $calculator->calculate();
-        $lines = $amounts->getLines();
+        $amountLines = $amounts->getLines();
 
-        foreach ($items as $index => $item) {
-            $line = $lines[$index] ?? null;
-            if (!$line instanceof InvoiceLineAmounts) {
-                continue;
+        foreach ($lines as $index => $line) {
+            $amountLine = $amountLines[$index] ?? null;
+            if ($amountLine instanceof InvoiceLineAmounts) {
+                $line->applyAmounts($amountLine);
             }
-
-            $item['unit_value'] = (float) $line->unitValue;
-            $item['unit_price'] = (float) $line->unitPrice;
-            $item['taxed_amount'] = (float) $line->taxableAmount;
-            $item['tax_amount'] = (float) $line->taxAmount;
-            $item['total'] = (float) $line->totalAmount;
-            $item['discount_amount'] = (float) $line->discountAmount;
-            $items[$index] = $item;
         }
 
-        $voucher['voucher_taxed_amount'] = (float) $amounts->getTaxedAmount();
-        $voucher['voucher_tax_amount'] = (float) $amounts->getTax();
-        $voucher['voucher_total_taxes'] = (float) $amounts->getTax();
-        $voucher['voucher_consumption_surcharge_amount'] = (float) $amounts->getChargesAmount();
-        $voucher['voucher_discount_amount'] = (float) $amounts->getDiscountAmount();
-        $voucher['voucher_sale_value'] = (float) $amounts->getSubtotal();
-        $voucher['voucher_sale_amount'] = (float) $amounts->getTotal();
+        $header->applyAmounts($amounts);
 
-        $voucher['voucher_items'] = array_map(
-            fn (array $item): mixed => $this->denormalizer->denormalize(
-                $item,
-                VoucherItem::class,
-                null,
-                $context
-            ),
-            $items
+        $voucherItems = array_map(
+            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            $lines
         );
 
-        return $this->denormalizer->denormalize($voucher, Voucher::class, null, $context);
+        return $header->toVoucher($voucherItems);
     }
 
     private function saleHeaderQuery(): string
