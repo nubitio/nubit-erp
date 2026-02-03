@@ -2,6 +2,12 @@ name: Deploy to Staging
 
 # Cada push a release/x.y.x despliega automáticamente a staging.
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override version/tag (defaults to sha)'
+        required: false
+        type: string
   push:
     branches:
       - 'release/*'
@@ -17,5 +23,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: staging
-      version: ${{ github.sha }}
+      version: ${{ inputs.version || github.sha }}
     secrets: inherit
