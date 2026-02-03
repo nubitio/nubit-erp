@@ -192,6 +192,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .name('total')
       .label('Total')
       .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .disabled(true)
       .sendAsString(true)
       .build(),
