@@ -2,6 +2,12 @@ name: Deploy to Production
 
 # Se ejecuta cuando se crea un tag vX.Y.Z y despliega a producción.
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override version/tag (defaults to ref name)'
+        required: false
+        type: string
   push:
     tags:
       - 'v*.*.*'
@@ -17,5 +23,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: production
-      version: ${{ github.ref_name }}
+      version: ${{ inputs.version || github.ref_name }}
     secrets: inherit
