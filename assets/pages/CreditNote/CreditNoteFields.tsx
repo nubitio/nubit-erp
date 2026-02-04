@@ -54,18 +54,18 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.DATE)
-      .name('fecha')
+      .name('issueDate')
       .label('Fecha')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .defaultValue(new Date())
       .required(true)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('tipoId').label('Tipo').build());
+  fields.push(new FieldBuilder().type(FieldType.NONE).name('documentType').label('Tipo').build());
   fields.push(
     new FieldBuilder()
       .type(FieldType.SELECT)
-      .name('codigoMotivo')
+      .name('reasonCode')
       .label('Código')
       .data([
         {
@@ -115,17 +115,17 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.TEXTAREA)
-      .name('descripcionMotivo')
+      .name('reasonDescription')
       .label('Motivo Descripción')
       .required(true)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('serie').label('Serie').build());
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('correlativo').label('Número').build());
+  fields.push(new FieldBuilder().type(FieldType.NONE).name('series').label('Serie').build());
+  fields.push(new FieldBuilder().type(FieldType.NONE).name('number').label('Número').build());
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('docAfectado')
+      .name('affectedDocument')
       .label('Doc. afectado')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => cell.value ?? cell.data.sale?.invoice ?? '')
@@ -134,14 +134,14 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('envioSunat')
+      .name('sunatStatus')
       .label('Envio sunat')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.billStatusFormatter(cell.value))
       .build(),
   );
   fields.push(
-    new FieldBuilder().type(FieldType.NONE).name('mensajeSunat').label('Mensaje sunat').build(),
+    new FieldBuilder().type(FieldType.NONE).name('sunatMessage').label('Mensaje sunat').build(),
   );
 
   return fields;

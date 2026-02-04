@@ -22,7 +22,7 @@ export const InvoiceFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.DATE)
-      .name('issuedAt')
+      .name('issueDate')
       .label('Fecha')
       .valueType('date')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
@@ -52,14 +52,14 @@ export const InvoiceFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENUM)
-      .name('voucherTypeId')
+      .name('documentType')
       .label('Tipo')
       .data([
         { value: '01', text: 'Factura' },
         { value: '03', text: 'Boleta' },
       ])
       .formatter((cell: ColumnCellTemplateData) =>
-        cell.data.voucherTypeId === '01' ? 'Factura' : 'Boleta',
+        cell.data.documentType === '01' ? 'Factura' : 'Boleta',
       )
       .build(),
   );
@@ -87,6 +87,8 @@ export const InvoiceFields = () => {
       .type(FieldType.SWITCH)
       .name('voided')
       .label('Anulado')
+      .filterable(false)
+      .sortable(false)
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value === 2) {
           return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>;

@@ -5,8 +5,7 @@ import {DxDialog} from '../../core/dialog/DxDialog';
 import {DxForm} from '../../core/form/DxForm';
 import {InvoiceFields} from './InvoiceFields';
 import {useRef} from 'react';
-import {invoiceService} from '../../service/invoice.service';
-import notify from 'devextreme/ui/notify';
+import {taxDocumentService} from '../../service/taxDocument.service';
 import toast from "../../core/utils/SharedUtils";
 
 export const InvoicePage = () => {
@@ -14,7 +13,7 @@ export const InvoicePage = () => {
   const fields = InvoiceFields();
   const gridRef = useRef<DxDataGridEvents>(null);
 
-  const API_URL = Constants.API_BASE_URL + 'invoices';
+  const API_URL = Constants.API_BASE_URL + 'tax-documents';
 
   const EVENTS = {
     ADD: 'invoice:add',
@@ -33,41 +32,29 @@ export const InvoicePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
-          notify(
-            {
-              message: 'Seleccione un comprobante',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
+          toast(
+            "Debe seleccionar un comprobante",
+            "warning",
+          )
           return;
         }
 
-        if (selectedRow.estado_sunat === '0') {
-          notify(
-            {
-              message: 'El comprobante ya fue enviado a SUNAT',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
+        if (selectedRow.sunatStatus === '0') {
+          toast(
+            "El comprobante ya fue enviado a SUNAT",
+            "warning",
+          )
           return;
         }
 
         gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-        invoiceService
-          .sendInvoice(selectedRow.saleId)
+        taxDocumentService
+          .sendInvoice(selectedRow.id)
           .subscribe((response) => {
-            notify(
-              {
-                message: response.data.message,
-                type: response.data.success ? 'success' : 'error',
-                displayTime: 3000,
-              },
-              {position: 'top right'},
-            );
+            toast(
+              response.data.message,
+              response.data.success ? "success" : "error"
+            )
             gridRef.current?.refresh();
           })
           .add(() => gridRef.current?.hideLoading());
@@ -79,29 +66,21 @@ export const InvoicePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
-          notify(
-            {
-              message: 'Seleccione un comprobante',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
+          toast(
+            "Debe seleccionar un comprobante",
+            "warning",
+          )
           return;
         }
 
         gridRef.current?.showLoading('Enviando comprobante por correo...');
-        invoiceService
-          .sendEmail(selectedRow.saleId)
+        taxDocumentService
+          .sendEmail(selectedRow.id)
           .subscribe((data) => {
-            notify(
-              {
-                message: 'El comprobante fue enviado por correo',
-                type: 'success',
-                displayTime: 3000,
-              },
-              {position: 'top right'},
-            );
+            toast(
+              "El comprobante fue enviado por correo",
+              "success"
+            )
             gridRef.current?.refresh();
           })
           .add(() => gridRef.current?.hideLoading());
@@ -128,28 +107,20 @@ export const InvoicePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
-          notify(
-            {
-              message: 'Seleccione un comprobante',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
+          toast(
+            "Debe seleccionar un comprobante",
+            "warning",
+          )
           return;
         }
         gridRef.current?.showLoading('Consultando CDR...');
-        invoiceService
-          .consultInvoice(selectedRow.saleId)
+        taxDocumentService
+          .consultInvoice(selectedRow.id)
           .subscribe((response) => {
-            notify(
-              {
-                message: response.data.message,
-                type: 'success',
-                displayTime: 3000,
-              },
-              {position: 'top right'},
-            );
+            toast(
+              response.data.message,
+              response.data.success ? "success" : "error"
+            )
             gridRef.current?.refresh();
           })
           .add(() => gridRef.current?.hideLoading());
@@ -159,30 +130,27 @@ export const InvoicePage = () => {
       text: 'Consulta CPE',
       type: 'success',
       onClick: () => {
-        const selectedRows = gridRef.current?.getSelectedRowKeys();
-        if (!selectedRows || selectedRows.length === 0) {
-          notify(
-            {
-              message: 'Seleccione uno o más comprobantes',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            {position: 'top right'},
-          );
+        const selectedRow = gridRef.current?.getSelectedRow();
+        if (!selectedRow) {
+          toast(
+            "Debe seleccionar un comprobante",
+            "warning",
+          )
           return;
         }
         gridRef.current?.showLoading('Consultando CPE...');
-        selectedRows.forEach((id: any) => {
-          invoiceService
-            .validateInvoice(id)
-            .subscribe((response) => {
-              console.log(response.data);
-            })
-            .add(() => {
-              gridRef.current?.hideLoading();
-              gridRef.current?.refresh();
-            });
-        });
+        taxDocumentService
+          .validateInvoice(selectedRow.id)
+          .subscribe((response) => {
+            toast(
+              response.data.message,
+              response.data.success ? "success" : "error"
+            )
+            gridRef.current?.refresh();
+          })
+          .add(() => {
+            gridRef.current?.hideLoading();
+          });
       },
     },
   ];
@@ -192,9 +160,9 @@ export const InvoicePage = () => {
       <DxDataGrid
         id={'invoice'}
         ref={gridRef}
-        title={'Comprobantes de pago'}
+        title={'Comprobantes'}
         toolbar={toolbar}
-        url={API_URL}
+        url={API_URL + '?type=invoice'}
         fields={fields}
         events={EVENTS}
         sort={[{selector: 'createdAt', desc: true}]}
