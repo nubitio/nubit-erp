@@ -7,6 +7,7 @@ namespace App\Billing\Domain;
 use App\Repository\CompanyRepository;
 use App\Repository\InvoiceRepository;
 use App\Core\Util\Money;
+use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
 use DateTime;
 use Doctrine\DBAL\Exception;
@@ -35,24 +36,26 @@ readonly class BillCreateUseCase
     /**
      * @throws DateMalformedStringException
      * @throws Exception
-     * @throws ExceptionInterface
+     * @throws MathException
      */
     public function __invoke(string $saleId): Invoice
     {
         $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
+        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval($value);
 
         $company = $this->companyRepository->findOneBy([]);
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
         $operationType = $voucher->voucher_operation_type ?: '0101';
-        $detractionPercent = $voucher->voucher_detraction_percent;
-        $detractionAmount = $voucher->voucher_detraction_amount;
+        $detractionPercent = $toNullableFloat($voucher->voucher_detraction_percent);
+        $detractionAmount = $toNullableFloat($voucher->voucher_detraction_amount);
+        $detractionValueRef = $toNullableFloat($voucher->voucher_detraction_value_ref);
         $hasDetraction = $voucher->voucher_detraction_code
             || $detractionPercent !== null
             || $detractionAmount !== null
             || $voucher->voucher_detraction_payment_method
-            || $voucher->voucher_detraction_value_ref !== null;
+            || $detractionValueRef !== null;
 
         if ($hasDetraction && !$voucher->voucher_operation_type) {
             $operationType = '1001';
@@ -95,13 +98,13 @@ readonly class BillCreateUseCase
 
         if ($hasDetraction) {
             $detractionAccount = $company->getDetraccionAccount() ?: $voucher->voucher_detraction_account;
-            $detraction = (new Detraction())
+            $detraction = new Detraction()
                 ->setPercent($detractionPercent)
                 ->setMount($detractionAmount)
                 ->setCtaBanco($detractionAccount)
                 ->setCodMedioPago($voucher->voucher_detraction_payment_method)
                 ->setCodBienDetraccion($voucher->voucher_detraction_code)
-                ->setValueRef($voucher->voucher_detraction_value_ref);
+                ->setValueRef($detractionValueRef);
             $bill->setDetraccion($detraction);
         }
 
@@ -167,7 +170,7 @@ readonly class BillCreateUseCase
         $bill->setDetails($details);
         $legends = [$legend];
         if ($hasDetraction) {
-            $legends[] = (new Legend())
+            $legends[] = new Legend()
                 ->setCode('2006')
                 ->setValue('Operación sujeta a detracción');
         }
