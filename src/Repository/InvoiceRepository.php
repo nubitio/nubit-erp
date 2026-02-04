@@ -10,6 +10,7 @@ use App\Dto\Invoice\VoucherHeaderDto;
 use App\Dto\Invoice\VoucherLineDto;
 use App\Invoice\Domain\Voucher;
 use App\Invoice\Domain\VoucherItem;
+use App\Sale\Domain\DocType;
 use App\Service\InvoiceCalculator;
 use App\Service\InvoiceLineAmounts;
 use App\Service\InvoiceLineInput;
@@ -47,6 +48,16 @@ class InvoiceRepository extends ServiceEntityRepository
 
         $header = VoucherHeaderDto::fromArray($voucher);
         $lines = array_map(static fn (array $row): VoucherLineDto => VoucherLineDto::fromArray($row), $items);
+
+        // Nota de venta must preserve persisted line totals
+        if ($header->voucherType === DocType::NOTA_VENTA->value) {
+            $voucherItems = array_map(
+                static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+                $lines
+            );
+
+            return $header->toVoucher($voucherItems);
+        }
 
         $calculator = new InvoiceCalculator(
             array_map(
