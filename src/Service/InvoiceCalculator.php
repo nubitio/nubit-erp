@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Core\Annotation\IgnoreAutowire;
 use App\Core\Util\Money;
 use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 
 #[IgnoreAutowire]
@@ -23,7 +24,8 @@ readonly class InvoiceCalculator
     }
 
     /**
-     * @return static
+     * @return InvoiceAmounts
+     * @throws MathException
      */
     public function calculate(): InvoiceAmounts
     {

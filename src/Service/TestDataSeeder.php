@@ -6,7 +6,6 @@ namespace App\Service;
 
 use App\Service\InvoiceCalculator;
 use App\Service\InvoiceLineInput;
-
 use App\Entity\Category;
 use App\Entity\Customer;
 use App\Entity\Invoice;
