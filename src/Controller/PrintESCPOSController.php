@@ -61,14 +61,14 @@ class PrintESCPOSController extends AbstractController
         $printer = new Printer($connector);
 
         $shouldPrintLogo = 'true' === strval(
-            $this->settingsService->get(Constants::PRINT_LOGO, 'true')
-        );
+                $this->settingsService->get(Constants::PRINT_LOGO, 'true')
+            );
 
         // HEADER (logo + empresa)
         $printer->setJustification(Printer::JUSTIFY_CENTER);
 
         if ($shouldPrintLogo && $logo instanceof EscposImage) {
-            $printer->graphics($logo);
+            $printer->bitImage($logo);
             $printer->feed();
         }
 
@@ -104,7 +104,6 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($hrSolid);
 
-        // DATOS BÁSICOS (2 columnas: label izquierda, valor derecha)
         $tz = new \DateTimeZone('America/Lima');
         $date = $voucher->voucher_date ? new \DateTime((string)$voucher->voucher_date, $tz) : new \DateTime('now', $tz);
 
@@ -144,11 +143,9 @@ class PrintESCPOSController extends AbstractController
             // Línea principal: nombre + columnas
             $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total);
 
-            // (Opcional) enfatizar el nombre: si tu SaleItemDto imprime el nombre dentro de la columna,
-            // el modo emphasis aplica a toda la línea. Si no te gusta, quítalo.
             $printer->text((string)$saleItem);
 
-            // Línea secundaria: cantidad + uom (alineada a la izquierda)
+            // Línea secundaria: cantidad + uom
             $qty = $this->formatQuantity((float)$item->quantity);
             $uom = $item->product_uom ?? '';
             $printer->text('  ' . trim($qty . ' ' . $uom) . "\n");
@@ -204,19 +201,19 @@ class PrintESCPOSController extends AbstractController
                 ($voucher->voucher_detraction_code ?? '') .
                 ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
             );
-            $description = $voucher->voucher_detraction_description;
+            $paymentDescription = $voucher->voucher_detraction_payment_description;
             $detractionPayment = trim(
                 ($voucher->voucher_detraction_payment_method ?? '') .
-                ($description ? ' - ' . $description : '')
+                ($paymentDescription ? ' - ' . $paymentDescription : '')
             );
 
-            $printer->text($this->wrap('Tipo detraccion: ' . ($detractionType !== '' ? $detractionType : '-'), $width));
+            $printer->text($this->wrap('Tipo detracción: ' . ($detractionType !== '' ? $detractionType : '-'), $width));
             $printer->text(
                 $this->wrap('Medio pago: ' . ($detractionPayment !== '' ? $detractionPayment : '-'), $width)
             );
 
             if (!empty($voucher->voucher_detraction_account)) {
-                $printer->text($this->wrap('CTA detraccion: ' . $voucher->voucher_detraction_account, $width));
+                $printer->text($this->wrap('CTA detracción: ' . $voucher->voucher_detraction_account, $width));
             }
 
             $printer->text($hrDashed);
@@ -255,13 +252,13 @@ class PrintESCPOSController extends AbstractController
             $printer->text($this->wrap($voucher->voucher_hash ?? '', $width));
 
             $printer->feed();
-            $printer->text($this->wrap('Representacion impresa del comprobante electronico.', $width));
+            $printer->text($this->wrap('Representación impresa del comprobante electrónico.', $width));
             $printer->text($this->wrap('Consulte en: ' . ($_ENV['EFACT_URL'] ?? ''), $width));
         }
 
         // FOOTER
         $printer->feed();
-        $printer->text((new \DateTime('now', $tz))->format('d/m/Y H:i:s') . "\n");
+        $printer->text(new \DateTime('now', $tz)->format('d/m/Y H:i:s') . "\n");
         $printer->text('Gracias por su preferencia' . "\n");
 
         $printer->feed();
@@ -289,7 +286,7 @@ class PrintESCPOSController extends AbstractController
 
         $space = $width - mb_strlen($left) - mb_strlen($right);
         if ($space < 1) {
-            // Si no entra, hacemos wrap en dos líneas
+            // Not enough space, print in two lines
             return $left . "\n" . str_pad($right, $width, ' ', STR_PAD_LEFT) . "\n";
         }
 
