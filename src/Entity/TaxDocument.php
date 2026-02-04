@@ -1,0 +1,307 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Core\Util\ReceiptPayload;
+use App\State\TaxDocument\TaxDocumentProvider;
+use DateTimeInterface;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use Symfony\Component\Serializer\Attribute\Groups;
+
+#[ORM\Entity]
+#[ORM\Table(name: 'tax_document')]
+#[ApiResource(
+    shortName: 'TaxDocument',
+    normalizationContext: ['groups' => ['tax_document:read', 'invoice:read', 'creditnote:read']],
+    denormalizationContext: ['groups' => ['tax_document:write']],
+    filters: [DevExtremeFilter::class],
+    provider: TaxDocumentProvider::class,
+)]
+class TaxDocument
+{
+    #[ORM\Id]
+    #[ORM\Column(name: 'tax_document_id', type: Types::STRING, length: 36)]
+    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
+    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private string $id;
+
+    #[ORM\ManyToOne(targetEntity: Sale::class)]
+    #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id', nullable: false)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private Sale $sale;
+
+    #[ORM\ManyToOne(targetEntity: Branch::class)]
+    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
+    private ?Branch $branch = null;
+
+    #[ORM\ManyToOne(targetEntity: Customer::class)]
+    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'ruc', nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read'])]
+    private ?Customer $customer = null;
+
+    #[ORM\Column(name: 'document_type', type: Types::STRING, length: 10)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private string $documentType;
+
+    #[ORM\Column(name: 'issue_date', type: Types::DATETIME_MUTABLE)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private DateTimeInterface $issueDate;
+
+    #[ORM\Column(name: 'series', type: Types::STRING, length: 10)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private string $series;
+
+    #[ORM\Column(name: 'number', type: Types::STRING, length: 20)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private string $number;
+
+    #[ORM\Column(name: 'affected_document', type: Types::STRING, length: 50, nullable: true)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private ?string $affectedDocument = null;
+
+    #[ORM\Column(name: 'reason_code', type: Types::STRING, length: 10, nullable: true)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private ?string $reasonCode = null;
+
+    #[ORM\Column(name: 'reason_description', type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['tax_document:read', 'creditnote:read'])]
+    private ?string $reasonDescription = null;
+
+    #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private string $total = '0.00';
+
+    #[ORM\Column(name: 'void_ticket', type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read'])]
+    private ?string $voidTicket = null;
+
+    #[ORM\Column(name: 'void_correlation', type: Types::STRING, length: 255, nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read'])]
+    private ?string $voidCorrelation = null;
+
+    #[ORM\Column(name: 'sunat_status', type: Types::STRING, length: 50, nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private ?string $sunatStatus = null;
+
+    #[ORM\Column(name: 'sunat_message', type: Types::TEXT, nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private ?string $sunatMessage = null;
+
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    #[Groups(['tax_document:read'])]
+    private DateTimeInterface $createdAt;
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function getSale(): Sale
+    {
+        return $this->sale;
+    }
+
+    public function setSale(Sale $sale): self
+    {
+        $this->sale = $sale;
+
+        return $this;
+    }
+
+    public function getBranch(): ?Branch
+    {
+        return $this->branch;
+    }
+
+    public function setBranch(?Branch $branch): self
+    {
+        $this->branch = $branch;
+
+        return $this;
+    }
+
+    public function getCustomer(): ?Customer
+    {
+        return $this->customer;
+    }
+
+    public function setCustomer(?Customer $customer): self
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    public function getDocumentType(): string
+    {
+        return $this->documentType;
+    }
+
+    public function setDocumentType(string $documentType): self
+    {
+        $this->documentType = $documentType;
+
+        return $this;
+    }
+
+    public function getIssueDate(): DateTimeInterface
+    {
+        return $this->issueDate;
+    }
+
+    public function setIssueDate(DateTimeInterface $issueDate): self
+    {
+        $this->issueDate = $issueDate;
+
+        return $this;
+    }
+
+    public function getSeries(): string
+    {
+        return $this->series;
+    }
+
+    public function setSeries(string $series): self
+    {
+        $this->series = $series;
+
+        return $this;
+    }
+
+    public function getNumber(): string
+    {
+        return $this->number;
+    }
+
+    public function setNumber(string $number): self
+    {
+        $this->number = $number;
+
+        return $this;
+    }
+
+    public function getAffectedDocument(): ?string
+    {
+        return $this->affectedDocument;
+    }
+
+    public function setAffectedDocument(?string $affectedDocument): self
+    {
+        $this->affectedDocument = $affectedDocument;
+
+        return $this;
+    }
+
+    public function getReasonCode(): ?string
+    {
+        return $this->reasonCode;
+    }
+
+    public function setReasonCode(?string $reasonCode): self
+    {
+        $this->reasonCode = $reasonCode;
+
+        return $this;
+    }
+
+    public function getReasonDescription(): ?string
+    {
+        return $this->reasonDescription;
+    }
+
+    public function setReasonDescription(?string $reasonDescription): self
+    {
+        $this->reasonDescription = $reasonDescription;
+
+        return $this;
+    }
+
+    public function getTotal(): string
+    {
+        return $this->total;
+    }
+
+    public function setTotal(string $total): self
+    {
+        $this->total = $total;
+
+        return $this;
+    }
+
+    public function getVoidTicket(): ?string
+    {
+        return $this->voidTicket;
+    }
+
+    public function setVoidTicket(?string $voidTicket): self
+    {
+        $this->voidTicket = $voidTicket;
+
+        return $this;
+    }
+
+    public function getVoidCorrelation(): ?string
+    {
+        return $this->voidCorrelation;
+    }
+
+    public function setVoidCorrelation(?string $voidCorrelation): self
+    {
+        $this->voidCorrelation = $voidCorrelation;
+
+        return $this;
+    }
+
+    public function getSunatStatus(): ?string
+    {
+        return $this->sunatStatus;
+    }
+
+    public function setSunatStatus(?string $sunatStatus): self
+    {
+        $this->sunatStatus = $sunatStatus;
+
+        return $this;
+    }
+
+    public function getSunatMessage(): ?string
+    {
+        return $this->sunatMessage;
+    }
+
+    public function setSunatMessage(?string $sunatMessage): self
+    {
+        $this->sunatMessage = $sunatMessage;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    public function getPublicReceiptUrl(): string
+    {
+        $identifier = in_array($this->documentType, ['01', '03'], true)
+            ? ($this->sale->getId() ?? $this->id)
+            : $this->id;
+
+        return ReceiptPayload::publicUrl($this->documentType, $identifier);
+    }
+}

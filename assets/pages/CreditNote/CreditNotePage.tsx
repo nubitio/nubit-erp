@@ -15,7 +15,7 @@ export const CreditNotePage = () => {
   const [editDisabled, setEditDisabled] = useState<boolean>(true);
   const [deleteDisabled, setDeleteDisabled] = useState<boolean>(true);
 
-  const API_URL = Constants.API_BASE_URL + 'credit-notes';
+  const API_URL = Constants.API_BASE_URL + 'tax-documents';
 
   const EVENTS = {
     ADD: 'credit-note:add',
@@ -28,7 +28,7 @@ export const CreditNotePage = () => {
   };
 
   const isPending = (row: any): boolean => {
-    const status = row?.envioSunat ?? row?.envio_sunat;
+    const status = row?.sunatStatus ?? row?.envioSunat ?? row?.envio_sunat;
     return status === null || status === undefined || status === '' || status === '0' || status === 'pendiente';
   };
 
@@ -39,7 +39,7 @@ export const CreditNotePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (selectedRow) {
-          if (selectedRow.envio_sunat === '0') {
+          if ((selectedRow.sunatStatus ?? selectedRow.envio_sunat) === '0') {
             toast(
               "El comprobante ya fue enviado a SUNAT",
               "warning",
@@ -101,7 +101,7 @@ export const CreditNotePage = () => {
         ref={gridRef}
         title={'Notas de crédito'}
         toolbar={toolbar}
-        url={API_URL}
+        url={API_URL + '?type=note'}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
