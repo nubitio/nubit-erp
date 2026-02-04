@@ -29,7 +29,7 @@ class PrintESCPOSController extends AbstractController
 
     private const string IMAGE_MODE_DEFAULT = 'bitimage';
     private const array IMAGE_MODE_MAP = [
-        'bitimage' => 'bitiamge',
+        'bitimage' => 'bitimage',
         'graphics' => 'graphics',
     ];
 
@@ -79,7 +79,7 @@ class PrintESCPOSController extends AbstractController
         string $imageMode = self::IMAGE_MODE_DEFAULT,
         string $lineStyle = self::LINE_STYLE_DEFAULT,
     ): string {
-        $width = $lineWidth ?? max(32, $this->printerLineWidth ?? 48);
+        $width = $lineWidth ?? max(32, $this->printerLineWidth);
         $solidChar = self::LINE_SOLID_CHAR[$lineStyle] ?? self::LINE_SOLID_CHAR['unicode'];
 
         $hrDashed = $this->hr('-', $width);
@@ -92,14 +92,14 @@ class PrintESCPOSController extends AbstractController
         $printer = new Printer($connector);
 
         $shouldPrintLogo = 'true' === strval(
-                $this->settingsService->get(Constants::PRINT_LOGO, 'true')
-            );
+            $this->settingsService->get(Constants::PRINT_LOGO, 'true')
+        );
 
         // HEADER (logo + company name)
         $printer->setJustification(Printer::JUSTIFY_CENTER);
 
         if ($shouldPrintLogo && $logo instanceof EscposImage) {
-            $printerImageMode = self::IMAGE_MODE_MAP[$imageMode];
+            $printerImageMode = self::IMAGE_MODE_MAP[$imageMode] ?? self::IMAGE_MODE_MAP[self::IMAGE_MODE_DEFAULT];
             if ($printerImageMode === 'graphics') {
                 $printer->graphics($logo);
             } else {
