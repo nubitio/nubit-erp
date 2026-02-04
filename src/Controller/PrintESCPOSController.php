@@ -24,7 +24,19 @@ class PrintESCPOSController extends AbstractController
 {
     private const array PAPER_WIDTH_MAP = [
         58 => 32,
-        80 => 42,
+        80 => 48,
+    ];
+
+    private const string IMAGE_MODE_DEFAULT = 'bitimage';
+    private const array IMAGE_MODE_MAP = [
+        'bitimage' => 'bitiamge',
+        'graphics' => 'graphics',
+    ];
+
+    private const string LINE_STYLE_DEFAULT = 'unicode';
+    private const array LINE_SOLID_CHAR = [
+        'unicode' => '─', // U+2500 BOX DRAWINGS LIGHT HORIZONTAL
+        'ascii' => '=',
     ];
 
     public function __construct(
@@ -44,8 +56,10 @@ class PrintESCPOSController extends AbstractController
         $paperWidth = $request->query->getInt('paper_width');
         $lineWidth = self::PAPER_WIDTH_MAP[$paperWidth] ?? null;
         $baseUrl = $request->getSchemeAndHttpHost();
+        $imageMode = $request->query->getString('image_mode', self::IMAGE_MODE_DEFAULT);
+        $lineStyle = $request->query->getString('line_style', self::LINE_STYLE_DEFAULT);
 
-        $commands = $this->printCommands($id, $lineWidth, $baseUrl);
+        $commands = $this->printCommands($id, $lineWidth, $baseUrl, $imageMode, $lineStyle);
 
         return new Response(
             $commands,
@@ -58,12 +72,18 @@ class PrintESCPOSController extends AbstractController
      * @throws Exception
      * @throws \Exception
      */
-    public function printCommands(string $saleId, ?int $lineWidth = null, ?string $baseUrl = null): string
-    {
-        $width = $lineWidth ?? max(32, $this->printerLineWidth ?? 42);
+    public function printCommands(
+        string $saleId,
+        ?int $lineWidth = null,
+        ?string $baseUrl = null,
+        string $imageMode = self::IMAGE_MODE_DEFAULT,
+        string $lineStyle = self::LINE_STYLE_DEFAULT,
+    ): string {
+        $width = $lineWidth ?? max(32, $this->printerLineWidth ?? 48);
+        $solidChar = self::LINE_SOLID_CHAR[$lineStyle] ?? self::LINE_SOLID_CHAR['unicode'];
 
         $hrDashed = $this->hr('-', $width);
-        $hrSolid = $this->hr('=', $width);
+        $hrSolid = $this->hr($solidChar, $width);
 
         $voucher = $this->invoiceRepository->getVoucher($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
@@ -79,7 +99,12 @@ class PrintESCPOSController extends AbstractController
         $printer->setJustification(Printer::JUSTIFY_CENTER);
 
         if ($shouldPrintLogo && $logo instanceof EscposImage) {
-            $printer->bitImage($logo);
+            $printerImageMode = self::IMAGE_MODE_MAP[$imageMode];
+            if ($printerImageMode === 'graphics') {
+                $printer->graphics($logo);
+            } else {
+                $printer->bitImage($logo);
+            }
             $printer->feed();
         }
 

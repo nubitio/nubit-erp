@@ -169,12 +169,29 @@ export const SalePage = () => {
       });
   };
 
+  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
   const print = (saleId: string) => {
     ensureQzConnection()
       .then((activePrinter) => {
         const config = qz.configs.create(activePrinter);
         saleService.printInvoice(saleId).subscribe((response) => {
-          qz.print(config, [response.data]).catch((err: any) => {
+          const base64Data = arrayBufferToBase64(response.data);
+          const printData = [
+            {
+              type: 'raw',
+              format: 'base64',
+              data: base64Data,
+            },
+          ];
+          qz.print(config, printData).catch((err: any) => {
             console.error(err);
           });
         });

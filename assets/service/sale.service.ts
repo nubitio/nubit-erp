@@ -21,7 +21,9 @@ export class SaleService {
   }
 
   printInvoice(saleId: string) {
-    return httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/print-invoice`);
+    return httpClient.get<ArrayBuffer>(`${Constants.API_BASE_URL}sales/${saleId}/print-invoice`, {
+      responseType: 'arraybuffer',
+    });
   }
 
   makeNote(noteId: string) {
