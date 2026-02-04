@@ -10,6 +10,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\CompanyContext;
 use App\Entity\Invoice;
+use App\Service\TaxDocumentSyncService;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
@@ -21,6 +22,7 @@ readonly class InvoiceSendUseCase
         private BillSendUseCase $billSendUseCase,
         private FileManager $fileManager,
         private CompanyContext $companyContext,
+        private TaxDocumentSyncService $taxDocumentSyncService,
     ) {
     }
 
@@ -61,6 +63,18 @@ readonly class InvoiceSendUseCase
 
         $this->entityManager->persist($invoice);
         $this->entityManager->flush();
+        $this->taxDocumentSyncService->recordSunatEvent(
+            documentType: $invoice->getVoucherTypeId(),
+            series: $invoice->getSeries(),
+            number: $invoice->getNumber(),
+            eventType: 'sunat_send',
+            statusCode: $invoice->getSunatStatus(),
+            statusMessage: $invoice->getSunatMessage(),
+            digest: $invoice->getDigest(),
+            payload: [
+                'name' => $response->name,
+            ],
+        );
 
         return $response;
     }

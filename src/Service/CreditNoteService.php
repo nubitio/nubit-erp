@@ -32,6 +32,7 @@ readonly class CreditNoteService
         private NotePdfUseCase $notePdfUseCase,
         private FileManager $fileManager,
         private CompanyContext $companyContext,
+        private TaxDocumentSyncService $taxDocumentSyncService,
     ) {
     }
 
@@ -90,6 +91,18 @@ readonly class CreditNoteService
         }
 
         $this->entityManager->flush();
+        $this->taxDocumentSyncService->recordSunatEvent(
+            documentType: $creditNote->getTipoId(),
+            series: $creditNote->getSerie(),
+            number: strval($creditNote->getCorrelativo()),
+            eventType: 'sunat_send',
+            statusCode: $creditNote->getEnvioSunat(),
+            statusMessage: $creditNote->getMensajeSunat(),
+            digest: $creditNote->getDigest(),
+            payload: [
+                'name' => $response->name,
+            ],
+        );
 
         return $response;
     }
@@ -154,6 +167,7 @@ readonly class CreditNoteService
         $creditNote->setEnvioSunat('pendiente');
 
         $this->creditNoteRepository->save($creditNote, true);
+        $this->taxDocumentSyncService->syncCreditNote($creditNote);
 
         return $creditNote;
     }

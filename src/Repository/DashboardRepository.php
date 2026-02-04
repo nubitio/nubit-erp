@@ -60,15 +60,16 @@ readonly class DashboardRepository
                 SUM(CASE WHEN td.date = :today THEN 1 ELSE 0 END) AS invoices_today,
                 SUM(CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN 1 ELSE 0 END) AS invoices_month,
                 COUNT(
-                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.cliente_id END
+                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN i.customer_id END
                 ) AS customers_month,
-                COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN i.cliente_id END) AS customers_week
-            FROM comprobante i
+                COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN i.customer_id END) AS customers_week
+            FROM tax_document i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE m.estado = 1
               AND m.tipo_id = 2
+              AND i.document_type IN ('01', '03')
               AND a.local_id = :branchId
         ", $params) ?: [];
 
@@ -78,8 +79,9 @@ readonly class DashboardRepository
                 td.day_name AS day_name,
                 COALESCE(SUM(i.total), 0) AS total
             FROM time_dimension td
-            LEFT JOIN comprobante i
-                ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+            LEFT JOIN tax_document i
+                ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
+                AND i.document_type IN ('01', '03')
             LEFT JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             WHERE td.year = :currentYear
@@ -95,8 +97,9 @@ readonly class DashboardRepository
                 td.month,
                 COALESCE(SUM(i.total), 0) AS total
             FROM time_dimension td
-            LEFT JOIN comprobante i
-                ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+            LEFT JOIN tax_document i
+                ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
+                AND i.document_type IN ('01', '03')
             LEFT JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             WHERE td.date >= :monthsBackDate
@@ -109,12 +112,13 @@ readonly class DashboardRepository
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
                 COALESCE(SUM(i.total), 0) AS total
-            FROM comprobante i
+            FROM tax_document i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
                 LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.date >= :last30days
+              AND i.document_type IN ('01', '03')
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
         ", $params);
@@ -126,8 +130,9 @@ readonly class DashboardRepository
                 COALESCE(pm.name, 'Sin método') AS method,
                 COALESCE(SUM(i.total), 0) AS total
             FROM time_dimension td
-            LEFT JOIN comprobante i
-                ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+            LEFT JOIN tax_document i
+                ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
+                AND i.document_type IN ('01', '03')
             LEFT JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
             LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
             LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
@@ -139,17 +144,17 @@ readonly class DashboardRepository
 
         $topProducts = $this->connection->fetchAllAssociative("
             SELECT
-                p.descripcion AS product,
-                SUM(md.cantidad) AS quantity,
-                SUM(md.precio_total) AS total
-            FROM movimiento_detalle md
-                INNER JOIN movimiento m ON md.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
-                INNER JOIN comprobante i ON i.movimiento_id = m.movimiento_id
+                COALESCE(p.descripcion, tdl.product_name) AS product,
+                SUM(tdl.quantity) AS quantity,
+                SUM(tdl.total) AS total
+            FROM tax_document_line tdl
+                INNER JOIN tax_document i ON i.tax_document_id = tdl.tax_document_id AND i.document_type IN ('01', '03')
+                INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                INNER JOIN producto p ON md.producto_id = p.producto_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+                LEFT JOIN producto p ON tdl.product_id = p.producto_id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.date >= :last30days
-            GROUP BY p.producto_id, p.descripcion
+            GROUP BY tdl.product_id, p.descripcion, tdl.product_name
             ORDER BY total DESC
             LIMIT 5
         ", $params);
@@ -159,12 +164,13 @@ readonly class DashboardRepository
                 COALESCE(c.razon_social, 'Cliente') AS customer,
                 COUNT(*) AS invoices,
                 SUM(i.total) AS total
-            FROM comprobante i
+            FROM tax_document i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN cliente c ON i.cliente_id = c.ruc
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+                LEFT JOIN cliente c ON i.customer_id = c.ruc
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.date >= :last30days
+              AND i.document_type IN ('01', '03')
             GROUP BY c.ruc, c.razon_social
             ORDER BY total DESC
             LIMIT 5
@@ -175,12 +181,13 @@ readonly class DashboardRepository
                 COALESCE(vt.descripcion, 'Sin tipo') AS voucher_type,
                 COUNT(*) AS count,
                 SUM(i.total) AS total
-            FROM comprobante i
+            FROM tax_document i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN tipo_comprobante vt ON i.tipo_comprobante_id = vt.codigo
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.fecha, 'UTC', 'America/Lima'))
+                LEFT JOIN tipo_comprobante vt ON i.document_type = vt.codigo
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.year = :currentYear AND td.month = :currentMonth
+              AND i.document_type IN ('01', '03')
             GROUP BY vt.codigo, vt.descripcion
             ORDER BY total DESC
         ", $params);
@@ -206,10 +213,11 @@ readonly class DashboardRepository
                 SUM(
                     CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN n.total ELSE 0 END
                 ) AS refunds_month
-            FROM nota n
+            FROM tax_document n
                 INNER JOIN movimiento m ON n.movimiento_id = m.movimiento_id
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.fecha, 'UTC', 'America/Lima'))
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.issue_date, 'UTC', 'America/Lima'))
+            WHERE n.document_type IN ('07', '08')
         ", $params) ?: [];
 
         $summaryData = [

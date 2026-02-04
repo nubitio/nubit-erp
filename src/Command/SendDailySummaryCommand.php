@@ -69,15 +69,20 @@ class SendDailySummaryCommand extends TenantAwareCommand
 
             // Get invoices sent to SUNAT count for today
             $invoicesSentCount = (int)$this->connection->fetchOne(
-                'SELECT COUNT(*) FROM comprobante WHERE DATE(fecha) = ?',
+                "SELECT COUNT(*) FROM tax_document WHERE document_type IN ('01', '03') AND DATE(issue_date) = ?",
                 [$today]
             );
             $cancellationsCount = (int)$this->connection->fetchOne(
-                'SELECT COUNT(*) FROM comprobante WHERE voided = 1 AND DATE(fecha) = ?',
+                "SELECT COUNT(*) FROM tax_document t
+                 INNER JOIN movimiento m ON m.movimiento_id = t.movimiento_id
+                 WHERE t.document_type IN ('01', '03') AND m.estado = 2 AND DATE(t.issue_date) = ?",
                 [$today]
             );
             $invoicesErrorCount = (int)$this->connection->fetchOne(
-                'SELECT COUNT(*) FROM comprobante WHERE envio_sunat > 0 AND DATE(fecha) = ?',
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(issue_date) = ?
+                   AND sunat_status REGEXP '^[1-9][0-9]*$'",
                 [$today]
             );
 

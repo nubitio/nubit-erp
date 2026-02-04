@@ -12,6 +12,7 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Entity\CreditNote;
 use App\Repository\BranchRepository;
 use App\Service\CreditNoteService;
+use App\Service\TaxDocumentSyncService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
@@ -26,6 +27,7 @@ readonly class CreditNoteProcessor implements ProcessorInterface
         private ProcessorInterface $removeProcessor,
         private EntityManagerInterface $entityManager,
         private CreditNoteService $creditNoteService,
+        private TaxDocumentSyncService $taxDocumentSyncService,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
     ) {
@@ -39,6 +41,8 @@ readonly class CreditNoteProcessor implements ProcessorInterface
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
     {
+        $isNew = !$data->getId();
+
         if ($data->getId() && $data->isSentToSunat()) {
             if ($operation instanceof DeleteOperationInterface) {
                 throw new ServiceException('No se puede eliminar una nota de crédito enviada a SUNAT.');
@@ -55,7 +59,14 @@ readonly class CreditNoteProcessor implements ProcessorInterface
             $this->applyDefaults($data);
         }
 
-        return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        $creditNote = $result instanceof CreditNote ? $result : $data;
+
+        if ($isNew) {
+            $this->taxDocumentSyncService->syncCreditNote($creditNote);
+        }
+
+        return $result;
     }
 
     private function applyDefaults(CreditNote $creditNote): void

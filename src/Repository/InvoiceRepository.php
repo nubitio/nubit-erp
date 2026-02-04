@@ -110,29 +110,29 @@ SELECT
     e.telefono AS company_phone,
     l.direccion AS branch_address,
     l.telefono AS branch_phone,
-    IFNULL(i.tipo_comprobante_id, '00') AS voucher_type,
-    IFNULL(i.serie, m.serie) AS voucher_series,
-    IFNULL(i.numero, m.numero) AS voucher_number,
+    IFNULL(i.document_type, '00') AS voucher_type,
+    IFNULL(i.series, m.serie) AS voucher_series,
+    IFNULL(i.number, m.numero) AS voucher_number,
     m.forma_pago AS voucher_payment_method,
-    IFNULL(i.fecha, m.fecha) AS voucher_date,
-    'PEN' AS voucher_currency,
+    IFNULL(i.issue_date, m.fecha) AS voucher_date,
+    IFNULL(i.currency, 'PEN') AS voucher_currency,
     IFNULL(i.discount_percent, m.descuento) AS voucher_discount_percentage,
     IFNULL(i.discount_amount, detail.discount_amount) AS voucher_discount_amount,
-    i.rc as voucher_consumption_surcharge_amount,
+    i.rc_amount as voucher_consumption_surcharge_amount,
     IFNULL(m.recargo_consumo, 0) as voucher_consumption_surcharge_percentage,
-    IFNULL(i.gravada, detail.taxed_amount) AS voucher_taxed_amount,
-    IFNULL(i.igv, detail.tax_amount) AS voucher_tax_amount,
+    IFNULL(i.taxable_amount, detail.taxed_amount) AS voucher_taxed_amount,
+    IFNULL(i.igv_amount, detail.tax_amount) AS voucher_tax_amount,
     m.igv AS voucher_tax_percentage,
-    IFNULL(i.igv, detail.tax_amount) AS voucher_total_taxes,
+    IFNULL(i.igv_amount, detail.tax_amount) AS voucher_total_taxes,
     IFNULL(i.subtotal, detail.taxed_amount) AS voucher_sale_value,
     IFNULL(i.total, detail.sale_amount) AS voucher_sale_amount,
-    IFNULL(i.tipo_operacion, m.tipo_operacion) AS voucher_operation_type,
-    IFNULL(i.detraccion_codigo, m.detraccion_codigo) AS voucher_detraction_code,
-    IFNULL(i.detraccion_porcentaje, m.detraccion_porcentaje) AS voucher_detraction_percent,
-    IFNULL(i.detraccion_monto, m.detraccion_monto) AS voucher_detraction_amount,
-    IFNULL(i.detraccion_medio_pago, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
+    IFNULL(i.operation_type, m.tipo_operacion) AS voucher_operation_type,
+    IFNULL(i.detraction_code, m.detraccion_codigo) AS voucher_detraction_code,
+    IFNULL(i.detraction_percent, m.detraccion_porcentaje) AS voucher_detraction_percent,
+    IFNULL(i.detraction_amount, m.detraccion_monto) AS voucher_detraction_amount,
+    IFNULL(i.detraction_payment_method, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
     sc_pay.description AS voucher_detraction_payment_description,
-    IFNULL(i.detraccion_valor_referencial, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
+    IFNULL(i.detraction_value_ref, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
     e.detraccion_account AS voucher_detraction_account,
     sc_det.description AS voucher_detraction_description,
     e.bank_name AS voucher_bank_name,
@@ -141,21 +141,21 @@ SELECT
     m.glosa AS voucher_note,
     i.created_at AS date_comprobante,
     i.digest AS voucher_hash,
-    IFNULL(i.voided, m.estado) AS voucher_status,
+    m.estado AS voucher_status,
     CONCAT(
         c.ruc,
         '|',
-        i.tipo_comprobante_id,
+        i.document_type,
         '|',
-        i.serie,
+        i.series,
         '|',
-        i.numero,
+        i.number,
         '|',
-        i.igv,
+        i.igv_amount,
         '|',
         i.total,
         '|',
-        i.fecha,
+        i.issue_date,
         '|',
         '0',
         '|',
@@ -165,17 +165,19 @@ SELECT
     ) as voucher_qr_data
 FROM
     movimiento m
-    LEFT JOIN comprobante i ON i.movimiento_id = m.movimiento_id
+    LEFT JOIN tax_document i
+        ON i.movimiento_id = m.movimiento_id
+       AND i.document_type IN ('01', '03')
     INNER JOIN almacen a ON a.almacen_id = m.almacen_id
     INNER JOIN `local` l ON l.local_id = a.local_id
     INNER JOIN empresa e ON e.empresa_id = l.empresa_id
     INNER JOIN cliente c ON c.ruc = m.cliente_id
     LEFT JOIN sunat_catalog sc_det
         ON sc_det.catalog = 54
-        AND sc_det.code = IFNULL(i.detraccion_codigo, m.detraccion_codigo)
+        AND sc_det.code = IFNULL(i.detraction_code, m.detraccion_codigo)
     LEFT JOIN sunat_catalog sc_pay
         ON sc_pay.catalog = 59
-        AND sc_pay.code = IFNULL(i.detraccion_medio_pago, m.detraccion_medio_pago)
+        AND sc_pay.code = IFNULL(i.detraction_payment_method, m.detraccion_medio_pago)
     LEFT JOIN (
         SELECT
             md.movimiento_id,
@@ -210,22 +212,60 @@ SQL;
     {
         return <<<SQL
 SELECT
-    md.id AS line_id,
-    p.producto_id AS product_id,
-    p.codigo AS product_code,
-    u.`code` AS product_uom,
-    p.descripcion AS product_name,
-    md.cantidad AS quantity,
-    md.precio_unitario AS unit_price,
-    m.igv AS tax_percentage,
-    md.precio_total AS total,
-    '10' AS tax_type
-FROM movimiento m
-INNER JOIN movimiento_detalle md ON md.movimiento_id = m.movimiento_id
-INNER JOIN producto p ON p.producto_id = md.producto_id
-LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
-WHERE m.movimiento_id = :saleId
-ORDER BY md.id ASC
+    line_id,
+    product_id,
+    product_code,
+    product_uom,
+    product_name,
+    quantity,
+    unit_price,
+    tax_percentage,
+    total,
+    tax_type
+FROM (
+    SELECT
+        tdl.id AS line_id,
+        tdl.product_id AS product_id,
+        tdl.product_code AS product_code,
+        tdl.product_uom AS product_uom,
+        tdl.product_name AS product_name,
+        tdl.quantity AS quantity,
+        tdl.unit_price AS unit_price,
+        m.igv AS tax_percentage,
+        tdl.total AS total,
+        IFNULL(tdl.tax_type, '10') AS tax_type
+    FROM tax_document td
+    INNER JOIN tax_document_line tdl ON tdl.tax_document_id = td.tax_document_id
+    INNER JOIN movimiento m ON m.movimiento_id = td.movimiento_id
+    WHERE td.movimiento_id = :saleId
+      AND td.document_type IN ('01', '03')
+
+    UNION ALL
+
+    SELECT
+        md.id AS line_id,
+        p.producto_id AS product_id,
+        p.codigo AS product_code,
+        u.`code` AS product_uom,
+        p.descripcion AS product_name,
+        md.cantidad AS quantity,
+        md.precio_unitario AS unit_price,
+        m.igv AS tax_percentage,
+        md.precio_total AS total,
+        '10' AS tax_type
+    FROM movimiento m
+    INNER JOIN movimiento_detalle md ON md.movimiento_id = m.movimiento_id
+    INNER JOIN producto p ON p.producto_id = md.producto_id
+    LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
+    WHERE m.movimiento_id = :saleId
+      AND NOT EXISTS (
+          SELECT 1
+          FROM tax_document td2
+          WHERE td2.movimiento_id = m.movimiento_id
+            AND td2.document_type IN ('01', '03')
+      )
+) AS sale_lines
+ORDER BY line_id ASC
 SQL;
     }
 

@@ -141,7 +141,7 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder().type(FieldType.NONE).name('mensaje_sunat').label('Mensaje sunat').build(),
+    new FieldBuilder().type(FieldType.NONE).name('mensajeSunat').label('Mensaje sunat').build(),
   );
 
   return fields;
