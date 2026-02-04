@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Api\SendCreditNote;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Exception\ServiceException;
+use App\Core\Util\ReceiptPayload;
 use App\Repository\CreditNoteRepository;
 use App\State\CreditNote\CreditNoteProcessor;
 use DateTime;
@@ -18,7 +18,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
-use App\Core\Util\ReceiptPayload;
 
 #[ApiResource(
     shortName: 'CreditNote',
@@ -36,14 +35,10 @@ use App\Core\Util\ReceiptPayload;
         new Post(
             uriTemplate: '/credit-notes/{id}/send',
             controller: SendCreditNote::class,
+            read: false,
+            deserialize: false,
         ),
-    ],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'id',
-            fromClass: CreditNote::class,
-        ),
-    ],
+    ]
 )]
 #[ORM\Entity(repositoryClass: CreditNoteRepository::class)]
 #[ORM\Table(name: 'nota')]

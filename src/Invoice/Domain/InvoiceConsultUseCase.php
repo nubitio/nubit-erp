@@ -8,6 +8,7 @@ use App\Billing\Domain\BillConsultUseCase;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\CompanyContext;
 use App\Repository\InvoiceRepository;
+use App\Service\TaxDocumentSyncService;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Model\Response\StatusCdrResult;
@@ -21,6 +22,7 @@ readonly class InvoiceConsultUseCase
         private FileManager $fileManager,
         private CompanyContext $companyContext,
         private EntityManagerInterface $entityManager,
+        private TaxDocumentSyncService $taxDocumentSyncService,
     ) {
     }
 
@@ -57,6 +59,18 @@ readonly class InvoiceConsultUseCase
 
             $this->entityManager->persist($invoice);
             $this->entityManager->flush();
+            if ($invoice !== null) {
+                $this->taxDocumentSyncService->recordSunatEvent(
+                    documentType: $invoice->getVoucherTypeId(),
+                    series: $invoice->getSeries(),
+                    number: $invoice->getNumber(),
+                    eventType: 'sunat_consult',
+                    statusCode: $invoice->getSunatStatus(),
+                    statusMessage: $invoice->getSunatMessage(),
+                    digest: $invoice->getDigest(),
+                    payload: null,
+                );
+            }
         }
 
         return $consultResponse;

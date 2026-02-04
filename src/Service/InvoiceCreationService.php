@@ -19,6 +19,7 @@ final readonly class InvoiceCreationService
     public function __construct(
         private InvoiceRepository $invoiceRepository,
         private EntityManagerInterface $entityManager,
+        private TaxDocumentSyncService $taxDocumentSyncService,
     ) {
     }
 
@@ -159,6 +160,9 @@ final readonly class InvoiceCreationService
         $invoice = $this->invoiceRepository->findOneBy(
             ['sale' => $sale->getId()]
         );
+        if ($invoice !== null) {
+            $this->taxDocumentSyncService->syncInvoice($invoice);
+        }
 
         $sale->setHasInvoice(true);
         $sale->setInvoice(($invoice?->getSeries() ?? '') . '-' . ($invoice?->getNumber() ?? ''));

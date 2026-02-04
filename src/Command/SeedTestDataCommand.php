@@ -159,6 +159,9 @@ HELP
 
         // Truncate invoices and sales (invoices must be deleted first due to FK)
         $io->text('Truncating invoices and sales...');
+        $this->truncateIfExists('tax_document_event');
+        $this->truncateIfExists('tax_document_line');
+        $this->truncateIfExists('tax_document');
         $this->connection->executeStatement('TRUNCATE TABLE comprobante');
         $this->connection->executeStatement('TRUNCATE TABLE movimiento_detalle');
         $this->connection->executeStatement('TRUNCATE TABLE movimiento');
@@ -194,5 +197,17 @@ HELP
         $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
 
         $io->progressFinish();
+    }
+
+    private function truncateIfExists(string $table): void
+    {
+        $exists = $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
+            [$table]
+        );
+
+        if ((int) $exists > 0) {
+            $this->connection->executeStatement('TRUNCATE TABLE ' . $table);
+        }
     }
 }

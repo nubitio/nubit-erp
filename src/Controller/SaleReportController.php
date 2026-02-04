@@ -96,21 +96,23 @@ class SaleReportController extends AbstractController
     {
         return <<<SQL
 select
-    p.codigo as product_code,
-    p.descripcion as product_name,
+    coalesce(p.codigo, tdl.product_code, '-') as product_code,
+    coalesce(p.descripcion, tdl.product_name) as product_name,
     c.descripcion as category,
-    sum(md.cantidad) as quantity,
-    round(sum(md.precio_total) / nullif(sum(md.cantidad),0), 2) as average_unit_price,
-    sum(md.precio_total) as total
-from movimiento m
+    sum(tdl.quantity) as quantity,
+    round(sum(tdl.total) / nullif(sum(tdl.quantity),0), 2) as average_unit_price,
+    sum(tdl.total) as total
+from tax_document td
+    inner join movimiento m on m.movimiento_id = td.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
-    inner join movimiento_detalle md on md.movimiento_id = m.movimiento_id
-    inner join producto p on p.producto_id = md.producto_id
+    inner join tax_document_line tdl on tdl.tax_document_id = td.tax_document_id
+    left join producto p on p.producto_id = tdl.product_id
     left join categoria c on c.categoria_id = p.categoria_id
 where
+    td.document_type in ('01', '03')
     m.tipo_id = 2
     and m.estado = 1
-    and m.fecha between :date_from and :date_to
+    and td.issue_date between :date_from and :date_to
     and a.local_id = :local_id
 group by product_code, product_name, category
 order by total desc
@@ -123,7 +125,7 @@ SQL;
 select
     date(m.fecha) as sale_date,
     time(m.fecha) as sale_time,
-    concat(coalesce(i.serie, m.serie), '-', coalesce(i.numero, m.numero)) as document,
+    concat(coalesce(i.series, m.serie), '-', coalesce(i.number, m.numero)) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
     coalesce(c.ruc, '-') as customer_ruc,
@@ -133,13 +135,13 @@ select
     m.total,
     m.descuento as discount,
     case
-        when coalesce(i.voided, m.estado) = 2 then 'Anulado'
+        when m.estado = 2 then 'Anulado'
         else 'Aceptado'
     end as status
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
-    left join comprobante i on i.movimiento_id = m.movimiento_id
-    left join tipo_comprobante vt on vt.codigo = i.tipo_comprobante_id
+    left join tax_document i on i.movimiento_id = m.movimiento_id and i.document_type in ('01', '03')
+    left join tipo_comprobante vt on vt.codigo = i.document_type
     left join cliente c on c.ruc = m.cliente_id
     left join payment_method pm on pm.id = m.tipo_pago
 where
@@ -154,33 +156,34 @@ SQL;
     {
         return <<<SQL
 select
-    date(i.fecha) as issue_date,
+    date(i.issue_date) as issue_date,
     coalesce(vt.descripcion, 'Documento') as voucher_type,
-    concat(i.serie, '-', i.numero) as document,
+    concat(i.series, '-', i.number) as document,
     coalesce(c.ruc, '-') as customer_ruc,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
-    i.gravada as taxable_amount,
-    i.igv,
-    i.rc as service_charge,
+    i.taxable_amount as taxable_amount,
+    i.igv_amount as igv,
+    i.rc_amount as service_charge,
     i.total,
     case
-        when i.voided = 2 then 'Anulado'
-        when i.envio_sunat is null or i.envio_sunat = '' then 'Pendiente'
-        when cast(i.envio_sunat as unsigned) = 0 then 'Aceptado'
-        when cast(i.envio_sunat as unsigned) < 2000 then 'Erroneo'
-        when cast(i.envio_sunat as unsigned) < 4000 then 'Rechazado'
+        when m.estado = 2 then 'Anulado'
+        when i.sunat_status is null or i.sunat_status = '' then 'Pendiente'
+        when i.sunat_status = '0' then 'Aceptado'
+        when cast(i.sunat_status as unsigned) < 2000 then 'Erroneo'
+        when cast(i.sunat_status as unsigned) < 4000 then 'Rechazado'
         else 'Observado'
     end as status
-from comprobante i
+from tax_document i
     inner join movimiento m on m.movimiento_id = i.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
     left join cliente c on c.ruc = m.cliente_id
-    left join tipo_comprobante vt on vt.codigo = i.tipo_comprobante_id
+    left join tipo_comprobante vt on vt.codigo = i.document_type
 where
     m.tipo_id = 2
-    and i.fecha between :date_from and :date_to
+    and i.document_type in ('01', '03')
+    and i.issue_date between :date_from and :date_to
     and a.local_id = :local_id
-order by i.fecha desc
+order by i.issue_date desc
 SQL;
     }
 
@@ -189,23 +192,23 @@ SQL;
         return <<<SQL
 select
     date(m.fecha) as sale_date,
-    concat(coalesce(i.serie, m.serie), '-', coalesce(i.numero, m.numero)) as document,
+    concat(coalesce(i.series, m.serie), '-', coalesce(i.number, m.numero)) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
     coalesce(c.ruc, '-') as customer_ruc,
     m.total,
     case
-        when coalesce(i.voided, m.estado) = 2 then 'Anulado'
+        when m.estado = 2 then 'Anulado'
         else 'Aceptado'
     end as status
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
-    left join comprobante i on i.movimiento_id = m.movimiento_id
+    left join tax_document i on i.movimiento_id = m.movimiento_id and i.document_type in ('01', '03')
     left join cliente c on c.ruc = m.cliente_id
-    left join tipo_comprobante vt on vt.codigo = i.tipo_comprobante_id
+    left join tipo_comprobante vt on vt.codigo = i.document_type
 where
     m.tipo_id = 2
-    and (coalesce(i.voided, 0) = 1 or m.estado = 0)
+    and m.estado = 2
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
 order by m.fecha desc
@@ -216,23 +219,24 @@ SQL;
     {
         return <<<SQL
 select
-    n.fecha as issue_date,
-    concat(n.serie, '-', n.correlativo) as document,
-    n.tipo_id as note_type,
-    n.codigo_motivo as reason_code,
-    n.descripcion_motivo as reason,
-    n.doc_afectado as affected_document,
+    n.issue_date as issue_date,
+    concat(n.series, '-', n.number) as document,
+    n.document_type as note_type,
+    n.reason_code as reason_code,
+    n.reason_description as reason,
+    n.affected_document as affected_document,
     n.total,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
     coalesce(c.ruc, '-') as customer_ruc
-from nota n
+from tax_document n
     inner join movimiento m on m.movimiento_id = n.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
     left join cliente c on c.ruc = m.cliente_id
 where
-    n.fecha between :date_from and :date_to
+    n.document_type in ('07', '08')
+    and n.issue_date between :date_from and :date_to
     and a.local_id = :local_id
-order by n.fecha desc
+order by n.issue_date desc
 SQL;
     }
 
@@ -246,11 +250,12 @@ select
     sum(m.total) as total
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
-    left join payment_method pm on pm.id = m.tipo_pago
+    inner join tax_document td on td.movimiento_id = m.movimiento_id and td.document_type in ('01', '03')
+    left join payment_method pm on pm.id = td.payment_method
 where
     m.tipo_id = 2
     and m.estado = 1
-    and m.fecha between :date_from and :date_to
+    and td.issue_date between :date_from and :date_to
     and a.local_id = :local_id
 group by sale_date, payment_method
 order by sale_date desc, payment_method
@@ -261,17 +266,19 @@ SQL;
     {
         return <<<SQL
 select
-    date(m.fecha) as sale_date,
+    date(td.issue_date) as sale_date,
     count(*) as documents,
-    sum(m.subtotal) as subtotal,
-    sum(m.igv) as tax,
-    sum(m.total) as total
-from movimiento m
+    sum(td.subtotal) as subtotal,
+    sum(td.igv_amount) as tax,
+    sum(td.total) as total
+from tax_document td
+    inner join movimiento m on m.movimiento_id = td.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
 where
     m.tipo_id = 2
     and m.estado = 1
-    and m.fecha between :date_from and :date_to
+    and td.document_type in ('01', '03')
+    and td.issue_date between :date_from and :date_to
     and a.local_id = :local_id
 group by sale_date
 order by sale_date desc

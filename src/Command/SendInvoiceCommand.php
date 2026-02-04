@@ -53,9 +53,10 @@ class SendInvoiceCommand extends TenantAwareCommand
         $pendingTotal = (int)$this->connection->fetchOne(
             "
             SELECT COUNT(1) AS total
-            FROM comprobante
-            WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
-              AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+            FROM tax_document
+            WHERE document_type IN ('01', '03')
+              AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')
+              AND issue_date >= DATE_SUB(NOW(), INTERVAL 3 DAY)
             "
         );
 
@@ -76,10 +77,11 @@ class SendInvoiceCommand extends TenantAwareCommand
             $pendingIds = $this->connection->fetchFirstColumn(
                 "
                 SELECT movimiento_id
-                FROM comprobante
-                WHERE (envio_sunat REGEXP '[^0-9]' OR envio_sunat IS NULL)
-                  AND fecha >= DATE_SUB(NOW(), INTERVAL 3 DAY)
-                ORDER BY fecha ASC
+                FROM tax_document
+                WHERE document_type IN ('01', '03')
+                  AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')
+                  AND issue_date >= DATE_SUB(NOW(), INTERVAL 3 DAY)
+                ORDER BY issue_date ASC
                 LIMIT :limit OFFSET :offset
                 ",
                 [

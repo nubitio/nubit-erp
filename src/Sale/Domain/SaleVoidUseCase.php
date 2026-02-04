@@ -22,6 +22,7 @@ use App\Entity\Sale;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\InvoiceRepository;
+use App\Service\TaxDocumentSyncService;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use League\Flysystem\FilesystemException;
@@ -39,6 +40,7 @@ readonly class SaleVoidUseCase
         private CompanyContext $companyContext,
         private LoggerInterface $logger,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
+        private TaxDocumentSyncService $taxDocumentSyncService,
     ) {
     }
 
@@ -146,6 +148,7 @@ readonly class SaleVoidUseCase
 
         $this->entityManager->persist($invoice);
         $this->entityManager->flush();
+        $this->taxDocumentSyncService->syncInvoice($invoice);
 
         return $response;
     }
@@ -189,6 +192,7 @@ readonly class SaleVoidUseCase
 
         $this->entityManager->persist($invoice);
         $this->entityManager->flush();
+        $this->taxDocumentSyncService->syncInvoice($invoice);
 
         return $response;
     }
