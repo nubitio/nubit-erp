@@ -71,8 +71,8 @@ class ReceiptController extends BaseController
 
         $format = strval($request->get('format', 'ticket'));
         $template = $format === 'a4'
-            ? 'sale/report/invoice_a4.html.twig'
-            : 'sale/report/invoice.html.twig';
+            ? 'invoice/invoice_a4.html.twig'
+            : 'invoice/invoice.html.twig';
         $content = $this->renderView($template, [
             'qr' => $qr,
             'voucher' => $voucher,

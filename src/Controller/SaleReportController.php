@@ -134,7 +134,7 @@ select
     m.descuento as discount,
     case
         when coalesce(i.voided, m.estado) = 2 then 'Anulado'
-        else 'Vigente'
+        else 'Aceptado'
     end as status
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
@@ -196,7 +196,7 @@ select
     m.total,
     case
         when coalesce(i.voided, m.estado) = 2 then 'Anulado'
-        else 'Vigente'
+        else 'Aceptado'
     end as status
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
