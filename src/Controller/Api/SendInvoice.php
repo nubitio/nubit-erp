@@ -2,36 +2,28 @@
 
 declare(strict_types=1);
 
-namespace App\State\Invoice;
+namespace App\Controller\Api;
 
-use Override;
-use Exception;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\InvoiceSendUseCase;
+use Exception;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
-readonly class SendInvoiceProcessor implements ProcessorInterface
+class SendInvoice extends AbstractController
 {
     public function __construct(
-        private InvoiceSendUseCase $invoiceSendUseCase,
-        private LoggerInterface $logger,
+        private readonly InvoiceSendUseCase $invoiceSendUseCase,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * @inheritdoc
-     */
-    #[Override]
-    public function process(
-        mixed $data,
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): ApiResponse {
-        $id = $uriVariables['id'];
+    public function __invoke(Request $request): Response
+    {
+        $id = $request->get('id');
 
         try {
             $result = $this->invoiceSendUseCase->__invoke($id);

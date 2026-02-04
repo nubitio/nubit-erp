@@ -5,8 +5,16 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Post;
+use App\Controller\Api\SendInvoice;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
+use App\Repository\TaxDocumentRepository;
+use App\State\Invoice\ConsultInvoiceProvider;
+use App\State\Invoice\SendEmailProcessor;
+use App\State\Invoice\ValidateInvoiceProcessor;
 use App\State\TaxDocument\TaxDocumentProvider;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -14,7 +22,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
 #[ORM\Table(name: 'tax_document')]
 #[ApiResource(
     shortName: 'TaxDocument',
@@ -22,6 +30,35 @@ use Symfony\Component\Serializer\Attribute\Groups;
     denormalizationContext: ['groups' => ['tax_document:write']],
     filters: [DevExtremeFilter::class],
     provider: TaxDocumentProvider::class,
+)]
+#[ApiResource(
+    shortName: 'TaxDocument',
+    operations: [
+        new Get(
+            uriTemplate: '/tax-documents/{id}/consult',
+            provider: ConsultInvoiceProvider::class
+        ),
+        new Post(
+            uriTemplate: '/tax-documents/{id}/validate',
+            processor: ValidateInvoiceProcessor::class
+        ),
+        new Post(
+            uriTemplate: '/tax-documents/{id}/send',
+            controller: SendInvoice::class,
+            read: false,
+            deserialize: false,
+        ),
+        new Post(
+            uriTemplate: '/tax-documents/{id}/email',
+            processor: SendEmailProcessor::class
+        ),
+    ],
+    uriVariables: [
+        'id' => new Link(
+            fromProperty: 'id',
+            fromClass: TaxDocument::class
+        ),
+    ]
 )]
 class TaxDocument
 {
@@ -94,9 +131,17 @@ class TaxDocument
     #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
     private ?string $sunatMessage = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(name: 'digest', type: Types::TEXT, nullable: true)]
+    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    private ?string $digest = null;
+
+    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     #[Groups(['tax_document:read'])]
     private DateTimeInterface $createdAt;
+
+    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
+    #[Groups(['tax_document:read'])]
+    private DateTimeInterface $updatedAt;
 
     public function getId(): string
     {
@@ -283,6 +328,18 @@ class TaxDocument
         return $this;
     }
 
+    public function getDigest(): ?string
+    {
+        return $this->digest;
+    }
+
+    public function setDigest(?string $digest): self
+    {
+        $this->digest = $digest;
+
+        return $this;
+    }
+
     public function getCreatedAt(): DateTimeInterface
     {
         return $this->createdAt;
@@ -291,6 +348,18 @@ class TaxDocument
     public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
