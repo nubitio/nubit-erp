@@ -22,6 +22,8 @@ class Voucher
         public ?string $company_name = null,
         public ?string $company_address = null,
         public ?string $company_phone = null,
+        public ?string $branch_address = null,
+        public ?string $branch_phone = null,
         public ?string $voucher_type = null,
         public ?string $voucher_series = null,
         public ?string $voucher_number = null,

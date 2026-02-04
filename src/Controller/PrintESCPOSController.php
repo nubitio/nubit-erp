@@ -16,24 +16,36 @@ use Mike42\Escpos\EscposImage;
 use Mike42\Escpos\PrintConnectors\DummyPrintConnector;
 use Mike42\Escpos\Printer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class PrintESCPOSController extends AbstractController
 {
+    private const array PAPER_WIDTH_MAP = [
+        58 => 32,
+        80 => 42,
+    ];
+
     public function __construct(
         private readonly LogoProvider $logoProvider,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly SettingsService $settingsService,
+        #[Autowire('%env(PRINTER_LINE_WIDTH)%')]
+        private readonly int $printerLineWidth,
     ) {
     }
 
     /**
-     * @throws Exception|ExceptionInterface
+     * @throws Exception
      */
-    public function __invoke(string $id): Response
+    public function __invoke(string $id, Request $request): Response
     {
-        $commands = $this->printCommands($id);
+        $paperWidth = $request->query->getInt('paper_width');
+        $lineWidth = self::PAPER_WIDTH_MAP[$paperWidth] ?? null;
+        $baseUrl = $request->getSchemeAndHttpHost();
+
+        $commands = $this->printCommands($id, $lineWidth, $baseUrl);
 
         return new Response(
             $commands,
@@ -44,12 +56,11 @@ class PrintESCPOSController extends AbstractController
 
     /**
      * @throws Exception
-     * @throws \Exception|ExceptionInterface
+     * @throws \Exception
      */
-
-    public function printCommands(string $saleId): string
+    public function printCommands(string $saleId, ?int $lineWidth = null, ?string $baseUrl = null): string
     {
-        $width = max(32, (int)($_ENV['PRINTER_LINE_WIDTH'] ?? 42)); // 42 típico 80mm, 32 típico 58mm
+        $width = $lineWidth ?? max(32, $this->printerLineWidth ?? 42);
 
         $hrDashed = $this->hr('-', $width);
         $hrSolid = $this->hr('=', $width);
@@ -64,7 +75,7 @@ class PrintESCPOSController extends AbstractController
                 $this->settingsService->get(Constants::PRINT_LOGO, 'true')
             );
 
-        // HEADER (logo + empresa)
+        // HEADER (logo + company name)
         $printer->setJustification(Printer::JUSTIFY_CENTER);
 
         if ($shouldPrintLogo && $logo instanceof EscposImage) {
@@ -80,14 +91,17 @@ class PrintESCPOSController extends AbstractController
             $printer->text('RUC: ' . ($voucher->company_id ?? '-') . "\n");
         }
 
-        $printer->text($this->wrap($voucher->company_address ?? '-', $width));
-        if (!empty($voucher->company_phone)) {
-            $printer->text('Tel.: ' . $voucher->company_phone . "\n");
+        $address = !empty($voucher->branch_address) ? $voucher->branch_address : ($voucher->company_address ?? '-');
+        $phone = !empty($voucher->branch_phone) ? $voucher->branch_phone : $voucher->company_phone;
+
+        $printer->text($this->wrap($address, $width));
+        if (!empty($phone)) {
+            $printer->text('Tel.: ' . $phone . "\n");
         }
 
         $printer->text($hrDashed);
 
-        // DOCUMENTO (tipo + serie-num)
+        // DOCUMENT (type + series-number)
         $docType = match ($voucher->voucher_type) {
             DocType::FACTURA->value => 'FACTURA ELECTRONICA',
             DocType::BOLETA->value => 'BOLETA ELECTRONICA',
@@ -118,7 +132,7 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($hrDashed);
 
-        // CLIENTE
+        // CUSTOMER
         $printer->text('CLIENTE: ' . ($voucher->customer_name ?? '-') . "\n");
         if (!empty($voucher->customer_doc_number)) {
             if ($voucher->voucher_type === DocType::FACTURA->value) {
@@ -133,19 +147,19 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($hrSolid);
 
-        // ITEMS (cabecera)
+        // ITEMS (header)
         $printer->setEmphasis(true);
         $printer->text((string)new SaleItemDto('DESCRIPCION', 'P.UNIT', 'IMPORTE'));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
         foreach ($voucher->voucher_items as $item) {
-            // Línea principal: nombre + columnas
+            // Principal line: description + unit price + total
             $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total);
 
             $printer->text((string)$saleItem);
 
-            // Línea secundaria: cantidad + uom
+            // Secondary line: quantity + unit
             $qty = $this->formatQuantity((float)$item->quantity);
             $uom = $item->product_uom ?? '';
             $printer->text('  ' . trim($qty . ' ' . $uom) . "\n");
@@ -153,7 +167,7 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($hrDashed);
 
-        // TOTALES
+        // TOTALS
         if ((float)$voucher->voucher_discount_percentage > 0) {
             $printer->text((string)new SaleItemDto('DESCUENTO', '', '-' . $voucher->voucher_discount_amount));
         }
@@ -176,27 +190,25 @@ class PrintESCPOSController extends AbstractController
                     )
                 );
             }
-            if ($hasDetraction) {
-                $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
-                $printer->text(
-                    (string)new SaleItemDto(
-                        'DETRACCION (' . $detractionPercent . '%)',
-                        '',
-                        $voucher->voucher_detraction_amount
-                    )
-                );
-            }
         }
 
-        // TOTAL destacado: línea sólida + emphasis
+        // FINAL TOTAL
         $printer->text($hrSolid);
         $printer->setEmphasis(true);
         $printer->text((string)new SaleItemDto('TOTAL', '', $voucher->voucher_sale_amount));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
-        // DETRACCIÓN (si aplica)
+        // DETRACTION DETAILS
         if ($hasDetraction) {
+            $detractionPercent = $voucher->voucher_detraction_percent ?? 0;
+            $printer->text(
+                (string)new SaleItemDto(
+                    'DETRACCION (' . $detractionPercent . '%)',
+                    '',
+                    $voucher->voucher_detraction_amount
+                )
+            );
             $detractionType = trim(
                 ($voucher->voucher_detraction_code ?? '') .
                 ($voucher->voucher_detraction_description ? ' - ' . $voucher->voucher_detraction_description : '')
@@ -236,16 +248,14 @@ class PrintESCPOSController extends AbstractController
 
         $printer->text($hrSolid);
 
-        // MONTO EN LETRAS (centrado)
+        // TOTAL IN WORDS
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text($this->wrap($voucher->getVoucherTotalText(), $width));
 
-        // QR + HASH + texto legal
+        // QR + HASH + legal text
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
-            if ('true' === (string)($_ENV['PRINTER_PRINT_QR'] ?? 'false')) {
-                $printer->feed();
-                $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 8);
-            }
+            $printer->feed();
+            $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 8);
 
             $printer->feed();
             $printer->text("Resumen:\n");
@@ -253,7 +263,9 @@ class PrintESCPOSController extends AbstractController
 
             $printer->feed();
             $printer->text($this->wrap('Representación impresa del comprobante electrónico.', $width));
-            $printer->text($this->wrap('Consulte en: ' . ($_ENV['EFACT_URL'] ?? ''), $width));
+            if ($baseUrl !== null) {
+                $printer->text($this->wrap('Consulte en: ' . $baseUrl . '/buscar', $width));
+            }
         }
 
         // FOOTER

@@ -97,6 +97,8 @@ SELECT
     e.razon_social AS company_name,
     e.domicilio_fiscal AS company_address,
     e.telefono AS company_phone,
+    l.direccion AS branch_address,
+    l.telefono AS branch_phone,
     IFNULL(i.tipo_comprobante_id, '00') AS voucher_type,
     IFNULL(i.serie, m.serie) AS voucher_series,
     IFNULL(i.numero, m.numero) AS voucher_number,
@@ -214,5 +216,36 @@ LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
 WHERE m.movimiento_id = :saleId
 ORDER BY md.id ASC
 SQL;
+    }
+
+    public function findBySearchCriteria(
+        string $companyRuc,
+        string $voucherType,
+        string $series,
+        string $number,
+        string $date,
+        string $total,
+    ): ?Invoice {
+        $dateStart = new \DateTime($date . ' 00:00:00');
+        $dateEnd = new \DateTime($date . ' 23:59:59');
+
+        return $this->createQueryBuilder('i')
+            ->innerJoin('i.branch', 'b')
+            ->innerJoin('b.company', 'c')
+            ->where('c.ruc = :companyRuc')
+            ->andWhere('i.voucherTypeId = :voucherType')
+            ->andWhere('i.series = :series')
+            ->andWhere('i.number = :number')
+            ->andWhere('i.issuedAt BETWEEN :dateStart AND :dateEnd')
+            ->andWhere('i.total = :total')
+            ->setParameter('companyRuc', $companyRuc)
+            ->setParameter('voucherType', $voucherType)
+            ->setParameter('series', strtoupper($series))
+            ->setParameter('number', ltrim($number, '0'))
+            ->setParameter('dateStart', $dateStart)
+            ->setParameter('dateEnd', $dateEnd)
+            ->setParameter('total', number_format((float) $total, 2, '.', ''))
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

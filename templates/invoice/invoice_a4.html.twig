@@ -239,9 +239,16 @@
 
                     <div class="card">
                         <div class="brand-name text-center">{{ voucher.company_name }}</div>
+                        {% set address = voucher.branch_address|default(voucher.company_address)|default('-') %}
+                        {% set phone = voucher.branch_phone|default(voucher.company_phone) %}
                         <div class="small muted mt-1">
-                            <strong class="muted">Dirección:</strong> {{ voucher.company_address|default('-') }}
+                            <strong class="muted">Dirección:</strong> {{ address }}
                         </div>
+                        {% if phone %}
+                            <div class="small muted">
+                                <strong class="muted">Tel.:</strong> {{ phone }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -458,7 +465,9 @@
             {% if voucher.voucher_type != '00' %}
                 <div class="card-soft xs">
                     <div><strong>Resumen:</strong> {{ voucher.voucher_hash }}</div>
-                    <div class="muted">Representación impresa del comprobante electrónico.</div>
+                    <div class="muted">Representación impresa del comprobante electrónico. Consulte en: {{ base_url() }}
+                        /buscar
+                    </div>
                 </div>
             {% endif %}
 
