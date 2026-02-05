@@ -405,7 +405,7 @@ final readonly class TestDataSeeder
                 ? '20' . str_pad((string)(100000000 + $i), 9, '0', STR_PAD_LEFT)
                 : '10' . str_pad((string)(100000 + $i), 6, '0', STR_PAD_LEFT);
 
-            $existing = $this->customerRepository->find($ruc);
+            $existing = $this->customerRepository->findOneBy(['ruc' => $ruc]);
 
             if (!$existing instanceof Customer) {
                 if ($isCompany) {
@@ -527,7 +527,7 @@ final readonly class TestDataSeeder
         $logisticOperationId = $logisticOperation->getId();
 
         // Get IDs for all entities to avoid detachment issues
-        $customerIds = array_map(fn ($c) => $c->getRuc(), $customers);
+        $customerIds = array_map(fn ($c) => $c->getId(), $customers);
         $supplierIds = array_map(fn ($s) => $s->getId(), $suppliers);
         $paymentMethodIds = array_map(fn ($p) => $p->getId(), $paymentMethods);
         $productIds = array_map(fn ($p) => $p->getId(), $products);

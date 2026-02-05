@@ -15,6 +15,16 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
   fields.push(
     textField()
       .isIdentity(true)
+      .name('id')
+      .label('ID')
+      .visible(false)
+      .visibleOnForm(false)
+      .filterable(false)
+      .sortable(false)
+      .build(),
+  );
+  fields.push(
+    textField()
       .name('ruc')
       .label('RUC/DNI')
       .maxLength(11)

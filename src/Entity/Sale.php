@@ -67,7 +67,7 @@ class Sale
 
     #[Groups(['sale:read', 'sale:write'])]
     #[ORM\ManyToOne(targetEntity: Customer::class)]
-    #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'ruc')]
+    #[ORM\JoinColumn(name: 'cliente_id', referencedColumnName: 'id')]
     private ?Customer $cliente = null;
 
     #[Groups(['sale:read', 'sale:write'])]

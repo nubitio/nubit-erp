@@ -44,7 +44,7 @@ export const InvoiceFields = () => {
       .name('customer')
       .label('Cliente')
       .url(Constants.API_BASE_URL + 'customers')
-      .valueField('ruc')
+      .valueField('id')
       .textField('businessName')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .build(),

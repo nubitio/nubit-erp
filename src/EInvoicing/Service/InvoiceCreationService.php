@@ -135,7 +135,7 @@ final readonly class InvoiceCreationService
                 'document_type' => $voucherType,
                 'series' => $series,
                 'number' => strval($nextNumber),
-                'customer_id' => $sale->getCliente()?->getRuc(),
+                'customer_id' => $sale->getCliente()?->getId(),
                 'currency' => 'PEN',
                 'payment_method' => $sale->getFormaPago(),
                 'subtotal' => $invoiceAmounts->getSubtotal(),

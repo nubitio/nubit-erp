@@ -167,11 +167,11 @@ readonly class DashboardRepository
             FROM tax_document i
                 INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
                 INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN cliente c ON i.customer_id = c.ruc
+                LEFT JOIN cliente c ON i.customer_id = c.id
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.date >= :last30days
               AND i.document_type IN ('01', '03')
-            GROUP BY c.ruc, c.razon_social
+            GROUP BY c.id, c.razon_social
             ORDER BY total DESC
             LIMIT 5
         ", $params);

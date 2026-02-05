@@ -292,7 +292,7 @@ FROM
     INNER JOIN almacen a ON a.almacen_id = m.almacen_id
     INNER JOIN `local` l ON l.local_id = a.local_id
     INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-    INNER JOIN cliente c ON c.ruc = m.cliente_id
+    INNER JOIN cliente c ON c.id = m.cliente_id
     LEFT JOIN sunat_catalog sc_det
         ON sc_det.catalog = 54
         AND sc_det.code = IFNULL(i.detraction_code, m.detraccion_codigo)
@@ -405,7 +405,7 @@ INNER JOIN movimiento m ON m.movimiento_id = cn.movimiento_id
 INNER JOIN almacen a ON a.almacen_id = m.almacen_id
 INNER JOIN `local` l ON l.local_id = a.local_id
 INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-INNER JOIN cliente c ON c.ruc = m.cliente_id
+INNER JOIN cliente c ON c.id = m.cliente_id
 LEFT JOIN sunat_catalog sc_det
     ON sc_det.catalog = 54
     AND sc_det.code = IFNULL(cn.detraction_code, m.detraccion_codigo)
