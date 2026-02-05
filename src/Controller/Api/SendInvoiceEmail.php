@@ -2,42 +2,36 @@
 
 declare(strict_types=1);
 
-namespace App\State\Invoice;
+namespace App\Controller\Api;
 
-use Override;
-use Exception;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\InvoiceEmailUseCase;
+use Exception;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 
-readonly class SendEmailProcessor implements ProcessorInterface
+class SendInvoiceEmail extends AbstractController
 {
     public function __construct(
-        private InvoiceEmailUseCase $emailUseCase,
-        private LoggerInterface $logger,
+        private readonly InvoiceEmailUseCase $emailUseCase,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
-    /**
-     * @inheritdoc
-     */
-    #[Override]
-    public function process(
-        mixed $data,
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): ApiResponse {
+    public function __invoke(Request $request): Response
+    {
         try {
-            $this->emailUseCase->__invoke($uriVariables['id']);
+            $id = $request->get('id');
+            $this->emailUseCase->__invoke($id);
 
             return new ApiResponse(true, 'Email enviado');
         } catch (Exception | FilesystemException | TransportExceptionInterface $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
+
             return new ApiResponse(false, 'Error al enviar el email', $e);
         }
     }

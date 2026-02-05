@@ -2,33 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\State\Invoice;
+namespace App\Controller\Api;
 
-use Override;
-use Exception;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProviderInterface;
 use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\InvoiceConsultUseCase;
+use Exception;
 use League\Flysystem\FilesystemException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 
-readonly class ConsultInvoiceProvider implements ProviderInterface
+class ConsultInvoice extends AbstractController
 {
     public function __construct(
-        private InvoiceConsultUseCase $invoiceConsultUseCase,
+        private readonly InvoiceConsultUseCase $invoiceConsultUseCase,
     ) {
     }
 
-    /**
-     * @inheritdoc
-     */
-    #[Override]
-    public function provide(
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): object | array | null {
-        $id = $uriVariables['id'];
+    public function __invoke(Request $request)
+    {
+        $id = $request->get('id');
         try {
             $result = $this->invoiceConsultUseCase->__invoke($id);
 
