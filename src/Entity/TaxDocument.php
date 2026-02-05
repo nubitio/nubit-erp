@@ -8,13 +8,13 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Api\ConsultInvoice;
+use App\Controller\Api\SendInvoiceEmail;
 use App\Controller\Api\SendInvoice;
+use App\Controller\Api\ValidateInvoice;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
 use App\Repository\TaxDocumentRepository;
-use App\State\Invoice\ConsultInvoiceProvider;
-use App\State\Invoice\SendEmailProcessor;
-use App\State\Invoice\ValidateInvoiceProcessor;
 use App\State\TaxDocument\TaxDocumentProvider;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -36,11 +36,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
-            provider: ConsultInvoiceProvider::class
+            controller: ConsultInvoice::class,
+            read: false,
+            deserialize: false,
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/validate',
-            processor: ValidateInvoiceProcessor::class
+            controller: ValidateInvoice::class,
+            read: false,
+            deserialize: false,
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/send',
@@ -50,7 +54,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/email',
-            processor: SendEmailProcessor::class
+            controller: SendInvoiceEmail::class,
+            read: false,
+            deserialize: false,
         ),
     ],
     uriVariables: [

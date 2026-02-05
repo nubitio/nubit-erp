@@ -9,6 +9,7 @@ use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Service\CompanyContext;
 use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -31,6 +32,7 @@ readonly class InvoiceEmailUseCase
         private FileManager $fileManager,
         private SettingsService $settings,
         private CompanyContext $companyContext,
+        private TaxDocumentRepository $taxDocumentRepository,
     ) {
     }
 
@@ -42,8 +44,15 @@ readonly class InvoiceEmailUseCase
      * @throws LoaderError
      * @throws Exception
      */
-    public function __invoke(string $saleId): void
+    public function __invoke(string $taxDocumentId): void
     {
+        $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
+
+        if ($taxDocument === null) {
+            return;
+        }
+
+        $saleId = $taxDocument->getSale()->getId();
         $voucher = $this->invoiceRepository->getVoucher($saleId);
 
         $type = match ($voucher->voucher_type) {

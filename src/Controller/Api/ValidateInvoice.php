@@ -2,34 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\State\Invoice;
+namespace App\Controller\Api;
 
-use Override;
-use Exception;
-use ApiPlatform\Metadata\Operation;
-use ApiPlatform\State\ProcessorInterface;
 use App\Core\Http\ApiResponse;
 use App\Invoice\Domain\ValidateInvoiceUseCase;
+use Exception;
 use Psr\Cache\InvalidArgumentException;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 
-readonly class ValidateInvoiceProcessor implements ProcessorInterface
+class ValidateInvoice extends AbstractController
 {
     public function __construct(
-        private ValidateInvoiceUseCase $validateInvoiceUseCase,
+        private readonly ValidateInvoiceUseCase $validateInvoiceUseCase,
     ) {
     }
 
-    /**
-     * @inheritdoc
-     */
-    #[Override]
-    public function process(
-        mixed $data,
-        Operation $operation,
-        array $uriVariables = [],
-        array $context = [],
-    ): ApiResponse {
-        $id = $uriVariables['id'];
+    public function __invoke(Request $request)
+    {
+        $id = $request->get('id');
         try {
             $result = $this->validateInvoiceUseCase->__invoke($id);
 

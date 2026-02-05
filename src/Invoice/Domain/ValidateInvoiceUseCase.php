@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Invoice\Domain;
 
-use App\Core\Service\SettingsService;
+use App\Core\Exception\ServiceException;
 use App\Core\Service\CompanyContext;
+use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Greenter\Sunat\ConsultaCpe\Api\AuthApi;
@@ -32,6 +34,7 @@ readonly class ValidateInvoiceUseCase
         private SettingsService $settings,
         private CompanyContext $companyContext,
         private InvoiceRepository $invoiceRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private EntityManagerInterface $entityManager,
     ) {
     }
@@ -41,37 +44,41 @@ readonly class ValidateInvoiceUseCase
      * @throws Exception
      * @throws InvalidArgumentException
      */
-    public function __invoke(string $invoiceId): CpeResponse
+    public function __invoke(string $taxDocumentId): CpeResponse
     {
-        $invoice = $this->invoiceRepository->findOneBy(
-            ['sale' => $invoiceId]
-        );
+        $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
+
+        if ($taxDocument === null) {
+            throw new ServiceException('Invoice not found');
+        }
+
+        $voucher = $this->invoiceRepository->getVoucher($taxDocument->getSale()->getId());
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));
         $customerId = $this->companyContext->getId();
 
         $cpeFilter = new CpeFilter()
-            ->setNumRuc(strval($customerId))
-            ->setCodComp(strval($invoice?->getVoucherTypeId()))
-            ->setNumeroSerie(strval($invoice?->getSeries()))
-            ->setNumero(strval($invoice?->getNumber()))
-            ->setFechaEmision(strval($invoice?->getIssuedAt()?->format('d/m/Y')))
-            ->setMonto(strval($invoice?->getTotal()));
+            ->setNumRuc($customerId)
+            ->setCodComp(strval($voucher->voucher_type))
+            ->setNumeroSerie(strval($voucher->voucher_series))
+            ->setNumero(strval($voucher->voucher_number))
+            ->setFechaEmision(date('d/m/Y', strtotime(strval($voucher->voucher_date))))
+            ->setMonto(strval($voucher->voucher_sale_amount));
 
         $response = $apiInstance->consultarCpe(strval($customerId), $cpeFilter);
 
         if ($response->getSuccess() && '0' === $response->getData()?->getEstadoCp()) {
-            $invoice?->setSunatStatus('');
-            $invoice?->setSunatMessage('');
-            $this->entityManager->persist($invoice);
+            $taxDocument->setSunatStatus('');
+            $taxDocument->setSunatMessage('');
+            $taxDocument->setUpdatedAt(new \DateTime());
+            $this->entityManager->flush();
         }
 
         return $response;
     }
 
     /**
-     * @throws Exception
      * @throws InvalidArgumentException
      */
     private function getToken(): string
