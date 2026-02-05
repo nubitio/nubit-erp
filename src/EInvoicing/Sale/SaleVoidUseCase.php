@@ -63,6 +63,10 @@ readonly class SaleVoidUseCase
             throw SaleException::tooOld();
         }
 
+        if ($this->taxDocumentRepository->hasCreditNoteForSale($saleId)) {
+            throw SaleException::hasCreditNote();
+        }
+
         $documentType = (string)$voucher->voucher_type;
         if (!in_array($documentType, [DocType::FACTURA->value, DocType::BOLETA->value], true)) {
             throw new ServiceException('Tipo de comprobante no soportado para anulación.');

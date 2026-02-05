@@ -90,7 +90,7 @@ export const InvoiceFields = () => {
       .filterable(false)
       .sortable(false)
       .formatter((cell: ColumnCellTemplateData) => {
-        if (cell.value === 2) {
+        if (cell.value === true) {
           return <span className="badge badge-outlined rounded-pill text-bg-danger">Anulado</span>;
         }
         return '';

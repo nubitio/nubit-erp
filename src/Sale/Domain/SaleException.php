@@ -22,4 +22,9 @@ class SaleException extends ServiceException
     {
         return new self('No se puede anular una venta que no ha sido registrada en SUNAT');
     }
+
+    public static function hasCreditNote(): self
+    {
+        return new self('No se puede anular una venta que ya tiene nota de crédito');
+    }
 }

@@ -54,6 +54,22 @@ SQL;
         ) : null;
     }
 
+    public function hasCreditNoteForSale(string $saleId): bool
+    {
+        $result = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<SQL
+SELECT 1
+FROM tax_document
+WHERE movimiento_id = :saleId
+  AND document_type = '07'
+LIMIT 1
+SQL,
+            ['saleId' => $saleId]
+        );
+
+        return (bool)$result;
+    }
+
     public function getNextSequenceNumber(string $branchId, string $documentType): int
     {
         $sql = <<<SQL
