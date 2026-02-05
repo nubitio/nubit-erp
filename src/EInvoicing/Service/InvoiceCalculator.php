@@ -36,7 +36,7 @@ readonly class InvoiceCalculator
         $taxRate = Money::rate($this->taxPercentage);
         $chargesRate = Money::rate($this->chargesPercentage);
         $discountRate = Money::rate($this->discountPercentage);
-        $divisor = BigDecimal::one()->plus($taxRate)->plus($chargesRate);
+        $divisor = BigDecimal::one()->plus($taxRate);
 
         $lines = [];
         $subtotal = BigDecimal::zero();
@@ -102,7 +102,7 @@ readonly class InvoiceCalculator
         $taxRate = Money::rate($this->taxPercentage);
         $chargesRate = Money::rate($this->chargesPercentage);
         $discountRate = Money::rate($this->discountPercentage);
-        $divisor = BigDecimal::one()->plus($taxRate)->plus($chargesRate);
+        $divisor = BigDecimal::one()->plus($taxRate);
         $grossTotal = Money::money($this->expectedTotal ?? 0);
 
         $subtotal = Money::money(Money::div($grossTotal, $divisor, 6));

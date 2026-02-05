@@ -6,8 +6,8 @@ namespace App\Controller\Api;
 
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
-use App\Sale\Domain\SaleException;
 use App\EInvoicing\Sale\SaleVoidUseCase;
+use App\Sale\Domain\SaleException;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,9 +46,11 @@ class VoidSale extends AbstractController
         try {
             $this->saleVoidUseCase->__invoke($saleId, $reason, $userId);
         } catch (FilesystemException | SaleException $e) {
+            $message = ($e instanceof SaleException) ? $e->getMessage() : 'Error al anular el comprobante';
+
             return new ApiResponse(
                 success: false,
-                message: 'Error al anular comprobante',
+                message: $message,
                 data: $e->getMessage()
             );
         } catch (\Exception $e) {
