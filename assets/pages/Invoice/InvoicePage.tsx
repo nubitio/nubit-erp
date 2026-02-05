@@ -49,7 +49,7 @@ export const InvoicePage = () => {
 
         gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
         taxDocumentService
-          .sendInvoice(selectedRow.id)
+          .sendDocument(selectedRow.id)
           .subscribe((response) => {
             toast(
               response.data.message,
@@ -115,7 +115,7 @@ export const InvoicePage = () => {
         }
         gridRef.current?.showLoading('Consultando CDR...');
         taxDocumentService
-          .consultInvoice(selectedRow.id)
+          .consultDocument(selectedRow.id)
           .subscribe((response) => {
             toast(
               response.data.message,
@@ -140,7 +140,7 @@ export const InvoicePage = () => {
         }
         gridRef.current?.showLoading('Consultando CPE...');
         taxDocumentService
-          .validateInvoice(selectedRow.id)
+          .validateDocument(selectedRow.id)
           .subscribe((response) => {
             toast(
               response.data.message,

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Billing\Domain;
 
+use App\Repository\TaxDocumentRepository;
 use DateTime;
 use DateMalformedStringException;
 use App\Billing\Model\Response\SummaryResponse;
-use App\Repository\InvoiceRepository;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Voided\Voided;
 use Greenter\Model\Voided\VoidedDetail;
@@ -17,7 +17,7 @@ readonly class VoidedCreateUseCase
 {
     public function __construct(
         private VoidedRepositoryInterface $voidedRepository,
-        private InvoiceRepository $invoiceRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $invoiceUtils,
     ) {
     }
@@ -29,7 +29,7 @@ readonly class VoidedCreateUseCase
      */
     public function __invoke(string $saleId, string $reason): SummaryResponse
     {
-        $voucher = $this->invoiceRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
 
         $voidedDetail = new VoidedDetail()
             ->setTipoDoc(strval($voucher->voucher_type))

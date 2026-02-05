@@ -8,7 +8,6 @@ use App\Core\Exception\ServiceException;
 use App\Core\Service\CompanyContext;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Repository\InvoiceRepository;
 use App\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -33,7 +32,6 @@ readonly class ValidateInvoiceUseCase
         private CacheInterface $cache,
         private SettingsService $settings,
         private CompanyContext $companyContext,
-        private InvoiceRepository $invoiceRepository,
         private TaxDocumentRepository $taxDocumentRepository,
         private EntityManagerInterface $entityManager,
     ) {
@@ -52,7 +50,7 @@ readonly class ValidateInvoiceUseCase
             throw new ServiceException('Invoice not found');
         }
 
-        $voucher = $this->invoiceRepository->getVoucher($taxDocument->getSale()->getId());
+        $voucher = $this->taxDocumentRepository->getVoucher($taxDocument->getSale()->getId());
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));

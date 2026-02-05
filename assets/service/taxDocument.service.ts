@@ -3,20 +3,20 @@ import AppResponse from '../core/http/AppResponse';
 import {Constants} from '../core/common/Constants';
 
 export class TaxDocumentService {
-  consultInvoice(saleId: string) {
-    return httpClient.get<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${saleId}/consult`);
+  consultDocument(documentId: string) {
+    return httpClient.get<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${documentId}/consult`);
   }
 
-  sendInvoice(saleId: string) {
-    return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${saleId}/send`);
+  sendDocument(documentId: string) {
+    return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${documentId}/send`);
   }
 
-  validateInvoice(saleId: string) {
-    return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${saleId}/validate`);
+  validateDocument(documentId: string) {
+    return httpClient.post<AppResponse>(`${Constants.API_BASE_URL}tax-documents/${documentId}/validate`);
   }
 
-  sendEmail(saleId: string) {
-    return httpClient.post<any>(`${Constants.API_BASE_URL}tax-documents/${saleId}/email`);
+  sendEmail(documentId: string) {
+    return httpClient.post<any>(`${Constants.API_BASE_URL}tax-documents/${documentId}/email`);
   }
 }
 

@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 final class InvoiceCalculatorTest extends TestCase
 {
     /**
-     * @return array<string, array{lines: array<int, array{quantity: mixed, unit_price: mixed}>, discount: mixed, tax: mixed, charges: mixed, expectedTotal: mixed, expected: array<string, string>}>
+     * @return array<string, array{lines: array<int, InvoiceLineInput>, discount: mixed, tax: mixed, charges: mixed, expectedTotal: mixed, expected: array<string, string>}>
      */
     public static function calculationProvider(): array
     {

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Billing\Domain;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\CreditNote;
-use App\Invoice\Domain\Voucher;
 use App\Core\Util\Money;
-use App\Repository\CreditNoteRepository;
-use App\Repository\InvoiceRepository;
+use App\Entity\TaxDocument;
+use App\Invoice\Domain\Voucher;
+use App\Repository\TaxDocumentRepository;
+use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
@@ -17,13 +17,11 @@ use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\Note;
 use Greenter\Model\Sale\SaleDetail;
 use NumberFormatter;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class NoteCreateUseCase
 {
     public function __construct(
-        private CreditNoteRepository $creditNoteRepository,
-        private InvoiceRepository $invoiceRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $billUtils,
     ) {
     }
@@ -31,17 +29,20 @@ readonly class NoteCreateUseCase
     /**
      * @throws ServiceException
      * @throws Exception
-     * @throws ExceptionInterface
+     * @throws MathException
      */
-    public function __invoke(string $noteId): Note
+    public function __invoke(string $taxDocumentId): Note
     {
-        $creditNote = $this->creditNoteRepository->find($noteId);
-        $voucher = $this->invoiceRepository->getVoucher($creditNote->getSale()->getId());
+        $creditNote = $this->taxDocumentRepository->find($taxDocumentId);
+        $voucher = $this->taxDocumentRepository->getVoucher($creditNote->getSale()->getId());
 
         return $this->getNote($creditNote, $voucher);
     }
 
-    private function getNote(CreditNote $creditNote, Voucher $voucher): Note
+    /**
+     * @throws MathException
+     */
+    private function getNote(TaxDocument $creditNote, Voucher $voucher): Note
     {
         $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
 
@@ -58,19 +59,23 @@ readonly class NoteCreateUseCase
         $note->setUblVersion('2.1')
             ->setTipDocAfectado($voucher->voucher_type)
             ->setNumDocfectado($voucher->voucher_series . '-' . $voucher->voucher_number)
-            ->setFechaEmision($creditNote->getFecha())
-            ->setCodMotivo($creditNote->getCodigoMotivo())
-            ->setDesMotivo($creditNote->getDescripcionMotivo())
-            ->setTipoDoc($creditNote->getTipoId())
-            ->setSerie($creditNote->getSerie())
-            ->setCorrelativo(strval($creditNote->getCorrelativo()))
+            ->setFechaEmision($creditNote->getIssueDate())
+            ->setCodMotivo($creditNote->getReasonCode())
+            ->setDesMotivo($creditNote->getReasonDescription())
+            ->setTipoDoc($creditNote->getDocumentType())
+            ->setSerie($creditNote->getSeries())
+            ->setCorrelativo($creditNote->getNumber())
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
             ->setClient($client)
-            ->setMtoOperGravadas($money(Money::of($voucher->voucher_taxed_amount)->plus(Money::of($voucher->voucher_discount_amount))))
+            ->setMtoOperGravadas(
+                $money(Money::of($voucher->voucher_taxed_amount)->plus(Money::of($voucher->voucher_discount_amount)))
+            )
             ->setMtoIGV($money($voucher->voucher_tax_amount))
             ->setTotalImpuestos($money($voucher->voucher_total_taxes))
-            ->setMtoImpVenta($money(Money::of($voucher->voucher_sale_amount)->plus(Money::of($voucher->voucher_discount_amount))));
+            ->setMtoImpVenta(
+                $money(Money::of($voucher->voucher_sale_amount)->plus(Money::of($voucher->voucher_discount_amount)))
+            );
 
         $items = [];
         foreach ($voucher->voucher_items as $item) {

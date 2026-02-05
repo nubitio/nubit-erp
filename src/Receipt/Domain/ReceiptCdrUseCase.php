@@ -5,30 +5,22 @@ declare(strict_types=1);
 namespace App\Receipt\Domain;
 
 use App\Billing\Domain\FileResponse;
-use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\CompanyContext;
-use App\Repository\CreditNoteRepository;
-use App\Repository\InvoiceRepository;
-use Doctrine\DBAL\Exception;
+use App\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class ReceiptCdrUseCase
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository,
-        private CreditNoteRepository $creditNoteRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private CompanyContext $companyContext,
         private FileManager $fileManager,
     ) {
     }
 
     /**
-     * @throws ServiceException
      * @throws FilesystemException
-     * @throws Exception
-     * @throws ExceptionInterface
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
     {
@@ -40,16 +32,14 @@ readonly class ReceiptCdrUseCase
 
     /**
      * @throws FilesystemException
-     * @throws Exception
-     * @throws ExceptionInterface
      */
     public function getCdrForInvoice(string $id): FileResponse
     {
-        $voucher = $this->invoiceRepository->getVoucher($id);
+        $invoice = $this->taxDocumentRepository->find($id);
         $companyId = $this->companyContext->getId();
 
-        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $companyId . '-' . $voucher->voucher_type . '-' . $docName;
+        $docName = $invoice->getFullNumber();
+        $docFullName = $companyId . '-' . $invoice->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/R-' . $docFullName . '.zip'),
@@ -58,17 +48,15 @@ readonly class ReceiptCdrUseCase
     }
 
     /**
-     * @throws ServiceException
      * @throws FilesystemException
-     * @throws Exception
      */
     public function getCdrForNote(string $id): FileResponse
     {
-        $voucher = $this->creditNoteRepository->find($id);
+        $note = $this->taxDocumentRepository->find($id);
         $companyId = $this->companyContext->getId();
 
-        $docName = $voucher->getSerie() . '-' . $voucher->getCorrelativo();
-        $docFullName = $companyId . '-' . $voucher->getTipoId() . '-' . $docName;
+        $docName = $note->getFullNumber();
+        $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/R-' . $docFullName . '.zip'),

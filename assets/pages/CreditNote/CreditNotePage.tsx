@@ -6,7 +6,7 @@ import {DxForm} from '../../core/form/DxForm';
 import {CreditNoteFields} from './CreditNoteFields';
 import {useRef, useState} from 'react';
 import toast from "../../core/utils/SharedUtils";
-import {httpClient} from "../../core/http/HttpClient";
+import {taxDocumentService} from "../../service/taxDocument.service";
 
 export const CreditNotePage = () => {
   const container = 'wrapper';
@@ -27,11 +27,6 @@ export const CreditNotePage = () => {
     LOADING: 'credit-note:loading',
   };
 
-  const isPending = (row: any): boolean => {
-    const status = row?.sunatStatus ?? row?.envioSunat ?? row?.envio_sunat;
-    return status === null || status === undefined || status === '' || status === '0' || status === 'pendiente';
-  };
-
   const toolbar = [
     {
       text: 'Enviar a SUNAT',
@@ -39,7 +34,7 @@ export const CreditNotePage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (selectedRow) {
-          if ((selectedRow.sunatStatus ?? selectedRow.envio_sunat) === '0') {
+          if (selectedRow.sunatStatus === '0') {
             toast(
               "El comprobante ya fue enviado a SUNAT",
               "warning",
@@ -48,7 +43,7 @@ export const CreditNotePage = () => {
           }
 
           gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-          httpClient.post<any>(Constants.API_BASE_URL + 'credit-notes/' + selectedRow.id + '/send')
+          taxDocumentService.sendDocument(selectedRow.id)
             .subscribe((response) => {
               toast(
                 response.data.message,
@@ -110,10 +105,10 @@ export const CreditNotePage = () => {
         fields={fields}
         events={EVENTS}
         onSelectionChanged={(e) => {
-          const row = e.selectedRowsData?.[0];
-          const pending = row ? isPending(row) : false;
-          setEditDisabled(!pending);
-          setDeleteDisabled(!pending);
+          const selectedRow = e.component.getSelectedRowsData()[0];
+          const isPending = selectedRow.sunatStatus === undefined;
+          setEditDisabled(!isPending);
+          setDeleteDisabled(!isPending);
         }}
       />
       <DxDialog events={EVENTS}>

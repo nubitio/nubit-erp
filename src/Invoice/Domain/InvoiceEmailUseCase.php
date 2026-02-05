@@ -8,7 +8,6 @@ use App\Billing\Domain\BillPdfUseCase;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\SettingsService;
 use App\Core\Service\CompanyContext;
-use App\Repository\InvoiceRepository;
 use App\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
@@ -24,7 +23,6 @@ use Twig\Error\SyntaxError;
 readonly class InvoiceEmailUseCase
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository,
         private MailerInterface $mailer,
         private Environment $twig,
         private UrlGeneratorInterface $urlGenerator,
@@ -53,7 +51,7 @@ readonly class InvoiceEmailUseCase
         }
 
         $saleId = $taxDocument->getSale()->getId();
-        $voucher = $this->invoiceRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
 
         $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',

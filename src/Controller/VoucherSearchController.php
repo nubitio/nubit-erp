@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Core\Util\ReceiptPayload;
-use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
+use Doctrine\DBAL\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,15 +14,19 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class VoucherSearchController extends AbstractController
 {
-    private const VOUCHER_TYPES = [
+    private const array VOUCHER_TYPES = [
         '01' => 'Factura',
         '03' => 'Boleta de Venta',
         '07' => 'Nota de Crédito',
         '08' => 'Nota de Débito',
     ];
 
+    /**
+     * @throws \DateMalformedStringException
+     * @throws Exception
+     */
     #[Route('/buscar', name: 'voucher_search', methods: ['GET', 'POST'])]
-    public function search(Request $request, InvoiceRepository $invoiceRepository): Response
+    public function search(Request $request, TaxDocumentRepository $taxDocumentRepository): Response
     {
         $result = null;
         $error = null;
@@ -45,7 +50,7 @@ class VoucherSearchController extends AbstractController
             ];
 
             if ($this->validateForm($formData)) {
-                $invoice = $invoiceRepository->findBySearchCriteria(
+                $document = $taxDocumentRepository->findTaxDocumentBySearchCriteria(
                     companyRuc: $formData['ruc'],
                     voucherType: $formData['voucher_type'],
                     series: $formData['series'],
@@ -54,18 +59,18 @@ class VoucherSearchController extends AbstractController
                     total: $formData['total'],
                 );
 
-                if ($invoice !== null) {
+                if ($document !== null) {
                     $result = [
-                        'type' => self::VOUCHER_TYPES[$invoice->getVoucherTypeId()] ?? 'Comprobante',
-                        'series' => $invoice->getSeries(),
-                        'number' => $invoice->getNumber(),
-                        'date' => $invoice->getIssuedAt()->format('d/m/Y'),
-                        'total' => $invoice->getTotal(),
-                        'hash' => $invoice->getDigest(),
-                        'status' => $invoice->getVoided() === 0 ? 'VIGENTE' : 'ANULADO',
+                        'type' => self::VOUCHER_TYPES[strval($document['document_type'])] ?? 'Comprobante',
+                        'series' => $document['series'],
+                        'number' => $document['number'],
+                        'date' => date('d/m/Y', strtotime(strval($document['issue_date']))),
+                        'total' => $document['total'],
+                        'hash' => $document['digest'],
+                        'status' => (int) ($document['sale_status'] ?? 1) === 2 ? 'ANULADO' : 'ACEPTADO',
                         'pdf_url' => ReceiptPayload::publicUrl(
-                            $invoice->getVoucherTypeId(),
-                            $invoice->getSaleId()
+                            strval($document['document_type']),
+                            strval($document['movimiento_id'])
                         ),
                     ];
                 } else {

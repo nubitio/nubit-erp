@@ -8,7 +8,7 @@ use App\Service\InvoiceCalculator;
 use App\Service\InvoiceLineInput;
 use App\Entity\Category;
 use App\Entity\Customer;
-use App\Entity\Invoice;
+use App\Entity\TaxDocument;
 use App\Entity\LogisticOperation;
 use App\Entity\Product;
 use App\Entity\ProductStock;
@@ -623,26 +623,19 @@ final readonly class TestDataSeeder
                 $sale->getTotal() !== null ? (string) $sale->getTotal() : null
             )->calculate();
 
-            // Create corresponding invoice
-            $invoice = new Invoice();
-            $invoice->setSale($sale);
-            $invoice->setCustomer($customer);
-            $invoice->setVoucherTypeId(($customer->getRuc()[0] === '1') ? '03' : '01');
-            $invoice->setIssuedAt($saleDate);
-            $invoice->setSeries($series);
-            $invoice->setNumber($sale->getNumero());
-            $invoice->setUnaffected(false);
-            $invoice->setSubTotal($invoiceAmounts->getSubtotal());
-            $invoice->setTaxableAmount($invoiceAmounts->getTaxedAmount());
-            $invoice->setIgv($invoiceAmounts->getTax());
-            $invoice->setRc(0);
-            $invoice->setTotal($invoiceAmounts->getTotal());
-            $invoice->setDiscountPercent(0);
-            $invoice->setDiscountAmount(0);
-            $invoice->setVoided(0);
-            $invoice->setCreatedAt($saleDate);
+            // Create corresponding tax document
+            $taxDocument = new TaxDocument();
+            $taxDocument->setSale($sale);
+            $taxDocument->setCustomer($customer);
+            $taxDocument->setDocumentType(($customer->getRuc()[0] === '1') ? '03' : '01');
+            $taxDocument->setIssueDate($saleDate);
+            $taxDocument->setSeries($series);
+            $taxDocument->setNumber($sale->getNumero());
+            $taxDocument->setTotal($invoiceAmounts->getTotal());
+            $taxDocument->setCreatedAt($saleDate);
+            $taxDocument->setUpdatedAt($saleDate);
 
-            $this->entityManager->persist($invoice);
+            $this->entityManager->persist($taxDocument);
             ++$created;
 
             if (0 === $created % $batchSize) {

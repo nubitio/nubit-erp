@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Sale;
-use App\Repository\InvoiceRepository;
 use App\Service\InvoiceLineInput;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Uid\Uuid;
+use Doctrine\DBAL\Connection;
 use Throwable;
 
 final readonly class InvoiceCreationService
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository,
-        private EntityManagerInterface $entityManager,
-        private TaxDocumentSyncService $taxDocumentSyncService,
+        private Connection $connection,
     ) {
     }
 
@@ -54,7 +50,8 @@ final readonly class InvoiceCreationService
             ];
         }
 
-        $connection = $this->entityManager->getConnection();
+        $connection = $this->connection;
+
         $localId = $connection->fetchOne(
             'select local_id from almacen where almacen_id = ?',
             [$sale->getAlmacen()?->getId()]
@@ -81,11 +78,15 @@ final readonly class InvoiceCreationService
         try {
             $voucherType = strlen($sale->getCliente()?->getRuc() ?? '') === 11 ? '01' : '03';
 
-            $existingInvoiceId = $connection->fetchOne(
-                'SELECT comprobante_id FROM comprobante WHERE movimiento_id = :saleId FOR UPDATE',
+            $existingInvoice = $connection->fetchOne(
+                "SELECT tax_document_id
+                 FROM tax_document
+                 WHERE movimiento_id = :saleId
+                   AND document_type IN ('01', '03')
+                 LIMIT 1 FOR UPDATE",
                 ['saleId' => $sale->getId()]
             );
-            if ($existingInvoiceId) {
+            if (is_string($existingInvoice) && $existingInvoice !== '') {
                 $connection->commit();
 
                 return [
@@ -116,39 +117,89 @@ final readonly class InvoiceCreationService
             }
 
             $nextNumber = $connection->fetchOne(
-                'SELECT IFNULL(MAX(CAST(numero AS SIGNED)), 0) + 1
-                 FROM comprobante
-                 WHERE serie = :series
+                'SELECT IFNULL(MAX(CAST(number AS SIGNED)), 0) + 1
+                 FROM tax_document
+                 WHERE series = :series
+                   AND document_type = :voucherType
                  FOR UPDATE',
-                ['series' => $series]
+                [
+                    'series' => $series,
+                    'voucherType' => $voucherType,
+                ]
             );
 
-            $connection->insert('comprobante', [
-                'comprobante_id' => Uuid::v4()->toRfc4122(),
-                'raw_document_id' => null,
+            $connection->insert('tax_document', [
+                'tax_document_id' => $this->connection->fetchOne('SELECT UUID()'),
                 'movimiento_id' => $sale->getId(),
-                'fecha' => $saleDateUtc->format('Y-m-d H:i:s'),
-                'tipo_comprobante_id' => $voucherType,
-                'serie' => $series,
-                'numero' => $nextNumber,
-                'cliente_id' => $sale->getCliente()?->getRuc(),
-                'inafecto' => 0,
+                'issue_date' => $saleDateUtc->format('Y-m-d H:i:s'),
+                'document_type' => $voucherType,
+                'series' => $series,
+                'number' => strval($nextNumber),
+                'customer_id' => $sale->getCliente()?->getRuc(),
+                'currency' => 'PEN',
+                'payment_method' => $sale->getFormaPago(),
                 'subtotal' => $invoiceAmounts->getSubtotal(),
-                'gravada' => $invoiceAmounts->getTaxedAmount(),
-                'igv' => $invoiceAmounts->getTax(),
-                'rc' => $invoiceAmounts->getChargesAmount(),
+                'taxable_amount' => $invoiceAmounts->getTaxedAmount(),
+                'igv_amount' => $invoiceAmounts->getTax(),
+                'rc_amount' => $invoiceAmounts->getChargesAmount(),
                 'total' => $invoiceAmounts->getTotal(),
-                'tipo_operacion' => $sale->getTipoOperacion(),
-                'detraccion_codigo' => $sale->getDetraccionCodigo(),
-                'detraccion_porcentaje' => $sale->getDetraccionPorcentaje(),
-                'detraccion_monto' => $sale->getDetraccionMonto(),
-                'detraccion_medio_pago' => $sale->getDetraccionMedioPago(),
-                'detraccion_valor_referencial' => $sale->getDetraccionValorReferencial(),
+                'operation_type' => $sale->getTipoOperacion(),
+                'detraction_code' => $sale->getDetraccionCodigo(),
+                'detraction_percent' => $sale->getDetraccionPorcentaje(),
+                'detraction_amount' => $sale->getDetraccionMonto(),
+                'detraction_payment_method' => $sale->getDetraccionMedioPago(),
+                'detraction_value_ref' => $sale->getDetraccionValorReferencial(),
                 'discount_percent' => $sale->getDescuento() ?? 0.0,
                 'discount_amount' => $invoiceAmounts->getDiscountAmount(),
-                'voided' => $sale->getEstado(),
                 'created_at' => $sale->getDateCreated()?->format('Y-m-d H:i:s'),
                 'branch_id' => $sale->getBranch()?->getId(),
+            ]);
+
+            $taxDocumentId = $connection->fetchOne(
+                "SELECT tax_document_id
+                 FROM tax_document
+                 WHERE movimiento_id = :saleId
+                   AND document_type = :voucherType
+                   AND series = :series
+                   AND number = :number
+                 LIMIT 1",
+                [
+                    'saleId' => $sale->getId(),
+                    'voucherType' => $voucherType,
+                    'series' => $series,
+                    'number' => strval($nextNumber),
+                ]
+            );
+
+            $saleItems = array_values($sale->getItems()->toArray());
+            $lineNumber = 0;
+            foreach ($invoiceAmounts->getLines() as $line) {
+                $saleItem = $saleItems[$lineNumber] ?? null;
+                $lineNumber++;
+                $connection->insert('tax_document_line', [
+                    'tax_document_id' => $taxDocumentId,
+                    'line_number' => $lineNumber,
+                    'product_id' => $saleItem?->getProducto()?->getId(),
+                    'product_code' => $saleItem?->getProducto()?->getCode(),
+                    'product_name' => $saleItem?->getProducto()?->getName() ?? '-',
+                    'product_uom' => $saleItem?->getProducto()?->getUnitOfMeasure()?->getCode(),
+                    'quantity' => $line->quantity,
+                    'unit_price' => $line->unitPrice,
+                    'unit_value' => $line->unitValue,
+                    'discount_amount' => $line->discountAmount,
+                    'taxed_amount' => $line->taxableAmount,
+                    'tax_amount' => $line->taxAmount,
+                    'tax_percentage' => $sale->getIgv() ?? 0,
+                    'tax_type' => '10',
+                    'total' => $line->totalAmount,
+                ]);
+            }
+
+            $connection->insert('tax_document_event', [
+                'tax_document_id' => $taxDocumentId,
+                'event_type' => 'issued',
+                'status' => 'pending',
+                'message' => 'Comprobante emitido pendiente de envío SUNAT',
             ]);
 
             $connection->commit();
@@ -157,19 +208,14 @@ final readonly class InvoiceCreationService
             throw $throwable;
         }
 
-        $invoice = $this->invoiceRepository->findOneBy(
-            ['sale' => $sale->getId()]
-        );
-        if ($invoice !== null) {
-            $this->taxDocumentSyncService->syncInvoice($invoice);
-        }
-
         $sale->setHasInvoice(true);
-        $sale->setInvoice(($invoice?->getSeries() ?? '') . '-' . ($invoice?->getNumber() ?? ''));
-        $sale->setTotal($invoice?->getTotal());
+        $sale->setInvoice($series . '-' . $nextNumber);
+        $sale->setTotal($invoiceAmounts->getTotal());
 
-        $this->entityManager->persist($sale);
-        $this->entityManager->flush();
+        $this->connection->executeStatement(
+            'UPDATE movimiento SET has_invoice = 1, invoice = ?, total = ? WHERE movimiento_id = ?',
+            [$sale->getInvoice(), $sale->getTotal(), $sale->getId()]
+        );
 
         return [
             'success' => true,

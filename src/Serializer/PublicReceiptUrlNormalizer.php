@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Serializer;
 
 use App\Core\Util\ReceiptPayload;
-use App\Entity\CreditNote;
-use App\Entity\Invoice;
 use App\Entity\Sale;
+use App\Entity\TaxDocument;
 use Override;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -35,7 +34,7 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             return false;
         }
 
-        return $data instanceof Invoice || $data instanceof Sale || $data instanceof CreditNote;
+        return $data instanceof TaxDocument || $data instanceof Sale;
     }
 
     /**
@@ -63,17 +62,17 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
 
     private function buildPayload(mixed $object): ?string
     {
-        if ($object instanceof Invoice) {
-            return ReceiptPayload::encode($object->getVoucherTypeId(), $object->getSaleId());
+        if ($object instanceof TaxDocument) {
+            return ReceiptPayload::encode($object->getDocumentType(), $object->getId());
         }
 
         if ($object instanceof Sale) {
-            $invoice = $object->getInvoiceEntity();
+            $invoice = $object->getTaxDocument();
             if ($invoice === null) {
                 return null;
             }
 
-            return ReceiptPayload::encode($invoice->getVoucherTypeId(), $invoice->getSaleId());
+            return ReceiptPayload::encode($invoice->getDocumentType(), $invoice->getId());
         }
 
         if ($object->getId() === null) {
@@ -88,6 +87,6 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
      */
     public function getSupportedTypes(?string $format): array
     {
-        return [Invoice::class => false, Sale::class => false, CreditNote::class => false];
+        return [TaxDocument::class => false, Sale::class => false];
     }
 }
