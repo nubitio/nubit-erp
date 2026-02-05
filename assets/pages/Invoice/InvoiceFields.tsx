@@ -116,3 +116,85 @@ export const InvoiceFields = () => {
 
   return fields;
 };
+
+export const InvoiceDetailFields = () => {
+  const fields: Field[] = [];
+
+  fields.push(
+    new FieldBuilder()
+      .isIdentity(true)
+      .visible(false)
+      .type(FieldType.NONE)
+      .name('id')
+      .label('Id')
+      .required(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productCode')
+      .label('Código')
+      .minWidth(120)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productName')
+      .label('Producto')
+      .minWidth(260)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productUom')
+      .label('U.M.')
+      .align('center')
+      .minWidth(80)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NUMBER)
+      .name('quantity')
+      .label('Cantidad')
+      .align('center')
+      .valueType('number')
+      .precision(2)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('unitPrice')
+      .label('Precio')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('taxAmount')
+      .label('IGV')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('total')
+      .label('Total')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .sendAsString(true)
+      .build(),
+  );
+
+  return fields;
+};

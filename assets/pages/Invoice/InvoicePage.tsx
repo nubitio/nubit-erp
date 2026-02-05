@@ -3,7 +3,7 @@ import {Constants} from '../../core/common/Constants';
 import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
 import {DxDialog} from '../../core/dialog/DxDialog';
 import {DxForm} from '../../core/form/DxForm';
-import {InvoiceFields} from './InvoiceFields';
+import {InvoiceDetailFields, InvoiceFields} from './InvoiceFields';
 import {useRef} from 'react';
 import {taxDocumentService} from '../../service/taxDocument.service';
 import toast from "../../core/utils/SharedUtils";
@@ -11,6 +11,7 @@ import toast from "../../core/utils/SharedUtils";
 export const InvoicePage = () => {
   const container = 'wrapper';
   const fields = InvoiceFields();
+  const detailFields = InvoiceDetailFields();
   const gridRef = useRef<DxDataGridEvents>(null);
 
   const API_URL = Constants.API_BASE_URL + 'tax-documents';
@@ -164,6 +165,8 @@ export const InvoicePage = () => {
         toolbar={toolbar}
         url={API_URL + '?type=invoice'}
         fields={fields}
+        detailUrl={API_URL + '/{id}/lines'}
+        detailFields={detailFields}
         events={EVENTS}
         sort={[{selector: 'createdAt', desc: true}]}
       />

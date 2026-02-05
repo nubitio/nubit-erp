@@ -30,6 +30,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     shortName: 'TaxDocument',
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
+    denormalizationContext: ['groups' => ['invoice:write', 'creditnote:write']],
     filters: [DevExtremeFilter::class],
     provider: TaxDocumentProvider::class,
     processor: TaxDocumentProcessor::class,
@@ -85,6 +86,7 @@ class TaxDocument
 
     #[ORM\ManyToOne(targetEntity: self::class)]
     #[ORM\JoinColumn(name: 'related_tax_document_id', referencedColumnName: 'tax_document_id', nullable: true)]
+    #[Groups(['creditnote:write'])]
     private ?self $relatedTaxDocument = null;
 
     #[ORM\ManyToOne(targetEntity: Branch::class)]
@@ -101,7 +103,7 @@ class TaxDocument
     private string $documentType;
 
     #[ORM\Column(name: 'issue_date', type: Types::DATETIME_MUTABLE)]
-    #[Groups(['creditnote:read'])]
+    #[Groups(['creditnote:read', 'creditnote:write'])]
     private DateTimeInterface $issueDate;
 
     #[ORM\Column(name: 'series', type: Types::STRING, length: 10)]
@@ -117,11 +119,11 @@ class TaxDocument
     private ?string $affectedDocument = null;
 
     #[ORM\Column(name: 'reason_code', type: Types::STRING, length: 10, nullable: true)]
-    #[Groups(['creditnote:read'])]
+    #[Groups(['creditnote:read', 'creditnote:write'])]
     private ?string $reasonCode = null;
 
     #[ORM\Column(name: 'reason_description', type: Types::STRING, length: 255, nullable: true)]
-    #[Groups(['creditnote:read'])]
+    #[Groups(['creditnote:read', 'creditnote:write'])]
     private ?string $reasonDescription = null;
 
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
@@ -151,7 +153,13 @@ class TaxDocument
     /**
      * @var Collection<int, TaxDocumentLine>
      */
-    #[ORM\OneToMany(targetEntity: TaxDocumentLine::class, mappedBy: 'taxDocument', orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: TaxDocumentLine::class,
+        mappedBy: 'taxDocument',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true
+    )]
+    #[Groups(['creditnote:write'])]
     private Collection $lines;
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]

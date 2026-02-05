@@ -178,3 +178,95 @@ export const CreditNoteFields = () => {
 
   return fields;
 };
+
+export const CreditNoteDetailFields = () => {
+  const fields: Field[] = [];
+
+  fields.push(
+    new FieldBuilder()
+      .isIdentity(true)
+      .visible(false)
+      .type(FieldType.NONE)
+      .name('id')
+      .label('Id')
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NUMBER)
+      .name('lineNumber')
+      .label('Linea')
+      .visible(false)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productCode')
+      .label('Código')
+      .minWidth(120)
+      .readonly(true)
+      .visible(false)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productName')
+      .label('Producto')
+      .minWidth(260)
+      .readonly(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('productUom')
+      .label('U.M.')
+      .align('center')
+      .minWidth(80)
+      .readonly(true)
+      .visible(false)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NUMBER)
+      .name('quantity')
+      .label('Cantidad')
+      .align('center')
+      .valueType('number')
+      .precision(2)
+      .onChange(function (this: any, row: any, value: any, currentRow: any) {
+        if (value === '') return;
+        row.total = Number(currentRow.unitPrice ?? 0) * Number(value ?? 0);
+        this.defaultSetCellValue(row, value, currentRow);
+      })
+      .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('unitPrice')
+      .label('Precio')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .readonly(true)
+      .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('total')
+      .label('Total')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .readonly(true)
+      .sendAsString(true)
+      .build(),
+  );
+
+  return fields;
+};

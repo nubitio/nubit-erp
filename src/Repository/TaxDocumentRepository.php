@@ -144,6 +144,60 @@ SQL;
         return $header->toVoucher($voucherItems);
     }
 
+    /**
+     * @throws Exception|MathException
+     */
+    public function getNoteVoucher(string $taxDocumentId): Voucher
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $voucher = $connection
+            ->executeQuery($this->noteHeaderQuery(), ['taxDocumentId' => $taxDocumentId])
+            ->fetchAssociative();
+        $items = $connection
+            ->executeQuery($this->noteDetailQuery(), ['taxDocumentId' => $taxDocumentId])
+            ->fetchAllAssociative();
+
+        if (!$voucher) {
+            throw new ServiceException('La nota de crédito no existe');
+        }
+
+        $header = VoucherHeaderDto::fromArray($voucher);
+        $lines = array_map(static fn (array $row): VoucherLineDto => VoucherLineDto::fromArray($row), $items);
+
+        $calculator = new InvoiceCalculator(
+            array_map(
+                static fn (VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
+                    quantity: $line->quantity ?? '0',
+                    unitPrice: $line->unitPrice ?? '0'
+                ),
+                $lines
+            ),
+            $header->voucherDiscountPercentage ?? '0',
+            $header->voucherTaxPercentage ?? '0',
+            $header->voucherConsumptionSurchargePercentage ?? '0',
+            $header->voucherSaleAmount ?? null
+        );
+
+        $amounts = $calculator->calculate();
+        $amountLines = $amounts->getLines();
+
+        foreach ($lines as $index => $line) {
+            $amountLine = $amountLines[$index] ?? null;
+            if ($amountLine instanceof InvoiceLineAmounts) {
+                $line->applyAmounts($amountLine);
+            }
+        }
+
+        $header->applyAmounts($amounts);
+
+        $voucherItems = array_map(
+            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            $lines
+        );
+
+        return $header->toVoucher($voucherItems);
+    }
+
     private function saleHeaderQuery(): string
     {
         return <<<SQL
@@ -256,6 +310,118 @@ FROM
     ) detail ON detail.movimiento_id = m.movimiento_id
 WHERE
     m.movimiento_id = :saleId
+SQL;
+    }
+
+    private function noteHeaderQuery(): string
+    {
+        return <<<SQL
+SELECT
+    m.movimiento_id AS sale_id,
+    CASE WHEN LENGTH(c.ruc) != 11 THEN 1 ELSE 6 END AS customer_doc_type,
+    c.ruc AS customer_doc_number,
+    c.razon_social AS customer_name,
+    c.domicilio_fiscal AS customer_address,
+    c.email AS customer_email,
+    c.telefono AS customer_phone,
+    e.ruc AS company_id,
+    e.razon_social AS company_name,
+    e.domicilio_fiscal AS company_address,
+    e.telefono AS company_phone,
+    l.direccion AS branch_address,
+    l.telefono AS branch_phone,
+    td.document_type AS voucher_type,
+    td.series AS voucher_series,
+    td.number AS voucher_number,
+    IFNULL(cn.payment_method, m.forma_pago) AS voucher_payment_method,
+    cn.issue_date AS voucher_date,
+    IFNULL(cn.currency, 'PEN') AS voucher_currency,
+    IFNULL(cn.discount_percent, 0) AS voucher_discount_percentage,
+    IFNULL(cn.discount_amount, 0) AS voucher_discount_amount,
+    IFNULL(cn.rc_amount, 0) AS voucher_consumption_surcharge_amount,
+    IFNULL(m.recargo_consumo, 0) AS voucher_consumption_surcharge_percentage,
+    IFNULL(cn.taxable_amount, 0) AS voucher_taxed_amount,
+    IFNULL(cn.igv_amount, 0) AS voucher_tax_amount,
+    IFNULL(m.igv, 0) AS voucher_tax_percentage,
+    IFNULL(cn.igv_amount, 0) AS voucher_total_taxes,
+    IFNULL(cn.subtotal, 0) AS voucher_sale_value,
+    IFNULL(cn.total, 0) AS voucher_sale_amount,
+    IFNULL(cn.operation_type, m.tipo_operacion) AS voucher_operation_type,
+    IFNULL(cn.detraction_code, m.detraccion_codigo) AS voucher_detraction_code,
+    IFNULL(cn.detraction_percent, m.detraccion_porcentaje) AS voucher_detraction_percent,
+    IFNULL(cn.detraction_amount, m.detraccion_monto) AS voucher_detraction_amount,
+    IFNULL(cn.detraction_payment_method, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
+    sc_pay.description AS voucher_detraction_payment_description,
+    IFNULL(cn.detraction_value_ref, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
+    e.detraccion_account AS voucher_detraction_account,
+    sc_det.description AS voucher_detraction_description,
+    e.bank_name AS voucher_bank_name,
+    e.bank_account AS voucher_bank_account,
+    e.bank_cci AS voucher_bank_cci,
+    m.glosa AS voucher_note,
+    cn.created_at AS date_comprobante,
+    cn.digest AS voucher_hash,
+    m.estado AS voucher_status,
+    CONCAT(
+        c.ruc,
+        '|',
+        td.document_type,
+        '|',
+        td.series,
+        '|',
+        td.number,
+        '|',
+        cn.igv_amount,
+        '|',
+        cn.total,
+        '|',
+        cn.issue_date,
+        '|',
+        '0',
+        '|',
+        '0',
+        '|',
+        IFNULL(cn.digest, '')
+    ) as voucher_qr_data
+FROM tax_document cn
+INNER JOIN tax_document td ON td.tax_document_id = cn.related_tax_document_id
+INNER JOIN movimiento m ON m.movimiento_id = cn.movimiento_id
+INNER JOIN almacen a ON a.almacen_id = m.almacen_id
+INNER JOIN `local` l ON l.local_id = a.local_id
+INNER JOIN empresa e ON e.empresa_id = l.empresa_id
+INNER JOIN cliente c ON c.ruc = m.cliente_id
+LEFT JOIN sunat_catalog sc_det
+    ON sc_det.catalog = 54
+    AND sc_det.code = IFNULL(cn.detraction_code, m.detraccion_codigo)
+LEFT JOIN sunat_catalog sc_pay
+    ON sc_pay.catalog = 59
+    AND sc_pay.code = IFNULL(cn.detraction_payment_method, m.detraccion_medio_pago)
+WHERE cn.tax_document_id = :taxDocumentId
+LIMIT 1
+SQL;
+    }
+
+    private function noteDetailQuery(): string
+    {
+        return <<<SQL
+SELECT
+    tdl.id AS line_id,
+    tdl.product_id AS product_id,
+    tdl.product_code AS product_code,
+    tdl.product_uom AS product_uom,
+    tdl.product_name AS product_name,
+    tdl.quantity AS quantity,
+    tdl.unit_price AS unit_price,
+    tdl.unit_value AS unit_value,
+    tdl.discount_amount AS discount_amount,
+    tdl.taxed_amount AS taxed_amount,
+    tdl.tax_amount AS tax_amount,
+    tdl.tax_percentage AS tax_percentage,
+    tdl.total AS total,
+    IFNULL(tdl.tax_type, '10') AS tax_type
+FROM tax_document_line tdl
+WHERE tdl.tax_document_id = :taxDocumentId
+ORDER BY tdl.line_number ASC
 SQL;
     }
 
