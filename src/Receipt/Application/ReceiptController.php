@@ -7,16 +7,18 @@ namespace App\Receipt\Application;
 use App\Core\Base\BaseController;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\PdfExporter;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Receipt\Domain\ReceiptCdrUseCase;
 use App\Receipt\Domain\ReceiptPdfUseCase;
 use App\Receipt\Domain\ReceiptRequest;
 use App\Receipt\Domain\ReceiptShowUseCase;
 use App\Receipt\Domain\ReceiptType;
 use App\Receipt\Domain\ReceiptXmlUseCase;
-use App\Core\Service\SettingsService;
-use App\Core\Util\Constants;
 use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
+use Brick\Math\Exception\MathException;
 use chillerlan\QRCode\QRCode;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;
@@ -24,12 +26,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class ReceiptController extends BaseController
 {
     /**
      * @throws ServiceException
-     * @throws Exception
      */
     #[Route('/receipt/{payload}', name: 'receipt_show', methods: ['GET'])]
     public function show(ReceiptShowUseCase $receiptShowUseCase, string $payload): Response
@@ -51,15 +53,16 @@ class ReceiptController extends BaseController
 
     /**
      * @throws Exception
+     * @throws MathException
      */
     #[Route('/receipt/{id}/ticket', name: 'receipt_ticket', methods: ['GET'])]
     public function ticket(
         Request $request,
         string $id,
-        InvoiceRepository $invoiceRepository,
+        TaxDocumentRepository $taxDocumentRepository,
         SettingsService $settingsService,
     ): Response {
-        $voucher = $invoiceRepository->getVoucher($id);
+        $voucher = $taxDocumentRepository->getVoucher($id);
         $qr = '';
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $qr = new QRCode()->render(strval($voucher->voucher_qr_data));
@@ -94,6 +97,7 @@ class ReceiptController extends BaseController
     /**
      * @throws FilesystemException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
     public function xml(
@@ -118,6 +122,7 @@ class ReceiptController extends BaseController
     /**
      * @throws FilesystemException
      * @throws Exception
+     * @throws ExceptionInterface
      */
     #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
     public function cdr(

@@ -9,7 +9,7 @@ use App\Core\Service\LogoProvider;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Sale\SaleItemDto;
-use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Exception;
 use Mike42\Escpos\EscposImage;
@@ -41,7 +41,7 @@ class PrintESCPOSController extends AbstractController
 
     public function __construct(
         private readonly LogoProvider $logoProvider,
-        private readonly InvoiceRepository $invoiceRepository,
+        private readonly TaxDocumentRepository $taxDocumentRepository,
         private readonly SettingsService $settingsService,
         #[Autowire('%env(PRINTER_LINE_WIDTH)%')]
         private readonly int $printerLineWidth,
@@ -85,7 +85,7 @@ class PrintESCPOSController extends AbstractController
         $hrDashed = $this->hr('-', $width);
         $hrSolid = $this->hr($solidChar, $width);
 
-        $voucher = $this->invoiceRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
         $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
 
         $connector = new DummyPrintConnector();

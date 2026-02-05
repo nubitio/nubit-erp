@@ -18,9 +18,9 @@ readonly class NoteSendUseCase
     /**
      * @throws ServiceException
      */
-    public function __invoke(string $noteId): DocumentResponse
+    public function __invoke(string $taxDocumentId): DocumentResponse
     {
-        $note = $this->noteCreateUseCase->__invoke($noteId);
+        $note = $this->noteCreateUseCase->__invoke($taxDocumentId);
         $response = $this->noteRepository->send($note);
         $response->name = $note->getName();
 

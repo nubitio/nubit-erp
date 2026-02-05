@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Domain;
 
-use App\Repository\CompanyRepository;
-use App\Repository\InvoiceRepository;
 use App\Core\Util\Money;
+use App\Repository\CompanyRepository;
+use App\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
 use DateTime;
@@ -22,12 +22,11 @@ use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
 use NumberFormatter;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class BillCreateUseCase
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $billUtils,
         private CompanyRepository $companyRepository,
     ) {
@@ -41,10 +40,12 @@ readonly class BillCreateUseCase
     public function __invoke(string $saleId): Invoice
     {
         $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
-        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval($value);
+        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval(
+            $value
+        );
 
         $company = $this->companyRepository->findOneBy([]);
-        $voucher = $this->invoiceRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
         $customerAddress = new Address()
             ->setDireccion(strval($voucher->customer_address));
         $operationType = $voucher->voucher_operation_type ?: '0101';
@@ -91,8 +92,16 @@ readonly class BillCreateUseCase
             ->setMtoIGV($money($voucher->voucher_tax_amount))
             ->setTotalImpuestos($money($voucher->voucher_total_taxes))
             ->setSumOtrosCargos($money($voucher->voucher_consumption_surcharge_amount ?? 0))
-            ->setValorVenta($money(Money::of($voucher->voucher_sale_value)->minus(Money::of($voucher->voucher_discount_amount))))
-            ->setSubTotal($money(Money::of($voucher->voucher_sale_amount)->minus(Money::of($voucher->voucher_consumption_surcharge_amount))))
+            ->setValorVenta(
+                $money(Money::of($voucher->voucher_sale_value)->minus(Money::of($voucher->voucher_discount_amount)))
+            )
+            ->setSubTotal(
+                $money(
+                    Money::of($voucher->voucher_sale_amount)->minus(
+                        Money::of($voucher->voucher_consumption_surcharge_amount)
+                    )
+                )
+            )
             ->setMtoImpVenta($money($voucher->voucher_sale_amount))
             ->setCompany($this->billUtils->getCompany());
 

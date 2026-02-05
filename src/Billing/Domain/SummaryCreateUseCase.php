@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Billing\Domain;
 
+use App\Repository\TaxDocumentRepository;
 use DateTime;
 use Exception;
 use App\Billing\Model\Response\SummaryResponse;
 use App\Core\Util\Money;
-use App\Repository\InvoiceRepository;
 use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -17,7 +17,7 @@ readonly class SummaryCreateUseCase
 {
     public function __construct(
         private SummaryRepositoryInterface $summaryRepository,
-        private InvoiceRepository $invoiceRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $invoiceUtils,
     ) {
     }
@@ -28,7 +28,7 @@ readonly class SummaryCreateUseCase
      */
     public function __invoke(string $saleId): SummaryResponse
     {
-        $voucher = $this->invoiceRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
         $summaryDetail = new SummaryDetail()
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerieNro($voucher->voucher_series . '-' . $voucher->voucher_number)

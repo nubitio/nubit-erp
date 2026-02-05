@@ -6,6 +6,49 @@ import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
 import {SharedUtils} from '../../core/utils/SharedUtils';
 import NumberUtils from '../../core/utils/NumberUtils';
 
+const reasonCodes: { value: string; text: string }[] = [
+  {
+    value: '01',
+    text: 'Anulación de la operación',
+  },
+  {
+    value: '02',
+    text: 'Anulación por error en el RUC',
+  },
+  {
+    value: '03',
+    text: 'Corrección por error en la descripción',
+  },
+  {
+    value: '04',
+    text: 'Descuento global',
+  },
+  {
+    value: '05',
+    text: 'Descuento por ítem',
+  },
+  {
+    value: '06',
+    text: 'Devolución total',
+  },
+  {
+    value: '07',
+    text: 'Devolución por ítem',
+  },
+  {
+    value: '08',
+    text: 'Bonificación',
+  },
+  {
+    value: '09',
+    text: 'Disminución en el valor',
+  },
+  {
+    value: '10',
+    text: 'Otros Conceptos',
+  },
+]
+
 export const CreditNoteFields = () => {
   const fields: Field[] = [];
 
@@ -22,29 +65,27 @@ export const CreditNoteFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('sale')
+      .name('relatedTaxDocument')
       .label('Comprobante')
       .visible(false)
-      .url(Constants.API_BASE_URL + 'movements')
+      .url(Constants.API_BASE_URL + 'tax-documents')
       .filters([
         {
-          field: 'invoice',
-          operator: 'isnotnull',
-          value: '',
-        }, {
-          field: 'estado',
+          field: 'documentType',
           operator: '=',
-          value: 1
+          value: '01'
         }
       ])
-      .textField('invoice')
+      .textField('fullNumber')
       .valueField('id')
       .itemFormatter((data: any) => {
         return (
           <div>
-            <b>Factura:</b> {data.invoice ?? ''}
+            <b>{data.series + '-' + data.number ?? ''}</b>
             <br/>
-            <b>Total:</b> {NumberUtils.formatCurrency(data.total)}
+            {data.customer?.businessName ?? ''}
+            <br/>
+            {NumberUtils.formatCurrency(data.total)}
           </div>
         );
       })
@@ -61,54 +102,45 @@ export const CreditNoteFields = () => {
       .required(true)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('documentType').label('Tipo').build());
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('customer')
+      .label('Cliente')
+      .url(Constants.API_BASE_URL + 'customers')
+      .valueField('ruc')
+      .textField('businessName')
+      .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
+      .visibleOnForm(false)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NONE)
+      .name('documentType')
+      .label('Tipo')
+      .formatter((cell: ColumnCellTemplateData) => {
+        if (cell.value === '07') {
+          return 'Nota de Crédito';
+        } else if (cell.value === '08') {
+          return 'Nota de Débito';
+        } else {
+          return cell.value;
+        }
+      })
+      .align('center')
+      .build(),
+  );
   fields.push(
     new FieldBuilder()
       .type(FieldType.SELECT)
       .name('reasonCode')
       .label('Código')
-      .data([
-        {
-          value: '01',
-          text: 'Anulación de la operación',
-        },
-        {
-          value: '02',
-          text: 'Anulación por error en el RUC',
-        },
-        {
-          value: '03',
-          text: 'Corrección por error en la descripción',
-        },
-        {
-          value: '04',
-          text: 'Descuento global',
-        },
-        {
-          value: '05',
-          text: 'Descuento por ítem',
-        },
-        {
-          value: '06',
-          text: 'Devolución total',
-        },
-        {
-          value: '07',
-          text: 'Devolución por ítem',
-        },
-        {
-          value: '08',
-          text: 'Bonificación',
-        },
-        {
-          value: '09',
-          text: 'Disminución en el valor',
-        },
-        {
-          value: '10',
-          text: 'Otros Conceptos',
-        },
-      ])
+      .data(reasonCodes)
+      .formatter((cell: ColumnCellTemplateData) => {
+        const reason = reasonCodes.find((r) => r.value === cell.value);
+        return reason ? reason.value + ' - ' + reason.text : cell.value;
+      })
       .required(true)
       .build(),
   );

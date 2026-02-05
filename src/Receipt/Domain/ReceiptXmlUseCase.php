@@ -4,30 +4,23 @@ declare(strict_types=1);
 
 namespace App\Receipt\Domain;
 
-use Doctrine\DBAL\Exception;
 use App\Billing\Domain\FileResponse;
-use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Service\CompanyContext;
-use App\Repository\CreditNoteRepository;
-use App\Repository\InvoiceRepository;
+use App\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 readonly class ReceiptXmlUseCase
 {
     public function __construct(
-        private InvoiceRepository $invoiceRepository,
-        private CreditNoteRepository $creditNoteRepository,
+        private TaxDocumentRepository $taxDocumentRepository,
         private CompanyContext $companyContext,
         private FileManager $fileManager,
     ) {
     }
 
     /**
-     * @throws ServiceException
-     * @throws FilesystemException|Exception
-     * @throws ExceptionInterface
+     * @throws FilesystemException
      */
     public function __invoke(ReceiptRequest $receiptRequest): FileResponse
     {
@@ -38,16 +31,15 @@ readonly class ReceiptXmlUseCase
     }
 
     /**
-     * @throws FilesystemException|Exception
-     * @throws ExceptionInterface
+     * @throws FilesystemException
      */
     public function getXmlForInvoice(string $id): FileResponse
     {
-        $voucher = $this->invoiceRepository->getVoucher($id);
+        $invoice = $this->taxDocumentRepository->find($id);
         $companyId = $this->companyContext->getId();
 
-        $docName = $voucher->voucher_series . '-' . $voucher->voucher_number;
-        $docFullName = $companyId . '-' . $voucher->voucher_type . '-' . $docName;
+        $docName = $invoice->getFullNumber();
+        $docFullName = $companyId . '-' . $invoice->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/' . $docFullName . '.xml'),
@@ -56,16 +48,15 @@ readonly class ReceiptXmlUseCase
     }
 
     /**
-     * @throws ServiceException
-     * @throws FilesystemException|Exception
+     * @throws FilesystemException
      */
     public function getXmlForNote(string $id): FileResponse
     {
-        $note = $this->creditNoteRepository->find($id);
+        $note = $this->taxDocumentRepository->find($id);
         $companyId = $this->companyContext->getId();
 
-        $docName = $note->getSerie() . '-' . $note->getcorrelativo();
-        $docFullName = $companyId . '-' . $note->getTipoId() . '-' . $docName;
+        $docName = $note->getFullNumber();
+        $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
             $this->fileManager->read($companyId . '/' . $docFullName . '.xml'),

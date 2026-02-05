@@ -10,14 +10,17 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Api\ConsultInvoice;
 use App\Controller\Api\SendInvoiceEmail;
-use App\Controller\Api\SendInvoice;
+use App\Controller\Api\SendTaxDocument;
 use App\Controller\Api\ValidateInvoice;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
 use App\Repository\TaxDocumentRepository;
+use App\State\TaxDocument\TaxDocumentProcessor;
 use App\State\TaxDocument\TaxDocumentProvider;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -26,10 +29,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'tax_document')]
 #[ApiResource(
     shortName: 'TaxDocument',
-    normalizationContext: ['groups' => ['tax_document:read', 'invoice:read', 'creditnote:read']],
-    denormalizationContext: ['groups' => ['tax_document:write']],
+    normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
     filters: [DevExtremeFilter::class],
     provider: TaxDocumentProvider::class,
+    processor: TaxDocumentProcessor::class,
 )]
 #[ApiResource(
     shortName: 'TaxDocument',
@@ -48,7 +51,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/send',
-            controller: SendInvoice::class,
+            controller: SendTaxDocument::class,
             read: false,
             deserialize: false,
         ),
@@ -72,13 +75,17 @@ class TaxDocument
     #[ORM\Column(name: 'tax_document_id', type: Types::STRING, length: 36)]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
-    private string $id;
+    #[Groups(['invoice:read', 'creditnote:read'])]
+    private ?string $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Sale::class)]
+    #[ORM\OneToOne(targetEntity: Sale::class, inversedBy: 'taxDocument')]
     #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id', nullable: false)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private Sale $sale;
+
+    #[ORM\ManyToOne(targetEntity: self::class)]
+    #[ORM\JoinColumn(name: 'related_tax_document_id', referencedColumnName: 'tax_document_id', nullable: true)]
+    private ?self $relatedTaxDocument = null;
 
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
@@ -86,70 +93,79 @@ class TaxDocument
 
     #[ORM\ManyToOne(targetEntity: Customer::class)]
     #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'ruc', nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read'])]
+    #[Groups(['invoice:read'])]
     private ?Customer $customer = null;
 
     #[ORM\Column(name: 'document_type', type: Types::STRING, length: 10)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private string $documentType;
 
     #[ORM\Column(name: 'issue_date', type: Types::DATETIME_MUTABLE)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private DateTimeInterface $issueDate;
 
     #[ORM\Column(name: 'series', type: Types::STRING, length: 10)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private string $series;
 
     #[ORM\Column(name: 'number', type: Types::STRING, length: 20)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private string $number;
 
     #[ORM\Column(name: 'affected_document', type: Types::STRING, length: 50, nullable: true)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private ?string $affectedDocument = null;
 
     #[ORM\Column(name: 'reason_code', type: Types::STRING, length: 10, nullable: true)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private ?string $reasonCode = null;
 
     #[ORM\Column(name: 'reason_description', type: Types::STRING, length: 255, nullable: true)]
-    #[Groups(['tax_document:read', 'creditnote:read'])]
+    #[Groups(['creditnote:read'])]
     private ?string $reasonDescription = null;
 
     #[ORM\Column(name: 'total', type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private string $total = '0.00';
 
     #[ORM\Column(name: 'void_ticket', type: Types::STRING, length: 255, nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read'])]
+    #[Groups(['invoice:read'])]
     private ?string $voidTicket = null;
 
     #[ORM\Column(name: 'void_correlation', type: Types::STRING, length: 255, nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read'])]
+    #[Groups(['invoice:read'])]
     private ?string $voidCorrelation = null;
 
     #[ORM\Column(name: 'sunat_status', type: Types::STRING, length: 50, nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private ?string $sunatStatus = null;
 
     #[ORM\Column(name: 'sunat_message', type: Types::TEXT, nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private ?string $sunatMessage = null;
 
     #[ORM\Column(name: 'digest', type: Types::TEXT, nullable: true)]
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
     private ?string $digest = null;
 
+    /**
+     * @var Collection<int, TaxDocumentLine>
+     */
+    #[ORM\OneToMany(targetEntity: TaxDocumentLine::class, mappedBy: 'taxDocument', orphanRemoval: true)]
+    private Collection $lines;
+
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
-    #[Groups(['tax_document:read'])]
     private DateTimeInterface $createdAt;
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
-    #[Groups(['tax_document:read'])]
     private DateTimeInterface $updatedAt;
 
-    public function getId(): string
+    public function __construct()
+    {
+        $this->lines = new ArrayCollection();
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -162,6 +178,43 @@ class TaxDocument
     public function setSale(Sale $sale): self
     {
         $this->sale = $sale;
+
+        return $this;
+    }
+
+    public function getRelatedTaxDocument(): ?self
+    {
+        return $this->relatedTaxDocument;
+    }
+
+    public function setRelatedTaxDocument(?self $relatedTaxDocument): self
+    {
+        $this->relatedTaxDocument = $relatedTaxDocument;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TaxDocumentLine>
+     */
+    public function getLines(): Collection
+    {
+        return $this->lines;
+    }
+
+    public function addLine(TaxDocumentLine $line): self
+    {
+        if (!$this->lines->contains($line)) {
+            $this->lines->add($line);
+            $line->setTaxDocument($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLine(TaxDocumentLine $line): self
+    {
+        $this->lines->removeElement($line);
 
         return $this;
     }
@@ -370,13 +423,20 @@ class TaxDocument
         return $this;
     }
 
-    #[Groups(['tax_document:read', 'invoice:read', 'creditnote:read'])]
+    #[Groups(['invoice:read', 'creditnote:read'])]
+    public function getFullNumber(): string
+    {
+        return sprintf('%s-%s', $this->series, $this->number);
+    }
+
+    public function isProcessed(): bool
+    {
+        return $this->sunatStatus !== null;
+    }
+
+    #[Groups(['invoice:read', 'creditnote:read'])]
     public function getPublicReceiptUrl(): string
     {
-        $identifier = in_array($this->documentType, ['01', '03'], true)
-            ? ($this->sale->getId() ?? $this->id)
-            : $this->id;
-
-        return ReceiptPayload::publicUrl($this->documentType, $identifier);
+        return ReceiptPayload::publicUrl($this->getDocumentType(), $this->getId());
     }
 }
