@@ -31,7 +31,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_LINE_PRODUCT', columns: ['product_id'])]
 class TaxDocumentLine
 {
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: Types::INTEGER)]
@@ -41,31 +41,31 @@ class TaxDocumentLine
     #[ORM\JoinColumn(name: 'tax_document_id', referencedColumnName: 'tax_document_id', nullable: false, onDelete: 'CASCADE')]
     private TaxDocument $taxDocument;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'line_number', type: Types::INTEGER)]
     private int $lineNumber;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'product_id', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productId = null;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'product_code', type: Types::STRING, length: 255, nullable: true)]
     private ?string $productCode = null;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'product_name', type: Types::STRING, length: 255)]
     private string $productName;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'product_uom', type: Types::STRING, length: 20, nullable: true)]
     private ?string $productUom = null;
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'quantity', type: Types::DECIMAL, precision: 10, scale: 6, options: ['default' => 0])]
     private string $quantity = '0.000000';
 
-    #[Groups(['tax_document_line:read'])]
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
     #[ORM\Column(name: 'unit_price', type: Types::DECIMAL, precision: 12, scale: 6, options: ['default' => 0])]
     private string $unitPrice = '0.000000';
 

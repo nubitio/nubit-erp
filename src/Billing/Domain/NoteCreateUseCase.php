@@ -34,7 +34,7 @@ readonly class NoteCreateUseCase
     public function __invoke(string $taxDocumentId): Note
     {
         $creditNote = $this->taxDocumentRepository->find($taxDocumentId);
-        $voucher = $this->taxDocumentRepository->getVoucher($creditNote->getSale()->getId());
+        $voucher = $this->taxDocumentRepository->getNoteVoucher($taxDocumentId);
 
         return $this->getNote($creditNote, $voucher);
     }

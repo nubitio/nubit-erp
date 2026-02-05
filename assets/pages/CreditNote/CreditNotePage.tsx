@@ -2,16 +2,21 @@ import './CreditNotePage.scss';
 import {Constants} from '../../core/common/Constants';
 import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
 import {DxDialog} from '../../core/dialog/DxDialog';
-import {DxForm} from '../../core/form/DxForm';
-import {CreditNoteFields} from './CreditNoteFields';
-import {useRef, useState} from 'react';
+import {DxForm, DxFormEvents, FORM_EVENTS} from '../../core/form/DxForm';
+import {CreditNoteDetailFields, CreditNoteFields} from './CreditNoteFields';
+import {useEffect, useRef, useState} from 'react';
 import toast from "../../core/utils/SharedUtils";
 import {taxDocumentService} from "../../service/taxDocument.service";
+import {useEvents} from "../../core/event/EventHook";
+import {httpClient} from "../../core/http/HttpClient";
 
 export const CreditNotePage = () => {
+  const [on] = useEvents();
   const container = 'wrapper';
   const fields = CreditNoteFields();
+  const detailFields = CreditNoteDetailFields();
   const gridRef = useRef<DxDataGridEvents>(null);
+  const formRef = useRef<DxFormEvents>(null);
   const [editDisabled, setEditDisabled] = useState<boolean>(true);
   const [deleteDisabled, setDeleteDisabled] = useState<boolean>(true);
 
@@ -26,6 +31,21 @@ export const CreditNotePage = () => {
     SUCCESS: 'credit-note:success',
     LOADING: 'credit-note:loading',
   };
+
+  useEffect(() => {
+    on<{ field: string; value: any }>(FORM_EVENTS.FIELD_CHANGED, ({field, value}) => {
+      if (field !== 'relatedTaxDocument') return;
+      if (!value) {
+        formRef.current?.setDetailData([]);
+        return;
+      }
+      httpClient
+        .get<any>(`${API_URL}/${value}/lines`)
+        .subscribe((response) => {
+          formRef.current?.setDetailData(response.data ?? []);
+        });
+    });
+  }, []);
 
   const toolbar = [
     {
@@ -97,6 +117,8 @@ export const CreditNotePage = () => {
         title={'Notas de crédito'}
         toolbar={toolbar}
         url={API_URL + '?type=note'}
+        detailUrl={API_URL + '/{id}/lines'}
+        detailFields={detailFields}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
@@ -111,8 +133,21 @@ export const CreditNotePage = () => {
           setDeleteDisabled(!isPending);
         }}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS}/>
+      <DxDialog width={1200} height={720} events={EVENTS}>
+        <DxForm
+          ref={formRef}
+          url={API_URL}
+          fields={fields}
+          detailUrl={API_URL + '/{id}/lines'}
+          detailFields={detailFields}
+          detailPropertyName="lines"
+          allowAdding={false}
+          allowDeleting={true}
+          allowUpdating={true}
+          requiredDetail={true}
+          events={EVENTS}
+          useIRI={true}
+        />
       </DxDialog>
     </div>
   );
