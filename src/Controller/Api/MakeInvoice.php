@@ -6,7 +6,7 @@ namespace App\Controller\Api;
 
 use App\Core\Http\ApiResponse;
 use App\Repository\SaleRepository;
-use App\Service\InvoiceCreationService;
+use App\EInvoicing\Service\InvoiceCreationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

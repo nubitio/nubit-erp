@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\MessageHandler;
 
-use App\Billing\Domain\BillSendUseCase;
+use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\Message\SendInvoiceMessage;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 

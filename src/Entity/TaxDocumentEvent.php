@@ -20,7 +20,12 @@ class TaxDocumentEvent
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: TaxDocument::class)]
-    #[ORM\JoinColumn(name: 'tax_document_id', referencedColumnName: 'tax_document_id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(
+        name: 'tax_document_id',
+        referencedColumnName: 'tax_document_id',
+        nullable: false,
+        onDelete: 'CASCADE'
+    )]
     private TaxDocument $taxDocument;
 
     #[ORM\Column(name: 'event_type', type: Types::STRING, length: 40)]
@@ -40,11 +45,6 @@ class TaxDocumentEvent
 
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE, options: ['default' => 'CURRENT_TIMESTAMP'])]
     private DateTimeImmutable $createdAt;
-
-    public function __construct()
-    {
-        $this->createdAt = new DateTimeImmutable();
-    }
 
     public function getId(): ?int
     {
@@ -133,5 +133,10 @@ class TaxDocumentEvent
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->createdAt = new DateTimeImmutable();
     }
 }

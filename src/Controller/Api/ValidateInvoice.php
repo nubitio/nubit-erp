@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Core\Http\ApiResponse;
-use App\Invoice\Domain\ValidateInvoiceUseCase;
+use App\EInvoicing\Invoice\Domain\ValidateInvoiceUseCase;
 use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

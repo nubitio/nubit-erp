@@ -37,8 +37,13 @@ class TaxDocumentLine
     #[ORM\Column(type: Types::INTEGER)]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: TaxDocument::class)]
-    #[ORM\JoinColumn(name: 'tax_document_id', referencedColumnName: 'tax_document_id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\ManyToOne(targetEntity: TaxDocument::class, inversedBy: 'lines')]
+    #[ORM\JoinColumn(
+        name: 'tax_document_id',
+        referencedColumnName: 'tax_document_id',
+        nullable: false,
+        onDelete: 'CASCADE'
+    )]
     private TaxDocument $taxDocument;
 
     #[Groups(['tax_document_line:read', 'creditnote:write'])]

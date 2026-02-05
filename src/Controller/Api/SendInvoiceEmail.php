@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Core\Http\ApiResponse;
-use App\Invoice\Domain\InvoiceEmailUseCase;
+use App\EInvoicing\Invoice\Domain\InvoiceEmailUseCase;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;

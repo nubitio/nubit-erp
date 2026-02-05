@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Core\Http\ApiResponse;
-use App\Invoice\Domain\InvoiceConsultUseCase;
+use App\EInvoicing\Invoice\Domain\InvoiceConsultUseCase;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

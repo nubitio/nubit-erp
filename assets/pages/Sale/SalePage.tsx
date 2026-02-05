@@ -18,6 +18,7 @@ import { useEvents } from '../../core/event/EventHook';
 import { httpClient } from '../../core/http/HttpClient';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 import toast from '../../core/utils/SharedUtils';
+import { prompt } from '../../components/library/prompt-dialog/PromptDialog';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
@@ -138,9 +139,9 @@ export const SalePage = () => {
     }
   }, []);
 
-  const voidSale = (saleId: string) => {
-    const reason = prompt('Motivo de anulación', '');
-    if (reason === null) {
+  const voidSale = async (saleId: string) => {
+    const reason = await prompt('Anular comprobante', 'Motivo de anulación');
+    if (!reason || reason.trim() === '') {
       return;
     }
     gridRef.current?.showLoading('Anulando comprobante...');

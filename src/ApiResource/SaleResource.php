@@ -10,14 +10,14 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
-use ArrayObject;
 use App\Controller\Api\MakeInvoice;
+use App\Controller\Api\VoidSale;
 use App\Controller\PrintESCPOSController;
-use App\Core\Http\ApiResponse;
 use App\Core\Exception\ServiceException;
+use App\Core\Http\ApiResponse;
 use App\Dto\Sale\VoidSaleDto;
 use App\Entity\Sale;
-use App\State\Sale\VoidInvoiceProcessor;
+use ArrayObject;
 
 #[ApiResource(
     shortName: 'Sale',
@@ -40,12 +40,12 @@ use App\State\Sale\VoidInvoiceProcessor;
                     fromClass: Sale::class
                 ),
             ],
+            controller: VoidSale::class,
             exceptionToStatus: [
                 ServiceException::class => 400,
             ],
             input: VoidSaleDto::class,
-            output: ApiResponse::class,
-            processor: VoidInvoiceProcessor::class
+            output: ApiResponse::class
         ),
         new Get(
             uriTemplate: '/sales/{id}/print-invoice',
