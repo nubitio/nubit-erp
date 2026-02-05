@@ -94,7 +94,7 @@ class TaxDocument
     private ?Branch $branch = null;
 
     #[ORM\ManyToOne(targetEntity: Customer::class)]
-    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'ruc', nullable: true)]
+    #[ORM\JoinColumn(name: 'customer_id', referencedColumnName: 'id', nullable: true)]
     #[Groups(['invoice:read'])]
     private ?Customer $customer = null;
 

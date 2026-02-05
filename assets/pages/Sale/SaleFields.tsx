@@ -76,9 +76,9 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .label('Cliente')
       .url(Constants.API_BASE_URL + 'customers')
       .mode('remote')
-      .valueField('ruc')
+      .valueField('id')
       .textField('businessName')
-      .defaultValue('00000000')
+      .defaultValue(1)
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .onSelect((event: any) => {

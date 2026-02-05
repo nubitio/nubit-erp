@@ -20,11 +20,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
 class Customer
 {
+    #[ORM\Id]
+    #[ORM\Column(type: 'integer')]
+    #[ORM\GeneratedValue]
+    private ?int $id = null;
+
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^\d{8,11}$/', message: 'El RUC/DNI debe contener entre 8 y 11 dígitos.')]
     #[Groups(['sale:read', 'invoice:read'])]
-    #[ORM\Id]
-    #[ORM\Column(length: 11)]
+    #[ORM\Column(length: 11, unique: true)]
     private string $ruc;
 
     #[Assert\NotBlank]
@@ -46,6 +50,11 @@ class Customer
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
     private ?PriceList $priceList = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
     public function getRuc(): string
     {

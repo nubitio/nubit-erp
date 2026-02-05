@@ -1,6 +1,7 @@
 import { PriceListDto } from './price-list.dto';
 
 export interface CustomerDto {
+  id: number;
   ruc: string;
   razon_social: string;
   domicilio_fiscal: string;

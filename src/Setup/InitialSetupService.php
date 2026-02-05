@@ -499,7 +499,7 @@ readonly class InitialSetupService
 
     private function getOrCreateCustomer(string $ruc, string $businessName): void
     {
-        $existing = $this->customerRepository->find($ruc);
+        $existing = $this->customerRepository->findOneBy(['ruc' => $ruc]);
         if ($existing instanceof Customer) {
             return;
         }

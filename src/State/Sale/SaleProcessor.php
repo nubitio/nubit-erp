@@ -249,7 +249,7 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $this->logger->info('Persisting sale data', [
             'sale_id' => $data->getId(),
-            'customer_id' => $data->getCliente()?->getRuc(),
+            'customer_id' => $data->getCliente()?->getId(),
             'total' => $data->getTotal(),
             'item_count' => count($data->getItems()),
         ]);

@@ -108,7 +108,7 @@ export const CreditNoteFields = () => {
       .name('customer')
       .label('Cliente')
       .url(Constants.API_BASE_URL + 'customers')
-      .valueField('ruc')
+      .valueField('id')
       .textField('businessName')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .visibleOnForm(false)

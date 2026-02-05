@@ -142,7 +142,7 @@ from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
     left join tax_document i on i.movimiento_id = m.movimiento_id and i.document_type in ('01', '03')
     left join tipo_comprobante vt on vt.codigo = i.document_type
-    left join cliente c on c.ruc = m.cliente_id
+    left join cliente c on c.id = m.cliente_id
     left join payment_method pm on pm.id = m.tipo_pago
 where
     m.tipo_id = 2
@@ -176,7 +176,7 @@ select
 from tax_document i
     inner join movimiento m on m.movimiento_id = i.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
-    left join cliente c on c.ruc = m.cliente_id
+    left join cliente c on c.id = m.cliente_id
     left join tipo_comprobante vt on vt.codigo = i.document_type
 where
     m.tipo_id = 2
@@ -204,7 +204,7 @@ select
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
     left join tax_document i on i.movimiento_id = m.movimiento_id and i.document_type in ('01', '03')
-    left join cliente c on c.ruc = m.cliente_id
+    left join cliente c on c.id = m.cliente_id
     left join tipo_comprobante vt on vt.codigo = i.document_type
 where
     m.tipo_id = 2
@@ -231,7 +231,7 @@ select
 from tax_document n
     inner join movimiento m on m.movimiento_id = n.movimiento_id
     inner join almacen a on a.almacen_id = m.almacen_id
-    left join cliente c on c.ruc = m.cliente_id
+    left join cliente c on c.id = m.cliente_id
 where
     n.document_type in ('07', '08')
     and n.issue_date between :date_from and :date_to
