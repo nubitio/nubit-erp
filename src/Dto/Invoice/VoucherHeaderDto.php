@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Dto\Invoice;
 
-use App\Invoice\Domain\Voucher;
-use App\Invoice\Domain\VoucherItem;
-use App\Service\InvoiceAmounts;
+use App\EInvoicing\Invoice\Domain\Voucher;
+use App\EInvoicing\Invoice\Domain\VoucherItem;
+use App\EInvoicing\Service\InvoiceAmounts;
 
 final class VoucherHeaderDto
 {
@@ -86,25 +86,31 @@ final class VoucherHeaderDto
             voucherDate: isset($row['voucher_date']) ? (string) $row['voucher_date'] : null,
             voucherCurrency: isset($row['voucher_currency']) ? (string) $row['voucher_currency'] : null,
             voucherExchangeRate: isset($row['voucher_exchange_rate']) ? (string) $row['voucher_exchange_rate'] : null,
-            voucherDiscountAmount: isset($row['voucher_discount_amount']) ? (string) $row['voucher_discount_amount'] : null,
-            voucherDiscountPercentage: isset($row['voucher_discount_percentage']) ? (string) $row['voucher_discount_percentage'] : null,
-            voucherConsumptionSurchargeAmount: isset($row['voucher_consumption_surcharge_amount']) ? (string) $row['voucher_consumption_surcharge_amount'] : null,
-            voucherConsumptionSurchargePercentage: isset($row['voucher_consumption_surcharge_percentage']) ? (string) $row['voucher_consumption_surcharge_percentage'] : null,
+            voucherDiscountAmount: self::stringOrNull($row, 'voucher_discount_amount'),
+            voucherDiscountPercentage: self::stringOrNull($row, 'voucher_discount_percentage'),
+            voucherConsumptionSurchargeAmount: self::stringOrNull($row, 'voucher_consumption_surcharge_amount'),
+            voucherConsumptionSurchargePercentage: self::stringOrNull(
+                $row,
+                'voucher_consumption_surcharge_percentage'
+            ),
             voucherTaxedAmount: isset($row['voucher_taxed_amount']) ? (string) $row['voucher_taxed_amount'] : null,
             voucherTaxAmount: isset($row['voucher_tax_amount']) ? (string) $row['voucher_tax_amount'] : null,
-            voucherTaxPercentage: isset($row['voucher_tax_percentage']) ? (string) $row['voucher_tax_percentage'] : null,
+            voucherTaxPercentage: self::stringOrNull($row, 'voucher_tax_percentage'),
             voucherTotalTaxes: isset($row['voucher_total_taxes']) ? (string) $row['voucher_total_taxes'] : null,
             voucherSaleValue: isset($row['voucher_sale_value']) ? (string) $row['voucher_sale_value'] : null,
             voucherSaleAmount: isset($row['voucher_sale_amount']) ? (string) $row['voucher_sale_amount'] : null,
-            voucherOperationType: isset($row['voucher_operation_type']) ? (string) $row['voucher_operation_type'] : null,
-            voucherDetractionCode: isset($row['voucher_detraction_code']) ? (string) $row['voucher_detraction_code'] : null,
-            voucherDetractionPercent: isset($row['voucher_detraction_percent']) ? (string) $row['voucher_detraction_percent'] : null,
-            voucherDetractionAmount: isset($row['voucher_detraction_amount']) ? (string) $row['voucher_detraction_amount'] : null,
-            voucherDetractionPaymentMethod: isset($row['voucher_detraction_payment_method']) ? (string) $row['voucher_detraction_payment_method'] : null,
-            voucherDetractionPaymentDescription: isset($row['voucher_detraction_payment_description']) ? (string) $row['voucher_detraction_payment_description'] : null,
-            voucherDetractionValueRef: isset($row['voucher_detraction_value_ref']) ? (string) $row['voucher_detraction_value_ref'] : null,
-            voucherDetractionAccount: isset($row['voucher_detraction_account']) ? (string) $row['voucher_detraction_account'] : null,
-            voucherDetractionDescription: isset($row['voucher_detraction_description']) ? (string) $row['voucher_detraction_description'] : null,
+            voucherOperationType: self::stringOrNull($row, 'voucher_operation_type'),
+            voucherDetractionCode: self::stringOrNull($row, 'voucher_detraction_code'),
+            voucherDetractionPercent: self::stringOrNull($row, 'voucher_detraction_percent'),
+            voucherDetractionAmount: self::stringOrNull($row, 'voucher_detraction_amount'),
+            voucherDetractionPaymentMethod: self::stringOrNull($row, 'voucher_detraction_payment_method'),
+            voucherDetractionPaymentDescription: self::stringOrNull(
+                $row,
+                'voucher_detraction_payment_description'
+            ),
+            voucherDetractionValueRef: self::stringOrNull($row, 'voucher_detraction_value_ref'),
+            voucherDetractionAccount: self::stringOrNull($row, 'voucher_detraction_account'),
+            voucherDetractionDescription: self::stringOrNull($row, 'voucher_detraction_description'),
             voucherBankName: isset($row['voucher_bank_name']) ? (string) $row['voucher_bank_name'] : null,
             voucherBankAccount: isset($row['voucher_bank_account']) ? (string) $row['voucher_bank_account'] : null,
             voucherBankCci: isset($row['voucher_bank_cci']) ? (string) $row['voucher_bank_cci'] : null,
@@ -113,6 +119,14 @@ final class VoucherHeaderDto
             voucherQrData: isset($row['voucher_qr_data']) ? (string) $row['voucher_qr_data'] : null,
             voucherStatus: isset($row['voucher_status']) ? (int) $row['voucher_status'] : null,
         );
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private static function stringOrNull(array $row, string $key): ?string
+    {
+        return isset($row[$key]) ? (string) $row[$key] : null;
     }
 
     public function applyAmounts(InvoiceAmounts $amounts): void

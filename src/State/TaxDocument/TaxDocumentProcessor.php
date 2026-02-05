@@ -14,10 +14,11 @@ use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
 use App\Repository\BranchRepository;
 use App\Repository\TaxDocumentRepository;
-use App\Service\InvoiceAmounts;
-use App\Service\InvoiceCalculator;
-use App\Service\InvoiceLineInput;
+use App\EInvoicing\Service\InvoiceAmounts;
+use App\EInvoicing\Service\InvoiceCalculator;
+use App\EInvoicing\Service\InvoiceLineInput;
 use DateTime;
+use Doctrine\DBAL\Connection;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -31,6 +32,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private TaxDocumentRepository $taxDocumentRepository,
+        private Connection $connection,
     ) {
     }
 
@@ -131,8 +133,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             throw new ServiceException('Debe seleccionar al menos un ítem para la nota de crédito.');
         }
 
-        $connection = $this->taxDocumentRepository->getEntityManager()->getConnection();
-        $originalLines = $connection->fetchAllAssociative(
+        $originalLines = $this->connection->fetchAllAssociative(
             <<<SQL
 SELECT
     line_number,
@@ -162,8 +163,8 @@ SQL,
 
         $selected = [];
         foreach ($requestedLines as $req) {
-            $lineNumber = (int)($req['lineNumber'] ?? 0);
-            $requestedQty = (float)($req['quantity'] ?? 0);
+            $lineNumber = (int)$req['lineNumber'];
+            $requestedQty = (float)$req['quantity'];
             if ($requestedQty <= 0) {
                 continue;
             }
@@ -238,8 +239,7 @@ SQL,
         InvoiceAmounts $amounts,
         Sale $sale
     ): void {
-        $connection = $this->taxDocumentRepository->getEntityManager()->getConnection();
-        $connection->update('tax_document', [
+        $this->connection->update('tax_document', [
             'currency' => 'PEN',
             'payment_method' => $sale->getFormaPago(),
             'subtotal' => $amounts->getSubtotal(),

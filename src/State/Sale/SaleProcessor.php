@@ -24,7 +24,7 @@ use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
-use App\Service\InvoiceCreationService;
+use App\EInvoicing\Service\InvoiceCreationService;
 use App\Service\ProductStockService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;

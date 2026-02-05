@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Dto\Invoice;
 
-use App\Invoice\Domain\VoucherItem;
-use App\Service\InvoiceLineAmounts;
+use App\EInvoicing\Invoice\Domain\VoucherItem;
+use App\EInvoicing\Service\InvoiceLineAmounts;
 
 final class VoucherLineDto
 {

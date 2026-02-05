@@ -6,9 +6,9 @@ namespace App\Controller\Api;
 
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
-use App\Invoice\Domain\InvoiceSendUseCase;
+use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use App\Repository\TaxDocumentRepository;
-use App\Service\CreditNoteService;
+use App\EInvoicing\Service\CreditNoteService;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Psr\Log\LoggerInterface;

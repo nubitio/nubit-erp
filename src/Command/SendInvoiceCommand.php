@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
-use App\Invoice\Domain\InvoiceSendUseCase;
+use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Override;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Service\InvoiceCalculator;
-use App\Service\InvoiceLineInput;
+use App\EInvoicing\Service\InvoiceCalculator;
+use App\EInvoicing\Service\InvoiceLineInput;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
