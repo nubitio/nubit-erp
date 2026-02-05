@@ -68,14 +68,25 @@ readonly class NoteCreateUseCase
             ->setTipoMoneda(strval($voucher->voucher_currency))
             ->setCompany($this->billUtils->getCompany())
             ->setClient($client)
-            ->setMtoOperGravadas(
-                $money(Money::of($voucher->voucher_taxed_amount)->plus(Money::of($voucher->voucher_discount_amount)))
+            ->setMtoOperGravadas($money($voucher->voucher_taxed_amount ?? 0))
+            ->setMtoIGV($money($voucher->voucher_tax_amount ?? 0))
+            ->setTotalImpuestos($money($voucher->voucher_total_taxes ?? 0))
+            ->setSumOtrosCargos($money($voucher->voucher_consumption_surcharge_amount ?? 0))
+            ->setValorVenta(
+                $money(
+                    Money::of($voucher->voucher_sale_value ?? 0)->minus(
+                        Money::of($voucher->voucher_discount_amount ?? 0)
+                    )
+                )
             )
-            ->setMtoIGV($money($voucher->voucher_tax_amount))
-            ->setTotalImpuestos($money($voucher->voucher_total_taxes))
-            ->setMtoImpVenta(
-                $money(Money::of($voucher->voucher_sale_amount)->plus(Money::of($voucher->voucher_discount_amount)))
-            );
+            ->setSubTotal(
+                $money(
+                    Money::of($voucher->voucher_sale_amount ?? 0)->minus(
+                        Money::of($voucher->voucher_consumption_surcharge_amount ?? 0)
+                    )
+                )
+            )
+            ->setMtoImpVenta($money($voucher->voucher_sale_amount ?? 0));
 
         $items = [];
         foreach ($voucher->voucher_items as $item) {

@@ -5,19 +5,26 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Exception\ServiceException;
+use App\Core\Util\Money;
 use App\Dto\Invoice\VoucherHeaderDto;
 use App\Dto\Invoice\VoucherLineDto;
 use App\Dto\TaxDocument\SeriesResultDto;
-use App\Entity\TaxDocument;
 use App\EInvoicing\Invoice\Domain\Voucher;
 use App\EInvoicing\Invoice\Domain\VoucherItem;
-use App\Sale\Domain\DocType;
+use App\EInvoicing\Service\InvoiceAmounts;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineAmounts;
 use App\EInvoicing\Service\InvoiceLineInput;
+use App\Entity\Branch;
+use App\Entity\Sale;
+use App\Entity\SunatCatalog;
+use App\Entity\TaxDocument;
+use App\Entity\TaxDocumentLine;
+use App\Entity\VoucherSeries;
+use App\Sale\Domain\DocType;
 use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\Exception;
+use Doctrine\ORM\Exception\ORMException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -30,130 +37,134 @@ class TaxDocumentRepository extends ServiceEntityRepository
         parent::__construct($registry, TaxDocument::class);
     }
 
+    /**
+     * @throws ORMException
+     */
     public function getTaxDocumentSeriesByBranch(string $branchId, string $documentType): ?SeriesResultDto
     {
-        $sql = <<<SQL
-SELECT
-    serie,
-    serie_asociada
-FROM local_comprobante
-WHERE local_id = ?
-  AND tipo_comprobante_id = ?
-SQL;
-
+        $branchRef = $this->getEntityManager()->getReference(Branch::class, $branchId);
         $result = $this->getEntityManager()
-            ->getConnection()
-            ->executeQuery(
-                $sql,
-                [$branchId, $documentType]
-            )->fetchAssociative();
+            ->getRepository(VoucherSeries::class)
+            ->createQueryBuilder('vs')
+            ->leftJoin('vs.voucherType', 'vt')
+            ->where('vs.branch = :branch')
+            ->andWhere('vt.code = :documentType')
+            ->setParameter('branch', $branchRef)
+            ->setParameter('documentType', $documentType)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        return $result ? new SeriesResultDto(
-            series: $result['serie'],
-            associatedSeries: $result['serie_asociada']
-        ) : null;
-    }
-
-    public function hasCreditNoteForSale(string $saleId): bool
-    {
-        $result = $this->getEntityManager()->getConnection()->fetchOne(
-            <<<SQL
-SELECT 1
-FROM tax_document
-WHERE movimiento_id = :saleId
-  AND document_type = '07'
-LIMIT 1
-SQL,
-            ['saleId' => $saleId]
-        );
-
-        return (bool)$result;
-    }
-
-    public function getNextSequenceNumber(string $branchId, string $documentType): int
-    {
-        $sql = <<<SQL
-SELECT
-    MAX(number) + 1 AS next_number
-FROM tax_document
-WHERE branch_id = ?
-AND document_type = ?
-ORDER BY next_number DESC
-LIMIT 1
-SQL;
-
-        $nextNumber = $this->getEntityManager()
-            ->getConnection()
-            ->executeQuery(
-                $sql,
-                [$branchId, $documentType]
-            )->fetchAssociative()['next_number'];
-
-        if ($nextNumber) {
-            return (int)$nextNumber;
-        } else {
-            return 1;
+        if (!$result instanceof VoucherSeries) {
+            return null;
         }
+
+        return new SeriesResultDto(
+            series: $result->getSeries(),
+            associatedSeries: $result->getAssociatedSeries()
+        );
     }
 
     /**
-     * @throws Exception|MathException
+     * @throws ORMException
+     */
+    public function hasCreditNoteForSale(string $saleId): bool
+    {
+        $saleRef = $this->getEntityManager()->getReference(Sale::class, $saleId);
+        $count = $this->createQueryBuilder('td')
+            ->select('COUNT(td.id)')
+            ->where('td.sale = :sale')
+            ->andWhere('td.documentType = :docType')
+            ->setParameter('sale', $saleRef)
+            ->setParameter('docType', '07')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int)$count > 0;
+    }
+
+    /**
+     * @throws ORMException
+     */
+    public function getNextSequenceNumber(string $branchId, string $documentType): int
+    {
+        $branchRef = $this->getEntityManager()->getReference(Branch::class, $branchId);
+        $numbers = $this->createQueryBuilder('td')
+            ->select('td.number')
+            ->where('td.branch = :branch')
+            ->andWhere('td.documentType = :docType')
+            ->setParameter('branch', $branchRef)
+            ->setParameter('docType', $documentType)
+            ->getQuery()
+            ->getArrayResult();
+
+        $max = 0;
+        foreach ($numbers as $row) {
+            $value = ltrim((string)($row['number'] ?? ''), '0');
+            $value = $value === '' ? '0' : $value;
+            $numeric = (int)$value;
+            if ($numeric > $max) {
+                $max = $numeric;
+            }
+        }
+
+        return $max + 1;
+    }
+
+    /**
+     * @throws MathException
      */
     public function getVoucher(string $saleId): Voucher
     {
-        $connection = $this->getEntityManager()->getConnection();
-        $voucher = $connection
-            ->executeQuery($this->saleHeaderQuery(), ['saleId' => $saleId])
-            ->fetchAssociative();
-        $items = $connection
-            ->executeQuery($this->saleDetailQuery(), ['saleId' => $saleId])
-            ->fetchAllAssociative();
+        $sale = $this->getEntityManager()->getRepository(Sale::class)
+            ->createQueryBuilder('s')
+            ->leftJoin('s.cliente', 'c')->addSelect('c')
+            ->leftJoin('s.almacen', 'w')->addSelect('w')
+            ->leftJoin('w.branch', 'b')->addSelect('b')
+            ->leftJoin('b.company', 'co')->addSelect('co')
+            ->leftJoin('s.items', 'items')->addSelect('items')
+            ->leftJoin('items.producto', 'p')->addSelect('p')
+            ->leftJoin('p.unitOfMeasure', 'u')->addSelect('u')
+            ->leftJoin('s.taxDocument', 'td')->addSelect('td')
+            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
+            ->where('s.id = :saleId')
+            ->setParameter('saleId', $saleId)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        if (!$voucher) {
+        if (!$sale) {
             throw new ServiceException('La venta no existe');
         }
 
-        $header = VoucherHeaderDto::fromArray($voucher);
-        $lines = array_map(static fn (array $row): VoucherLineDto => VoucherLineDto::fromArray($row), $items);
+        $taxDocument = $sale->getTaxDocument();
+        $header = $this->buildHeaderFromSale($sale, $taxDocument, null);
+        $lines = $this->buildLinesForVoucher($sale, $taxDocument);
 
-        // Nota de venta must preserve persisted line totals
+        // Nota de venta: preserve persisted line totals
         if ($header->voucherType === DocType::NOTA_VENTA->value) {
+            $this->applyNotaVentaTotals($sale, $header);
+
             $voucherItems = array_map(
-                static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+                static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
                 $lines
             );
 
             return $header->toVoucher($voucherItems);
         }
 
-        $calculator = new InvoiceCalculator(
-            array_map(
-                static fn (VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
-                    quantity: $line->quantity ?? '0',
-                    unitPrice: $line->unitPrice ?? '0'
-                ),
-                $lines
-            ),
+        $amounts = $this->calculateAmounts(
+            $lines,
             $header->voucherDiscountPercentage ?? '0',
             $header->voucherTaxPercentage ?? '0',
             $header->voucherConsumptionSurchargePercentage ?? '0',
-            $header->voucherSaleAmount ?? null
+            $taxDocument?->getTotal() ?? $sale->getTotal()
         );
 
-        $amounts = $calculator->calculate();
-        $amountLines = $amounts->getLines();
-
-        foreach ($lines as $index => $line) {
-            $amountLine = $amountLines[$index] ?? null;
-            if ($amountLine instanceof InvoiceLineAmounts) {
-                $line->applyAmounts($amountLine);
-            }
-        }
-
+        $this->applyAmountsToLines($lines, $amounts);
         $header->applyAmounts($amounts);
+        $header->voucherQrData = $this->buildQrData($sale, $taxDocument, $amounts);
 
         $voucherItems = array_map(
-            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
             $lines
         );
 
@@ -161,40 +172,205 @@ SQL;
     }
 
     /**
-     * @throws Exception|MathException
+     * @throws MathException
      */
     public function getNoteVoucher(string $taxDocumentId): Voucher
     {
-        $connection = $this->getEntityManager()->getConnection();
-        $voucher = $connection
-            ->executeQuery($this->noteHeaderQuery(), ['taxDocumentId' => $taxDocumentId])
-            ->fetchAssociative();
-        $items = $connection
-            ->executeQuery($this->noteDetailQuery(), ['taxDocumentId' => $taxDocumentId])
-            ->fetchAllAssociative();
+        $creditNote = $this->createQueryBuilder('td')
+            ->leftJoin('td.sale', 's')->addSelect('s')
+            ->leftJoin('s.cliente', 'c')->addSelect('c')
+            ->leftJoin('s.almacen', 'w')->addSelect('w')
+            ->leftJoin('w.branch', 'b')->addSelect('b')
+            ->leftJoin('b.company', 'co')->addSelect('co')
+            ->leftJoin('td.relatedTaxDocument', 'rtd')->addSelect('rtd')
+            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
+            ->where('td.id = :taxDocumentId')
+            ->setParameter('taxDocumentId', $taxDocumentId)
+            ->getQuery()
+            ->getOneOrNullResult();
 
-        if (!$voucher) {
+        if (!$creditNote) {
             throw new ServiceException('La nota de crédito no existe');
         }
 
-        $header = VoucherHeaderDto::fromArray($voucher);
-        $lines = array_map(static fn (array $row): VoucherLineDto => VoucherLineDto::fromArray($row), $items);
+        $sale = $creditNote->getSale();
+        $relatedTaxDocument = $creditNote->getRelatedTaxDocument();
+        $header = $this->buildHeaderFromSale($sale, $creditNote, $relatedTaxDocument);
+        $lines = $this->buildLinesForVoucher($sale, $creditNote);
 
+        $amounts = $this->calculateAmounts(
+            $lines,
+            $header->voucherDiscountPercentage ?? '0',
+            $header->voucherTaxPercentage ?? '0',
+            $header->voucherConsumptionSurchargePercentage ?? '0',
+            $creditNote->getTotal()
+        );
+
+        $this->applyAmountsToLines($lines, $amounts);
+        $header->applyAmounts($amounts);
+
+        $voucherItems = array_map(
+            static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            $lines
+        );
+
+        return $header->toVoucher($voucherItems);
+    }
+
+    private function buildHeaderFromSale(
+        Sale $sale,
+        ?TaxDocument $taxDocument,
+        ?TaxDocument $relatedTaxDocument,
+    ): VoucherHeaderDto {
+        $customer = $sale->getCliente();
+        $branch = $sale->getBranch() ?? $sale->getAlmacen()?->getBranch();
+        $company = $branch?->getCompany();
+        $customerRuc = $customer?->getRuc();
+        $docType = $relatedTaxDocument?->getDocumentType()
+            ?? $taxDocument?->getDocumentType()
+            ?? DocType::NOTA_VENTA->value;
+
+        $voucherSeries = $relatedTaxDocument?->getSeries()
+            ?? $taxDocument?->getSeries()
+            ?? $sale->getSerie();
+        $voucherNumber = $relatedTaxDocument?->getNumber()
+            ?? $taxDocument?->getNumber()
+            ?? $sale->getNumero();
+
+        $detractionCode = $taxDocument?->getDetractionCode() ?? $sale->getDetraccionCodigo();
+        $detractionPaymentMethod = $taxDocument?->getDetractionPaymentMethod() ?? $sale->getDetraccionMedioPago();
+        $detractionDescription = $this->findSunatCatalogDescription(54, $detractionCode);
+        $detractionPaymentDescription = $this->findSunatCatalogDescription(59, $detractionPaymentMethod);
+
+        return new VoucherHeaderDto(
+            saleId: $sale->getId(),
+            customerDocType: $customerRuc && strlen($customerRuc) === 11 ? '6' : '1',
+            customerDocNumber: $customerRuc,
+            customerName: $customer?->getBusinessName(),
+            customerAddress: $customer?->getFiscalAddress(),
+            customerEmail: $customer?->getEmail(),
+            customerPhone: $customer?->getPhone(),
+            companyId: $company?->getRuc(),
+            companyName: $company?->getBusinessName(),
+            companyAddress: $company?->getFiscalAddress(),
+            companyPhone: $company?->getPhone(),
+            branchAddress: $branch?->getAddress(),
+            branchPhone: $branch?->getPhone(),
+            voucherType: $docType,
+            voucherSeries: $voucherSeries,
+            voucherNumber: $voucherNumber,
+            voucherPaymentMethod: $taxDocument?->getPaymentMethod() ?? $sale->getFormaPago(),
+            voucherDate: ($taxDocument?->getIssueDate() ?? $sale->getFecha())?->format('Y-m-d H:i:s'),
+            voucherCurrency: $taxDocument?->getCurrency() ?? 'PEN',
+            voucherDiscountAmount: $taxDocument?->getDiscountAmount(),
+            voucherDiscountPercentage: (string)($taxDocument?->getDiscountPercent() ?? $sale->getDescuento() ?? 0),
+            voucherConsumptionSurchargeAmount: $taxDocument?->getRcAmount(),
+            voucherConsumptionSurchargePercentage: (string)($sale->getRecargoConsumo() ?? 0),
+            voucherTaxedAmount: $taxDocument?->getTaxableAmount(),
+            voucherTaxAmount: $taxDocument?->getIgvAmount(),
+            voucherTaxPercentage: (string)($sale->getIgv() ?? 0),
+            voucherTotalTaxes: $taxDocument?->getIgvAmount(),
+            voucherSaleValue: $taxDocument?->getSubtotal(),
+            voucherSaleAmount: $taxDocument?->getTotal() ?? $sale->getTotal(),
+            voucherOperationType: $taxDocument?->getOperationType() ?? $sale->getTipoOperacion(),
+            voucherDetractionCode: $detractionCode,
+            voucherDetractionPercent: $this->toNullableString(
+                $taxDocument?->getDetractionPercent() ?? $sale->getDetraccionPorcentaje()
+            ),
+            voucherDetractionAmount: $this->toNullableString(
+                $taxDocument?->getDetractionAmount() ?? $sale->getDetraccionMonto()
+            ),
+            voucherDetractionPaymentMethod: $detractionPaymentMethod,
+            voucherDetractionPaymentDescription: $detractionPaymentDescription,
+            voucherDetractionValueRef: $this->toNullableString(
+                $taxDocument?->getDetractionValueRef() ?? $sale->getDetraccionValorReferencial()
+            ),
+            voucherDetractionAccount: $company?->getDetraccionAccount(),
+            voucherDetractionDescription: $detractionDescription,
+            voucherBankName: $company?->getBankName(),
+            voucherBankAccount: $company?->getBankAccount(),
+            voucherBankCci: $company?->getBankCci(),
+            voucherNote: $sale->getGlosa(),
+            voucherHash: $taxDocument?->getDigest(),
+            voucherQrData: null,
+            voucherStatus: $sale->getEstado(),
+        );
+    }
+
+    /**
+     * @return VoucherLineDto[]
+     */
+    private function buildLinesForVoucher(Sale $sale, ?TaxDocument $taxDocument): array
+    {
+        if ($taxDocument && !$taxDocument->getLines()->isEmpty()) {
+            return array_map(
+                static fn(TaxDocumentLine $line): VoucherLineDto => new VoucherLineDto(
+                    productId: $line->getProductId(),
+                    productCode: $line->getProductCode(),
+                    productUom: $line->getProductUom(),
+                    productName: $line->getProductName(),
+                    quantity: $line->getQuantity(),
+                    unitValue: $line->getUnitValue(),
+                    unitPrice: $line->getUnitPrice(),
+                    discountAmount: $line->getDiscountAmount(),
+                    taxedAmount: $line->getTaxedAmount(),
+                    taxAmount: $line->getTaxAmount(),
+                    taxPercentage: $line->getTaxPercentage(),
+                    taxType: $line->getTaxType(),
+                    total: $line->getTotal(),
+                ),
+                $taxDocument->getLines()->toArray()
+            );
+        }
+
+        return array_map(
+            fn($item): VoucherLineDto => new VoucherLineDto(
+                productId: $item->getProducto()?->getId(),
+                productCode: $item->getProducto()?->getCode(),
+                productUom: $item->getProducto()?->getUnitOfMeasure()?->getCode(),
+                productName: $item->getProducto()?->getName() ?? '-',
+                quantity: (string)$item->getCantidad(),
+                unitPrice: $item->getPrecioUnitario() ?? '0',
+                taxPercentage: (string)($sale->getIgv() ?? 0),
+                taxType: '10',
+                total: $item->getPrecioTotal() ?? '0',
+            ),
+            $sale->getItems()->toArray()
+        );
+    }
+
+    /**
+     * @throws MathException
+     */
+    private function calculateAmounts(
+        array $lines,
+        string $discountPercentage,
+        string $taxPercentage,
+        string $chargesPercentage,
+        ?string $expectedTotal
+    ): InvoiceAmounts {
         $calculator = new InvoiceCalculator(
             array_map(
-                static fn (VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
+                static fn(VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
                     quantity: $line->quantity ?? '0',
                     unitPrice: $line->unitPrice ?? '0'
                 ),
                 $lines
             ),
-            $header->voucherDiscountPercentage ?? '0',
-            $header->voucherTaxPercentage ?? '0',
-            $header->voucherConsumptionSurchargePercentage ?? '0',
-            $header->voucherSaleAmount ?? null
+            $discountPercentage,
+            $taxPercentage,
+            $chargesPercentage,
+            $expectedTotal
         );
 
-        $amounts = $calculator->calculate();
+        return $calculator->calculate();
+    }
+
+    /**
+     * @param VoucherLineDto[] $lines
+     */
+    private function applyAmountsToLines(array $lines, InvoiceAmounts $amounts): void
+    {
         $amountLines = $amounts->getLines();
 
         foreach ($lines as $index => $line) {
@@ -203,308 +379,76 @@ SQL;
                 $line->applyAmounts($amountLine);
             }
         }
-
-        $header->applyAmounts($amounts);
-
-        $voucherItems = array_map(
-            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
-            $lines
-        );
-
-        return $header->toVoucher($voucherItems);
     }
 
-    private function saleHeaderQuery(): string
+    /**
+     * @throws MathException
+     */
+    private function applyNotaVentaTotals(Sale $sale, VoucherHeaderDto $header): void
     {
-        return <<<SQL
-SELECT
-    m.movimiento_id AS sale_id,
-    CASE WHEN LENGTH(c.ruc) != 11 THEN 1 ELSE 6 END AS customer_doc_type,
-    c.ruc AS customer_doc_number,
-    c.razon_social AS customer_name,
-    c.domicilio_fiscal AS customer_address,
-    c.email AS customer_email,
-    c.telefono AS customer_phone,
-    e.ruc AS company_id,
-    e.razon_social AS company_name,
-    e.domicilio_fiscal AS company_address,
-    e.telefono AS company_phone,
-    l.direccion AS branch_address,
-    l.telefono AS branch_phone,
-    IFNULL(i.document_type, '00') AS voucher_type,
-    IFNULL(i.series, m.serie) AS voucher_series,
-    IFNULL(i.number, m.numero) AS voucher_number,
-    m.forma_pago AS voucher_payment_method,
-    IFNULL(i.issue_date, m.fecha) AS voucher_date,
-    IFNULL(i.currency, 'PEN') AS voucher_currency,
-    IFNULL(i.discount_percent, m.descuento) AS voucher_discount_percentage,
-    IFNULL(i.discount_amount, detail.discount_amount) AS voucher_discount_amount,
-    i.rc_amount as voucher_consumption_surcharge_amount,
-    IFNULL(m.recargo_consumo, 0) as voucher_consumption_surcharge_percentage,
-    IFNULL(i.taxable_amount, detail.taxed_amount) AS voucher_taxed_amount,
-    IFNULL(i.igv_amount, detail.tax_amount) AS voucher_tax_amount,
-    m.igv AS voucher_tax_percentage,
-    IFNULL(i.igv_amount, detail.tax_amount) AS voucher_total_taxes,
-    IFNULL(i.subtotal, detail.taxed_amount) AS voucher_sale_value,
-    IFNULL(i.total, detail.sale_amount) AS voucher_sale_amount,
-    IFNULL(i.operation_type, m.tipo_operacion) AS voucher_operation_type,
-    IFNULL(i.detraction_code, m.detraccion_codigo) AS voucher_detraction_code,
-    IFNULL(i.detraction_percent, m.detraccion_porcentaje) AS voucher_detraction_percent,
-    IFNULL(i.detraction_amount, m.detraccion_monto) AS voucher_detraction_amount,
-    IFNULL(i.detraction_payment_method, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
-    sc_pay.description AS voucher_detraction_payment_description,
-    IFNULL(i.detraction_value_ref, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
-    e.detraccion_account AS voucher_detraction_account,
-    sc_det.description AS voucher_detraction_description,
-    e.bank_name AS voucher_bank_name,
-    e.bank_account AS voucher_bank_account,
-    e.bank_cci AS voucher_bank_cci,
-    m.glosa AS voucher_note,
-    i.created_at AS date_comprobante,
-    i.digest AS voucher_hash,
-    m.estado AS voucher_status,
-    CONCAT(
-        c.ruc,
-        '|',
-        i.document_type,
-        '|',
-        i.series,
-        '|',
-        i.number,
-        '|',
-        i.igv_amount,
-        '|',
-        i.total,
-        '|',
-        i.issue_date,
-        '|',
-        '0',
-        '|',
-        '0',
-        '|',
-        IFNULL(i.digest, '')
-    ) as voucher_qr_data
-FROM
-    movimiento m
-    LEFT JOIN tax_document i
-        ON i.movimiento_id = m.movimiento_id
-       AND i.document_type IN ('01', '03')
-    INNER JOIN almacen a ON a.almacen_id = m.almacen_id
-    INNER JOIN `local` l ON l.local_id = a.local_id
-    INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-    INNER JOIN cliente c ON c.id = m.cliente_id
-    LEFT JOIN sunat_catalog sc_det
-        ON sc_det.catalog = 54
-        AND sc_det.code = IFNULL(i.detraction_code, m.detraccion_codigo)
-    LEFT JOIN sunat_catalog sc_pay
-        ON sc_pay.catalog = 59
-        AND sc_pay.code = IFNULL(i.detraction_payment_method, m.detraccion_medio_pago)
-    LEFT JOIN (
-        SELECT
-            md.movimiento_id,
-            SUM(
-                ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6) * md.cantidad
-            ) AS taxed_amount,
-            SUM(
-                ROUND(
-                    (
-                        ROUND(md.precio_unitario / (1 + (m2.igv / 100 + m2.recargo_consumo / 100)), 6)
-                        * m2.igv / 100
-                    )
-                    * md.cantidad,
-                    2
-                )
-            ) AS tax_amount,
-            SUM(
-                ROUND(md.precio_total - md.precio_total * IFNULL(m2.descuento, 0) / 100, 2)
-            ) AS sale_amount,
-            SUM(ROUND(md.precio_total * IFNULL(m2.descuento, 0) / 100, 2)) AS discount_amount
-        FROM movimiento m2
-        JOIN movimiento_detalle md ON md.movimiento_id = m2.movimiento_id
-        WHERE m2.movimiento_id = :saleId
-        GROUP BY md.movimiento_id
-    ) detail ON detail.movimiento_id = m.movimiento_id
-WHERE
-    m.movimiento_id = :saleId
-SQL;
+        $subtotal = Money::money($sale->getSubtotal());
+        $discountRate = Money::rate($sale->getDescuento() ?? 0);
+        $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
+        $total = Money::money($sale->getTotal());
+
+        $header->voucherDiscountAmount = Money::toString($discountAmount);
+        $header->voucherTaxedAmount = '0.00';
+        $header->voucherTaxAmount = '0.00';
+        $header->voucherTotalTaxes = '0.00';
+        $header->voucherConsumptionSurchargeAmount = '0.00';
+        $header->voucherSaleValue = Money::toString($subtotal);
+        $header->voucherSaleAmount = Money::toString($total);
     }
 
-    private function noteHeaderQuery(): string
+    private function findSunatCatalogDescription(int $catalog, ?string $code): ?string
     {
-        return <<<SQL
-SELECT
-    m.movimiento_id AS sale_id,
-    CASE WHEN LENGTH(c.ruc) != 11 THEN 1 ELSE 6 END AS customer_doc_type,
-    c.ruc AS customer_doc_number,
-    c.razon_social AS customer_name,
-    c.domicilio_fiscal AS customer_address,
-    c.email AS customer_email,
-    c.telefono AS customer_phone,
-    e.ruc AS company_id,
-    e.razon_social AS company_name,
-    e.domicilio_fiscal AS company_address,
-    e.telefono AS company_phone,
-    l.direccion AS branch_address,
-    l.telefono AS branch_phone,
-    td.document_type AS voucher_type,
-    td.series AS voucher_series,
-    td.number AS voucher_number,
-    IFNULL(cn.payment_method, m.forma_pago) AS voucher_payment_method,
-    cn.issue_date AS voucher_date,
-    IFNULL(cn.currency, 'PEN') AS voucher_currency,
-    IFNULL(cn.discount_percent, 0) AS voucher_discount_percentage,
-    IFNULL(cn.discount_amount, 0) AS voucher_discount_amount,
-    IFNULL(cn.rc_amount, 0) AS voucher_consumption_surcharge_amount,
-    IFNULL(m.recargo_consumo, 0) AS voucher_consumption_surcharge_percentage,
-    IFNULL(cn.taxable_amount, 0) AS voucher_taxed_amount,
-    IFNULL(cn.igv_amount, 0) AS voucher_tax_amount,
-    IFNULL(m.igv, 0) AS voucher_tax_percentage,
-    IFNULL(cn.igv_amount, 0) AS voucher_total_taxes,
-    IFNULL(cn.subtotal, 0) AS voucher_sale_value,
-    IFNULL(cn.total, 0) AS voucher_sale_amount,
-    IFNULL(cn.operation_type, m.tipo_operacion) AS voucher_operation_type,
-    IFNULL(cn.detraction_code, m.detraccion_codigo) AS voucher_detraction_code,
-    IFNULL(cn.detraction_percent, m.detraccion_porcentaje) AS voucher_detraction_percent,
-    IFNULL(cn.detraction_amount, m.detraccion_monto) AS voucher_detraction_amount,
-    IFNULL(cn.detraction_payment_method, m.detraccion_medio_pago) AS voucher_detraction_payment_method,
-    sc_pay.description AS voucher_detraction_payment_description,
-    IFNULL(cn.detraction_value_ref, m.detraccion_valor_referencial) AS voucher_detraction_value_ref,
-    e.detraccion_account AS voucher_detraction_account,
-    sc_det.description AS voucher_detraction_description,
-    e.bank_name AS voucher_bank_name,
-    e.bank_account AS voucher_bank_account,
-    e.bank_cci AS voucher_bank_cci,
-    m.glosa AS voucher_note,
-    cn.created_at AS date_comprobante,
-    cn.digest AS voucher_hash,
-    m.estado AS voucher_status,
-    CONCAT(
-        c.ruc,
-        '|',
-        td.document_type,
-        '|',
-        td.series,
-        '|',
-        td.number,
-        '|',
-        cn.igv_amount,
-        '|',
-        cn.total,
-        '|',
-        cn.issue_date,
-        '|',
-        '0',
-        '|',
-        '0',
-        '|',
-        IFNULL(cn.digest, '')
-    ) as voucher_qr_data
-FROM tax_document cn
-INNER JOIN tax_document td ON td.tax_document_id = cn.related_tax_document_id
-INNER JOIN movimiento m ON m.movimiento_id = cn.movimiento_id
-INNER JOIN almacen a ON a.almacen_id = m.almacen_id
-INNER JOIN `local` l ON l.local_id = a.local_id
-INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-INNER JOIN cliente c ON c.id = m.cliente_id
-LEFT JOIN sunat_catalog sc_det
-    ON sc_det.catalog = 54
-    AND sc_det.code = IFNULL(cn.detraction_code, m.detraccion_codigo)
-LEFT JOIN sunat_catalog sc_pay
-    ON sc_pay.catalog = 59
-    AND sc_pay.code = IFNULL(cn.detraction_payment_method, m.detraccion_medio_pago)
-WHERE cn.tax_document_id = :taxDocumentId
-LIMIT 1
-SQL;
+        if (!$code) {
+            return null;
+        }
+
+        $catalogRow = $this->getEntityManager()
+            ->getRepository(SunatCatalog::class)
+            ->findOneBy(['catalog' => $catalog, 'code' => $code]);
+
+        return $catalogRow?->getDescription();
     }
 
-    private function noteDetailQuery(): string
-    {
-        return <<<SQL
-SELECT
-    tdl.id AS line_id,
-    tdl.product_id AS product_id,
-    tdl.product_code AS product_code,
-    tdl.product_uom AS product_uom,
-    tdl.product_name AS product_name,
-    tdl.quantity AS quantity,
-    tdl.unit_price AS unit_price,
-    tdl.unit_value AS unit_value,
-    tdl.discount_amount AS discount_amount,
-    tdl.taxed_amount AS taxed_amount,
-    tdl.tax_amount AS tax_amount,
-    tdl.tax_percentage AS tax_percentage,
-    tdl.total AS total,
-    IFNULL(tdl.tax_type, '10') AS tax_type
-FROM tax_document_line tdl
-WHERE tdl.tax_document_id = :taxDocumentId
-ORDER BY tdl.line_number ASC
-SQL;
+    private function buildQrData(
+        Sale $sale,
+        ?TaxDocument $taxDocument,
+        InvoiceAmounts $amounts
+    ): ?string {
+        if (!$taxDocument || !$taxDocument->getIssueDate()) {
+            return null;
+        }
+
+        $customerRuc = $sale->getCliente()?->getRuc() ?? '';
+
+        return implode('|', [
+            $customerRuc,
+            $taxDocument->getDocumentType(),
+            $taxDocument->getSeries(),
+            $taxDocument->getNumber(),
+            $amounts->getTax(),
+            $amounts->getTotal(),
+            $taxDocument->getIssueDate()->format('Y-m-d H:i:s'),
+            '0',
+            '0',
+            $taxDocument->getDigest() ?? '',
+        ]);
     }
 
-    private function saleDetailQuery(): string
+    private function toNullableString(mixed $value): ?string
     {
-        return <<<SQL
-SELECT
-    line_id,
-    product_id,
-    product_code,
-    product_uom,
-    product_name,
-    quantity,
-    unit_price,
-    tax_percentage,
-    total,
-    tax_type
-FROM (
-    SELECT
-        tdl.id AS line_id,
-        tdl.product_id AS product_id,
-        tdl.product_code AS product_code,
-        tdl.product_uom AS product_uom,
-        tdl.product_name AS product_name,
-        tdl.quantity AS quantity,
-        tdl.unit_price AS unit_price,
-        m.igv AS tax_percentage,
-        tdl.total AS total,
-        IFNULL(tdl.tax_type, '10') AS tax_type
-    FROM tax_document td
-    INNER JOIN tax_document_line tdl ON tdl.tax_document_id = td.tax_document_id
-    INNER JOIN movimiento m ON m.movimiento_id = td.movimiento_id
-    WHERE td.movimiento_id = :saleId
-      AND td.document_type IN ('01', '03')
+        if ($value === null) {
+            return null;
+        }
 
-    UNION ALL
-
-    SELECT
-        md.id AS line_id,
-        p.producto_id AS product_id,
-        p.codigo AS product_code,
-        u.`code` AS product_uom,
-        p.descripcion AS product_name,
-        md.cantidad AS quantity,
-        md.precio_unitario AS unit_price,
-        m.igv AS tax_percentage,
-        md.precio_total AS total,
-        '10' AS tax_type
-    FROM movimiento m
-    INNER JOIN movimiento_detalle md ON md.movimiento_id = m.movimiento_id
-    INNER JOIN producto p ON p.producto_id = md.producto_id
-    LEFT JOIN unidad u ON u.unidad_id = p.unidad_id
-    WHERE m.movimiento_id = :saleId
-      AND NOT EXISTS (
-          SELECT 1
-          FROM tax_document td2
-          WHERE td2.movimiento_id = m.movimiento_id
-            AND td2.document_type IN ('01', '03')
-      )
-) AS sale_lines
-ORDER BY line_id ASC
-SQL;
+        return (string)$value;
     }
 
     /**
      * @return array<string, mixed>|null
-     * @throws Exception
      * @throws \DateMalformedStringException
      */
     public function findTaxDocumentBySearchCriteria(
@@ -519,44 +463,50 @@ SQL;
         $dateEnd = new \DateTimeImmutable($date . ' 23:59:59')->format('Y-m-d H:i:s');
         $normalizedNumber = ltrim($number, '0');
         $normalizedNumber = $normalizedNumber === '' ? '0' : $normalizedNumber;
+        $rows = $this->createQueryBuilder('td')
+            ->leftJoin('td.branch', 'b')->addSelect('b')
+            ->leftJoin('b.company', 'e')->addSelect('e')
+            ->leftJoin('td.sale', 's')->addSelect('s')
+            ->where('e.ruc = :companyRuc')
+            ->andWhere('td.documentType = :voucherType')
+            ->andWhere('td.series = :series')
+            ->andWhere('td.issueDate BETWEEN :dateStart AND :dateEnd')
+            ->andWhere('td.total = :total')
+            ->setParameter('companyRuc', $companyRuc)
+            ->setParameter('voucherType', $voucherType)
+            ->setParameter('series', strtoupper($series))
+            ->setParameter('dateStart', new \DateTimeImmutable($dateStart))
+            ->setParameter('dateEnd', new \DateTimeImmutable($dateEnd))
+            ->setParameter('total', number_format((float)$total, 2, '.', ''))
+            ->getQuery()
+            ->getResult();
 
-        $row = $this->getEntityManager()->getConnection()->fetchAssociative(
-            <<<SQL
-SELECT
-    td.tax_document_id,
-    td.movimiento_id,
-    td.document_type,
-    td.series,
-    td.number,
-    td.issue_date,
-    td.total,
-    td.digest,
-    td.sunat_status,
-    m.estado AS sale_status
-FROM tax_document td
-INNER JOIN movimiento m ON m.movimiento_id = td.movimiento_id
-INNER JOIN almacen a ON a.almacen_id = m.almacen_id
-INNER JOIN `local` l ON l.local_id = a.local_id
-INNER JOIN empresa e ON e.empresa_id = l.empresa_id
-WHERE e.ruc = :companyRuc
-  AND td.document_type = :voucherType
-  AND td.series = :series
-  AND CAST(td.number AS UNSIGNED) = CAST(:number AS UNSIGNED)
-  AND td.issue_date BETWEEN :dateStart AND :dateEnd
-  AND td.total = :total
-LIMIT 1
-SQL,
-            [
-                'companyRuc' => $companyRuc,
-                'voucherType' => $voucherType,
-                'series' => strtoupper($series),
-                'number' => $normalizedNumber,
-                'dateStart' => $dateStart,
-                'dateEnd' => $dateEnd,
-                'total' => number_format((float)$total, 2, '.', ''),
-            ]
-        );
+        foreach ($rows as $row) {
+            if (!$row instanceof TaxDocument) {
+                continue;
+            }
+            $docNumber = ltrim($row->getNumber(), '0');
+            $docNumber = $docNumber === '' ? '0' : $docNumber;
+            if ($docNumber !== $normalizedNumber) {
+                continue;
+            }
 
-        return $row === false ? null : $row;
+            $sale = $row->getSale();
+
+            return [
+                'tax_document_id' => $row->getId(),
+                'movimiento_id' => $sale?->getId(),
+                'document_type' => $row->getDocumentType(),
+                'series' => $row->getSeries(),
+                'number' => $row->getNumber(),
+                'issue_date' => $row->getIssueDate()->format('Y-m-d H:i:s'),
+                'total' => $row->getTotal(),
+                'digest' => $row->getDigest(),
+                'sunat_status' => $row->getSunatStatus(),
+                'sale_status' => $sale?->getEstado(),
+            ];
+        }
+
+        return null;
     }
 }

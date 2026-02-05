@@ -114,6 +114,48 @@ class TaxDocument
     #[Groups(['invoice:read', 'creditnote:read'])]
     private string $number;
 
+    #[ORM\Column(name: 'payment_method', type: Types::INTEGER, nullable: true)]
+    private ?int $paymentMethod = null;
+
+    #[ORM\Column(name: 'currency', type: Types::STRING, length: 3, nullable: true)]
+    private ?string $currency = null;
+
+    #[ORM\Column(name: 'subtotal', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $subtotal = null;
+
+    #[ORM\Column(name: 'taxable_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $taxableAmount = null;
+
+    #[ORM\Column(name: 'igv_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $igvAmount = null;
+
+    #[ORM\Column(name: 'rc_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $rcAmount = null;
+
+    #[ORM\Column(name: 'discount_percent', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $discountPercent = null;
+
+    #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $discountAmount = null;
+
+    #[ORM\Column(name: 'operation_type', type: Types::STRING, length: 4, nullable: true)]
+    private ?string $operationType = null;
+
+    #[ORM\Column(name: 'detraction_code', type: Types::STRING, length: 10, nullable: true)]
+    private ?string $detractionCode = null;
+
+    #[ORM\Column(name: 'detraction_percent', type: Types::FLOAT, nullable: true)]
+    private ?float $detractionPercent = null;
+
+    #[ORM\Column(name: 'detraction_amount', type: Types::FLOAT, nullable: true)]
+    private ?float $detractionAmount = null;
+
+    #[ORM\Column(name: 'detraction_payment_method', type: Types::STRING, length: 10, nullable: true)]
+    private ?string $detractionPaymentMethod = null;
+
+    #[ORM\Column(name: 'detraction_value_ref', type: Types::FLOAT, nullable: true)]
+    private ?float $detractionValueRef = null;
+
     #[ORM\Column(name: 'affected_document', type: Types::STRING, length: 50, nullable: true)]
     #[Groups(['creditnote:read'])]
     private ?string $affectedDocument = null;
@@ -295,6 +337,174 @@ class TaxDocument
     public function setNumber(string $number): self
     {
         $this->number = $number;
+
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?int
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?int $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?string $currency): self
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getSubtotal(): ?string
+    {
+        return $this->subtotal;
+    }
+
+    public function setSubtotal(?string $subtotal): self
+    {
+        $this->subtotal = $subtotal;
+
+        return $this;
+    }
+
+    public function getTaxableAmount(): ?string
+    {
+        return $this->taxableAmount;
+    }
+
+    public function setTaxableAmount(?string $taxableAmount): self
+    {
+        $this->taxableAmount = $taxableAmount;
+
+        return $this;
+    }
+
+    public function getIgvAmount(): ?string
+    {
+        return $this->igvAmount;
+    }
+
+    public function setIgvAmount(?string $igvAmount): self
+    {
+        $this->igvAmount = $igvAmount;
+
+        return $this;
+    }
+
+    public function getRcAmount(): ?string
+    {
+        return $this->rcAmount;
+    }
+
+    public function setRcAmount(?string $rcAmount): self
+    {
+        $this->rcAmount = $rcAmount;
+
+        return $this;
+    }
+
+    public function getDiscountPercent(): ?string
+    {
+        return $this->discountPercent;
+    }
+
+    public function setDiscountPercent(?string $discountPercent): self
+    {
+        $this->discountPercent = $discountPercent;
+
+        return $this;
+    }
+
+    public function getDiscountAmount(): ?string
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(?string $discountAmount): self
+    {
+        $this->discountAmount = $discountAmount;
+
+        return $this;
+    }
+
+    public function getOperationType(): ?string
+    {
+        return $this->operationType;
+    }
+
+    public function setOperationType(?string $operationType): self
+    {
+        $this->operationType = $operationType;
+
+        return $this;
+    }
+
+    public function getDetractionCode(): ?string
+    {
+        return $this->detractionCode;
+    }
+
+    public function setDetractionCode(?string $detractionCode): self
+    {
+        $this->detractionCode = $detractionCode;
+
+        return $this;
+    }
+
+    public function getDetractionPercent(): ?float
+    {
+        return $this->detractionPercent;
+    }
+
+    public function setDetractionPercent(?float $detractionPercent): self
+    {
+        $this->detractionPercent = $detractionPercent;
+
+        return $this;
+    }
+
+    public function getDetractionAmount(): ?float
+    {
+        return $this->detractionAmount;
+    }
+
+    public function setDetractionAmount(?float $detractionAmount): self
+    {
+        $this->detractionAmount = $detractionAmount;
+
+        return $this;
+    }
+
+    public function getDetractionPaymentMethod(): ?string
+    {
+        return $this->detractionPaymentMethod;
+    }
+
+    public function setDetractionPaymentMethod(?string $detractionPaymentMethod): self
+    {
+        $this->detractionPaymentMethod = $detractionPaymentMethod;
+
+        return $this;
+    }
+
+    public function getDetractionValueRef(): ?float
+    {
+        return $this->detractionValueRef;
+    }
+
+    public function setDetractionValueRef(?float $detractionValueRef): self
+    {
+        $this->detractionValueRef = $detractionValueRef;
 
         return $this;
     }
