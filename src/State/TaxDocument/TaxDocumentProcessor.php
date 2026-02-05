@@ -63,6 +63,9 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             $data->setAffectedDocument($data->getSale()->getInvoice());
             $data->setCustomer($data->getSale()->getCliente());
             $data->setTotal($data->getSale()->getTotal());
+            if ($data->getRelatedTaxDocument()?->isVoided()) {
+                throw new ServiceException('No se puede generar nota de crédito para un comprobante anulado.');
+            }
             $branchId = $this->branchContextService->getCurrentBranchId();
             $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch($branchId, '07');
             $number = $this->taxDocumentRepository->getNextSequenceNumber($branchId, '07');

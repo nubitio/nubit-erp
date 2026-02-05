@@ -447,4 +447,10 @@ class TaxDocument
     {
         return ReceiptPayload::publicUrl($this->getDocumentType(), $this->getId());
     }
+
+    #[Groups(['invoice:read'])]
+    public function isVoided(): bool
+    {
+        return $this->voidTicket !== null || $this->voidCorrelation !== null;
+    }
 }
