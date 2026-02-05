@@ -1,10 +1,10 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import toast, { SharedUtils } from '../../core/utils/SharedUtils';
-import { textField } from '../../core/field/TextFieldBuilder';
-import { DxFormEvents } from '../../core/form/DxForm';
-import { consultService } from '../../service/consult.service';
+import {Field} from '../../core/field/Field';
+import {FieldBuilder} from '../../core/field/FieldBuilder';
+import {FieldType} from '../../core/field/FieldType';
+import toast, {SharedUtils} from '../../core/utils/SharedUtils';
+import {textField} from '../../core/field/TextFieldBuilder';
+import {DxFormEvents} from '../../core/form/DxForm';
+import {consultService} from '../../service/consult.service';
 
 export const SupplierFields = (formRef: DxFormEvents | null) => {
   const fields: Field[] = [];
@@ -27,11 +27,11 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
       .validators([
         {
           type: 'stringLength',
-          options: { min: 11, max: 11, message: 'El RUC debe tener 11 dígitos' },
+          options: {min: 11, max: 11, message: 'El RUC debe tener 11 dígitos'},
         },
         {
           type: 'pattern',
-          options: { pattern: '^[0-9]+$', message: 'El RUC solo debe contener números' },
+          options: {pattern: '^[0-9]+$', message: 'El RUC solo debe contener números'},
         },
         {
           type: 'custom',
@@ -77,7 +77,6 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
       .type(FieldType.TEXTAREA)
       .name('businessName')
       .label('Razón Social')
-      .width('100%')
       .required(true)
       .build(),
   );
@@ -86,14 +85,13 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
       .type(FieldType.TEXT)
       .name('fiscalAddress')
       .label('Dirección')
-      .width('100%')
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
+    textField()
       .name('phone')
       .label('Teléfono')
+      .maxLength(15)
       .validators([
         {
           type: 'pattern',
