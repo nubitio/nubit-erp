@@ -9,6 +9,8 @@ use App\Core\Http\ApiResponse;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\EInvoicing\Sale\Void\SunatVoidService;
 use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;
+use App\Sale\Domain\SaleStatus;
+use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\Sale;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
@@ -47,10 +49,10 @@ readonly class SaleVoidUseCase
         $voucher = $this->taxDocumentRepository->getVoucher($saleId);
         $sale = $this->entityManager->find(Sale::class, $saleId);
         if (!$sale instanceof Sale) {
-            throw new ServiceException('La venta no existe.');
+            throw new ServiceException(ErrorMessages::SALE_NOT_EXISTS);
         }
 
-        if (2 === $sale->getEstado()) {
+        if (SaleStatus::VOIDED->value === $sale->getEstado()) {
             throw SaleException::alreadyVoided();
         }
 
@@ -69,7 +71,7 @@ readonly class SaleVoidUseCase
 
         $documentType = (string)$voucher->voucher_type;
         if (!in_array($documentType, [DocType::FACTURA->value, DocType::BOLETA->value], true)) {
-            throw new ServiceException('Tipo de comprobante no soportado para anulación.');
+            throw new ServiceException(ErrorMessages::UNSUPPORTED_VOUCHER_TYPE_FOR_VOID);
         }
 
         $connection = $this->entityManager->getConnection();
@@ -83,14 +85,14 @@ readonly class SaleVoidUseCase
                 'documentType' => $documentType,
             ]);
             if ($taxDocument === null) {
-                throw new ServiceException('Comprobante no encontrado');
+                throw new ServiceException(ErrorMessages::TAX_DOCUMENT_NOT_FOUND);
             }
 
             $voidedStatus = $sunatResponse->success ? 2 : 3;
             $this->taxDocumentVoidUpdater->applyVoidResult($taxDocument, $sunatResponse, $voidedStatus);
 
             $sale->setGlosa($reason);
-            $sale->setEstado(2);
+            $sale->setEstado(SaleStatus::VOIDED->value);
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
             $this->entityManager->persist($sale);
@@ -101,8 +103,8 @@ readonly class SaleVoidUseCase
             $connection->commit();
 
             $message = $sunatResponse->success
-                ? 'Anulado correctamente'
-                : ($sunatResponse->message ?? 'Error al anular');
+                ? ErrorMessages::VOID_SUCCESSFUL
+                : ($sunatResponse->message ?? ErrorMessages::VOID_ERROR);
 
             return new ApiResponse($sunatResponse->success, $message);
         } catch (\Throwable $throwable) {

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
+use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\Sale;
-use App\EInvoicing\Service\InvoiceLineInput;
+use App\Sale\Domain\DocType;
+use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use DateTimeZone;
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Throwable;
 
 final readonly class InvoiceCreationService
@@ -23,13 +25,15 @@ final readonly class InvoiceCreationService
      * @return array{success: bool, message: string}
      *
      * @throws Exception
+     * @throws MathException
+     * @throws \DateMalformedStringException
      */
     public function createForSale(Sale $sale): array
     {
         if ($sale->isHasInvoice() && $sale->getInvoice() !== null) {
             return [
                 'success' => false,
-                'message' => 'La venta ya tiene un comprobante emitido.',
+                'message' => ErrorMessages::SALE_ALREADY_HAS_VOUCHER,
             ];
         }
 
@@ -37,7 +41,7 @@ final readonly class InvoiceCreationService
         if (!$saleDate) {
             return [
                 'success' => false,
-                'message' => 'La venta no tiene fecha válida.',
+                'message' => ErrorMessages::SALE_HAS_NO_VALID_DATE,
             ];
         }
 
@@ -46,7 +50,7 @@ final readonly class InvoiceCreationService
         if ($saleDateUtc < $nowUtc->modify('-3 days')) {
             return [
                 'success' => false,
-                'message' => 'La fecha de la venta excede el límite permitido para emisión (3 días).',
+                'message' => ErrorMessages::SALE_DATE_EXCEEDS_LIMIT,
             ];
         }
 
@@ -60,7 +64,7 @@ final readonly class InvoiceCreationService
         $lines = [];
         foreach ($sale->getItems() as $item) {
             $lines[] = new InvoiceLineInput(
-                quantity: (string) $item->getCantidad(),
+                quantity: (string)$item->getCantidad(),
                 unitPrice: $item->getPrecioUnitario() ?? '0'
             );
         }
@@ -68,30 +72,36 @@ final readonly class InvoiceCreationService
         $invoiceCalculator = new InvoiceCalculator(
             $lines,
             $sale->getDescuento() ?? '0',
-            (string) ($sale->getIgv() ?? '0'),
-            (string) ($sale->getRecargoConsumo() ?? '0'),
-            $sale->getTotal() !== null ? (string) $sale->getTotal() : null,
+            (string)($sale->getIgv() ?? '0'),
+            (string)($sale->getRecargoConsumo() ?? '0'),
+            $sale->getTotal() !== null ? (string)$sale->getTotal() : null,
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
 
         $connection->beginTransaction();
         try {
-            $voucherType = strlen($sale->getCliente()?->getRuc() ?? '') === 11 ? '01' : '03';
+            $voucherType = strlen(
+                $sale->getCliente()?->getRuc() ?? ''
+            ) === 11 ? DocType::FACTURA->value : DocType::BOLETA->value;
 
             $existingInvoice = $connection->fetchOne(
                 "SELECT tax_document_id
                  FROM tax_document
                  WHERE movimiento_id = :saleId
-                   AND document_type IN ('01', '03')
+                   AND document_type IN (:facturaDocType, :boletaDocType)
                  LIMIT 1 FOR UPDATE",
-                ['saleId' => $sale->getId()]
+                [
+                    'saleId' => $sale->getId(),
+                    'facturaDocType' => DocType::FACTURA->value,
+                    'boletaDocType' => DocType::BOLETA->value,
+                ]
             );
             if (is_string($existingInvoice) && $existingInvoice !== '') {
                 $connection->commit();
 
                 return [
                     'success' => false,
-                    'message' => 'La venta ya tiene un comprobante emitido.',
+                    'message' => ErrorMessages::SALE_ALREADY_HAS_VOUCHER,
                 ];
             }
 
@@ -112,7 +122,7 @@ final readonly class InvoiceCreationService
 
                 return [
                     'success' => false,
-                    'message' => 'No hay serie configurada para el tipo de comprobante.',
+                    'message' => ErrorMessages::NO_SERIES_CONFIGURED,
                 ];
             }
 
