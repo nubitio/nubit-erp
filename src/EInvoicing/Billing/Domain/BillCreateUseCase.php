@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Domain;
 
 use App\Core\Util\Money;
+use App\EInvoicing\Invoice\Service\VoucherHydratorInterface;
+use App\EInvoicing\Shared\Enum\ChargeType;
+use App\EInvoicing\Shared\Enum\LegendCode;
+use App\EInvoicing\Shared\Enum\OperationType;
+use App\EInvoicing\Shared\Service\AmountFormatterService;
 use App\Repository\CompanyRepository;
 use App\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
-use DateTime;
 use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
-use Greenter\Model\Company\Address;
 use Greenter\Model\Sale\Charge;
 use Greenter\Model\Sale\Cuota;
 use Greenter\Model\Sale\Detraction;
@@ -21,7 +24,6 @@ use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\Legend;
 use Greenter\Model\Sale\SaleDetail;
-use NumberFormatter;
 
 readonly class BillCreateUseCase
 {
@@ -29,6 +31,8 @@ readonly class BillCreateUseCase
         private TaxDocumentRepository $taxDocumentRepository,
         private BillUtilsInterface $billUtils,
         private CompanyRepository $companyRepository,
+        private VoucherHydratorInterface $voucherHydrator,
+        private AmountFormatterService $amountFormatterService,
     ) {
     }
 
@@ -39,108 +43,104 @@ readonly class BillCreateUseCase
      */
     public function __invoke(string $saleId): Invoice
     {
-        $money = static fn (mixed $value): float => Money::toFloat(Money::money($value));
-        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval(
-            $value
-        );
+        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $hydratedVoucher = $this->voucherHydrator->hydrate($voucher);
 
         $company = $this->companyRepository->findOneBy([]);
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
-        $customerAddress = new Address()
-            ->setDireccion(strval($voucher->customer_address));
-        $operationType = $voucher->voucher_operation_type ?: '0101';
-        $detractionPercent = $toNullableFloat($voucher->voucher_detraction_percent);
-        $detractionAmount = $toNullableFloat($voucher->voucher_detraction_amount);
-        $detractionValueRef = $toNullableFloat($voucher->voucher_detraction_value_ref);
-        $hasDetraction = $voucher->voucher_detraction_code
+        $customerAddress = $hydratedVoucher->customerAddress;
+        $operationType = $hydratedVoucher->voucherOperationType ?: OperationType::SALE->value;
+        $detractionPercent = $hydratedVoucher->voucherDetractionPercent;
+        $detractionAmount = $hydratedVoucher->voucherDetractionAmount;
+        $detractionValueRef = $hydratedVoucher->voucherDetractionValueRef;
+        $hasDetraction = $hydratedVoucher->voucherDetractionCode
             || $detractionPercent !== null
             || $detractionAmount !== null
-            || $voucher->voucher_detraction_payment_method
+            || $hydratedVoucher->voucherDetractionPaymentMethod
             || $detractionValueRef !== null;
 
-        if ($hasDetraction && !$voucher->voucher_operation_type) {
-            $operationType = '1001';
+        if ($hasDetraction && !$hydratedVoucher->voucherOperationType) {
+            $operationType = OperationType::DETRACTION_SALE->value;
         }
 
         if ($detractionAmount === null && $detractionPercent !== null) {
-            $detractionAmount = $money(
-                Money::of($voucher->voucher_sale_amount)->multipliedBy(Money::rate($detractionPercent))
+            $detractionAmount = Money::toFloat(
+                Money::of($hydratedVoucher->voucherSaleAmount)->multipliedBy(Money::rate($detractionPercent))
             );
         }
 
         $customer = new Client()
-            ->setTipoDoc(strval($voucher->customer_doc_type))
-            ->setNumDoc(strval($voucher->customer_doc_number))
-            ->setRznSocial(strval($voucher->customer_name))
+            ->setTipoDoc($hydratedVoucher->customerDocType)
+            ->setNumDoc($hydratedVoucher->customerDocNumber)
+            ->setRznSocial($hydratedVoucher->customerName)
             ->setAddress($customerAddress);
 
         $bill = new Invoice()
             ->setUblVersion('2.1')
             ->setTipoOperacion($operationType)
-            ->setTipoDoc(strval($voucher->voucher_type))
-            ->setSerie(strval($voucher->voucher_series))
-            ->setCorrelativo(strval($voucher->voucher_number))
-            ->setFechaEmision(new DateTime(strval($voucher->voucher_date)))
+            ->setTipoDoc($hydratedVoucher->voucherType)
+            ->setSerie($hydratedVoucher->voucherSeries)
+            ->setCorrelativo($hydratedVoucher->voucherNumber)
+            ->setFechaEmision($hydratedVoucher->voucherDate)
             ->setFormaPago(
-                2 == $voucher->voucher_payment_method ? new FormaPagoCredito(
-                    $money($voucher->voucher_sale_amount)
+                2 === $hydratedVoucher->voucherPaymentMethod ? new FormaPagoCredito(
+                    $hydratedVoucher->voucherSaleAmount
                 ) : new FormaPagoContado()
             )
-            ->setTipoMoneda(strval($voucher->voucher_currency))
+            ->setTipoMoneda($hydratedVoucher->voucherCurrency)
             ->setClient($customer)
-            ->setMtoOperGravadas($money($voucher->voucher_taxed_amount))
-            ->setMtoIGV($money($voucher->voucher_tax_amount))
-            ->setTotalImpuestos($money($voucher->voucher_total_taxes))
-            ->setSumOtrosCargos($money($voucher->voucher_consumption_surcharge_amount ?? 0))
+            ->setMtoOperGravadas($hydratedVoucher->voucherTaxedAmount)
+            ->setMtoIGV($hydratedVoucher->voucherTaxAmount)
+            ->setTotalImpuestos($hydratedVoucher->voucherTotalTaxes)
+            ->setSumOtrosCargos($hydratedVoucher->voucherConsumptionSurchargeAmount)
             ->setValorVenta(
-                $money(Money::of($voucher->voucher_sale_value)->minus(Money::of($voucher->voucher_discount_amount)))
+                Money::of($hydratedVoucher->voucherSaleValue)->minus(
+                    Money::of($hydratedVoucher->voucherDiscountAmount)
+                )->toFloat()
             )
             ->setSubTotal(
-                $money(
-                    Money::of($voucher->voucher_sale_amount)->minus(
-                        Money::of($voucher->voucher_consumption_surcharge_amount)
-                    )
-                )
+                Money::of($hydratedVoucher->voucherSaleAmount)->minus(
+                    Money::of($hydratedVoucher->voucherConsumptionSurchargeAmount)
+                )->toFloat()
             )
-            ->setMtoImpVenta($money($voucher->voucher_sale_amount))
+            ->setMtoImpVenta($hydratedVoucher->voucherSaleAmount)
             ->setCompany($this->billUtils->getCompany());
 
         if ($hasDetraction) {
-            $detractionAccount = $company->getDetraccionAccount() ?: $voucher->voucher_detraction_account;
+            $detractionAccount = $company->getDetraccionAccount() ?: $hydratedVoucher->voucherDetractionAccount;
             $detraction = new Detraction()
                 ->setPercent($detractionPercent)
                 ->setMount($detractionAmount)
                 ->setCtaBanco($detractionAccount)
-                ->setCodMedioPago($voucher->voucher_detraction_payment_method)
-                ->setCodBienDetraccion($voucher->voucher_detraction_code)
+                ->setCodMedioPago($hydratedVoucher->voucherDetractionPaymentMethod)
+                ->setCodBienDetraccion($hydratedVoucher->voucherDetractionCode)
                 ->setValueRef($detractionValueRef);
             $bill->setDetraccion($detraction);
         }
 
-        if (2 == $voucher->voucher_payment_method) {
-            $paymentDate = new DateTime(strval($voucher->voucher_date))->modify('+1 month');
+        if (2 === $hydratedVoucher->voucherPaymentMethod) {
+            $paymentDate = $hydratedVoucher->voucherDate->modify('+1 month');
 
             $bill->setCuotas([
                 new Cuota()
                     ->setFechaPago($paymentDate)
-                    ->setMonto($money($voucher->voucher_sale_amount)),
+                    ->setMonto($hydratedVoucher->voucherSaleAmount),
             ]);
         }
 
-        if (floatval($voucher->voucher_consumption_surcharge_amount) > 0) {
-            $surchargeAmount = $money($voucher->voucher_consumption_surcharge_amount);
+        if ($hydratedVoucher->voucherConsumptionSurchargeAmount > 0) {
+            $surchargeAmount = $hydratedVoucher->voucherConsumptionSurchargeAmount;
             $charge = new Charge()
-                ->setCodTipo('46')
+                ->setCodTipo(ChargeType::CONSUMPTION_SURCHARGE->value)
                 ->setMontoBase($surchargeAmount)
                 ->setFactor(1)
                 ->setMonto($surchargeAmount);
             $bill->setCargos([$charge]);
         }
 
-        if (floatval($voucher->voucher_discount_amount) > 0) {
-            $discountAmount = $money($voucher->voucher_discount_amount);
+        if ($hydratedVoucher->voucherDiscountAmount > 0) {
+            $discountAmount = $hydratedVoucher->voucherDiscountAmount;
             $charge = new Charge()
-                ->setCodTipo('02')
+                ->setCodTipo(ChargeType::DISCOUNT->value)
                 ->setMontoBase($discountAmount)
                 ->setFactor(1)
                 ->setMonto($discountAmount);
@@ -149,42 +149,41 @@ readonly class BillCreateUseCase
 
         $details = [];
 
-        foreach ($voucher->voucher_items as $item) {
+        foreach ($hydratedVoucher->voucherItems as $item) {
             $detail = new SaleDetail()
-                ->setCodProducto(strval($item->product_code))
-                ->setUnidad($item->product_uom ?? 'NIU')
-                ->setCantidad(floatval($item->quantity))
-                ->setDescripcion(strval($item->product_name))
-                ->setMtoValorUnitario($money($item->unit_value))
-                ->setMtoBaseIgv($money($item->taxed_amount))
-                ->setPorcentajeIgv(floatval($item->tax_percentage))
-                ->setIgv($money($item->tax_amount))
-                ->setTipAfeIgv(strval($item->tax_type))
-                ->setTotalImpuestos($money($item->tax_amount))
-                ->setMtoValorVenta($money($item->taxed_amount))
-                ->setMtoPrecioUnitario($money($item->unit_price));
+                ->setCodProducto($item->productCode)
+                ->setUnidad($item->productUom)
+                ->setCantidad($item->quantity)
+                ->setDescripcion($item->productName)
+                ->setMtoValorUnitario($item->unitValue)
+                ->setMtoBaseIgv($item->taxedAmount)
+                ->setPorcentajeIgv($item->taxPercentage)
+                ->setIgv($item->taxAmount)
+                ->setTipAfeIgv($item->taxType)
+                ->setTotalImpuestos($item->taxAmount)
+                ->setMtoValorVenta($item->taxedAmount)
+                ->setMtoPrecioUnitario($item->unitPrice);
             $details[] = $detail;
         }
 
-        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
-        $amountString = Money::toString(Money::money($voucher->voucher_sale_amount));
-        $parts = explode('.', $amountString);
-        $amount = $formatter->format((int)$parts[0]);
-        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
+        $strTotal = $this->amountFormatterService->formatAmountInWords(
+            $hydratedVoucher->voucherSaleAmount,
+            $hydratedVoucher->voucherCurrency
+        );
 
         $legend = new Legend()
-            ->setCode('1000')
+            ->setCode(LegendCode::TOTAL_AMOUNT_IN_WORDS->value)
             ->setValue($strTotal);
 
         $bill->setDetails($details);
         $legends = [$legend];
         if ($hasDetraction) {
             $legends[] = new Legend()
-                ->setCode('2006')
+                ->setCode(LegendCode::DETRACTION_OPERATION->value)
                 ->setValue('Operación sujeta a detracción');
         }
         $bill->setLegends($legends);
-        $bill->setObservacion(strval($voucher->voucher_note ?? null));
+        $bill->setObservacion($hydratedVoucher->voucherNote ?? null);
 
         return $bill;
     }
