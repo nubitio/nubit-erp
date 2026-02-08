@@ -1,6 +1,6 @@
 export const Constants = {
   BASE_URL: '/',
-  API_BASE_URL: '/api/v1/',
+  API_BASE_URL: '/api/',
   TEXT_ADD: 'Nuevo',
   TEXT_EDIT: 'Editar',
   TEXT_DELETE: 'Eliminar',
