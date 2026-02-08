@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class QzTrayController
 {
-    #[Route('/api/v1/qz/certificate', name: 'qz_certificate', methods: ['GET'])]
+    #[Route('/api/qz/certificate', name: 'qz_certificate', methods: ['GET'])]
     public function certificate(): Response
     {
         $path = $_ENV['QZ_CERT_PATH'] ?? null;
@@ -25,7 +25,7 @@ final class QzTrayController
         );
     }
 
-    #[Route('/api/v1/qz/sign', name: 'qz_sign', methods: ['POST'])]
+    #[Route('/api/qz/sign', name: 'qz_sign', methods: ['POST'])]
     public function sign(Request $request): Response
     {
         $payload = json_decode($request->getContent(), true);

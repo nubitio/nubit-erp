@@ -6,6 +6,7 @@ import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { Card } from '../../components';
 import SelectBox from 'devextreme-react/select-box';
 import { DateUtils } from '../../core/utils/DateUtils';
+import {Constants} from "../../core/common/Constants";
 
 const reportTypes = [
   { value: 'sale-by-product', text: 'Ventas por producto' },
@@ -27,7 +28,7 @@ export const SaleConsultPage = () => {
     const dateFrom = DateUtils.dateFormatter(startDate || new Date());
     const dateTo = DateUtils.dateFormatter(endDate || new Date());
     const data = `report=${selectedReport}&date-from=${dateFrom}&date-to=${dateTo}`;
-    window.open(`/api/v1/sales/report?${data}`);
+    window.open(`${Constants.API_BASE_URL}sales/report?${data}`);
     formRef.current?.instance().clear();
   };
   return (
