@@ -17,6 +17,7 @@
     "ext-curl": "*",
     "ext-iconv": "*",
     "ext-imagick": "*",
+    "ext-gd": "*",
     "ext-intl": "*",
     "ext-json": "*",
     "ext-pdo": "*",
