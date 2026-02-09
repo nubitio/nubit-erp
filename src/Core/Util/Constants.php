@@ -24,4 +24,6 @@ abstract class Constants
     public const string PRINT_LOGO = 'app_option_print_logo';
 
     public const string REQUIRE_CASH_REGISTER = 'app_option_require_cash_register';
+
+    public const string RECEIPT_REQUIRED = 'app_option_receipt_required';
 }

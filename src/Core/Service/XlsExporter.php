@@ -15,13 +15,13 @@ class XlsExporter
 {
     /**
      * @param array<int, array<string, mixed>> $data
+     * @param array<string, string>|null        $headers Column key => display label
      *
      * @throws Exception
-     * @throws \Doctrine\DBAL\Exception
      */
-    public function export(array $data, string $filename): StreamedResponse
+    public function export(array $data, string $filename, ?array $headers = null): StreamedResponse
     {
-        $spreadsheet = $this->makeSpreadsheet($data);
+        $spreadsheet = $this->makeSpreadsheet($data, $headers);
 
         $writer = new Xlsx($spreadsheet);
         $response = new StreamedResponse(function () use ($writer): void {
@@ -35,13 +35,14 @@ class XlsExporter
 
     /**
      * @param array<int, array<string, mixed>> $data
+     * @param array<string, string>|null        $headers Column key => display label
      *
      * @throws Exception
      * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
      */
-    public function save(array $data, string $filename): void
+    public function save(array $data, string $filename, ?array $headers = null): void
     {
-        $spreadsheet = $this->makeSpreadsheet($data);
+        $spreadsheet = $this->makeSpreadsheet($data, $headers);
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($filename . '.xlsx');
@@ -49,24 +50,25 @@ class XlsExporter
 
     /**
      * @param array<int, array<string, mixed>> $data
+     * @param array<string, string>|null        $headers Column key => display label
      *
      * @throws Exception
      */
-    private function makeSpreadsheet(array $data): Spreadsheet
+    private function makeSpreadsheet(array $data, ?array $headers = null): Spreadsheet
     {
         $headerFillColor = 'FFF2F2F2'; // light gray header
         $headerFontColor = 'FF000000'; // black text
         $borderColor = 'FFBFBFBF';     // subtle gray borders
         $zebraFillColor = 'FFF9F9F9';  // very light row shading for readability
 
-        $headers = [];
+        $headerRow = [];
         if (isset($data[0])) {
             $properties = array_keys($data[0]);
             foreach ($properties as $property) {
-                $headers[$property] = ucfirst(str_replace('_', ' ', $property));
+                $headerRow[$property] = $headers[$property] ?? ucfirst(str_replace('_', ' ', $property));
             }
 
-            array_unshift($data, $headers);
+            array_unshift($data, $headerRow);
         }
 
         $columnLetters = range('A', 'Z');
@@ -132,7 +134,7 @@ class XlsExporter
             $spreadsheet->getActiveSheet()->setCellValue('A1', 'No data');
         }
 
-        $lastColumn = [] === $headers ? 'A' : $columnLetters[count($headers) - 1];
+        $lastColumn = [] === $headerRow ? 'A' : $columnLetters[count($headerRow) - 1];
         foreach (range('A', $lastColumn) as $columnID) {
             $spreadsheet->getActiveSheet()->getColumnDimension($columnID)
                 ->setAutoSize(true);
