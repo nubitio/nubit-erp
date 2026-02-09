@@ -61,4 +61,15 @@ class Voucher
         public array $voucher_items = [],
     ) {
     }
+
+    #[SerializedName('voucher_sale_amount_text')]
+    public function getVoucherTotalText(): string
+    {
+        $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
+        $amount = Money::toString(Money::money($this->voucher_sale_amount ?? 0));
+        $parts = explode('.', $amount);
+        $amount = $formatter->format((int) $parts[0]);
+
+        return 'Son: ' . mb_strtoupper($amount . ' Y ' . $parts[1] . '/100');
+    }
 }
