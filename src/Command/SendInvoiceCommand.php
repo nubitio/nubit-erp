@@ -107,21 +107,21 @@ class SendInvoiceCommand extends TenantAwareCommand
                     } else {
                         $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
                         $errors[] = [
-                            'movimiento_id' => (string)$taxDocumentId,
+                            'tax_document_id' => (string)$taxDocumentId,
                             'error' => $message,
                         ];
                         $this->logger->warning('Invoice sending warning', [
-                            'movimiento_id' => $taxDocumentId,
+                            'tax_document_id' => $taxDocumentId,
                             'message' => $message,
                         ]);
                     }
                 } catch (Throwable $exception) {
                     $errors[] = [
-                        'movimiento_id' => (string)$taxDocumentId,
+                        'tax_document_id' => (string)$taxDocumentId,
                         'error' => $exception->getMessage(),
                     ];
                     $this->logger->error('Error sending invoice', [
-                        'movimiento_id' => $taxDocumentId,
+                        'tax_document_id' => $taxDocumentId,
                         'exception' => $exception,
                     ]);
                 } finally {

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Core\Security\Auth\BranchContextService;
+use App\Core\Service\SettingsService;
 use App\Core\Service\XlsExporter;
+use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use PhpOffice\PhpSpreadsheet\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,6 +20,7 @@ class SaleReportController extends AbstractController
     public function __construct(
         private readonly XlsExporter $xlsExporter,
         private readonly Connection $connection,
+        private readonly SettingsService $settings,
     ) {
     }
 
@@ -44,31 +47,91 @@ class SaleReportController extends AbstractController
         switch ($report) {
             case 'sale-by-product':
                 $data = $this->connection->fetchAllAssociative($this->saleByProductSql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_por_producto');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_por_producto', [
+                    'product_code' => 'Código',
+                    'product_name' => 'Producto',
+                    'category' => 'Categoría',
+                    'quantity' => 'Cantidad',
+                    'average_unit_price' => 'Precio unit. prom.',
+                    'total' => 'Total',
+                ]);
                 break;
             case 'detailed-sales':
                 $data = $this->connection->fetchAllAssociative($this->detailedSalesSql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_detallado');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_detallado', [
+                    'sale_date' => 'Fecha',
+                    'sale_time' => 'Hora',
+                    'document' => 'Comprobante',
+                    'voucher_type' => 'Tipo',
+                    'customer_name' => 'Cliente',
+                    'customer_ruc' => 'RUC/DNI',
+                    'payment_method' => 'Método de pago',
+                    'subtotal' => 'Subtotal',
+                    'tax' => 'IGV',
+                    'total' => 'Total',
+                    'discount' => 'Descuento',
+                    'status' => 'Estado',
+                ]);
                 break;
             case 'accounting-report':
                 $data = $this->connection->fetchAllAssociative($this->accountingSalesSql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_contable');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_contable', [
+                    'issue_date' => 'Fecha emisión',
+                    'voucher_type' => 'Tipo',
+                    'document' => 'Comprobante',
+                    'customer_ruc' => 'RUC/DNI',
+                    'customer_name' => 'Cliente',
+                    'taxable_amount' => 'Op. gravada',
+                    'igv' => 'IGV',
+                    'service_charge' => 'R.C.',
+                    'total' => 'Total',
+                    'status' => 'Estado',
+                ]);
                 break;
             case 'voided-sales':
                 $data = $this->connection->fetchAllAssociative($this->voidedSalesSql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_anuladas');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_ventas_anuladas', [
+                    'sale_date' => 'Fecha',
+                    'document' => 'Comprobante',
+                    'voucher_type' => 'Tipo',
+                    'customer_name' => 'Cliente',
+                    'customer_ruc' => 'RUC/DNI',
+                    'total' => 'Total',
+                    'status' => 'Estado',
+                ]);
                 break;
             case 'credit-notes':
                 $data = $this->connection->fetchAllAssociative($this->creditNotesSql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_notas_de_credito');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_notas_de_credito', [
+                    'issue_date' => 'Fecha emisión',
+                    'document' => 'Comprobante',
+                    'note_type' => 'Tipo nota',
+                    'reason_code' => 'Código motivo',
+                    'reason' => 'Motivo',
+                    'affected_document' => 'Doc. afectado',
+                    'total' => 'Total',
+                    'customer_name' => 'Cliente',
+                    'customer_ruc' => 'RUC/DNI',
+                ]);
                 break;
             case 'payment-method-daily':
                 $data = $this->connection->fetchAllAssociative($this->paymentMethodDailySql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_pagos_diarios');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_pagos_diarios', [
+                    'sale_date' => 'Fecha',
+                    'payment_method' => 'Método de pago',
+                    'transactions' => 'Transacciones',
+                    'total' => 'Total',
+                ]);
                 break;
             case 'daily-summary':
                 $data = $this->connection->fetchAllAssociative($this->dailySummarySql(), $params);
-                $reportFile = $this->xlsExporter->export($data, 'reporte_resumen_diario');
+                $reportFile = $this->xlsExporter->export($data, 'reporte_resumen_diario', [
+                    'sale_date' => 'Fecha',
+                    'sales' => 'Ventas',
+                    'subtotal' => 'Subtotal',
+                    'tax' => 'IGV',
+                    'total' => 'Total',
+                ]);
                 break;
             default:
                 throw new BadRequestHttpException('Reporte no encontrado');
@@ -92,8 +155,19 @@ class SaleReportController extends AbstractController
         ];
     }
 
+    private function receiptFilter(): string
+    {
+        if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
+            return "AND EXISTS (SELECT 1 FROM tax_document td WHERE td.movimiento_id = m.movimiento_id AND td.document_type IN ('01','03'))";
+        }
+
+        return '';
+    }
+
     private function saleByProductSql(): string
     {
+        $receiptFilter = $this->receiptFilter();
+
         return <<<SQL
 select
     coalesce(p.codigo, '-') as product_code,
@@ -112,6 +186,7 @@ where
     and m.estado = 1
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
+    {$receiptFilter}
 group by product_code, product_name, category
 order by total desc
 SQL;
@@ -119,6 +194,8 @@ SQL;
 
     private function detailedSalesSql(): string
     {
+        $receiptFilter = $this->receiptFilter();
+
         return <<<SQL
 select
     date(m.fecha) as sale_date,
@@ -146,6 +223,7 @@ where
     m.tipo_id = 2
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
+    {$receiptFilter}
 order by m.fecha desc
 SQL;
     }
@@ -187,6 +265,8 @@ SQL;
 
     private function voidedSalesSql(): string
     {
+        $receiptFilter = $this->receiptFilter();
+
         return <<<SQL
 select
     date(m.fecha) as sale_date,
@@ -209,6 +289,7 @@ where
     and m.estado = 2
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
+    {$receiptFilter}
 order by m.fecha desc
 SQL;
     }
@@ -240,6 +321,8 @@ SQL;
 
     private function paymentMethodDailySql(): string
     {
+        $receiptFilter = $this->receiptFilter();
+
         return <<<SQL
 select
     date(m.fecha) as sale_date,
@@ -254,6 +337,7 @@ where
     and m.estado = 1
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
+    {$receiptFilter}
 group by sale_date, payment_method
 order by sale_date desc, payment_method
 SQL;
@@ -261,6 +345,8 @@ SQL;
 
     private function dailySummarySql(): string
     {
+        $receiptFilter = $this->receiptFilter();
+
         return <<<SQL
 select
     date(m.fecha) as sale_date,
@@ -275,6 +361,7 @@ where
     and m.estado = 1
     and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
+    {$receiptFilter}
 group by sale_date
 order by sale_date desc
 SQL;
