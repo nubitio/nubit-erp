@@ -76,7 +76,7 @@ class SendInvoiceCommand extends TenantAwareCommand
         while (true) {
             $pendingIds = $this->connection->fetchFirstColumn(
                 "
-                SELECT movimiento_id
+                SELECT tax_document_id
                 FROM tax_document
                 WHERE document_type IN ('01', '03')
                   AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')
@@ -98,30 +98,30 @@ class SendInvoiceCommand extends TenantAwareCommand
                 break;
             }
 
-            foreach ($pendingIds as $movimientoId) {
+            foreach ($pendingIds as $taxDocumentId) {
                 try {
-                    $response = $this->invoiceSendUseCase->__invoke((string)$movimientoId);
+                    $response = $this->invoiceSendUseCase->__invoke((string)$taxDocumentId);
 
                     if ($response->sunatResponse->isSuccess()) {
                         $sent++;
                     } else {
                         $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
                         $errors[] = [
-                            'movimiento_id' => (int)$movimientoId,
+                            'movimiento_id' => (string)$taxDocumentId,
                             'error' => $message,
                         ];
                         $this->logger->warning('Invoice sending warning', [
-                            'movimiento_id' => $movimientoId,
+                            'movimiento_id' => $taxDocumentId,
                             'message' => $message,
                         ]);
                     }
                 } catch (Throwable $exception) {
                     $errors[] = [
-                        'movimiento_id' => (int)$movimientoId,
+                        'movimiento_id' => (string)$taxDocumentId,
                         'error' => $exception->getMessage(),
                     ];
                     $this->logger->error('Error sending invoice', [
-                        'movimiento_id' => $movimientoId,
+                        'movimiento_id' => $taxDocumentId,
                         'exception' => $exception,
                     ]);
                 } finally {
