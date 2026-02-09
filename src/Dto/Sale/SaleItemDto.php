@@ -13,13 +13,14 @@ class SaleItemDto implements Stringable
         private string $name = '',
         private readonly float|string|null $price = '',
         private readonly float|string|null $total = null,
+        private readonly int $lineWidth,
     ) {
     }
 
     #[Override]
     public function __toString(): string
     {
-        $line_width = $_ENV['PRINTER_LINE_WIDTH'];
+        $line_width = $this->lineWidth;
         $rightCols = (int) round(20 / 100 * $line_width);
         $centerCols = (int) round(20 / 100 * $line_width);
         $leftCols = $line_width - $rightCols - $centerCols;
