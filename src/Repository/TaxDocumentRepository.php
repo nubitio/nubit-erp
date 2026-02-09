@@ -144,7 +144,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             $this->applyNotaVentaTotals($sale, $header);
 
             $voucherItems = array_map(
-                static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+                static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
                 $lines
             );
 
@@ -164,7 +164,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
         $header->voucherQrData = $this->buildQrData($sale, $taxDocument, $amounts);
 
         $voucherItems = array_map(
-            static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
             $lines
         );
 
@@ -210,7 +210,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
         $header->applyAmounts($amounts);
 
         $voucherItems = array_map(
-            static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
+            static fn (VoucherLineDto $line): VoucherItem => $line->toVoucherItem(),
             $lines
         );
 
@@ -304,7 +304,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
     {
         if ($taxDocument && !$taxDocument->getLines()->isEmpty()) {
             return array_map(
-                static fn(TaxDocumentLine $line): VoucherLineDto => new VoucherLineDto(
+                static fn (TaxDocumentLine $line): VoucherLineDto => new VoucherLineDto(
                     productId: $line->getProductId(),
                     productCode: $line->getProductCode(),
                     productUom: $line->getProductUom(),
@@ -324,7 +324,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
         }
 
         return array_map(
-            fn($item): VoucherLineDto => new VoucherLineDto(
+            fn ($item): VoucherLineDto => new VoucherLineDto(
                 productId: $item->getProducto()?->getId(),
                 productCode: $item->getProducto()?->getCode(),
                 productUom: $item->getProducto()?->getUnitOfMeasure()?->getCode(),
@@ -351,7 +351,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
     ): InvoiceAmounts {
         $calculator = new InvoiceCalculator(
             array_map(
-                static fn(VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
+                static fn (VoucherLineDto $line): InvoiceLineInput => new InvoiceLineInput(
                     quantity: $line->quantity ?? '0',
                     unitPrice: $line->unitPrice ?? '0'
                 ),

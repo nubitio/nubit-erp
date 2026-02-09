@@ -96,23 +96,21 @@ class SaleReportController extends AbstractController
     {
         return <<<SQL
 select
-    coalesce(p.codigo, tdl.product_code, '-') as product_code,
-    coalesce(p.descripcion, tdl.product_name) as product_name,
+    coalesce(p.codigo, '-') as product_code,
+    coalesce(p.descripcion, 'Sin producto') as product_name,
     c.descripcion as category,
-    sum(tdl.quantity) as quantity,
-    round(sum(tdl.total) / nullif(sum(tdl.quantity),0), 2) as average_unit_price,
-    sum(tdl.total) as total
-from tax_document td
-    inner join movimiento m on m.movimiento_id = td.movimiento_id
+    sum(md.cantidad) as quantity,
+    round(sum(md.precio_total) / nullif(sum(md.cantidad),0), 2) as average_unit_price,
+    sum(md.precio_total) as total
+from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
-    inner join tax_document_line tdl on tdl.tax_document_id = td.tax_document_id
-    left join producto p on p.producto_id = tdl.product_id
+    inner join movimiento_detalle md on md.movimiento_id = m.movimiento_id
+    left join producto p on p.producto_id = md.producto_id
     left join categoria c on c.categoria_id = p.categoria_id
 where
-    td.document_type in ('01', '03')
     m.tipo_id = 2
     and m.estado = 1
-    and td.issue_date between :date_from and :date_to
+    and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
 group by product_code, product_name, category
 order by total desc
@@ -250,12 +248,11 @@ select
     sum(m.total) as total
 from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
-    inner join tax_document td on td.movimiento_id = m.movimiento_id and td.document_type in ('01', '03')
-    left join payment_method pm on pm.id = td.payment_method
+    left join payment_method pm on pm.id = m.tipo_pago
 where
     m.tipo_id = 2
     and m.estado = 1
-    and td.issue_date between :date_from and :date_to
+    and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
 group by sale_date, payment_method
 order by sale_date desc, payment_method
@@ -266,19 +263,17 @@ SQL;
     {
         return <<<SQL
 select
-    date(td.issue_date) as sale_date,
-    count(*) as documents,
-    sum(td.subtotal) as subtotal,
-    sum(td.igv_amount) as tax,
-    sum(td.total) as total
-from tax_document td
-    inner join movimiento m on m.movimiento_id = td.movimiento_id
+    date(m.fecha) as sale_date,
+    count(*) as sales,
+    sum(m.subtotal) as subtotal,
+    sum(m.total - m.subtotal) as tax,
+    sum(m.total) as total
+from movimiento m
     inner join almacen a on a.almacen_id = m.almacen_id
 where
     m.tipo_id = 2
     and m.estado = 1
-    and td.document_type in ('01', '03')
-    and td.issue_date between :date_from and :date_to
+    and m.fecha between :date_from and :date_to
     and a.local_id = :local_id
 group by sale_date
 order by sale_date desc
