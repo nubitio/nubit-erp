@@ -27,6 +27,11 @@ class PrintESCPOSController extends AbstractController
         80 => 48,
     ];
 
+    private const array PAPER_PIXEL_WIDTH_MAP = [
+        58 => 384,
+        80 => 576,
+    ];
+
     private const string IMAGE_MODE_DEFAULT = 'bitimage';
     private const array IMAGE_MODE_MAP = [
         'bitimage' => 'bitimage',
@@ -59,7 +64,7 @@ class PrintESCPOSController extends AbstractController
         $imageMode = $request->query->getString('image_mode', self::IMAGE_MODE_DEFAULT);
         $lineStyle = $request->query->getString('line_style', self::LINE_STYLE_DEFAULT);
 
-        $commands = $this->printCommands($id, $lineWidth, $baseUrl, $imageMode, $lineStyle);
+        $commands = $this->printCommands($id, $lineWidth, $baseUrl, $imageMode, $lineStyle, $paperWidth);
 
         return new Response(
             $commands,
@@ -78,6 +83,7 @@ class PrintESCPOSController extends AbstractController
         ?string $baseUrl = null,
         string $imageMode = self::IMAGE_MODE_DEFAULT,
         string $lineStyle = self::LINE_STYLE_DEFAULT,
+        int $paperWidth = 80,
     ): string {
         $width = $lineWidth ?? max(32, $this->printerLineWidth);
         $solidChar = self::LINE_SOLID_CHAR[$lineStyle] ?? self::LINE_SOLID_CHAR['unicode'];
@@ -86,7 +92,8 @@ class PrintESCPOSController extends AbstractController
         $hrSolid = $this->hr($solidChar, $width);
 
         $voucher = $this->taxDocumentRepository->getVoucher($saleId);
-        $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke());
+        $logoMaxPixels = (int) ((self::PAPER_PIXEL_WIDTH_MAP[$paperWidth] ?? self::PAPER_PIXEL_WIDTH_MAP[80]) * 0.5);
+        $logo = RemoteEscposImage::loadImage($this->logoProvider->__invoke(), $logoMaxPixels);
 
         $connector = new DummyPrintConnector();
         $printer = new Printer($connector);
@@ -282,7 +289,7 @@ class PrintESCPOSController extends AbstractController
         // QR + HASH + legal text
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
             $printer->feed();
-            $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 8);
+            $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 5);
 
             $printer->feed();
             $printer->text("Resumen:\n");

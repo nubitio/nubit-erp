@@ -19,9 +19,11 @@ class RemoteEscposImage extends EscposImage
      * Prefer Imagick if available, otherwise fall back to GD.
      * If neither extension is available or the image is empty, return null.
      *
+     * @param int|null $maxWidth Maximum image width in pixels (null = no resize)
+     *
      * @throws Exception
      */
-    public static function loadImage(string $imageUrl): ?EscposImage
+    public static function loadImage(string $imageUrl, ?int $maxWidth = null): ?EscposImage
     {
         if ($imageUrl === '') {
             return null;
@@ -40,7 +42,7 @@ class RemoteEscposImage extends EscposImage
         // Try Imagick first if available
         if (class_exists(Imagick::class)) {
             try {
-                $processedPath = self::preprocessWithImagick($tempPath);
+                $processedPath = self::preprocessWithImagick($tempPath, $maxWidth);
                 return new ImagickEscposImage($processedPath);
             } catch (Throwable) {
                 // Fall through to GD
@@ -50,7 +52,7 @@ class RemoteEscposImage extends EscposImage
         // Fallback to GD if available
         if (extension_loaded('gd')) {
             try {
-                $processedPath = self::preprocessWithGd($tempPath);
+                $processedPath = self::preprocessWithGd($tempPath, $maxWidth);
                 return GdEscposImage::load($processedPath);
             } catch (Throwable) {
                 return null;
@@ -63,14 +65,21 @@ class RemoteEscposImage extends EscposImage
     /**
      * Preprocess image with Imagick for better thermal printing.
      * Darkens light colors so they appear on thermal printers.
+     *
+     * @throws \ImagickException
      */
-    private static function preprocessWithImagick(string $imagePath): string
+    private static function preprocessWithImagick(string $imagePath, ?int $maxWidth = null): string
     {
         $image = new Imagick($imagePath);
 
-        // Flatten image to remove transparency (white background)
+        // Flatten the image to remove transparency (white background)
         $image->setImageBackgroundColor(new ImagickPixel('white'));
         $image = $image->flattenImages();
+
+        // Resize if wider than maxWidth, preserving an aspect ratio
+        if ($maxWidth !== null && $image->getImageWidth() > $maxWidth) {
+            $image->scaleImage($maxWidth, 0);
+        }
 
         // Convert to grayscale
         $image->setImageColorspace(Imagick::COLORSPACE_GRAY);
@@ -79,7 +88,7 @@ class RemoteEscposImage extends EscposImage
         // This maps input range [0, 0.85] to output [0, 1], making light grays darker
         $image->levelImage(0, 0.5, 0.85 * Imagick::getQuantum());
 
-        // Save processed image (let EscposImage do the final binarization)
+        // Save a processed image (let EscposImage do the final binarization)
         $processedPath = sys_get_temp_dir() . '/escpos_processed_' . uniqid() . '.png';
         $image->writeImage($processedPath);
         $image->destroy();
@@ -90,7 +99,7 @@ class RemoteEscposImage extends EscposImage
     /**
      * Preprocess image with GD for better thermal printing.
      */
-    private static function preprocessWithGd(string $imagePath): string
+    private static function preprocessWithGd(string $imagePath, ?int $maxWidth = null): string
     {
         $imageInfo = getimagesize($imagePath);
         if ($imageInfo === false) {
@@ -111,6 +120,17 @@ class RemoteEscposImage extends EscposImage
         $width = imagesx($src);
         $height = imagesy($src);
 
+        // Resize if wider than maxWidth, preserving the aspect ratio
+        if ($maxWidth !== null && $width > $maxWidth) {
+            $newHeight = (int) round($height * ($maxWidth / $width));
+            $resized = imagecreatetruecolor($maxWidth, $newHeight);
+            imagecopyresampled($resized, $src, 0, 0, 0, 0, $maxWidth, $newHeight, $width, $height);
+            imagedestroy($src);
+            $src = $resized;
+            $width = $maxWidth;
+            $height = $newHeight;
+        }
+
         // Create a white background image
         $dest = imagecreatetruecolor($width, $height);
         $white = imagecolorallocate($dest, 255, 255, 255);
@@ -120,7 +140,7 @@ class RemoteEscposImage extends EscposImage
         // Copy with transparency handling
         imagecopy($dest, $src, 0, 0, 0, 0, $width, $height);
 
-        // Convert to grayscale and apply threshold
+        // Convert to grayscale and apply a threshold
         imagefilter($dest, IMG_FILTER_GRAYSCALE);
         imagefilter($dest, IMG_FILTER_CONTRAST, -30);
 
