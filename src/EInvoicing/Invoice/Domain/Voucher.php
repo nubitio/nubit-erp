@@ -61,5 +61,4 @@ class Voucher
         public array $voucher_items = [],
     ) {
     }
-
 }

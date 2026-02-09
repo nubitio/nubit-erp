@@ -18,11 +18,11 @@ class VoucherHydrator implements VoucherHydratorInterface
      */
     public function hydrate(Voucher $voucher): HydratedVoucher
     {
-        $moneyToFloat = static fn(mixed $value): float => Money::toFloat(Money::money($value));
-        $toNullableFloat = static fn(mixed $value): ?float => $value === null || $value === '' ? null : floatval(
+        $moneyToFloat = static fn (mixed $value): float => Money::toFloat(Money::money($value));
+        $toNullableFloat = static fn (mixed $value): ?float => $value === null || $value === '' ? null : floatval(
             $value
         );
-        $toNullableInt = static fn(mixed $value): ?int => $value === null || $value === '' ? null : intval(
+        $toNullableInt = static fn (mixed $value): ?int => $value === null || $value === '' ? null : intval(
             $value
         );
 
