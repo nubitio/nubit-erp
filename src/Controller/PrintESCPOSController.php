@@ -174,13 +174,13 @@ class PrintESCPOSController extends AbstractController
 
         // ITEMS (header)
         $printer->setEmphasis(true);
-        $printer->text((string)new SaleItemDto('DESCRIPCION', 'P.UNIT', 'IMPORTE'));
+        $printer->text((string)new SaleItemDto('DESCRIPCION', 'P.UNIT', 'IMPORTE', $width));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
         foreach ($voucher->voucher_items as $item) {
             // Principal line: description + unit price + total
-            $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total);
+            $saleItem = new SaleItemDto($item->product_name, $item->unit_price, $item->total, $width);
 
             $printer->text((string)$saleItem);
 
@@ -194,7 +194,7 @@ class PrintESCPOSController extends AbstractController
 
         // TOTALS
         if ((float)$voucher->voucher_discount_percentage > 0) {
-            $printer->text((string)new SaleItemDto('DESCUENTO', '', '-' . $voucher->voucher_discount_amount));
+            $printer->text((string)new SaleItemDto('DESCUENTO', '', '-' . $voucher->voucher_discount_amount, $width));
         }
 
         $app_option_rc_get = (int)$this->settingsService->get(Constants::CONSUMPTION_TAX);
@@ -202,16 +202,17 @@ class PrintESCPOSController extends AbstractController
         $hasDetraction = $voucher->voucher_detraction_amount && $voucher->voucher_detraction_amount > 0;
 
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
-            $printer->text((string)new SaleItemDto('OP. GRAVADA', '', $voucher->voucher_taxed_amount));
+            $printer->text((string)new SaleItemDto('OP. GRAVADA', '', $voucher->voucher_taxed_amount, $width));
             $printer->text(
-                (string)new SaleItemDto('IGV (' . $app_option_igv_get . '%)', '', $voucher->voucher_tax_amount)
+                (string)new SaleItemDto('IGV (' . $app_option_igv_get . '%)', '', $voucher->voucher_tax_amount, $width)
             );
             if ($app_option_rc_get >= 1 && (float)$voucher->voucher_consumption_surcharge_amount > 0) {
                 $printer->text(
                     (string)new SaleItemDto(
                         'RC (' . $app_option_rc_get . '%)',
                         '',
-                        $voucher->voucher_consumption_surcharge_amount
+                        $voucher->voucher_consumption_surcharge_amount,
+                        $width,
                     )
                 );
             }
@@ -220,7 +221,7 @@ class PrintESCPOSController extends AbstractController
         // FINAL TOTAL
         $printer->text($hrSolid);
         $printer->setEmphasis(true);
-        $printer->text((string)new SaleItemDto('TOTAL', '', $voucher->voucher_sale_amount));
+        $printer->text((string)new SaleItemDto('TOTAL', '', $voucher->voucher_sale_amount, $width));
         $printer->setEmphasis(false);
         $printer->text($hrDashed);
 
@@ -231,7 +232,8 @@ class PrintESCPOSController extends AbstractController
                 (string)new SaleItemDto(
                     'DETRACCION (' . $detractionPercent . '%)',
                     '',
-                    $voucher->voucher_detraction_amount
+                    $voucher->voucher_detraction_amount,
+                    $width,
                 )
             );
             $detractionType = trim(
