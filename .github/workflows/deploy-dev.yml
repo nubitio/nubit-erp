@@ -1,0 +1,26 @@
+name: Deploy to Dev
+
+# Deploy automático a dev en cada push a main
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override version/tag (defaults to sha)'
+        required: false
+        type: string
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  deploy-dev:
+    name: Deploy to Dev
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: dev
+      version: ${{ inputs.version || github.sha }}
+    secrets: inherit

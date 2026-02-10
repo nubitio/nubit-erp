@@ -19,9 +19,8 @@ jobs:
       contents: read
       actions: read
       packages: write
-      security-events: write
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: staging
+      environment: stg
       version: ${{ inputs.version || github.sha }}
     secrets: inherit
