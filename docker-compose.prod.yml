@@ -78,8 +78,7 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
-      web:
-        condition: service_healthy
+      - web
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
@@ -126,8 +125,7 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
-      web:
-        condition: service_healthy
+      - web
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
