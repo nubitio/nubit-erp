@@ -150,6 +150,9 @@ class Sale
     #[ORM\Column(name: 'has_invoice', type: 'boolean', options: ['default' => false])]
     private bool $has_invoice = false;
 
+    #[Groups(['sale:write'])]
+    private ?bool $emit_invoice = null;
+
     #[Groups(['sale:read', 'sale:write'])]
     #[ORM\Column(name: 'is_consume', type: 'boolean', options: ['default' => false])]
     private bool $is_consume = false;
@@ -494,6 +497,18 @@ class Sale
     public function setHasInvoice(?bool $has_invoice): static
     {
         $this->has_invoice = $has_invoice;
+
+        return $this;
+    }
+
+    public function getEmitInvoice(): ?bool
+    {
+        return $this->emit_invoice;
+    }
+
+    public function setEmitInvoice(?bool $emit_invoice): static
+    {
+        $this->emit_invoice = $emit_invoice;
 
         return $this;
     }

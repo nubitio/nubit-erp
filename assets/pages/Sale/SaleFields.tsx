@@ -37,6 +37,17 @@ export const SaleFields = (form: DxFormEvents | null) => {
   );
   fields.push(
     new FieldBuilder()
+      .type(FieldType.CHECKBOX)
+      .name('emit_invoice')
+      .label('Emitir comprobante')
+      .valueType('boolean')
+      .defaultValue(() => settings.getCached(Setting.AUTO_INVOICE)?.value === 'true')
+      .visibleOnForm(true)
+      .visible(false)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
       .type(FieldType.DATE)
       .name('fecha')
       .label('Fecha')
