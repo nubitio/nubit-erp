@@ -88,7 +88,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
         fullScreen={isXSmall}
         width={width}
         height={options.height ?? 'auto'}
-        maxHeight={options.maxHeight ?? 640}
+        maxHeight={options.maxHeight ?? '90%'}
         wrapperAttr={{ id: dialogId, class: options.fitContent ? 'fit-content' : 'form-popup' }}
       >
         {(options.footerVisible ?? true) && (

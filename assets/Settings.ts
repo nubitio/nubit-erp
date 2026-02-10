@@ -39,6 +39,10 @@ class Settings {
     }
     return this.settings.find((s) => s.name === key);
   }
+
+  getCached(key: string): SettingDto | undefined {
+    return this.settings.find((s) => s.name === key);
+  }
 }
 
 export const settings = new Settings();

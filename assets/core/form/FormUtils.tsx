@@ -1,6 +1,6 @@
-import { Field } from '../field/Field';
-import { FieldType } from '../field/FieldType';
-import { dxUtils } from '../common/DxUtils';
+import {Field} from '../field/Field';
+import {FieldType} from '../field/FieldType';
+import {dxUtils} from '../common/DxUtils';
 import {
   CompareRule,
   CustomRule,
@@ -12,19 +12,19 @@ import {
   SimpleItem,
   StringLengthRule,
 } from 'devextreme-react/form';
-import { MutableRefObject } from 'react';
-import { dispatch } from '../event/EventHook';
-import { FORM_EVENTS, UploadedFile } from './DxForm';
-import { ValidationRule } from '../field/ValidationRule';
-import { getIRI } from '../utils/SharedUtils';
-import { Template } from 'devextreme-react/core/template';
+import {MutableRefObject} from 'react';
+import {dispatch} from '../event/EventHook';
+import {FORM_EVENTS, UploadedFile} from './DxForm';
+import {ValidationRule} from '../field/ValidationRule';
+import {getIRI} from '../utils/SharedUtils';
+import {Template} from 'devextreme-react/core/template';
 
 export const buildField = (
   field: Field,
   key: any,
   isEditable: boolean = true,
-  uploadedFiles: MutableRefObject<UploadedFile[]> = { current: [] },
-  formRef: MutableRefObject<FormRef | null> = { current: null },
+  uploadedFiles: MutableRefObject<UploadedFile[]> = {current: []},
+  formRef: MutableRefObject<FormRef | null> = {current: null},
 ) => {
   if (field.type === FieldType.NONE) return null;
   let editorOptions: any = {};
@@ -69,7 +69,7 @@ export const buildField = (
           // The CustomStore.load may return either an array or an object with .data
           // We deliberately request a small page: skip=0, take=2
           (store as any)
-            .load({ skip: 0, take: 2 })
+            .load({skip: 0, take: 2})
             .then((result: any) => {
               const items = result?.data ?? result;
               if (Array.isArray(items) && items.length === 1) {
@@ -109,7 +109,8 @@ export const buildField = (
         accept: field.accept,
         uploadUrl: field.url,
         name: 'file',
-        onBeforeSend: (e: any) => {},
+        onBeforeSend: (e: any) => {
+        },
         onUploaded: (e: any) => {
           const response = JSON.parse(e.request.response);
           uploadedFiles.current.push({
@@ -193,11 +194,21 @@ export const buildField = (
       },
     };
   }
+  if (field.type === FieldType.SWITCH) {
+    editorOptions = {
+      hint: field.label,
+    };
+  }
+  if (field.type === FieldType.CHECKBOX) {
+    editorOptions = {
+      text: field.label,
+    };
+  }
   if (!isEditable) {
     editorOptions = {
       ...editorOptions,
-      elementAttr: { class: 'form-editor' },
-      inputAttr: { class: 'form-editor-input' },
+      elementAttr: {class: 'form-editor'},
+      inputAttr: {class: 'form-editor-input'},
     };
   }
   editorOptions = {
@@ -207,7 +218,7 @@ export const buildField = (
     disabled: field.disabled,
     onFocusIn: field.onClick,
     onValueChanged: (e: any) => {
-      dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
+      dispatch(FORM_EVENTS.FIELD_CHANGED, {field: field.name, value: e.value});
       field.onChange?.(e.value);
     },
     onKeyPress: field.onKeyPress,
@@ -223,13 +234,14 @@ export const buildField = (
   }
 
   const className = field.hidden ? 'dx-hidden' : '';
+  const shouldHideLabel = true; // For checkboxes and switches, we use the editor's built-in label, so we hide the form label to avoid duplication
 
   return (
     <SimpleItem
       key={key}
       dataField={field.name}
       editorType={getEditorType(field)}
-      label={{ text: field.label }}
+      label={{text: field.label, visible: !shouldHideLabel}}
       isRequired={field.required}
       editorOptions={editorOptions}
       helpText={field.helpText}
@@ -246,7 +258,7 @@ export const buildField = (
 
 const buildTemplate = (field: Field) => {
   if (field.itemFormatter) {
-    return <Template name={field.name} render={field.itemFormatter} />;
+    return <Template name={field.name} render={field.itemFormatter}/>;
   }
 };
 
@@ -264,13 +276,13 @@ const buildValidationRules = (field: Field) => {
   return validationRules.map((rule, index) => {
     switch (rule.type) {
       case 'required':
-        return <RequiredRule key={index} />;
+        return <RequiredRule key={index}/>;
       case 'pattern':
         return (
-          <PatternRule key={index} pattern={rule.options.pattern} message={rule.options.message} />
+          <PatternRule key={index} pattern={rule.options.pattern} message={rule.options.message}/>
         );
       case 'email':
-        return <EmailRule key={index} message={rule.options.message} />;
+        return <EmailRule key={index} message={rule.options.message}/>;
       case 'compare':
         return (
           <CompareRule

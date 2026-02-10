@@ -267,7 +267,9 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->settings->get(Constants::AUTO_INVOICE, 'false'),
             FILTER_VALIDATE_BOOLEAN
         );
-        if ($isNew && $data->getTipoId() === 2 && $autoInvoiceEnabled) {
+        $emitInvoice = $data->getEmitInvoice();
+        $shouldEmitInvoice = $emitInvoice !== null ? $emitInvoice : $autoInvoiceEnabled;
+        if ($isNew && $data->getTipoId() === 2 && $shouldEmitInvoice) {
             try {
                 $invoiceResult = $this->invoiceCreationService->createForSale($data);
                 if (!$invoiceResult['success']) {

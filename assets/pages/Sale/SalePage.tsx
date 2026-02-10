@@ -19,6 +19,7 @@ import { httpClient } from '../../core/http/HttpClient';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 import toast from '../../core/utils/SharedUtils';
 import { prompt } from '../../components/library/prompt-dialog/PromptDialog';
+import { Setting, settings } from '../../Settings';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
@@ -77,6 +78,13 @@ export const SalePage = () => {
 
     on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
       formRef.current?.setFieldValue('cliente', payload.data);
+    });
+
+    on(EVENTS.ADD, async () => {
+      const autoInvoice = await settings.get(Setting.AUTO_INVOICE);
+      if (autoInvoice) {
+        formRef.current?.setFieldValue('emit_invoice', autoInvoice.value === 'true');
+      }
     });
   };
 
@@ -301,7 +309,7 @@ export const SalePage = () => {
         events={EVENTS}
         sort={[{ selector: 'date_created', desc: true }]}
       />
-      <DxDialog width={1080} height={720} events={EVENTS}>
+      <DxDialog width={1000} height={760} events={EVENTS}>
         <DxForm
           ref={formRef}
           url={API_URL}
