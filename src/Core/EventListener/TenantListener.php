@@ -72,7 +72,7 @@ readonly class TenantListener
         $subdomain = $parts[0];
 
         // Default/known infra hosts that should not trigger tenant switching.
-        $excludedSubdomains = ['localhost'];
+        $excludedSubdomains = ['localhost', 'dev', 'stg'];
         if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
             $this->logger->debug('Skipping tenant switch for excluded or empty subdomain', [
                 'subdomain' => $subdomain,
