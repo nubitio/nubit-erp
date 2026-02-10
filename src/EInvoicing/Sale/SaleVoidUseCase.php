@@ -72,6 +72,23 @@ readonly class SaleVoidUseCase
         }
 
         $documentType = (string)$voucher->voucher_type;
+        if ($documentType === DocType::NOTA_VENTA->value) {
+            $sale->setGlosa($reason);
+            $sale->setEstado(SaleStatus::VOIDED->value);
+            $sale->setUpdatedBy($userId);
+            $sale->setDateUpdated(new DateTime());
+            $this->entityManager->persist($sale);
+            $this->entityManager->flush();
+
+            $this->auditLogger->log('sale.void.result', [
+                'sale_id' => $saleId,
+                'document_type' => $documentType,
+                'success' => true,
+                'message' => ErrorMessages::VOID_SUCCESSFUL,
+            ]);
+
+            return new ApiResponse(true, ErrorMessages::VOID_SUCCESSFUL);
+        }
         if (!in_array($documentType, [DocType::FACTURA->value, DocType::BOLETA->value], true)) {
             throw new ServiceException(ErrorMessages::UNSUPPORTED_VOUCHER_TYPE_FOR_VOID);
         }
