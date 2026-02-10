@@ -12,9 +12,9 @@ readonly class BillPdfUseCase
     ) {
     }
 
-    public function __invoke(string $saleId): FileResponse
+    public function __invoke(string $taxDocumentId): FileResponse
     {
-        $bill = $this->billCreateUseCase->__invoke($saleId);
+        $bill = $this->billCreateUseCase->__invoke($taxDocumentId);
         $pdf = $this->billRepository->getPdf($bill);
 
         return new FileResponse($pdf, $bill->getName() . '.pdf');
