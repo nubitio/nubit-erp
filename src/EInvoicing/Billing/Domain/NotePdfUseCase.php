@@ -17,9 +17,9 @@ readonly class NotePdfUseCase
     /**
      * @throws ServiceException
      */
-    public function __invoke(string $noteId): FileResponse
+    public function __invoke(string $taxDocumentId): FileResponse
     {
-        $note = $this->noteCreateUseCase->__invoke($noteId);
+        $note = $this->noteCreateUseCase->__invoke($taxDocumentId);
         $pdf = $this->noteRepository->pdf($note);
 
         return new FileResponse($pdf, $note->getName() . '.pdf');

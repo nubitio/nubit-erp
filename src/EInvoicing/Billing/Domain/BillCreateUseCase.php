@@ -14,7 +14,6 @@ use App\Repository\CompanyRepository;
 use App\Repository\TaxDocumentRepository;
 use Brick\Math\Exception\MathException;
 use DateMalformedStringException;
-use Doctrine\DBAL\Exception;
 use Greenter\Model\Client\Client;
 use Greenter\Model\Sale\Charge;
 use Greenter\Model\Sale\Cuota;
@@ -38,12 +37,12 @@ readonly class BillCreateUseCase
 
     /**
      * @throws DateMalformedStringException
-     * @throws Exception
      * @throws MathException
      */
-    public function __invoke(string $saleId): Invoice
+    public function __invoke(string $taxDocumentId): Invoice
     {
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
+        $voucher = $this->taxDocumentRepository->getVoucher($taxDocument->getSale()->getId());
         $hydratedVoucher = $this->voucherHydrator->hydrate($voucher);
 
         $company = $this->companyRepository->findOneBy([]);

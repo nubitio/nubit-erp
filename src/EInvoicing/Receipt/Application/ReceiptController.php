@@ -26,7 +26,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
 class ReceiptController extends BaseController
 {
@@ -96,8 +95,6 @@ class ReceiptController extends BaseController
 
     /**
      * @throws FilesystemException
-     * @throws Exception
-     * @throws ExceptionInterface
      */
     #[Route('/receipt/{payload}/xml', name: 'receipt_xml', methods: ['GET'])]
     public function xml(
@@ -121,8 +118,6 @@ class ReceiptController extends BaseController
 
     /**
      * @throws FilesystemException
-     * @throws Exception
-     * @throws ExceptionInterface
      */
     #[Route('/receipt/{payload}/cdr', name: 'receipt_cdr', methods: ['GET'])]
     public function cdr(
