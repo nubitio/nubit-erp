@@ -9,7 +9,10 @@ mkdir -p /app/var/cache/${APP_ENV:-prod} /app/var/log /app/public/uploads
 chown -R www-data:www-data /app/var /app/public/uploads
 
 # Run database migrations automatically (only in prod/staging, not dev)
-if [ "${APP_ENV}" = "prod" ] || [ "${APP_ENV}" = "staging" ]; then
+# Workers should set SKIP_MIGRATIONS=true to avoid race conditions
+if [ "${SKIP_MIGRATIONS}" = "true" ]; then
+    echo "Skipping migrations (SKIP_MIGRATIONS=true)"
+elif [ "${APP_ENV}" = "prod" ] || [ "${APP_ENV}" = "staging" ]; then
     echo "Running database migrations..."
     
     # Wait for database to be ready (max 30 seconds)
