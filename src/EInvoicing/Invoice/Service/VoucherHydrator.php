@@ -26,7 +26,7 @@ class VoucherHydrator implements VoucherHydratorInterface
             $value
         );
 
-        $voucherItems = array_map(function ($item) use ($moneyToFloat, $toNullableFloat) {
+        $voucherItems = array_map(function ($item) use ($moneyToFloat) {
             return new HydratedVoucherItem(
                 productCode: strval($item->product_code),
                 productUom: $item->product_uom ?? 'NIU',

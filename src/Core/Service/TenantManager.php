@@ -370,7 +370,9 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT t.id, t.name, t.connection FROM tenant_domains d INNER JOIN tenants t ON t.id = d.tenant_id WHERE d.domain = ?',
+            'SELECT t.id, t.name, t.connection FROM tenant_domains d '
+            . 'INNER JOIN tenants t ON t.id = d.tenant_id '
+            . 'WHERE d.domain = ?',
             [$domain],
         );
 

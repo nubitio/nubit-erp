@@ -158,7 +158,9 @@ class SaleReportController extends AbstractController
     private function receiptFilter(): string
     {
         if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
-            return "AND EXISTS (SELECT 1 FROM tax_document td WHERE td.movimiento_id = m.movimiento_id AND td.document_type IN ('01','03'))";
+            return 'AND EXISTS (SELECT 1 FROM tax_document td '
+                . 'WHERE td.movimiento_id = m.movimiento_id '
+                . "AND td.document_type IN ('01','03'))";
         }
 
         return '';

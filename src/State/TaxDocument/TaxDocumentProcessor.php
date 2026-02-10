@@ -186,7 +186,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             $line->setLineNumber($original->getLineNumber());
             $line->setProductId($original->getProductId());
             $line->setProductCode($original->getProductCode());
-            $line->setProductName($original->getProductName() ?? '-');
+            $line->setProductName($original->getProductName());
             $line->setProductUom($original->getProductUom());
             $line->setQuantity($amountLine->quantity);
             $line->setUnitPrice($amountLine->unitPrice);
