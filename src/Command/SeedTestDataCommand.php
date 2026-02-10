@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Core\Application\Command\TenantAwareCommand;
+use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use App\Service\TestDataSeeder;
 use Doctrine\DBAL\Connection;
+use Doctrine\Persistence\ConnectionRegistry;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,13 +22,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'app:seed:test-data',
     description: 'Seed test data for development (customers, products, categories, units, sales)',
 )]
-class SeedTestDataCommand extends Command
+class SeedTestDataCommand extends TenantAwareCommand
 {
     public function __construct(
         private readonly TestDataSeeder $testDataSeeder,
-        private readonly Connection $connection,
+        private readonly ConnectionRegistry $connectionRegistry,
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        LoggerInterface $logger,
     ) {
-        parent::__construct();
+        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
     }
 
     protected function configure(): void
@@ -68,10 +76,11 @@ HELP
             );
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
+        $connection = $this->connectionRegistry->getConnection();
         $customerCount = (int)$input->getOption('customers');
         $productCount = (int)$input->getOption('products');
         $supplierCount = (int)$input->getOption('suppliers');
@@ -92,7 +101,7 @@ HELP
 
             try {
                 $io->section('Purging existing test data...');
-                $this->purgeTestData($io);
+                $this->purgeTestData($connection, $io);
                 $io->success('Test data purged successfully!');
             } catch (\Throwable $e) {
                 $io->error('Failed to purge test data: ' . $e->getMessage());
@@ -150,64 +159,64 @@ HELP
         }
     }
 
-    private function purgeTestData(SymfonyStyle $io): void
+    private function purgeTestData(Connection $connection, SymfonyStyle $io): void
     {
         $io->progressStart(6);
 
         // Disable foreign key checks
-        $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
 
         // Truncate invoices and sales (invoices must be deleted first due to FK)
         $io->text('Truncating invoices and sales...');
-        $this->truncateIfExists('tax_document_event');
-        $this->truncateIfExists('tax_document_line');
-        $this->truncateIfExists('tax_document');
-        $this->connection->executeStatement('TRUNCATE TABLE comprobante');
-        $this->connection->executeStatement('TRUNCATE TABLE movimiento_detalle');
-        $this->connection->executeStatement('TRUNCATE TABLE movimiento');
+        $this->truncateIfExists($connection, 'tax_document_event');
+        $this->truncateIfExists($connection, 'tax_document_line');
+        $this->truncateIfExists($connection, 'tax_document');
+        $connection->executeStatement('TRUNCATE TABLE comprobante');
+        $connection->executeStatement('TRUNCATE TABLE movimiento_detalle');
+        $connection->executeStatement('TRUNCATE TABLE movimiento');
         $io->progressAdvance();
 
         // Truncate products and stock
         $io->text('Truncating products...');
-        $this->connection->executeStatement('TRUNCATE TABLE product_stock');
-        $this->connection->executeStatement('TRUNCATE TABLE producto');
+        $connection->executeStatement('TRUNCATE TABLE product_stock');
+        $connection->executeStatement('TRUNCATE TABLE producto');
         $io->progressAdvance();
 
         // Delete customers (except default)
         $io->text('Deleting customers...');
-        $this->connection->executeStatement("DELETE FROM cliente WHERE ruc != '00000000'");
+        $connection->executeStatement("DELETE FROM cliente WHERE ruc != '00000000'");
         $io->progressAdvance();
 
         // Delete suppliers
         $io->text('Deleting suppliers...');
-        $this->connection->executeStatement('TRUNCATE TABLE proveedor');
+        $connection->executeStatement('TRUNCATE TABLE proveedor');
         $io->progressAdvance();
 
         // Delete categories (except default)
         $io->text('Deleting categories...');
-        $this->connection->executeStatement("DELETE FROM categoria WHERE descripcion != 'General'");
+        $connection->executeStatement("DELETE FROM categoria WHERE descripcion != 'General'");
         $io->progressAdvance();
 
         // Delete units of measure (except NIU)
         $io->text('Deleting units of measure...');
-        $this->connection->executeStatement("DELETE FROM unidad WHERE code != 'NIU'");
+        $connection->executeStatement("DELETE FROM unidad WHERE code != 'NIU'");
         $io->progressAdvance();
 
         // Re-enable foreign key checks
-        $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
+        $connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
 
         $io->progressFinish();
     }
 
-    private function truncateIfExists(string $table): void
+    private function truncateIfExists(Connection $connection, string $table): void
     {
-        $exists = $this->connection->fetchOne(
+        $exists = $connection->fetchOne(
             'SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?',
             [$table]
         );
 
         if ((int) $exists > 0) {
-            $this->connection->executeStatement('TRUNCATE TABLE ' . $table);
+            $connection->executeStatement('TRUNCATE TABLE ' . $table);
         }
     }
 }

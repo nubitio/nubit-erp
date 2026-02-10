@@ -13,6 +13,7 @@ readonly class TenantConnectionSwitcher
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
+        private TenantManager $tenantManager,
     ) {
     }
 
@@ -25,6 +26,11 @@ readonly class TenantConnectionSwitcher
     {
         /** @var TenantConnection $connection */
         $connection = $this->connectionRegistry->getConnection();
-        $connection->switchTenant($tenant);
+        $tenantData = $this->tenantManager->getTenantByName($tenant);
+        if ($tenantData === null) {
+            throw new ServiceException('Tenant not found');
+        }
+
+        $connection->switchTenantParams($tenantData);
     }
 }
