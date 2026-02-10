@@ -15,9 +15,9 @@ TENANTS_SET=false
 DOMAINS_SET=false
 TENANT_DB_PASSWORD="${TENANT_DB_PASSWORD:-}"
 ADMIN_USER="${ADMIN_USER:-admin}"
-ADMIN_PASS="${ADMIN_PASS:-Admin.3000}"
-COMPANY_RUC="${COMPANY_RUC:-20123456789}"
-COMPANY_NAME="${COMPANY_NAME:-Empresa Demo}"
+ADMIN_PASS="${ADMIN_PASS:-Demo.3000}"
+COMPANY_RUC="${COMPANY_RUC:-20000000001}"
+COMPANY_NAME="${COMPANY_NAME:-Demo SAC}"
 COMPANY_TRADE="${COMPANY_TRADE:-Demo}"
 COMPANY_ADDRESS="${COMPANY_ADDRESS:-Av. Principal 123}"
 COMPANY_PHONE="${COMPANY_PHONE:-999999999}"
@@ -84,15 +84,15 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --admin-pass)
-      ADMIN_PASS="${2:-Admin.3000}"
+      ADMIN_PASS="${2:-Demo.3000}"
       shift 2
       ;;
     --company-ruc)
-      COMPANY_RUC="${2:-20123456789}"
+      COMPANY_RUC="${2:-20000000001}"
       shift 2
       ;;
     --company-name)
-      COMPANY_NAME="${2:-Empresa Demo}"
+      COMPANY_NAME="${2:-Demo SAC}"
       shift 2
       ;;
     --company-trade)
