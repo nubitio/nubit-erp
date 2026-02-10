@@ -90,7 +90,7 @@ services:
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
       TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
-        # OpenTelemetry
+      # OpenTelemetry
       OTEL_PHP_AUTOLOAD_ENABLED: true
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
       OTEL_TRACES_EXPORTER: otlp
@@ -99,7 +99,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_PROPAGATORS: baggage,tracecontext
-        # AWS S3
+      # AWS S3
       S3_ENDPOINT: ${S3_ENDPOINT}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
@@ -137,7 +137,7 @@ services:
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
       TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
-        # OpenTelemetry
+      # OpenTelemetry
       OTEL_PHP_AUTOLOAD_ENABLED: true
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
       OTEL_TRACES_EXPORTER: otlp
@@ -146,7 +146,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_PROPAGATORS: baggage,tracecontext
-        # AWS S3
+      # AWS S3
       S3_ENDPOINT: ${S3_ENDPOINT}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
