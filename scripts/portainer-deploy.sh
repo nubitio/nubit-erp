@@ -143,12 +143,12 @@ curl --http1.1 -sS -D "$RESP_HEADERS" -o "$RESP_BODY" -X PUT \
   "${PORTAINER_URL%/}/api/stacks/${FOUND_ID}?endpointId=${ENDPOINT_TO_USE}" \
   --data-binary "@$PAYLOAD_FILE"
 
+STATUS_LINE=$(head -n 1 "$RESP_HEADERS" || true)
 printf "%s\n" "=== Headers ==="
-cat "$RESP_HEADERS"
-printf "%s\n" "=== Body ==="
-cat "$RESP_BODY"
+printf "%s\n" "$STATUS_LINE"
 printf "%s\n" "=== Body Size ==="
 wc -c "$RESP_BODY"
-printf "%s\n" "=== Payload ==="
-wc -c "$RESP_PAYLOAD"
-sed -n '1,5p' "$RESP_PAYLOAD"
+if grep -qi "HTTP/1.1 4" "$RESP_HEADERS" || grep -qi "HTTP/1.1 5" "$RESP_HEADERS"; then
+  printf "%s\n" "=== Body (error) ==="
+  cat "$RESP_BODY"
+fi
