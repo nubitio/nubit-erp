@@ -229,7 +229,8 @@ class TenantProvisionCommand extends Command
             array_merge([PHP_BINARY, 'bin/console'], $args)
         );
         $process->setTimeout(null);
-        $process->run(function ($type, $buffer) use ($io) {
+        $process->run(function ($type, $buffer) use ($io): void {
+            unset($type);
             $io->write($buffer);
         });
 
@@ -242,24 +243,36 @@ class TenantProvisionCommand extends Command
     {
         $setup = new InitialSetupInput();
 
-        $setup->adminUsername = (string)($input->getOption('admin-user') ?: $io->ask('Admin username', 'admin'));
-        $setup->adminPassword = (string)($input->getOption('admin-pass') ?: $io->askHidden('Admin password (hidden)', static function ($value): string {
-            if (trim((string)$value) === '') {
-                return 'Admin.3000';
+        $setup->adminUsername = (string)($input->getOption('admin-user')
+            ?: $io->ask('Admin username', 'admin'));
+        $setup->adminPassword = (string)($input->getOption('admin-pass') ?: $io->askHidden(
+            'Admin password (hidden)',
+            static function ($value): string {
+                if (trim((string)$value) === '') {
+                    return 'Admin.3000';
+                }
+
+                return (string)$value;
             }
+        ));
 
-            return (string)$value;
-        }));
+        $setup->companyRuc = (string)($input->getOption('company-ruc')
+            ?: $io->ask('Company RUC (11 digits)', '20123456789'));
+        $setup->companyBusinessName = (string)($input->getOption('company-name')
+            ?: $io->ask('Company business name', 'Empresa Demo'));
+        $setup->companyTradeName = (string)($input->getOption('company-trade')
+            ?: $io->ask('Company trade name', 'Demo'));
+        $setup->companyFiscalAddress = (string)($input->getOption('company-address')
+            ?: $io->ask('Company fiscal address', 'Av. Principal 123'));
+        $setup->companyPhone = (string)($input->getOption('company-phone')
+            ?: $io->ask('Company phone', '999999999'));
 
-        $setup->companyRuc = (string)($input->getOption('company-ruc') ?: $io->ask('Company RUC (11 digits)', '20123456789'));
-        $setup->companyBusinessName = (string)($input->getOption('company-name') ?: $io->ask('Company business name', 'Empresa Demo'));
-        $setup->companyTradeName = (string)($input->getOption('company-trade') ?: $io->ask('Company trade name', 'Demo'));
-        $setup->companyFiscalAddress = (string)($input->getOption('company-address') ?: $io->ask('Company fiscal address', 'Av. Principal 123'));
-        $setup->companyPhone = (string)($input->getOption('company-phone') ?: $io->ask('Company phone', '999999999'));
-
-        $setup->branchName = (string)($input->getOption('branch-name') ?: $io->ask('Branch name', 'Principal'));
-        $setup->branchAddress = (string)($input->getOption('branch-address') ?: $io->ask('Branch address', 'Av. Principal 123'));
-        $setup->branchPhone = (string)($input->getOption('branch-phone') ?: $io->ask('Branch phone', '999999999'));
+        $setup->branchName = (string)($input->getOption('branch-name')
+            ?: $io->ask('Branch name', 'Principal'));
+        $setup->branchAddress = (string)($input->getOption('branch-address')
+            ?: $io->ask('Branch address', 'Av. Principal 123'));
+        $setup->branchPhone = (string)($input->getOption('branch-phone')
+            ?: $io->ask('Branch phone', '999999999'));
 
         return $setup;
     }

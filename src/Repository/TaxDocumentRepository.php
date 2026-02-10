@@ -418,7 +418,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
         ?TaxDocument $taxDocument,
         InvoiceAmounts $amounts
     ): ?string {
-        if (!$taxDocument || !$taxDocument->getIssueDate()) {
+        if (!$taxDocument) {
             return null;
         }
 
@@ -495,7 +495,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
 
             return [
                 'tax_document_id' => $row->getId(),
-                'movimiento_id' => $sale?->getId(),
+                'movimiento_id' => $sale->getId(),
                 'document_type' => $row->getDocumentType(),
                 'series' => $row->getSeries(),
                 'number' => $row->getNumber(),
@@ -503,7 +503,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
                 'total' => $row->getTotal(),
                 'digest' => $row->getDigest(),
                 'sunat_status' => $row->getSunatStatus(),
-                'sale_status' => $sale?->getEstado(),
+                'sale_status' => $sale->getEstado(),
             ];
         }
 

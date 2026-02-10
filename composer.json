@@ -136,9 +136,9 @@
       "assets:install %PUBLIC_DIR%": "symfony-cmd"
     },
     "git-init": [
-      "php -r \"file_exists('.git') && copy('.scripts/pre-commit.sh', '.git/hooks/pre-commit');\"",
+      "php -r \"file_exists('.git') && copy('scripts/pre-commit.sh', '.git/hooks/pre-commit');\"",
       "chmod +x .git/hooks/pre-commit",
-      "php -r \"file_exists('.git') && copy('.scripts/commit-msg.sh', '.git/hooks/commit-msg');\"",
+      "php -r \"file_exists('.git') && copy('scripts/commit-msg.sh', '.git/hooks/commit-msg');\"",
       "chmod +x .git/hooks/commit-msg"
     ],
     "post-install-cmd": [

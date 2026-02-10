@@ -10,10 +10,10 @@ use Override;
 class SaleItemDto implements Stringable
 {
     public function __construct(
+        private readonly int $lineWidth,
         private string $name = '',
         private readonly float|string|null $price = '',
         private readonly float|string|null $total = null,
-        private readonly int $lineWidth,
     ) {
     }
 

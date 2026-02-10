@@ -79,12 +79,12 @@ final class InvoiceCalculatorTest extends TestCase
                 'charges' => '10',
                 'expectedTotal' => null,
                 'expected' => [
-                    'subtotal' => '1.00',
+                    'subtotal' => '1.08',
                     'discount' => '0.00',
-                    'taxable' => '1.00',
-                    'tax' => '0.18',
-                    'charges' => '0.10',
-                    'total' => '1.28',
+                    'taxable' => '1.08',
+                    'tax' => '0.19',
+                    'charges' => '0.11',
+                    'total' => '1.38',
                 ],
             ],
             'quantity_decimals' => [

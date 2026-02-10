@@ -332,7 +332,9 @@ readonly class DashboardRepository
     private function receiptFilter(): string
     {
         if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
-            return "AND EXISTS (SELECT 1 FROM tax_document td2 WHERE td2.movimiento_id = m.movimiento_id AND td2.document_type IN ('01','03'))";
+            return 'AND EXISTS (SELECT 1 FROM tax_document td2 '
+                . 'WHERE td2.movimiento_id = m.movimiento_id '
+                . "AND td2.document_type IN ('01','03'))";
         }
 
         return '';

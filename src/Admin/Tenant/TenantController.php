@@ -125,7 +125,11 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
-    #[Route('/admin/tenants/{tenantId}/domains/{domainId}/primary', name: 'admin_tenant_domain_primary', methods: ['POST'])]
+    #[Route(
+        '/admin/tenants/{tenantId}/domains/{domainId}/primary',
+        name: 'admin_tenant_domain_primary',
+        methods: ['POST']
+    )]
     public function setPrimaryDomain(int $tenantId, int $domainId): Response
     {
         try {
