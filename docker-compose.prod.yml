@@ -59,7 +59,7 @@ services:
 
     networks:
       - default
-      - shared_net
+      - shared
 
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
@@ -115,7 +115,7 @@ services:
       - app-var:/app/var
     networks:
       - default
-      - shared_net
+      - shared
     command: >
       php /app/bin/console messenger:consume async
       --time-limit=3600
@@ -163,7 +163,7 @@ services:
       - app-var:/app/var
     networks:
       - default
-      - shared_net
+      - shared
     command: >
       php /app/bin/console messenger:consume scheduler_default
       --time-limit=3600
@@ -178,5 +178,5 @@ volumes:
 
 networks:
   default:
-  shared_net:
+  shared:
     external: true
