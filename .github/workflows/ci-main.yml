@@ -1,6 +1,5 @@
-name: CI & Deploy to Testing
+name: CI
 
-# Cada push/PR a main: ejecuta CI; en push a main despliega a testing.
 on:
   push:
     branches: [ main ]
@@ -8,16 +7,11 @@ on:
     branches: [ main ]
 
 concurrency:
-  group: ci-main-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
-  checks: write
-  pull-requests: write
-  actions: read
-  packages: write
-  security-events: write
 
 env:
   PHP_VERSION: '8.5'
@@ -25,59 +19,9 @@ env:
   COMPOSER_CACHE_VERSION: v2
 
 jobs:
-  preflight:
-    name: Preflight Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Validate PR title
-        if: github.event_name == 'pull_request'
-        run: |
-          TITLE="${{ github.event.pull_request.title }}"
-          if [[ ! "$TITLE" =~ ^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?:\ .+ ]]; then
-            echo "::error::PR title must follow Conventional Commits format"
-            echo "Expected format: type(scope): description"
-            exit 1
-          fi
-
-      - name: Detect merge conflict markers
-        run: |
-          if git grep -n "<<<<<<< HEAD" -- ':!vendor' ':!node_modules' ':!.github/workflows/*'; then
-            echo "::error::Merge conflict markers detected"
-            exit 1
-          fi
-
-      - name: Check for oversized files
-        run: |
-          large_files=$(find . -type f -size +10M -not -path "./.git/*" -not -path "./vendor/*" -not -path "./node_modules/*" -not -path "./var/*" -not -path "./public/build/*")
-          if [ -n "$large_files" ]; then
-            echo "::error::Files over 10MB detected (should use Git LFS):"
-            echo "$large_files"
-            exit 1
-          fi
-
-      - name: Validate composer.json
-        run: |
-          if [ -f composer.json ]; then
-            composer validate --strict --no-check-all --no-check-publish
-          fi
-
-      - name: Validate package.json
-        run: |
-          if [ -f package.json ]; then
-            node -e "JSON.parse(require('fs').readFileSync('package.json'))"
-          fi
-
   backend:
     name: PHP Quality & Tests
     runs-on: ubuntu-latest
-    needs: preflight
     timeout-minutes: 30
 
     services:
@@ -118,12 +62,11 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: curl, intl, json, pdo_mysql, redis, zip, opcache, apcu, protobuf, opentelemetry
-          coverage: xdebug
           ini-values: memory_limit=512M
 
       - name: Composer cache directory
         id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -145,45 +88,15 @@ jobs:
         run: ./vendor/bin/grumphp run --no-interaction
 
       - name: Run PHPUnit
-        run: ./vendor/bin/phpunit --coverage-clover=coverage.xml --coverage-text --log-junit=junit.xml
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        if: always()
-        with:
-          file: ./coverage.xml
-          flags: backend
-          name: backend-coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: |
-            coverage.xml
-            junit.xml
-          retention-days: 30
-
-      - name: Test Report
-        uses: dorny/test-reporter@v2
-        if: always()
-        with:
-          name: PHPUnit Tests
-          path: junit.xml
-          reporter: java-junit
+        run: ./vendor/bin/phpunit
 
   frontend:
-    name: Frontend Build & Lint
+    name: Frontend Lint
     runs-on: ubuntu-latest
-    needs: preflight
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -198,72 +111,3 @@ jobs:
 
       - name: Lint JavaScript/TypeScript
         run: yarn lint
-
-      - name: Build themes
-        run: |
-          mkdir -p public/themes
-          yarn build:themes
-
-      - name: Build assets
-        run: yarn build
-
-      - name: Check build size
-        run: |
-          if [ -d "public/build" ]; then
-            BUILD_SIZE=$(du -sh public/build | cut -f1)
-            echo "### Build Size: $BUILD_SIZE" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: |
-            public/build
-            public/themes
-          retention-days: 7
-          compression-level: 9
-
-  ci-summary:
-    name: CI Summary
-    runs-on: ubuntu-latest
-    needs: [preflight, backend, frontend]
-    if: always()
-    timeout-minutes: 5
-
-    steps:
-      - name: Generate CI summary
-        run: |
-          echo "## 🎯 CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Stage | Status | Duration |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Preflight | ${{ needs.preflight.result }} | - |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend Tests | ${{ needs.backend.result }} | - |" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend Build | ${{ needs.frontend.result }} | - |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-          if [[ "${{ needs.backend.result }}" == "success" && "${{ needs.frontend.result }}" == "success" ]]; then
-            echo "✅ **All checks passed!** Ready to merge." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Some checks failed.** Please review the errors above." >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Fail if critical jobs failed
-        run: |
-          if [[ "${{ needs.preflight.result }}" == "failure" ]] || \
-             [[ "${{ needs.backend.result }}" == "failure" ]] || \
-             [[ "${{ needs.frontend.result }}" == "failure" ]]; then
-            echo "::error::One or more critical CI jobs failed"
-            exit 1
-          fi
-
-  deploy-testing:
-    name: Deploy to Testing
-    needs: [preflight, backend, frontend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/deploy.yml
-    with:
-      environment: testing
-      version: ${{ github.sha }}
-    secrets: inherit

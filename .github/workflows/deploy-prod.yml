@@ -19,9 +19,8 @@ jobs:
       contents: read
       actions: read
       packages: write
-      security-events: write
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: production
+      environment: prod
       version: ${{ inputs.version || github.ref_name }}
     secrets: inherit

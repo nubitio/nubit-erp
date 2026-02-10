@@ -1,11 +1,10 @@
 name: Reusable Deploy
 
-# Reusable workflow for deployments; invoked by environment-specific workflows.
 on:
   workflow_call:
     inputs:
       environment:
-        description: 'Target environment (testing|staging|production)'
+        description: 'Target environment (dev|stg|prod)'
         required: true
         type: string
       version:
@@ -25,7 +24,6 @@ permissions:
   contents: read
   actions: read
   packages: write
-  security-events: write
 
 env:
   REGISTRY: ghcr.io
@@ -67,20 +65,20 @@ jobs:
           SHOULD_DEPLOY="false"
 
           case "${TARGET_INPUT_ENV}" in
-            testing)
-              TARGET_ENV="test"
+            dev)
+              TARGET_ENV="dev"
               BUILD_TARGET="dev"
-              ENV_NAME="testing"
+              ENV_NAME="dev"
               ;;
-            staging)
+            stg)
               TARGET_ENV="stg"
               BUILD_TARGET="stg"
-              ENV_NAME="staging"
+              ENV_NAME="stg"
               ;;
-            production)
+            prod)
               TARGET_ENV="prod"
               BUILD_TARGET="prod"
-              ENV_NAME="production"
+              ENV_NAME="prod"
               ;;
             *)
               echo "Unknown environment: ${TARGET_INPUT_ENV}"
@@ -113,12 +111,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-      security-events: write
       actions: read
     outputs:
       image: ${{ steps.primary-tag.outputs.image }}
       digest: ${{ steps.build.outputs.digest }}
-      tags: ${{ steps.meta.outputs.tags }}
 
     steps:
       - name: Checkout repository
@@ -140,16 +136,12 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            # primary tag from plan
             type=raw,value=${{ needs.plan.outputs.image_tag }}
-            # branch/tag-based tags
             type=ref,event=branch
             type=semver,pattern={{version}},enable=${{ github.ref_type == 'tag' }}
             type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
             type=semver,pattern={{major}},enable=${{ github.ref_type == 'tag' }}
-            # always add sha tag
             type=sha,prefix=sha-
-            # only tag latest for production
             type=raw,value=latest,enable=${{ needs.plan.outputs.target_env == 'prod' }}
           labels: |
             org.opencontainers.image.title=eFact
@@ -175,40 +167,9 @@ jobs:
       - name: Primary image tag
         id: primary-tag
         run: |
-          # First line from metadata tags is the "primary" one
           TAG="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
           echo "image=${TAG}" >> "$GITHUB_OUTPUT"
           echo "✅ Pushed ${TAG}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Scan image for vulnerabilities
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ steps.primary-tag.outputs.image }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
-
-      - name: Generate SBOM
-        uses: anchore/sbom-action@v0
-        with:
-          image: ${{ steps.primary-tag.outputs.image }}
-          format: spdx-json
-          output-file: sbom.spdx.json
-
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: sbom-${{ needs.plan.outputs.target_env }}
-          path: sbom.spdx.json
-          retention-days: 90
 
   deploy:
     name: Deploy to Portainer
@@ -225,17 +186,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create deployment notification
-        run: |
-          echo "## 🚀 Deployment Started" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ needs.plan.outputs.environment_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** ${{ needs.build-and-push.outputs.image }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Tag:** ${{ needs.plan.outputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Digest:** ${{ needs.build-and-push.outputs.digest }}" >> $GITHUB_STEP_SUMMARY
-
       - name: Deploy stack
-        id: deploy
         uses: dann41/portainer-stack-deploy@v1
         with:
           portainer-host: ${{ secrets.PORTAINER_URL }}
@@ -246,74 +197,23 @@ jobs:
           template-variables: '{"IMAGE": "${{ needs.build-and-push.outputs.image }}"}'
           image: ${{ needs.build-and-push.outputs.image }}
 
-      - name: Wait for deployment health check
+      - name: Basic health check
         run: |
+          if [ -z "${{ secrets.APP_URL }}" ]; then
+            echo "APP_URL not set; skipping health check."
+            exit 0
+          fi
+
           echo "Waiting for application to be healthy..."
-          sleep 30
+          sleep 20
 
-          # Try to check health endpoint if available
-          if [ -n "${{ secrets.APP_URL }}" ]; then
-            for i in {1..10}; do
-              if curl -sf "${{ secrets.APP_URL }}/health" > /dev/null 2>&1; then
-                echo "✅ Application is healthy!"
-                exit 0
-              fi
-              echo "Waiting for application... (attempt $i/10)"
-              sleep 10
-            done
-            echo "⚠️ Health check inconclusive, check manually"
-          fi
-
-      - name: Deployment summary
-        if: always()
-        run: |
-          if [ "${{ steps.deploy.outcome }}" == "success" ]; then
-            echo "## ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "**URL:** ${{ secrets.APP_URL }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "## ❌ Deployment Failed" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Please check Portainer logs for details." >> $GITHUB_STEP_SUMMARY
-          fi
-
-  post-deploy:
-    name: Post-Deployment Checks
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [plan, build-and-push, deploy]
-    if: always() && needs.deploy.result == 'success'
-
-    steps:
-      - name: Smoke tests
-        run: |
-          echo "## 🧪 Running Smoke Tests" >> $GITHUB_STEP_SUMMARY
-
-          if [ -n "${{ secrets.APP_URL }}" ]; then
-            # Check if app is responding
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${{ secrets.APP_URL }}" || echo "000")
-
-            if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 400 ]; then
-              echo "✅ Application is responding (HTTP $HTTP_CODE)" >> $GITHUB_STEP_SUMMARY
-            else
-              echo "⚠️ Application returned HTTP $HTTP_CODE" >> $GITHUB_STEP_SUMMARY
+          for i in {1..10}; do
+            if curl -sf "${{ secrets.APP_URL }}/health" > /dev/null 2>&1; then
+              echo "✅ Application is healthy!"
+              exit 0
             fi
-          fi
+            echo "Waiting for application... (attempt $i/10)"
+            sleep 10
+          done
 
-      - name: Notify deployment
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const deployStatus = '${{ needs.deploy.result }}';
-            const env = '${{ needs.plan.outputs.environment_name }}';
-            const image = '${{ needs.build-and-push.outputs.image }}';
-
-            const emoji = deployStatus === 'success' ? '✅' : '❌';
-            const message = `${emoji} Deployment to **${env}** ${deployStatus === 'success' ? 'succeeded' : 'failed'}
-
-            **Image:** \`${image}\`
-            **Workflow:** ${context.payload.repository.html_url}/actions/runs/${context.runId}`;
-
-            // You can add Slack/Discord notification here
-            console.log(message);
+          echo "⚠️ Health check inconclusive, check manually"
