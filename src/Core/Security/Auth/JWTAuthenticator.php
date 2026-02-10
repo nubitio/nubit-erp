@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
+use App\Core\Audit\AuditLogger;
 use App\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Override;
@@ -40,6 +41,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly ClientDetectorService $clientDetector,
         private readonly CookieFactoryService $cookieFactory,
         private readonly TranslatorInterface $translator,
+        private readonly AuditLogger $auditLogger,
     ) {
     }
 
@@ -327,6 +329,22 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             'ip' => $request->getClientIp() ?? 'unknown',
             'route' => $request->attributes->get('_route'),
         ]);
+
+        $route = (string)$request->attributes->get('_route');
+        if ($route === self::LOGIN_ROUTE) {
+            $username = '';
+            $data = json_decode($request->getContent(), true);
+            if (is_array($data)) {
+                $username = (string)($data['username'] ?? '');
+            }
+
+            $this->auditLogger->log('auth.login_failed', [
+                'username' => $username,
+                'route' => $route,
+                'ip' => $request->getClientIp() ?? 'unknown',
+                'error' => $exception->getMessage(),
+            ]);
+        }
 
         $translatedMessage = $this->translator->trans(
             $exception->getMessageKey(),

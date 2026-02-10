@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Messenger;
+
+use App\Core\Context\TenantContext;
+use App\Core\Service\TenantConnectionSwitcher;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Middleware\MiddlewareInterface;
+use Symfony\Component\Messenger\Middleware\StackInterface;
+
+final readonly class TenantContextMiddleware implements MiddlewareInterface
+{
+    public function __construct(
+        private TenantContext $tenantContext,
+        private TenantConnectionSwitcher $tenantConnectionSwitcher,
+    ) {
+    }
+
+    public function handle(Envelope $envelope, StackInterface $stack): Envelope
+    {
+        /** @var TenantStamp|null $stamp */
+        $stamp = $envelope->last(TenantStamp::class);
+        if ($stamp !== null && $stamp->tenantName !== null && $stamp->tenantName !== '') {
+            $this->tenantContext->setTenant(
+                $stamp->tenantId,
+                $stamp->tenantName,
+                $stamp->tenantDomain,
+                $stamp->requestId,
+            );
+
+            $this->tenantConnectionSwitcher->switchConnection($stamp->tenantName);
+        }
+
+        try {
+            return $stack->next()->handle($envelope, $stack);
+        } finally {
+            $this->tenantContext->clear();
+        }
+    }
+}

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Sale;
 
+use App\Core\Audit\AuditLogger;
 use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
@@ -30,6 +31,7 @@ readonly class SaleVoidUseCase
         private SunatVoidService $sunatVoidService,
         private TaxDocumentVoidUpdater $taxDocumentVoidUpdater,
         private CashRefundRegistrar $cashRefundRegistrar,
+        private AuditLogger $auditLogger,
     ) {
     }
 
@@ -74,6 +76,13 @@ readonly class SaleVoidUseCase
             throw new ServiceException(ErrorMessages::UNSUPPORTED_VOUCHER_TYPE_FOR_VOID);
         }
 
+        $this->auditLogger->log('sale.void.requested', [
+            'sale_id' => $saleId,
+            'reason' => $reason,
+            'user_id' => $userId,
+            'document_type' => $documentType,
+        ]);
+
         $connection = $this->entityManager->getConnection();
         $connection->beginTransaction();
 
@@ -106,9 +115,22 @@ readonly class SaleVoidUseCase
                 ? ErrorMessages::VOID_SUCCESSFUL
                 : ($sunatResponse->message ?? ErrorMessages::VOID_ERROR);
 
+            $this->auditLogger->log('sale.void.result', [
+                'sale_id' => $saleId,
+                'document_type' => $documentType,
+                'success' => $sunatResponse->success,
+                'message' => $message,
+            ]);
+
             return new ApiResponse($sunatResponse->success, $message);
         } catch (\Throwable $throwable) {
             $connection->rollBack();
+            $this->auditLogger->log('sale.void.result', [
+                'sale_id' => $saleId,
+                'document_type' => $documentType,
+                'success' => false,
+                'error' => $throwable->getMessage(),
+            ]);
             throw $throwable;
         }
     }

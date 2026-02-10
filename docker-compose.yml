@@ -15,8 +15,8 @@ services:
     environment:
       SERVER_NAME: ":80"
       CADDY_GLOBAL_OPTIONS: "auto_https off"
-      QZ_CERT_PATH: "/app/config/qz/qz_cert.pem"
-      QZ_PRIVATE_KEY_PATH: "/app/config/qz/qz_private.key"
+      QZ_CERT_PATH: "/app/var/qz/qz_cert.pem"
+      QZ_PRIVATE_KEY_PATH: "/app/var/qz/qz_private.key"
       QZ_PRIVATE_KEY_PASSPHRASE: "Admin.3000"
       # Worker mode disabled for development (enable for performance testing)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
@@ -24,8 +24,9 @@ services:
       OTEL_SERVICE_NAME: "efact-dev"
       OTEL_TRACES_EXPORTER: "otlp"
       OTEL_LOGS_EXPORTER: "otlp"
+      OTEL_METRICS_EXPORTER: "otlp"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "http://154.53.35.210:4318"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://ingest.nubit.io"
       OTEL_PROPAGATORS: "baggage,tracecontext"
       OTEL_TRACES_SAMPLER: "always_on"
       OTEL_LOG_LEVEL: "debug"

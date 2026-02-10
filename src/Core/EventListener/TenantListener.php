@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
+use App\Core\Context\TenantContext;
 use App\Core\Service\TenantConnectionSwitcher;
+use App\Core\Service\TenantManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Uid\Uuid;
 use Throwable;
 
 #[AsEventListener(priority: 1024)]
@@ -16,6 +19,8 @@ readonly class TenantListener
 {
     public function __construct(
         private TenantConnectionSwitcher $tenantConnectionSwitcher,
+        private TenantManager $tenantManager,
+        private TenantContext $tenantContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -26,11 +31,18 @@ readonly class TenantListener
         $path = $request->getPathInfo();
         $host = $request->getHost();
         $clientIp = $request->getClientIp();
+        $requestId = (string)($request->headers->get('X-Request-Id') ?? '');
+        if ($requestId === '') {
+            $requestId = Uuid::v4()->toRfc4122();
+        }
+        $request->attributes->set('request_id', $requestId);
+        $request->attributes->set('request_start', microtime(true));
 
         $this->logger->debug('TenantListener invoked', [
             'path' => $path,
             'host' => $host,
             'client_ip' => $clientIp,
+            'request_id' => $requestId,
         ]);
 
         if (str_starts_with($path, '/admin/tenants')) {
@@ -60,7 +72,7 @@ readonly class TenantListener
         $subdomain = $parts[0];
 
         // Default/known infra hosts that should not trigger tenant switching.
-        $excludedSubdomains = ['localhost', 'demo', 'dev', 'test'];
+        $excludedSubdomains = ['localhost'];
         if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
             $this->logger->debug('Skipping tenant switch for excluded or empty subdomain', [
                 'subdomain' => $subdomain,
@@ -71,9 +83,24 @@ readonly class TenantListener
         }
 
         try {
-            $request->headers->set('tenant', $subdomain);
-            $this->tenantConnectionSwitcher->switchConnection($subdomain);
-            $this->logger->info('Tenant connection switched', ['tenant' => $subdomain, 'host' => $host]);
+            $tenant = $this->tenantManager->getTenantByDomain($host);
+            if ($tenant === null) {
+                $tenant = $this->tenantManager->getTenantByName($subdomain);
+            }
+
+            $tenantName = $tenant['name'] ?? $subdomain;
+
+            $request->headers->set('tenant', $tenantName);
+            $this->tenantConnectionSwitcher->switchConnection($tenantName);
+            $this->logger->info('Tenant connection switched', ['tenant' => $tenantName, 'host' => $host]);
+
+            $tenantId = isset($tenant['id']) ? (int)$tenant['id'] : null;
+            if ($tenantId === 0) {
+                $tenantId = null;
+            }
+
+            $this->tenantContext->setTenant($tenantId, $tenantName, $host, $requestId);
+            $this->setTraceAttributes($tenantId, $tenantName, $host, $requestId);
         } catch (Throwable $throwable) {
             $this->logger->error(sprintf('Invalid tenant "%s": %s', $subdomain, $throwable->getMessage()), [
                 'tenant' => $subdomain,
@@ -84,6 +111,26 @@ readonly class TenantListener
                 sprintf('Invalid tenant "%s": %s', $subdomain, $throwable->getMessage()),
                 $throwable
             );
+        }
+    }
+
+    private function setTraceAttributes(
+        ?int $tenantId,
+        string $tenantName,
+        string $domain,
+        string $requestId,
+    ): void {
+        if (!class_exists(\OpenTelemetry\API\Trace\Span::class)) {
+            return;
+        }
+
+        $span = \OpenTelemetry\API\Trace\Span::getCurrent();
+        $span->setAttribute('tenant.name', $tenantName);
+        $span->setAttribute('tenant.domain', $domain);
+        $span->setAttribute('request.id', $requestId);
+
+        if ($tenantId !== null) {
+            $span->setAttribute('tenant.id', $tenantId);
         }
     }
 }

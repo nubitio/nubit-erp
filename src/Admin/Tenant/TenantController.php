@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Tenant;
 
 use App\Core\Service\TenantManager;
+use App\Core\Audit\AuditLogger;
 use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,6 +17,7 @@ class TenantController extends AbstractController
 {
     public function __construct(
         private readonly TenantManager $tenantManager,
+        private readonly AuditLogger $auditLogger,
     ) {
     }
 
@@ -40,8 +42,11 @@ class TenantController extends AbstractController
             return $this->redirectToRoute('admin_tenant_index');
         }
 
+        $domains = $this->tenantManager->getTenantDomains($id);
+
         return $this->render('admin/tenant/edit.html.twig', [
             'tenant' => $tenant,
+            'domains' => $domains,
         ]);
     }
 
@@ -55,6 +60,7 @@ class TenantController extends AbstractController
 
         try {
             $this->tenantManager->addTenant($tenant);
+            $this->auditLogger->log('tenant.create', ['tenant' => $tenant]);
             $this->addFlash('success', 'Tenant created');
         } catch (InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
@@ -75,6 +81,7 @@ class TenantController extends AbstractController
 
         try {
             $this->tenantManager->updateTenant($id, $tenant);
+            $this->auditLogger->log('tenant.update', ['tenant_id' => $id, 'tenant' => $tenant]);
             $this->addFlash('success', 'Tenant updated');
         } catch (InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
@@ -89,8 +96,62 @@ class TenantController extends AbstractController
     public function delete(int $id): Response
     {
         $this->tenantManager->deleteTenant($id);
+        $this->auditLogger->log('tenant.delete', ['tenant_id' => $id]);
         $this->addFlash('success', 'Tenant removed');
 
         return $this->redirectToRoute('admin_tenant_index');
+    }
+
+    #[Route('/admin/tenants/{id}/domains', name: 'admin_tenant_domain_create', methods: ['POST'])]
+    public function addDomain(int $id, Request $request): Response
+    {
+        $domain = trim((string)$request->request->get('domain', ''));
+        $isPrimary = (bool)$request->request->get('is_primary', false);
+
+        try {
+            $this->tenantManager->addTenantDomain($id, $domain, $isPrimary);
+            $this->auditLogger->log('tenant.domain.create', [
+                'tenant_id' => $id,
+                'domain' => $domain,
+                'is_primary' => $isPrimary,
+            ]);
+            $this->addFlash('success', 'Domain added');
+        } catch (InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        } catch (RuntimeException $exception) {
+            $this->addFlash('error', 'Unable to add domain: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+    }
+
+    #[Route('/admin/tenants/{tenantId}/domains/{domainId}/primary', name: 'admin_tenant_domain_primary', methods: ['POST'])]
+    public function setPrimaryDomain(int $tenantId, int $domainId): Response
+    {
+        try {
+            $this->tenantManager->setPrimaryTenantDomain($tenantId, $domainId);
+            $this->auditLogger->log('tenant.domain.primary', [
+                'tenant_id' => $tenantId,
+                'domain_id' => $domainId,
+            ]);
+            $this->addFlash('success', 'Primary domain updated');
+        } catch (RuntimeException $exception) {
+            $this->addFlash('error', 'Unable to update primary domain: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
+    }
+
+    #[Route('/admin/tenants/{tenantId}/domains/{domainId}/delete', name: 'admin_tenant_domain_delete')]
+    public function deleteDomain(int $tenantId, int $domainId): Response
+    {
+        $this->tenantManager->deleteTenantDomain($domainId);
+        $this->auditLogger->log('tenant.domain.delete', [
+            'tenant_id' => $tenantId,
+            'domain_id' => $domainId,
+        ]);
+        $this->addFlash('success', 'Domain removed');
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
     }
 }

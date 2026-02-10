@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DbalException;
+use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -15,12 +19,18 @@ readonly class TenantManager
     public function __construct(
         #[Autowire('%env(TENANTS_CONFIG_PATH)%')]
         private string $tenantsConfigFilePath,
+        #[Autowire('%env(default::TENANTS_SOURCE)%')]
+        private string $tenantsSource,
+        private ConnectionRegistry $connectionRegistry,
+        private LoggerInterface $logger,
     ) {
-        if ('' === trim($this->tenantsConfigFilePath)) {
-            throw new RuntimeException('Tenants config path is required');
+        if ($this->shouldUseYaml() && '' === trim($this->tenantsConfigFilePath)) {
+            throw new RuntimeException('Tenants config path is required when using YAML tenants source');
         }
 
-        $this->ensureConfigFile();
+        if ($this->shouldUseYaml()) {
+            $this->ensureConfigFile();
+        }
     }
 
     /**
@@ -43,30 +53,24 @@ readonly class TenantManager
             throw new InvalidArgumentException('Tenant name and connection are required');
         }
 
-        $data = $this->readTenants();
+        if ($this->shouldUseDatabase()) {
+            $this->addTenantInDatabase($name, $connection);
 
-        foreach ($data as $existingTenant) {
-            if (($existingTenant['name'] ?? '') === $name) {
-                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
-            }
+            return;
         }
 
-        $data[] = [
-            'id' => $this->nextId($data),
-            'name' => $name,
-            'connection' => $connection,
-        ];
-
-        $this->writeTenants($data);
+        $this->addTenantInYaml($name, $connection);
     }
 
     public function deleteTenant(int $id): void
     {
-        $data = $this->readTenants();
+        if ($this->shouldUseDatabase()) {
+            $this->deleteTenantInDatabase($id);
 
-        $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
+            return;
+        }
 
-        $this->writeTenants($data);
+        $this->deleteTenantInYaml($id);
     }
 
     public function updateTenant(int $id, array $tenant): void
@@ -78,41 +82,146 @@ readonly class TenantManager
             throw new InvalidArgumentException('Tenant name and connection are required');
         }
 
-        $data = $this->readTenants();
-        $found = false;
+        if ($this->shouldUseDatabase()) {
+            $this->updateTenantInDatabase($id, $name, $connection);
 
-        foreach ($data as &$existingTenant) {
-            if ((int)($existingTenant['id'] ?? 0) === $id) {
-                $existingTenant['name'] = $name;
-                $existingTenant['connection'] = $connection;
-                $found = true;
-
-                continue;
-            }
-
-            if (($existingTenant['name'] ?? '') === $name) {
-                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
-            }
+            return;
         }
 
-        unset($existingTenant);
-
-        if (!$found) {
-            throw new InvalidArgumentException('Tenant not found');
-        }
-
-        $this->writeTenants(array_values($data));
+        $this->updateTenantInYaml($id, $name, $connection);
     }
 
     public function getTenant(int $id): ?array
     {
-        return array_find($this->readTenants(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
+        if ($this->shouldUseDatabase()) {
+            return $this->getTenantFromDatabase($id);
+        }
+
+        return array_find($this->readTenantsFromYaml(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
+    }
+
+    public function getTenantByName(string $name): ?array
+    {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+
+        if ($this->shouldUseDatabase()) {
+            return $this->getTenantByNameFromDatabase($name);
+        }
+
+        return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+    }
+
+    public function getTenantByDomain(string $domain): ?array
+    {
+        $domain = trim($domain);
+        if ($domain === '') {
+            return null;
+        }
+
+        if ($this->shouldUseDatabase()) {
+            return $this->getTenantByDomainFromDatabase($domain);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getTenantDomains(int $tenantId): array
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('list tenant domains');
+
+        /** @var array<int, array<string, mixed>> $rows */
+        $rows = $conn->fetchAllAssociative(
+            'SELECT id, domain, is_primary FROM tenant_domains WHERE tenant_id = ? ORDER BY is_primary DESC, id ASC',
+            [$tenantId],
+        );
+
+        return $rows;
+    }
+
+    public function addTenantDomain(int $tenantId, string $domain, bool $isPrimary = false): void
+    {
+        $domain = strtolower(trim($domain));
+        if ($domain === '') {
+            throw new InvalidArgumentException('Domain is required');
+        }
+
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('create tenant domain');
+
+        $existing = $conn->fetchOne('SELECT id FROM tenant_domains WHERE domain = ?', [$domain]);
+        if ($existing !== false) {
+            throw new InvalidArgumentException(sprintf('Domain "%s" already exists', $domain));
+        }
+
+        if ($isPrimary) {
+            $conn->update('tenant_domains', ['is_primary' => 0], ['tenant_id' => $tenantId]);
+        }
+
+        $conn->insert('tenant_domains', [
+            'tenant_id' => $tenantId,
+            'domain' => $domain,
+            'is_primary' => $isPrimary ? 1 : 0,
+        ]);
+    }
+
+    public function deleteTenantDomain(int $domainId): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('delete tenant domain');
+
+        $conn->delete('tenant_domains', ['id' => $domainId]);
+    }
+
+    public function setPrimaryTenantDomain(int $tenantId, int $domainId): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('set primary tenant domain');
+
+        $conn->update('tenant_domains', ['is_primary' => 0], ['tenant_id' => $tenantId]);
+        $conn->update('tenant_domains', ['is_primary' => 1], ['id' => $domainId, 'tenant_id' => $tenantId]);
     }
 
     /**
      * @return array<int, array<string, mixed>>
      */
     private function readTenants(): array
+    {
+        if ($this->shouldUseDatabase()) {
+            return $this->readTenantsFromDatabase();
+        }
+
+        return $this->readTenantsFromYaml();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function readTenantsFromDatabase(): array
+    {
+        $connection = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($connection)) {
+            return $this->fallbackToYamlOrFail('read tenants');
+        }
+
+        $sql = 'SELECT id, name, connection FROM tenants ORDER BY id ASC';
+
+        /** @var array<int, array<string, mixed>> $rows */
+        $rows = $connection->fetchAllAssociative($sql);
+
+        return $rows;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function readTenantsFromYaml(): array
     {
         $configContent = file_get_contents($this->tenantsConfigFilePath);
 
@@ -139,6 +248,207 @@ readonly class TenantManager
         $cleanTenants = array_values(array_filter($tenants, is_array(...)));
 
         return $cleanTenants;
+    }
+
+    private function addTenantInDatabase(string $name, string $connection): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('create tenant');
+            $this->addTenantInYaml($name, $connection);
+
+            return;
+        }
+
+        $existing = $conn->fetchOne('SELECT id FROM tenants WHERE name = ?', [$name]);
+        if ($existing !== false) {
+            throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+        }
+
+        $now = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+        $conn->insert('tenants', [
+            'name' => $name,
+            'connection' => $connection,
+            'status' => 'active',
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    }
+
+    private function updateTenantInDatabase(int $id, string $name, string $connection): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('update tenant');
+            $this->updateTenantInYaml($id, $name, $connection);
+
+            return;
+        }
+
+        $existing = $conn->fetchOne('SELECT id FROM tenants WHERE name = ? AND id <> ?', [$name, $id]);
+        if ($existing !== false) {
+            throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+        }
+
+        $now = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+        $affected = $conn->update('tenants', [
+            'name' => $name,
+            'connection' => $connection,
+            'updated_at' => $now,
+        ], ['id' => $id]);
+
+        if ($affected === 0) {
+            throw new InvalidArgumentException('Tenant not found');
+        }
+    }
+
+    private function deleteTenantInDatabase(int $id): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('delete tenant');
+            $this->deleteTenantInYaml($id);
+
+            return;
+        }
+
+        $conn->delete('tenants', ['id' => $id]);
+    }
+
+    private function getTenantFromDatabase(int $id): ?array
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('get tenant');
+
+            return array_find($this->readTenantsFromYaml(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
+        }
+
+        /** @var array<string, mixed>|false $row */
+        $row = $conn->fetchAssociative(
+            'SELECT id, name, connection FROM tenants WHERE id = ?',
+            [$id],
+        );
+
+        if ($row === false) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    private function getTenantByNameFromDatabase(string $name): ?array
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('get tenant by name');
+
+            return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+        }
+
+        /** @var array<string, mixed>|false $row */
+        $row = $conn->fetchAssociative(
+            'SELECT id, name, connection FROM tenants WHERE name = ?',
+            [$name],
+        );
+
+        if ($row === false) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    private function getTenantByDomainFromDatabase(string $domain): ?array
+    {
+        $conn = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($conn)) {
+            $this->fallbackToYamlOrFail('get tenant by domain');
+
+            return null;
+        }
+
+        /** @var array<string, mixed>|false $row */
+        $row = $conn->fetchAssociative(
+            'SELECT t.id, t.name, t.connection FROM tenant_domains d INNER JOIN tenants t ON t.id = d.tenant_id WHERE d.domain = ?',
+            [$domain],
+        );
+
+        if ($row === false) {
+            return null;
+        }
+
+        return $row;
+    }
+
+    private function addTenantInYaml(string $name, string $connection): void
+    {
+        $data = $this->readTenantsFromYaml();
+
+        foreach ($data as $existingTenant) {
+            if (($existingTenant['name'] ?? '') === $name) {
+                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+            }
+        }
+
+        $data[] = [
+            'id' => $this->nextId($data),
+            'name' => $name,
+            'connection' => $connection,
+        ];
+
+        $this->writeTenants($data);
+    }
+
+    private function updateTenantInYaml(int $id, string $name, string $connection): void
+    {
+        $data = $this->readTenantsFromYaml();
+        $found = false;
+
+        foreach ($data as &$existingTenant) {
+            if ((int)($existingTenant['id'] ?? 0) === $id) {
+                $existingTenant['name'] = $name;
+                $existingTenant['connection'] = $connection;
+                $found = true;
+
+                continue;
+            }
+
+            if (($existingTenant['name'] ?? '') === $name) {
+                throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
+            }
+        }
+
+        unset($existingTenant);
+
+        if (!$found) {
+            throw new InvalidArgumentException('Tenant not found');
+        }
+
+        $this->writeTenants(array_values($data));
+    }
+
+    private function deleteTenantInYaml(int $id): void
+    {
+        $data = $this->readTenantsFromYaml();
+        $data = array_values(array_filter($data, static fn (array $tenant): bool => (int)($tenant['id'] ?? 0) !== $id));
+        $this->writeTenants($data);
+    }
+
+    private function fallbackToYamlOrFail(string $operation): array
+    {
+        if ($this->yamlFallbackAvailable()) {
+            $this->logger->warning('Control plane not ready. Falling back to YAML.', [
+                'operation' => $operation,
+            ]);
+
+            return $this->readTenantsFromYaml();
+        }
+
+        throw new RuntimeException(sprintf(
+            'Control plane database not ready and YAML fallback unavailable while attempting to %s.',
+            $operation
+        ));
     }
 
     private function ensureConfigFile(): void
@@ -176,5 +486,58 @@ readonly class TenantManager
         $ids = array_map(static fn (array $tenant): int => (int)($tenant['id'] ?? 0), $tenants);
 
         return (int)(max($ids ?: [0]) + 1);
+    }
+
+    private function shouldUseDatabase(): bool
+    {
+        return !$this->shouldUseYaml();
+    }
+
+    private function shouldUseYaml(): bool
+    {
+        $source = strtolower(trim($this->tenantsSource));
+
+        if ($source === '') {
+            $source = 'db';
+        }
+
+        return $source === 'yaml';
+    }
+
+    private function getControlPlaneConnection(): Connection
+    {
+        return $this->connectionRegistry->getConnection('control_plane');
+    }
+
+    private function isControlPlaneReady(Connection $connection): bool
+    {
+        try {
+            return $connection->createSchemaManager()->tablesExist(['tenants']);
+        } catch (DbalException $exception) {
+            $this->logger->warning('Failed to verify control plane schema', [
+                'exception' => $exception,
+            ]);
+
+            return false;
+        }
+    }
+
+    private function yamlFallbackAvailable(): bool
+    {
+        if ('' === trim($this->tenantsConfigFilePath)) {
+            return false;
+        }
+
+        return file_exists($this->tenantsConfigFilePath);
+    }
+
+    private function requireControlPlaneReady(string $operation): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        if ($this->isControlPlaneReady($conn)) {
+            return;
+        }
+
+        throw new RuntimeException(sprintf('Control plane database not ready while attempting to %s.', $operation));
     }
 }

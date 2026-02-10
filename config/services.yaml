@@ -43,6 +43,32 @@ services:
         arguments:
             $connectionRegistry: '@doctrine'
 
+    Doctrine\Persistence\ConnectionRegistry: '@doctrine'
+
+    App\Core\Migrations\ControlPlaneMigrationFactory:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    doctrine.migrations.control_plane_dependency_factory:
+        class: Doctrine\Migrations\DependencyFactory
+        factory: [ '@App\Core\Migrations\ControlPlaneMigrationFactory', 'createDependencyFactory' ]
+        arguments:
+            $logger: '@logger'
+
+    App\Core\Logging\TenantLogProcessor:
+        tags:
+            - { name: monolog.processor }
+
+    App\Core\Audit\AuditLogger: ~
+
+    App\Core\Messenger\TenantStampMiddleware:
+        tags:
+            - { name: messenger.middleware, bus: messenger.bus.default }
+
+    App\Core\Messenger\TenantContextMiddleware:
+        tags:
+            - { name: messenger.middleware, bus: messenger.bus.default }
+
     # OpenTelemetry Logger Provider
     open_telemetry.logger_provider:
         class: OpenTelemetry\SDK\Logs\LoggerProviderInterface

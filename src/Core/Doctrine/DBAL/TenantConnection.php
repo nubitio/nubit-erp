@@ -35,40 +35,29 @@ class TenantConnection extends Connection
      */
     public function switchTenant(string $tenantName): void
     {
-        /** @var array<string, array<string, mixed>> $tenants */
-        $tenants = [];
-        $tenantsConfigFilePath = $this->resolveConfigPath();
-        if (file_exists($tenantsConfigFilePath)) {
-            $configContent = file_get_contents($tenantsConfigFilePath);
+        $tenant = $this->resolveTenantFromYaml($tenantName);
+        $this->switchTenantParams($tenant);
+    }
 
-            if (false === $configContent) {
-                throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
-            }
-
-            try {
-                /** @var array<string, array<string, mixed>>|null $tenants */
-                $tenants = Yaml::parse($configContent) ?? [];
-            } catch (ParseException $exception) {
-                throw new RuntimeException('Error al parsear el archivo de tenants', 0, $exception);
-            }
-
-            if (!is_array($tenants)) {
-                $tenants = [];
-            }
+    /**
+     * @param array<string, mixed> $tenant
+     * @throws ServiceException
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function switchTenantParams(array $tenant): void
+    {
+        $connection = trim((string)($tenant['connection'] ?? ''));
+        if ($connection === '') {
+            throw new ServiceException('Tenant connection is required');
         }
-
-        if (!in_array($tenantName, array_column($tenants, 'name'))) {
-            throw new ServiceException('Tenant not found');
-        }
-
-        $tenant = array_values(array_filter($tenants, fn (array $item): bool => $item['name'] === $tenantName))[0];
 
         if ($this->isConnected) {
             $this->close();
         }
 
-        $this->tenantParams['dbname'] = $tenant['connection'];
-        $this->tenantParams['user'] = $tenant['connection'];
+        $this->tenantParams['dbname'] = $connection;
+        $this->tenantParams['user'] = $connection;
         $this->connect();
     }
 
@@ -124,5 +113,41 @@ class TenantConnection extends Connection
         }
 
         return dirname(__DIR__, 4) . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function resolveTenantFromYaml(string $tenantName): array
+    {
+        /** @var array<string, array<string, mixed>> $tenants */
+        $tenants = [];
+        $tenantsConfigFilePath = $this->resolveConfigPath();
+        if (file_exists($tenantsConfigFilePath)) {
+            $configContent = file_get_contents($tenantsConfigFilePath);
+
+            if (false === $configContent) {
+                throw new RuntimeException('Error al leer el archivo de configuración de los tenants');
+            }
+
+            try {
+                /** @var array<string, array<string, mixed>>|null $tenants */
+                $tenants = Yaml::parse($configContent) ?? [];
+            } catch (ParseException $exception) {
+                throw new RuntimeException('Error al parsear el archivo de tenants', 0, $exception);
+            }
+
+            if (!is_array($tenants)) {
+                $tenants = [];
+            }
+        }
+
+        if (!in_array($tenantName, array_column($tenants, 'name'), true)) {
+            throw new ServiceException('Tenant not found');
+        }
+
+        $tenant = array_values(array_filter($tenants, fn (array $item): bool => $item['name'] === $tenantName))[0];
+
+        return $tenant;
     }
 }
