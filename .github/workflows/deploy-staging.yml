@@ -1,26 +1,17 @@
-name: Deploy to Staging
+name: Promote to Staging
 
-# Cada push a release/x.y.x despliega automáticamente a staging.
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Override version/tag (defaults to sha)'
-        required: false
+      image_ref:
+        description: Immutable image reference (ghcr.io/org/repo@sha256:...)
+        required: true
         type: string
-  push:
-    branches:
-      - 'release/*'
 
 jobs:
   deploy-staging:
-    name: Deploy to Staging
-    permissions:
-      contents: read
-      actions: read
-      packages: write
     uses: ./.github/workflows/deploy.yml
     with:
       environment: stg
-      version: ${{ inputs.version || github.sha }}
+      image_ref: ${{ inputs.image_ref }}
     secrets: inherit

@@ -1,22 +1,21 @@
-# CI/CD Workflows (Minimal)
-
-This directory contains the lightweight GitHub Actions setup for eFact.
+# CI/CD Workflows
 
 ## Workflows
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | **ci-main.yml** | PR to `main`, push to `main` | PHP quality checks + backend tests + frontend lint |
-| **deploy-dev.yml** | Push to `main`, manual | Build and deploy to dev via Portainer |
-| **deploy-staging.yml** | Push to `release/*`, manual | Build and deploy to staging via Portainer |
-| **deploy-prod.yml** | Tag push `v*.*.*`, manual | Build and deploy to production via Portainer |
-| **deploy.yml** | Reusable | Shared deploy logic used by dev/stg/prod |
+| **build-image.yml** | Push to `main`, manual, reusable | Build and push image to GHCR, output immutable `image_ref` |
+| **deploy-dev.yml** | Push to `main`, manual | Build image and deploy to `dev` |
+| **deploy-staging.yml** | Manual | Promote an existing immutable image to `stg` |
+| **deploy-prod.yml** | Manual | Promote an existing immutable image to `prod` |
+| **deploy.yml** | Reusable | Deploy a provided immutable image via Portainer |
 
 ## Notes
 
 - Frontend assets are built inside the Docker image (`Dockerfile` stage `frontend-builder`).
-- CI intentionally does **not** build frontend assets to keep the pipeline fast.
-- Deploys are automatic via Portainer; production is tag-driven.
+- Promotion model uses the same image digest across environments (no rebuild for `stg`/`prod`).
+- `dev` is the only environment that builds images automatically from `main`.
 
 ## Required Secrets
 
@@ -26,4 +25,12 @@ PORTAINER_API_TOKEN
 PORTAINER_STACK_NAME
 PORTAINER_ENDPOINT_ID
 APP_URL
+```
+
+For tenant provisioning workflow (`tenant-provision.yml`) you also need:
+
+```
+PROVISIONING_DATABASE_URL
+TENANT_DB_PASS
+TENANT_ADMIN_PASS
 ```

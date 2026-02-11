@@ -4,216 +4,69 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'Target environment (dev|stg|prod)'
+        description: Target environment (dev|stg|prod)
         required: true
         type: string
-      version:
-        description: 'Version or tag being deployed'
+      image_ref:
+        description: Immutable image reference (ghcr.io/org/repo@sha256:...)
         required: true
         type: string
-      image_tag:
-        description: 'Override image tag (optional)'
+      run_healthcheck:
+        description: Run post-deploy healthcheck
         required: false
-        type: string
-
-concurrency:
-  group: deploy-${{ github.workflow }}-${{ github.ref_name }}
-  cancel-in-progress: true
+        default: true
+        type: boolean
 
 permissions:
   contents: read
-  actions: read
-  packages: write
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  PHP_VERSION: '8.5'
-  NODE_VERSION: '20'
-
-defaults:
-  run:
-    shell: bash
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
 
 jobs:
-  plan:
-    name: Plan Deployment
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      target_env: ${{ steps.detect.outputs.target_env }}
-      build_target: ${{ steps.detect.outputs.build_target }}
-      image_tag: ${{ steps.detect.outputs.image_tag }}
-      environment_name: ${{ steps.detect.outputs.environment_name }}
-      should_deploy: ${{ steps.detect.outputs.should_deploy }}
-
-    steps:
-      - name: Detect target env & image tag
-        id: detect
-        env:
-          TARGET_INPUT_ENV: ${{ inputs.environment }}
-          INPUT_VERSION: ${{ inputs.version }}
-          INPUT_IMAGE_TAG: ${{ inputs.image_tag }}
-          SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-
-          TARGET_ENV=""
-          BUILD_TARGET=""
-          IMAGE_TAG=""
-          ENV_NAME=""
-          SHOULD_DEPLOY="false"
-
-          case "${TARGET_INPUT_ENV}" in
-            dev)
-              TARGET_ENV="dev"
-              BUILD_TARGET="dev"
-              ENV_NAME="dev"
-              ;;
-            stg)
-              TARGET_ENV="stg"
-              BUILD_TARGET="stg"
-              ENV_NAME="stg"
-              ;;
-            prod)
-              TARGET_ENV="prod"
-              BUILD_TARGET="prod"
-              ENV_NAME="prod"
-              ;;
-            *)
-              echo "Unknown environment: ${TARGET_INPUT_ENV}"
-              exit 1
-              ;;
-          esac
-
-          if [[ -n "${INPUT_IMAGE_TAG:-}" ]]; then
-            IMAGE_TAG="${INPUT_IMAGE_TAG}"
-          elif [[ -n "${INPUT_VERSION:-}" ]]; then
-            IMAGE_TAG="${INPUT_VERSION}"
-          else
-            IMAGE_TAG="${SHA}"
-          fi
-
-          SHOULD_DEPLOY="true"
-
-          echo "target_env=${TARGET_ENV}" >> "$GITHUB_OUTPUT"
-          echo "build_target=${BUILD_TARGET}" >> "$GITHUB_OUTPUT"
-          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
-          echo "environment_name=${ENV_NAME}" >> "$GITHUB_OUTPUT"
-          echo "should_deploy=${SHOULD_DEPLOY}" >> "$GITHUB_OUTPUT"
-
-  build-and-push:
-    name: Build & Push Docker Image
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    needs: plan
-    if: needs.plan.outputs.should_deploy == 'true'
-    permissions:
-      contents: read
-      packages: write
-      actions: read
-    outputs:
-      image: ${{ steps.primary-tag.outputs.image }}
-      digest: ${{ steps.build.outputs.digest }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=${{ needs.plan.outputs.image_tag }}
-            type=ref,event=branch
-            type=semver,pattern={{version}},enable=${{ github.ref_type == 'tag' }}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
-            type=semver,pattern={{major}},enable=${{ github.ref_type == 'tag' }}
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable=${{ needs.plan.outputs.target_env == 'prod' }}
-          labels: |
-            org.opencontainers.image.title=eFact
-            org.opencontainers.image.description=Symfony application with FrankenPHP
-            org.opencontainers.image.vendor=Nubit Team
-
-      - name: Build and push image
-        id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          target: ${{ needs.plan.outputs.build_target }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ needs.plan.outputs.build_target }}
-          cache-to: type=gha,mode=max,scope=${{ needs.plan.outputs.build_target }}
-          build-args: |
-            PHP_VERSION=${{ env.PHP_VERSION }}
-            NODE_VERSION=${{ env.NODE_VERSION }}
-          provenance: false
-
-      - name: Primary image tag
-        id: primary-tag
-        run: |
-          TAG="$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)"
-          echo "image=${TAG}" >> "$GITHUB_OUTPUT"
-          echo "✅ Pushed ${TAG}" >> $GITHUB_STEP_SUMMARY
-
   deploy:
-    name: Deploy to Portainer
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs:
-      - plan
-      - build-and-push
-    if: needs.plan.outputs.should_deploy == 'true'
+    timeout-minutes: 20
     environment:
-      name: ${{ needs.plan.outputs.environment_name }}
-
+      name: ${{ inputs.environment }}
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Deploy stack
+      - name: Deploy stack in Portainer
         env:
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
           PORTAINER_TOKEN: ${{ secrets.PORTAINER_API_TOKEN }}
           STACK_NAME: ${{ secrets.PORTAINER_STACK_NAME }}
           ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           COMPOSE_FILE: docker-compose.prod.yml
-          IMAGE: ${{ needs.build-and-push.outputs.image }}
+          IMAGE: ${{ inputs.image_ref }}
         run: |
+          set -euo pipefail
           bash scripts/portainer-deploy.sh
 
-      - name: Basic health check
+      - name: Healthcheck
+        if: ${{ inputs.run_healthcheck }}
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
         run: |
-          if [ -z "${{ secrets.APP_URL }}" ]; then
-            echo "APP_URL not set; skipping health check."
+          set -euo pipefail
+          if [ -z "${APP_URL:-}" ]; then
+            echo "APP_URL not set; skipping healthcheck."
             exit 0
           fi
 
-          echo "Waiting for application to be healthy..."
+          echo "Waiting for application to become healthy..."
           sleep 20
-
-          for i in {1..10}; do
-            if curl -sf "${{ secrets.APP_URL }}/health" > /dev/null 2>&1; then
-              echo "✅ Application is healthy!"
+          for i in {1..12}; do
+            if curl -sf "${APP_URL}/health" >/dev/null 2>&1; then
+              echo "Healthy."
               exit 0
             fi
-            echo "Waiting for application... (attempt $i/10)"
+            echo "Attempt ${i}/12 failed. Retrying..."
             sleep 10
           done
 
-          echo "⚠️ Health check inconclusive, check manually"
+          echo "Healthcheck failed."
+          exit 1
