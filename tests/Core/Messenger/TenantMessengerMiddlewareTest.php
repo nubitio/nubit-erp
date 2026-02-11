@@ -149,7 +149,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
 
     private function createPassthroughStack(): StackInterface
     {
-        $nextMiddleware = new class implements MiddlewareInterface {
+        $nextMiddleware = new class () implements MiddlewareInterface {
             public function handle(Envelope $envelope, StackInterface $stack): Envelope
             {
                 return $envelope;
@@ -164,7 +164,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
 
     private function createCapturingStack(\Closure $callback): StackInterface
     {
-        $nextMiddleware = new class($callback) implements MiddlewareInterface {
+        $nextMiddleware = new class ($callback) implements MiddlewareInterface {
             public function __construct(private readonly \Closure $callback)
             {
             }
@@ -185,7 +185,7 @@ final class TenantMessengerMiddlewareTest extends TestCase
 
     private function createThrowingStack(\Throwable $exception): StackInterface
     {
-        $nextMiddleware = new class($exception) implements MiddlewareInterface {
+        $nextMiddleware = new class ($exception) implements MiddlewareInterface {
             public function __construct(private readonly \Throwable $exception)
             {
             }

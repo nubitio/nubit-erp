@@ -37,25 +37,18 @@ final class JWTTenantBindingTest extends TestCase
 
     public function testTenantMismatchDetection(): void
     {
-        $tokenTenantName = 'tenant-a';
-        $currentTenantName = 'tenant-b';
-
-        // Simulate the validation logic from JWTAuthenticator
-        $mismatch = $tokenTenantName !== null
-            && $currentTenantName !== null
-            && $tokenTenantName !== $currentTenantName;
+        $ctx = new TenantContext();
+        $ctx->setTenant(1, 'tenant-b', 'tenant-b.example.com', 'req-1');
+        $mismatch = $this->hasTenantMismatch(['tenantName' => 'tenant-a'], $ctx);
 
         $this->assertTrue($mismatch, 'Cross-tenant token usage must be detected');
     }
 
     public function testSameTenantPassesValidation(): void
     {
-        $tokenTenantName = 'acme';
-        $currentTenantName = 'acme';
-
-        $mismatch = $tokenTenantName !== null
-            && $currentTenantName !== null
-            && $tokenTenantName !== $currentTenantName;
+        $ctx = new TenantContext();
+        $ctx->setTenant(1, 'acme', 'acme.example.com', 'req-1');
+        $mismatch = $this->hasTenantMismatch(['tenantName' => 'acme'], $ctx);
 
         $this->assertFalse($mismatch, 'Same-tenant token must be accepted');
     }
@@ -63,12 +56,9 @@ final class JWTTenantBindingTest extends TestCase
     public function testNullTenantInTokenIsAccepted(): void
     {
         // Legacy tokens without tenant claim should still work
-        $tokenTenantName = null;
-        $currentTenantName = 'acme';
-
-        $mismatch = $tokenTenantName !== null
-            && $currentTenantName !== null
-            && $tokenTenantName !== $currentTenantName;
+        $ctx = new TenantContext();
+        $ctx->setTenant(1, 'acme', 'acme.example.com', 'req-1');
+        $mismatch = $this->hasTenantMismatch([], $ctx);
 
         $this->assertFalse($mismatch, 'Tokens without tenant claim should be accepted for backward compatibility');
     }
@@ -76,12 +66,8 @@ final class JWTTenantBindingTest extends TestCase
     public function testNullCurrentTenantIsAccepted(): void
     {
         // Requests without tenant context (admin paths, etc.)
-        $tokenTenantName = 'acme';
-        $currentTenantName = null;
-
-        $mismatch = $tokenTenantName !== null
-            && $currentTenantName !== null
-            && $tokenTenantName !== $currentTenantName;
+        $ctx = new TenantContext();
+        $mismatch = $this->hasTenantMismatch(['tenantName' => 'acme'], $ctx);
 
         $this->assertFalse($mismatch, 'Requests without resolved tenant should accept any token');
     }
@@ -104,5 +90,22 @@ final class JWTTenantBindingTest extends TestCase
 
         $this->assertSame($ctx->getTenantId(), $decoded['tenantId']);
         $this->assertSame($ctx->getTenantName(), $decoded['tenantName']);
+    }
+
+    /**
+     * Simulates JWTAuthenticator tenant-binding check using runtime values.
+     *
+     * @param array<string, mixed> $tokenData
+     */
+    private function hasTenantMismatch(array $tokenData, TenantContext $tenantContext): bool
+    {
+        $tokenTenantName = isset($tokenData['tenantName']) && is_string($tokenData['tenantName'])
+            ? $tokenData['tenantName']
+            : null;
+        $currentTenantName = $tenantContext->getTenantName();
+
+        return $tokenTenantName !== null
+            && $currentTenantName !== null
+            && $tokenTenantName !== $currentTenantName;
     }
 }

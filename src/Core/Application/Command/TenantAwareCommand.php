@@ -137,7 +137,12 @@ abstract class TenantAwareCommand extends Command
     {
         /** @var string $commandName */
         $commandName = $this->getName();
-        $io->info(sprintf('Running "%s" for %d tenants (concurrency: %d)', $commandName, count($this->tenants), $concurrency));
+        $io->info(sprintf(
+            'Running "%s" for %d tenants (concurrency: %d)',
+            $commandName,
+            count($this->tenants),
+            $concurrency
+        ));
 
         /** @var array<string, Process> $running */
         $running = [];
