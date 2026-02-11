@@ -36,6 +36,11 @@ const initialData: DashboardData = {
   topCustomers: [],
   voucherTypes: [],
   lowStockProducts: [],
+  meta: {
+    mode: 'full',
+    partial: false,
+    failedSegments: [],
+  },
 };
 
 const normalize = (payload: any): DashboardData => ({
@@ -48,9 +53,14 @@ const normalize = (payload: any): DashboardData => ({
   topCustomers: payload?.topCustomers ?? [],
   voucherTypes: payload?.voucherTypes ?? [],
   lowStockProducts: payload?.lowStockProducts ?? [],
+  meta: payload?.meta ?? initialData.meta,
 });
 
-export const useDashboardOverview = () => {
+type DashboardOverviewOptions = {
+  lite?: boolean;
+};
+
+export const useDashboardOverview = (options?: DashboardOverviewOptions) => {
   const [data, setData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +69,10 @@ export const useDashboardOverview = () => {
   const loadDashboard = useCallback(() => {
     setLoading(true);
     setError(null);
+    const query = options?.lite ? '?lite=1&view=mobile' : '';
 
     lastSubscription.current?.unsubscribe?.();
-    const subscription = httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview').subscribe({
+    const subscription = httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview' + query).subscribe({
       next: (response) => {
         setData(normalize(response.data));
         setLoading(false);
@@ -75,7 +86,7 @@ export const useDashboardOverview = () => {
     });
 
     lastSubscription.current = subscription;
-  }, []);
+  }, [options?.lite]);
 
   useEffect(() => {
     loadDashboard();

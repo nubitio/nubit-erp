@@ -7,8 +7,8 @@ namespace App\Controller;
 use App\Core\Security\Auth\BranchContextService;
 use App\Repository\DashboardRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 class DashboardController extends AbstractController
 {
@@ -18,9 +18,12 @@ class DashboardController extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): JsonResponse
     {
         $type = $request->attributes->get('type');
+        $view = strtolower((string) $request->query->get('view', ''));
+        $lite = filter_var($request->query->get('lite', false), FILTER_VALIDATE_BOOL);
+        $isLite = $lite || $view === 'mobile';
 
         $branchId = $this->branchContext->getCurrentBranchId();
 
@@ -28,10 +31,56 @@ class DashboardController extends AbstractController
             return $this->json([]);
         }
 
-        if ($type == 'overview') {
-            $data = $this->repository->getOverview($branchId);
+        if ($type !== 'overview') {
+            return $this->json([]);
         }
 
-        return $this->json($data ?? []);
+        try {
+            $data = $isLite
+                ? $this->repository->getLiteOverview($branchId)
+                : $this->repository->getOverview($branchId);
+        } catch (\Throwable) {
+            if ($isLite) {
+                return $this->json([
+                    'summary' => [
+                        'salesToday' => 0.0,
+                        'invoicesToday' => 0,
+                        'avgTicketToday' => 0.0,
+                        'refundsToday' => 0.0,
+                        'netSalesToday' => 0.0,
+                    ],
+                    'paymentMethodsToday' => [],
+                    'hourlySalesToday' => [],
+                    'recentSalesToday' => [],
+                    'meta' => [
+                        'mode' => 'lite',
+                        'partial' => true,
+                        'failedSegments' => ['fatal'],
+                    ],
+                ]);
+            }
+
+            return $this->json([
+                'summary' => [],
+                'salesByDay' => [],
+                'salesByMonth' => [],
+                'paymentMethods' => [],
+                'paymentMethodTrend' => [
+                    'methods' => [],
+                    'points' => [],
+                ],
+                'topProducts' => [],
+                'topCustomers' => [],
+                'voucherTypes' => [],
+                'lowStockProducts' => [],
+                'meta' => [
+                    'mode' => 'full',
+                    'partial' => true,
+                    'failedSegments' => ['fatal'],
+                ],
+            ]);
+        }
+
+        return $this->json($data);
     }
 }
