@@ -36,6 +36,8 @@ jobs:
           TENANT_ADMIN_PASS: ${{ secrets.TENANT_ADMIN_PASS }}
           PROVISIONING_DATABASE_URL: ${{ secrets.PROVISIONING_DATABASE_URL }}
         run: |
+          set -euo pipefail
+
           if [ -z "$PROVISIONING_DATABASE_URL" ]; then
             echo "Missing secret: PROVISIONING_DATABASE_URL"
             exit 1
@@ -74,6 +76,7 @@ jobs:
             exit 1
           fi
 
+          echo "Running tenant provisioning command."
           docker exec -i \
             -e PROVISIONING_DATABASE_URL="$PROVISIONING_DATABASE_URL" \
             -e TENANT_DB_PASS="$TENANT_DB_PASS" \
@@ -81,9 +84,7 @@ jobs:
             "$CONTAINER" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
             --domain="${{ inputs.domain }}" \
             --create-user \
-            --db-user-pass="$TENANT_DB_PASS" \
             --setup \
             --admin-user="${{ inputs.admin_user }}" \
-            --admin-pass="$TENANT_ADMIN_PASS" \
             --provisioning-url="$PROVISIONING_DATABASE_URL" \
             --no-interaction
