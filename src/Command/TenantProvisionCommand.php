@@ -21,7 +21,7 @@ use Symfony\Component\Process\Process;
 
 #[AsCommand(
     name: 'app:tenant:provision',
-    description: 'Provision a tenant locally (DB, control plane, migrations, optional seed).',
+    description: 'Provision a tenant (DB, control plane, migrations, optional seed).',
 )]
 class TenantProvisionCommand extends Command
 {
@@ -39,13 +39,11 @@ class TenantProvisionCommand extends Command
             ->addArgument('tenant', InputArgument::REQUIRED, 'Tenant name (slug)')
             ->addOption('domain', null, InputOption::VALUE_OPTIONAL, 'Primary domain for tenant')
             ->addOption('create-user', null, InputOption::VALUE_NONE, 'Create DB user equal to tenant name')
-            ->addOption('db-user-pass', null, InputOption::VALUE_OPTIONAL, 'DB user password (defaults to Admin.3000)')
             ->addOption('provisioning-url', null, InputOption::VALUE_OPTIONAL, 'Provisioning database URL')
             ->addOption('seed-initial', null, InputOption::VALUE_NONE, 'Run initial data seed')
             ->addOption('seed-test', null, InputOption::VALUE_NONE, 'Run test data seed')
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
-            ->addOption('admin-pass', null, InputOption::VALUE_OPTIONAL, 'Admin password')
             ->addOption('company-ruc', null, InputOption::VALUE_OPTIONAL, 'Company RUC (11 digits)')
             ->addOption('company-name', null, InputOption::VALUE_OPTIONAL, 'Company business name')
             ->addOption('company-trade', null, InputOption::VALUE_OPTIONAL, 'Company trade name')
@@ -68,6 +66,16 @@ class TenantProvisionCommand extends Command
             return Command::FAILURE;
         }
 
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{1,61}[a-z0-9]$/i', $tenant)) {
+            $io->error(
+                'Tenant name must be 3-63 characters, alphanumeric with hyphens/underscores'
+            );
+
+            return Command::FAILURE;
+        }
+
+        $tenant = strtolower($tenant);
+
         if ($domain === '' && $input->isInteractive()) {
             $domain = (string)$io->ask('Primary domain (leave blank to skip)', $tenant . '.localhost');
             $domain = trim($domain);
@@ -78,15 +86,16 @@ class TenantProvisionCommand extends Command
             $createUser = $io->confirm('Create DB user for tenant?', false);
         }
 
-        $dbUserPass = (string)$input->getOption('db-user-pass');
-        if ($createUser && $dbUserPass === '' && $input->isInteractive()) {
-            $dbUserPass = (string)$io->askHidden('DB user password (hidden)', static function ($value): string {
-                if (trim((string)$value) === '') {
-                    return 'Admin.3000';
-                }
+        $dbUserPass = $this->resolveSecret('TENANT_DB_PASS');
+        if ($createUser && $dbUserPass === '') {
+            if ($input->isInteractive()) {
+                $dbUserPass = (string)$io->askHidden('DB user password (hidden)');
+            }
+            if ($dbUserPass === '') {
+                $io->error('DB user password is required. Set TENANT_DB_PASS env var or provide interactively.');
 
-                return (string)$value;
-            });
+                return Command::FAILURE;
+            }
         }
 
         $seedInitial = (bool)$input->getOption('seed-initial');
@@ -121,72 +130,131 @@ class TenantProvisionCommand extends Command
         );
         $this->ensureControlPlaneReady($controlPlane);
 
-        $io->section('Creating tenant database');
-        $provisioningConnection->executeStatement(
-            sprintf(
-                'CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci',
-                $tenant
-            )
-        );
+        $dbCreated = false;
+        $userCreated = false;
+        $controlPlaneRegistered = false;
 
-        if ($createUser) {
-            $io->section('Creating tenant DB user');
+        try {
+            $io->section('Creating tenant database');
+            $quotedDb = $provisioningConnection->quoteIdentifier($tenant);
             $provisioningConnection->executeStatement(
-                sprintf("CREATE USER IF NOT EXISTS '%s'@'%%' IDENTIFIED BY '%s'", $tenant, $dbUserPass)
+                'CREATE DATABASE IF NOT EXISTS ' . $quotedDb . ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
             );
-            $provisioningConnection->executeStatement(
-                sprintf("ALTER USER '%s'@'%%' IDENTIFIED BY '%s'", $tenant, $dbUserPass)
-            );
-            $provisioningConnection->executeStatement(
-                sprintf("GRANT ALL PRIVILEGES ON `%s`.* TO '%s'@'%%'", $tenant, $tenant)
-            );
-            $provisioningConnection->executeStatement('FLUSH PRIVILEGES');
-        }
+            $dbCreated = true;
 
-        $io->section('Registering tenant in control plane');
-        $controlPlane->executeStatement(
-            'INSERT INTO tenants (name, connection, status, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())
-            ON DUPLICATE KEY UPDATE connection=VALUES(connection), updated_at=NOW()',
-            [$tenant, $tenant, 'active']
-        );
-
-        if ($domain !== '') {
-            $io->section('Registering domain');
-            $tenantId = (int)$controlPlane->fetchOne('SELECT id FROM tenants WHERE name = ?', [$tenant]);
-            $controlPlane->executeStatement(
-                'INSERT INTO tenant_domains (tenant_id, domain, is_primary) VALUES (?, ?, 1)
-                ON DUPLICATE KEY UPDATE tenant_id=VALUES(tenant_id), is_primary=1',
-                [$tenantId, strtolower($domain)]
-            );
-        }
-
-        $io->section('Running tenant migrations');
-        $this->runConsole($io, 'app:tenants:migrate', ['--tenant' => $tenant]);
-
-        if ($seedInitial) {
-            $io->section('Seeding initial data');
-            $this->runConsole($io, 'app:seed:initial-data', ['--tenant' => $tenant]);
-        }
-
-        if ($seedTest) {
-            $io->section('Seeding test data');
-            $this->runConsole($io, 'app:seed:test-data', ['--tenant' => $tenant]);
-        }
-
-        if ($runSetup) {
-            $io->section('Running initial setup');
-            $this->tenantConnectionSwitcher->switchConnection($tenant);
-            $setupInput = $this->buildSetupInput($io, $input);
-            try {
-                $this->initialSetupService->configure($setupInput);
-            } catch (\Throwable $throwable) {
-                $io->warning('Initial setup skipped: ' . $throwable->getMessage());
+            if ($createUser) {
+                $io->section('Creating tenant DB user');
+                $quotedUser = $provisioningConnection->quote($tenant);
+                $quotedPass = $provisioningConnection->quote($dbUserPass);
+                $provisioningConnection->executeStatement(
+                    'CREATE USER IF NOT EXISTS ' . $quotedUser . '@\'%\' IDENTIFIED BY ' . $quotedPass
+                );
+                $provisioningConnection->executeStatement(
+                    'ALTER USER ' . $quotedUser . '@\'%\' IDENTIFIED BY ' . $quotedPass
+                );
+                $provisioningConnection->executeStatement(
+                    'GRANT ALL PRIVILEGES ON ' . $quotedDb . '.* TO ' . $quotedUser . '@\'%\''
+                );
+                $provisioningConnection->executeStatement('FLUSH PRIVILEGES');
+                $userCreated = true;
             }
+
+            $io->section('Registering tenant in control plane');
+            $controlPlane->executeStatement(
+                'INSERT INTO tenants (name, connection, status, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE connection=VALUES(connection), updated_at=NOW()',
+                [$tenant, $tenant, 'active']
+            );
+            $controlPlaneRegistered = true;
+
+            if ($domain !== '') {
+                $io->section('Registering domain');
+                $tenantId = (int)$controlPlane->fetchOne('SELECT id FROM tenants WHERE name = ?', [$tenant]);
+                $controlPlane->executeStatement(
+                    'INSERT INTO tenant_domains (tenant_id, domain, is_primary) VALUES (?, ?, 1)
+                    ON DUPLICATE KEY UPDATE tenant_id=VALUES(tenant_id), is_primary=1',
+                    [$tenantId, strtolower($domain)]
+                );
+            }
+
+            $io->section('Running tenant migrations');
+            $this->runConsole($io, 'app:tenants:migrate', ['--tenant' => $tenant]);
+
+            if ($seedInitial) {
+                $io->section('Seeding initial data');
+                $this->runConsole($io, 'app:seed:initial-data', ['--tenant' => $tenant]);
+            }
+
+            if ($seedTest) {
+                $io->section('Seeding test data');
+                $this->runConsole($io, 'app:seed:test-data', ['--tenant' => $tenant]);
+            }
+
+            if ($runSetup) {
+                $io->section('Running initial setup');
+                $this->tenantConnectionSwitcher->switchConnection($tenant);
+                $setupInput = $this->buildSetupInput($io, $input);
+                $this->initialSetupService->configure($setupInput);
+            }
+        } catch (\Throwable $exception) {
+            $io->error('Provisioning failed: ' . $exception->getMessage());
+            $io->section('Rolling back provisioning');
+
+            $this->rollback(
+                $io,
+                $provisioningConnection,
+                $controlPlane,
+                $tenant,
+                $dbCreated,
+                $userCreated,
+                $controlPlaneRegistered
+            );
+
+            return Command::FAILURE;
         }
 
         $io->success('Provisioning completed.');
 
         return Command::SUCCESS;
+    }
+
+    private function rollback(
+        SymfonyStyle $io,
+        Connection $provisioningConnection,
+        Connection $controlPlane,
+        string $tenant,
+        bool $dbCreated,
+        bool $userCreated,
+        bool $controlPlaneRegistered,
+    ): void {
+        if ($controlPlaneRegistered) {
+            try {
+                $controlPlane->executeStatement('DELETE FROM tenants WHERE name = ?', [$tenant]);
+                $io->note('Rolled back: control plane registration');
+            } catch (\Throwable $e) {
+                $io->warning('Rollback failed (control plane): ' . $e->getMessage());
+            }
+        }
+
+        if ($userCreated) {
+            try {
+                $quotedUser = $provisioningConnection->quote($tenant);
+                $provisioningConnection->executeStatement('DROP USER IF EXISTS ' . $quotedUser . '@\'%\'');
+                $io->note('Rolled back: DB user');
+            } catch (\Throwable $e) {
+                $io->warning('Rollback failed (DB user): ' . $e->getMessage());
+            }
+        }
+
+        if ($dbCreated) {
+            try {
+                $quotedDb = $provisioningConnection->quoteIdentifier($tenant);
+                $provisioningConnection->executeStatement('DROP DATABASE IF EXISTS ' . $quotedDb);
+                $io->note('Rolled back: database');
+            } catch (\Throwable $e) {
+                $io->warning('Rollback failed (database): ' . $e->getMessage());
+            }
+        }
     }
 
     private function ensureControlPlaneReady(Connection $connection): void
@@ -279,22 +347,28 @@ class TenantProvisionCommand extends Command
         }
     }
 
+    private function resolveSecret(string $envVar): string
+    {
+        return trim((string)($_ENV[$envVar] ?? $_SERVER[$envVar] ?? getenv($envVar) ?: ''));
+    }
+
     private function buildSetupInput(SymfonyStyle $io, InputInterface $input): InitialSetupInput
     {
         $setup = new InitialSetupInput();
 
         $setup->adminUsername = (string)($input->getOption('admin-user')
             ?: $io->ask('Admin username', 'admin'));
-        $setup->adminPassword = (string)($input->getOption('admin-pass') ?: $io->askHidden(
-            'Admin password (hidden)',
-            static function ($value): string {
-                if (trim((string)$value) === '') {
-                    return 'Admin.3000';
-                }
 
-                return (string)$value;
-            }
-        ));
+        $adminPass = $this->resolveSecret('TENANT_ADMIN_PASS');
+        if ($adminPass === '' && $input->isInteractive()) {
+            $adminPass = (string)$io->askHidden('Admin password (hidden)');
+        }
+        if ($adminPass === '') {
+            throw new \RuntimeException(
+                'Admin password is required. Set TENANT_ADMIN_PASS env var or provide interactively.'
+            );
+        }
+        $setup->adminPassword = $adminPass;
 
         $setup->companyRuc = (string)($input->getOption('company-ruc')
             ?: $io->ask('Company RUC (11 digits)', '20000000001'));

@@ -13,9 +13,13 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 readonly class TenantManager
 {
+    private const int CACHE_TTL = 300;
+
     public function __construct(
         #[Autowire('%env(TENANTS_CONFIG_PATH)%')]
         private string $tenantsConfigFilePath,
@@ -23,6 +27,7 @@ readonly class TenantManager
         private string $tenantsSource,
         private ConnectionRegistry $connectionRegistry,
         private LoggerInterface $logger,
+        private CacheInterface $cache,
     ) {
         if ($this->shouldUseYaml() && '' === trim($this->tenantsConfigFilePath)) {
             throw new RuntimeException('Tenants config path is required when using YAML tenants source');
@@ -57,6 +62,7 @@ readonly class TenantManager
 
         if ($this->shouldUseDatabase()) {
             $this->addTenantInDatabase($name, $connection);
+            $this->invalidateTenantCache($name);
 
             return;
         }
@@ -66,13 +72,18 @@ readonly class TenantManager
 
     public function deleteTenant(int $id): void
     {
+        $tenant = $this->getTenant($id);
+
         if ($this->shouldUseDatabase()) {
             $this->deleteTenantInDatabase($id);
-
-            return;
+        } else {
+            $this->deleteTenantInYaml($id);
         }
 
-        $this->deleteTenantInYaml($id);
+        if ($tenant !== null) {
+            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantDomainCaches($id);
+        }
     }
 
     public function updateTenant(int $id, array $tenant): void
@@ -84,13 +95,19 @@ readonly class TenantManager
             throw new InvalidArgumentException('Tenant name and connection are required');
         }
 
+        $oldTenant = $this->getTenant($id);
+
         if ($this->shouldUseDatabase()) {
             $this->updateTenantInDatabase($id, $name, $connection);
-
-            return;
+        } else {
+            $this->updateTenantInYaml($id, $name, $connection);
         }
 
-        $this->updateTenantInYaml($id, $name, $connection);
+        if ($oldTenant !== null) {
+            $this->invalidateTenantCache((string)($oldTenant['name'] ?? ''));
+        }
+        $this->invalidateTenantCache($name);
+        $this->invalidateTenantDomainCaches($id);
     }
 
     public function getTenant(int $id): ?array
@@ -109,11 +126,17 @@ readonly class TenantManager
             return null;
         }
 
-        if ($this->shouldUseDatabase()) {
-            return $this->getTenantByNameFromDatabase($name);
-        }
+        $cacheKey = 'tenant_name_' . hash('xxh3', $name);
 
-        return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($name): ?array {
+            $item->expiresAfter(self::CACHE_TTL);
+
+            if ($this->shouldUseDatabase()) {
+                return $this->getTenantByNameFromDatabase($name);
+            }
+
+            return array_find($this->readTenantsFromYaml(), fn ($tenant) => ($tenant['name'] ?? '') === $name);
+        });
     }
 
     public function getTenantByDomain(string $domain): ?array
@@ -123,11 +146,17 @@ readonly class TenantManager
             return null;
         }
 
-        if ($this->shouldUseDatabase()) {
-            return $this->getTenantByDomainFromDatabase($domain);
-        }
+        $cacheKey = 'tenant_domain_' . hash('xxh3', $domain);
 
-        return null;
+        return $this->cache->get($cacheKey, function (ItemInterface $item) use ($domain): ?array {
+            $item->expiresAfter(self::CACHE_TTL);
+
+            if ($this->shouldUseDatabase()) {
+                return $this->getTenantByDomainFromDatabase($domain);
+            }
+
+            return null;
+        });
     }
 
     /**
@@ -175,6 +204,8 @@ readonly class TenantManager
             'domain' => $domain,
             'is_primary' => $isPrimary ? 1 : 0,
         ]);
+
+        $this->cache->delete('tenant_domain_' . hash('xxh3', $domain));
     }
 
     /**
@@ -185,7 +216,12 @@ readonly class TenantManager
         $conn = $this->getControlPlaneConnection();
         $this->requireControlPlaneReady('delete tenant domain');
 
+        $row = $conn->fetchAssociative('SELECT domain FROM tenant_domains WHERE id = ?', [$domainId]);
         $conn->delete('tenant_domains', ['id' => $domainId]);
+
+        if ($row !== false) {
+            $this->cache->delete('tenant_domain_' . hash('xxh3', (string)$row['domain']));
+        }
     }
 
     /**
@@ -198,6 +234,8 @@ readonly class TenantManager
 
         $conn->update('tenant_domains', ['is_primary' => 0], ['tenant_id' => $tenantId]);
         $conn->update('tenant_domains', ['is_primary' => 1], ['id' => $domainId, 'tenant_id' => $tenantId]);
+
+        $this->invalidateTenantDomainCaches($tenantId);
     }
 
     /**
@@ -592,5 +630,26 @@ readonly class TenantManager
         }
 
         throw new RuntimeException(sprintf('Control plane database not ready while attempting to %s.', $operation));
+    }
+
+    private function invalidateTenantCache(string $tenantName): void
+    {
+        if ($tenantName === '') {
+            return;
+        }
+
+        $this->cache->delete('tenant_name_' . hash('xxh3', $tenantName));
+    }
+
+    private function invalidateTenantDomainCaches(int $tenantId): void
+    {
+        try {
+            $domains = $this->getTenantDomains($tenantId);
+            foreach ($domains as $domain) {
+                $this->cache->delete('tenant_domain_' . hash('xxh3', (string)($domain['domain'] ?? '')));
+            }
+        } catch (\Throwable) {
+            // Domain cache invalidation is the best effort
+        }
     }
 }

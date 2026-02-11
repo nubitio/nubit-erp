@@ -15,10 +15,6 @@ on:
         description: "Admin username"
         required: true
         type: string
-      admin_pass:
-        description: "Admin password"
-        required: true
-        type: string
       target_container:
         description: "Container name to run provisioning in (e.g. efact-dev, efact, efact-stg)"
         required: true
@@ -34,7 +30,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug runner/docker
+        run: |
+          echo "Host:"
+          hostname
+          whoami
+          pwd
+          echo "Docker context:"
+          docker context ls || true
+          echo "Docker info:"
+          docker info || true
+          echo "Running containers:"
+          docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' || true
+          echo "All containers:"
+          docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' || true
+
       - name: Provision tenant
+        env:
+          TENANT_DB_PASS: ${{ secrets.TENANT_DB_PASS }}
+          TENANT_ADMIN_PASS: ${{ secrets.TENANT_ADMIN_PASS }}
         run: |
           TARGET="${{ inputs.target_container }}"
           CONTAINER="$(docker ps --format '{{.Names}}' | awk -v t="$TARGET" '$0==t{print; exit}')"
@@ -48,10 +62,12 @@ jobs:
           fi
 
           echo "Using container: $CONTAINER"
-          docker exec -i "$CONTAINER" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
+          docker exec -i \
+            -e TENANT_DB_PASS="$TENANT_DB_PASS" \
+            -e TENANT_ADMIN_PASS="$TENANT_ADMIN_PASS" \
+            "$CONTAINER" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
             --domain="${{ inputs.domain }}" \
             --create-user \
-            --db-user-pass="${{ inputs.admin_pass }}" \
             --setup \
             --admin-user="${{ inputs.admin_user }}" \
-            --admin-pass="${{ inputs.admin_pass }}"
+            --no-interaction

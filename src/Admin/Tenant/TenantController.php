@@ -174,14 +174,7 @@ class TenantController extends AbstractController
         }
 
         $adminUser = trim((string)$request->request->get('admin_user', 'admin'));
-        $adminPass = trim((string)$request->request->get('admin_pass', ''));
         $domain = trim((string)$request->request->get('domain', ''));
-
-        if ($adminPass === '') {
-            $this->addFlash('error', 'Admin password is required for provisioning.');
-
-            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
-        }
 
         if ($domain === '') {
             $domain = (string)($this->tenantManager->getPrimaryDomain($id) ?? '');
@@ -192,7 +185,6 @@ class TenantController extends AbstractController
                 'tenant_name' => (string)$tenant['name'],
                 'domain' => $domain,
                 'admin_user' => $adminUser,
-                'admin_pass' => $adminPass,
             ]);
             $this->auditLogger->log('tenant.provision.dispatch', [
                 'tenant_id' => $id,
