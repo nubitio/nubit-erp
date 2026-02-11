@@ -1,0 +1,40 @@
+name: Tenant Provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant_name:
+        description: "Tenant name (slug)"
+        required: true
+        type: string
+      domain:
+        description: "Primary domain (e.g. acme.example.com)"
+        required: true
+        type: string
+      admin_user:
+        description: "Admin username"
+        required: true
+        type: string
+      admin_pass:
+        description: "Admin password"
+        required: true
+        type: string
+
+jobs:
+  provision:
+    runs-on: self-hosted
+    env:
+      PROVISIONING_DATABASE_URL: ${{ secrets.PROVISIONING_DATABASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Provision tenant
+        run: |
+          docker compose exec -T web php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
+            --domain="${{ inputs.domain }}" \
+            --create-user \
+            --db-user-pass="${{ inputs.admin_pass }}" \
+            --setup \
+            --admin-user="${{ inputs.admin_user }}" \
+            --admin-pass="${{ inputs.admin_pass }}"

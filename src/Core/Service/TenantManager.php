@@ -43,6 +43,8 @@ readonly class TenantManager
 
     /**
      * @param array<string, mixed> $tenant
+     *
+     * @throws DbalException
      */
     public function addTenant(array $tenant): void
     {
@@ -130,6 +132,7 @@ readonly class TenantManager
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws DbalException
      */
     public function getTenantDomains(int $tenantId): array
     {
@@ -145,6 +148,9 @@ readonly class TenantManager
         return $rows;
     }
 
+    /**
+     * @throws DbalException
+     */
     public function addTenantDomain(int $tenantId, string $domain, bool $isPrimary = false): void
     {
         $domain = strtolower(trim($domain));
@@ -171,6 +177,9 @@ readonly class TenantManager
         ]);
     }
 
+    /**
+     * @throws DbalException
+     */
     public function deleteTenantDomain(int $domainId): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -179,6 +188,9 @@ readonly class TenantManager
         $conn->delete('tenant_domains', ['id' => $domainId]);
     }
 
+    /**
+     * @throws DbalException
+     */
     public function setPrimaryTenantDomain(int $tenantId, int $domainId): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -186,6 +198,26 @@ readonly class TenantManager
 
         $conn->update('tenant_domains', ['is_primary' => 0], ['tenant_id' => $tenantId]);
         $conn->update('tenant_domains', ['is_primary' => 1], ['id' => $domainId, 'tenant_id' => $tenantId]);
+    }
+
+    /**
+     * @throws DbalException
+     */
+    public function getPrimaryDomain(int $tenantId): ?string
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('get primary tenant domain');
+
+        $domain = $conn->fetchOne(
+            'SELECT domain FROM tenant_domains WHERE tenant_id = ? AND is_primary = 1 ORDER BY id ASC LIMIT 1',
+            [$tenantId],
+        );
+
+        if ($domain === false) {
+            return null;
+        }
+
+        return (string)$domain;
     }
 
     /**
@@ -202,6 +234,7 @@ readonly class TenantManager
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws DbalException
      */
     private function readTenantsFromDatabase(): array
     {
@@ -250,6 +283,9 @@ readonly class TenantManager
         return $cleanTenants;
     }
 
+    /**
+     * @throws DbalException
+     */
     private function addTenantInDatabase(string $name, string $connection): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -265,7 +301,7 @@ readonly class TenantManager
             throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
         }
 
-        $now = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
         $conn->insert('tenants', [
             'name' => $name,
             'connection' => $connection,
@@ -275,6 +311,9 @@ readonly class TenantManager
         ]);
     }
 
+    /**
+     * @throws DbalException
+     */
     private function updateTenantInDatabase(int $id, string $name, string $connection): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -290,7 +329,7 @@ readonly class TenantManager
             throw new InvalidArgumentException(sprintf('Tenant "%s" already exists', $name));
         }
 
-        $now = (new \DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+        $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
         $affected = $conn->update('tenants', [
             'name' => $name,
             'connection' => $connection,
@@ -302,6 +341,9 @@ readonly class TenantManager
         }
     }
 
+    /**
+     * @throws DbalException
+     */
     private function deleteTenantInDatabase(int $id): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -315,6 +357,9 @@ readonly class TenantManager
         $conn->delete('tenants', ['id' => $id]);
     }
 
+    /**
+     * @throws DbalException
+     */
     private function getTenantFromDatabase(int $id): ?array
     {
         $conn = $this->getControlPlaneConnection();
@@ -337,6 +382,9 @@ readonly class TenantManager
         return $row;
     }
 
+    /**
+     * @throws DbalException
+     */
     private function getTenantByNameFromDatabase(string $name): ?array
     {
         $conn = $this->getControlPlaneConnection();
@@ -359,6 +407,9 @@ readonly class TenantManager
         return $row;
     }
 
+    /**
+     * @throws DbalException
+     */
     private function getTenantByDomainFromDatabase(string $domain): ?array
     {
         $conn = $this->getControlPlaneConnection();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Tenant;
 
 use App\Core\Service\TenantManager;
+use App\Core\Service\GitHubWorkflowDispatcher;
 use App\Core\Audit\AuditLogger;
 use InvalidArgumentException;
 use RuntimeException;
@@ -18,6 +19,7 @@ class TenantController extends AbstractController
     public function __construct(
         private readonly TenantManager $tenantManager,
         private readonly AuditLogger $auditLogger,
+        private readonly GitHubWorkflowDispatcher $workflowDispatcher,
     ) {
     }
 
@@ -43,10 +45,12 @@ class TenantController extends AbstractController
         }
 
         $domains = $this->tenantManager->getTenantDomains($id);
+        $primaryDomain = $this->tenantManager->getPrimaryDomain($id);
 
         return $this->render('admin/tenant/edit.html.twig', [
             'tenant' => $tenant,
             'domains' => $domains,
+            'primary_domain' => $primaryDomain,
         ]);
     }
 
@@ -157,5 +161,48 @@ class TenantController extends AbstractController
         $this->addFlash('success', 'Domain removed');
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
+    }
+
+    #[Route('/admin/tenants/{id}/provision', name: 'admin_tenant_provision', methods: ['POST'])]
+    public function provision(int $id, Request $request): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $adminUser = trim((string)$request->request->get('admin_user', 'admin'));
+        $adminPass = trim((string)$request->request->get('admin_pass', ''));
+        $domain = trim((string)$request->request->get('domain', ''));
+
+        if ($adminPass === '') {
+            $this->addFlash('error', 'Admin password is required for provisioning.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
+        if ($domain === '') {
+            $domain = (string)($this->tenantManager->getPrimaryDomain($id) ?? '');
+        }
+
+        try {
+            $this->workflowDispatcher->dispatch([
+                'tenant_name' => (string)$tenant['name'],
+                'domain' => $domain,
+                'admin_user' => $adminUser,
+                'admin_pass' => $adminPass,
+            ]);
+            $this->auditLogger->log('tenant.provision.dispatch', [
+                'tenant_id' => $id,
+                'domain' => $domain,
+            ]);
+            $this->addFlash('success', 'Provisioning workflow dispatched.');
+        } catch (RuntimeException $exception) {
+            $this->addFlash('error', 'Unable to dispatch provisioning: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 }

@@ -155,6 +155,12 @@ services:
       # Billing
       BILL_API_BASE_URL: ${BILL_API_BASE_URL}
       BILL_API_TOKEN: ${BILL_API_TOKEN}
+      # GitHub Actions provisioning
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_OWNER: ${GITHUB_OWNER}
+      GITHUB_REPO: ${GITHUB_REPO}
+      GITHUB_WORKFLOW_REF: ${GITHUB_WORKFLOW_REF}
+      GITHUB_WORKFLOW_FILE: ${GITHUB_WORKFLOW_FILE}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
