@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Security\Auth;
 
+use App\Core\Context\TenantContext;
 use App\Entity\Branch;
 use App\Entity\RefreshToken;
 use App\Entity\User;
@@ -15,6 +16,7 @@ final readonly class TokenGeneratorService
     public function __construct(
         private JWTManager $jwtManager,
         private EntityManagerInterface $entityManager,
+        private TenantContext $tenantContext,
         private int $accessTokenTtl,
         private int $refreshTokenTtl,
     ) {
@@ -73,6 +75,8 @@ final readonly class TokenGeneratorService
             'roles' => $user->getRoles(),
             'branchId' => $branch?->getId(),
             'branchName' => $branch?->getName(),
+            'tenantId' => $this->tenantContext->getTenantId(),
+            'tenantName' => $this->tenantContext->getTenantName(),
         ];
     }
 

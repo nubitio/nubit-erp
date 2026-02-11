@@ -102,15 +102,13 @@ readonly class TenantListener
             $this->tenantContext->setTenant($tenantId, $tenantName, $host, $requestId);
             $this->setTraceAttributes($tenantId, $tenantName, $host, $requestId);
         } catch (Throwable $throwable) {
-            $this->logger->error(sprintf('Invalid tenant "%s": %s', $subdomain, $throwable->getMessage()), [
+            $this->logger->error('Tenant resolution failed', [
                 'tenant' => $subdomain,
+                'host' => $host,
                 'exception' => $throwable,
             ]);
 
-            throw new BadRequestHttpException(
-                sprintf('Invalid tenant "%s": %s', $subdomain, $throwable->getMessage()),
-                $throwable
-            );
+            throw new BadRequestHttpException('Invalid request', $throwable);
         }
     }
 

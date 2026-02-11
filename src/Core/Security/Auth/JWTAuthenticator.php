@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Security\Auth;
 
 use App\Core\Audit\AuditLogger;
+use App\Core\Context\TenantContext;
 use App\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Override;
@@ -42,6 +43,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         private readonly CookieFactoryService $cookieFactory,
         private readonly TranslatorInterface $translator,
         private readonly AuditLogger $auditLogger,
+        private readonly TenantContext $tenantContext,
     ) {
     }
 
@@ -119,6 +121,17 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
         }
 
+        $tokenTenantName = $tokenData['tenantName'] ?? null;
+        $currentTenantName = $this->tenantContext->getTenantName();
+        if ($tokenTenantName !== null && $currentTenantName !== null && $tokenTenantName !== $currentTenantName) {
+            $this->logger->warning('JWT tenant mismatch: token belongs to a different tenant', [
+                'token_tenant' => $tokenTenantName,
+                'current_tenant' => $currentTenantName,
+                'username' => $username,
+            ]);
+            throw new AuthenticationException('Token inválido', Response::HTTP_UNAUTHORIZED);
+        }
+
         $passport = new SelfValidatingPassport(
             new UserBadge($username, $this->userProvider->loadUserByIdentifier(...))
         );
@@ -128,6 +141,7 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         $this->logger->info('User authenticated with JWT', [
             'username' => $username,
             'user_id' => $tokenData['userId'] ?? null,
+            'tenant' => $tokenTenantName,
         ]);
 
         return $passport;
