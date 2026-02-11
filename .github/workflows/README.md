@@ -5,7 +5,7 @@
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | **ci-main.yml** | PR to `main`, push to `main` | PHP quality checks + backend tests + frontend lint |
-| **build-image.yml** | Push to `main`, manual, reusable | Build and push image to GHCR, output immutable `image_ref` |
+| **build-image.yml** | Manual, reusable | Build and push image to GHCR, output immutable `image_ref` |
 | **deploy-dev.yml** | Push to `main`, manual | Build image and deploy to `dev` |
 | **deploy-staging.yml** | Manual, tag `v*.*.*-rc*` | Promote immutable image to `stg` (auto on pre-release tags) |
 | **deploy-prod.yml** | Manual, tag `v*.*.*` | Promote immutable image to `prod` (auto on release tags) |
