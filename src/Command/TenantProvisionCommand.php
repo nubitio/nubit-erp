@@ -206,13 +206,53 @@ class TenantProvisionCommand extends Command
                 ?: '';
         }
         if (is_string($url) && $url !== '') {
-            return DriverManager::getConnection([
-                'url' => $url,
-                'driver' => 'pdo_mysql',
-            ]);
+            $params = $this->buildProvisioningParams($url);
+
+            return DriverManager::getConnection($params);
         }
 
         return $fallback;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildProvisioningParams(string $url): array
+    {
+        $parts = parse_url($url);
+        if ($parts === false) {
+            throw new \RuntimeException('Invalid PROVISIONING_DATABASE_URL.');
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+
+        $params = [
+            'driver' => 'pdo_mysql',
+            'host' => $parts['host'] ?? null,
+            'port' => isset($parts['port']) ? (int)$parts['port'] : 3306,
+            'user' => $parts['user'] ?? null,
+            'password' => $parts['pass'] ?? null,
+        ];
+
+        if (!empty($parts['path']) && $parts['path'] !== '/') {
+            $params['dbname'] = ltrim($parts['path'], '/');
+        }
+
+        if (isset($query['serverVersion'])) {
+            $params['serverVersion'] = $query['serverVersion'];
+        }
+        if (isset($query['charset'])) {
+            $params['charset'] = $query['charset'];
+        }
+
+        if (empty($params['host'])) {
+            throw new \RuntimeException('Provisioning DB host is required in PROVISIONING_DATABASE_URL.');
+        }
+
+        return $params;
     }
 
     /**
@@ -257,9 +297,9 @@ class TenantProvisionCommand extends Command
         ));
 
         $setup->companyRuc = (string)($input->getOption('company-ruc')
-            ?: $io->ask('Company RUC (11 digits)', '20123456789'));
+            ?: $io->ask('Company RUC (11 digits)', '20000000001'));
         $setup->companyBusinessName = (string)($input->getOption('company-name')
-            ?: $io->ask('Company business name', 'Empresa Demo'));
+            ?: $io->ask('Company business name', 'Demo SAC'));
         $setup->companyTradeName = (string)($input->getOption('company-trade')
             ?: $io->ask('Company trade name', 'Demo'));
         $setup->companyFiscalAddress = (string)($input->getOption('company-address')
