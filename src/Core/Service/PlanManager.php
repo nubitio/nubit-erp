@@ -121,7 +121,9 @@ final readonly class PlanManager
         }
 
         if (!preg_match('/^[a-z0-9_-]+$/', $name)) {
-            throw new InvalidArgumentException('Plan name must contain only lowercase letters, numbers, hyphens and underscores');
+            throw new InvalidArgumentException(
+                'Plan name must contain only lowercase letters, numbers, hyphens and underscores'
+            );
         }
         $limits = $this->normalizeLimits($limits);
 
@@ -318,9 +320,6 @@ final readonly class PlanManager
         foreach ($limits as $key => $value) {
             if (!in_array($key, $allowedKeys, true)) {
                 throw new InvalidArgumentException(sprintf('Invalid limit key "%s"', $key));
-            }
-            if (!is_int($value)) {
-                throw new InvalidArgumentException(sprintf('Limit "%s" must be an integer', $key));
             }
             if ($value < -1) {
                 throw new InvalidArgumentException(sprintf('Limit "%s" must be -1 or greater', $key));

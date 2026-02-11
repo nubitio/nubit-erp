@@ -22,7 +22,7 @@ final readonly class InvoiceCreationService
     }
 
     /**
-     * @return array{success: bool, message: string}
+     * @return array{success: bool, message: string, invoiceId?: string}
      *
      * @throws Exception
      * @throws MathException

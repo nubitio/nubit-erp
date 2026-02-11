@@ -31,7 +31,13 @@ class TenantUsageCommand extends Command
     {
         $this
             ->addArgument('tenant', InputArgument::OPTIONAL, 'Specific tenant (checks all if omitted)')
-            ->addOption('store', null, InputOption::VALUE_NONE, 'Store metrics in control plane for historical tracking');
+            ->addOption(
+                'store',
+                null,
+                InputOption::VALUE_NONE,
+                'Store metrics in control plane for historical tracking'
+            )
+        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

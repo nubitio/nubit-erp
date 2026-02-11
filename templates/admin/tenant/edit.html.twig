@@ -31,6 +31,7 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Edit {{ tenant.name }}</h2>
                     <form action="{{ url('admin_tenant_update', {'id': tenant.id}) }}" method="post" class="needs-validation" novalidate>
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" value="{{ tenant.name }}"
@@ -51,6 +52,7 @@
 
                     <h3 class="h6 mb-2">Plan</h3>
                     <form id="tenant-plan-form" action="{{ url('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="d-flex gap-2">
                             <select id="plan" name="plan" class="form-select">
                                 {% for plan in plans %}
@@ -71,6 +73,7 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Domains</h2>
                     <form action="{{ url('admin_tenant_domain_create', {'id': tenant.id}) }}" method="post" class="row g-3 align-items-end mb-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-12">
                             <label for="domain" class="form-label">Domain</label>
                             <input type="text" class="form-control" id="domain" name="domain" placeholder="acme.example.com" required>
@@ -115,16 +118,19 @@
                                         <td class="text-end">
                                             {% if not domain.is_primary %}
                                                 <form action="{{ url('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}" method="post" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                                     <button type="submit" class="btn btn-outline-secondary btn-sm me-2">
                                                         Set primary
                                                     </button>
                                                 </form>
                                             {% endif %}
-                                            <a href="{{ url('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
-                                               class="btn btn-outline-danger btn-sm"
-                                               onclick="return confirm('Delete domain {{ domain.domain }}?');">
-                                                Delete
-                                            </a>
+                                            <form action="{{ url('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('Delete domain {{ domain.domain }}?');">
+                                                    Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 {% endfor %}
@@ -140,6 +146,7 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Provisioning</h2>
                     <form action="{{ url('admin_tenant_provision', {'id': tenant.id}) }}" method="post" class="row g-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-md-4">
                             <label for="admin_user" class="form-label">Admin user</label>
                             <input type="text" class="form-control" id="admin_user" name="admin_user" value="admin" required>
