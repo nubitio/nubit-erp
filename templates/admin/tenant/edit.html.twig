@@ -1,167 +1,274 @@
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Edit tenant</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-</head>
-<body>
-<div class="container py-4">
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Edit {{ tenant.name }}{% endblock %}
+{% block nav_tenants %}active{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url('admin_tenant_index') }}">Tenants</a></li>
+            <li class="breadcrumb-item active">{{ tenant.name }}</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
-            <p class="text-uppercase text-muted mb-1 small">Tenant management</p>
-            <h1 class="h4 mb-0">Edit tenant</h1>
-            <p class="text-muted mb-0">Update the tenant name or database connection.</p>
+            <h1 class="h4 mb-0">{{ tenant.name }}</h1>
+            <p class="text-muted mb-0">Manage tenant settings, domains, and provisioning.</p>
         </div>
-        <a href="{{ url('admin_tenant_index') }}" class="btn btn-link">Back to list</a>
+        <div>
+            {% if tenant.status is defined and tenant.status == 'suspended' %}
+                <span class="badge bg-warning-subtle text-warning fs-6">Suspended</span>
+            {% elseif tenant.status is defined and tenant.status == 'active' %}
+                <span class="badge bg-success-subtle text-success fs-6">Active</span>
+            {% endif %}
+        </div>
     </div>
 
-    {% for label, messages in app.flashes %}
-        {% for message in messages %}
-            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mt-3" role="alert">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endfor %}
+    <ul class="nav nav-tabs" id="tenantTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab"
+                    data-bs-target="#general" type="button" role="tab">
+                <i class="bi bi-pencil-square me-1"></i> General
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="domains-tab" data-bs-toggle="tab"
+                    data-bs-target="#domains" type="button" role="tab">
+                <i class="bi bi-globe me-1"></i> Domains
+                {% if domains is not empty %}
+                    <span class="badge bg-secondary ms-1">{{ domains|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="provisioning-tab" data-bs-toggle="tab"
+                    data-bs-target="#provisioning" type="button" role="tab">
+                <i class="bi bi-rocket me-1"></i> Provisioning
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="usage-tab" data-bs-toggle="tab"
+                    data-bs-target="#usage" type="button" role="tab">
+                <i class="bi bi-graph-up me-1"></i> Usage
+                {% if quota_alerts is not empty %}
+                    <span class="badge bg-warning ms-1">{{ quota_alerts|length }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
 
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Edit {{ tenant.name }}</h2>
-                    <form action="{{ url('admin_tenant_update', {'id': tenant.id}) }}" method="post" class="needs-validation" novalidate>
-                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" name="name" value="{{ tenant.name }}"
-                                   placeholder="Tenant name" required>
+    <div class="tab-content pt-4" id="tenantTabContent">
+        {# ── GENERAL TAB ── #}
+        <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">Tenant details</h2>
+                            <form action="{{ url('admin_tenant_update', {'id': tenant.id}) }}" method="post"
+                                  class="needs-validation" novalidate>
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="name" name="name"
+                                           value="{{ tenant.name }}" placeholder="Tenant name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="connection" class="form-label">Connection</label>
+                                    <input type="text" class="form-control" id="connection" name="connection"
+                                           value="{{ tenant.connection }}" placeholder="Database/schema" required>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="{{ url('admin_tenant_index') }}"
+                                       class="btn btn-outline-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                </div>
+                            </form>
                         </div>
-                        <div class="mb-3">
-                            <label for="connection" class="form-label">Connection</label>
-                            <input type="text" class="form-control" id="connection" name="connection"
-                                   value="{{ tenant.connection }}" placeholder="Database/schema" required>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ url('admin_tenant_index') }}" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </form>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">Plan</h2>
+                            <form id="tenant-plan-form"
+                                  action="{{ url('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                <div class="d-flex gap-2">
+                                    <select id="plan" name="plan" class="form-select">
+                                        {% for plan in plans %}
+                                            <option value="{{ plan.name }}"
+                                                {{ (tenant.plan ?? 'free') == plan.name ? 'selected' : '' }}>
+                                                {{ plan.name }}{{ plan.is_default ? ' (default)' : '' }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button class="btn btn-outline-primary" type="submit">Change</button>
+                                </div>
+                                <div class="form-text">Plan controls quotas and limits for this tenant.</div>
+                            </form>
 
-                    <hr class="my-4">
+                            <hr class="my-4">
 
-                    <h3 class="h6 mb-2">Plan</h3>
-                    <form id="tenant-plan-form" action="{{ url('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
-                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                        <div class="d-flex gap-2">
-                            <select id="plan" name="plan" class="form-select">
-                                {% for plan in plans %}
-                                    <option value="{{ plan.name }}" {{ (tenant.plan ?? 'free') == plan.name ? 'selected' : '' }}>
-                                        {{ plan.name }}{{ plan.is_default ? ' (default)' : '' }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <button class="btn btn-outline-primary" type="submit">Change</button>
+                            <h2 class="h5 mb-3">Status</h2>
+                            {% if tenant.status is defined and tenant.status == 'suspended' %}
+                                <form action="{{ url('admin_tenant_unsuspend', {'id': tenant.id}) }}"
+                                      method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                    <button type="submit" class="btn btn-outline-success btn-sm">
+                                        <i class="bi bi-play-circle me-1"></i> Unsuspend
+                                    </button>
+                                </form>
+                            {% else %}
+                                <form action="{{ url('admin_tenant_suspend', {'id': tenant.id}) }}"
+                                      method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                    <button type="submit" class="btn btn-outline-warning btn-sm"
+                                            onclick="return confirm('Suspend tenant {{ tenant.name }}?');">
+                                        <i class="bi bi-pause-circle me-1"></i> Suspend
+                                    </button>
+                                </form>
+                            {% endif %}
                         </div>
-                        <div class="form-text">Plan controls quotas and limits for this tenant.</div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Domains</h2>
-                    <form action="{{ url('admin_tenant_domain_create', {'id': tenant.id}) }}" method="post" class="row g-3 align-items-end mb-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                        <div class="col-12">
-                            <label for="domain" class="form-label">Domain</label>
-                            <input type="text" class="form-control" id="domain" name="domain" placeholder="acme.example.com" required>
-                            <div class="form-text">Add a custom domain for this tenant.</div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="1" id="is_primary" name="is_primary">
-                                <label class="form-check-label" for="is_primary">Set as primary domain</label>
-                            </div>
-                        </div>
-                        <div class="col-12 d-grid">
-                            <button class="btn btn-outline-primary" type="submit">Add domain</button>
-                        </div>
-                    </form>
 
-                    {% if domains is empty %}
-                        <div class="border rounded p-3 text-center text-muted bg-light">
-                            No domains yet.
+        {# ── DOMAINS TAB ── #}
+        <div class="tab-pane fade" id="domains" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3"><i class="bi bi-plus-circle me-1"></i> Add domain</h2>
+                            <form action="{{ url('admin_tenant_domain_create', {'id': tenant.id}) }}"
+                                  method="post" class="row g-3 align-items-end">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                <div class="col-12">
+                                    <label for="domain" class="form-label">Domain</label>
+                                    <input type="text" class="form-control" id="domain" name="domain"
+                                           placeholder="acme.example.com" required>
+                                    <div class="form-text">Add a custom domain for this tenant.</div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" value="1"
+                                               id="is_primary" name="is_primary">
+                                        <label class="form-check-label" for="is_primary">
+                                            Set as primary domain
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12 d-grid">
+                                    <button class="btn btn-outline-primary" type="submit">Add domain</button>
+                                </div>
+                            </form>
                         </div>
-                    {% else %}
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead class="table-light">
-                                <tr>
-                                    <th scope="col">Domain</th>
-                                    <th scope="col">Primary</th>
-                                    <th scope="col" class="text-end">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for domain in domains %}
-                                    <tr>
-                                        <td><code class="bg-light px-2 py-1 rounded">{{ domain.domain }}</code></td>
-                                        <td>
-                                            {% if domain.is_primary %}
-                                                <span class="badge bg-success-subtle text-success">Primary</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary-subtle text-secondary">Secondary</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end">
-                                            {% if not domain.is_primary %}
-                                                <form action="{{ url('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}" method="post" class="d-inline">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                                                    <button type="submit" class="btn btn-outline-secondary btn-sm me-2">
-                                                        Set primary
-                                                    </button>
-                                                </form>
-                                            {% endif %}
-                                            <form action="{{ url('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}" method="post" class="d-inline">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm"
-                                                        onclick="return confirm('Delete domain {{ domain.domain }}?');">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">Current domains</h2>
+                            {% if domains is empty %}
+                                <div class="border rounded p-3 text-center text-muted bg-light">
+                                    No domains yet.
+                                </div>
+                            {% else %}
+                                <div class="table-responsive">
+                                    <table class="table align-middle mb-0">
+                                        <thead>
+                                        <tr>
+                                            <th scope="col">Domain</th>
+                                            <th scope="col">Primary</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for domain in domains %}
+                                            <tr>
+                                                <td>
+                                                    <code class="bg-light px-2 py-1 rounded">
+                                                        {{ domain.domain }}
+                                                    </code>
+                                                </td>
+                                                <td>
+                                                    {% if domain.is_primary %}
+                                                        <span class="badge bg-success-subtle text-success">
+                                                            Primary
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary-subtle text-secondary">
+                                                            Secondary
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if not domain.is_primary %}
+                                                        <form action="{{ url('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
+                                                              method="post" class="d-inline">
+                                                            <input type="hidden" name="_token"
+                                                                   value="{{ csrf_token('admin') }}">
+                                                            <button type="submit"
+                                                                    class="btn btn-outline-secondary btn-sm me-1">
+                                                                Set primary
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                    <form action="{{ url('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
+                                                          method="post" class="d-inline">
+                                                        <input type="hidden" name="_token"
+                                                               value="{{ csrf_token('admin') }}">
+                                                        <button type="submit"
+                                                                class="btn btn-outline-danger btn-sm"
+                                                                onclick="return confirm('Delete domain {{ domain.domain }}?');">
+                                                            <i class="bi bi-trash"></i> Delete
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% endif %}
                         </div>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-12">
-            <div class="card shadow-sm border-0">
+
+        {# ── PROVISIONING TAB ── #}
+        <div class="tab-pane fade" id="provisioning" role="tabpanel">
+            <div class="card">
                 <div class="card-body">
-                    <h2 class="h5 mb-3">Provisioning</h2>
-                    <form action="{{ url('admin_tenant_provision', {'id': tenant.id}) }}" method="post" class="row g-3">
+                    <h2 class="h5 mb-3"><i class="bi bi-rocket me-1"></i> Provisioning</h2>
+                    <form action="{{ url('admin_tenant_provision', {'id': tenant.id}) }}" method="post"
+                          class="row g-3">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-md-4">
                             <label for="admin_user" class="form-label">Admin user</label>
-                            <input type="text" class="form-control" id="admin_user" name="admin_user" value="admin" required>
+                            <input type="text" class="form-control" id="admin_user" name="admin_user"
+                                   value="admin" required>
                         </div>
                         <div class="col-md-4">
                             <label for="admin_pass" class="form-label">Admin password</label>
-                            <input type="password" class="form-control" id="admin_pass" name="admin_pass" required>
+                            <input type="password" class="form-control" id="admin_pass" name="admin_pass"
+                                   required>
                         </div>
                         <div class="col-md-4">
-                            <label for="domain" class="form-label">Domain</label>
-                            <input type="text" class="form-control" id="domain" name="domain"
+                            <label for="prov_domain" class="form-label">Domain</label>
+                            <input type="text" class="form-control" id="prov_domain" name="domain"
                                    value="{{ primary_domain ?? '' }}" placeholder="acme.example.com">
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-primary">Dispatch provisioning</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-play-fill me-1"></i> Dispatch provisioning
+                            </button>
                         </div>
                         <div class="col-12">
                             <div class="form-text">
@@ -172,18 +279,24 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-12">
-            <div class="card shadow-sm border-0">
+
+        {# ── USAGE TAB ── #}
+        <div class="tab-pane fade" id="usage" role="tabpanel">
+            <div class="card">
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h2 class="h5 mb-0">Observability</h2>
-                        <a href="{{ url('admin_tenant_usage', {'id': tenant.id}) }}" class="btn btn-outline-secondary btn-sm">JSON</a>
+                        <h2 class="h5 mb-0"><i class="bi bi-graph-up me-1"></i> Observability</h2>
+                        <a href="{{ url('admin_tenant_usage', {'id': tenant.id}) }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-filetype-json me-1"></i> JSON
+                        </a>
                     </div>
 
                     {% if quota_alerts is not empty %}
                         <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
                             <strong>Quota alerts:</strong>
-                            <ul class="mb-0">
+                            <ul class="mb-0 mt-1">
                                 {% for alert in quota_alerts %}
                                     <li>{{ alert.resource }} at {{ alert.percent }}%</li>
                                 {% endfor %}
@@ -191,11 +304,13 @@
                         </div>
                     {% endif %}
 
-                    <div class="row g-3 mb-3">
+                    <div class="row g-3 mb-4">
                         {% for metric, value in usage_latest %}
                             <div class="col-md-3">
                                 <div class="border rounded p-2">
-                                    <div class="text-muted small">{{ metric }}</div>
+                                    <div class="text-muted small text-capitalize">
+                                        {{ metric|replace({'_': ' '}) }}
+                                    </div>
                                     <div class="fw-semibold">{{ value }}</div>
                                 </div>
                             </div>
@@ -203,29 +318,49 @@
                     </div>
 
                     {% if quota_summary is not empty %}
-                        <div class="table-responsive mb-3">
-                            <table class="table table-sm">
-                                <thead class="table-light">
-                                <tr>
-                                    <th>Resource</th>
-                                    <th>Current</th>
-                                    <th>Limit</th>
-                                    <th>%</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for resource, usage in quota_summary %}
-                                    {% set limit = usage.limit %}
-                                    {% set pct = limit > 0 ? ((usage.current / limit) * 100)|round(2) : null %}
-                                    <tr>
-                                        <td>{{ resource }}</td>
-                                        <td>{{ usage.current }}</td>
-                                        <td>{{ limit == -1 ? 'unlimited' : limit }}</td>
-                                        <td>{{ pct is null ? '-' : pct ~ '%' }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                        <h3 class="h6 mb-3">Quota usage</h3>
+                        <div class="row g-3 mb-4">
+                            {% for resource, usage in quota_summary %}
+                                {% set limit = usage.limit %}
+                                {% set current = usage.current %}
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="fw-semibold text-capitalize">
+                                                {{ resource|replace({'_': ' '}) }}
+                                            </span>
+                                            {% if limit == -1 %}
+                                                <span class="text-muted">{{ current }} / Unlimited</span>
+                                            {% else %}
+                                                <span class="text-muted">{{ current }} / {{ limit }}</span>
+                                            {% endif %}
+                                        </div>
+                                        {% if limit == -1 %}
+                                            <div class="text-success small">
+                                                <i class="bi bi-infinity me-1"></i> Unlimited
+                                            </div>
+                                        {% else %}
+                                            {% set pct = limit > 0
+                                                ? ((current / limit) * 100)|round(1)
+                                                : 0 %}
+                                            {% if pct < 60 %}
+                                                {% set bar_class = 'bg-success' %}
+                                            {% elseif pct < 80 %}
+                                                {% set bar_class = 'bg-warning' %}
+                                            {% else %}
+                                                {% set bar_class = 'bg-danger' %}
+                                            {% endif %}
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar {{ bar_class }}" role="progressbar"
+                                                     style="width: {{ min(pct, 100) }}%"
+                                                     aria-valuenow="{{ current }}" aria-valuemin="0"
+                                                     aria-valuemax="{{ limit }}"></div>
+                                            </div>
+                                            <div class="small text-muted mt-1">{{ pct }}%</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     {% endif %}
 
@@ -235,7 +370,7 @@
                     {% else %}
                         <div class="table-responsive">
                             <table class="table table-sm mb-0">
-                                <thead class="table-light">
+                                <thead>
                                 <tr>
                                     <th>Collected at</th>
                                     <th>Metric</th>
@@ -258,6 +393,21 @@
             </div>
         </div>
     </div>
-</div>
-</body>
-</html>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    var hash = window.location.hash;
+    if (hash) {
+        var tab = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (tab) { new bootstrap.Tab(tab).show(); }
+    }
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(el) {
+        el.addEventListener('shown.bs.tab', function(e) {
+            history.replaceState(null, null, e.target.dataset.bsTarget);
+        });
+    });
+})();
+</script>
+{% endblock %}

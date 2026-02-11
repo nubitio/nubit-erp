@@ -47,6 +47,31 @@ readonly class TenantManager
     }
 
     /**
+     * @return array<int, array<string, mixed>>
+     * @throws DbalException
+     */
+    public function getDeletedTenants(): array
+    {
+        if (!$this->shouldUseDatabase()) {
+            return [];
+        }
+
+        $connection = $this->getControlPlaneConnection();
+        if (!$this->isControlPlaneReady($connection)) {
+            return [];
+        }
+
+        $sql = 'SELECT t.id, t.name, t.connection, t.plan, t.deleted_at,
+                       d.domain AS primary_domain
+                FROM tenants t
+                LEFT JOIN tenant_domains d ON d.tenant_id = t.id AND d.is_primary = 1
+                WHERE t.status = \'deleted\'
+                ORDER BY t.deleted_at DESC';
+
+        return $connection->fetchAllAssociative($sql);
+    }
+
+    /**
      * @param array<string, mixed> $tenant
      *
      * @throws DbalException
@@ -281,7 +306,11 @@ readonly class TenantManager
             return $this->fallbackToYamlOrFail('read tenants');
         }
 
-        $sql = 'SELECT id, name, connection, status, plan FROM tenants WHERE status != \'deleted\' ORDER BY id ASC';
+        $sql = 'SELECT t.id, t.name, t.connection, t.status, t.plan, d.domain AS primary_domain
+                FROM tenants t
+                LEFT JOIN tenant_domains d ON d.tenant_id = t.id AND d.is_primary = 1
+                WHERE t.status != \'deleted\'
+                ORDER BY t.id ASC';
 
         /** @var array<int, array<string, mixed>> $rows */
         $rows = $connection->fetchAllAssociative($sql);
