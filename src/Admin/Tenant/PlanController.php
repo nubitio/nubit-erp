@@ -31,6 +31,12 @@ final class PlanController extends AbstractController
     #[Route('/admin/plans/create', name: 'admin_plan_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_plan_index');
+        }
+
         try {
             $name = strtolower(trim((string)$request->request->get('name', '')));
             $limits = $this->extractLimits($request);
@@ -49,6 +55,12 @@ final class PlanController extends AbstractController
     #[Route('/admin/plans/{id}', name: 'admin_plan_update', methods: ['POST'])]
     public function update(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_plan_index');
+        }
+
         try {
             $name = strtolower(trim((string)$request->request->get('name', '')));
             $limits = $this->extractLimits($request);
@@ -70,8 +82,14 @@ final class PlanController extends AbstractController
     }
 
     #[Route('/admin/plans/{id}/delete', name: 'admin_plan_delete', methods: ['POST'])]
-    public function delete(int $id): Response
+    public function delete(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_plan_index');
+        }
+
         try {
             $this->planManager->deletePlan($id);
             $this->auditLogger->log('plan.delete', ['id' => $id]);

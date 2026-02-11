@@ -77,8 +77,8 @@ final class TenantUsageCollectCommand extends Command
         $summary = $this->tenantQuotaService->getUsageSummary($tenantName);
 
         foreach ($summary as $resource => $usage) {
-            $limit = (int)($usage['limit'] ?? -1);
-            $current = (int)($usage['current'] ?? 0);
+            $limit = (int)$usage['limit'];
+            $current = (int)$usage['current'];
             if ($limit <= 0) {
                 continue;
             }

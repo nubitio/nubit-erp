@@ -19,6 +19,11 @@ security:
         api_docs:
             pattern: ^/api/docs
             security: false
+        admin:
+            pattern: ^/admin
+            http_basic:
+                realm: 'Admin Panel'
+            provider: user_provider
         main:
             lazy: true
             stateless: true

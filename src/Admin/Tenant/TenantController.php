@@ -87,6 +87,12 @@ class TenantController extends AbstractController
     #[Route('/admin/tenants/create', name: 'admin_tenant_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
         $tenant = [
             'name' => trim((string)$request->request->get('name', '')),
             'connection' => trim((string)$request->request->get('connection', '')),
@@ -108,6 +114,12 @@ class TenantController extends AbstractController
     #[Route('/admin/tenants/{id}', name: 'admin_tenant_update', methods: ['POST'])]
     public function update(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         $tenant = [
             'name' => trim((string)$request->request->get('name', '')),
             'connection' => trim((string)$request->request->get('connection', '')),
@@ -126,9 +138,15 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/delete/{id}', name: 'admin_tenant_delete')]
-    public function delete(int $id): Response
+    #[Route('/admin/tenants/delete/{id}', name: 'admin_tenant_delete', methods: ['POST'])]
+    public function delete(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
         $this->tenantManager->deleteTenant($id);
         $this->auditLogger->log('tenant.soft_delete', ['tenant_id' => $id]);
         $this->addFlash('success', 'Tenant deactivated (soft-deleted). Use purge for permanent removal.');
@@ -137,8 +155,14 @@ class TenantController extends AbstractController
     }
 
     #[Route('/admin/tenants/{id}/restore', name: 'admin_tenant_restore', methods: ['POST'])]
-    public function restore(int $id): Response
+    public function restore(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
         try {
             $this->tenantManager->restoreTenant($id);
             $this->auditLogger->log('tenant.restore', ['tenant_id' => $id]);
@@ -151,8 +175,14 @@ class TenantController extends AbstractController
     }
 
     #[Route('/admin/tenants/{id}/suspend', name: 'admin_tenant_suspend', methods: ['POST'])]
-    public function suspend(int $id): Response
+    public function suspend(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         try {
             $this->tenantManager->suspendTenant($id);
             $this->auditLogger->log('tenant.suspend', ['tenant_id' => $id]);
@@ -165,8 +195,14 @@ class TenantController extends AbstractController
     }
 
     #[Route('/admin/tenants/{id}/unsuspend', name: 'admin_tenant_unsuspend', methods: ['POST'])]
-    public function unsuspend(int $id): Response
+    public function unsuspend(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         try {
             $this->tenantManager->unsuspendTenant($id);
             $this->auditLogger->log('tenant.unsuspend', ['tenant_id' => $id]);
@@ -179,8 +215,14 @@ class TenantController extends AbstractController
     }
 
     #[Route('/admin/tenants/{id}/purge', name: 'admin_tenant_purge', methods: ['POST'])]
-    public function purge(int $id): Response
+    public function purge(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
         try {
             $this->tenantManager->purgeTenant($id);
             $this->auditLogger->log('tenant.purge', ['tenant_id' => $id]);
@@ -195,6 +237,12 @@ class TenantController extends AbstractController
     #[Route('/admin/tenants/{id}/domains', name: 'admin_tenant_domain_create', methods: ['POST'])]
     public function addDomain(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         $domain = trim((string)$request->request->get('domain', ''));
         $isPrimary = (bool)$request->request->get('is_primary', false);
 
@@ -220,8 +268,14 @@ class TenantController extends AbstractController
         name: 'admin_tenant_domain_primary',
         methods: ['POST']
     )]
-    public function setPrimaryDomain(int $tenantId, int $domainId): Response
+    public function setPrimaryDomain(int $tenantId, int $domainId, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
+        }
+
         try {
             $this->tenantManager->setPrimaryTenantDomain($tenantId, $domainId);
             $this->auditLogger->log('tenant.domain.primary', [
@@ -236,9 +290,19 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
     }
 
-    #[Route('/admin/tenants/{tenantId}/domains/{domainId}/delete', name: 'admin_tenant_domain_delete')]
-    public function deleteDomain(int $tenantId, int $domainId): Response
+    #[Route(
+        '/admin/tenants/{tenantId}/domains/{domainId}/delete',
+        name: 'admin_tenant_domain_delete',
+        methods: ['POST']
+    )]
+    public function deleteDomain(int $tenantId, int $domainId, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
+        }
+
         $this->tenantManager->deleteTenantDomain($domainId);
         $this->auditLogger->log('tenant.domain.delete', [
             'tenant_id' => $tenantId,
@@ -252,6 +316,12 @@ class TenantController extends AbstractController
     #[Route('/admin/tenants/{id}/plan', name: 'admin_tenant_plan', methods: ['POST'])]
     public function changePlan(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         $plan = trim((string)$request->request->get('plan', ''));
         $expectsJson = $request->isXmlHttpRequest() || str_contains(
             strtolower((string)$request->headers->get('Accept', '')),
@@ -312,6 +382,12 @@ class TenantController extends AbstractController
     #[Route('/admin/tenants/{id}/provision', name: 'admin_tenant_provision', methods: ['POST'])]
     public function provision(int $id, Request $request): Response
     {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
         $tenant = $this->tenantManager->getTenant($id);
         if ($tenant === null) {
             $this->addFlash('error', 'Tenant not found');

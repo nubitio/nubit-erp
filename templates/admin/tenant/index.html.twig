@@ -36,6 +36,7 @@
                 <div class="card-body">
                     <h2 class="h5 mb-3">Add tenant</h2>
                     <form action="{{ url('admin_tenant_create') }}" method="post" class="needs-validation" novalidate>
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="mb-3">
                             <label for="name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="name" name="name" placeholder="e.g. acme"
@@ -86,11 +87,13 @@
                                                class="btn btn-outline-secondary btn-sm me-2">
                                                 Edit
                                             </a>
-                                            <a href="{{ url('admin_tenant_delete', {'id': tenant.id}) }}"
-                                               class="btn btn-outline-danger btn-sm"
-                                               onclick="return confirm('Delete tenant {{ tenant.name }}? This cannot be undone.');">
-                                                Delete
-                                            </a>
+                                            <form action="{{ url('admin_tenant_delete', {'id': tenant.id}) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('Delete tenant {{ tenant.name }}? This cannot be undone.');">
+                                                    Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 {% endfor %}
