@@ -10,9 +10,6 @@ on:
         description: Primary mutable tag used for convenience
         value: ${{ jobs.build.outputs.image_tag }}
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
