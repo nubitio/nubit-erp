@@ -63,6 +63,11 @@ export const DashboardPage = () => {
     <ScrollView className="view-wrapper-scroll">
       <AppToolbar title="Dashboard" onRefresh={refetch}>
         {error && <div className="dashboard-error">{error}</div>}
+        {data.meta?.partial && !error && (
+          <div className="dashboard-error">
+            Se cargó información parcial del dashboard. Algunos bloques no están disponibles.
+          </div>
+        )}
 
         <div className="cards metrics">
           <StatCard

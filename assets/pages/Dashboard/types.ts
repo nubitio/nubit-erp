@@ -46,6 +46,12 @@ export type DashboardData = {
   topCustomers: TopCustomer[];
   voucherTypes: VoucherTypeShare[];
   lowStockProducts: LowStockProduct[];
+  meta?: {
+    mode?: string;
+    partial?: boolean;
+    failedSegments?: string[];
+    generatedAt?: string;
+  };
 };
 
 export type CashRegisterStatus = {
