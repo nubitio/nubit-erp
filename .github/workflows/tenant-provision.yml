@@ -19,6 +19,11 @@ on:
         description: "Admin password"
         required: true
         type: string
+      target_container:
+        description: "Container name to run provisioning in (e.g. efact-dev, efact, efact-stg)"
+        required: true
+        default: "efact-dev"
+        type: string
 
 jobs:
   provision:
@@ -31,7 +36,7 @@ jobs:
 
       - name: Provision tenant
         run: |
-          docker compose exec -T web php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
+          docker exec -i "${{ inputs.target_container }}" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
             --domain="${{ inputs.domain }}" \
             --create-user \
             --db-user-pass="${{ inputs.admin_pass }}" \
