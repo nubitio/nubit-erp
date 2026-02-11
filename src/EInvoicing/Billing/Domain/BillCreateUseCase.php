@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Billing\Domain;
 
+use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\EInvoicing\Invoice\Service\VoucherHydratorInterface;
 use App\EInvoicing\Shared\Enum\ChargeType;
@@ -42,6 +43,11 @@ readonly class BillCreateUseCase
     public function __invoke(string $taxDocumentId): Invoice
     {
         $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
+
+        if ($taxDocument === null) {
+            throw new ServiceException('Invoice not found');
+        }
+
         $voucher = $this->taxDocumentRepository->getVoucher($taxDocument->getSale()->getId());
         $hydratedVoucher = $this->voucherHydrator->hydrate($voucher);
 
