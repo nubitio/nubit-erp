@@ -14,9 +14,9 @@ readonly class BillConsultUseCase
     ) {
     }
 
-    public function __invoke(string $saleId): StatusCdrResult
+    public function __invoke(string $taxDocumentId): StatusCdrResult
     {
-        $bill = $this->billCreateUseCase->__invoke($saleId);
+        $bill = $this->billCreateUseCase->__invoke($taxDocumentId);
 
         return $this->billRepository->getStatus($bill);
     }
