@@ -278,7 +278,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         'message' => $invoiceResult['message'],
                     ]);
                 } else {
-                    $this->messageBus->dispatch(new SendInvoiceMessage($data->getId()));
+                    $this->messageBus->dispatch(new SendInvoiceMessage($invoiceResult['invoiceId']));
                 }
             } catch (\Throwable $throwable) {
                 $this->logger->error('Auto invoice failed', [

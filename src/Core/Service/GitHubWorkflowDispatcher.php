@@ -19,9 +19,9 @@ final readonly class GitHubWorkflowDispatcher
         private string $owner,
         #[Autowire('%env(default::GITHUB_REPO)%')]
         private string $repo,
-        #[Autowire('%env(default:main:GITHUB_WORKFLOW_REF)%')]
+        #[Autowire('%env(default::GITHUB_WORKFLOW_REF)%')]
         private string $ref,
-        #[Autowire('%env(default:tenant-provision.yml:GITHUB_WORKFLOW_FILE)%')]
+        #[Autowire('%env(default::GITHUB_WORKFLOW_FILE)%')]
         private string $workflowFile,
     ) {
     }
@@ -41,7 +41,7 @@ final readonly class GitHubWorkflowDispatcher
             'https://api.github.com/repos/%s/%s/actions/workflows/%s/dispatches',
             $this->owner,
             $this->repo,
-            $this->workflowFile
+            $this->workflowFile !== '' ? $this->workflowFile : 'tenant-provision.yml'
         );
 
         $response = $this->httpClient->request('POST', $url, [
@@ -50,7 +50,7 @@ final readonly class GitHubWorkflowDispatcher
                 'Accept' => 'application/vnd.github+json',
             ],
             'json' => [
-                'ref' => $this->ref,
+                'ref' => $this->ref !== '' ? $this->ref : 'main',
                 'inputs' => $inputs,
             ],
         ]);

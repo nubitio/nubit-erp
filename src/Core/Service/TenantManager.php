@@ -281,7 +281,7 @@ readonly class TenantManager
             return $this->fallbackToYamlOrFail('read tenants');
         }
 
-        $sql = 'SELECT id, name, connection, status FROM tenants WHERE status != \'deleted\' ORDER BY id ASC';
+        $sql = 'SELECT id, name, connection, status, plan FROM tenants WHERE status != \'deleted\' ORDER BY id ASC';
 
         /** @var array<int, array<string, mixed>> $rows */
         $rows = $connection->fetchAllAssociative($sql);
@@ -417,6 +417,56 @@ readonly class TenantManager
         $conn->delete('tenants', ['id' => $id]);
     }
 
+    /**
+     * @throws DbalException
+     */
+    public function suspendTenant(int $id): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('suspend tenant');
+
+        $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
+        $affected = $conn->update('tenants', [
+            'status' => 'suspended',
+            'updated_at' => $now,
+        ], ['id' => $id, 'status' => 'active']);
+
+        if ($affected === 0) {
+            throw new InvalidArgumentException('Active tenant not found');
+        }
+
+        $tenant = $this->getTenant($id);
+        if ($tenant !== null) {
+            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantDomainCaches($id);
+        }
+    }
+
+    /**
+     * @throws DbalException
+     */
+    public function unsuspendTenant(int $id): void
+    {
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('unsuspend tenant');
+
+        $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
+        $affected = $conn->update('tenants', [
+            'status' => 'active',
+            'updated_at' => $now,
+        ], ['id' => $id, 'status' => 'suspended']);
+
+        if ($affected === 0) {
+            throw new InvalidArgumentException('Suspended tenant not found');
+        }
+
+        $tenant = $this->getTenant($id);
+        if ($tenant !== null) {
+            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantDomainCaches($id);
+        }
+    }
+
     public function restoreTenant(int $id): void
     {
         $conn = $this->getControlPlaneConnection();
@@ -439,6 +489,44 @@ readonly class TenantManager
     /**
      * @throws DbalException
      */
+    public function changePlan(int $id, string $plan): void
+    {
+        $plan = strtolower(trim($plan));
+        if ($plan === '') {
+            throw new InvalidArgumentException('Plan is required');
+        }
+
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('change tenant plan');
+
+        $planExists = $conn->fetchOne('SELECT name FROM plans WHERE name = ?', [$plan]);
+        if ($planExists === false) {
+            throw new InvalidArgumentException(sprintf('Invalid plan "%s"', $plan));
+        }
+
+        $now = new \DateTimeImmutable('now')->format('Y-m-d H:i:s');
+        $affected = $conn->update('tenants', [
+            'plan' => $plan,
+            'updated_at' => $now,
+        ], ['id' => $id]);
+
+        if ($affected === 0) {
+            $exists = $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]);
+            if ($exists === false) {
+                throw new InvalidArgumentException('Tenant not found');
+            }
+        }
+
+        $tenant = $this->getTenant($id);
+        if ($tenant !== null) {
+            $this->invalidateTenantCache((string)($tenant['name'] ?? ''));
+            $this->invalidateTenantDomainCaches($id);
+        }
+    }
+
+    /**
+     * @throws DbalException
+     */
     private function getTenantFromDatabase(int $id): ?array
     {
         $conn = $this->getControlPlaneConnection();
@@ -450,7 +538,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT id, name, connection FROM tenants WHERE id = ?',
+            'SELECT id, name, connection, plan FROM tenants WHERE id = ?',
             [$id],
         );
 
@@ -475,7 +563,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT id, name, connection FROM tenants WHERE name = ? AND status != ?',
+            'SELECT id, name, connection, status, plan FROM tenants WHERE name = ? AND status != ?',
             [$name, 'deleted'],
         );
 
@@ -500,7 +588,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT t.id, t.name, t.connection FROM tenant_domains d '
+            'SELECT t.id, t.name, t.connection, t.status, t.plan FROM tenant_domains d '
             . 'INNER JOIN tenants t ON t.id = d.tenant_id '
             . 'WHERE d.domain = ? AND t.status != ?',
             [$domain, 'deleted'],

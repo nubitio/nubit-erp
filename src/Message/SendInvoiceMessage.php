@@ -10,7 +10,7 @@ use Symfony\Component\Messenger\Attribute\AsMessage;
 final readonly class SendInvoiceMessage
 {
     public function __construct(
-        public readonly string $saleId
+        public string $taxDocumentId
     ) {
     }
 }

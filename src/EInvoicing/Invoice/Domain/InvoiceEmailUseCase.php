@@ -80,7 +80,7 @@ readonly class InvoiceEmailUseCase
         $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
         $xmlPath = $companyId . '/' . $docFullName . '.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
-        $pdfResponse = $this->billPdfUseCase->__invoke($saleId);
+        $pdfResponse = $this->billPdfUseCase->__invoke($taxDocumentId);
         $pdfContent = $pdfResponse->file;
 
         $content = $this->twig->render('invoice/tpl/email.html.twig', [

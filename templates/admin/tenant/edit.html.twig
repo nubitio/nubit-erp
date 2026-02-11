@@ -46,6 +46,23 @@
                             <button type="submit" class="btn btn-primary">Save changes</button>
                         </div>
                     </form>
+
+                    <hr class="my-4">
+
+                    <h3 class="h6 mb-2">Plan</h3>
+                    <form id="tenant-plan-form" action="{{ url('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
+                        <div class="d-flex gap-2">
+                            <select id="plan" name="plan" class="form-select">
+                                {% for plan in plans %}
+                                    <option value="{{ plan.name }}" {{ (tenant.plan ?? 'free') == plan.name ? 'selected' : '' }}>
+                                        {{ plan.name }}{{ plan.is_default ? ' (default)' : '' }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button class="btn btn-outline-primary" type="submit">Change</button>
+                        </div>
+                        <div class="form-text">Plan controls quotas and limits for this tenant.</div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -145,6 +162,91 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h2 class="h5 mb-0">Observability</h2>
+                        <a href="{{ url('admin_tenant_usage', {'id': tenant.id}) }}" class="btn btn-outline-secondary btn-sm">JSON</a>
+                    </div>
+
+                    {% if quota_alerts is not empty %}
+                        <div class="alert alert-warning">
+                            <strong>Quota alerts:</strong>
+                            <ul class="mb-0">
+                                {% for alert in quota_alerts %}
+                                    <li>{{ alert.resource }} at {{ alert.percent }}%</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="row g-3 mb-3">
+                        {% for metric, value in usage_latest %}
+                            <div class="col-md-3">
+                                <div class="border rounded p-2">
+                                    <div class="text-muted small">{{ metric }}</div>
+                                    <div class="fw-semibold">{{ value }}</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if quota_summary is not empty %}
+                        <div class="table-responsive mb-3">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Current</th>
+                                    <th>Limit</th>
+                                    <th>%</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for resource, usage in quota_summary %}
+                                    {% set limit = usage.limit %}
+                                    {% set pct = limit > 0 ? ((usage.current / limit) * 100)|round(2) : null %}
+                                    <tr>
+                                        <td>{{ resource }}</td>
+                                        <td>{{ usage.current }}</td>
+                                        <td>{{ limit == -1 ? 'unlimited' : limit }}</td>
+                                        <td>{{ pct is null ? '-' : pct ~ '%' }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    <h3 class="h6">Recent usage samples (24h)</h3>
+                    {% if usage_history is empty %}
+                        <div class="text-muted">No usage samples yet.</div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm mb-0">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>Collected at</th>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in usage_history|slice(0, 100) %}
+                                    <tr>
+                                        <td>{{ row.collected_at }}</td>
+                                        <td>{{ row.metric_name }}</td>
+                                        <td>{{ row.metric_value }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -6,13 +6,18 @@ namespace App\Core\EventListener;
 
 use App\Core\Context\TenantContext;
 use OpenTelemetry\API\Globals;
+use OpenTelemetry\API\Metrics\CounterInterface;
+use OpenTelemetry\API\Metrics\HistogramInterface;
 use OpenTelemetry\API\Metrics\MeterInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 #[AsEventListener]
-final readonly class TenantMetricsListener
+final class TenantMetricsListener
 {
+    private ?HistogramInterface $requestDurationHistogram = null;
+    private ?CounterInterface $requestCounter = null;
+
     public function __construct(
         private TenantContext $tenantContext,
     ) {
@@ -41,9 +46,8 @@ final readonly class TenantMetricsListener
             'http.status_code' => $statusCode,
         ];
 
-        $meter = $this->getMeter();
-        $meter->createHistogram('http.server.duration', 'ms')->record($durationMs, $attributes);
-        $meter->createCounter('http.server.requests')->add(1, $attributes);
+        $this->getRequestDurationHistogram()->record($durationMs, $attributes);
+        $this->getRequestCounter()->add(1, $attributes);
     }
 
     private function getMeter(): MeterInterface
@@ -51,5 +55,23 @@ final readonly class TenantMetricsListener
         $provider = Globals::meterProvider();
 
         return $provider->getMeter('efact');
+    }
+
+    private function getRequestDurationHistogram(): HistogramInterface
+    {
+        if ($this->requestDurationHistogram === null) {
+            $this->requestDurationHistogram = $this->getMeter()->createHistogram('http.server.duration', 'ms');
+        }
+
+        return $this->requestDurationHistogram;
+    }
+
+    private function getRequestCounter(): CounterInterface
+    {
+        if ($this->requestCounter === null) {
+            $this->requestCounter = $this->getMeter()->createCounter('http.server.requests');
+        }
+
+        return $this->requestCounter;
     }
 }
