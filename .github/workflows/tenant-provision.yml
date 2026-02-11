@@ -23,7 +23,7 @@ on:
 
 jobs:
   provision:
-    runs-on: [ self-hosted, ops.efact ]
+    runs-on: [ self-hosted, efact ]
     env:
       PROVISIONING_DATABASE_URL: ${{ secrets.PROVISIONING_DATABASE_URL }}
     steps:
