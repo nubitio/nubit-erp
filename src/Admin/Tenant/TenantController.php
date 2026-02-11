@@ -100,8 +100,36 @@ class TenantController extends AbstractController
     public function delete(int $id): Response
     {
         $this->tenantManager->deleteTenant($id);
-        $this->auditLogger->log('tenant.delete', ['tenant_id' => $id]);
-        $this->addFlash('success', 'Tenant removed');
+        $this->auditLogger->log('tenant.soft_delete', ['tenant_id' => $id]);
+        $this->addFlash('success', 'Tenant deactivated (soft-deleted). Use purge for permanent removal.');
+
+        return $this->redirectToRoute('admin_tenant_index');
+    }
+
+    #[Route('/admin/tenants/{id}/restore', name: 'admin_tenant_restore', methods: ['POST'])]
+    public function restore(int $id): Response
+    {
+        try {
+            $this->tenantManager->restoreTenant($id);
+            $this->auditLogger->log('tenant.restore', ['tenant_id' => $id]);
+            $this->addFlash('success', 'Tenant restored');
+        } catch (InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_index');
+    }
+
+    #[Route('/admin/tenants/{id}/purge', name: 'admin_tenant_purge', methods: ['POST'])]
+    public function purge(int $id): Response
+    {
+        try {
+            $this->tenantManager->purgeTenant($id);
+            $this->auditLogger->log('tenant.purge', ['tenant_id' => $id]);
+            $this->addFlash('success', 'Tenant permanently deleted');
+        } catch (InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
 
         return $this->redirectToRoute('admin_tenant_index');
     }

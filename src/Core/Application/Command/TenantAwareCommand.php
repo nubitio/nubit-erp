@@ -16,6 +16,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Process\Process;
 
 abstract class TenantAwareCommand extends Command
 {
@@ -41,6 +42,13 @@ abstract class TenantAwareCommand extends Command
             shortcut: 't',
             mode: InputOption::VALUE_REQUIRED,
             description: 'Execute command for a specific tenant',
+        );
+        $this->addOption(
+            name: 'parallel',
+            shortcut: 'p',
+            mode: InputOption::VALUE_OPTIONAL,
+            description: 'Run for all tenants in parallel (value = max concurrency, default 4)',
+            default: false,
         );
     }
 
@@ -83,6 +91,13 @@ abstract class TenantAwareCommand extends Command
             return Command::SUCCESS;
         }
 
+        $parallel = $input->getOption('parallel');
+        if ($parallel !== false) {
+            $concurrency = (int)($parallel ?: 4);
+
+            return $this->executeAllTenantsParallel($io, $concurrency);
+        }
+
         return $this->executeAllTenants($io, $input, $output);
     }
 
@@ -113,6 +128,67 @@ abstract class TenantAwareCommand extends Command
 
         $io->success('Done!');
 
+        $this->release();
+
+        return Command::SUCCESS;
+    }
+
+    private function executeAllTenantsParallel(SymfonyStyle $io, int $concurrency): int
+    {
+        /** @var string $commandName */
+        $commandName = $this->getName();
+        $io->info(sprintf('Running "%s" for %d tenants (concurrency: %d)', $commandName, count($this->tenants), $concurrency));
+
+        /** @var array<string, Process> $running */
+        $running = [];
+        $queue = array_map(static fn (array $t): string => (string)$t['name'], $this->tenants);
+        $failed = [];
+        $succeeded = [];
+
+        while ($queue !== [] || $running !== []) {
+            while (count($running) < $concurrency && $queue !== []) {
+                $tenantName = array_shift($queue);
+                $process = new Process([PHP_BINARY, 'bin/console', $commandName, '--tenant=' . $tenantName]);
+                $process->setTimeout(null);
+                $process->start();
+                $running[$tenantName] = $process;
+                $io->writeln(sprintf('  <info>Started</info> %s', $tenantName));
+            }
+
+            foreach ($running as $tenantName => $process) {
+                if (!$process->isRunning()) {
+                    if ($process->isSuccessful()) {
+                        $succeeded[] = $tenantName;
+                        $io->writeln(sprintf('  <fg=green>Done</> %s', $tenantName));
+                    } else {
+                        $failed[] = $tenantName;
+                        $this->logger->error('Parallel execution failed for tenant', [
+                            'tenant' => $tenantName,
+                            'output' => $process->getErrorOutput(),
+                        ]);
+                        $io->writeln(sprintf('  <fg=red>Failed</> %s', $tenantName));
+                    }
+
+                    unset($running[$tenantName]);
+                }
+            }
+
+            if ($running !== []) {
+                usleep(100_000); // 100ms poll
+            }
+        }
+
+        $io->newLine();
+        $io->writeln(sprintf('Succeeded: %d, Failed: %d', count($succeeded), count($failed)));
+
+        if ($failed !== []) {
+            $io->error('Failed tenants: ' . implode(', ', $failed));
+            $this->release();
+
+            return Command::FAILURE;
+        }
+
+        $io->success('All tenants processed');
         $this->release();
 
         return Command::SUCCESS;
