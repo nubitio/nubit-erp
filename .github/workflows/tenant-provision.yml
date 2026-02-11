@@ -23,27 +23,12 @@ on:
 
 jobs:
   provision:
-    runs-on: self-hosted
+    runs-on: [ self-hosted, ops.efact ]
     env:
       PROVISIONING_DATABASE_URL: ${{ secrets.PROVISIONING_DATABASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Debug runner/docker
-        run: |
-          echo "Host:"
-          hostname
-          whoami
-          pwd
-          echo "Docker context:"
-          docker context ls || true
-          echo "Docker info:"
-          docker info || true
-          echo "Running containers:"
-          docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' || true
-          echo "All containers:"
-          docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}' || true
 
       - name: Provision tenant
         env:
