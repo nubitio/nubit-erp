@@ -36,7 +36,19 @@ jobs:
 
       - name: Provision tenant
         run: |
-          docker exec -i "${{ inputs.target_container }}" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
+          TARGET="${{ inputs.target_container }}"
+          CONTAINER="$(docker ps --format '{{.Names}}' | awk -v t="$TARGET" '$0==t{print; exit}')"
+          if [ -z "$CONTAINER" ]; then
+            CONTAINER="$(docker ps --format '{{.Names}}' | awk -v t="$TARGET" 'index($0,t)==1{print; exit}')"
+          fi
+          if [ -z "$CONTAINER" ]; then
+            echo "Container not found. Running containers:"
+            docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
+            exit 1
+          fi
+
+          echo "Using container: $CONTAINER"
+          docker exec -i "$CONTAINER" php bin/console app:tenant:provision "${{ inputs.tenant_name }}" \
             --domain="${{ inputs.domain }}" \
             --create-user \
             --db-user-pass="${{ inputs.admin_pass }}" \
