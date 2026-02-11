@@ -34,9 +34,11 @@ class TenantController extends AbstractController
     public function index(): Response
     {
         $tenants = $this->tenantManager->getTenants();
+        $deletedTenants = $this->tenantManager->getDeletedTenants();
 
         return $this->render('admin/tenant/index.html.twig', [
             'tenants' => $tenants,
+            'deleted_tenants' => $deletedTenants,
         ]);
     }
 
