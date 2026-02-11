@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
@@ -124,6 +125,34 @@ final class TenantListenerTest extends TestCase
 
         $this->assertSame(2, $this->tenantContext->getTenantId());
         $this->assertSame('corp', $this->tenantContext->getTenantName());
+    }
+
+    public function testSuspendedTenantIsBlocked(): void
+    {
+        $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme', 'status' => 'suspended'];
+
+        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
+        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $this->expectExceptionMessage('Service temporarily unavailable');
+
+        ($this->listener)($this->createEvent('acme.example.com'));
+    }
+
+    public function testActiveTenantIsAllowed(): void
+    {
+        $tenantData = ['id' => 1, 'name' => 'acme', 'connection' => 'acme', 'status' => 'active'];
+
+        $this->tenantManager->method('getTenantByDomain')->willReturn(null);
+        $this->tenantManager->method('getTenantByName')->willReturn($tenantData);
+        $this->switcher->method('switchConnection');
+
+        ($this->listener)($this->createEvent('acme.example.com'));
+
+        $this->assertSame('acme', $this->tenantContext->getTenantName());
     }
 
     public function testErrorDoesNotLeakTenantName(): void

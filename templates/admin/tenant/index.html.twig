@@ -14,9 +14,12 @@
             <h1 class="h3 mb-0">Create and manage tenant connections</h1>
             <p class="text-muted mb-0">Add a tenant with its database/schema name. Use short, memorable names.</p>
         </div>
-        <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2">
-            {{ tenants|length }} active {{ tenants|length == 1 ? 'tenant' : 'tenants' }}
-        </span>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url('admin_plan_index') }}" class="btn btn-outline-primary btn-sm">Manage plans</a>
+            <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2">
+                {{ tenants|length }} active {{ tenants|length == 1 ? 'tenant' : 'tenants' }}
+            </span>
+        </div>
     </div>
 
     {% for label, messages in app.flashes %}

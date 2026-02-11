@@ -229,6 +229,7 @@ final readonly class InvoiceCreationService
 
         return [
             'success' => true,
+            'invoiceId' => $taxDocumentId,
             'message' => 'Comprobante emitido correctamente.',
         ];
     }

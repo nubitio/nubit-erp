@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Billing\Domain;
 
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
-use Doctrine\DBAL\Exception;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Brick\Math\Exception\MathException;
 
 readonly class BillSendUseCase
 {
@@ -18,12 +17,11 @@ readonly class BillSendUseCase
 
     /**
      * @throws \DateMalformedStringException
-     * @throws ExceptionInterface
-     * @throws Exception
+     * @throws MathException
      */
-    public function __invoke(string $saleId): DocumentResponse
+    public function __invoke(string $taxDocumentId): DocumentResponse
     {
-        $bill = $this->billCreateUseCase->__invoke($saleId);
+        $bill = $this->billCreateUseCase->__invoke($taxDocumentId);
         $response = $this->billRepository->sendBill($bill);
         $response->name = $bill->getName();
 

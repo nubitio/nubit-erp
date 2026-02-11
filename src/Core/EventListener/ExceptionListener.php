@@ -6,6 +6,7 @@ namespace App\Core\EventListener;
 
 use Throwable;
 use App\Core\Exception\NotFoundException;
+use App\Core\Exception\QuotaExceededException;
 use App\Core\Exception\ServiceException;
 use App\Core\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
@@ -68,6 +69,9 @@ final readonly class ExceptionListener
 
         if ($exception instanceof ValidationException) {
             return Response::HTTP_UNPROCESSABLE_ENTITY;
+        }
+        if ($exception instanceof QuotaExceededException) {
+            return Response::HTTP_TOO_MANY_REQUESTS;
         }
 
         $code = $exception->getCode();

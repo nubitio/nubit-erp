@@ -7,6 +7,7 @@ namespace App\Core\Security\Auth;
 use Exception;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use LogicException;
 use Psr\Log\LoggerInterface;
 
 final readonly class JWTManager
@@ -17,6 +18,9 @@ final readonly class JWTManager
         private string $secret,
         private LoggerInterface $logger,
     ) {
+        if (trim($this->secret) === '') {
+            throw new LogicException('JWT secret is empty. Configure APP_SECRET with a non-empty value.');
+        }
     }
 
     public function encode(array $payload, ?int $expiresIn = null): string

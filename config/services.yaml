@@ -9,6 +9,9 @@
 parameters:
     jwt_access_token_ttl: '%env(int:AUTH_TOKEN_TTL)%'
     jwt_refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
+    tenant_rate_limit: '300'
+    tenant_rate_window: '60'
+    tenant_plans: '%kernel.project_dir%/config/tenant_plans.php'
 
 services:
     # default configuration for services in *this* file

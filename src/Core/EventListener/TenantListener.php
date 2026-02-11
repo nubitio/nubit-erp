@@ -10,6 +10,7 @@ use App\Core\Service\TenantManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Uid\Uuid;
 use Throwable;
@@ -89,6 +90,16 @@ readonly class TenantListener
             }
 
             $tenantName = $tenant['name'] ?? $subdomain;
+            $tenantStatus = $tenant['status'] ?? 'active';
+
+            if ($tenantStatus === 'suspended') {
+                $this->logger->warning('Request to suspended tenant blocked', [
+                    'tenant' => $tenantName,
+                    'host' => $host,
+                ]);
+
+                throw new AccessDeniedHttpException('Service temporarily unavailable');
+            }
 
             $request->headers->set('tenant', $tenantName);
             $this->tenantConnectionSwitcher->switchConnection($tenantName);
@@ -101,6 +112,8 @@ readonly class TenantListener
 
             $this->tenantContext->setTenant($tenantId, $tenantName, $host, $requestId);
             $this->setTraceAttributes($tenantId, $tenantName, $host, $requestId);
+        } catch (AccessDeniedHttpException $e) {
+            throw $e;
         } catch (Throwable $throwable) {
             $this->logger->error('Tenant resolution failed', [
                 'tenant' => $subdomain,

@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
+use Symfony\Contracts\Cache\CacheInterface;
 
 #[AsCommand(
     name: 'app:tenant:provision',
@@ -29,6 +30,7 @@ class TenantProvisionCommand extends Command
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly InitialSetupService $initialSetupService,
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
+        private readonly CacheInterface $cache,
     ) {
         parent::__construct();
     }
@@ -136,7 +138,7 @@ class TenantProvisionCommand extends Command
 
         try {
             $io->section('Creating tenant database');
-            $quotedDb = $provisioningConnection->quoteIdentifier($tenant);
+            $quotedDb = $provisioningConnection->quoteSingleIdentifier($tenant);
             $provisioningConnection->executeStatement(
                 'CREATE DATABASE IF NOT EXISTS ' . $quotedDb . ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
             );
@@ -165,6 +167,7 @@ class TenantProvisionCommand extends Command
                 ON DUPLICATE KEY UPDATE connection=VALUES(connection), updated_at=NOW()',
                 [$tenant, $tenant, 'active']
             );
+            $this->invalidateTenantCache($tenant);
             $controlPlaneRegistered = true;
 
             if ($domain !== '') {
@@ -175,6 +178,7 @@ class TenantProvisionCommand extends Command
                     ON DUPLICATE KEY UPDATE tenant_id=VALUES(tenant_id), is_primary=1',
                     [$tenantId, strtolower($domain)]
                 );
+                $this->invalidateTenantDomainCache($domain);
             }
 
             $io->section('Running tenant migrations');
@@ -248,13 +252,15 @@ class TenantProvisionCommand extends Command
 
         if ($dbCreated) {
             try {
-                $quotedDb = $provisioningConnection->quoteIdentifier($tenant);
+                $quotedDb = $provisioningConnection->quoteSingleIdentifier($tenant);
                 $provisioningConnection->executeStatement('DROP DATABASE IF EXISTS ' . $quotedDb);
                 $io->note('Rolled back: database');
             } catch (\Throwable $e) {
                 $io->warning('Rollback failed (database): ' . $e->getMessage());
             }
         }
+
+        $this->invalidateTenantCache($tenant);
     }
 
     private function ensureControlPlaneReady(Connection $connection): void
@@ -350,6 +356,26 @@ class TenantProvisionCommand extends Command
     private function resolveSecret(string $envVar): string
     {
         return trim((string)($_ENV[$envVar] ?? $_SERVER[$envVar] ?? getenv($envVar) ?: ''));
+    }
+
+    private function invalidateTenantCache(string $tenantName): void
+    {
+        $tenantName = trim($tenantName);
+        if ($tenantName === '') {
+            return;
+        }
+
+        $this->cache->delete('tenant_name_' . hash('xxh3', $tenantName));
+    }
+
+    private function invalidateTenantDomainCache(string $domain): void
+    {
+        $domain = strtolower(trim($domain));
+        if ($domain === '') {
+            return;
+        }
+
+        $this->cache->delete('tenant_domain_' . hash('xxh3', $domain));
     }
 
     private function buildSetupInput(SymfonyStyle $io, InputInterface $input): InitialSetupInput

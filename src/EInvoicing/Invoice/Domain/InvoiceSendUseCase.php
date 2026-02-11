@@ -45,7 +45,7 @@ readonly class InvoiceSendUseCase
             }
 
             $saleId = (string)$taxDocument->getSale()->getId();
-            $response = $this->billSendUseCase->__invoke($saleId);
+            $response = $this->billSendUseCase->__invoke($taxDocumentId);
             $companyId = $this->companyContext->getId();
             $this->fileManager->write(
                 $companyId . '/' . $response->name . '.xml',
