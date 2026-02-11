@@ -61,6 +61,19 @@ jobs:
           fi
 
           echo "Using container: $CONTAINER"
+          PROV_HOST="$(docker exec -i \
+            -e PROVISIONING_DATABASE_URL="$PROVISIONING_DATABASE_URL" \
+            "$CONTAINER" php -r '$u=getenv("PROVISIONING_DATABASE_URL") ?: ""; $p=parse_url($u); echo $p["host"] ?? "";')"
+          echo "Provisioning DB host: ${PROV_HOST:-<empty>}"
+          if [ -z "$PROV_HOST" ]; then
+            echo "Invalid PROVISIONING_DATABASE_URL: host is empty (check URL format and URL-encode password)."
+            exit 1
+          fi
+          if [ "$PROV_HOST" = "localhost" ] || [ "$PROV_HOST" = "127.0.0.1" ]; then
+            echo "Invalid PROVISIONING_DATABASE_URL host for containerized app: use mariadb service/container hostname."
+            exit 1
+          fi
+
           docker exec -i \
             -e PROVISIONING_DATABASE_URL="$PROVISIONING_DATABASE_URL" \
             -e TENANT_DB_PASS="$TENANT_DB_PASS" \
