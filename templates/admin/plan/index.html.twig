@@ -59,7 +59,7 @@
                 <div class="card-body">
                     <h2 class="h5 mb-1"><i class="bi bi-plus-circle me-1"></i> Create plan</h2>
                     <p class="text-muted small mb-3">Start from scratch and tune each limit.</p>
-                    <form action="{{ url('admin_plan_create') }}" method="post" class="row g-3">
+                    <form action="{{ path('admin_plan_create') }}" method="post" class="row g-3">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-12">
                             <label class="form-label">Name</label>
@@ -121,7 +121,7 @@
                         </div>
                     {% else %}
                         {% for plan in plans %}
-                            <form action="{{ url('admin_plan_update', {'id': plan.id}) }}" method="post"
+                            <form action="{{ path('admin_plan_update', {'id': plan.id}) }}" method="post"
                                   class="border rounded p-3 mb-3 {{ plan.is_default ? 'border-primary' : '' }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
@@ -180,7 +180,7 @@
 
                                     <div class="col-12 d-flex justify-content-end gap-2">
                                         <button class="btn btn-outline-danger btn-sm"
-                                                formaction="{{ url('admin_plan_delete', {'id': plan.id}) }}"
+                                                formaction="{{ path('admin_plan_delete', {'id': plan.id}) }}"
                                                 formmethod="post"
                                                 onclick="return confirm('Delete plan {{ plan.name }}?');">
                                             <i class="bi bi-trash me-1"></i> Delete
