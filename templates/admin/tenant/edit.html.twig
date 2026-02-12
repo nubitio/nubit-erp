@@ -6,7 +6,7 @@
 {% block breadcrumbs %}
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url('admin_tenant_index') }}">Tenants</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_tenant_index') }}">Tenants</a></li>
             <li class="breadcrumb-item active">{{ tenant.name }}</li>
         </ol>
     </nav>
@@ -80,7 +80,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Tenant details</h2>
-                            <form action="{{ url('admin_tenant_update', {'id': tenant.id}) }}" method="post"
+                            <form action="{{ path('admin_tenant_update', {'id': tenant.id}) }}" method="post"
                                   class="needs-validation" novalidate>
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                 <div class="mb-3">
@@ -94,7 +94,7 @@
                                            value="{{ tenant.connection }}" placeholder="Database/schema" required>
                                 </div>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a href="{{ url('admin_tenant_index') }}"
+                                    <a href="{{ path('admin_tenant_index') }}"
                                        class="btn btn-outline-secondary">Cancel</a>
                                     <button type="submit" class="btn btn-primary">Save changes</button>
                                 </div>
@@ -107,7 +107,7 @@
                         <div class="card-body">
                             <h2 class="h5 mb-3">Plan</h2>
                             <form id="tenant-plan-form"
-                                  action="{{ url('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
+                                  action="{{ path('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                 <div class="d-flex gap-2">
                                     <select id="plan" name="plan" class="form-select">
@@ -129,7 +129,7 @@
                             {% if tenant.status is defined and tenant.status == 'suspended' %}
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="badge bg-warning-subtle text-warning">Suspended</span>
-                                    <form action="{{ url('admin_tenant_unsuspend', {'id': tenant.id}) }}"
+                                    <form action="{{ path('admin_tenant_unsuspend', {'id': tenant.id}) }}"
                                           method="post" class="d-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                         <button type="submit" class="btn btn-outline-success btn-sm">
@@ -140,7 +140,7 @@
                             {% else %}
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="badge bg-success-subtle text-success">Active</span>
-                                    <form action="{{ url('admin_tenant_suspend', {'id': tenant.id}) }}"
+                                    <form action="{{ path('admin_tenant_suspend', {'id': tenant.id}) }}"
                                           method="post" class="d-inline">
                                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                         <button type="submit" class="btn btn-outline-warning btn-sm"
@@ -163,7 +163,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h2 class="h5 mb-3"><i class="bi bi-plus-circle me-1"></i> Add domain</h2>
-                            <form action="{{ url('admin_tenant_domain_create', {'id': tenant.id}) }}"
+                            <form action="{{ path('admin_tenant_domain_create', {'id': tenant.id}) }}"
                                   method="post" class="row g-3 align-items-end">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                                 <div class="col-12">
@@ -227,7 +227,7 @@
                                                 </td>
                                                 <td class="text-end">
                                                     {% if not domain.is_primary %}
-                                                        <form action="{{ url('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
+                                                        <form action="{{ path('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
                                                               method="post" class="d-inline">
                                                             <input type="hidden" name="_token"
                                                                    value="{{ csrf_token('admin') }}">
@@ -237,7 +237,7 @@
                                                             </button>
                                                         </form>
                                                     {% endif %}
-                                                    <form action="{{ url('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
+                                                    <form action="{{ path('admin_tenant_domain_delete', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
                                                           method="post" class="d-inline">
                                                         <input type="hidden" name="_token"
                                                                value="{{ csrf_token('admin') }}">
@@ -265,7 +265,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5 mb-3"><i class="bi bi-rocket me-1"></i> Provisioning</h2>
-                    <form action="{{ url('admin_tenant_provision', {'id': tenant.id}) }}" method="post"
+                    <form action="{{ path('admin_tenant_provision', {'id': tenant.id}) }}" method="post"
                           class="row g-3">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-md-4">
@@ -363,7 +363,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5 mb-3"><i class="bi bi-clock-history me-1"></i> Backup schedule</h2>
-                    <form action="{{ url('admin_tenant_backup_frequency', {'id': tenant.id}) }}" method="post"
+                    <form action="{{ path('admin_tenant_backup_frequency', {'id': tenant.id}) }}" method="post"
                           class="row g-3 align-items-end">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                         <div class="col-md-4">
@@ -388,7 +388,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 mb-0"><i class="bi bi-archive me-1"></i> Backups</h2>
-                        <form action="{{ url('admin_tenant_backup_create', {'id': tenant.id}) }}" method="post"
+                        <form action="{{ path('admin_tenant_backup_create', {'id': tenant.id}) }}" method="post"
                               class="d-inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
                             <button type="submit" class="btn btn-primary btn-sm">
@@ -449,7 +449,7 @@
                                         <td>{{ backup.created_at }}</td>
                                         <td class="text-end">
                                             {% if backup.status == 'completed' %}
-                                                <form action="{{ url('admin_tenant_backup_restore', {'id': tenant.id, 'backupId': backup.id}) }}"
+                                                <form action="{{ path('admin_tenant_backup_restore', {'id': tenant.id, 'backupId': backup.id}) }}"
                                                       method="post" class="d-inline">
                                                     <input type="hidden" name="_token"
                                                            value="{{ csrf_token('admin') }}">
@@ -460,7 +460,7 @@
                                                     </button>
                                                 </form>
                                             {% endif %}
-                                            <form action="{{ url('admin_tenant_backup_delete', {'id': tenant.id, 'backupId': backup.id}) }}"
+                                            <form action="{{ path('admin_tenant_backup_delete', {'id': tenant.id, 'backupId': backup.id}) }}"
                                                   method="post" class="d-inline">
                                                 <input type="hidden" name="_token"
                                                        value="{{ csrf_token('admin') }}">

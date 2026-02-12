@@ -127,6 +127,18 @@ services:
       --time-limit=3600
       --memory-limit=256M
       --no-interaction
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "exit((int)!str_contains(file_get_contents('/proc/1/cmdline'), 'messenger:consume'));",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   worker_scheduler:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
@@ -174,6 +186,18 @@ services:
       --time-limit=3600
       --memory-limit=256M
       --no-interaction
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "php",
+          "-r",
+          "exit((int)!str_contains(file_get_contents('/proc/1/cmdline'), 'messenger:consume'));",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
 volumes:
   app-var:
