@@ -58,6 +58,15 @@
                 {% endif %}
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="backups-tab" data-bs-toggle="tab"
+                    data-bs-target="#backups" type="button" role="tab">
+                <i class="bi bi-archive me-1"></i> Backups
+                {% if backups is not empty %}
+                    <span class="badge bg-secondary ms-1">{{ backups|length }}</span>
+                {% endif %}
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content pt-4" id="tenantTabContent">
@@ -282,6 +291,119 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        {# ── BACKUPS TAB ── #}
+        <div class="tab-pane fade" id="backups" role="tabpanel">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3"><i class="bi bi-clock-history me-1"></i> Backup schedule</h2>
+                    <form action="{{ url('admin_tenant_backup_frequency', {'id': tenant.id}) }}" method="post"
+                          class="row g-3 align-items-end">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                        <div class="col-md-4">
+                            <label for="backup_frequency" class="form-label">Frequency</label>
+                            <select id="backup_frequency" name="backup_frequency" class="form-select">
+                                <option value="0" {{ (tenant.backup_frequency ?? 0) == 0 ? 'selected' : '' }}>Disabled</option>
+                                <option value="6" {{ (tenant.backup_frequency ?? 0) == 6 ? 'selected' : '' }}>Every 6 hours</option>
+                                <option value="12" {{ (tenant.backup_frequency ?? 0) == 12 ? 'selected' : '' }}>Every 12 hours</option>
+                                <option value="24" {{ (tenant.backup_frequency ?? 0) == 24 ? 'selected' : '' }}>Daily</option>
+                                <option value="168" {{ (tenant.backup_frequency ?? 0) == 168 ? 'selected' : '' }}>Weekly</option>
+                                <option value="720" {{ (tenant.backup_frequency ?? 0) == 720 ? 'selected' : '' }}>Monthly</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-outline-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="h5 mb-0"><i class="bi bi-archive me-1"></i> Backups</h2>
+                        <form action="{{ url('admin_tenant_backup_create', {'id': tenant.id}) }}" method="post"
+                              class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> Backup Now
+                            </button>
+                        </form>
+                    </div>
+
+                    {% if backups is empty %}
+                        <div class="border rounded p-3 text-center text-muted bg-light">
+                            No backups yet.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Filename</th>
+                                    <th scope="col">Size</th>
+                                    <th scope="col">Storage</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for backup in backups %}
+                                    <tr>
+                                        <td>{{ backup.id }}</td>
+                                        <td><code class="bg-light px-1 rounded">{{ backup.filename }}</code></td>
+                                        <td>
+                                            {% if backup.size_bytes >= 1048576 %}
+                                                {{ (backup.size_bytes / 1048576)|number_format(1) }} MB
+                                            {% elseif backup.size_bytes >= 1024 %}
+                                                {{ (backup.size_bytes / 1024)|number_format(1) }} KB
+                                            {% else %}
+                                                {{ backup.size_bytes }} B
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if backup.storage_type == 's3' %}
+                                                <span class="badge bg-primary-subtle text-primary">S3</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary">Local</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if backup.status == 'completed' %}
+                                                <span class="badge bg-success-subtle text-success">Completed</span>
+                                            {% elseif backup.status == 'failed' %}
+                                                <span class="badge bg-danger-subtle text-danger"
+                                                      title="{{ backup.error_message }}">Failed</span>
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ backup.created_at }}</td>
+                                        <td class="text-end">
+                                            {% if backup.status == 'completed' %}
+                                                <form action="{{ url('admin_tenant_backup_restore', {'id': tenant.id, 'backupId': backup.id}) }}"
+                                                      method="post" class="d-inline">
+                                                    <input type="hidden" name="_token"
+                                                           value="{{ csrf_token('admin') }}">
+                                                    <button type="submit"
+                                                            class="btn btn-outline-warning btn-sm"
+                                                            onclick="return confirm('Restore tenant from backup #{{ backup.id }}? This will overwrite the current database.');">
+                                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>

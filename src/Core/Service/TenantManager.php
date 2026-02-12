@@ -306,7 +306,7 @@ readonly class TenantManager
             return $this->fallbackToYamlOrFail('read tenants');
         }
 
-        $sql = 'SELECT t.id, t.name, t.connection, t.status, t.plan, d.domain AS primary_domain
+        $sql = 'SELECT t.id, t.name, t.connection, t.status, t.plan, t.backup_frequency, d.domain AS primary_domain
                 FROM tenants t
                 LEFT JOIN tenant_domains d ON d.tenant_id = t.id AND d.is_primary = 1
                 WHERE t.status != \'deleted\'
@@ -518,6 +518,37 @@ readonly class TenantManager
     /**
      * @throws DbalException
      */
+    public function updateBackupFrequency(int $id, int $frequency): void
+    {
+        if ($frequency < 0) {
+            throw new InvalidArgumentException('Backup frequency must be 0 or greater');
+        }
+
+        $conn = $this->getControlPlaneConnection();
+        $this->requireControlPlaneReady('update backup frequency');
+
+        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $affected = $conn->update('tenants', [
+            'backup_frequency' => $frequency,
+            'updated_at' => $now,
+        ], ['id' => $id]);
+
+        if ($affected === 0) {
+            $exists = $conn->fetchOne('SELECT id FROM tenants WHERE id = ?', [$id]);
+            if ($exists === false) {
+                throw new InvalidArgumentException('Tenant not found');
+            }
+        }
+
+        $tenant = $this->getTenant($id);
+        if ($tenant !== null) {
+            $this->invalidateTenantCache((string) ($tenant['name'] ?? ''));
+        }
+    }
+
+    /**
+     * @throws DbalException
+     */
     public function changePlan(int $id, string $plan): void
     {
         $plan = strtolower(trim($plan));
@@ -567,7 +598,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT id, name, connection, plan FROM tenants WHERE id = ?',
+            'SELECT id, name, connection, status, plan, backup_frequency FROM tenants WHERE id = ?',
             [$id],
         );
 
@@ -592,7 +623,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT id, name, connection, status, plan FROM tenants WHERE name = ? AND status != ?',
+            'SELECT id, name, connection, status, plan, backup_frequency FROM tenants WHERE name = ? AND status != ?',
             [$name, 'deleted'],
         );
 
@@ -617,7 +648,7 @@ readonly class TenantManager
 
         /** @var array<string, mixed>|false $row */
         $row = $conn->fetchAssociative(
-            'SELECT t.id, t.name, t.connection, t.status, t.plan FROM tenant_domains d '
+            'SELECT t.id, t.name, t.connection, t.status, t.plan, t.backup_frequency FROM tenant_domains d '
             . 'INNER JOIN tenants t ON t.id = d.tenant_id '
             . 'WHERE d.domain = ? AND t.status != ?',
             [$domain, 'deleted'],

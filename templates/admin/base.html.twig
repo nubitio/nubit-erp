@@ -688,6 +688,11 @@
     </a>
     <nav class="admin-sidebar-nav">
         <div class="nav-label">Management</div>
+        <a href="{{ url('admin_dashboard') }}"
+           class="sidebar-link {% block nav_dashboard %}{% endblock %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
         <a href="{{ url('admin_tenant_index') }}"
            class="sidebar-link {% block nav_tenants %}{% endblock %}">
             <i class="bi bi-building"></i>
