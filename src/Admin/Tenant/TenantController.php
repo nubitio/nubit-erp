@@ -21,6 +21,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 class TenantController extends AbstractController
@@ -583,6 +584,49 @@ class TenantController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
+    }
+
+    #[Route('/admin/tenants/{id}/backup/{backupId}/download', name: 'admin_tenant_backup_download', methods: ['GET'])]
+    public function downloadBackup(int $id, int $backupId): StreamedResponse
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            throw $this->createNotFoundException('Tenant not found.');
+        }
+
+        $localPath = $this->backupService->downloadBackup($backupId);
+        $filename = basename($localPath);
+
+        $backups = $this->backupService->listBackupsByTenantId($id);
+        foreach ($backups as $b) {
+            if ((int) $b['id'] === $backupId) {
+                $filename = (string) $b['filename'];
+                break;
+            }
+        }
+
+        $isTemp = str_starts_with($localPath, sys_get_temp_dir());
+
+        $response = new StreamedResponse(function () use ($localPath, $isTemp): void {
+            $stream = fopen($localPath, 'r');
+            if ($stream !== false) {
+                fpassthru($stream);
+                fclose($stream);
+            }
+            if ($isTemp) {
+                @unlink($localPath);
+            }
+        });
+
+        $response->headers->set('Content-Type', 'application/gzip');
+        $response->headers->set('Content-Disposition', sprintf('attachment; filename="%s"', $filename));
+
+        $size = filesize($localPath);
+        if ($size !== false) {
+            $response->headers->set('Content-Length', (string) $size);
+        }
+
+        return $response;
     }
 
     private function recordProvisionDispatch(
