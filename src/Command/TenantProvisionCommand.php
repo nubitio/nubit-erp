@@ -12,11 +12,13 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\Persistence\ConnectionRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Doctrine\DBAL\ParameterType;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
 use Symfony\Contracts\Cache\CacheInterface;
 
@@ -53,7 +55,8 @@ class TenantProvisionCommand extends Command
             ->addOption('company-phone', null, InputOption::VALUE_OPTIONAL, 'Company phone')
             ->addOption('branch-name', null, InputOption::VALUE_OPTIONAL, 'Branch name')
             ->addOption('branch-address', null, InputOption::VALUE_OPTIONAL, 'Branch address')
-            ->addOption('branch-phone', null, InputOption::VALUE_OPTIONAL, 'Branch phone');
+            ->addOption('branch-phone', null, InputOption::VALUE_OPTIONAL, 'Branch phone')
+            ->addOption('provision-id', null, InputOption::VALUE_OPTIONAL, 'Provision tracking ID from control plane');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -120,6 +123,8 @@ class TenantProvisionCommand extends Command
             $seedInitial = false;
         }
 
+        $provisionId = (int)$input->getOption('provision-id');
+
         $io->title('Provision tenant: ' . $tenant);
 
         /** @var Connection $controlPlane */
@@ -131,6 +136,10 @@ class TenantProvisionCommand extends Command
             (string)$input->getOption('provisioning-url')
         );
         $this->ensureControlPlaneReady($controlPlane);
+
+        if ($provisionId > 0) {
+            $this->updateProvisionStatus($controlPlane, $provisionId, 'running');
+        }
 
         $dbCreated = false;
         $userCreated = false;
@@ -197,11 +206,25 @@ class TenantProvisionCommand extends Command
             if ($runSetup) {
                 $io->section('Running initial setup');
                 $this->tenantConnectionSwitcher->switchConnection($tenant);
-                $setupInput = $this->buildSetupInput($io, $input);
-                $this->initialSetupService->configure($setupInput);
+                try {
+                    $setupInput = $this->buildSetupInput($io, $input);
+                    $this->initialSetupService->configure($setupInput);
+                } catch (BadRequestHttpException) {
+                    $io->note('Setup already completed, skipping.');
+                }
             }
         } catch (\Throwable $exception) {
             $io->error('Provisioning failed: ' . $exception->getMessage());
+
+            if ($provisionId > 0) {
+                $this->updateProvisionStatus(
+                    $controlPlane,
+                    $provisionId,
+                    'failed',
+                    mb_substr($exception::class . ': ' . $exception->getMessage(), 0, 500)
+                );
+            }
+
             $io->section('Rolling back provisioning');
 
             $this->rollback(
@@ -217,9 +240,48 @@ class TenantProvisionCommand extends Command
             return Command::FAILURE;
         }
 
+        if ($provisionId > 0) {
+            $this->updateProvisionStatus($controlPlane, $provisionId, 'completed');
+        }
+
         $io->success('Provisioning completed.');
 
         return Command::SUCCESS;
+    }
+
+    private function updateProvisionStatus(
+        Connection $controlPlane,
+        int $provisionId,
+        string $status,
+        string $errorMessage = '',
+    ): void {
+        try {
+            $sets = ['status = ?'];
+            $params = [$status];
+            $types = [];
+
+            if ($status === 'running') {
+                $sets[] = 'started_at = NOW()';
+            } elseif ($status === 'completed' || $status === 'failed') {
+                $sets[] = 'completed_at = NOW()';
+            }
+
+            if ($errorMessage !== '') {
+                $sets[] = 'error_message = ?';
+                $params[] = $errorMessage;
+            }
+
+            $params[] = $provisionId;
+            $types[] = ParameterType::INTEGER;
+
+            $controlPlane->executeStatement(
+                'UPDATE tenant_provisions SET ' . implode(', ', $sets) . ' WHERE id = ?',
+                $params,
+                [...array_fill(0, count($params) - 1, ParameterType::STRING), ParameterType::INTEGER]
+            );
+        } catch (\Throwable) {
+            // Don't let tracking failures break provisioning
+        }
     }
 
     private function rollback(

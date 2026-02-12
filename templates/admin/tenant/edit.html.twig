@@ -47,6 +47,9 @@
             <button class="nav-link" id="provisioning-tab" data-bs-toggle="tab"
                     data-bs-target="#provisioning" type="button" role="tab">
                 <i class="bi bi-rocket me-1"></i> Provisioning
+                {% if provisions is not empty %}
+                    <span class="badge bg-secondary ms-1">{{ provisions|length }}</span>
+                {% endif %}
             </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -259,7 +262,7 @@
 
         {# ── PROVISIONING TAB ── #}
         <div class="tab-pane fade" id="provisioning" role="tabpanel">
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5 mb-3"><i class="bi bi-rocket me-1"></i> Provisioning</h2>
                     <form action="{{ url('admin_tenant_provision', {'id': tenant.id}) }}" method="post"
@@ -291,6 +294,66 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3"><i class="bi bi-clock-history me-1"></i> Provisioning history</h2>
+                    {% if provisions is empty %}
+                        <div class="border rounded p-3 text-center text-muted bg-light">
+                            No provisioning runs yet.
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Domain</th>
+                                    <th scope="col">Container</th>
+                                    <th scope="col">Created</th>
+                                    <th scope="col">Started</th>
+                                    <th scope="col">Completed</th>
+                                    <th scope="col">Error</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for prov in provisions %}
+                                    <tr>
+                                        <td>{{ prov.id }}</td>
+                                        <td>
+                                            {% if prov.status == 'completed' %}
+                                                <span class="badge bg-success-subtle text-success">Completed</span>
+                                            {% elseif prov.status == 'failed' %}
+                                                <span class="badge bg-danger-subtle text-danger">Failed</span>
+                                            {% elseif prov.status == 'running' %}
+                                                <span class="badge bg-info-subtle text-info">Running</span>
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-warning">Dispatched</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><code class="bg-light px-1 rounded">{{ prov.domain }}</code></td>
+                                        <td>{{ prov.target_container }}</td>
+                                        <td>{{ prov.created_at }}</td>
+                                        <td>{{ prov.started_at ?? '-' }}</td>
+                                        <td>{{ prov.completed_at ?? '-' }}</td>
+                                        <td>
+                                            {% if prov.error_message %}
+                                                <span class="text-danger" title="{{ prov.error_message }}">
+                                                    {{ prov.error_message|length > 60 ? prov.error_message[:60] ~ '...' : prov.error_message }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
