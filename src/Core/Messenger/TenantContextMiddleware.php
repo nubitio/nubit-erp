@@ -33,6 +33,14 @@ final readonly class TenantContextMiddleware implements MiddlewareInterface
             $this->tenantConnectionSwitcher->switchConnection($stamp->tenantName);
         }
 
+        /** @var ActorStamp|null $actorStamp */
+        $actorStamp = $envelope->last(ActorStamp::class);
+        $this->tenantContext->setActor(
+            $actorStamp?->actorIdentifier,
+            'messenger',
+            $actorStamp?->commandName,
+        );
+
         try {
             return $stack->next()->handle($envelope, $stack);
         } finally {

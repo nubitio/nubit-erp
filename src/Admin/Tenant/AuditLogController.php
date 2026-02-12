@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Tenant;
 
-use App\Core\Audit\AuditLogger;
+use App\Core\Audit\AuditLogRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AuditLogController extends AbstractController
 {
     public function __construct(
-        private readonly AuditLogger $auditLogger,
+        private readonly AuditLogRepository $auditLogRepository,
     ) {
     }
 
@@ -29,8 +29,8 @@ final class AuditLogController extends AbstractController
         $page = max(1, $request->query->getInt('page', 1));
         $limit = 50;
 
-        $result = $this->auditLogger->getAuditLogs($filters, $page, $limit);
-        $actions = $this->auditLogger->getDistinctActions();
+        $result = $this->auditLogRepository->getAuditLogs($filters, $page, $limit);
+        $actions = $this->auditLogRepository->getDistinctActions();
 
         $totalPages = $result['total'] > 0
             ? (int) ceil($result['total'] / $limit)

@@ -28,6 +28,8 @@ readonly class TenantListener
 
     public function __invoke(RequestEvent $event): void
     {
+        $this->tenantContext->setActor(null, 'http');
+
         $request = $event->getRequest();
         $path = $request->getPathInfo();
         $host = $request->getHost();
