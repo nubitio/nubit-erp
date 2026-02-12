@@ -41,7 +41,7 @@ final readonly class MediaNormalizer implements NormalizerInterface
     ): array | ArrayObject | bool | float | int | string | null {
         $context[self::ALREADY_CALLED] = true;
 
-        $path = Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $data->getPath();
+        $path = $this->tenantContext->getTenantName() . '/' . Constants::IMAGE_DIR . '/' . $data->getPath();
         $data->setPath($this->s3UrlResolver->resolve($path));
 
         return $this->normalizer->normalize($data, $format, $context);

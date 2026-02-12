@@ -6,6 +6,7 @@ namespace App\EInvoicing\Receipt\Domain;
 
 use App\EInvoicing\Billing\Domain\FileResponse;
 use App\Core\Filesystem\FileManager;
+use App\Core\Util\Constants;
 use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
 use League\Flysystem\FilesystemException;
@@ -42,7 +43,7 @@ readonly class ReceiptCdrUseCase
         $docFullName = $companyId . '-' . $invoice->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId . '/R-' . $docFullName . '.zip'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $docFullName . '.zip'),
             'R-' . $docFullName . '.zip'
         );
     }
@@ -59,7 +60,7 @@ readonly class ReceiptCdrUseCase
         $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read($companyId . '/R-' . $docFullName . '.zip'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $docFullName . '.zip'),
             'R-' . $docFullName . '.zip'
         );
     }

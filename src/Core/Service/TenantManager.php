@@ -285,6 +285,7 @@ readonly class TenantManager
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws DbalException
      */
     private function readTenants(): array
     {

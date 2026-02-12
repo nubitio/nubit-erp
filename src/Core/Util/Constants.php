@@ -6,7 +6,10 @@ namespace App\Core\Util;
 
 abstract class Constants
 {
-    public const string IMAGE_UPLOAD_DIR = 'images/';
+    // Storage paths
+    public const string INVOICE_DIR = 'invoices';
+    public const string IMAGE_DIR = 'images';
+    public const string BACKUP_DIR = 'backups';
 
     // Settings
     public const string TAX = 'app_option_igv';
