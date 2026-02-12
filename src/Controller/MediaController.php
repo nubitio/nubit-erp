@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Core\Base\BaseController;
-use App\Core\Context\TenantContext;
-use App\Core\Filesystem\FileUploader;
+use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
 use App\Entity\Media;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -17,8 +16,7 @@ class MediaController extends BaseController
 {
     public function __invoke(
         Request $request,
-        FileUploader $fileUploader,
-        TenantContext $tenantContext,
+        FileManager $fileManager,
     ): Media {
         /** @var ?UploadedFile $file */
         $file = $request->files->get('file');
@@ -26,10 +24,8 @@ class MediaController extends BaseController
             throw new BadRequestHttpException('"file" is required');
         }
 
-        $targetDir = Constants::IMAGE_UPLOAD_DIR . $tenantContext->getTenantName();
-
         $mediaObject = new Media();
-        $mediaObject->setPath($fileUploader->upload($file, $targetDir));
+        $mediaObject->setPath($fileManager->upload($file, Constants::IMAGE_DIR));
 
         return $mediaObject;
     }

@@ -39,7 +39,7 @@ readonly class LogoProvider
             return '';
         }
 
-        $path = Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $media['path'];
+        $path = $this->tenantContext->getTenantName() . '/' . Constants::IMAGE_DIR . '/' . $media['path'];
 
         return $this->s3UrlResolver->resolve($path);
     }

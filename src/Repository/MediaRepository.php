@@ -22,7 +22,7 @@ class MediaRepository extends ServiceEntityRepository
 {
     public function __construct(
         ManagerRegistry $registry,
-        private readonly FilesystemOperator $uploadsFilesystem,
+        private readonly FilesystemOperator $defaultFilesystem,
         private readonly LoggerInterface $logger,
         private readonly TenantContext $tenantContext,
     ) {
@@ -42,8 +42,8 @@ class MediaRepository extends ServiceEntityRepository
         }
 
         try {
-            $this->uploadsFilesystem->delete(
-                Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $entity->getPath()
+            $this->defaultFilesystem->delete(
+                $this->tenantContext->getTenantName() . '/' . Constants::IMAGE_DIR . '/' . $entity->getPath()
             );
         } catch (FilesystemException $filesystemException) {
             $this->logger->alert($filesystemException->getMessage());

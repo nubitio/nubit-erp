@@ -7,6 +7,7 @@ namespace App\EInvoicing\Invoice\Domain;
 use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
+use App\Core\Util\Constants;
 use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
 use App\Repository\TaxDocumentEventRepository;
@@ -29,7 +30,6 @@ readonly class InvoiceConsultUseCase
 
     /**
      * @throws FilesystemException
-     * @throws Exception
      */
     public function __invoke(string $taxDocumentId): StatusCdrResult
     {
@@ -52,7 +52,7 @@ readonly class InvoiceConsultUseCase
                     $consultResponse->getCdrResponse()->getId() .
                     '.zip';
                 $this->fileManager->write(
-                    $companyId . '/R-' . $name . '.zip',
+                    Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $name . '.zip',
                     $cdr
                 );
             } else {

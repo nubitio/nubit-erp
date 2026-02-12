@@ -10,6 +10,7 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
+use App\Core\Util\Constants;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\Process\Process;
@@ -19,7 +20,7 @@ final readonly class TenantBackupService
     public function __construct(
         private TenantManager $tenantManager,
         private ConnectionRegistry $connectionRegistry,
-        private FilesystemOperator $backupsFilesystem,
+        private FilesystemOperator $defaultFilesystem,
         private LoggerInterface $logger,
     ) {
     }
@@ -65,13 +66,13 @@ final readonly class TenantBackupService
             $storagePath = $localPath;
 
             if ($uploadToS3) {
-                $s3Key = sprintf('%s/%s', $tenantName, $filename);
+                $s3Key = sprintf('%s/%s/%s', $tenantName, Constants::BACKUP_DIR, $filename);
                 $stream = fopen($localPath, 'r');
                 if ($stream === false) {
                     throw new RuntimeException('Cannot open backup file for upload.');
                 }
                 try {
-                    $this->backupsFilesystem->writeStream($s3Key, $stream);
+                    $this->defaultFilesystem->writeStream($s3Key, $stream);
                 } finally {
                     if (is_resource($stream)) {
                         fclose($stream);
@@ -163,7 +164,7 @@ final readonly class TenantBackupService
             $storagePath = (string) $backup['storage_path'];
             if ($storagePath !== '') {
                 try {
-                    $this->backupsFilesystem->delete($storagePath);
+                    $this->defaultFilesystem->delete($storagePath);
                 } catch (FilesystemException $e) {
                     $this->logger->warning('Could not delete backup file from S3', [
                         'backup_id' => $backupId,
@@ -200,7 +201,7 @@ final readonly class TenantBackupService
         }
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'backup_') . '.sql.gz';
-        $stream = $this->backupsFilesystem->readStream((string) $backup['storage_path']);
+        $stream = $this->defaultFilesystem->readStream((string) $backup['storage_path']);
         $local = fopen($tmpFile, 'w');
         if ($local === false) {
             throw new RuntimeException('Cannot create temp file for download.');

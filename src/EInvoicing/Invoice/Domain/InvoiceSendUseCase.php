@@ -9,6 +9,7 @@ use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
+use App\Core\Util\Constants;
 use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
 use App\Repository\TaxDocumentEventRepository;
@@ -48,7 +49,7 @@ readonly class InvoiceSendUseCase
             $response = $this->billSendUseCase->__invoke($taxDocumentId);
             $companyId = $this->companyContext->getId();
             $this->fileManager->write(
-                $companyId . '/' . $response->name . '.xml',
+                Constants::INVOICE_DIR . '/' . $companyId . '/' . $response->name . '.xml',
                 $response->xml
             );
 

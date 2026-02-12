@@ -9,6 +9,7 @@ use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Repository\TaxDocumentEventRepository;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
+use App\Core\Util\Constants;
 use App\Core\Service\CompanyContext;
 use App\Entity\TaxDocument;
 use Brick\Math\Exception\MathException;
@@ -50,7 +51,7 @@ readonly class CreditNoteService
         if (isset($response->xml) && ($response->xml !== '' && $response->xml !== '0')) {
             $companyId = $this->companyContext->getId();
             $this->fileManager->write(
-                $companyId . '/' . $response->name . '.xml',
+                Constants::INVOICE_DIR . '/' . $companyId . '/' . $response->name . '.xml',
                 $response->xml
             );
         }

@@ -1,17 +1,10 @@
 # Read the documentation: https://github.com/1up-lab/OneupFlysystemBundle
 oneup_flysystem:
   adapters:
-    uploads_adapter:
+    default_adapter:
      awss3v3:
        client: Aws\S3\S3Client
        bucket: '%env(S3_BUCKET_NAME)%'
-    backups_adapter:
-     awss3v3:
-       client: Aws\S3\S3Client
-       bucket: '%env(S3_BUCKET_NAME)%'
-       prefix: backups
   filesystems:
-    uploads_filesystem:
-      adapter: uploads_adapter
-    backups_filesystem:
-      adapter: backups_adapter
+    default_filesystem:
+      adapter: default_adapter

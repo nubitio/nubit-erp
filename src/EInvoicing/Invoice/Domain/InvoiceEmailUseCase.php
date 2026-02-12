@@ -6,6 +6,7 @@ namespace App\EInvoicing\Invoice\Domain;
 
 use App\EInvoicing\Billing\Domain\BillPdfUseCase;
 use App\Core\Filesystem\FileManager;
+use App\Core\Util\Constants;
 use App\Core\Service\SettingsService;
 use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
@@ -78,7 +79,7 @@ readonly class InvoiceEmailUseCase
         $companyName = $this->companyContext->getName();
 
         $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
-        $xmlPath = $companyId . '/' . $docFullName . '.xml';
+        $xmlPath = Constants::INVOICE_DIR . '/' . $companyId . '/' . $docFullName . '.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
         $pdfResponse = $this->billPdfUseCase->__invoke($taxDocumentId);
         $pdfContent = $pdfResponse->file;

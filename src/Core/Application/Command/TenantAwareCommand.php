@@ -169,7 +169,7 @@ abstract class TenantAwareCommand extends Command
 
         /** @var array<string, Process> $running */
         $running = [];
-        $queue = array_map(static fn(array $t): string => (string)$t['name'], $this->tenants);
+        $queue = array_map(static fn (array $t): string => (string)$t['name'], $this->tenants);
         $failed = [];
         $succeeded = [];
 
