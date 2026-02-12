@@ -5,13 +5,10 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Override;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,13 +27,10 @@ class SendInvoiceCommand extends TenantAwareCommand
     private const int CHUNK_SIZE = 100;
 
     public function __construct(
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
         private readonly Connection $connection,
         private readonly InvoiceSendUseCase $invoiceSendUseCase,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     #[Override]

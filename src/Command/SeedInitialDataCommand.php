@@ -6,10 +6,7 @@ namespace App\Command;
 
 use Override;
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use App\Service\InitialDataSeeder;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,11 +23,8 @@ class SeedInitialDataCommand extends TenantAwareCommand
 {
     public function __construct(
         private readonly InitialDataSeeder $initialDataSeeder,
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     #[Override]

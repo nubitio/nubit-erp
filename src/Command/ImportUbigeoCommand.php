@@ -3,10 +3,7 @@
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use App\Service\UbigeoImportService;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,12 +19,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class ImportUbigeoCommand extends TenantAwareCommand
 {
     public function __construct(
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
         private readonly UbigeoImportService $ubigeoImportService,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     protected function configure(): void

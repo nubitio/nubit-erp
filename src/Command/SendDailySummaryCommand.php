@@ -8,10 +8,7 @@ use Override;
 use Exception;
 use RuntimeException;
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use Doctrine\DBAL\Connection;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,12 +26,9 @@ TXT)]
 class SendDailySummaryCommand extends TenantAwareCommand
 {
     public function __construct(
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
-        private readonly Connection $connection
+        private readonly Connection $connection,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     #[Override]

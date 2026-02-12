@@ -6,10 +6,7 @@ namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
 use App\Core\Security\Auth\RefreshTokenService;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use Override;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,12 +21,9 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
 class TokenCleanupCommand extends TenantAwareCommand
 {
     public function __construct(
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
         private readonly RefreshTokenService $refreshTokenService,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     #[Override]

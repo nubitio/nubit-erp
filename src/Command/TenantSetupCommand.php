@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\Core\Service\TenantConnectionSwitcher;
-use App\Core\Service\TenantManager;
 use App\Dto\Setup\InitialSetupInput;
 use App\Setup\InitialSetupService;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,11 +22,8 @@ class TenantSetupCommand extends TenantAwareCommand
 {
     public function __construct(
         private readonly InitialSetupService $initialSetupService,
-        TenantManager $tenantManager,
-        TenantConnectionSwitcher $tenantConnectionSwitcher,
-        LoggerInterface $logger,
     ) {
-        parent::__construct($tenantManager, $tenantConnectionSwitcher, $logger);
+        parent::__construct();
     }
 
     protected function configure(): void
