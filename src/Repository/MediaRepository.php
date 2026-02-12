@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Core\Context\TenantContext;
 use App\Core\Util\Constants;
 use App\Entity\Media;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -23,6 +24,7 @@ class MediaRepository extends ServiceEntityRepository
         ManagerRegistry $registry,
         private readonly FilesystemOperator $uploadsFilesystem,
         private readonly LoggerInterface $logger,
+        private readonly TenantContext $tenantContext,
     ) {
         parent::__construct($registry, Media::class);
     }
@@ -40,7 +42,9 @@ class MediaRepository extends ServiceEntityRepository
         }
 
         try {
-            $this->uploadsFilesystem->delete(Constants::IMAGE_UPLOAD_DIR . $entity->getPath());
+            $this->uploadsFilesystem->delete(
+                Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $entity->getPath()
+            );
         } catch (FilesystemException $filesystemException) {
             $this->logger->alert($filesystemException->getMessage());
         }

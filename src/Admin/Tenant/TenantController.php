@@ -419,6 +419,7 @@ class TenantController extends AbstractController
                 'tenant_name' => (string)$tenant['name'],
                 'domain' => $domain,
                 'admin_user' => $adminUser,
+                'target_container' => $this->workflowDispatcher->getTargetContainer(),
             ]);
             $this->auditLogger->log('tenant.provision.dispatch', [
                 'tenant_id' => $id,
@@ -521,6 +522,29 @@ class TenantController extends AbstractController
             $this->addFlash('success', sprintf('Tenant restored from backup #%d.', $backupId));
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Restore failed: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
+    }
+
+    #[Route('/admin/tenants/{id}/backup/{backupId}/delete', name: 'admin_tenant_backup_delete', methods: ['POST'])]
+    public function deleteBackup(int $id, int $backupId, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
+        try {
+            $this->backupService->deleteBackup($backupId);
+            $this->auditLogger->log('tenant.backup.delete', [
+                'tenant_id' => $id,
+                'backup_id' => $backupId,
+            ]);
+            $this->addFlash('success', sprintf('Backup #%d deleted.', $backupId));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Delete failed: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);

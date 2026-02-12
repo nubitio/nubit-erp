@@ -6,6 +6,8 @@ namespace App\Serializer;
 
 use Override;
 use ArrayObject;
+use App\Core\Context\TenantContext;
+use App\Core\Filesystem\S3UrlResolver;
 use App\Core\Util\Constants;
 use App\Entity\Media;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -19,6 +21,8 @@ final readonly class MediaNormalizer implements NormalizerInterface
     public function __construct(
         #[Autowire(service: 'serializer.normalizer.object')]
         private NormalizerInterface $normalizer,
+        private S3UrlResolver $s3UrlResolver,
+        private TenantContext $tenantContext,
     ) {
     }
 
@@ -37,11 +41,8 @@ final readonly class MediaNormalizer implements NormalizerInterface
     ): array | ArrayObject | bool | float | int | string | null {
         $context[self::ALREADY_CALLED] = true;
 
-        $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
-
-        $folder = Constants::IMAGE_UPLOAD_DIR;
-
-        $data->setPath($baseUrl . $folder . $data->getPath());
+        $path = Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $data->getPath();
+        $data->setPath($this->s3UrlResolver->resolve($path));
 
         return $this->normalizer->normalize($data, $format, $context);
     }

@@ -23,6 +23,7 @@ abstract class TenantAwareCommand extends Command
     use LockableTrait;
 
     protected array $tenants = [];
+    protected ?string $currentTenantName = null;
 
     public function __construct(
         private readonly TenantManager $tenantManager,
@@ -83,6 +84,7 @@ abstract class TenantAwareCommand extends Command
 
         if ($tenantName = $input->getOption('tenant')) {
             $this->tenantConnectionSwitcher->switchConnection($tenantName);
+            $this->currentTenantName = $tenantName;
             $io->title('Tenant: ' . $tenantName);
             $this->executeTenantCommand($input, $output);
             $io->success('Done!');
@@ -110,6 +112,7 @@ abstract class TenantAwareCommand extends Command
             try {
                 $tenantName = $tenant['name'];
                 $this->tenantConnectionSwitcher->switchConnection($tenantName);
+                $this->currentTenantName = $tenantName;
                 $io->title('Tenant: ' . $tenantName);
 
                 $this->executeTenantCommand($input, $output);

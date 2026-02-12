@@ -397,6 +397,16 @@
                                                     </button>
                                                 </form>
                                             {% endif %}
+                                            <form action="{{ url('admin_tenant_backup_delete', {'id': tenant.id, 'backupId': backup.id}) }}"
+                                                  method="post" class="d-inline">
+                                                <input type="hidden" name="_token"
+                                                       value="{{ csrf_token('admin') }}">
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('Delete backup #{{ backup.id }}? This cannot be undone.');">
+                                                    <i class="bi bi-trash me-1"></i> Delete
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 {% endfor %}

@@ -118,7 +118,8 @@ final readonly class TenantBackupService
         }
 
         return $this->getControlPlaneConnection()->fetchAllAssociative(
-            'SELECT id, tenant_id, filename, storage_path, size_bytes, storage_type, status, error_message, created_at, completed_at
+            'SELECT id, tenant_id, filename, storage_path, size_bytes,
+                    storage_type, status, error_message, created_at, completed_at
              FROM tenant_backups
              WHERE tenant_id = ?
              ORDER BY created_at DESC
@@ -134,7 +135,8 @@ final readonly class TenantBackupService
     public function listBackupsByTenantId(int $tenantId, int $limit = 20): array
     {
         return $this->getControlPlaneConnection()->fetchAllAssociative(
-            'SELECT id, tenant_id, filename, storage_path, size_bytes, storage_type, status, error_message, created_at, completed_at
+            'SELECT id, tenant_id, filename, storage_path, size_bytes,
+                    storage_type, status, error_message, created_at, completed_at
              FROM tenant_backups
              WHERE tenant_id = ?
              ORDER BY created_at DESC
@@ -142,6 +144,34 @@ final readonly class TenantBackupService
             [$tenantId, $limit],
             [ParameterType::INTEGER, ParameterType::INTEGER],
         );
+    }
+
+    public function deleteBackup(int $backupId): void
+    {
+        $backup = $this->getBackup($backupId);
+        $conn = $this->getControlPlaneConnection();
+
+        if ($backup['storage_type'] === 's3') {
+            $storagePath = (string) $backup['storage_path'];
+            if ($storagePath !== '') {
+                try {
+                    $this->backupsFilesystem->delete($storagePath);
+                } catch (\League\Flysystem\FilesystemException $e) {
+                    $this->logger->warning('Could not delete backup file from S3', [
+                        'backup_id' => $backupId,
+                        'storage_path' => $storagePath,
+                        'exception' => $e,
+                    ]);
+                }
+            }
+        } elseif ($backup['storage_type'] === 'local') {
+            $localPath = (string) $backup['storage_path'];
+            if ($localPath !== '' && file_exists($localPath)) {
+                @unlink($localPath);
+            }
+        }
+
+        $conn->delete('tenant_backups', ['id' => $backupId]);
     }
 
     public function downloadBackup(int $backupId): string
@@ -185,7 +215,10 @@ final readonly class TenantBackupService
         }
 
         $conn = $this->getControlPlaneConnection();
-        $tenant = $conn->fetchAssociative('SELECT id, name, connection FROM tenants WHERE id = ?', [(int) $backup['tenant_id']]);
+        $tenant = $conn->fetchAssociative(
+            'SELECT id, name, connection FROM tenants WHERE id = ?',
+            [(int) $backup['tenant_id']],
+        );
         if ($tenant === false) {
             throw new RuntimeException('Tenant not found for this backup.');
         }
