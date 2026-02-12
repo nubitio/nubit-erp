@@ -8,6 +8,7 @@ use App\Core\Service\TenantManager;
 use App\Core\Service\PlanManager;
 use App\Core\Service\TenantQuotaService;
 use App\Core\Service\TenantUsageService;
+use App\Core\Service\TenantBackupService;
 use App\Core\Service\GitHubWorkflowDispatcher;
 use App\Core\Audit\AuditLogger;
 use InvalidArgumentException;
@@ -25,6 +26,7 @@ class TenantController extends AbstractController
         private readonly PlanManager $planManager,
         private readonly TenantQuotaService $tenantQuotaService,
         private readonly TenantUsageService $tenantUsageService,
+        private readonly TenantBackupService $backupService,
         private readonly AuditLogger $auditLogger,
         private readonly GitHubWorkflowDispatcher $workflowDispatcher,
     ) {
@@ -61,6 +63,7 @@ class TenantController extends AbstractController
         $usageLatest = [];
         $usageDeltas = [];
         $quotaAlerts = [];
+        $backups = [];
 
         try {
             $tenantName = (string)($tenant['name'] ?? '');
@@ -74,6 +77,12 @@ class TenantController extends AbstractController
             $this->addFlash('error', 'Unable to load usage summary: ' . $e->getMessage());
         }
 
+        try {
+            $backups = $this->backupService->listBackupsByTenantId($id);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Unable to load backups: ' . $e->getMessage());
+        }
+
         return $this->render('admin/tenant/edit.html.twig', [
             'tenant' => $tenant,
             'domains' => $domains,
@@ -83,6 +92,7 @@ class TenantController extends AbstractController
             'usage_latest' => $usageLatest,
             'usage_deltas' => $usageDeltas,
             'quota_alerts' => $quotaAlerts,
+            'backups' => $backups,
         ]);
     }
 
@@ -420,6 +430,100 @@ class TenantController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+    }
+
+    #[Route('/admin/tenants/{id}/backup-frequency', name: 'admin_tenant_backup_frequency', methods: ['POST'])]
+    public function updateBackupFrequency(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
+        $frequency = (int) $request->request->get('backup_frequency', 0);
+
+        try {
+            $this->tenantManager->updateBackupFrequency($id, $frequency);
+            $this->auditLogger->log('tenant.backup_frequency.update', [
+                'tenant_id' => $id,
+                'backup_frequency' => $frequency,
+            ]);
+            $this->addFlash('success', 'Backup frequency updated.');
+        } catch (InvalidArgumentException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
+    }
+
+    #[Route('/admin/tenants/{id}/backups', name: 'admin_tenant_backups', methods: ['GET'])]
+    public function backups(int $id): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $backups = $this->backupService->listBackupsByTenantId($id);
+
+        return $this->json($backups);
+    }
+
+    #[Route('/admin/tenants/{id}/backup', name: 'admin_tenant_backup_create', methods: ['POST'])]
+    public function createBackup(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        try {
+            $result = $this->backupService->backup((string) $tenant['name'], true);
+            $this->auditLogger->log('tenant.backup.create', [
+                'tenant_id' => $id,
+                'backup_id' => $result['id'],
+                'filename' => $result['filename'],
+            ]);
+            $this->addFlash('success', sprintf('Backup created: %s', $result['filename']));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Backup failed: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
+    }
+
+    #[Route('/admin/tenants/{id}/backup/{backupId}/restore', name: 'admin_tenant_backup_restore', methods: ['POST'])]
+    public function restoreBackup(int $id, int $backupId, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
+        }
+
+        try {
+            $this->backupService->restore($backupId);
+            $this->auditLogger->log('tenant.backup.restore', [
+                'tenant_id' => $id,
+                'backup_id' => $backupId,
+            ]);
+            $this->addFlash('success', sprintf('Tenant restored from backup #%d.', $backupId));
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Restore failed: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
     /**

@@ -6,6 +6,7 @@ namespace App\Core\Audit;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -36,20 +37,24 @@ final readonly class AuditLogRepository
 
         $where = [];
         $params = [];
+        $types = [];
 
         if (!empty($filters['action'])) {
             $where[] = 'a.action = ?';
             $params[] = $filters['action'];
+            $types[] = ParameterType::STRING;
         }
 
         if (!empty($filters['date_from'])) {
             $where[] = 'a.created_at >= ?';
             $params[] = $filters['date_from'] . ' 00:00:00';
+            $types[] = ParameterType::STRING;
         }
 
         if (!empty($filters['date_to'])) {
             $where[] = 'a.created_at <= ?';
             $params[] = $filters['date_to'] . ' 23:59:59';
+            $types[] = ParameterType::STRING;
         }
 
         $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
@@ -57,6 +62,7 @@ final readonly class AuditLogRepository
         $total = (int) $connection->fetchOne(
             'SELECT COUNT(*) FROM audit_logs a ' . $whereClause,
             $params,
+            $types,
         );
 
         $offset = max(0, ($page - 1) * $limit);
@@ -69,9 +75,11 @@ final readonly class AuditLogRepository
             . ' LIMIT ? OFFSET ?';
 
         $params[] = $limit;
+        $types[] = ParameterType::INTEGER;
         $params[] = $offset;
+        $types[] = ParameterType::INTEGER;
 
-        $rows = $connection->fetchAllAssociative($sql, $params);
+        $rows = $connection->fetchAllAssociative($sql, $params, $types);
 
         return ['rows' => $rows, 'total' => $total];
     }

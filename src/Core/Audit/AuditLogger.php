@@ -6,24 +6,19 @@ namespace App\Core\Audit;
 
 use App\Core\Context\TenantContext;
 use App\Core\Service\TenantManager;
-use Doctrine\DBAL\Connection;
-use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;
-use RuntimeException;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\Cache\ItemInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
 final readonly class AuditLogger
 {
     public function __construct(
-        private ConnectionRegistry $connectionRegistry,
         private TenantContext $tenantContext,
         private Security $security,
         private TenantManager $tenantManager,
         private LoggerInterface $logger,
-        private CacheInterface $cache,
+        private MessageBusInterface $bus,
     ) {
     }
 
@@ -36,25 +31,19 @@ final readonly class AuditLogger
         ?int $tenantId = null,
         ?string $actor = null,
     ): void {
-        $connection = $this->getControlPlaneConnection();
-        if (!$this->isControlPlaneReady()) {
-            throw new RuntimeException('Control plane database not ready for audit logging.');
-        }
-
         $actor = $this->resolveActor($actor, $metadata);
         $tenantId = $tenantId ?? $this->tenantContext->getTenantId() ?? $this->resolveTenantId($metadata);
         $requestId = $this->tenantContext->getRequestId();
         $channel = $this->tenantContext->getChannel();
 
-        $connection->insert('audit_logs', [
-            'tenant_id' => $tenantId,
-            'action' => $action,
-            'actor' => $actor,
-            'request_id' => $requestId,
-            'channel' => $channel,
-            'metadata' => json_encode($metadata, JSON_THROW_ON_ERROR),
-            'created_at' => new \DateTimeImmutable('now')->format('Y-m-d H:i:s'),
-        ]);
+        $this->bus->dispatch(new AuditLogMessage(
+            action: $action,
+            metadata: json_encode($metadata, JSON_THROW_ON_ERROR),
+            tenantId: $tenantId,
+            actor: $actor,
+            channel: $channel,
+            requestId: $requestId,
+        ));
     }
 
     /**
@@ -142,21 +131,5 @@ final readonly class AuditLogger
         }
 
         return null;
-    }
-
-    private function getControlPlaneConnection(): Connection
-    {
-        return $this->connectionRegistry->getConnection('control_plane');
-    }
-
-    private function isControlPlaneReady(): bool
-    {
-        return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
-            $item->expiresAfter(600);
-
-            return $this->getControlPlaneConnection()
-                ->createSchemaManager()
-                ->tablesExist(['audit_logs']);
-        });
     }
 }
