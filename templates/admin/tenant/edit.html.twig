@@ -115,22 +115,28 @@
 
                             <h2 class="h5 mb-3">Status</h2>
                             {% if tenant.status is defined and tenant.status == 'suspended' %}
-                                <form action="{{ url('admin_tenant_unsuspend', {'id': tenant.id}) }}"
-                                      method="post" class="d-inline">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                                    <button type="submit" class="btn btn-outline-success btn-sm">
-                                        <i class="bi bi-play-circle me-1"></i> Unsuspend
-                                    </button>
-                                </form>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge bg-warning-subtle text-warning">Suspended</span>
+                                    <form action="{{ url('admin_tenant_unsuspend', {'id': tenant.id}) }}"
+                                          method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-play-circle me-1"></i> Unsuspend
+                                        </button>
+                                    </form>
+                                </div>
                             {% else %}
-                                <form action="{{ url('admin_tenant_suspend', {'id': tenant.id}) }}"
-                                      method="post" class="d-inline">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
-                                    <button type="submit" class="btn btn-outline-warning btn-sm"
-                                            onclick="return confirm('Suspend tenant {{ tenant.name }}?');">
-                                        <i class="bi bi-pause-circle me-1"></i> Suspend
-                                    </button>
-                                </form>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="badge bg-success-subtle text-success">Active</span>
+                                    <form action="{{ url('admin_tenant_suspend', {'id': tenant.id}) }}"
+                                          method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm"
+                                                onclick="return confirm('Suspend tenant {{ tenant.name }}?');">
+                                            <i class="bi bi-pause-circle me-1"></i> Suspend
+                                        </button>
+                                    </form>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -284,13 +290,7 @@
         <div class="tab-pane fade" id="usage" role="tabpanel">
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h2 class="h5 mb-0"><i class="bi bi-graph-up me-1"></i> Observability</h2>
-                        <a href="{{ url('admin_tenant_usage', {'id': tenant.id}) }}"
-                           class="btn btn-outline-secondary btn-sm">
-                            <i class="bi bi-filetype-json me-1"></i> JSON
-                        </a>
-                    </div>
+                    <h2 class="h5 mb-3"><i class="bi bi-graph-up me-1"></i> Usage</h2>
 
                     {% if quota_alerts is not empty %}
                         <div class="alert alert-warning">
@@ -309,9 +309,27 @@
                             <div class="col-md-3">
                                 <div class="border rounded p-2">
                                     <div class="text-muted small text-capitalize">
-                                        {{ metric|replace({'_': ' '}) }}
+                                        {% if metric == 'storage_bytes' %}
+                                            DB Storage
+                                        {% else %}
+                                            {{ metric|replace({'_': ' '}) }}
+                                        {% endif %}
                                     </div>
-                                    <div class="fw-semibold">{{ value }}</div>
+                                    <div class="fw-semibold">
+                                        {% if metric == 'storage_bytes' %}
+                                            {% if value >= 1073741824 %}
+                                                {{ (value / 1073741824)|number_format(2) }} GB
+                                            {% elseif value >= 1048576 %}
+                                                {{ (value / 1048576)|number_format(1) }} MB
+                                            {% elseif value >= 1024 %}
+                                                {{ (value / 1024)|number_format(1) }} KB
+                                            {% else %}
+                                                {{ value }} B
+                                            {% endif %}
+                                        {% else %}
+                                            {{ value|number_format }}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         {% endfor %}
@@ -323,16 +341,38 @@
                             {% for resource, usage in quota_summary %}
                                 {% set limit = usage.limit %}
                                 {% set current = usage.current %}
+                                {% set is_storage = resource == 'storage_bytes' %}
                                 <div class="col-md-6">
                                     <div class="border rounded p-3">
                                         <div class="d-flex justify-content-between mb-1">
                                             <span class="fw-semibold text-capitalize">
-                                                {{ resource|replace({'_': ' '}) }}
+                                                {% if is_storage %}
+                                                    DB Storage
+                                                {% else %}
+                                                    {{ resource|replace({'_': ' '}) }}
+                                                {% endif %}
                                             </span>
-                                            {% if limit == -1 %}
-                                                <span class="text-muted">{{ current }} / Unlimited</span>
+                                            {% if is_storage %}
+                                                {% macro format_bytes(bytes) %}
+                                                    {%- if bytes >= 1073741824 -%}
+                                                        {{ (bytes / 1073741824)|number_format(2) }} GB
+                                                    {%- elseif bytes >= 1048576 -%}
+                                                        {{ (bytes / 1048576)|number_format(1) }} MB
+                                                    {%- elseif bytes >= 1024 -%}
+                                                        {{ (bytes / 1024)|number_format(1) }} KB
+                                                    {%- else -%}
+                                                        {{ bytes }} B
+                                                    {%- endif -%}
+                                                {% endmacro %}
+                                                {% if limit == -1 %}
+                                                    <span class="text-muted">{{ _self.format_bytes(current) }} / Unlimited</span>
+                                                {% else %}
+                                                    <span class="text-muted">{{ _self.format_bytes(current) }} / {{ _self.format_bytes(limit) }}</span>
+                                                {% endif %}
+                                            {% elseif limit == -1 %}
+                                                <span class="text-muted">{{ current|number_format }} / Unlimited</span>
                                             {% else %}
-                                                <span class="text-muted">{{ current }} / {{ limit }}</span>
+                                                <span class="text-muted">{{ current|number_format }} / {{ limit|number_format }}</span>
                                             {% endif %}
                                         </div>
                                         {% if limit == -1 %}
@@ -364,25 +404,58 @@
                         </div>
                     {% endif %}
 
-                    <h3 class="h6">Recent usage samples (24h)</h3>
-                    {% if usage_history is empty %}
-                        <div class="text-muted">No usage samples yet.</div>
+                    <h3 class="h6">Changes in the last 24h</h3>
+                    {% if usage_deltas is empty %}
+                        <div class="text-muted">No usage data yet.</div>
                     {% else %}
                         <div class="table-responsive">
                             <table class="table table-sm mb-0">
                                 <thead>
                                 <tr>
-                                    <th>Collected at</th>
-                                    <th>Metric</th>
-                                    <th>Value</th>
+                                    <th>Resource</th>
+                                    <th class="text-end">24h ago</th>
+                                    <th class="text-end">Now</th>
+                                    <th class="text-end">Change</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for row in usage_history|slice(0, 100) %}
+                                {% for metric, data in usage_deltas %}
+                                    {% set is_storage = metric == 'storage_bytes' %}
                                     <tr>
-                                        <td>{{ row.collected_at }}</td>
-                                        <td>{{ row.metric_name }}</td>
-                                        <td>{{ row.metric_value }}</td>
+                                        <td class="text-capitalize">
+                                            {% if is_storage %}
+                                                DB Storage
+                                            {% else %}
+                                                {{ metric|replace({'_': ' '}) }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if is_storage %}
+                                                {{ _self.format_bytes(data.previous) }}
+                                            {% else %}
+                                                {{ data.previous|number_format }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if is_storage %}
+                                                {{ _self.format_bytes(data.current) }}
+                                            {% else %}
+                                                {{ data.current|number_format }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if data.delta > 0 %}
+                                                <span class="text-success">
+                                                    +{% if is_storage %}{{ _self.format_bytes(data.delta) }}{% else %}{{ data.delta|number_format }}{% endif %}
+                                                </span>
+                                            {% elseif data.delta < 0 %}
+                                                <span class="text-danger">
+                                                    {% if is_storage %}-{{ _self.format_bytes(data.delta|abs) }}{% else %}{{ data.delta|number_format }}{% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">0</span>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

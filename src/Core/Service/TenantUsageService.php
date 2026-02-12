@@ -187,6 +187,73 @@ final readonly class TenantUsageService
     }
 
     /**
+     * @return array<string, array{previous: int, current: int, delta: int}>
+     */
+    public function getUsageDeltas(string $tenantName, int $hours = 24): array
+    {
+        $tenant = $this->tenantManager->getTenantByName($tenantName);
+        if ($tenant === null) {
+            throw new \InvalidArgumentException(sprintf('Tenant "%s" not found', $tenantName));
+        }
+
+        $tenantId = (int) ($tenant['id'] ?? 0);
+        if ($tenantId <= 0) {
+            return [];
+        }
+
+        /** @var \Doctrine\DBAL\Connection $controlPlane */
+        $controlPlane = $this->connectionRegistry->getConnection('control_plane');
+        $cutoff = (new \DateTimeImmutable(sprintf('-%d hours', max(1, $hours))))->format('Y-m-d H:i:s');
+
+        // Get the oldest sample per metric within the window
+        $oldestRows = $controlPlane->fetchAllAssociative(
+            'SELECT tu.metric_name, tu.metric_value
+             FROM tenant_usage tu
+             INNER JOIN (
+                 SELECT metric_name, MIN(collected_at) AS min_collected
+                 FROM tenant_usage
+                 WHERE tenant_id = ? AND collected_at >= ?
+                 GROUP BY metric_name
+             ) oldest ON oldest.metric_name = tu.metric_name AND oldest.min_collected = tu.collected_at
+             WHERE tu.tenant_id = ?',
+            [$tenantId, $cutoff, $tenantId],
+        );
+
+        $oldest = [];
+        foreach ($oldestRows as $row) {
+            $oldest[(string) $row['metric_name']] = (int) $row['metric_value'];
+        }
+
+        // Get the newest sample per metric within the window
+        $newestRows = $controlPlane->fetchAllAssociative(
+            'SELECT tu.metric_name, tu.metric_value
+             FROM tenant_usage tu
+             INNER JOIN (
+                 SELECT metric_name, MAX(collected_at) AS max_collected
+                 FROM tenant_usage
+                 WHERE tenant_id = ? AND collected_at >= ?
+                 GROUP BY metric_name
+             ) newest ON newest.metric_name = tu.metric_name AND newest.max_collected = tu.collected_at
+             WHERE tu.tenant_id = ?',
+            [$tenantId, $cutoff, $tenantId],
+        );
+
+        $result = [];
+        foreach ($newestRows as $row) {
+            $metric = (string) $row['metric_name'];
+            $current = (int) $row['metric_value'];
+            $previous = $oldest[$metric] ?? $current;
+            $result[$metric] = [
+                'previous' => $previous,
+                'current' => $current,
+                'delta' => $current - $previous,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * @param list<string> $existingTables
      */
     private function resolveTableName(string $resource, array $existingTables): ?string

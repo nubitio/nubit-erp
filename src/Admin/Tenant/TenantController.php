@@ -59,7 +59,7 @@ class TenantController extends AbstractController
 
         $quotaSummary = [];
         $usageLatest = [];
-        $usageHistory = [];
+        $usageDeltas = [];
         $quotaAlerts = [];
 
         try {
@@ -67,7 +67,7 @@ class TenantController extends AbstractController
             if ($tenantName !== '') {
                 $quotaSummary = $this->tenantQuotaService->getUsageSummary($tenantName);
                 $usageLatest = $this->tenantUsageService->getLatestMetrics($tenantName);
-                $usageHistory = $this->tenantUsageService->getRecentHistory($tenantName, 24);
+                $usageDeltas = $this->tenantUsageService->getUsageDeltas($tenantName, 24);
                 $quotaAlerts = $this->buildQuotaAlerts($quotaSummary);
             }
         } catch (\Throwable $e) {
@@ -81,7 +81,7 @@ class TenantController extends AbstractController
             'plans' => $plans,
             'quota_summary' => $quotaSummary,
             'usage_latest' => $usageLatest,
-            'usage_history' => $usageHistory,
+            'usage_deltas' => $usageDeltas,
             'quota_alerts' => $quotaAlerts,
         ]);
     }
