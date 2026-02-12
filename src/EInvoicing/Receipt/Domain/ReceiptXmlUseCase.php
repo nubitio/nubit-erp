@@ -43,7 +43,7 @@ readonly class ReceiptXmlUseCase
         $docFullName = $companyId . '-' . $invoice->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/' . $docFullName . '.xml'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml'),
             $docFullName . '.xml'
         );
     }
@@ -60,7 +60,7 @@ readonly class ReceiptXmlUseCase
         $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/' . $docFullName . '.xml'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml'),
             $docFullName . '.xml'
         );
     }

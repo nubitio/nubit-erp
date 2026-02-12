@@ -10,7 +10,6 @@ use App\Repository\TaxDocumentEventRepository;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
-use App\Core\Service\CompanyContext;
 use App\Entity\TaxDocument;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
@@ -26,7 +25,6 @@ readonly class CreditNoteService
         private EntityManagerInterface $entityManager,
         private NoteSendUseCase $noteSendUseCase,
         private FileManager $fileManager,
-        private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
     ) {
     }
@@ -48,10 +46,10 @@ readonly class CreditNoteService
         $creditNote->setDigest($response->hash ?? null);
 
         // Save XML file
+        $docDir = Constants::INVOICE_DIR . '/' . $response->name;
         if (isset($response->xml) && ($response->xml !== '' && $response->xml !== '0')) {
-            $companyId = $this->companyContext->getId();
             $this->fileManager->write(
-                Constants::INVOICE_DIR . '/' . $companyId . '/' . $response->name . '.xml',
+                $docDir . '/' . $response->name . '.xml',
                 $response->xml
             );
         }
@@ -64,9 +62,8 @@ readonly class CreditNoteService
             // Save CDR (Constancia de Recepción)
             if (!in_array($response->sunatResponse->getCdrZip(), [null, '', '0'], true)) {
                 $cdr = base64_decode($response->sunatResponse->getCdrZip());
-                $companyId = $this->companyContext->getId();
                 $this->fileManager->write(
-                    $companyId . '/R-' . $response->name . '.zip',
+                    $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
             }

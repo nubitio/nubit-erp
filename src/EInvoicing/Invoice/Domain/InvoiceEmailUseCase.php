@@ -79,7 +79,7 @@ readonly class InvoiceEmailUseCase
         $companyName = $this->companyContext->getName();
 
         $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
-        $xmlPath = Constants::INVOICE_DIR . '/' . $companyId . '/' . $docFullName . '.xml';
+        $xmlPath = Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml';
         $xmlContent = $this->fileManager->read($xmlPath);
         $pdfResponse = $this->billPdfUseCase->__invoke($taxDocumentId);
         $pdfContent = $pdfResponse->file;

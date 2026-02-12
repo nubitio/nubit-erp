@@ -278,8 +278,12 @@ final class MigrateStorageToTenantPrefixCommand extends Command
 
         foreach ($files as $file) {
             $sourcePath = $file->path();
-            $relativePath = substr($sourcePath, strlen($companyId . '/'));
-            $targetPath = $tenantName . '/' . Constants::INVOICE_DIR . '/' . $companyId . '/' . $relativePath;
+            $filename = basename($sourcePath);
+            $nameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
+            $docFullName = str_starts_with($nameWithoutExt, 'R-')
+                ? substr($nameWithoutExt, 2)
+                : $nameWithoutExt;
+            $targetPath = $tenantName . '/' . Constants::INVOICE_DIR . '/' . $docFullName . '/' . $filename;
 
             try {
                 if ($this->copyFile($io, $sourcePath, $targetPath, $deleteOriginals)) {

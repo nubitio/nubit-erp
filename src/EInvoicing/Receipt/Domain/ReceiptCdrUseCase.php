@@ -43,7 +43,7 @@ readonly class ReceiptCdrUseCase
         $docFullName = $companyId . '-' . $invoice->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $docFullName . '.zip'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip'),
             'R-' . $docFullName . '.zip'
         );
     }
@@ -60,7 +60,7 @@ readonly class ReceiptCdrUseCase
         $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
 
         return new FileResponse(
-            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $docFullName . '.zip'),
+            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip'),
             'R-' . $docFullName . '.zip'
         );
     }
