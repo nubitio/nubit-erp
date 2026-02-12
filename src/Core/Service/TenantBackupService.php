@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Core\Service;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
+use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -24,6 +26,7 @@ final readonly class TenantBackupService
 
     /**
      * @return array{id: int, filename: string, storage_path: string, size_bytes: int, storage_type: string}
+     * @throws Exception
      */
     public function backup(string $tenantName, bool $uploadToS3 = true): array
     {
@@ -51,7 +54,7 @@ final readonly class TenantBackupService
             'size_bytes' => 0,
             'storage_type' => $uploadToS3 ? 's3' : 'local',
             'status' => 'pending',
-            'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+            'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
         $backupId = (int) $conn->lastInsertId();
 
@@ -79,7 +82,7 @@ final readonly class TenantBackupService
                 @unlink($localPath);
             }
 
-            $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+            $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
             $conn->update('tenant_backups', [
                 'storage_path' => $storagePath,
                 'size_bytes' => $sizeBytes,
@@ -98,7 +101,7 @@ final readonly class TenantBackupService
             $conn->update('tenant_backups', [
                 'status' => 'failed',
                 'error_message' => mb_substr($e->getMessage(), 0, 2000),
-                'completed_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'completed_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
             ], ['id' => $backupId]);
 
             @unlink($localPath);
@@ -109,6 +112,7 @@ final readonly class TenantBackupService
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws Exception
      */
     public function listBackups(string $tenantName, int $limit = 20): array
     {
@@ -131,6 +135,7 @@ final readonly class TenantBackupService
 
     /**
      * @return array<int, array<string, mixed>>
+     * @throws Exception
      */
     public function listBackupsByTenantId(int $tenantId, int $limit = 20): array
     {
@@ -146,6 +151,9 @@ final readonly class TenantBackupService
         );
     }
 
+    /**
+     * @throws Exception
+     */
     public function deleteBackup(int $backupId): void
     {
         $backup = $this->getBackup($backupId);
@@ -156,7 +164,7 @@ final readonly class TenantBackupService
             if ($storagePath !== '') {
                 try {
                     $this->backupsFilesystem->delete($storagePath);
-                } catch (\League\Flysystem\FilesystemException $e) {
+                } catch (FilesystemException $e) {
                     $this->logger->warning('Could not delete backup file from S3', [
                         'backup_id' => $backupId,
                         'storage_path' => $storagePath,
@@ -174,6 +182,10 @@ final readonly class TenantBackupService
         $conn->delete('tenant_backups', ['id' => $backupId]);
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws Exception
+     */
     public function downloadBackup(int $backupId): string
     {
         $backup = $this->getBackup($backupId);
@@ -206,6 +218,9 @@ final readonly class TenantBackupService
         return $tmpFile;
     }
 
+    /**
+     * @throws Exception
+     */
     public function restore(int $backupId): void
     {
         $backup = $this->getBackup($backupId);
@@ -242,6 +257,7 @@ final readonly class TenantBackupService
 
     /**
      * @return array<string, mixed>
+     * @throws Exception
      */
     private function getBackup(int $backupId): array
     {
@@ -270,19 +286,25 @@ final readonly class TenantBackupService
             '--host=' . $host,
             '--port=' . $port,
             '--user=' . $user,
-            '--single-transaction',
-            '--routines',
-            '--triggers',
-            '--quick',
-            $dbName,
         ];
 
         if ($password !== '') {
             $dumpCmd[] = '--password=' . $password;
         }
 
+        $dumpCmd = array_merge($dumpCmd, [
+            '--single-transaction',
+            '--routines',
+            '--triggers',
+            '--quick',
+            $dbName,
+        ]);
+
+        $shellCmd = implode(' ', array_map('escapeshellarg', $dumpCmd))
+            . ' | gzip > ' . escapeshellarg($outputPath);
+
         $process = Process::fromShellCommandline(
-            implode(' ', array_map('escapeshellarg', $dumpCmd)) . ' | gzip > ' . escapeshellarg($outputPath),
+            'bash -o pipefail -c ' . escapeshellarg($shellCmd),
         );
         $process->setTimeout(null);
         $process->run();
@@ -309,16 +331,19 @@ final readonly class TenantBackupService
             '--host=' . $host,
             '--port=' . $port,
             '--user=' . $user,
-            $dbName,
         ];
 
         if ($password !== '') {
             $restoreCmd[] = '--password=' . $password;
         }
 
+        $restoreCmd[] = $dbName;
+
+        $shellCmd = 'gunzip -c ' . escapeshellarg($filePath)
+            . ' | ' . implode(' ', array_map('escapeshellarg', $restoreCmd));
+
         $process = Process::fromShellCommandline(
-            'gunzip -c ' . escapeshellarg($filePath)
-            . ' | ' . implode(' ', array_map('escapeshellarg', $restoreCmd)),
+            'bash -o pipefail -c ' . escapeshellarg($shellCmd),
         );
         $process->setTimeout(null);
         $process->run();
