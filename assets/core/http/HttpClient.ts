@@ -30,6 +30,7 @@ class HttpClient {
     internalServerError: 'Error interno del servidor',
     badRequest: 'Solicitud incorrecta',
     conflict: 'Conflicto de datos',
+    tooManyRequests: 'Demasiadas solicitudes',
   };
 
   constructor(private readonly baseUrl: string) {
@@ -142,19 +143,19 @@ class HttpClient {
     toast(HttpClient.DEFAULT_MESSAGES.unauthorized, 'error');
   }
 
-  private handleError(status: number, message: string | undefined) {
+  private handleError(status: number | undefined, message: string | undefined) {
     const messageMap: { [key: number]: string } = {
       [HttpCode.BAD_REQUEST]: HttpClient.DEFAULT_MESSAGES.badRequest,
       [HttpCode.FORBIDDEN]: HttpClient.DEFAULT_MESSAGES.forbidden,
       [HttpCode.NOT_FOUND]: HttpClient.DEFAULT_MESSAGES.notFound,
       [HttpCode.CONFLICT]: HttpClient.DEFAULT_MESSAGES.conflict,
+      [HttpCode.TOO_MANY_REQUESTS]: HttpClient.DEFAULT_MESSAGES.tooManyRequests,
       [HttpCode.INTERNAL_SERVER_ERROR]: HttpClient.DEFAULT_MESSAGES.internalServerError,
     };
 
-    const errorMessage = message || messageMap[status] || HttpClient.DEFAULT_MESSAGES.error;
-    if (status === HttpCode.BAD_REQUEST || status === HttpCode.INTERNAL_SERVER_ERROR) {
-      toast(errorMessage, 'error');
-    }
+    const errorMessage =
+      message || (status ? messageMap[status] : undefined) || HttpClient.DEFAULT_MESSAGES.error;
+    toast(errorMessage, 'error');
 
     dispatch(HTTP_ERROR_EVENT, errorMessage);
   }
