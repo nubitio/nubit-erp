@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Application\Command;
 
-use Override;
-use Exception;
+use App\Core\Context\TenantContext;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\TenantConnectionSwitcher;
 use App\Core\Service\TenantManager;
+use Exception;
+use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\LockableTrait;
@@ -17,21 +18,31 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
+use Symfony\Contracts\Service\Attribute\Required;
 
 abstract class TenantAwareCommand extends Command
 {
     use LockableTrait;
 
+    private TenantManager $tenantManager;
+    private TenantConnectionSwitcher $tenantConnectionSwitcher;
+    private TenantContext $tenantContext;
+    protected LoggerInterface $logger;
+
     protected array $tenants = [];
     protected ?string $currentTenantName = null;
 
-    public function __construct(
-        private readonly TenantManager $tenantManager,
-        private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
-        protected readonly LoggerInterface $logger,
-    ) {
-        parent::__construct();
-        $this->tenants = $this->tenantManager->getTenants();
+    #[Required]
+    public function initDependencies(
+        TenantManager $tenantManager,
+        TenantConnectionSwitcher $tenantConnectionSwitcher,
+        TenantContext $tenantContext,
+        LoggerInterface $logger,
+    ): void {
+        $this->tenantManager = $tenantManager;
+        $this->tenantConnectionSwitcher = $tenantConnectionSwitcher;
+        $this->tenantContext = $tenantContext;
+        $this->logger = $logger;
     }
 
     #[Override]
@@ -58,6 +69,8 @@ abstract class TenantAwareCommand extends Command
         InputInterface $input,
         OutputInterface $output,
     ): int {
+        $this->tenants = $this->tenantManager->getTenants();
+
         if (!$this->lock()) {
             $this->logger->info(
                 'The command is already running in another process.'
@@ -83,8 +96,15 @@ abstract class TenantAwareCommand extends Command
         }
 
         if ($tenantName = $input->getOption('tenant')) {
-            $this->tenantConnectionSwitcher->switchConnection($tenantName);
-            $this->currentTenantName = $tenantName;
+            $tenant = $this->tenantManager->getTenantByName($tenantName);
+            if ($tenant === null) {
+                $io->error(sprintf('Tenant "%s" not found.', $tenantName));
+                $this->release();
+
+                return Command::FAILURE;
+            }
+
+            $this->switchToTenant($tenant);
             $io->title('Tenant: ' . $tenantName);
             $this->executeTenantCommand($input, $output);
             $io->success('Done!');
@@ -110,21 +130,19 @@ abstract class TenantAwareCommand extends Command
     ): int {
         foreach ($this->tenants as $tenant) {
             try {
-                $tenantName = $tenant['name'];
-                $this->tenantConnectionSwitcher->switchConnection($tenantName);
-                $this->currentTenantName = $tenantName;
-                $io->title('Tenant: ' . $tenantName);
+                $this->switchToTenant($tenant);
+                $io->title('Tenant: ' . $tenant['name']);
 
                 $this->executeTenantCommand($input, $output);
             } catch (ServiceException | \Doctrine\DBAL\Driver\Exception | \Doctrine\DBAL\Exception | Exception $e) {
                 $this->logger->error(
                     'An error occurred while executing command for tenant '
-                    . $tenantName,
+                    . $tenant['name'],
                     ['exception' => $e]
                 );
                 $io->error(
                     'An error occurred while executing command for tenant '
-                    . $tenantName
+                    . $tenant['name']
                 );
             }
         }
@@ -140,16 +158,18 @@ abstract class TenantAwareCommand extends Command
     {
         /** @var string $commandName */
         $commandName = $this->getName();
-        $io->info(sprintf(
-            'Running "%s" for %d tenants (concurrency: %d)',
-            $commandName,
-            count($this->tenants),
-            $concurrency
-        ));
+        $io->info(
+            sprintf(
+                'Running "%s" for %d tenants (concurrency: %d)',
+                $commandName,
+                count($this->tenants),
+                $concurrency
+            )
+        );
 
         /** @var array<string, Process> $running */
         $running = [];
-        $queue = array_map(static fn (array $t): string => (string)$t['name'], $this->tenants);
+        $queue = array_map(static fn(array $t): string => (string)$t['name'], $this->tenants);
         $failed = [];
         $succeeded = [];
 
@@ -200,6 +220,26 @@ abstract class TenantAwareCommand extends Command
         $this->release();
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @param array<string, mixed> $tenant
+     *
+     * @throws \Doctrine\DBAL\Driver\Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
+    private function switchToTenant(array $tenant): void
+    {
+        $tenantName = (string)$tenant['name'];
+
+        $this->tenantConnectionSwitcher->switchConnection($tenantName);
+        $this->tenantContext->setTenant(
+            isset($tenant['id']) ? (int)$tenant['id'] : null,
+            $tenantName,
+            isset($tenant['primary_domain']) ? (string)$tenant['primary_domain'] : null,
+            null,
+        );
+        $this->currentTenantName = $tenantName;
     }
 
     abstract protected function executeTenantCommand(
