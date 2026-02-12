@@ -47,12 +47,11 @@ readonly class InvoiceConsultUseCase
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
                 $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
                 $companyId = $this->companyContext->getId();
-                $name = $companyId .
-                    $taxDocument->getDocumentType() .
-                    $consultResponse->getCdrResponse()->getId() .
-                    '.zip';
+                $docFullName = $companyId . '-'
+                    . $taxDocument->getDocumentType() . '-'
+                    . $consultResponse->getCdrResponse()->getId();
                 $this->fileManager->write(
-                    Constants::INVOICE_DIR . '/' . $companyId . '/R-' . $name . '.zip',
+                    Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
                     $cdr
                 );
             } else {

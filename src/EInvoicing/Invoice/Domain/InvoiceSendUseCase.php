@@ -10,7 +10,6 @@ use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
-use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
 use App\Repository\TaxDocumentEventRepository;
 use Doctrine\DBAL\Exception;
@@ -22,7 +21,6 @@ readonly class InvoiceSendUseCase
     public function __construct(
         private BillSendUseCase $billSendUseCase,
         private FileManager $fileManager,
-        private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
         private TaxDocumentRepository $taxDocumentRepository,
         private EntityManagerInterface $entityManager,
@@ -47,9 +45,9 @@ readonly class InvoiceSendUseCase
 
             $saleId = (string)$taxDocument->getSale()->getId();
             $response = $this->billSendUseCase->__invoke($taxDocumentId);
-            $companyId = $this->companyContext->getId();
+            $docDir = Constants::INVOICE_DIR . '/' . $response->name;
             $this->fileManager->write(
-                Constants::INVOICE_DIR . '/' . $companyId . '/' . $response->name . '.xml',
+                $docDir . '/' . $response->name . '.xml',
                 $response->xml
             );
 
@@ -58,7 +56,7 @@ readonly class InvoiceSendUseCase
                 $sunatMessage = $response->sunatResponse->getCdrResponse()?->getDescription();
                 $cdr = base64_decode($response->sunatResponse->getCdrZip() ?? '');
                 $this->fileManager->write(
-                    $companyId . '/R-' . $response->name . '.zip',
+                    $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
             } else {

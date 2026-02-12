@@ -7,7 +7,6 @@ namespace App\EInvoicing\Sale\Void;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
-use App\Core\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\VoidedCreateUseCase;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;
@@ -20,7 +19,6 @@ final readonly class InvoiceVoidStrategy implements VoidStrategyInterface
         private TaxDocumentRepository $taxDocumentRepository,
         private VoidedCreateUseCase $voidedCreateUseCase,
         private FileManager $fileManager,
-        private CompanyContext $companyContext,
     ) {
     }
 
@@ -55,7 +53,7 @@ final readonly class InvoiceVoidStrategy implements VoidStrategyInterface
 
         if ($success) {
             $this->fileManager->write(
-                Constants::INVOICE_DIR . '/' . $this->companyContext->getId() . '/' . $response->name . '.xml',
+                Constants::INVOICE_DIR . '/' . $response->name . '/' . $response->name . '.xml',
                 $response->xml
             );
         }
