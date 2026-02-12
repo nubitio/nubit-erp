@@ -27,6 +27,14 @@ final readonly class TenantStampMiddleware implements MiddlewareInterface
             ));
         }
 
+        if ($envelope->last(ActorStamp::class) === null) {
+            $envelope = $envelope->with(new ActorStamp(
+                $this->tenantContext->getActorIdentifier(),
+                $this->tenantContext->getChannel(),
+                $this->tenantContext->getCommandName(),
+            ));
+        }
+
         return $stack->next()->handle($envelope, $stack);
     }
 }

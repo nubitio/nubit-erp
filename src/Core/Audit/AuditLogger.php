@@ -5,16 +5,25 @@ declare(strict_types=1);
 namespace App\Core\Audit;
 
 use App\Core\Context\TenantContext;
+use App\Core\Service\TenantManager;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ConnectionRegistry;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+use Throwable;
 
 final readonly class AuditLogger
 {
     public function __construct(
         private ConnectionRegistry $connectionRegistry,
         private TenantContext $tenantContext,
+        private Security $security,
+        private TenantManager $tenantManager,
+        private LoggerInterface $logger,
+        private CacheInterface $cache,
     ) {
     }
 
@@ -28,89 +37,111 @@ final readonly class AuditLogger
         ?string $actor = null,
     ): void {
         $connection = $this->getControlPlaneConnection();
-        if (!$this->isControlPlaneReady($connection)) {
+        if (!$this->isControlPlaneReady()) {
             throw new RuntimeException('Control plane database not ready for audit logging.');
         }
 
-        $tenantId = $tenantId ?? $this->tenantContext->getTenantId();
+        $actor = $this->resolveActor($actor, $metadata);
+        $tenantId = $tenantId ?? $this->tenantContext->getTenantId() ?? $this->resolveTenantId($metadata);
         $requestId = $this->tenantContext->getRequestId();
+        $channel = $this->tenantContext->getChannel();
 
         $connection->insert('audit_logs', [
             'tenant_id' => $tenantId,
             'action' => $action,
             'actor' => $actor,
             'request_id' => $requestId,
+            'channel' => $channel,
             'metadata' => json_encode($metadata, JSON_THROW_ON_ERROR),
             'created_at' => new \DateTimeImmutable('now')->format('Y-m-d H:i:s'),
         ]);
     }
 
     /**
-     * @param array<string, string> $filters Keys: 'action', 'date_from', 'date_to'
-     *
-     * @return array{rows: array<int, array<string, mixed>>, total: int}
-     * @throws Exception
+     * @param array<string, mixed> $metadata
      */
-    public function getAuditLogs(array $filters = [], int $page = 1, int $limit = 50): array
+    private function resolveActor(?string $actor, array $metadata): string
     {
-        $connection = $this->getControlPlaneConnection();
-        if (!$this->isControlPlaneReady($connection)) {
-            return ['rows' => [], 'total' => 0];
+        $actor = trim((string) $actor);
+        if ($actor !== '') {
+            return $actor;
         }
 
-        $where = [];
-        $params = [];
-
-        if (!empty($filters['action'])) {
-            $where[] = 'a.action = ?';
-            $params[] = $filters['action'];
+        $contextActor = $this->tenantContext->getActorIdentifier();
+        if ($contextActor !== null && trim($contextActor) !== '') {
+            return trim($contextActor);
         }
 
-        if (!empty($filters['date_from'])) {
-            $where[] = 'a.created_at >= ?';
-            $params[] = $filters['date_from'] . ' 00:00:00';
+        $user = $this->security->getUser();
+        if ($user !== null) {
+            $identifier = trim((string) $user->getUserIdentifier());
+            if ($identifier !== '') {
+                return $identifier;
+            }
         }
 
-        if (!empty($filters['date_to'])) {
-            $where[] = 'a.created_at <= ?';
-            $params[] = $filters['date_to'] . ' 23:59:59';
+        foreach (['actor', 'username', 'admin_user', 'user'] as $key) {
+            if (isset($metadata[$key]) && is_string($metadata[$key])) {
+                $candidate = trim($metadata[$key]);
+                if ($candidate !== '') {
+                    return $candidate;
+                }
+            }
         }
 
-        $whereClause = $where !== [] ? 'WHERE ' . implode(' AND ', $where) : '';
-
-        $total = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM audit_logs a ' . $whereClause,
-            $params
-        );
-
-        $offset = max(0, ($page - 1) * $limit);
-
-        $sql = 'SELECT a.id, a.action, a.actor, a.metadata, a.created_at, t.name AS tenant_name
-                FROM audit_logs a
-                LEFT JOIN tenants t ON t.id = a.tenant_id '
-            . $whereClause
-            . ' ORDER BY a.created_at DESC'
-            . ' LIMIT ' . $limit . ' OFFSET ' . $offset;
-
-        $rows = $connection->fetchAllAssociative($sql, $params);
-
-        return ['rows' => $rows, 'total' => $total];
+        return 'system';
     }
 
     /**
-     * @return list<string>
-     * @throws Exception
+     * @param array<string, mixed> $metadata
      */
-    public function getDistinctActions(): array
+    private function resolveTenantId(array $metadata): ?int
     {
-        $connection = $this->getControlPlaneConnection();
-        if (!$this->isControlPlaneReady($connection)) {
-            return [];
+        $tenantName = $this->tenantContext->getTenantName();
+        if ($tenantName === null || trim($tenantName) === '') {
+            $tenantName = $this->extractTenantNameFromMetadata($metadata);
         }
 
-        return $connection->fetchFirstColumn(
-            'SELECT DISTINCT action FROM audit_logs ORDER BY action ASC'
-        );
+        if ($tenantName === null || trim($tenantName) === '') {
+            return null;
+        }
+
+        try {
+            $tenant = $this->tenantManager->getTenantByName($tenantName);
+            if ($tenant === null) {
+                return null;
+            }
+
+            $tenantId = isset($tenant['id']) ? (int) $tenant['id'] : null;
+
+            return $tenantId === 0 ? null : $tenantId;
+        } catch (Throwable $e) {
+            $this->logger->debug('Audit tenant resolution skipped', [
+                'tenant' => $tenantName,
+                'exception' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function extractTenantNameFromMetadata(array $metadata): ?string
+    {
+        foreach (['tenant', 'tenant_name'] as $key) {
+            if (!isset($metadata[$key]) || !is_string($metadata[$key])) {
+                continue;
+            }
+
+            $tenantName = trim($metadata[$key]);
+            if ($tenantName !== '') {
+                return $tenantName;
+            }
+        }
+
+        return null;
     }
 
     private function getControlPlaneConnection(): Connection
@@ -118,8 +149,14 @@ final readonly class AuditLogger
         return $this->connectionRegistry->getConnection('control_plane');
     }
 
-    private function isControlPlaneReady(Connection $connection): bool
+    private function isControlPlaneReady(): bool
     {
-        return $connection->createSchemaManager()->tablesExist(['audit_logs']);
+        return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
+            $item->expiresAfter(600);
+
+            return $this->getControlPlaneConnection()
+                ->createSchemaManager()
+                ->tablesExist(['audit_logs']);
+        });
     }
 }

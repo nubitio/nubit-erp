@@ -64,6 +64,8 @@ services:
 
     App\Core\Audit\AuditLogger: ~
 
+    App\Core\Audit\AuditLogRepository: ~
+
     App\Core\Messenger\TenantStampMiddleware:
         tags:
             - { name: messenger.middleware, bus: messenger.bus.default }

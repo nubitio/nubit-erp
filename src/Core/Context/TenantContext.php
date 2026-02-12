@@ -10,6 +10,9 @@ final class TenantContext
     private ?string $tenantName = null;
     private ?string $tenantDomain = null;
     private ?string $requestId = null;
+    private ?string $actorIdentifier = null;
+    private ?string $channel = null;
+    private ?string $commandName = null;
 
     public function setTenant(
         ?int $tenantId,
@@ -23,12 +26,25 @@ final class TenantContext
         $this->requestId = $requestId;
     }
 
+    public function setActor(
+        ?string $actorIdentifier,
+        ?string $channel,
+        ?string $commandName = null,
+    ): void {
+        $this->actorIdentifier = $actorIdentifier;
+        $this->channel = $channel;
+        $this->commandName = $commandName;
+    }
+
     public function clear(): void
     {
         $this->tenantId = null;
         $this->tenantName = null;
         $this->tenantDomain = null;
         $this->requestId = null;
+        $this->actorIdentifier = null;
+        $this->channel = null;
+        $this->commandName = null;
     }
 
     public function getTenantId(): ?int
@@ -49,5 +65,20 @@ final class TenantContext
     public function getRequestId(): ?string
     {
         return $this->requestId;
+    }
+
+    public function getActorIdentifier(): ?string
+    {
+        return $this->actorIdentifier;
+    }
+
+    public function getChannel(): ?string
+    {
+        return $this->channel;
+    }
+
+    public function getCommandName(): ?string
+    {
+        return $this->commandName;
     }
 }

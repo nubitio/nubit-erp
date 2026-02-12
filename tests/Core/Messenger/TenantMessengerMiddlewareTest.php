@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Core\Messenger;
 
 use App\Core\Context\TenantContext;
+use App\Core\Messenger\ActorStamp;
 use App\Core\Messenger\TenantContextMiddleware;
 use App\Core\Messenger\TenantStamp;
 use App\Core\Messenger\TenantStampMiddleware;
@@ -53,6 +54,43 @@ final class TenantMessengerMiddlewareTest extends TestCase
         $this->assertSame('original', $stamp->tenantName);
     }
 
+    public function testStampMiddlewareAddsActorStamp(): void
+    {
+        $ctx = new TenantContext();
+        $ctx->setTenant(1, 'acme', 'acme.example.com', 'req-1');
+        $ctx->setActor('cli:app:test', 'cli', 'app:test');
+
+        $middleware = new TenantStampMiddleware($ctx);
+        $envelope = new Envelope(new \stdClass());
+        $stack = $this->createPassthroughStack();
+
+        $result = $middleware->handle($envelope, $stack);
+
+        $actorStamp = $result->last(ActorStamp::class);
+        $this->assertNotNull($actorStamp);
+        $this->assertSame('cli:app:test', $actorStamp->actorIdentifier);
+        $this->assertSame('cli', $actorStamp->channel);
+        $this->assertSame('app:test', $actorStamp->commandName);
+    }
+
+    public function testStampMiddlewareDoesNotOverwriteExistingActorStamp(): void
+    {
+        $ctx = new TenantContext();
+        $ctx->setActor('cli:new', 'cli', 'new');
+
+        $existingStamp = new ActorStamp('http:original', 'http');
+        $envelope = new Envelope(new \stdClass(), [$existingStamp]);
+
+        $middleware = new TenantStampMiddleware($ctx);
+        $stack = $this->createPassthroughStack();
+
+        $result = $middleware->handle($envelope, $stack);
+
+        $actorStamp = $result->last(ActorStamp::class);
+        $this->assertSame('http:original', $actorStamp->actorIdentifier);
+        $this->assertSame('http', $actorStamp->channel);
+    }
+
     public function testContextMiddlewareRestoresTenantContext(): void
     {
         $ctx = new TenantContext();
@@ -77,13 +115,61 @@ final class TenantMessengerMiddlewareTest extends TestCase
         $this->assertSame('acme', $capturedTenantName);
     }
 
+    public function testContextMiddlewareRestoresActorWithMessengerChannel(): void
+    {
+        $ctx = new TenantContext();
+        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+
+        $tenantStamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
+        $actorStamp = new ActorStamp('cli:app:test', 'cli', 'app:test');
+        $envelope = new Envelope(new \stdClass(), [$tenantStamp, $actorStamp]);
+
+        $middleware = new TenantContextMiddleware($ctx, $switcher);
+
+        $capturedActor = null;
+        $capturedChannel = null;
+        $capturedCommand = null;
+        $stack = $this->createCapturingStack(function () use ($ctx, &$capturedActor, &$capturedChannel, &$capturedCommand): void {
+            $capturedActor = $ctx->getActorIdentifier();
+            $capturedChannel = $ctx->getChannel();
+            $capturedCommand = $ctx->getCommandName();
+        });
+
+        $middleware->handle($envelope, $stack);
+
+        $this->assertSame('cli:app:test', $capturedActor);
+        $this->assertSame('messenger', $capturedChannel);
+        $this->assertSame('app:test', $capturedCommand);
+    }
+
+    public function testContextMiddlewareSetsMessengerChannelWithoutActorStamp(): void
+    {
+        $ctx = new TenantContext();
+        $switcher = $this->createMock(TenantConnectionSwitcher::class);
+
+        $tenantStamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
+        $envelope = new Envelope(new \stdClass(), [$tenantStamp]);
+
+        $middleware = new TenantContextMiddleware($ctx, $switcher);
+
+        $capturedChannel = null;
+        $stack = $this->createCapturingStack(function () use ($ctx, &$capturedChannel): void {
+            $capturedChannel = $ctx->getChannel();
+        });
+
+        $middleware->handle($envelope, $stack);
+
+        $this->assertSame('messenger', $capturedChannel);
+    }
+
     public function testContextMiddlewareClearsContextAfterProcessing(): void
     {
         $ctx = new TenantContext();
         $switcher = $this->createMock(TenantConnectionSwitcher::class);
 
         $stamp = new TenantStamp(1, 'acme', 'acme.example.com', 'req-1');
-        $envelope = new Envelope(new \stdClass(), [$stamp]);
+        $actorStamp = new ActorStamp('cli:test', 'cli');
+        $envelope = new Envelope(new \stdClass(), [$stamp, $actorStamp]);
 
         $middleware = new TenantContextMiddleware($ctx, $switcher);
         $stack = $this->createPassthroughStack();
@@ -92,6 +178,8 @@ final class TenantMessengerMiddlewareTest extends TestCase
 
         $this->assertNull($ctx->getTenantId(), 'Context must be cleared after processing');
         $this->assertNull($ctx->getTenantName(), 'Context must be cleared after processing');
+        $this->assertNull($ctx->getActorIdentifier(), 'Actor must be cleared after processing');
+        $this->assertNull($ctx->getChannel(), 'Channel must be cleared after processing');
     }
 
     public function testContextMiddlewareClearsContextEvenOnException(): void
@@ -113,6 +201,8 @@ final class TenantMessengerMiddlewareTest extends TestCase
 
         $this->assertNull($ctx->getTenantId(), 'Context must be cleared even on exception');
         $this->assertNull($ctx->getTenantName(), 'Context must be cleared even on exception');
+        $this->assertNull($ctx->getActorIdentifier(), 'Actor must be cleared even on exception');
+        $this->assertNull($ctx->getChannel(), 'Channel must be cleared even on exception');
     }
 
     public function testContextMiddlewareSkipsWhenNoStamp(): void

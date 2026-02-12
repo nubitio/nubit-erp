@@ -70,6 +70,7 @@
                             <th>Date</th>
                             <th>Action</th>
                             <th>Actor</th>
+                            <th>Channel</th>
                             <th>Tenant</th>
                             <th>Metadata</th>
                         </tr>
@@ -80,13 +81,21 @@
                                 <td class="text-nowrap">{{ log.created_at }}</td>
                                 <td><code>{{ log.action }}</code></td>
                                 <td>{{ log.actor ?? '-' }}</td>
+                                <td>{{ log.channel ?? '-' }}</td>
                                 <td>{{ log.tenant_name ?? '-' }}</td>
                                 <td>
+                                    {% set meta = log.metadata %}
                                     <small class="text-muted text-break"
                                            style="max-width:300px;display:inline-block;">
-                                        {% set meta = log.metadata %}
                                         {{ meta|length > 120 ? meta|slice(0, 120) ~ '...' : meta }}
                                     </small>
+                                    {% if meta|length > 2 %}
+                                        <button type="button" class="btn btn-link btn-sm p-0 ms-1"
+                                                data-bs-toggle="modal" data-bs-target="#metadataModal"
+                                                data-metadata="{{ meta|e('html_attr') }}">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
@@ -123,4 +132,68 @@
             {% endif %}
         </div>
     </div>
+
+    <div class="modal fade" id="metadataModal" tabindex="-1" aria-labelledby="metadataModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="metadataModalLabel">Metadata</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <pre id="metadataContent" class="mb-0 json-highlight"
+                         style="white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow-y:auto;background:var(--code-bg);padding:1rem;border-radius:8px;font-size:0.8rem;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .json-highlight .json-key { color: #6366f1; }
+    .json-highlight .json-string { color: #16a34a; }
+    .json-highlight .json-number { color: #d97706; }
+    .json-highlight .json-bool { color: #dc2626; }
+    .json-highlight .json-null { color: #9ca3af; }
+    [data-theme="dark"] .json-highlight .json-key { color: #a5b4fc; }
+    [data-theme="dark"] .json-highlight .json-string { color: #86efac; }
+    [data-theme="dark"] .json-highlight .json-number { color: #fcd34d; }
+    [data-theme="dark"] .json-highlight .json-bool { color: #fca5a5; }
+    [data-theme="dark"] .json-highlight .json-null { color: #64748b; }
+</style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+function highlightJson(json) {
+    var escaped = json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return escaped.replace(
+        /("(?:\\.|[^"\\])*")\s*:/g,
+        '<span class="json-key">$1</span>:'
+    ).replace(
+        /:\s*("(?:\\.|[^"\\])*")/g,
+        function(m, str) { return ': <span class="json-string">' + str + '</span>'; }
+    ).replace(
+        /:\s*(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+        ': <span class="json-number">$1</span>'
+    ).replace(
+        /:\s*(true|false)/g,
+        ': <span class="json-bool">$1</span>'
+    ).replace(
+        /:\s*(null)/g,
+        ': <span class="json-null">$1</span>'
+    );
+}
+
+document.getElementById('metadataModal').addEventListener('show.bs.modal', function(event) {
+    var raw = event.relatedTarget.getAttribute('data-metadata');
+    try {
+        var formatted = JSON.stringify(JSON.parse(raw), null, 2);
+        document.getElementById('metadataContent').innerHTML = highlightJson(formatted);
+    } catch (e) {
+        document.getElementById('metadataContent').textContent = raw;
+    }
+});
+</script>
 {% endblock %}
