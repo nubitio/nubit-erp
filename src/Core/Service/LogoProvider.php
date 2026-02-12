@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
+use App\Core\Context\TenantContext;
+use App\Core\Filesystem\S3UrlResolver;
 use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -12,6 +14,8 @@ readonly class LogoProvider
 {
     public function __construct(
         private Connection $connection,
+        private S3UrlResolver $s3UrlResolver,
+        private TenantContext $tenantContext,
     ) {
     }
 
@@ -26,10 +30,6 @@ readonly class LogoProvider
             return '';
         }
 
-        $baseUrl = $_ENV['S3_ENDPOINT'] . '/' . $_ENV['S3_BUCKET_NAME'] . '/';
-
-        $folder = Constants::IMAGE_UPLOAD_DIR;
-
         $media = $this->connection->fetchAssociative(
             'SELECT path FROM media WHERE id = :id',
             ['id' => $company['logo']]
@@ -39,6 +39,8 @@ readonly class LogoProvider
             return '';
         }
 
-        return $baseUrl . $folder . $media['path'];
+        $path = Constants::IMAGE_UPLOAD_DIR . $this->tenantContext->getTenantName() . '/' . $media['path'];
+
+        return $this->s3UrlResolver->resolve($path);
     }
 }

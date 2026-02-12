@@ -40,7 +40,11 @@ class TenantRestoreCommand extends Command
             return Command::FAILURE;
         }
 
-        if (!$io->confirm(sprintf('Restore tenant from backup #%d? This will overwrite the current database.', $backupId), false)) {
+        $message = sprintf(
+            'Restore tenant from backup #%d? This will overwrite the current database.',
+            $backupId,
+        );
+        if (!$io->confirm($message, false)) {
             $io->note('Restore cancelled.');
 
             return Command::SUCCESS;

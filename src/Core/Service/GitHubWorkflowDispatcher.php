@@ -23,7 +23,14 @@ final readonly class GitHubWorkflowDispatcher
         private string $ref,
         #[Autowire('%env(default::GITHUB_WORKFLOW_FILE)%')]
         private string $workflowFile,
+        #[Autowire('%env(default::GITHUB_TARGET_CONTAINER)%')]
+        private string $targetContainer,
     ) {
+    }
+
+    public function getTargetContainer(): string
+    {
+        return $this->targetContainer;
     }
 
     /**

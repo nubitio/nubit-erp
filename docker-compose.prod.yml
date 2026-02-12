@@ -9,6 +9,7 @@ services:
       # Application settings
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1, ::1}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
       TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
       # Database
@@ -53,7 +54,8 @@ services:
       GITHUB_OWNER: ${GITHUB_OWNER:-nubitio}
       GITHUB_REPO: ${GITHUB_REPO:-efact}
       GITHUB_WORKFLOW_REF: ${GITHUB_WORKFLOW_REF:-main}
-      GITHUB_WORKFLOW_FILE: ${GITHUB_WORKFLOW_FILE:-.github/workflows/tenant-provision.yml}
+      GITHUB_WORKFLOW_FILE: ${GITHUB_WORKFLOW_FILE:-tenant-provision.yml}
+      GITHUB_TARGET_CONTAINER: ${GITHUB_TARGET_CONTAINER:-efact}
     volumes:
       - app-var:/app/var
       - app-public-uploads:/app/public/uploads

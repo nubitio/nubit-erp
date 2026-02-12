@@ -30,7 +30,13 @@ class TenantBackupCommand extends Command
         $this
             ->addArgument('tenant', InputArgument::REQUIRED, 'Tenant name to backup')
             ->addOption('upload-s3', null, InputOption::VALUE_NEGATABLE, 'Upload backup to S3', true)
-            ->addOption('output-dir', 'o', InputOption::VALUE_OPTIONAL, 'Output directory (local-only backups)', 'var/backups');
+            ->addOption(
+                'output-dir',
+                'o',
+                InputOption::VALUE_OPTIONAL,
+                'Output directory (local-only backups)',
+                'var/backups',
+            );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
