@@ -84,43 +84,52 @@ abstract class TenantAwareCommand extends Command
 
         $io = new SymfonyStyle($input, $output);
 
-        if ($this->tenants === []) {
-            $this->logger->warning('No tenants found');
-            $io->warning('No tenants found');
-            $io->info('Using default connection');
-            $this->executeTenantCommand($input, $output);
-            $io->success('Done!');
-            $this->release();
+        try {
+            if ($this->tenants === []) {
+                $this->logger->warning('No tenants found');
+                $io->warning('No tenants found');
+                $io->info('Using default connection');
+                $result = $this->executeTenantCommand($input, $output);
+                if ($result === Command::SUCCESS) {
+                    $io->success('Done!');
+                }
 
-            return Command::SUCCESS;
-        }
-
-        if ($tenantName = $input->getOption('tenant')) {
-            $tenant = $this->tenantManager->getTenantByName($tenantName);
-            if ($tenant === null) {
-                $io->error(sprintf('Tenant "%s" not found.', $tenantName));
-                $this->release();
-
-                return Command::FAILURE;
+                return $result;
             }
 
-            $this->switchToTenant($tenant);
-            $io->title('Tenant: ' . $tenantName);
-            $this->executeTenantCommand($input, $output);
-            $io->success('Done!');
+            if ($tenantName = $input->getOption('tenant')) {
+                $tenant = $this->tenantManager->getTenantByName($tenantName);
+                if ($tenant === null) {
+                    $io->error(sprintf('Tenant "%s" not found.', $tenantName));
+
+                    return Command::FAILURE;
+                }
+
+                $this->switchToTenant($tenant);
+                $io->title('Tenant: ' . $tenantName);
+                $result = $this->executeTenantCommand($input, $output);
+                if ($result === Command::SUCCESS) {
+                    $io->success('Done!');
+                }
+
+                return $result;
+            }
+
+            $parallel = $input->getOption('parallel');
+            if ($parallel !== false) {
+                $concurrency = (int)($parallel ?: 4);
+                if ($concurrency < 1) {
+                    $io->warning('Invalid parallel value; using 1.');
+                    $concurrency = 1;
+                }
+
+                return $this->executeAllTenantsParallel($io, $input, $concurrency);
+            }
+
+            return $this->executeAllTenants($io, $input, $output);
+        } finally {
             $this->release();
-
-            return Command::SUCCESS;
         }
-
-        $parallel = $input->getOption('parallel');
-        if ($parallel !== false) {
-            $concurrency = (int)($parallel ?: 4);
-
-            return $this->executeAllTenantsParallel($io, $concurrency);
-        }
-
-        return $this->executeAllTenants($io, $input, $output);
     }
 
     private function executeAllTenants(
@@ -128,12 +137,17 @@ abstract class TenantAwareCommand extends Command
         InputInterface $input,
         OutputInterface $output,
     ): int {
+        $failedTenants = [];
+
         foreach ($this->tenants as $tenant) {
             try {
                 $this->switchToTenant($tenant);
                 $io->title('Tenant: ' . $tenant['name']);
 
-                $this->executeTenantCommand($input, $output);
+                $result = $this->executeTenantCommand($input, $output);
+                if ($result !== Command::SUCCESS) {
+                    $failedTenants[] = (string)$tenant['name'];
+                }
             } catch (ServiceException | \Doctrine\DBAL\Driver\Exception | \Doctrine\DBAL\Exception | Exception $e) {
                 $this->logger->error(
                     'An error occurred while executing command for tenant '
@@ -144,18 +158,26 @@ abstract class TenantAwareCommand extends Command
                     'An error occurred while executing command for tenant '
                     . $tenant['name']
                 );
+                $failedTenants[] = (string)$tenant['name'];
             }
+        }
+
+        if ($failedTenants !== []) {
+            $io->error('Failed tenants: ' . implode(', ', array_unique($failedTenants)));
+
+            return Command::FAILURE;
         }
 
         $io->success('Done!');
 
-        $this->release();
-
         return Command::SUCCESS;
     }
 
-    private function executeAllTenantsParallel(SymfonyStyle $io, int $concurrency): int
-    {
+    private function executeAllTenantsParallel(
+        SymfonyStyle $io,
+        InputInterface $input,
+        int $concurrency,
+    ): int {
         /** @var string $commandName */
         $commandName = $this->getName();
         $io->info(
@@ -176,7 +198,13 @@ abstract class TenantAwareCommand extends Command
         while ($queue !== [] || $running !== []) {
             while (count($running) < $concurrency && $queue !== []) {
                 $tenantName = array_shift($queue);
-                $process = new Process([PHP_BINARY, 'bin/console', $commandName, '--tenant=' . $tenantName]);
+                if ($tenantName == null) {
+                    break;
+                }
+
+                $process = new Process(
+                    $this->buildParallelCommandArgs($input, $commandName, $tenantName),
+                );
                 $process->setTimeout(null);
                 $process->start();
                 $running[$tenantName] = $process;
@@ -192,7 +220,9 @@ abstract class TenantAwareCommand extends Command
                         $failed[] = $tenantName;
                         $this->logger->error('Parallel execution failed for tenant', [
                             'tenant' => $tenantName,
+                            'command' => $process->getCommandLine(),
                             'output' => $process->getErrorOutput(),
+                            'stdout' => $process->getOutput(),
                         ]);
                         $io->writeln(sprintf('  <fg=red>Failed</> %s', $tenantName));
                     }
@@ -211,15 +241,76 @@ abstract class TenantAwareCommand extends Command
 
         if ($failed !== []) {
             $io->error('Failed tenants: ' . implode(', ', $failed));
-            $this->release();
 
             return Command::FAILURE;
         }
 
         $io->success('All tenants processed');
-        $this->release();
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function buildParallelCommandArgs(
+        InputInterface $input,
+        string $commandName,
+        string $tenantName,
+    ): array {
+        $args = [PHP_BINARY, 'bin/console', $commandName, '--tenant=' . $tenantName];
+
+        foreach ($this->getDefinition()->getArguments() as $argumentName => $argument) {
+            if ($argumentName === 'command') {
+                continue;
+            }
+
+            $value = $input->getArgument($argumentName);
+            if ($value === null) {
+                continue;
+            }
+
+            if ($argument->isArray() && is_array($value)) {
+                foreach ($value as $entry) {
+                    $args[] = (string)$entry;
+                }
+
+                continue;
+            }
+
+            $args[] = (string)$value;
+        }
+
+        foreach ($this->getDefinition()->getOptions() as $optionName => $option) {
+            if (in_array($optionName, ['tenant', 'parallel'], true)) {
+                continue;
+            }
+
+            $value = $input->getOption($optionName);
+            if ($value === null || $value === false || $value === []) {
+                continue;
+            }
+
+            if ($option->acceptValue()) {
+                if (is_array($value)) {
+                    foreach ($value as $entry) {
+                        $args[] = sprintf('--%s=%s', $optionName, (string)$entry);
+                    }
+
+                    continue;
+                }
+
+                $args[] = sprintf('--%s=%s', $optionName, (string)$value);
+
+                continue;
+            }
+
+            if ($value === true) {
+                $args[] = '--' . $optionName;
+            }
+        }
+
+        return $args;
     }
 
     /**
