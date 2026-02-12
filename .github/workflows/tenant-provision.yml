@@ -20,6 +20,11 @@ on:
         required: true
         default: "efact-dev"
         type: string
+      provision_id:
+        description: "Provision tracking ID from control plane"
+        required: false
+        default: "0"
+        type: string
 
 jobs:
   provision:
@@ -87,4 +92,5 @@ jobs:
             --setup \
             --admin-user="${{ inputs.admin_user }}" \
             --provisioning-url="$PROVISIONING_DATABASE_URL" \
+            --provision-id="${{ inputs.provision_id }}" \
             --no-interaction

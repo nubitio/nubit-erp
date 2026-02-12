@@ -11,7 +11,11 @@ use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
 use App\Core\Service\GitHubWorkflowDispatcher;
 use App\Core\Audit\AuditLogger;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\Persistence\ConnectionRegistry;
 use InvalidArgumentException;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,6 +33,8 @@ class TenantController extends AbstractController
         private readonly TenantBackupService $backupService,
         private readonly AuditLogger $auditLogger,
         private readonly GitHubWorkflowDispatcher $workflowDispatcher,
+        private readonly ConnectionRegistry $connectionRegistry,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -64,6 +70,7 @@ class TenantController extends AbstractController
         $usageDeltas = [];
         $quotaAlerts = [];
         $backups = [];
+        $provisions = [];
 
         try {
             $tenantName = (string)($tenant['name'] ?? '');
@@ -83,6 +90,12 @@ class TenantController extends AbstractController
             $this->addFlash('error', 'Unable to load backups: ' . $e->getMessage());
         }
 
+        try {
+            $provisions = $this->loadProvisions($id);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Unable to load provision history: ' . $e->getMessage());
+        }
+
         return $this->render('admin/tenant/edit.html.twig', [
             'tenant' => $tenant,
             'domains' => $domains,
@@ -93,6 +106,7 @@ class TenantController extends AbstractController
             'usage_deltas' => $usageDeltas,
             'quota_alerts' => $quotaAlerts,
             'backups' => $backups,
+            'provisions' => $provisions,
         ]);
     }
 
@@ -414,20 +428,41 @@ class TenantController extends AbstractController
             $domain = (string)($this->tenantManager->getPrimaryDomain($id) ?? '');
         }
 
+        $provisionId = 0;
+
         try {
+            $targetContainer = $this->workflowDispatcher->getTargetContainer();
+            $provisionId = $this->recordProvisionDispatch(
+                $id,
+                (string)$tenant['name'],
+                $domain,
+                $adminUser,
+                $targetContainer
+            );
+
             $this->workflowDispatcher->dispatch([
                 'tenant_name' => (string)$tenant['name'],
                 'domain' => $domain,
                 'admin_user' => $adminUser,
-                'target_container' => $this->workflowDispatcher->getTargetContainer(),
+                'target_container' => $targetContainer,
+                'provision_id' => (string)$provisionId,
             ]);
             $this->auditLogger->log('tenant.provision.dispatch', [
                 'tenant_id' => $id,
+                'provision_id' => $provisionId,
                 'domain' => $domain,
             ]);
             $this->addFlash('success', 'Provisioning workflow dispatched.');
         } catch (RuntimeException $exception) {
-            $this->addFlash('error', 'Unable to dispatch provisioning: ' . $exception->getMessage());
+            $this->logger->error('Provisioning dispatch failed for tenant {tenant}', [
+                'tenant_id' => $id,
+                'provision_id' => $provisionId,
+                'exception' => $exception,
+            ]);
+            if ($provisionId > 0) {
+                $this->markProvisionFailed($provisionId, 'Workflow dispatch failed');
+            }
+            $this->addFlash('error', 'Unable to dispatch provisioning. Check logs for details.');
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
@@ -548,6 +583,69 @@ class TenantController extends AbstractController
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
+    }
+
+    private function recordProvisionDispatch(
+        int $tenantId,
+        string $tenantName,
+        string $domain,
+        string $adminUser,
+        string $targetContainer,
+    ): int {
+        /** @var Connection $cp */
+        $cp = $this->connectionRegistry->getConnection('control_plane');
+
+        $sql = 'INSERT INTO tenant_provisions'
+            . ' (tenant_id, tenant_name, domain, admin_user, target_container, status, created_at)'
+            . ' VALUES (?, ?, ?, ?, ?, \'dispatched\', NOW())';
+
+        $cp->executeStatement(
+            $sql,
+            [$tenantId, $tenantName, $domain, $adminUser, $targetContainer],
+            [
+                ParameterType::INTEGER,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+                ParameterType::STRING,
+            ]
+        );
+
+        return (int)$cp->lastInsertId();
+    }
+
+    private function markProvisionFailed(int $provisionId, string $error): void
+    {
+        try {
+            /** @var Connection $cp */
+            $cp = $this->connectionRegistry->getConnection('control_plane');
+            $cp->executeStatement(
+                'UPDATE tenant_provisions SET status = ?, error_message = ?, completed_at = NOW() WHERE id = ?',
+                ['failed', mb_substr($error, 0, 65535), $provisionId],
+                [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
+            );
+        } catch (\Throwable) {
+            // Don't let tracking failures mask the original error
+        }
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function loadProvisions(int $tenantId): array
+    {
+        /** @var Connection $cp */
+        $cp = $this->connectionRegistry->getConnection('control_plane');
+
+        if (!$cp->createSchemaManager()->tablesExist(['tenant_provisions'])) {
+            return [];
+        }
+
+        return $cp->fetchAllAssociative(
+            'SELECT * FROM tenant_provisions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
+            [$tenantId, 20],
+            [ParameterType::INTEGER, ParameterType::INTEGER]
+        );
     }
 
     /**
