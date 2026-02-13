@@ -10,6 +10,7 @@ use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\Persistence\ConnectionRegistry;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Doctrine\DBAL\ParameterType;
@@ -33,6 +34,12 @@ class TenantProvisionCommand extends Command
         private readonly InitialSetupService $initialSetupService,
         private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
         private readonly CacheInterface $cache,
+        #[Autowire(env: 'TENANT_DB_PASS')]
+        private readonly string $tenantDbPass,
+        #[Autowire(env: 'TENANT_ADMIN_PASS')]
+        private readonly string $tenantAdminPass,
+        #[Autowire(env: 'PROVISIONING_DATABASE_URL')]
+        private readonly string $provisioningDatabaseUrl,
     ) {
         parent::__construct();
     }
@@ -141,9 +148,18 @@ class TenantProvisionCommand extends Command
             $this->updateProvisionStatus($controlPlane, $provisionId, 'running');
         }
 
+        $controlPlaneExistingTenant = $controlPlane->fetchAssociative(
+            'SELECT id, connection, status FROM tenants WHERE name = ?',
+            [$tenant]
+        );
+        $dbAlreadyExists = $this->provisioningDatabaseExists($provisioningConnection, $tenant);
+        $dbUserAlreadyExists = $createUser
+            ? $this->provisioningUserExists($provisioningConnection, $tenant)
+            : true;
+
         $dbCreated = false;
         $userCreated = false;
-        $controlPlaneRegistered = false;
+        $controlPlaneTenantCreated = false;
 
         try {
             $io->section('Creating tenant database');
@@ -151,23 +167,22 @@ class TenantProvisionCommand extends Command
             $provisioningConnection->executeStatement(
                 'CREATE DATABASE IF NOT EXISTS ' . $quotedDb . ' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci'
             );
-            $dbCreated = true;
+            $dbCreated = !$dbAlreadyExists;
 
             if ($createUser) {
                 $io->section('Creating tenant DB user');
                 $quotedUser = $provisioningConnection->quote($tenant);
                 $quotedPass = $provisioningConnection->quote($dbUserPass);
-                $provisioningConnection->executeStatement(
-                    'CREATE USER IF NOT EXISTS ' . $quotedUser . '@\'%\' IDENTIFIED BY ' . $quotedPass
-                );
-                $provisioningConnection->executeStatement(
-                    'ALTER USER ' . $quotedUser . '@\'%\' IDENTIFIED BY ' . $quotedPass
-                );
+                if (!$dbUserAlreadyExists) {
+                    $provisioningConnection->executeStatement(
+                        'CREATE USER IF NOT EXISTS ' . $quotedUser . '@\'%\' IDENTIFIED BY ' . $quotedPass
+                    );
+                    $userCreated = true;
+                }
                 $provisioningConnection->executeStatement(
                     'GRANT ALL PRIVILEGES ON ' . $quotedDb . '.* TO ' . $quotedUser . '@\'%\''
                 );
                 $provisioningConnection->executeStatement('FLUSH PRIVILEGES');
-                $userCreated = true;
             }
 
             $io->section('Registering tenant in control plane');
@@ -177,7 +192,7 @@ class TenantProvisionCommand extends Command
                 [$tenant, $tenant, 'active']
             );
             $this->invalidateTenantCache($tenant);
-            $controlPlaneRegistered = true;
+            $controlPlaneTenantCreated = $controlPlaneExistingTenant === false;
 
             if ($domain !== '') {
                 $io->section('Registering domain');
@@ -234,7 +249,8 @@ class TenantProvisionCommand extends Command
                 $tenant,
                 $dbCreated,
                 $userCreated,
-                $controlPlaneRegistered
+                $controlPlaneTenantCreated,
+                $controlPlaneExistingTenant,
             );
 
             return Command::FAILURE;
@@ -291,15 +307,27 @@ class TenantProvisionCommand extends Command
         string $tenant,
         bool $dbCreated,
         bool $userCreated,
-        bool $controlPlaneRegistered,
+        bool $controlPlaneTenantCreated,
+        array|false $controlPlaneExistingTenant,
     ): void {
-        if ($controlPlaneRegistered) {
-            try {
+        try {
+            if ($controlPlaneTenantCreated) {
                 $controlPlane->executeStatement('DELETE FROM tenants WHERE name = ?', [$tenant]);
                 $io->note('Rolled back: control plane registration');
-            } catch (\Throwable $e) {
-                $io->warning('Rollback failed (control plane): ' . $e->getMessage());
+            } elseif (is_array($controlPlaneExistingTenant)) {
+                $controlPlane->executeStatement(
+                    'UPDATE tenants SET connection = ?, status = ?, updated_at = NOW() WHERE id = ?',
+                    [
+                        (string) ($controlPlaneExistingTenant['connection'] ?? $tenant),
+                        (string) ($controlPlaneExistingTenant['status'] ?? 'active'),
+                        (int) ($controlPlaneExistingTenant['id'] ?? 0),
+                    ],
+                    [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
+                );
+                $io->note('Rolled back: control plane tenant state');
             }
+        } catch (\Throwable $e) {
+            $io->warning('Rollback failed (control plane): ' . $e->getMessage());
         }
 
         if ($userCreated) {
@@ -325,6 +353,32 @@ class TenantProvisionCommand extends Command
         $this->invalidateTenantCache($tenant);
     }
 
+    private function provisioningDatabaseExists(Connection $connection, string $database): bool
+    {
+        try {
+            return (int) $connection->fetchOne(
+                'SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
+                [$database]
+            ) > 0;
+        } catch (\Throwable) {
+            // Fail-safe: never assume resource is safe to delete when we cannot verify.
+            return true;
+        }
+    }
+
+    private function provisioningUserExists(Connection $connection, string $user): bool
+    {
+        try {
+            return (int) $connection->fetchOne(
+                'SELECT COUNT(*) FROM mysql.user WHERE user = ? AND host = ?',
+                [$user, '%']
+            ) > 0;
+        } catch (\Throwable) {
+            // Fail-safe: never assume resource is safe to delete when we cannot verify.
+            return true;
+        }
+    }
+
     private function ensureControlPlaneReady(Connection $connection): void
     {
         if (!$connection->createSchemaManager()->tablesExist(['tenants'])) {
@@ -336,12 +390,9 @@ class TenantProvisionCommand extends Command
     {
         $url = $overrideUrl;
         if ($url === '') {
-            $url = $_ENV['PROVISIONING_DATABASE_URL']
-                ?? $_SERVER['PROVISIONING_DATABASE_URL']
-                ?? getenv('PROVISIONING_DATABASE_URL')
-                ?: '';
+            $url = trim($this->provisioningDatabaseUrl);
         }
-        if (is_string($url) && $url !== '') {
+        if ($url !== '') {
             $params = $this->buildProvisioningParams($url);
 
             return DriverManager::getConnection($params);
@@ -417,7 +468,11 @@ class TenantProvisionCommand extends Command
 
     private function resolveSecret(string $envVar): string
     {
-        return trim((string)($_ENV[$envVar] ?? $_SERVER[$envVar] ?? getenv($envVar) ?: ''));
+        return match ($envVar) {
+            'TENANT_DB_PASS' => trim($this->tenantDbPass),
+            'TENANT_ADMIN_PASS' => trim($this->tenantAdminPass),
+            default => '',
+        };
     }
 
     private function invalidateTenantCache(string $tenantName): void

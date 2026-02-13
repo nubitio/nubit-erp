@@ -9,7 +9,8 @@ use App\Core\Service\PlanManager;
 use App\Core\Service\TenantQuotaService;
 use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
-use App\Core\Service\ProvisioningDispatchService;
+use App\Core\Service\ProvisionCommandRequest;
+use App\Core\Service\ProvisionCommandRunner;
 use App\Core\Audit\AuditLogger;
 use App\Onboarding\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
@@ -36,7 +37,7 @@ class TenantController extends AbstractController
         private readonly TenantBackupService $backupService,
         private readonly SubscriptionManager $subscriptionManager,
         private readonly AuditLogger $auditLogger,
-        private readonly ProvisioningDispatchService $workflowDispatcher,
+        private readonly ProvisionCommandRunner $commandRunner,
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly LoggerInterface $logger,
     ) {
@@ -443,42 +444,36 @@ class TenantController extends AbstractController
             $domain = $this->tenantManager->getPrimaryDomain($id) ?? '';
         }
 
-        $provisionId = 0;
+        $provisionId = $this->recordProvisionDispatch(
+            $id,
+            (string)$tenant['name'],
+            $domain,
+            $adminUser,
+        );
 
-        try {
-            $targetContainer = $this->workflowDispatcher->getTargetContainer();
-            $provisionId = $this->recordProvisionDispatch(
-                $id,
-                (string)$tenant['name'],
-                $domain,
-                $adminUser,
-                $targetContainer
-            );
+        $result = $this->commandRunner->run(new ProvisionCommandRequest(
+            tenant: (string)$tenant['name'],
+            domain: $domain,
+            adminUser: $adminUser,
+            provisionId: $provisionId,
+            createUser: true,
+        ));
 
-            $this->workflowDispatcher->dispatch([
-                'tenant_name' => (string)$tenant['name'],
-                'domain' => $domain,
-                'admin_user' => $adminUser,
-                'target_container' => $targetContainer,
-                'target_env' => $this->workflowDispatcher->getTargetEnvironment(),
-                'provision_id' => (string)$provisionId,
+        if (!$result['successful']) {
+            $this->logger->error('Provisioning failed for tenant {tenant}', [
+                'tenant_id' => $id,
+                'provision_id' => $provisionId,
+                'output' => mb_substr($result['output'], 0, 2000),
             ]);
-            $this->auditLogger->log('tenant.provision.dispatch', [
+            $this->markProvisionFailed($provisionId, $result['output']);
+            $this->addFlash('error', 'Provisioning failed.');
+        } else {
+            $this->auditLogger->log('tenant.provision.completed', [
                 'tenant_id' => $id,
                 'provision_id' => $provisionId,
                 'domain' => $domain,
             ]);
-            $this->addFlash('success', 'Provisioning workflow dispatched.');
-        } catch (RuntimeException $exception) {
-            $this->logger->error('Provisioning dispatch failed for tenant {tenant}', [
-                'tenant_id' => $id,
-                'provision_id' => $provisionId,
-                'exception' => $exception,
-            ]);
-            if ($provisionId > 0) {
-                $this->markProvisionFailed($provisionId, 'Workflow dispatch failed');
-            }
-            $this->addFlash('error', 'Unable to dispatch provisioning. Check logs for details.');
+            $this->addFlash('success', 'Provisioning completed.');
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
@@ -649,21 +644,19 @@ class TenantController extends AbstractController
         string $tenantName,
         string $domain,
         string $adminUser,
-        string $targetContainer,
     ): int {
         /** @var Connection $cp */
         $cp = $this->connectionRegistry->getConnection('control_plane');
 
         $sql = 'INSERT INTO tenant_provisions'
-            . ' (tenant_id, tenant_name, domain, admin_user, target_container, status, created_at)'
-            . ' VALUES (?, ?, ?, ?, ?, \'dispatched\', NOW())';
+            . ' (tenant_id, tenant_name, domain, admin_user, status, created_at)'
+            . ' VALUES (?, ?, ?, ?, \'dispatched\', NOW())';
 
         $cp->executeStatement(
             $sql,
-            [$tenantId, $tenantName, $domain, $adminUser, $targetContainer],
+            [$tenantId, $tenantName, $domain, $adminUser],
             [
                 ParameterType::INTEGER,
-                ParameterType::STRING,
                 ParameterType::STRING,
                 ParameterType::STRING,
                 ParameterType::STRING,
