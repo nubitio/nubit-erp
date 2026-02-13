@@ -187,8 +187,8 @@ class Sale
     private ?int $updated_by = null;
 
     #[Groups(['sale:read', 'sale:write'])]
-    #[ORM\Column(name: 'igv', type: 'integer', nullable: true)]
-    private ?int $igv = null;
+    #[ORM\Column(name: 'igv', type: 'float', nullable: true)]
+    private ?float $igv = null;
 
     #[Groups(['sale:read', 'sale:write'])]
     #[ORM\Column(name: 'recargo_consumo', type: 'integer', nullable: true)]
@@ -605,12 +605,12 @@ class Sale
         return $this;
     }
 
-    public function getIgv(): ?int
+    public function getIgv(): ?float
     {
         return $this->igv;
     }
 
-    public function setIgv(?int $igv): static
+    public function setIgv(?float $igv): static
     {
         $this->igv = $igv;
 
