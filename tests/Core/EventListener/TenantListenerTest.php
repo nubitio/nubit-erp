@@ -53,6 +53,20 @@ final class TenantListenerTest extends TestCase
         ($this->listener)($this->createEvent('acme.example.com', '/admin/tenants'));
     }
 
+    public function testSkipsRegisterPath(): void
+    {
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('app.example.com', '/register/new-tenant'));
+    }
+
+    public function testSkipsAccountPath(): void
+    {
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('app.example.com', '/account/dashboard'));
+    }
+
     public function testSkipsLocalhostSubdomain(): void
     {
         $this->switcher->expects($this->never())->method('switchConnection');

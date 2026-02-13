@@ -1,0 +1,100 @@
+{% extends 'onboarding/base.html.twig' %}
+
+{% block title %}Verificar email | eFact{% endblock %}
+
+{% block steps %}
+    <div class="steps">
+        <div class="step step--done">
+            <div class="step-dot">&#10003;</div>
+            <div class="step-label">Cuenta</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step--active">
+            <div class="step-dot">2</div>
+            <div class="step-label">Verificar</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-dot">3</div>
+            <div class="step-label">Empresa</div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Verifica tu email</h1>
+    <p class="subtitle">Ingresa el c&oacute;digo de 6 d&iacute;gitos que enviamos a <strong>{{ email|default('tu correo') }}</strong></p>
+
+    <form method="post" action="{{ path('onboarding_verify_submit') }}" id="verify-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('onboarding_verify') }}">
+        <input type="hidden" name="email" value="{{ email|default('') }}">
+        <input type="hidden" name="code" id="code-hidden" value="">
+
+        <div class="form-group">
+            <div class="code-input-wrapper" id="code-wrapper">
+                <input type="text" inputmode="numeric" maxlength="1" data-index="0" autocomplete="one-time-code" autofocus>
+                <input type="text" inputmode="numeric" maxlength="1" data-index="1">
+                <input type="text" inputmode="numeric" maxlength="1" data-index="2">
+                <input type="text" inputmode="numeric" maxlength="1" data-index="3">
+                <input type="text" inputmode="numeric" maxlength="1" data-index="4">
+                <input type="text" inputmode="numeric" maxlength="1" data-index="5">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="submit-btn" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">Verificar y continuar</span>
+        </button>
+    </form>
+
+    <p class="text-center mt-24">
+        <a href="{{ path('onboarding_register', { email: email|default('') }) }}" class="link">Reenviar c&oacute;digo</a>
+    </p>
+
+    <script>
+        (function () {
+            const wrapper = document.getElementById('code-wrapper');
+            const inputs = wrapper.querySelectorAll('input');
+            const hidden = document.getElementById('code-hidden');
+            const btn = document.getElementById('submit-btn');
+
+            function syncCode() {
+                let code = '';
+                inputs.forEach(function (input) { code += input.value; });
+                hidden.value = code;
+                btn.disabled = code.length < 6 || !/^\d{6}$/.test(code);
+            }
+
+            inputs.forEach(function (input, i) {
+                input.addEventListener('input', function () {
+                    this.value = this.value.replace(/\D/g, '').slice(0, 1);
+                    if (this.value && i < 5) { inputs[i + 1].focus(); }
+                    syncCode();
+                });
+
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Backspace' && !this.value && i > 0) {
+                        inputs[i - 1].focus();
+                        inputs[i - 1].value = '';
+                        syncCode();
+                    }
+                });
+
+                input.addEventListener('paste', function (e) {
+                    e.preventDefault();
+                    var paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+                    for (var j = 0; j < paste.length && j < 6; j++) {
+                        inputs[j].value = paste[j];
+                    }
+                    if (paste.length > 0) { inputs[Math.min(paste.length, 5)].focus(); }
+                    syncCode();
+                });
+            });
+
+            document.getElementById('verify-form').addEventListener('submit', function () {
+                btn.classList.add('btn--loading');
+                btn.disabled = true;
+            });
+        })();
+    </script>
+{% endblock %}

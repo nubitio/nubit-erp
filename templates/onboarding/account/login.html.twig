@@ -1,0 +1,45 @@
+{% extends 'onboarding/base.html.twig' %}
+
+{% block title %}Iniciar sesi&oacute;n | eFact{% endblock %}
+
+{% block header_action %}
+    <a href="{{ path('onboarding_register') }}">Crear cuenta</a>
+{% endblock %}
+
+{% block content %}
+    <h1>Iniciar sesi&oacute;n</h1>
+    <p class="subtitle">Accede a tus empresas en eFact.</p>
+
+    <form method="post" action="{{ path('onboarding_account_login_submit') }}" id="login-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('onboarding_account_login') }}">
+
+        <div class="form-group">
+            <label class="form-label" for="email">Correo electr&oacute;nico</label>
+            <input type="email" name="email" id="email" class="form-input" value="{{ email|default('') }}"
+                   placeholder="tu@empresa.com" required autocomplete="email" autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Contrase&ntilde;a</label>
+            <input type="password" name="password" id="password" class="form-input"
+                   required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="submit-btn">
+            <span class="spinner"></span>
+            <span class="btn-text">Entrar</span>
+        </button>
+    </form>
+
+    <p class="text-center mt-24">
+        <a href="{{ path('onboarding_register') }}" class="link">&iquest;No tienes cuenta? Reg&iacute;strate</a>
+    </p>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function () {
+            var btn = document.getElementById('submit-btn');
+            btn.classList.add('btn--loading');
+            btn.disabled = true;
+        });
+    </script>
+{% endblock %}
