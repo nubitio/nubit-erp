@@ -6,6 +6,8 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+        control_plane_admin_provider:
+            id: App\Core\Security\Auth\ControlPlaneUserProvider
         user_provider:
             id: App\Core\Security\Auth\UserProvider
     role_hierarchy:
@@ -23,7 +25,7 @@ security:
             pattern: ^/admin
             http_basic:
                 realm: 'Admin Panel'
-            provider: user_provider
+            provider: control_plane_admin_provider
         main:
             lazy: true
             stateless: true

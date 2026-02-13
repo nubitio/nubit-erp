@@ -32,7 +32,7 @@ services:
       OTEL_LOG_LEVEL: "debug"
       OTEL_PHP_LOG_DESTINATION: "stderr"
   database:
-    image: mariadb:10.7
+    image: mariadb:11.4
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: efact

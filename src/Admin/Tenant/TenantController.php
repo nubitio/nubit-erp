@@ -25,6 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/admin/tenants')]
 class TenantController extends AbstractController
 {
     public function __construct(
@@ -41,7 +42,7 @@ class TenantController extends AbstractController
     ) {
     }
 
-    #[Route('/admin/tenants', name: 'admin_tenant_index')]
+    #[Route('', name: 'admin_tenant_index')]
     public function index(): Response
     {
         $tenants = $this->tenantManager->getTenants();
@@ -53,7 +54,7 @@ class TenantController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/tenants/{id}/edit', name: 'admin_tenant_edit', methods: ['GET'])]
+    #[Route('/{id}/edit', name: 'admin_tenant_edit', methods: ['GET'])]
     public function edit(int $id): Response
     {
         $tenant = $this->tenantManager->getTenant($id);
@@ -124,7 +125,7 @@ class TenantController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/tenants/create', name: 'admin_tenant_create', methods: ['POST'])]
+    #[Route('/create', name: 'admin_tenant_create', methods: ['POST'])]
     public function create(Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -151,7 +152,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/{id}', name: 'admin_tenant_update', methods: ['POST'])]
+    #[Route('/{id}', name: 'admin_tenant_update', methods: ['POST'])]
     public function update(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -178,7 +179,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/delete/{id}', name: 'admin_tenant_delete', methods: ['POST'])]
+    #[Route('/delete/{id}', name: 'admin_tenant_delete', methods: ['POST'])]
     public function delete(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -194,7 +195,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/{id}/restore', name: 'admin_tenant_restore', methods: ['POST'])]
+    #[Route('/{id}/restore', name: 'admin_tenant_restore', methods: ['POST'])]
     public function restore(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -214,7 +215,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/{id}/suspend', name: 'admin_tenant_suspend', methods: ['POST'])]
+    #[Route('/{id}/suspend', name: 'admin_tenant_suspend', methods: ['POST'])]
     public function suspend(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -234,7 +235,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
-    #[Route('/admin/tenants/{id}/unsuspend', name: 'admin_tenant_unsuspend', methods: ['POST'])]
+    #[Route('/{id}/unsuspend', name: 'admin_tenant_unsuspend', methods: ['POST'])]
     public function unsuspend(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -254,7 +255,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
-    #[Route('/admin/tenants/{id}/purge', name: 'admin_tenant_purge', methods: ['POST'])]
+    #[Route('/{id}/purge', name: 'admin_tenant_purge', methods: ['POST'])]
     public function purge(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -274,7 +275,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
-    #[Route('/admin/tenants/{id}/domains', name: 'admin_tenant_domain_create', methods: ['POST'])]
+    #[Route('/{id}/domains', name: 'admin_tenant_domain_create', methods: ['POST'])]
     public function addDomain(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -304,7 +305,7 @@ class TenantController extends AbstractController
     }
 
     #[Route(
-        '/admin/tenants/{tenantId}/domains/{domainId}/primary',
+        '/{tenantId}/domains/{domainId}/primary',
         name: 'admin_tenant_domain_primary',
         methods: ['POST']
     )]
@@ -331,7 +332,7 @@ class TenantController extends AbstractController
     }
 
     #[Route(
-        '/admin/tenants/{tenantId}/domains/{domainId}/delete',
+        '/{tenantId}/domains/{domainId}/delete',
         name: 'admin_tenant_domain_delete',
         methods: ['POST']
     )]
@@ -353,7 +354,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $tenantId]);
     }
 
-    #[Route('/admin/tenants/{id}/plan', name: 'admin_tenant_plan', methods: ['POST'])]
+    #[Route('/{id}/plan', name: 'admin_tenant_plan', methods: ['POST'])]
     public function changePlan(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -397,7 +398,7 @@ class TenantController extends AbstractController
         }
     }
 
-    #[Route('/admin/tenants/{id}/usage', name: 'admin_tenant_usage', methods: ['GET'])]
+    #[Route('/{id}/usage', name: 'admin_tenant_usage', methods: ['GET'])]
     public function usage(int $id): JsonResponse
     {
         $tenant = $this->tenantManager->getTenant($id);
@@ -419,7 +420,7 @@ class TenantController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/tenants/{id}/provision', name: 'admin_tenant_provision', methods: ['POST'])]
+    #[Route('/{id}/provision', name: 'admin_tenant_provision', methods: ['POST'])]
     public function provision(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -459,6 +460,7 @@ class TenantController extends AbstractController
                 'domain' => $domain,
                 'admin_user' => $adminUser,
                 'target_container' => $targetContainer,
+                'target_env' => $this->workflowDispatcher->getTargetEnvironment(),
                 'provision_id' => (string)$provisionId,
             ]);
             $this->auditLogger->log('tenant.provision.dispatch', [
@@ -482,7 +484,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
-    #[Route('/admin/tenants/{id}/backup-frequency', name: 'admin_tenant_backup_frequency', methods: ['POST'])]
+    #[Route('/{id}/backup-frequency', name: 'admin_tenant_backup_frequency', methods: ['POST'])]
     public function updateBackupFrequency(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -507,7 +509,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
-    #[Route('/admin/tenants/{id}/backups', name: 'admin_tenant_backups', methods: ['GET'])]
+    #[Route('/{id}/backups', name: 'admin_tenant_backups', methods: ['GET'])]
     public function backups(int $id): Response
     {
         $tenant = $this->tenantManager->getTenant($id);
@@ -522,7 +524,7 @@ class TenantController extends AbstractController
         return $this->json($backups);
     }
 
-    #[Route('/admin/tenants/{id}/backup', name: 'admin_tenant_backup_create', methods: ['POST'])]
+    #[Route('/{id}/backup', name: 'admin_tenant_backup_create', methods: ['POST'])]
     public function createBackup(int $id, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -553,7 +555,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
-    #[Route('/admin/tenants/{id}/backup/{backupId}/restore', name: 'admin_tenant_backup_restore', methods: ['POST'])]
+    #[Route('/{id}/backup/{backupId}/restore', name: 'admin_tenant_backup_restore', methods: ['POST'])]
     public function restoreBackup(int $id, int $backupId, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -576,7 +578,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
-    #[Route('/admin/tenants/{id}/backup/{backupId}/delete', name: 'admin_tenant_backup_delete', methods: ['POST'])]
+    #[Route('/{id}/backup/{backupId}/delete', name: 'admin_tenant_backup_delete', methods: ['POST'])]
     public function deleteBackup(int $id, int $backupId, Request $request): Response
     {
         if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
@@ -599,7 +601,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
-    #[Route('/admin/tenants/{id}/backup/{backupId}/download', name: 'admin_tenant_backup_download', methods: ['GET'])]
+    #[Route('/{id}/backup/{backupId}/download', name: 'admin_tenant_backup_download', methods: ['GET'])]
     public function downloadBackup(int $id, int $backupId): StreamedResponse
     {
         $tenant = $this->tenantManager->getTenant($id);
