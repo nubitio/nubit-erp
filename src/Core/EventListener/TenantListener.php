@@ -49,7 +49,7 @@ readonly class TenantListener
         ]);
 
         $excludedPaths = [
-            '/admin/tenants',
+            '/admin',
             '/register',
             '/account',
             '/webhook/paypal',
