@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Onboarding\Controller;
 
+use App\Onboarding\Payment\BillingCycle;
 use App\Onboarding\Service\AccountService;
 use App\Onboarding\Service\OnboardingService;
 use App\Onboarding\Service\SubdomainValidator;
@@ -12,7 +13,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 final class TenantWizardController extends AbstractController
 {
@@ -20,6 +23,7 @@ final class TenantWizardController extends AbstractController
         private readonly AccountService $accountService,
         private readonly SubdomainValidator $subdomainValidator,
         private readonly OnboardingService $onboardingService,
+        private readonly RateLimiterFactory $onboardingTenantCreationLimiter,
     ) {
     }
 
@@ -55,7 +59,7 @@ final class TenantWizardController extends AbstractController
     }
 
     #[Route('/register/provision', name: 'onboarding_provision', methods: ['POST'])]
-    public function provision(Request $request): RedirectResponse
+    public function provision(Request $request): Response
     {
         if (!$this->isCsrfTokenValid('onboarding_wizard', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de seguridad invalido.');
@@ -68,9 +72,19 @@ final class TenantWizardController extends AbstractController
             return $this->redirectToRoute('onboarding_account_login');
         }
 
+        $limiter = $this->onboardingTenantCreationLimiter->create('account_' . $accountId);
+        if (!$limiter->consume()->isAccepted()) {
+            $this->addFlash('error', 'Has alcanzado el limite de creacion de tenants por hoy. Intenta manana.');
+
+            return $this->redirectToRoute('onboarding_account_dashboard');
+        }
+
         $tenantName = trim((string) $request->request->get('tenant_name', ''));
         $subdomain = trim((string) $request->request->get('subdomain', ''));
-        $plan = trim((string) $request->request->get('plan', 'free'));
+        $plan = mb_strtolower(trim((string) $request->request->get('plan', 'free')));
+        $gateway = mb_strtolower(trim((string) $request->request->get('gateway', 'paypal')));
+        $billingCycleRaw = mb_strtolower(trim((string) $request->request->get('billing_cycle', 'monthly')));
+        $billingCycle = BillingCycle::tryFrom($billingCycleRaw) ?? BillingCycle::Monthly;
         $adminPassword = (string) $request->request->get('admin_password', '');
 
         if ($subdomain === '' && $tenantName !== '') {
@@ -78,15 +92,40 @@ final class TenantWizardController extends AbstractController
         }
 
         try {
-            $result = $this->onboardingService->startProvisioning(
-                $accountId,
-                $tenantName,
-                $subdomain,
-                $plan,
-                $adminPassword,
+            if (!OnboardingService::isPaidPlan($plan)) {
+                $result = $this->onboardingService->startFreeProvisioning(
+                    $accountId,
+                    $tenantName,
+                    $subdomain,
+                    $adminPassword,
+                );
+
+                return $this->redirectToRoute('onboarding_status_page', ['token' => $result['token']]);
+            }
+
+            // Paid plan: store admin password in session temporarily for post-payment provisioning
+            $request->getSession()->set('onboarding_admin_password', $adminPassword);
+
+            $result = $this->onboardingService->startPaidProvisioning(
+                accountId: $accountId,
+                tenantName: $tenantName,
+                subdomain: $subdomain,
+                plan: $plan,
+                gateway: $gateway,
+                billingCycle: $billingCycle,
+                adminPassword: $adminPassword,
+                returnUrl: $this->generateUrl('onboarding_payment_return', [
+                    'token' => 'PLACEHOLDER',
+                ], UrlGeneratorInterface::ABSOLUTE_URL),
+                cancelUrl: $this->generateUrl('onboarding_payment_cancel', [
+                    'token' => 'PLACEHOLDER',
+                ], UrlGeneratorInterface::ABSOLUTE_URL),
             );
 
-            return $this->redirectToRoute('onboarding_status_page', ['token' => $result['token']]);
+            // Store token for return
+            $request->getSession()->set('onboarding_provision_token', $result['token']);
+
+            return $this->redirect($result['approval_url']);
         } catch (\InvalidArgumentException $e) {
             $this->addFlash('error', $e->getMessage());
 
@@ -95,6 +134,37 @@ final class TenantWizardController extends AbstractController
                 'subdomain' => $subdomain,
             ]);
         }
+    }
+
+    #[Route('/register/payment-return/{token}', name: 'onboarding_payment_return', methods: ['GET'])]
+    public function paymentReturn(string $token, Request $request): Response
+    {
+        $accountId = $this->getSessionAccountId($request);
+        if ($accountId <= 0) {
+            return $this->redirectToRoute('onboarding_account_login');
+        }
+
+        $this->addFlash('success', 'Pago procesado. Tu empresa se esta creando.');
+
+        return $this->redirectToRoute('onboarding_status_page', ['token' => $token]);
+    }
+
+    #[Route('/register/payment-cancel/{token}', name: 'onboarding_payment_cancel', methods: ['GET'])]
+    public function paymentCancel(string $token, Request $request): Response
+    {
+        $accountId = $this->getSessionAccountId($request);
+        if ($accountId <= 0) {
+            return $this->redirectToRoute('onboarding_account_login');
+        }
+
+        $sessionToken = (string) $request->getSession()->get('onboarding_provision_token', '');
+        if ($sessionToken === $token) {
+            $request->getSession()->remove('onboarding_provision_token');
+        }
+
+        $this->addFlash('warning', 'El pago fue cancelado. Puedes intentar nuevamente.');
+
+        return $this->redirectToRoute('onboarding_account_dashboard');
     }
 
     #[Route('/register/status/{token}', name: 'onboarding_status_page', methods: ['GET'])]

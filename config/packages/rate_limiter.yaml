@@ -1,0 +1,14 @@
+framework:
+    rate_limiter:
+        onboarding_registration:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'
+        onboarding_verification:
+            policy: sliding_window
+            limit: 10
+            interval: '15 minutes'
+        onboarding_tenant_creation:
+            policy: fixed_window
+            limit: 3
+            interval: '24 hours'

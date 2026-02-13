@@ -11,6 +11,7 @@ use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
 use App\Core\Service\GitHubWorkflowDispatcher;
 use App\Core\Audit\AuditLogger;
+use App\Onboarding\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -32,6 +33,7 @@ class TenantController extends AbstractController
         private readonly TenantQuotaService $tenantQuotaService,
         private readonly TenantUsageService $tenantUsageService,
         private readonly TenantBackupService $backupService,
+        private readonly SubscriptionManager $subscriptionManager,
         private readonly AuditLogger $auditLogger,
         private readonly GitHubWorkflowDispatcher $workflowDispatcher,
         private readonly ConnectionRegistry $connectionRegistry,
@@ -72,6 +74,8 @@ class TenantController extends AbstractController
         $quotaAlerts = [];
         $backups = [];
         $provisions = [];
+        $subscription = null;
+        $paymentEvents = [];
 
         try {
             $tenantName = (string)($tenant['name'] ?? '');
@@ -97,6 +101,13 @@ class TenantController extends AbstractController
             $this->addFlash('error', 'Unable to load provision history: ' . $e->getMessage());
         }
 
+        try {
+            $subscription = $this->subscriptionManager->findActiveByTenant($id);
+            $paymentEvents = $this->loadPaymentEvents($id);
+        } catch (\Throwable $e) {
+            $this->addFlash('error', 'Unable to load subscription data: ' . $e->getMessage());
+        }
+
         return $this->render('admin/tenant/edit.html.twig', [
             'tenant' => $tenant,
             'domains' => $domains,
@@ -108,6 +119,8 @@ class TenantController extends AbstractController
             'quota_alerts' => $quotaAlerts,
             'backups' => $backups,
             'provisions' => $provisions,
+            'subscription' => $subscription,
+            'payment_events' => $paymentEvents,
         ]);
     }
 
@@ -688,6 +701,25 @@ class TenantController extends AbstractController
         return $cp->fetchAllAssociative(
             'SELECT * FROM tenant_provisions WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
             [$tenantId, 20],
+            [ParameterType::INTEGER, ParameterType::INTEGER]
+        );
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function loadPaymentEvents(int $tenantId): array
+    {
+        /** @var Connection $cp */
+        $cp = $this->connectionRegistry->getConnection('control_plane');
+
+        if (!$cp->createSchemaManager()->tablesExist(['payment_events'])) {
+            return [];
+        }
+
+        return $cp->fetchAllAssociative(
+            'SELECT * FROM payment_events WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?',
+            [$tenantId, 50],
             [ParameterType::INTEGER, ParameterType::INTEGER]
         );
     }
