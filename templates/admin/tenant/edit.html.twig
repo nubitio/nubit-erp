@@ -62,6 +62,15 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="subscription-tab" data-bs-toggle="tab"
+                    data-bs-target="#subscription" type="button" role="tab">
+                <i class="bi bi-credit-card me-1"></i> Subscription
+                {% if subscription %}
+                    <span class="badge bg-{{ subscription.status == 'active' ? 'success' : (subscription.status == 'past_due' ? 'warning' : 'secondary') }} ms-1">{{ subscription.status }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="backups-tab" data-bs-toggle="tab"
                     data-bs-target="#backups" type="button" role="tab">
                 <i class="bi bi-archive me-1"></i> Backups
@@ -348,6 +357,143 @@
                                                 -
                                             {% endif %}
                                         </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {# ── SUBSCRIPTION TAB ── #}
+        <div class="tab-pane fade" id="subscription" role="tabpanel">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3"><i class="bi bi-credit-card me-1"></i> Subscription</h2>
+
+                    {% if subscription %}
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Plan</div>
+                                    <div class="fw-semibold text-capitalize">{{ subscription.plan }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Status</div>
+                                    <div>
+                                        {% if subscription.status == 'active' %}
+                                            <span class="badge bg-success-subtle text-success">Active</span>
+                                        {% elseif subscription.status == 'past_due' %}
+                                            <span class="badge bg-warning-subtle text-warning">Past due</span>
+                                        {% elseif subscription.status == 'pending' %}
+                                            <span class="badge bg-info-subtle text-info">Pending</span>
+                                        {% elseif subscription.status == 'cancelled' %}
+                                            <span class="badge bg-danger-subtle text-danger">Cancelled</span>
+                                        {% elseif subscription.status == 'suspended' %}
+                                            <span class="badge bg-warning-subtle text-warning">Suspended</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary">{{ subscription.status }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Billing cycle</div>
+                                    <div class="fw-semibold">{{ subscription.billing_cycle == 'annual' ? 'Annual' : 'Monthly' }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3">
+                                    <div class="text-muted small">Gateway</div>
+                                    <div class="fw-semibold">{{ subscription.gateway == 'paypal' ? 'PayPal' : (subscription.gateway == 'mercadopago' ? 'MercadoPago' : subscription.gateway) }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-muted" style="width:200px;">Subscription ID</td>
+                                        <td><code>{{ subscription.id }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Gateway subscription ID</td>
+                                        <td><code>{{ subscription.gateway_subscription_id ?: '-' }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Gateway customer ID</td>
+                                        <td><code>{{ subscription.gateway_customer_id ?: '-' }}</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Account ID</td>
+                                        <td>{{ subscription.account_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Current period start</td>
+                                        <td>{{ subscription.current_period_start ?: '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Current period end</td>
+                                        <td>{{ subscription.current_period_end ?: '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Grace period (days)</td>
+                                        <td>{{ subscription.grace_period_days ?? 7 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted">Created</td>
+                                        <td>{{ subscription.created_at }}</td>
+                                    </tr>
+                                    {% if subscription.cancelled_at %}
+                                    <tr>
+                                        <td class="text-muted">Cancelled at</td>
+                                        <td>{{ subscription.cancelled_at }}</td>
+                                    </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="border rounded p-3 text-center text-muted bg-light">
+                            No active subscription. This tenant is on the free plan.
+                        </div>
+                    {% endif %}
+
+                    {% if payment_events is not empty %}
+                        <h3 class="h6 mt-4 mb-3">Recent payment events</h3>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Gateway</th>
+                                    <th>Event type</th>
+                                    <th>Gateway event ID</th>
+                                    <th>Processed</th>
+                                    <th>Created</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for event in payment_events %}
+                                    <tr>
+                                        <td>{{ event.id }}</td>
+                                        <td>
+                                            {% if event.gateway == 'paypal' %}
+                                                <span class="badge bg-primary-subtle text-primary">PayPal</span>
+                                            {% else %}
+                                                <span class="badge bg-info-subtle text-info">MercadoPago</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><code class="bg-light px-1 rounded">{{ event.event_type }}</code></td>
+                                        <td><code class="bg-light px-1 rounded" style="font-size:11px;">{{ event.gateway_event_id|length > 30 ? event.gateway_event_id[:30] ~ '...' : event.gateway_event_id }}</code></td>
+                                        <td>{{ event.processed_at ?: '-' }}</td>
+                                        <td>{{ event.created_at }}</td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>

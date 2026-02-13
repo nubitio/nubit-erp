@@ -9,12 +9,15 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class RegistrationController extends AbstractController
 {
     public function __construct(
         private readonly AccountService $accountService,
+        private readonly RateLimiterFactory $onboardingRegistrationLimiter,
+        private readonly RateLimiterFactory $onboardingVerificationLimiter,
     ) {
     }
 
@@ -35,6 +38,13 @@ final class RegistrationController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('onboarding_register', (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'Token de seguridad invalido.');
+
+            return $this->redirectToRoute('onboarding_register');
+        }
+
+        $limiter = $this->onboardingRegistrationLimiter->create($request->getClientIp() ?? 'unknown');
+        if (!$limiter->consume()->isAccepted()) {
+            $this->addFlash('error', 'Demasiados intentos de registro. Intenta mas tarde.');
 
             return $this->redirectToRoute('onboarding_register');
         }
@@ -82,6 +92,14 @@ final class RegistrationController extends AbstractController
         }
 
         $email = (string) $request->request->get('email', '');
+
+        $limiter = $this->onboardingVerificationLimiter->create('verify_' . mb_strtolower(trim($email)));
+        if (!$limiter->consume()->isAccepted()) {
+            $this->addFlash('error', 'Demasiados intentos de verificacion. Intenta mas tarde.');
+
+            return $this->redirectToRoute('onboarding_verify', ['email' => $email]);
+        }
+
         $code = (string) $request->request->get('code', '');
 
         try {

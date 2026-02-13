@@ -23,45 +23,34 @@
         </a>
     </div>
 
-    {% if provisions is not empty %}
+    {% set active_provisions = provisions|filter(p => p.status in ['dispatched', 'running']) %}
+    {% set failed_provisions = provisions|filter(p => p.status == 'failed') %}
+
+    {% if active_provisions is not empty %}
+    <div id="provision-banner" class="dashboard-section">
+        {% for item in active_provisions %}
+            <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-primary-light);border:1px solid var(--color-gray-200);border-radius:var(--radius);margin-bottom:8px;">
+                <div class="status-spinner" style="width:24px;height:24px;border-width:3px;margin:0;flex-shrink:0;"></div>
+                <div>
+                    <span style="font-weight:600;">{{ item.tenant_name }}</span>
+                    <span style="color:var(--color-gray-500);font-size:13px;">&mdash; Creando tu empresa, esto puede tomar unos minutos...</span>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if failed_provisions is not empty %}
     <div class="dashboard-section">
-        <h2>Provisioning en curso</h2>
-        <div class="table-wrapper">
-            <table id="provision-table">
-                <thead>
-                    <tr>
-                        <th>Empresa</th>
-                        <th>Plan</th>
-                        <th>Estado</th>
-                        <th>Instancia</th>
-                        <th>Error</th>
-                    </tr>
-                </thead>
-                <tbody id="provision-body">
-                    {% for item in provisions %}
-                        <tr>
-                            <td>{{ item.tenant_name }}</td>
-                            <td><span class="badge badge--{{ item.plan ?: 'free' }}">{{ item.plan ?: 'free' }}</span></td>
-                            <td><span class="badge badge--{{ item.status }}">{{ item.status }}</span></td>
-                            <td>
-                                {% if item.status == 'completed' and item.tenant_url %}
-                                    <a href="{{ item.tenant_url }}" target="_blank" rel="noopener" class="link">Abrir</a>
-                                {% elseif item.status in ['dispatched', 'running'] %}
-                                    <span style="color:var(--color-gray-400);">Procesando...</span>
-                                {% else %}
-                                    &mdash;
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.error_message %}
-                                    <span style="color:var(--color-error);font-size:13px;">{{ item.error_message|length > 80 ? item.error_message|slice(0, 80) ~ '...' : item.error_message }}</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% for item in failed_provisions %}
+            <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-error-light);border:1px solid var(--color-error-border);border-radius:var(--radius);margin-bottom:8px;">
+                <div style="flex-shrink:0;font-size:20px;">&#10007;</div>
+                <div>
+                    <span style="font-weight:600;color:var(--color-error);">{{ item.tenant_name }}</span>
+                    <span style="color:var(--color-gray-600);font-size:13px;">&mdash; Hubo un problema creando tu empresa. Por favor contacta a soporte.</span>
+                </div>
+            </div>
+        {% endfor %}
     </div>
     {% endif %}
 
@@ -97,9 +86,12 @@
                                 </td>
                                 <td><span class="badge badge--{{ tenant.plan ?: 'free' }}">{{ tenant.plan ?: 'free' }}</span></td>
                                 <td><span class="badge badge--{{ tenant.status }}">{{ tenant.status }}</span></td>
-                                <td>
+                                <td style="white-space:nowrap;">
+                                    <a href="{{ path('onboarding_tenant_detail', {tenantId: tenant.id}) }}" class="btn btn--secondary" style="padding:4px 12px;font-size:13px;">
+                                        Gestionar
+                                    </a>
                                     {% if tenant.primary_domain %}
-                                        <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener" class="btn btn--secondary" style="padding:4px 12px;font-size:13px;">
+                                        <a href="https://{{ tenant.primary_domain }}" target="_blank" rel="noopener" class="btn btn--ghost" style="padding:4px 8px;font-size:13px;">
                                             Abrir
                                         </a>
                                     {% endif %}
@@ -114,50 +106,8 @@
 
     <script>
         (function () {
-            var provisionBody = document.getElementById('provision-body');
-            if (!provisionBody) return;
-
-            var hasActive = {{ provisions|filter(p => p.status in ['dispatched', 'running'])|length > 0 ? 'true' : 'false' }};
-            if (!hasActive) return;
-
-            function badgeClass(value) {
-                var map = { active: 'active', suspended: 'suspended', dispatched: 'dispatched', running: 'running', completed: 'completed', failed: 'failed', free: 'free', basic: 'basic', pro: 'pro' };
-                return 'badge badge--' + (map[value] || 'free');
-            }
-
-            function escapeHtml(str) {
-                var div = document.createElement('div');
-                div.appendChild(document.createTextNode(str));
-                return div.innerHTML;
-            }
-
-            function rowHtml(item) {
-                var plan = item.plan || 'free';
-                var status = item.status || 'dispatched';
-                var error = item.error_message || '';
-                var url = item.tenant_url || '';
-                var instanceCell;
-
-                if (status === 'completed' && url) {
-                    instanceCell = '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener" class="link">Abrir</a>';
-                } else if (status === 'dispatched' || status === 'running') {
-                    instanceCell = '<span style="color:var(--color-gray-400);">Procesando...</span>';
-                } else {
-                    instanceCell = '&mdash;';
-                }
-
-                var errorCell = error
-                    ? '<span style="color:var(--color-error);font-size:13px;">' + escapeHtml(error.slice(0, 80)) + '</span>'
-                    : '';
-
-                return '<tr>'
-                    + '<td>' + escapeHtml(item.tenant_name || '') + '</td>'
-                    + '<td><span class="' + badgeClass(plan) + '">' + escapeHtml(plan) + '</span></td>'
-                    + '<td><span class="' + badgeClass(status) + '">' + escapeHtml(status) + '</span></td>'
-                    + '<td>' + instanceCell + '</td>'
-                    + '<td>' + errorCell + '</td>'
-                    + '</tr>';
-            }
+            var banner = document.getElementById('provision-banner');
+            if (!banner) return;
 
             async function refresh() {
                 try {
@@ -168,14 +118,10 @@
                     var data = await response.json();
                     var items = Array.isArray(data.items) ? data.items : [];
 
-                    if (items.length > 0) {
-                        provisionBody.innerHTML = items.map(rowHtml).join('');
-                    }
-
                     var stillActive = items.some(function (i) { return i.status === 'dispatched' || i.status === 'running'; });
                     if (!stillActive) {
                         clearInterval(interval);
-                        setTimeout(function () { window.location.reload(); }, 1000);
+                        window.location.reload();
                     }
                 } catch (_e) { /* silent retry */ }
             }

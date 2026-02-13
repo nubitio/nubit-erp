@@ -58,6 +58,17 @@ services:
         arguments:
             $logger: '@logger'
 
+    App\Onboarding\Payment\PaymentGatewayInterface:
+        class: App\Onboarding\Payment\PayPalGateway
+
+    App\Onboarding\Payment\PayPalGateway:
+        tags:
+            - { name: app.payment_gateway }
+
+    App\Onboarding\Payment\MercadoPagoGateway:
+        tags:
+            - { name: app.payment_gateway }
+
     App\Core\Logging\TenantLogProcessor:
         tags:
             - { name: monolog.processor }

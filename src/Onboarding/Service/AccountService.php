@@ -56,7 +56,9 @@ final readonly class AccountService
                 'email' => $email,
                 'password_hash' => $hash,
                 'verification_code' => $code,
-                'verification_expires_at' => (new \DateTimeImmutable(sprintf('+%d seconds', $ttl)))->format('Y-m-d H:i:s'),
+                'verification_expires_at' => (new \DateTimeImmutable(
+                    sprintf('+%d seconds', $ttl)
+                ))->format('Y-m-d H:i:s'),
                 'verification_attempts' => 0,
                 'created_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                 'updated_at' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
@@ -114,7 +116,9 @@ final readonly class AccountService
         }
 
         if ((int) ($account['verification_attempts'] ?? 0) >= self::MAX_VERIFICATION_ATTEMPTS) {
-            throw new InvalidArgumentException('Demasiados intentos. Registra nuevamente para recibir un nuevo codigo.');
+            throw new InvalidArgumentException(
+                'Demasiados intentos. Registra nuevamente para recibir un nuevo codigo.'
+            );
         }
 
         $expiresAt = (string) ($account['verification_expires_at'] ?? '');
@@ -125,7 +129,9 @@ final readonly class AccountService
         $storedCode = (string) ($account['verification_code'] ?? '');
         if (!hash_equals($storedCode, $code)) {
             $conn->executeStatement(
-                'UPDATE accounts SET verification_attempts = verification_attempts + 1, updated_at = NOW() WHERE id = ?',
+                'UPDATE accounts
+                 SET verification_attempts = verification_attempts + 1, updated_at = NOW()
+                 WHERE id = ?',
                 [(int) $account['id']],
                 [ParameterType::INTEGER]
             );
