@@ -6,37 +6,27 @@ namespace App\Core\Service;
 
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-final readonly class GitHubWorkflowDispatcher
+final readonly class GithubProvisioningDispatcher implements ProvisioningDispatcherInterface
 {
     public function __construct(
         private HttpClientInterface $httpClient,
-        #[Autowire('%env(default::GITHUB_TOKEN)%')]
+        #[Autowire(env: 'GITHUB_TOKEN')]
         private string $token,
-        #[Autowire('%env(default::GITHUB_OWNER)%')]
+        #[Autowire(env: 'GITHUB_OWNER')]
         private string $owner,
-        #[Autowire('%env(default::GITHUB_REPO)%')]
+        #[Autowire(env: 'GITHUB_REPO')]
         private string $repo,
-        #[Autowire('%env(default::GITHUB_WORKFLOW_REF)%')]
+        #[Autowire(env: 'GITHUB_WORKFLOW_REF')]
         private string $ref,
-        #[Autowire('%env(default::GITHUB_WORKFLOW_FILE)%')]
+        #[Autowire(env: 'GITHUB_WORKFLOW_FILE')]
         private string $workflowFile,
-        #[Autowire('%env(default::GITHUB_TARGET_CONTAINER)%')]
-        private string $targetContainer,
     ) {
-    }
-
-    public function getTargetContainer(): string
-    {
-        return $this->targetContainer;
     }
 
     /**
      * @param array<string, string> $inputs
-     *
-     * @throws TransportExceptionInterface
      */
     public function dispatch(array $inputs): void
     {

@@ -232,6 +232,7 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/ai-platform" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/ai-store" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/mcp-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/rate-limiter" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

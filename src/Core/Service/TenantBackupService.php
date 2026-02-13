@@ -364,7 +364,7 @@ final readonly class TenantBackupService
     {
         $url = $this->provisioningDatabaseUrl;
 
-        if (is_string($url) && $url !== '') {
+        if ($url !== '') {
             $parts = parse_url($url);
             if ($parts !== false) {
                 return [
