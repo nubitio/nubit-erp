@@ -99,7 +99,7 @@ readonly class SaleUtils
             $sale->setCajaId($this->getCashBoxId());
         }
 
-        $sale->setIgv(floatval($this->settings->get(Constants::TAX)));
+        $sale->setIgv((string)$this->settings->get(Constants::TAX));
         $sale->setRecargoConsumo(
             intval(
                 $this->settings->get(Constants::CONSUMPTION_TAX)
