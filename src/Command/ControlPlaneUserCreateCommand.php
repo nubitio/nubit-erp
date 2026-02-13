@@ -87,18 +87,16 @@ final class ControlPlaneUserCreateCommand extends Command
         }
 
         $rolesRaw = (string) $input->getOption('roles');
-        $roles = array_values(array_filter(array_map('trim', explode(',', $rolesRaw)), static fn (string $role): bool => $role !== ''));
+        $roles = array_values(array_filter(
+            array_map('trim', explode(',', $rolesRaw)),
+            static fn (string $role): bool => $role !== ''
+        ));
         if ($roles === []) {
             $roles = ['ROLE_ADMIN'];
         }
 
         $isActive = !$input->getOption('inactive');
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        if (!is_string($hash) || $hash === '') {
-            $io->error('Could not hash password.');
-
-            return Command::FAILURE;
-        }
 
         $conn = $this->getControlPlaneConnection();
         if (!$conn->createSchemaManager()->tablesExist(['control_plane_admin_users'])) {

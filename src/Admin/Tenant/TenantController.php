@@ -9,7 +9,7 @@ use App\Core\Service\PlanManager;
 use App\Core\Service\TenantQuotaService;
 use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
-use App\Core\Service\GitHubWorkflowDispatcher;
+use App\Core\Service\ProvisioningDispatchService;
 use App\Core\Audit\AuditLogger;
 use App\Onboarding\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
@@ -36,7 +36,7 @@ class TenantController extends AbstractController
         private readonly TenantBackupService $backupService,
         private readonly SubscriptionManager $subscriptionManager,
         private readonly AuditLogger $auditLogger,
-        private readonly GitHubWorkflowDispatcher $workflowDispatcher,
+        private readonly ProvisioningDispatchService $workflowDispatcher,
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly LoggerInterface $logger,
     ) {
@@ -440,7 +440,7 @@ class TenantController extends AbstractController
         $domain = trim((string)$request->request->get('domain', ''));
 
         if ($domain === '') {
-            $domain = (string)($this->tenantManager->getPrimaryDomain($id) ?? '');
+            $domain = $this->tenantManager->getPrimaryDomain($id) ?? '';
         }
 
         $provisionId = 0;
