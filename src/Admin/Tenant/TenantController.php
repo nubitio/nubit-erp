@@ -11,6 +11,7 @@ use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
 use App\Core\Service\ProvisionCommandRequest;
 use App\Core\Service\ProvisionCommandRunner;
+use App\Core\Service\TenantNotificationService;
 use App\Core\Audit\AuditLogger;
 use App\Onboarding\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
@@ -39,6 +40,7 @@ class TenantController extends AbstractController
         private readonly AuditLogger $auditLogger,
         private readonly ProvisionCommandRunner $commandRunner,
         private readonly ConnectionRegistry $connectionRegistry,
+        private readonly TenantNotificationService $tenantNotificationService,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -124,6 +126,187 @@ class TenantController extends AbstractController
             'subscription' => $subscription,
             'payment_events' => $paymentEvents,
         ]);
+    }
+
+    #[Route('/{id}/notifications', name: 'admin_tenant_notifications', methods: ['GET'])]
+    public function notifications(int $id): Response
+    {
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $targets = $this->tenantNotificationService->getTenantTargets($id);
+        $definitions = $this->tenantNotificationService->getEventDefinitions();
+        $channels = $this->tenantNotificationService->getSupportedChannels();
+
+        $matrix = [];
+        foreach ($definitions as $eventKey => $def) {
+            foreach ($channels as $channel) {
+                $matrix[$eventKey][$channel] = [
+                    'enabled' => false,
+                    'severity' => (string)$def['severity'],
+                    'recipients' => [],
+                    'config' => [],
+                ];
+            }
+        }
+
+        foreach ($targets as $target) {
+            $eventKey = (string)($target['event_key'] ?? '');
+            $channel = (string)($target['channel'] ?? '');
+            if (!isset($matrix[$eventKey][$channel])) {
+                continue;
+            }
+
+            $matrix[$eventKey][$channel] = [
+                'enabled' => (bool)($target['is_enabled'] ?? false),
+                'severity' => (string)($target['severity'] ?? $definitions[$eventKey]['severity']),
+                'recipients' => is_array($target['recipients'] ?? null) ? $target['recipients'] : [],
+                'config' => is_array($target['config'] ?? null) ? $target['config'] : [],
+            ];
+        }
+
+        return $this->render('admin/tenant/notifications.html.twig', [
+            'tenant' => $tenant,
+            'event_definitions' => $definitions,
+            'channels' => $channels,
+            'matrix' => $matrix,
+        ]);
+    }
+
+    #[Route('/{id}/notifications', name: 'admin_tenant_notifications_update', methods: ['POST'])]
+    public function updateNotifications(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
+        }
+
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $definitions = $this->tenantNotificationService->getEventDefinitions();
+        $channels = $this->tenantNotificationService->getSupportedChannels();
+        $targets = [];
+
+        foreach (array_keys($definitions) as $eventKey) {
+            foreach ($channels as $channel) {
+                $enabled = (string)$request->request->get("enabled_{$eventKey}_{$channel}", '') === '1';
+                $severity = trim((string)$request->request->get(
+                    "severity_{$eventKey}_{$channel}",
+                    (string)$definitions[$eventKey]['severity']
+                ));
+                $recipientsRaw = trim((string)$request->request->get("recipients_{$eventKey}_{$channel}", ''));
+                $recipients = $recipientsRaw === ''
+                    ? []
+                    : array_values(array_filter(array_map(
+                        static fn (string $value): string => trim($value),
+                        preg_split('/[\n,;]+/', $recipientsRaw) ?: []
+                    )));
+
+                $configRaw = trim((string)$request->request->get("config_{$eventKey}_{$channel}", ''));
+                $config = [];
+                if ($configRaw !== '') {
+                    $decoded = json_decode($configRaw, true);
+                    if (!is_array($decoded)) {
+                        $this->addFlash('error', sprintf(
+                            'Invalid JSON config for %s / %s.',
+                            $eventKey,
+                            $channel
+                        ));
+
+                        return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
+                    }
+                    $config = $decoded;
+                }
+
+                $targets[$eventKey][$channel] = [
+                    'enabled' => $enabled,
+                    'severity' => $severity,
+                    'recipients' => $recipients,
+                    'config' => $config,
+                ];
+            }
+        }
+
+        try {
+            $this->tenantNotificationService->saveTenantTargets($id, $targets);
+            $this->auditLogger->log('tenant.notifications.update', [
+                'tenant_id' => $id,
+                'tenant_name' => (string)($tenant['name'] ?? ''),
+            ]);
+            $this->addFlash('success', 'Notification settings updated.');
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', 'Unable to save notification settings: ' . $exception->getMessage());
+        }
+
+        return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
+    }
+
+    #[Route('/{id}/notifications/test', name: 'admin_tenant_notifications_test', methods: ['POST'])]
+    public function testNotification(int $id, Request $request): Response
+    {
+        if (!$this->isCsrfTokenValid('admin', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Invalid security token. Please try again.');
+
+            return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
+        }
+
+        $tenant = $this->tenantManager->getTenant($id);
+        if ($tenant === null) {
+            $this->addFlash('error', 'Tenant not found');
+
+            return $this->redirectToRoute('admin_tenant_index');
+        }
+
+        $eventKey = trim((string)$request->get('event_key', ''));
+        $channel = trim((string)$request->get('channel', ''));
+
+        if ($eventKey === '' || $channel === '') {
+            $this->addFlash('error', 'Event and channel are required for test notification.');
+
+            return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
+        }
+
+        try {
+            $sent = $this->tenantNotificationService->dispatchTestTargetByTenantId(
+                tenantId: $id,
+                eventKey: $eventKey,
+                channel: $channel,
+                tenantName: (string)($tenant['name'] ?? ''),
+            );
+
+            if ($sent) {
+                $this->addFlash('success', sprintf(
+                    'Test notification sent for event "%s" via channel "%s".',
+                    $eventKey,
+                    $channel
+                ));
+            } else {
+                $this->addFlash('warning', sprintf(
+                    'No test notification sent for event "%s" via channel "%s" (check enable flag and recipients).',
+                    $eventKey,
+                    $channel
+                ));
+            }
+        } catch (\Throwable $exception) {
+            $this->addFlash('error', sprintf(
+                'Test notification failed for event "%s" via channel "%s": %s',
+                $eventKey,
+                $channel,
+                $exception->getMessage()
+            ));
+        }
+
+        return $this->redirectToRoute('admin_tenant_notifications', ['id' => $id]);
     }
 
     #[Route('/create', name: 'admin_tenant_create', methods: ['POST'])]

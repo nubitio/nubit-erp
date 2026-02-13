@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Core\Service\TenantNotificationService;
 use Override;
 use Exception;
 use RuntimeException;
@@ -27,6 +28,7 @@ class SendDailySummaryCommand extends TenantAwareCommand
 {
     public function __construct(
         private readonly Connection $connection,
+        private readonly TenantNotificationService $notificationService,
     ) {
         parent::__construct();
     }
@@ -66,31 +68,103 @@ class SendDailySummaryCommand extends TenantAwareCommand
                 "SELECT COUNT(*) FROM tax_document WHERE document_type IN ('01', '03') AND DATE(issue_date) = ?",
                 [$today]
             );
+            $invoicesAcceptedCount = (int)$this->connection->fetchOne(
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(issue_date) = ?
+                   AND sunat_status = '0'",
+                [$today]
+            );
+            $invoicesRejectedCount = (int)$this->connection->fetchOne(
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(issue_date) = ?
+                   AND sunat_status REGEXP '^[0-9]+$'
+                   AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999",
+                [$today]
+            );
+            $invoicesPendingCount = (int)$this->connection->fetchOne(
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(issue_date) = ?
+                   AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')",
+                [$today]
+            );
+            $invoicesTechnicalErrorCount = (int)$this->connection->fetchOne(
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(issue_date) = ?
+                   AND sunat_status IS NOT NULL
+                   AND sunat_status <> ''
+                   AND sunat_status <> 'pendiente'
+                   AND sunat_status <> '0'
+                   AND NOT (
+                       sunat_status REGEXP '^[0-9]+$'
+                       AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
+                   )",
+                [$today]
+            );
             $cancellationsCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document t
                  INNER JOIN movimiento m ON m.movimiento_id = t.movimiento_id
                  WHERE t.document_type IN ('01', '03') AND m.estado = 2 AND DATE(t.issue_date) = ?",
                 [$today]
             );
-            $invoicesErrorCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*) FROM tax_document
-                 WHERE document_type IN ('01', '03')
-                   AND DATE(issue_date) = ?
-                   AND sunat_status REGEXP '^[1-9][0-9]*$'",
-                [$today]
-            );
+            $invoicesErrorCount = $invoicesRejectedCount + $invoicesTechnicalErrorCount;
 
-            // Send the summary to Bird API
-            $this->sendToBirdApi(
-                $companyName,
-                $salesCount,
-                $newCustomersCount,
-                $recurringCustomersCount,
-                $invoicesSentCount,
-                $cancellationsCount,
-                $invoicesErrorCount,
-                $io
-            );
+            $tenantName = (string)($this->currentTenantName ?? '');
+            $subject = sprintf('[SUNAT Daily Summary] %s - %s', $companyName, $today);
+            $message = implode("\n", [
+                sprintf('Resumen SUNAT diario (%s)', $today),
+                'Tenant: ' . ($tenantName !== '' ? $tenantName : 'default'),
+                'Empresa: ' . (string)$companyName,
+                'Comprobantes emitidos: ' . $invoicesSentCount,
+                'Aceptados: ' . $invoicesAcceptedCount,
+                'Rechazados: ' . $invoicesRejectedCount,
+                'Errores técnicos: ' . $invoicesTechnicalErrorCount,
+                'Pendientes: ' . $invoicesPendingCount,
+                'Anulados: ' . $cancellationsCount,
+            ]);
+            $payload = [
+                'date' => $today,
+                'tenant_name' => $tenantName !== '' ? $tenantName : 'default',
+                'company_name' => (string)$companyName,
+                'sales_count' => $salesCount,
+                'new_customers_count' => $newCustomersCount,
+                'recurring_customers_count' => $recurringCustomersCount,
+                'total_sent' => $invoicesSentCount,
+                'accepted' => $invoicesAcceptedCount,
+                'rejected' => $invoicesRejectedCount,
+                'technical_errors' => $invoicesTechnicalErrorCount,
+                'pending' => $invoicesPendingCount,
+                'cancellations' => $cancellationsCount,
+                'errors_total' => $invoicesErrorCount,
+            ];
+
+            $dispatched = 0;
+            if ($tenantName !== '') {
+                $dispatched = $this->notificationService->dispatchForTenantName(
+                    tenantName: $tenantName,
+                    eventKey: TenantNotificationService::EVENT_SUNAT_DAILY_SUMMARY,
+                    subject: $subject,
+                    message: $message,
+                    payload: $payload,
+                    severity: 'info',
+                );
+            }
+
+            if ($dispatched === 0) {
+                $this->sendToBirdApi(
+                    $companyName,
+                    $salesCount,
+                    $newCustomersCount,
+                    $recurringCustomersCount,
+                    $invoicesSentCount,
+                    $cancellationsCount,
+                    $invoicesErrorCount,
+                    $io
+                );
+            }
 
             $io->success('Daily summary sent successfully');
 

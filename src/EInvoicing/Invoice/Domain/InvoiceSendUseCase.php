@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\EInvoicing\Invoice\Domain;
 
 use App\Core\Audit\AuditLogger;
+use App\Core\Service\CompanyContext;
 use App\EInvoicing\Billing\Domain\BillSendUseCase;
+use App\EInvoicing\Billing\Domain\BillConsultUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
@@ -20,7 +22,9 @@ readonly class InvoiceSendUseCase
 {
     public function __construct(
         private BillSendUseCase $billSendUseCase,
+        private BillConsultUseCase $billConsultUseCase,
         private FileManager $fileManager,
+        private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
         private ManagerRegistry $doctrine,
         private AuditLogger $auditLogger,
@@ -58,9 +62,42 @@ readonly class InvoiceSendUseCase
                     $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
+                $recoveredByConsult = false;
+                $retryable = false;
             } else {
-                $sunatStatus = $response->sunatResponse->getError()?->getCode();
-                $sunatMessage = $response->sunatResponse->getError()?->getMessage();
+                $errorCode = $response->sunatResponse->getError()?->getCode();
+                $errorMessage = $response->sunatResponse->getError()?->getMessage();
+                $retryable = !$this->isSunatRejection($errorCode, $errorMessage);
+                $recoveredByConsult = false;
+
+                if ($retryable) {
+                    try {
+                        $consultResponse = $this->billConsultUseCase->__invoke($taxDocumentId);
+                        if ($consultResponse->isSuccess() && $consultResponse->getCdrResponse()?->isAccepted()) {
+                            $sunatStatus = $consultResponse->getCdrResponse()->getCode();
+                            $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
+                            $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
+                            $companyId = $this->companyContext->getId();
+                            $docFullName = $companyId . '-'
+                                . $taxDocument->getDocumentType() . '-'
+                                . $consultResponse->getCdrResponse()->getId();
+                            $this->fileManager->write(
+                                Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
+                                $cdr
+                            );
+                            $recoveredByConsult = true;
+                        } else {
+                            $sunatStatus = 'pendiente';
+                            $sunatMessage = $errorMessage;
+                        }
+                    } catch (\Throwable) {
+                        $sunatStatus = 'pendiente';
+                        $sunatMessage = $errorMessage;
+                    }
+                } else {
+                    $sunatStatus = $errorCode;
+                    $sunatMessage = $errorMessage;
+                }
             }
 
             $taxDocument->setSunatStatus($sunatStatus);
@@ -76,6 +113,8 @@ readonly class InvoiceSendUseCase
                 statusMessage: $sunatMessage,
                 payload: [
                     'name' => $response->name,
+                    'retryable' => $retryable,
+                    'recovered_by_consult' => $recoveredByConsult,
                 ],
             );
 
@@ -97,5 +136,17 @@ readonly class InvoiceSendUseCase
 
             throw $throwable;
         }
+    }
+
+    private function isSunatRejection(?string $code, ?string $message): bool
+    {
+        if ($code !== null && $code !== '' && ctype_digit($code)) {
+            $numericCode = (int)$code;
+            if ($numericCode >= 2000 && $numericCode < 4000) {
+                return true;
+            }
+        }
+
+        return stripos((string)$message, 'rechaz') !== false;
     }
 }

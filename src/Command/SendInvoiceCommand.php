@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Core\Application\Command\TenantAwareCommand;
-use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\ParameterType;
+use App\Core\Service\TenantNotificationService;
+use App\EInvoicing\Invoice\Domain\InvoiceSendOrchestrator;
+use App\EInvoicing\Invoice\Domain\InvoiceSendRetryService;
+use App\EInvoicing\Invoice\Domain\SunatSendControlService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Override;
@@ -17,7 +18,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
-use Throwable;
 
 #[AsCommand(
     name: 'invoice:send',
@@ -29,8 +29,10 @@ class SendInvoiceCommand extends TenantAwareCommand
     private const int CHUNK_SIZE = 100;
 
     public function __construct(
-        private readonly Connection $connection,
-        private readonly InvoiceSendUseCase $invoiceSendUseCase,
+        private readonly InvoiceSendOrchestrator $orchestrator,
+        private readonly InvoiceSendRetryService $retryService,
+        private readonly SunatSendControlService $controlService,
+        private readonly TenantNotificationService $notificationService,
         private readonly ManagerRegistry $doctrine,
     ) {
         parent::__construct();
@@ -46,16 +48,21 @@ class SendInvoiceCommand extends TenantAwareCommand
     {
         $io = new SymfonyStyle($input, $output);
         $startedAt = microtime(true);
+        $tenantName = $this->currentTenantName;
+        $rejectionThreshold = $this->controlService->getRejectionThreshold($tenantName);
 
-        $pendingTotal = (int)$this->connection->fetchOne(
-            "
-            SELECT COUNT(1) AS total
-            FROM tax_document
-            WHERE document_type IN ('01', '03')
-              AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')
-              AND issue_date >= DATE_SUB(NOW(), INTERVAL 3 DAY)
-            "
-        );
+        if (!$this->controlService->isSunatSendingEnabled($tenantName)) {
+            $io->warning('SUNAT sending is paused by configuration (app_option_sunat_send_enabled=false).');
+            $this->logger->warning('Skipping invoice send because SUNAT sending is paused', [
+                'tenant' => $tenantName,
+                'rejection_threshold' => $rejectionThreshold,
+            ]);
+
+            return Command::SUCCESS;
+        }
+
+        $retryPolicy = $this->retryService->getRetryPolicy($tenantName);
+        $pendingTotal = $this->retryService->countCandidateDocuments();
 
         if ($pendingTotal === 0) {
             $io->success('No pending invoices to send.');
@@ -63,75 +70,66 @@ class SendInvoiceCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
+        $io->text('SUNAT rejection threshold: ' . $rejectionThreshold);
+        $io->text(sprintf(
+            'Retry policy: max_attempts=%d, base=%ds, max_backoff=%ds',
+            $retryPolicy['max_attempts'],
+            $retryPolicy['base_seconds'],
+            $retryPolicy['max_seconds'],
+        ));
         $io->text('Pending: ' . $pendingTotal);
         $io->progressStart($pendingTotal);
 
         $errors = [];
         $sent = 0;
         $batchOffset = 0;
+        $pausedByRejection = false;
+        $skippedByBackoff = 0;
+        $skippedByMaxAttempts = 0;
 
         while (true) {
-            $pendingIds = $this->connection->fetchFirstColumn(
-                "
-                SELECT tax_document_id
-                FROM tax_document
-                WHERE document_type IN ('01', '03')
-                  AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')
-                  AND issue_date >= DATE_SUB(NOW(), INTERVAL 3 DAY)
-                ORDER BY issue_date ASC
-                LIMIT :limit OFFSET :offset
-                ",
-                [
-                    'limit' => self::CHUNK_SIZE,
-                    'offset' => $batchOffset,
-                ],
-                [
-                    'limit' => ParameterType::INTEGER,
-                    'offset' => ParameterType::INTEGER,
-                ]
-            );
-
+            $pendingIds = $this->retryService->fetchCandidateIds(self::CHUNK_SIZE, $batchOffset);
             if ($pendingIds === []) {
                 break;
             }
 
             foreach ($pendingIds as $taxDocumentId) {
-                try {
-                    $response = $this->invoiceSendUseCase->__invoke((string)$taxDocumentId);
+                $result = $this->orchestrator->process(
+                    $taxDocumentId,
+                    $retryPolicy,
+                    $rejectionThreshold,
+                    $tenantName
+                );
 
-                    if ($response->sunatResponse->isSuccess()) {
-                        $sent++;
-                    } else {
-                        $message = $response->sunatResponse->getError()?->getMessage() ?? 'Unknown error';
-                        $errors[] = [
-                            'tax_document_id' => (string)$taxDocumentId,
-                            'error' => $message,
-                        ];
-                        $this->logger->warning('Invoice sending warning', [
-                            'tax_document_id' => $taxDocumentId,
-                            'message' => $message,
-                        ]);
-                    }
-                } catch (Throwable $exception) {
+                if ($result->sent) {
+                    $sent++;
+                }
+                if ($result->error !== null) {
                     $errors[] = [
-                        'tax_document_id' => (string)$taxDocumentId,
-                        'error' => $exception->getMessage(),
-                    ];
-                    $this->logger->error('Error sending invoice', [
                         'tax_document_id' => $taxDocumentId,
-                        'exception' => $exception,
-                    ]);
-
-                    /** @var EntityManagerInterface $manager */
-                    $manager = $this->doctrine->getManager();
-                    if (!$manager->isOpen()) {
-                        $this->doctrine->resetManager();
-                    }
-                } finally {
-                    $io->progressAdvance();
+                        'error' => $result->error,
+                    ];
+                }
+                if ($result->skipReason === 'backoff') {
+                    $skippedByBackoff++;
+                } elseif ($result->skipReason === 'max_attempts') {
+                    $skippedByMaxAttempts++;
+                }
+                if ($result->paused) {
+                    $pausedByRejection = true;
                 }
 
+                $this->ensureEntityManagerOpen();
                 $this->doctrine->getManager()->clear();
+                $io->progressAdvance();
+
+                if ($pausedByRejection) {
+                    break;
+                }
+            }
+
+            if ($pausedByRejection) {
+                break;
             }
 
             $batchOffset += self::CHUNK_SIZE;
@@ -145,27 +143,55 @@ class SendInvoiceCommand extends TenantAwareCommand
         }
 
         $durationMs = (int)((microtime(true) - $startedAt) * 1000);
-
-        $io->success(
-            sprintf(
-                'Completed. Sent: %d, Failed: %d, Duration: %d ms',
-                $sent,
-                count($errors),
-                $durationMs
-            )
-        );
+        $io->success(sprintf(
+            'Completed. Sent: %d, Failed: %d, Duration: %d ms',
+            $sent,
+            count($errors),
+            $durationMs
+        ));
 
         $this->logger->info('Invoice send command completed', [
             'pending_total' => $pendingTotal,
             'sent' => $sent,
             'failed' => count($errors),
             'duration_ms' => $durationMs,
+            'paused_by_rejection' => $pausedByRejection,
+            'rejection_threshold' => $rejectionThreshold,
+            'retry_max_attempts' => $retryPolicy['max_attempts'],
+            'retry_base_seconds' => $retryPolicy['base_seconds'],
+            'retry_max_seconds' => $retryPolicy['max_seconds'],
+            'skipped_by_backoff' => $skippedByBackoff,
+            'skipped_by_max_attempts' => $skippedByMaxAttempts,
         ]);
 
-        if ($errors !== []) {
-            return Command::FAILURE;
+        if ($skippedByMaxAttempts > 0 && is_string($tenantName) && $tenantName !== '') {
+            $subject = sprintf('[SUNAT] Documentos bloqueados por max attempts - %s', $tenantName);
+            $message = sprintf(
+                'Se detectaron %d comprobantes bloqueados por max attempts en esta corrida.',
+                $skippedByMaxAttempts
+            );
+            $this->notificationService->dispatchForTenantName(
+                tenantName: $tenantName,
+                eventKey: TenantNotificationService::EVENT_SUNAT_MAX_ATTEMPTS,
+                subject: $subject,
+                message: $message,
+                payload: [
+                    'tenant_name' => $tenantName,
+                    'skipped_by_max_attempts' => $skippedByMaxAttempts,
+                    'occurred_at' => date(DATE_ATOM),
+                ],
+                severity: 'warning',
+            );
         }
 
-        return Command::SUCCESS;
+        return $errors === [] ? Command::SUCCESS : Command::FAILURE;
+    }
+
+    private function ensureEntityManagerOpen(): void
+    {
+        $manager = $this->doctrine->getManager();
+        if ($manager instanceof EntityManagerInterface && !$manager->isOpen()) {
+            $this->doctrine->resetManager();
+        }
     }
 }
