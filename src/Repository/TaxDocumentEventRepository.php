@@ -14,8 +14,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 final class TaxDocumentEventRepository extends ServiceEntityRepository
 {
+    private ManagerRegistry $registry;
+
     public function __construct(ManagerRegistry $registry)
     {
+        $this->registry = $registry;
         parent::__construct($registry, TaxDocumentEvent::class);
     }
 
@@ -38,7 +41,7 @@ final class TaxDocumentEventRepository extends ServiceEntityRepository
         $event->setPayloadJson($payload === null ? null : json_encode($payload, JSON_UNESCAPED_UNICODE));
         $event->setCreatedAt(new \DateTimeImmutable());
 
-        $this->getEntityManager()->persist($event);
+        $this->registry->getManager()->persist($event);
 
         return $event;
     }

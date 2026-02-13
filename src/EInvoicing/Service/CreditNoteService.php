@@ -13,7 +13,7 @@ use App\Core\Util\Constants;
 use App\Entity\TaxDocument;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use League\Flysystem\FilesystemException;
 
 /**
@@ -22,7 +22,7 @@ use League\Flysystem\FilesystemException;
 readonly class CreditNoteService
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
+        private ManagerRegistry $doctrine,
         private NoteSendUseCase $noteSendUseCase,
         private FileManager $fileManager,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
@@ -72,7 +72,7 @@ readonly class CreditNoteService
             $creditNote->setSunatMessage($response->sunatResponse->getError()?->getMessage() ?? '');
         }
 
-        $this->entityManager->flush();
+        $this->doctrine->getManager()->flush();
         $this->taxDocumentEventRepository->recordEvent(
             taxDocument: $creditNote,
             eventType: 'sunat_send',

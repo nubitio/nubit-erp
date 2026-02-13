@@ -8,6 +8,7 @@ use App\Core\Application\Command\TenantAwareCommand;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\Persistence\ManagerRegistry;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -29,6 +30,7 @@ class SendInvoiceCommand extends TenantAwareCommand
     public function __construct(
         private readonly Connection $connection,
         private readonly InvoiceSendUseCase $invoiceSendUseCase,
+        private readonly ManagerRegistry $doctrine,
     ) {
         parent::__construct();
     }
@@ -118,9 +120,15 @@ class SendInvoiceCommand extends TenantAwareCommand
                         'tax_document_id' => $taxDocumentId,
                         'exception' => $exception,
                     ]);
+
+                    if (!$this->doctrine->getManager()->isOpen()) {
+                        $this->doctrine->resetManager();
+                    }
                 } finally {
                     $io->progressAdvance();
                 }
+
+                $this->doctrine->getManager()->clear();
             }
 
             $batchOffset += self::CHUNK_SIZE;
