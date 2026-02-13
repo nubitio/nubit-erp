@@ -576,7 +576,7 @@ final readonly class TestDataSeeder
             $sale->setEstado(1);
             $sale->setDateCreated($saleDate);
             $sale->setCreatedBy(1);
-            $sale->setIgv(18);
+            $sale->setIgv('18');
             $sale->setRecargoConsumo(0);
 
             $subtotal = 0.0;

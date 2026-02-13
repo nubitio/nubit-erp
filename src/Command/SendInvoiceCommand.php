@@ -8,6 +8,7 @@ use App\Core\Application\Command\TenantAwareCommand;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -121,7 +122,9 @@ class SendInvoiceCommand extends TenantAwareCommand
                         'exception' => $exception,
                     ]);
 
-                    if (!$this->doctrine->getManager()->isOpen()) {
+                    /** @var EntityManagerInterface $manager */
+                    $manager = $this->doctrine->getManager();
+                    if (!$manager->isOpen()) {
                         $this->doctrine->resetManager();
                     }
                 } finally {
