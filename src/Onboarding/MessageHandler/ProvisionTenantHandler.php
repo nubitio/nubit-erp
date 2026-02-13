@@ -10,6 +10,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -19,6 +20,10 @@ final readonly class ProvisionTenantHandler
         private ConnectionRegistry $connectionRegistry,
         private TenantProvisioningService $tenantProvisioningService,
         private LoggerInterface $logger,
+        #[Autowire(env: 'ONBOARDING_TENANT_DB_PASS')]
+        private string $onboardingTenantDbPass,
+        #[Autowire(env: 'DATABASE_URL')]
+        private string $databaseUrl,
     ) {
     }
 
@@ -107,22 +112,12 @@ final readonly class ProvisionTenantHandler
 
     private function resolveTenantDbPassword(): string
     {
-        $explicit = trim((string) (
-            $_ENV['ONBOARDING_TENANT_DB_PASS']
-            ?? $_SERVER['ONBOARDING_TENANT_DB_PASS']
-            ?? getenv('ONBOARDING_TENANT_DB_PASS')
-            ?: ''
-        ));
+        $explicit = trim($this->onboardingTenantDbPass);
         if ($explicit !== '') {
             return $explicit;
         }
 
-        $databaseUrl = (string) (
-            $_ENV['DATABASE_URL']
-            ?? $_SERVER['DATABASE_URL']
-            ?? getenv('DATABASE_URL')
-            ?: ''
-        );
+        $databaseUrl = trim($this->databaseUrl);
         if ($databaseUrl === '') {
             return '';
         }

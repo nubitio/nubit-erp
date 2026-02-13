@@ -34,7 +34,7 @@ final readonly class ProvisionCommandRunner
         }
 
         $command = [
-            PHP_BINARY,
+            $this->resolvePhpExecutable(),
             'bin/console',
             'app:tenant:provision',
             $tenant,
@@ -95,5 +95,20 @@ final readonly class ProvisionCommandRunner
             'exit_code' => $process->getExitCode() ?? 1,
             'output' => $combinedOutput,
         ];
+    }
+
+    private function resolvePhpExecutable(): string
+    {
+        $binary = trim((string) (\defined('PHP_BINARY') ? PHP_BINARY : ''));
+        if ($binary === '') {
+            return 'php';
+        }
+
+        $basename = strtolower(basename($binary));
+        if (str_contains($basename, 'php-fpm')) {
+            return 'php';
+        }
+
+        return $binary;
     }
 }
