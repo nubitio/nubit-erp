@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
+use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
-use App\Core\Util\Constants;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Process\Process;
 
 final readonly class TenantBackupService
@@ -22,6 +23,8 @@ final readonly class TenantBackupService
         private ConnectionRegistry $connectionRegistry,
         private FilesystemOperator $defaultFilesystem,
         private LoggerInterface $logger,
+        #[Autowire(env: 'PROVISIONING_DATABASE_URL')]
+        private string $provisioningDatabaseUrl,
     ) {
     }
 
@@ -36,8 +39,8 @@ final readonly class TenantBackupService
             throw new RuntimeException(sprintf('Tenant "%s" not found.', $tenantName));
         }
 
-        $dbName = (string) ($tenant['connection'] ?? $tenantName);
-        $tenantId = (int) $tenant['id'];
+        $dbName = (string)($tenant['connection'] ?? $tenantName);
+        $tenantId = (int)$tenant['id'];
         $timestamp = date('Ymd_His');
         $filename = sprintf('%s_%s.sql.gz', $dbName, $timestamp);
         $localDir = 'var/backups';
@@ -57,12 +60,12 @@ final readonly class TenantBackupService
             'status' => 'pending',
             'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
-        $backupId = (int) $conn->lastInsertId();
+        $backupId = (int)$conn->lastInsertId();
 
         try {
             $this->executeDump($dbName, $localPath);
 
-            $sizeBytes = (int) filesize($localPath);
+            $sizeBytes = (int)filesize($localPath);
             $storagePath = $localPath;
 
             if ($uploadToS3) {
@@ -129,7 +132,7 @@ final readonly class TenantBackupService
              WHERE tenant_id = ?
              ORDER BY created_at DESC
              LIMIT ?',
-            [(int) $tenant['id'], $limit],
+            [(int)$tenant['id'], $limit],
             [ParameterType::INTEGER, ParameterType::INTEGER],
         );
     }
@@ -161,7 +164,7 @@ final readonly class TenantBackupService
         $conn = $this->getControlPlaneConnection();
 
         if ($backup['storage_type'] === 's3') {
-            $storagePath = (string) $backup['storage_path'];
+            $storagePath = (string)$backup['storage_path'];
             if ($storagePath !== '') {
                 try {
                     $this->defaultFilesystem->delete($storagePath);
@@ -174,7 +177,7 @@ final readonly class TenantBackupService
                 }
             }
         } elseif ($backup['storage_type'] === 'local') {
-            $localPath = (string) $backup['storage_path'];
+            $localPath = (string)$backup['storage_path'];
             if ($localPath !== '' && file_exists($localPath)) {
                 @unlink($localPath);
             }
@@ -192,7 +195,7 @@ final readonly class TenantBackupService
         $backup = $this->getBackup($backupId);
 
         if ($backup['storage_type'] === 'local') {
-            $path = (string) $backup['storage_path'];
+            $path = (string)$backup['storage_path'];
             if (!file_exists($path)) {
                 throw new RuntimeException('Local backup file not found.');
             }
@@ -201,7 +204,7 @@ final readonly class TenantBackupService
         }
 
         $tmpFile = tempnam(sys_get_temp_dir(), 'backup_') . '.sql.gz';
-        $stream = $this->defaultFilesystem->readStream((string) $backup['storage_path']);
+        $stream = $this->defaultFilesystem->readStream((string)$backup['storage_path']);
         $local = fopen($tmpFile, 'w');
         if ($local === false) {
             throw new RuntimeException('Cannot create temp file for download.');
@@ -233,13 +236,13 @@ final readonly class TenantBackupService
         $conn = $this->getControlPlaneConnection();
         $tenant = $conn->fetchAssociative(
             'SELECT id, name, connection FROM tenants WHERE id = ?',
-            [(int) $backup['tenant_id']],
+            [(int)$backup['tenant_id']],
         );
         if ($tenant === false) {
             throw new RuntimeException('Tenant not found for this backup.');
         }
 
-        $dbName = (string) ($tenant['connection'] ?: $tenant['name']);
+        $dbName = (string)($tenant['connection'] ?: $tenant['name']);
         $localFile = $this->downloadBackup($backupId);
 
         try {
@@ -277,10 +280,10 @@ final readonly class TenantBackupService
     private function executeDump(string $dbName, string $outputPath): void
     {
         $params = $this->getConnectionParams();
-        $host = (string) ($params['host'] ?? 'localhost');
-        $port = (string) ($params['port'] ?? '3306');
-        $user = (string) ($params['user'] ?? 'root');
-        $password = (string) ($params['password'] ?? '');
+        $host = (string)($params['host'] ?? 'localhost');
+        $port = (string)($params['port'] ?? '3306');
+        $user = (string)($params['user'] ?? 'root');
+        $password = (string)($params['password'] ?? '');
 
         $dumpCmd = [
             'mariadb-dump',
@@ -322,10 +325,10 @@ final readonly class TenantBackupService
     private function executeRestore(string $dbName, string $filePath): void
     {
         $params = $this->getConnectionParams();
-        $host = (string) ($params['host'] ?? 'localhost');
-        $port = (string) ($params['port'] ?? '3306');
-        $user = (string) ($params['user'] ?? 'root');
-        $password = (string) ($params['password'] ?? '');
+        $host = (string)($params['host'] ?? 'localhost');
+        $port = (string)($params['port'] ?? '3306');
+        $user = (string)($params['user'] ?? 'root');
+        $password = (string)($params['password'] ?? '');
 
         $restoreCmd = [
             'mariadb',
@@ -359,10 +362,7 @@ final readonly class TenantBackupService
      */
     private function getConnectionParams(): array
     {
-        $url = $_ENV['PROVISIONING_DATABASE_URL']
-            ?? $_SERVER['PROVISIONING_DATABASE_URL']
-            ?? getenv('PROVISIONING_DATABASE_URL')
-            ?: '';
+        $url = $this->provisioningDatabaseUrl;
 
         if (is_string($url) && $url !== '') {
             $parts = parse_url($url);
