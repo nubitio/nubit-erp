@@ -10,10 +10,10 @@ use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
-use App\Repository\TaxDocumentRepository;
+use App\Entity\TaxDocument;
 use App\Repository\TaxDocumentEventRepository;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use League\Flysystem\FilesystemException;
 
 readonly class InvoiceSendUseCase
@@ -22,8 +22,7 @@ readonly class InvoiceSendUseCase
         private BillSendUseCase $billSendUseCase,
         private FileManager $fileManager,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
-        private TaxDocumentRepository $taxDocumentRepository,
-        private EntityManagerInterface $entityManager,
+        private ManagerRegistry $doctrine,
         private AuditLogger $auditLogger,
     ) {
     }
@@ -37,7 +36,7 @@ readonly class InvoiceSendUseCase
     public function __invoke(string $taxDocumentId): DocumentResponse
     {
         try {
-            $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
+            $taxDocument = $this->doctrine->getManager()->find(TaxDocument::class, $taxDocumentId);
 
             if ($taxDocument === null) {
                 throw new ServiceException('Invoice not found');
@@ -68,7 +67,7 @@ readonly class InvoiceSendUseCase
             $taxDocument->setSunatMessage($sunatMessage);
             $taxDocument->setDigest($response->hash);
             $taxDocument->setUpdatedAt(new \DateTime());
-            $this->entityManager->flush();
+            $this->doctrine->getManager()->flush();
 
             $this->taxDocumentEventRepository->recordEvent(
                 taxDocument: $taxDocument,
