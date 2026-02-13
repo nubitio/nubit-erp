@@ -1,0 +1,184 @@
+{% extends 'onboarding/base.html.twig' %}
+
+{% block title %}Crear empresa | eFact{% endblock %}
+{% block card_class %}onboarding-card--wide{% endblock %}
+
+{% block steps %}
+    <div class="steps">
+        <div class="step step--done">
+            <div class="step-dot">&#10003;</div>
+            <div class="step-label">Cuenta</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step--done">
+            <div class="step-dot">&#10003;</div>
+            <div class="step-label">Verificar</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step step--active">
+            <div class="step-dot">3</div>
+            <div class="step-label">Empresa</div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Configura tu empresa</h1>
+    <p class="subtitle">Conectado como <strong>{{ account.email }}</strong></p>
+
+    <form method="post" action="{{ path('onboarding_provision') }}" id="wizard-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('onboarding_wizard') }}">
+
+        <div class="form-group">
+            <label class="form-label" for="tenant_name">Nombre de la empresa</label>
+            <input type="text" name="tenant_name" id="tenant_name" class="form-input"
+                   value="{{ tenant_name|default('') }}" placeholder="Mi Empresa S.A.C." required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="subdomain">Subdominio</label>
+            <div class="subdomain-preview">
+                <input type="text" name="subdomain" id="subdomain"
+                       value="{{ subdomain|default('') }}" placeholder="miempresa" required>
+                <span class="subdomain-suffix" id="subdomain-suffix">.efact.app</span>
+            </div>
+            <p class="form-hint" id="subdomain-feedback">&nbsp;</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Plan</label>
+            <div class="plan-cards" id="plan-cards">
+                <label class="plan-card plan-card--selected">
+                    <input type="radio" name="plan" value="free" checked>
+                    <div class="plan-card-name">Free</div>
+                    <div class="plan-card-price">Gratis &mdash; 3 usuarios, 500 facturas/mes</div>
+                </label>
+                {# Uncomment when payment is ready:
+                <label class="plan-card">
+                    <input type="radio" name="plan" value="basic">
+                    <div class="plan-card-name">Basic</div>
+                    <div class="plan-card-price">10 usuarios, 5000 facturas/mes</div>
+                </label>
+                <label class="plan-card">
+                    <input type="radio" name="plan" value="pro">
+                    <div class="plan-card-name">Pro</div>
+                    <div class="plan-card-price">Usuarios ilimitados</div>
+                </label>
+                #}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="admin_password">Contrase&ntilde;a del administrador</label>
+            <input type="password" name="admin_password" id="admin_password" class="form-input"
+                   placeholder="M&iacute;nimo 8 caracteres" minlength="8" required autocomplete="new-password">
+            <p class="form-hint">Esta ser&aacute; la contrase&ntilde;a del usuario <strong>admin</strong> dentro de tu instancia.</p>
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="submit-btn" disabled>
+            <span class="spinner"></span>
+            <span class="btn-text">Crear mi empresa</span>
+        </button>
+    </form>
+
+    <p class="text-center mt-24">
+        <a href="{{ path('onboarding_account_dashboard') }}" class="link">&larr; Volver al dashboard</a>
+    </p>
+
+    <script>
+        (function () {
+            var tenantName = document.getElementById('tenant_name');
+            var subdomain = document.getElementById('subdomain');
+            var feedback = document.getElementById('subdomain-feedback');
+            var submitBtn = document.getElementById('submit-btn');
+            var debounceTimer = null;
+            var lastChecked = '';
+            var subdomainValid = false;
+
+            function slugify(value) {
+                return value.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '')
+                    .slice(0, 63);
+            }
+
+            function updateSubmitState() {
+                submitBtn.disabled = !subdomainValid;
+            }
+
+            tenantName.addEventListener('blur', function () {
+                if (!subdomain.value.trim() && tenantName.value.trim()) {
+                    subdomain.value = slugify(tenantName.value.trim());
+                    checkSubdomain();
+                }
+            });
+
+            subdomain.addEventListener('input', function () {
+                this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                subdomainValid = false;
+                updateSubmitState();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(checkSubdomain, 400);
+            });
+
+            async function checkSubdomain() {
+                var value = subdomain.value.trim().toLowerCase();
+                if (!value || value === lastChecked) {
+                    if (!value) {
+                        feedback.innerHTML = '&nbsp;';
+                        subdomainValid = false;
+                        updateSubmitState();
+                    }
+                    return;
+                }
+
+                lastChecked = value;
+                feedback.textContent = 'Verificando disponibilidad...';
+                feedback.className = 'form-hint';
+                subdomainValid = false;
+                updateSubmitState();
+
+                try {
+                    var response = await fetch('{{ path('onboarding_check_subdomain') }}?subdomain=' + encodeURIComponent(value));
+                    var data = await response.json();
+
+                    if (data.normalized !== subdomain.value.trim().toLowerCase()) return;
+
+                    if (data.available) {
+                        feedback.textContent = 'Disponible: ' + data.domain;
+                        feedback.className = 'form-hint form-hint--success';
+                        subdomainValid = true;
+                    } else {
+                        feedback.textContent = data.reason || 'No disponible';
+                        feedback.className = 'form-hint form-hint--error';
+                        subdomainValid = false;
+                    }
+                } catch (_e) {
+                    feedback.textContent = 'No se pudo verificar. Intenta de nuevo.';
+                    feedback.className = 'form-hint form-hint--error';
+                    subdomainValid = false;
+                }
+
+                updateSubmitState();
+            }
+
+            /* Plan card selection */
+            document.querySelectorAll('.plan-card').forEach(function (card) {
+                card.addEventListener('click', function () {
+                    document.querySelectorAll('.plan-card').forEach(function (c) { c.classList.remove('plan-card--selected'); });
+                    card.classList.add('plan-card--selected');
+                    card.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+
+            /* Loading state on submit */
+            document.getElementById('wizard-form').addEventListener('submit', function () {
+                submitBtn.classList.add('btn--loading');
+                submitBtn.disabled = true;
+            });
+
+            /* Initial check if subdomain pre-filled */
+            if (subdomain.value.trim()) { checkSubdomain(); }
+        })();
+    </script>
+{% endblock %}

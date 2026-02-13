@@ -48,10 +48,20 @@ readonly class TenantListener
             'request_id' => $requestId,
         ]);
 
-        if (str_starts_with($path, '/admin/tenants')) {
-            $this->logger->debug('Skipping tenant switch for admin tenant management path', ['path' => $path]);
+        $excludedPaths = [
+            '/admin/tenants',
+            '/register',
+            '/account',
+            '/webhook/paypal',
+            '/webhook/mercadopago',
+        ];
 
-            return;
+        foreach ($excludedPaths as $excludedPath) {
+            if ($path === $excludedPath || str_starts_with($path, $excludedPath . '/')) {
+                $this->logger->debug('Skipping tenant switch for excluded path', ['path' => $path]);
+
+                return;
+            }
         }
 
         // Exclude requests coming from IP addresses that are local/reserved (loopback, private ranges)

@@ -39,6 +39,10 @@ security:
 
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/account, roles: PUBLIC_ACCESS }
+        - { path: ^/webhook/paypal, roles: PUBLIC_ACCESS }
+        - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/settings, roles: PUBLIC_ACCESS }

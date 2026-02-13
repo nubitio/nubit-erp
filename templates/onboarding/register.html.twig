@@ -1,0 +1,78 @@
+{% extends 'onboarding/base.html.twig' %}
+
+{% block title %}Crear cuenta | eFact{% endblock %}
+
+{% block header_action %}
+    <a href="{{ path('onboarding_account_login') }}">Ya tengo cuenta</a>
+{% endblock %}
+
+{% block steps %}
+    <div class="steps">
+        <div class="step step--active">
+            <div class="step-dot">1</div>
+            <div class="step-label">Cuenta</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-dot">2</div>
+            <div class="step-label">Verificar</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step">
+            <div class="step-dot">3</div>
+            <div class="step-label">Empresa</div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1>Crea tu cuenta</h1>
+    <p class="subtitle">Empieza a facturar en minutos.</p>
+
+    <form method="post" action="{{ path('onboarding_register_submit') }}" id="register-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('onboarding_register') }}">
+
+        <div class="form-group">
+            <label class="form-label" for="email">Correo electr&oacute;nico</label>
+            <input type="email" name="email" id="email" class="form-input" value="{{ email|default('') }}"
+                   placeholder="tu@empresa.com" required autocomplete="email" autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Contrase&ntilde;a</label>
+            <input type="password" name="password" id="password" class="form-input"
+                   placeholder="M&iacute;nimo 8 caracteres" required minlength="8" autocomplete="new-password">
+            <p class="form-hint" id="password-hint"></p>
+        </div>
+
+        <button type="submit" class="btn btn--primary" id="submit-btn">
+            <span class="spinner"></span>
+            <span class="btn-text">Continuar</span>
+        </button>
+    </form>
+
+    <p class="text-center mt-24">
+        <a href="{{ path('onboarding_account_login') }}" class="link">&iquest;Ya tienes cuenta? Inicia sesi&oacute;n</a>
+    </p>
+
+    <script>
+        document.getElementById('register-form').addEventListener('submit', function () {
+            const btn = document.getElementById('submit-btn');
+            btn.classList.add('btn--loading');
+            btn.disabled = true;
+        });
+
+        document.getElementById('password').addEventListener('input', function () {
+            const hint = document.getElementById('password-hint');
+            const len = this.value.length;
+            if (len === 0) { hint.textContent = ''; return; }
+            if (len < 8) {
+                hint.textContent = len + '/8 caracteres';
+                hint.className = 'form-hint form-hint--error';
+            } else {
+                hint.textContent = 'Longitud correcta';
+                hint.className = 'form-hint form-hint--success';
+            }
+        });
+    </script>
+{% endblock %}
