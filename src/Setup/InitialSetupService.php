@@ -185,6 +185,12 @@ readonly class InitialSetupService
             $this->settingsService->set(Constants::PRINT_LOGO, 'bool', 'true');
             $this->settingsService->set(Constants::REQUIRE_CASH_REGISTER, 'bool', 'true');
             $this->settingsService->set(Constants::RECEIPT_REQUIRED, 'bool', 'false');
+            $this->settingsService->set(Constants::SUNAT_SEND_ENABLED, 'bool', 'true');
+            $this->settingsService->set(Constants::SUNAT_REJECTION_STREAK, 'int', '0');
+            $this->settingsService->set(Constants::SUNAT_REJECTION_THRESHOLD, 'int', '3');
+            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, 'int', '8');
+            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_BASE_SECONDS, 'int', '60');
+            $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_SECONDS, 'int', '1800');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to avoid blocking setup.
         }

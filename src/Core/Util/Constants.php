@@ -29,4 +29,16 @@ abstract class Constants
     public const string REQUIRE_CASH_REGISTER = 'app_option_require_cash_register';
 
     public const string RECEIPT_REQUIRED = 'app_option_receipt_required';
+
+    public const string SUNAT_SEND_ENABLED = 'app_option_sunat_send_enabled';
+
+    public const string SUNAT_REJECTION_STREAK = 'app_option_sunat_rejection_streak';
+
+    public const string SUNAT_REJECTION_THRESHOLD = 'app_option_sunat_rejection_threshold';
+
+    public const string SUNAT_SEND_RETRY_MAX_ATTEMPTS = 'app_option_sunat_send_retry_max_attempts';
+
+    public const string SUNAT_SEND_RETRY_BASE_SECONDS = 'app_option_sunat_send_retry_base_seconds';
+
+    public const string SUNAT_SEND_RETRY_MAX_SECONDS = 'app_option_sunat_send_retry_max_seconds';
 }
