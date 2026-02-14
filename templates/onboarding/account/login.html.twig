@@ -6,6 +6,30 @@
     <a href="{{ path('onboarding_register') }}">Crear cuenta</a>
 {% endblock %}
 
+{% block head %}
+    <style>
+        .password-field {
+            position: relative;
+        }
+        .password-field .form-input { padding-right: 42px; }
+        .password-visibility-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--color-gray-500);
+            cursor: pointer;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-visibility-btn:hover { color: var(--color-gray-700); }
+    </style>
+{% endblock %}
+
 {% block content %}
     <h1>Iniciar sesi&oacute;n</h1>
     <p class="subtitle">Accede a tus empresas en eFact.</p>
@@ -21,8 +45,13 @@
 
         <div class="form-group">
             <label class="form-label" for="password">Contrase&ntilde;a</label>
-            <input type="password" name="password" id="password" class="form-input"
-                   required autocomplete="current-password">
+            <div class="password-field">
+                <input type="password" name="password" id="password" class="form-input"
+                       required autocomplete="current-password">
+                <button type="button" class="password-visibility-btn" id="toggle-password" aria-label="Mostrar contrase&ntilde;a">
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+            </div>
         </div>
 
         <button type="submit" class="btn btn--primary" id="submit-btn">
@@ -36,6 +65,17 @@
     </p>
 
     <script>
+        document.getElementById('toggle-password').addEventListener('click', function () {
+            var input = document.getElementById('password');
+            var isVisible = input.type === 'text';
+            input.type = isVisible ? 'password' : 'text';
+            var icon = this.querySelector('i');
+            if (icon) {
+                icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
+            }
+            this.setAttribute('aria-label', isVisible ? 'Mostrar contrase&ntilde;a' : 'Ocultar contrase&ntilde;a');
+        });
+
         document.getElementById('login-form').addEventListener('submit', function () {
             var btn = document.getElementById('submit-btn');
             btn.classList.add('btn--loading');

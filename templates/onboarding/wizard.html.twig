@@ -52,6 +52,25 @@
             color: var(--color-gray-400);
             font-size: 12px;
         }
+        .password-field {
+            position: relative;
+        }
+        .password-field .form-input { padding-right: 42px; }
+        .password-visibility-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--color-gray-500);
+            cursor: pointer;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-visibility-btn:hover { color: var(--color-gray-700); }
     </style>
 {% endblock %}
 
@@ -149,9 +168,23 @@
 
         <div class="form-group">
             <label class="form-label" for="admin_password">Contrase&ntilde;a del administrador</label>
-            <input type="password" name="admin_password" id="admin_password" class="form-input"
-                   placeholder="M&iacute;nimo 8 caracteres" minlength="8" required autocomplete="new-password">
+            <div class="password-field">
+                <input type="password" name="admin_password" id="admin_password" class="form-input"
+                       placeholder="M&iacute;nimo 8 caracteres" minlength="8" required autocomplete="new-password">
+                <button type="button" class="password-visibility-btn" id="toggle-admin-password" aria-label="Mostrar contrase&ntilde;a">
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+            </div>
             <p class="form-hint">Esta ser&aacute; la contrase&ntilde;a del usuario <strong>admin</strong> dentro de tu instancia.</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="admin_password_confirm">Confirmar contrase&ntilde;a</label>
+            <div class="password-field">
+                <input type="password" name="admin_password_confirm" id="admin_password_confirm" class="form-input"
+                       placeholder="Repite la contrase&ntilde;a admin" minlength="8" required autocomplete="new-password">
+            </div>
+            <p class="form-hint" id="admin-password-hint"></p>
         </div>
 
         <button type="submit" class="btn btn--primary" id="submit-btn" disabled>
@@ -170,9 +203,14 @@
             var subdomain = document.getElementById('subdomain');
             var feedback = document.getElementById('subdomain-feedback');
             var submitBtn = document.getElementById('submit-btn');
+            var adminPassword = document.getElementById('admin_password');
+            var adminPasswordConfirm = document.getElementById('admin_password_confirm');
+            var adminPasswordHint = document.getElementById('admin-password-hint');
+            var toggleAdminPassword = document.getElementById('toggle-admin-password');
             var debounceTimer = null;
             var lastChecked = '';
             var subdomainValid = false;
+            var passwordValid = false;
 
             function slugify(value) {
                 return value.toLowerCase()
@@ -182,7 +220,38 @@
             }
 
             function updateSubmitState() {
-                submitBtn.disabled = !subdomainValid;
+                submitBtn.disabled = !subdomainValid || !passwordValid;
+            }
+
+            function validateAdminPassword() {
+                var password = adminPassword.value;
+                var confirm = adminPasswordConfirm.value;
+
+                if (password.length < 8 || confirm.length < 8) {
+                    passwordValid = false;
+                    adminPasswordConfirm.setCustomValidity('La contraseña debe tener al menos 8 caracteres.');
+                    adminPasswordHint.textContent = password.length === 0 && confirm.length === 0
+                        ? ''
+                        : 'La contraseña debe tener al menos 8 caracteres.';
+                    adminPasswordHint.className = 'form-hint form-hint--error';
+                    updateSubmitState();
+                    return;
+                }
+
+                if (password !== confirm) {
+                    passwordValid = false;
+                    adminPasswordConfirm.setCustomValidity('Las contraseñas no coinciden');
+                    adminPasswordHint.textContent = 'Las contraseñas no coinciden';
+                    adminPasswordHint.className = 'form-hint form-hint--error';
+                    updateSubmitState();
+                    return;
+                }
+
+                passwordValid = true;
+                adminPasswordConfirm.setCustomValidity('');
+                adminPasswordHint.textContent = 'Las contraseñas coinciden';
+                adminPasswordHint.className = 'form-hint form-hint--success';
+                updateSubmitState();
             }
 
             tenantName.addEventListener('blur', function () {
@@ -295,13 +364,34 @@
             });
 
             /* Loading state on submit */
-            document.getElementById('wizard-form').addEventListener('submit', function () {
+            document.getElementById('wizard-form').addEventListener('submit', function (event) {
+                validateAdminPassword();
+                if (!this.checkValidity()) {
+                    event.preventDefault();
+                    this.reportValidity();
+                    return;
+                }
                 submitBtn.classList.add('btn--loading');
                 submitBtn.disabled = true;
             });
 
+            adminPassword.addEventListener('input', validateAdminPassword);
+            adminPasswordConfirm.addEventListener('input', validateAdminPassword);
+            toggleAdminPassword.addEventListener('click', function () {
+                var isVisible = adminPassword.type === 'text';
+                var type = isVisible ? 'password' : 'text';
+                adminPassword.type = type;
+                adminPasswordConfirm.type = type;
+                var icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
+                }
+                this.setAttribute('aria-label', isVisible ? 'Mostrar contrase&ntilde;a' : 'Ocultar contrase&ntilde;a');
+            });
+
             /* Initial check if subdomain pre-filled */
             if (subdomain.value.trim()) { checkSubdomain(); }
+            validateAdminPassword();
         })();
     </script>
 {% endblock %}

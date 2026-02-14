@@ -53,6 +53,7 @@ final readonly class SubscriptionManager
      */
     public function createPending(
         int $accountId,
+        int $provisionId,
         string $plan,
         BillingCycle $billingCycle,
         string $gateway,
@@ -63,6 +64,7 @@ final readonly class SubscriptionManager
         $conn->insert('subscriptions', [
             'tenant_id' => 0,
             'account_id' => $accountId,
+            'provision_id' => $provisionId,
             'plan' => $plan,
             'billing_cycle' => $billingCycle->value,
             'gateway' => $gateway,
