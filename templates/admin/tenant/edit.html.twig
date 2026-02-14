@@ -527,12 +527,66 @@
                                 <option value="720" {{ (tenant.backup_frequency ?? 0) == 720 ? 'selected' : '' }}>Monthly</option>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
+                            <label for="backup_retention_days" class="form-label">Retention</label>
+                            <select id="backup_retention_days" name="backup_retention_days" class="form-select">
+                                <option value="0" {{ (tenant.backup_retention_days ?? 30) == 0 ? 'selected' : '' }}>Forever</option>
+                                <option value="7" {{ (tenant.backup_retention_days ?? 30) == 7 ? 'selected' : '' }}>7 days</option>
+                                <option value="14" {{ (tenant.backup_retention_days ?? 30) == 14 ? 'selected' : '' }}>14 days</option>
+                                <option value="30" {{ (tenant.backup_retention_days ?? 30) == 30 ? 'selected' : '' }}>30 days</option>
+                                <option value="60" {{ (tenant.backup_retention_days ?? 30) == 60 ? 'selected' : '' }}>60 days</option>
+                                <option value="90" {{ (tenant.backup_retention_days ?? 30) == 90 ? 'selected' : '' }}>90 days</option>
+                                <option value="180" {{ (tenant.backup_retention_days ?? 30) == 180 ? 'selected' : '' }}>180 days</option>
+                                <option value="365" {{ (tenant.backup_retention_days ?? 30) == 365 ? 'selected' : '' }}>1 year</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
                             <button type="submit" class="btn btn-outline-primary">Save</button>
                         </div>
                     </form>
                 </div>
             </div>
+
+            {% if binlog_summary is not empty %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3"><i class="bi bi-journal-code me-1"></i> Binary log backups</h2>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">Last backup</div>
+                                <div class="fw-semibold">{{ binlog_summary.last_backup_at ?? 'Never' }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">Total backups</div>
+                                <div class="fw-semibold">{{ binlog_summary.total_count }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded p-3">
+                                <div class="text-muted small">Total size</div>
+                                <div class="fw-semibold">
+                                    {% if binlog_summary.total_size_bytes >= 1073741824 %}
+                                        {{ (binlog_summary.total_size_bytes / 1073741824)|number_format(2) }} GB
+                                    {% elseif binlog_summary.total_size_bytes >= 1048576 %}
+                                        {{ (binlog_summary.total_size_bytes / 1048576)|number_format(1) }} MB
+                                    {% elseif binlog_summary.total_size_bytes >= 1024 %}
+                                        {{ (binlog_summary.total_size_bytes / 1024)|number_format(1) }} KB
+                                    {% else %}
+                                        {{ binlog_summary.total_size_bytes }} B
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-text mt-2">
+                        Binary logs are backed up automatically every 15 minutes to enable point-in-time recovery (PITR).
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <div class="card">
                 <div class="card-body">
@@ -557,6 +611,7 @@
                                 <thead>
                                 <tr>
                                     <th scope="col">ID</th>
+                                    <th scope="col">Type</th>
                                     <th scope="col">Filename</th>
                                     <th scope="col">Size</th>
                                     <th scope="col">Storage</th>
@@ -569,6 +624,9 @@
                                 {% for backup in backups %}
                                     <tr>
                                         <td>{{ backup.id }}</td>
+                                        <td>
+                                            <span class="badge bg-info-subtle text-info text-capitalize">{{ backup.backup_type ?? 'full' }}</span>
+                                        </td>
                                         <td><code class="bg-light px-1 rounded">{{ backup.filename }}</code></td>
                                         <td>
                                             {% if backup.size_bytes >= 1048576 %}

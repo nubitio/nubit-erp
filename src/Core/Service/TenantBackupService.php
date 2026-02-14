@@ -32,7 +32,7 @@ final readonly class TenantBackupService
      * @return array{id: int, filename: string, storage_path: string, size_bytes: int, storage_type: string}
      * @throws Exception
      */
-    public function backup(string $tenantName, bool $uploadToS3 = true): array
+    public function backup(string $tenantName, bool $uploadToS3 = true, string $backupType = 'full'): array
     {
         $tenant = $this->tenantManager->getTenantByName($tenantName);
         if ($tenant === null) {
@@ -58,6 +58,7 @@ final readonly class TenantBackupService
             'size_bytes' => 0,
             'storage_type' => $uploadToS3 ? 's3' : 'local',
             'status' => 'pending',
+            'backup_type' => $backupType,
             'created_at' => new \DateTimeImmutable()->format('Y-m-d H:i:s'),
         ]);
         $backupId = (int)$conn->lastInsertId();
@@ -100,6 +101,7 @@ final readonly class TenantBackupService
                 'storage_path' => $storagePath,
                 'size_bytes' => $sizeBytes,
                 'storage_type' => $uploadToS3 ? 's3' : 'local',
+                'backup_type' => $backupType,
             ];
         } catch (\Throwable $e) {
             $conn->update('tenant_backups', [
@@ -127,7 +129,7 @@ final readonly class TenantBackupService
 
         return $this->getControlPlaneConnection()->fetchAllAssociative(
             'SELECT id, tenant_id, filename, storage_path, size_bytes,
-                    storage_type, status, error_message, created_at, completed_at
+                    storage_type, status, backup_type, error_message, created_at, completed_at
              FROM tenant_backups
              WHERE tenant_id = ?
              ORDER BY created_at DESC
@@ -145,7 +147,7 @@ final readonly class TenantBackupService
     {
         return $this->getControlPlaneConnection()->fetchAllAssociative(
             'SELECT id, tenant_id, filename, storage_path, size_bytes,
-                    storage_type, status, error_message, created_at, completed_at
+                    storage_type, status, backup_type, error_message, created_at, completed_at
              FROM tenant_backups
              WHERE tenant_id = ?
              ORDER BY created_at DESC

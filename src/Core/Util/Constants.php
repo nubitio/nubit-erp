@@ -10,6 +10,7 @@ abstract class Constants
     public const string INVOICE_DIR = 'invoices';
     public const string IMAGE_DIR = 'images';
     public const string BACKUP_DIR = 'backups';
+    public const string BINLOG_DIR = 'binlogs';
 
     // Settings
     public const string TAX = 'app_option_igv';
