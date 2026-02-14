@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}eFact{% endblock %}</title>
+    <script>
+        (function () {
+            var storageKey = 'onboarding-theme';
+            var mode = localStorage.getItem(storageKey) || 'auto';
+            var resolved = mode === 'auto'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : mode;
+            document.documentElement.setAttribute('data-theme', resolved);
+            document.documentElement.setAttribute('data-theme-mode', mode);
+        })();
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>%F0%9F%A7%BE</text></svg>">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,10 +43,36 @@
             --color-gray-700: #374151;
             --color-gray-800: #1f2937;
             --color-gray-900: #111827;
+            --color-surface: #ffffff;
+            --color-surface-elevated: #ffffff;
             --radius: 8px;
             --radius-lg: 12px;
             --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.07);
+        }
+
+        [data-theme="dark"] {
+            --color-primary-light: #312e81;
+            --color-success-light: #052e22;
+            --color-success-border: #065f46;
+            --color-error-light: #3b0d0d;
+            --color-error-border: #7f1d1d;
+            --color-warning-light: #3a2703;
+            --color-warning-border: #92400e;
+            --color-gray-50: #0b1220;
+            --color-gray-100: #121a2b;
+            --color-gray-200: #1e293b;
+            --color-gray-300: #334155;
+            --color-gray-400: #64748b;
+            --color-gray-500: #94a3b8;
+            --color-gray-600: #cbd5e1;
+            --color-gray-700: #e2e8f0;
+            --color-gray-800: #f1f5f9;
+            --color-gray-900: #f8fafc;
+            --color-surface: #0f172a;
+            --color-surface-elevated: #111b31;
+            --shadow: 0 1px 3px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.25);
+            --shadow-lg: 0 14px 24px -8px rgba(0,0,0,.45), 0 6px 10px -6px rgba(0,0,0,.35);
         }
 
         body {
@@ -52,7 +90,7 @@
         }
 
         .onboarding-header {
-            background: #fff;
+            background: var(--color-surface);
             border-bottom: 1px solid var(--color-gray-200);
             padding: 16px 24px;
             display: flex;
@@ -78,6 +116,36 @@
         }
 
         .onboarding-header-action a:hover { color: var(--color-primary); }
+        .onboarding-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--color-gray-300);
+            background: var(--color-surface-elevated);
+            color: var(--color-gray-700);
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 10px;
+            cursor: pointer;
+            transition: all .15s;
+            line-height: 1.3;
+            min-width: 88px;
+            text-align: center;
+        }
+
+        .theme-toggle i { font-size: 14px; }
+
+        .theme-toggle:hover {
+            border-color: var(--color-gray-400);
+            color: var(--color-gray-800);
+        }
 
         .onboarding-main {
             flex: 1;
@@ -88,7 +156,7 @@
         }
 
         .onboarding-card {
-            background: #fff;
+            background: var(--color-surface-elevated);
             border: 1px solid var(--color-gray-200);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
@@ -139,7 +207,7 @@
             font-weight: 600;
             border: 2px solid var(--color-gray-300);
             color: var(--color-gray-400);
-            background: #fff;
+            background: var(--color-surface-elevated);
             transition: all .2s;
         }
 
@@ -202,7 +270,7 @@
             font-size: 15px;
             border: 1px solid var(--color-gray-300);
             border-radius: var(--radius);
-            background: #fff;
+            background: var(--color-surface);
             color: var(--color-gray-800);
             transition: border-color .15s, box-shadow .15s;
             outline: none;
@@ -279,7 +347,7 @@
         .btn--primary:disabled { background: var(--color-gray-300); cursor: not-allowed; }
 
         .btn--secondary {
-            background: #fff;
+            background: var(--color-surface);
             color: var(--color-gray-700);
             border-color: var(--color-gray-300);
         }
@@ -296,7 +364,7 @@
         .btn--ghost:hover { color: var(--color-gray-700); background: var(--color-gray-100); }
 
         .btn--danger {
-            background: #fff;
+            background: var(--color-surface);
             color: var(--color-error);
             border-color: var(--color-error-border);
         }
@@ -500,6 +568,21 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @media (max-width: 520px) {
+            .onboarding-header {
+                padding: 12px 14px;
+            }
+
+            .onboarding-header-actions {
+                gap: 8px;
+            }
+
+            .theme-toggle {
+                min-width: 78px;
+                padding: 6px 8px;
+            }
+        }
+
         .onboarding-card { animation: fadeIn .3s ease-out; }
     </style>
     {% block head %}{% endblock %}
@@ -508,7 +591,13 @@
     <div class="onboarding-shell">
         <header class="onboarding-header">
             <a href="{{ path('onboarding_register') }}" class="onboarding-logo">e<span>Fact</span></a>
-            <div class="onboarding-header-action">{% block header_action %}{% endblock %}</div>
+            <div class="onboarding-header-actions">
+                <button type="button" class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+                    <i class="bi bi-circle-half" aria-hidden="true"></i>
+                    <span>Tema: Sistema</span>
+                </button>
+                <div class="onboarding-header-action">{% block header_action %}{% endblock %}</div>
+            </div>
         </header>
 
         <main class="onboarding-main">
@@ -529,5 +618,64 @@
             </div>
         </main>
     </div>
+    <script>
+        (function () {
+            var storageKey = 'onboarding-theme';
+            var modes = ['light', 'dark', 'auto'];
+            var labels = {
+                light: 'Tema: Claro',
+                dark: 'Tema: Oscuro',
+                auto: 'Tema: Sistema'
+            };
+            var icons = {
+                light: 'bi bi-sun',
+                dark: 'bi bi-moon-stars',
+                auto: 'bi bi-circle-half'
+            };
+            var button = document.getElementById('themeToggle');
+            if (!button) {
+                return;
+            }
+            var icon = button.querySelector('i');
+            var label = button.querySelector('span');
+
+            function getMode() {
+                return localStorage.getItem(storageKey) || 'auto';
+            }
+
+            function resolveTheme(mode) {
+                if (mode === 'auto') {
+                    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                return mode;
+            }
+
+            function applyMode(mode) {
+                localStorage.setItem(storageKey, mode);
+                document.documentElement.setAttribute('data-theme-mode', mode);
+                document.documentElement.setAttribute('data-theme', resolveTheme(mode));
+                if (icon) {
+                    icon.className = icons[mode];
+                }
+                if (label) {
+                    label.textContent = labels[mode];
+                }
+            }
+
+            button.addEventListener('click', function () {
+                var current = getMode();
+                var next = modes[(modes.indexOf(current) + 1) % modes.length];
+                applyMode(next);
+            });
+
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+                if (getMode() === 'auto') {
+                    document.documentElement.setAttribute('data-theme', resolveTheme('auto'));
+                }
+            });
+
+            applyMode(getMode());
+        })();
+    </script>
 </body>
 </html>
