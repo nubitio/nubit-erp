@@ -9,6 +9,7 @@ use App\Core\Service\PlanManager;
 use App\Core\Service\TenantQuotaService;
 use App\Core\Service\TenantUsageService;
 use App\Core\Service\TenantBackupService;
+use App\Core\Service\BinlogBackupService;
 use App\Core\Service\ProvisionCommandRequest;
 use App\Core\Service\ProvisionCommandRunner;
 use App\Core\Service\TenantNotificationService;
@@ -38,6 +39,7 @@ class TenantController extends AbstractController
         private readonly TenantQuotaService $tenantQuotaService,
         private readonly TenantUsageService $tenantUsageService,
         private readonly TenantBackupService $backupService,
+        private readonly BinlogBackupService $binlogBackupService,
         private readonly SubscriptionManager $subscriptionManager,
         private readonly AuditLogger $auditLogger,
         private readonly ProvisionCommandRunner $commandRunner,
@@ -96,8 +98,10 @@ class TenantController extends AbstractController
             $this->addFlash('error', 'Unable to load usage summary: ' . $e->getMessage());
         }
 
+        $binlogSummary = [];
         try {
             $backups = $this->backupService->listBackupsByTenantId($id);
+            $binlogSummary = $this->binlogBackupService->getBinlogBackupSummary();
         } catch (\Throwable $e) {
             $this->addFlash('error', 'Unable to load backups: ' . $e->getMessage());
         }
@@ -125,6 +129,7 @@ class TenantController extends AbstractController
             'usage_deltas' => $usageDeltas,
             'quota_alerts' => $quotaAlerts,
             'backups' => $backups,
+            'binlog_summary' => $binlogSummary,
             'provisions' => $provisions,
             'subscription' => $subscription,
             'payment_events' => $paymentEvents,
@@ -679,14 +684,17 @@ class TenantController extends AbstractController
         }
 
         $frequency = (int) $request->request->get('backup_frequency', 0);
+        $retention = (int) $request->request->get('backup_retention_days', 30);
 
         try {
             $this->tenantManager->updateBackupFrequency($id, $frequency);
-            $this->auditLogger->log('tenant.backup_frequency.update', [
+            $this->tenantManager->updateBackupRetention($id, $retention);
+            $this->auditLogger->log('tenant.backup_schedule.update', [
                 'tenant_id' => $id,
                 'backup_frequency' => $frequency,
+                'backup_retention_days' => $retention,
             ]);
-            $this->addFlash('success', 'Backup frequency updated.');
+            $this->addFlash('success', 'Backup schedule updated.');
         } catch (InvalidArgumentException $exception) {
             $this->addFlash('error', $exception->getMessage());
         }
