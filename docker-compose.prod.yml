@@ -6,6 +6,8 @@ services:
     depends_on:
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     expose:
       - "80"
     environment:
@@ -22,11 +24,11 @@ services:
       BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       # Redis
-      REDIS_URL: ${REDIS_URL}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       # Mailer
       MAILER_DSN: ${MAILER_DSN}
       # Messenger
-      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       # FrankenPHP settings
       SERVER_NAME: ${SERVER_NAME}
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
@@ -87,6 +89,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
@@ -97,8 +101,8 @@ services:
       BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
-      REDIS_URL: ${REDIS_URL}
-      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
       TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
       # OpenTelemetry
@@ -152,6 +156,8 @@ services:
         condition: service_healthy
       database:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
@@ -162,8 +168,8 @@ services:
       BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
       TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
-      REDIS_URL: ${REDIS_URL}
-      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-redis://redis:6379/messages}
       TENANTS_CONFIG_PATH: ${TENANTS_CONFIG_PATH:-/app/var/tenants/tenants.yaml}
       TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
       # OpenTelemetry
@@ -212,6 +218,8 @@ services:
   database:
     image: mariadb:11.4
     restart: unless-stopped
+    ports:
+      - "${DB_BIND_IP:-127.0.0.1}:${DB_PORT:-3306}:3306"
     environment:
       MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
       MARIADB_DATABASE: efact
@@ -241,12 +249,34 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   app-var:
     driver: local
   app-public-uploads:
     driver: local
   mariadb-data:
+    driver: local
+  redis-data:
     driver: local
 
 networks:
