@@ -196,18 +196,35 @@ final readonly class WebhookProcessor
     private function triggerProvisioning(array $subscription): void
     {
         $conn = $this->cp();
-        $provision = $conn->fetchAssociative(
-            "SELECT * FROM tenant_provisions
-             WHERE account_id = ? AND plan = ? AND status = 'dispatched'
-             ORDER BY id DESC LIMIT 1",
-            [(int) $subscription['account_id'], (string) $subscription['plan']],
-            [ParameterType::INTEGER, ParameterType::STRING],
-        );
+        $provisionId = (int) ($subscription['provision_id'] ?? 0);
+        if ($provisionId > 0) {
+            $provision = $conn->fetchAssociative(
+                "SELECT * FROM tenant_provisions
+                 WHERE id = ? AND account_id = ? AND status = 'dispatched'
+                 LIMIT 1",
+                [$provisionId, (int) $subscription['account_id']],
+                [ParameterType::INTEGER, ParameterType::INTEGER],
+            );
+        } else {
+            // Backward compatibility for older subscriptions created before provision_id existed.
+            $this->logger->warning('Subscription without provision_id; using legacy account+plan lookup', [
+                'subscription_id' => $subscription['id'] ?? null,
+                'account_id' => $subscription['account_id'] ?? null,
+            ]);
+            $provision = $conn->fetchAssociative(
+                "SELECT * FROM tenant_provisions
+                 WHERE account_id = ? AND plan = ? AND status = 'dispatched'
+                 ORDER BY id DESC LIMIT 1",
+                [(int) $subscription['account_id'], (string) $subscription['plan']],
+                [ParameterType::INTEGER, ParameterType::STRING],
+            );
+        }
 
         if ($provision === false) {
-            $this->logger->warning('No pending provision found for paid subscription', [
+            $this->logger->warning('No dispatched provision found for subscription provision_id', [
                 'subscription_id' => $subscription['id'],
                 'account_id' => $subscription['account_id'],
+                'provision_id' => $provisionId,
             ]);
 
             return;

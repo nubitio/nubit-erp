@@ -126,6 +126,7 @@ final readonly class OnboardingService
 
         $subResult = $this->subscriptionManager->createPending(
             accountId: $accountId,
+            provisionId: $provisionId,
             plan: $plan,
             billingCycle: $billingCycle,
             gateway: $gateway,

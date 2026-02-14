@@ -6,6 +6,30 @@
     <a href="{{ path('onboarding_account_login') }}">Ya tengo cuenta</a>
 {% endblock %}
 
+{% block head %}
+    <style>
+        .password-field {
+            position: relative;
+        }
+        .password-field .form-input { padding-right: 42px; }
+        .password-visibility-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            border: 0;
+            background: transparent;
+            color: var(--color-gray-500);
+            cursor: pointer;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .password-visibility-btn:hover { color: var(--color-gray-700); }
+    </style>
+{% endblock %}
+
 {% block steps %}
     <div class="steps">
         <div class="step step--active">
@@ -40,9 +64,23 @@
 
         <div class="form-group">
             <label class="form-label" for="password">Contrase&ntilde;a</label>
-            <input type="password" name="password" id="password" class="form-input"
-                   placeholder="M&iacute;nimo 8 caracteres" required minlength="8" autocomplete="new-password">
+            <div class="password-field">
+                <input type="password" name="password" id="password" class="form-input"
+                       placeholder="M&iacute;nimo 8 caracteres" required minlength="8" autocomplete="new-password">
+                <button type="button" class="password-visibility-btn" id="toggle-password" aria-label="Mostrar contrase&ntilde;a">
+                    <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+            </div>
             <p class="form-hint" id="password-hint"></p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password_confirm">Confirmar contrase&ntilde;a</label>
+            <div class="password-field">
+                <input type="password" name="password_confirm" id="password_confirm" class="form-input"
+                       placeholder="Repite tu contrase&ntilde;a" required minlength="8" autocomplete="new-password">
+            </div>
+            <p class="form-hint" id="password-confirm-hint"></p>
         </div>
 
         <button type="submit" class="btn btn--primary" id="submit-btn">
@@ -56,23 +94,72 @@
     </p>
 
     <script>
-        document.getElementById('register-form').addEventListener('submit', function () {
+        var form = document.getElementById('register-form');
+        var password = document.getElementById('password');
+        var passwordConfirm = document.getElementById('password_confirm');
+        var passwordHint = document.getElementById('password-hint');
+        var confirmHint = document.getElementById('password-confirm-hint');
+        var togglePasswordBtn = document.getElementById('toggle-password');
+        var submitBtn = document.getElementById('submit-btn');
+
+        function validatePasswords() {
+            var len = password.value.length;
+            if (len === 0) {
+                passwordHint.textContent = '';
+            } else if (len < 8) {
+                passwordHint.textContent = len + '/8 caracteres';
+                passwordHint.className = 'form-hint form-hint--error';
+            } else {
+                passwordHint.textContent = 'Longitud correcta';
+                passwordHint.className = 'form-hint form-hint--success';
+            }
+
+            if (passwordConfirm.value.length === 0) {
+                confirmHint.textContent = '';
+                passwordConfirm.setCustomValidity('');
+                return;
+            }
+
+            if (password.value !== passwordConfirm.value) {
+                confirmHint.textContent = 'Las contraseñas no coinciden';
+                confirmHint.className = 'form-hint form-hint--error';
+                passwordConfirm.setCustomValidity('Las contraseñas no coinciden');
+                return;
+            }
+
+            confirmHint.textContent = 'Las contraseñas coinciden';
+            confirmHint.className = 'form-hint form-hint--success';
+            passwordConfirm.setCustomValidity('');
+        }
+
+        form.addEventListener('submit', function (event) {
+            validatePasswords();
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+                return;
+            }
+
             const btn = document.getElementById('submit-btn');
             btn.classList.add('btn--loading');
             btn.disabled = true;
         });
 
-        document.getElementById('password').addEventListener('input', function () {
-            const hint = document.getElementById('password-hint');
-            const len = this.value.length;
-            if (len === 0) { hint.textContent = ''; return; }
-            if (len < 8) {
-                hint.textContent = len + '/8 caracteres';
-                hint.className = 'form-hint form-hint--error';
-            } else {
-                hint.textContent = 'Longitud correcta';
-                hint.className = 'form-hint form-hint--success';
+        password.addEventListener('input', validatePasswords);
+        passwordConfirm.addEventListener('input', validatePasswords);
+
+        togglePasswordBtn.addEventListener('click', function () {
+            var isVisible = password.type === 'text';
+            var type = isVisible ? 'password' : 'text';
+            password.type = type;
+            passwordConfirm.type = type;
+            var icon = this.querySelector('i');
+            if (icon) {
+                icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
             }
+            this.setAttribute('aria-label', isVisible ? 'Mostrar contrase&ntilde;a' : 'Ocultar contrase&ntilde;a');
         });
+
+        validatePasswords();
     </script>
 {% endblock %}
