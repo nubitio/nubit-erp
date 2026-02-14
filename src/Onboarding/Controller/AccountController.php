@@ -100,6 +100,27 @@ final class AccountController extends AbstractController
         ]);
     }
 
+    #[Route('/account/dashboard/provisions/{provisionId}/dismiss', name: 'onboarding_account_dashboard_provision_dismiss', methods: ['POST'])]
+    public function dismissProvision(Request $request, int $provisionId): JsonResponse
+    {
+        $accountId = $this->getSessionAccountId($request);
+        if ($accountId <= 0) {
+            return $this->json(['error' => 'Unauthorized'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $token = (string) $request->request->get('_token', '');
+        if (!$this->isCsrfTokenValid('onboarding_dismiss_provision', $token)) {
+            return $this->json(['error' => 'Invalid CSRF token'], Response::HTTP_FORBIDDEN);
+        }
+
+        $dismissed = $this->accountService->dismissFailedProvision($accountId, $provisionId);
+        if (!$dismissed) {
+            return $this->json(['error' => 'Provision not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json(['ok' => true]);
+    }
+
     #[Route('/account/logout', name: 'onboarding_account_logout', methods: ['POST'])]
     public function logout(Request $request): RedirectResponse
     {
