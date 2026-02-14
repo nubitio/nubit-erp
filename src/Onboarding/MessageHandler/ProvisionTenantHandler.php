@@ -31,9 +31,13 @@ final readonly class ProvisionTenantHandler
     {
         $tenantDbPassword = $this->resolveTenantDbPassword();
         if ($tenantDbPassword === '') {
+            $this->logger->critical('Onboarding provisioning misconfiguration: tenant DB password is missing', [
+                'provision_id' => $message->provisionId,
+                'provision_tenant' => $message->subdomain,
+            ]);
             $this->markProvisionFailed(
                 $message->provisionId,
-                'Missing tenant DB password. Configure ONBOARDING_TENANT_DB_PASS or DATABASE_URL with password.'
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
             );
 
             return;
@@ -63,7 +67,7 @@ final readonly class ProvisionTenantHandler
 
             $this->markProvisionFailed(
                 $message->provisionId,
-                'Provisioning command failed: ' . mb_substr($combinedOutput, 0, 2000)
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
             );
 
             return;
@@ -71,7 +75,14 @@ final readonly class ProvisionTenantHandler
 
         $tenantId = (int) $this->cp()->fetchOne('SELECT id FROM tenants WHERE name = ?', [$message->subdomain]);
         if ($tenantId <= 0) {
-            $this->markProvisionFailed($message->provisionId, 'Tenant record was not created');
+            $this->logger->error('Onboarding provisioning failed: tenant record was not created', [
+                'provision_id' => $message->provisionId,
+                'provision_tenant' => $message->subdomain,
+            ]);
+            $this->markProvisionFailed(
+                $message->provisionId,
+                'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.'
+            );
 
             return;
         }

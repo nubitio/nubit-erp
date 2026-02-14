@@ -3,6 +3,33 @@
 {% block title %}Dashboard | eFact{% endblock %}
 {% block card_class %}onboarding-card--dashboard{% endblock %}
 
+{% block head %}
+    <style>
+        .provision-error-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: var(--color-error-light);
+            border: 1px solid var(--color-error-border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+        .provision-error-card__content { flex: 1; }
+        .provision-error-card__close {
+            border: 0;
+            background: transparent;
+            color: var(--color-error);
+            opacity: .75;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            padding: 0;
+        }
+        .provision-error-card__close:hover { opacity: 1; }
+    </style>
+{% endblock %}
+
 {% block header_action %}
     <form method="post" action="{{ path('onboarding_account_logout') }}" style="display:inline;">
         <input type="hidden" name="_token" value="{{ csrf_token('onboarding_account_logout') }}">
@@ -41,14 +68,17 @@
     {% endif %}
 
     {% if failed_provisions is not empty %}
-    <div class="dashboard-section">
+    <div class="dashboard-section" id="failed-provisions">
         {% for item in failed_provisions %}
-            <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--color-error-light);border:1px solid var(--color-error-border);border-radius:var(--radius);margin-bottom:8px;">
+            <div class="provision-error-card"
+                 data-provision-id="{{ item.id }}"
+                 data-dismiss-url="{{ path('onboarding_account_dashboard_provision_dismiss', { provisionId: item.id }) }}">
                 <div style="flex-shrink:0;font-size:20px;">&#10007;</div>
-                <div>
+                <div class="provision-error-card__content">
                     <span style="font-weight:600;color:var(--color-error);">{{ item.tenant_name }}</span>
                     <span style="color:var(--color-gray-600);font-size:13px;">&mdash; Hubo un problema creando tu empresa. Por favor contacta a soporte.</span>
                 </div>
+                <button type="button" class="provision-error-card__close" aria-label="Ocultar error">&times;</button>
             </div>
         {% endfor %}
     </div>
@@ -107,6 +137,48 @@
     <script>
         (function () {
             var banner = document.getElementById('provision-banner');
+            var failedSection = document.getElementById('failed-provisions');
+            var dismissToken = '{{ csrf_token('onboarding_dismiss_provision') }}';
+
+            document.addEventListener('click', async function (event) {
+                var closeBtn = event.target.closest('.provision-error-card__close');
+                if (!closeBtn) {
+                    return;
+                }
+                var card = closeBtn.closest('.provision-error-card');
+                if (!card) {
+                    return;
+                }
+
+                var dismissUrl = card.getAttribute('data-dismiss-url');
+                if (!dismissUrl) {
+                    card.remove();
+                    return;
+                }
+
+                try {
+                    var response = await fetch(dismissUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'Accept': 'application/json'
+                        },
+                        body: new URLSearchParams({ _token: dismissToken }).toString()
+                    });
+
+                    if (!response.ok) {
+                        return;
+                    }
+
+                    card.remove();
+                    if (failedSection && !failedSection.querySelector('.provision-error-card')) {
+                        failedSection.remove();
+                    }
+                } catch (_e) {
+                    /* silent fail */
+                }
+            });
+
             if (!banner) return;
 
             async function refresh() {

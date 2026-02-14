@@ -179,6 +179,7 @@ final class TenantWizardController extends AbstractController
         if ($status === null) {
             throw $this->createNotFoundException('Provision no encontrada.');
         }
+        $status['error_message'] = $this->toPublicProvisionError((string) ($status['error_message'] ?? ''));
 
         return $this->render('onboarding/status.html.twig', [
             'token' => $token,
@@ -202,7 +203,7 @@ final class TenantWizardController extends AbstractController
 
         return $this->json([
             'status' => $status['status'],
-            'error' => $status['error_message'],
+            'error' => $this->toPublicProvisionError((string) ($status['error_message'] ?? '')),
             'tenant_url' => $this->resolveTenantUrl($status),
         ]);
     }
@@ -223,5 +224,30 @@ final class TenantWizardController extends AbstractController
     private function getSessionAccountId(Request $request): int
     {
         return (int) $request->getSession()->get('onboarding_account_id', 0);
+    }
+
+    private function toPublicProvisionError(string $errorMessage): string
+    {
+        $errorMessage = trim($errorMessage);
+        if ($errorMessage === '') {
+            return '';
+        }
+
+        $technicalMarkers = [
+            'Provisioning command failed',
+            'DB user password is required',
+            'TENANT_DB_PASS',
+            'ONBOARDING_TENANT_DB_PASS',
+            'DATABASE_URL',
+            '[ERROR]',
+        ];
+
+        foreach ($technicalMarkers as $marker) {
+            if (str_contains($errorMessage, $marker)) {
+                return 'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.';
+            }
+        }
+
+        return $errorMessage;
     }
 }

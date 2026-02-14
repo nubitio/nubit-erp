@@ -233,11 +233,28 @@ final readonly class AccountService
                     p.created_at, p.started_at, p.completed_at
              FROM tenant_provisions p
              WHERE p.account_id = ?
+               AND p.dismissed_at IS NULL
              ORDER BY p.id DESC
              LIMIT ?',
             [$accountId, $limit],
             [ParameterType::INTEGER, ParameterType::INTEGER]
         );
+    }
+
+    public function dismissFailedProvision(int $accountId, int $provisionId): bool
+    {
+        $updated = $this->cp()->executeStatement(
+            'UPDATE tenant_provisions
+             SET dismissed_at = NOW()
+             WHERE id = ?
+               AND account_id = ?
+               AND status = ?
+               AND dismissed_at IS NULL',
+            [$provisionId, $accountId, 'failed'],
+            [ParameterType::INTEGER, ParameterType::INTEGER, ParameterType::STRING]
+        );
+
+        return $updated > 0;
     }
 
     private function sendVerificationCode(string $email, string $code): void
