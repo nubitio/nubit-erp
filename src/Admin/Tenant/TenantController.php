@@ -12,6 +12,7 @@ use App\Core\Service\TenantBackupService;
 use App\Core\Service\ProvisionCommandRequest;
 use App\Core\Service\ProvisionCommandRunner;
 use App\Core\Service\TenantNotificationService;
+use App\Core\Message\TenantBackupMessage;
 use App\Core\Audit\AuditLogger;
 use App\Onboarding\Payment\SubscriptionManager;
 use Doctrine\DBAL\Connection;
@@ -26,6 +27,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[Route('/admin/tenants')]
 class TenantController extends AbstractController
@@ -42,6 +44,7 @@ class TenantController extends AbstractController
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly TenantNotificationService $tenantNotificationService,
         private readonly LoggerInterface $logger,
+        private readonly MessageBusInterface $messageBus,
     ) {
     }
 
@@ -719,15 +722,13 @@ class TenantController extends AbstractController
         }
 
         try {
-            $result = $this->backupService->backup((string) $tenant['name'], true);
-            $this->auditLogger->log('tenant.backup.create', [
-                'tenant_id' => $id,
-                'backup_id' => $result['id'],
-                'filename' => $result['filename'],
-            ]);
-            $this->addFlash('success', sprintf('Backup created: %s', $result['filename']));
+            $this->messageBus->dispatch(new TenantBackupMessage(
+                tenantId: $id,
+                tenantName: (string) $tenant['name'],
+            ));
+            $this->addFlash('success', 'Backup queued. It will appear in the list when completed.');
         } catch (\Throwable $e) {
-            $this->addFlash('error', 'Backup failed: ' . $e->getMessage());
+            $this->addFlash('error', 'Backup could not be queued: ' . $e->getMessage());
         }
 
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
