@@ -27,11 +27,3 @@ PORTAINER_STACK_NAME
 PORTAINER_ENDPOINT_ID
 APP_URL
 ```
-
-For tenant provisioning workflow (`tenant-provision.yml`) you also need:
-
-```
-PROVISIONING_DATABASE_URL
-TENANT_DB_PASS
-TENANT_ADMIN_PASS
-```

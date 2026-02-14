@@ -36,8 +36,6 @@ class TenantProvisionCommand extends Command
         private readonly CacheInterface $cache,
         #[Autowire(env: 'TENANT_DB_PASS')]
         private readonly string $tenantDbPass,
-        #[Autowire(env: 'TENANT_ADMIN_PASS')]
-        private readonly string $tenantAdminPass,
         #[Autowire(env: 'PROVISIONING_DATABASE_URL')]
         private readonly string $provisioningDatabaseUrl,
     ) {
@@ -55,6 +53,7 @@ class TenantProvisionCommand extends Command
             ->addOption('seed-test', null, InputOption::VALUE_NONE, 'Run test data seed')
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
+            ->addOption('admin-password', null, InputOption::VALUE_OPTIONAL, 'Admin password for initial setup')
             ->addOption('company-ruc', null, InputOption::VALUE_OPTIONAL, 'Company RUC (11 digits)')
             ->addOption('company-name', null, InputOption::VALUE_OPTIONAL, 'Company business name')
             ->addOption('company-trade', null, InputOption::VALUE_OPTIONAL, 'Company trade name')
@@ -98,7 +97,7 @@ class TenantProvisionCommand extends Command
             $createUser = $io->confirm('Create DB user for tenant?', false);
         }
 
-        $dbUserPass = $this->resolveSecret('TENANT_DB_PASS');
+        $dbUserPass = trim($this->tenantDbPass);
         if ($createUser && $dbUserPass === '') {
             if ($input->isInteractive()) {
                 $dbUserPass = (string)$io->askHidden('DB user password (hidden)');
@@ -466,15 +465,6 @@ class TenantProvisionCommand extends Command
         }
     }
 
-    private function resolveSecret(string $envVar): string
-    {
-        return match ($envVar) {
-            'TENANT_DB_PASS' => trim($this->tenantDbPass),
-            'TENANT_ADMIN_PASS' => trim($this->tenantAdminPass),
-            default => '',
-        };
-    }
-
     private function invalidateTenantCache(string $tenantName): void
     {
         $tenantName = trim($tenantName);
@@ -502,14 +492,15 @@ class TenantProvisionCommand extends Command
         $setup->adminUsername = (string)($input->getOption('admin-user')
             ?: $io->ask('Admin username', 'admin'));
 
-        $adminPass = $this->resolveSecret('TENANT_ADMIN_PASS');
+        $adminPass = trim((string) $input->getOption('admin-password'));
         if ($adminPass === '' && $input->isInteractive()) {
             $adminPass = (string)$io->askHidden('Admin password (hidden)');
         }
         if ($adminPass === '') {
-            throw new \RuntimeException(
-                'Admin password is required. Set TENANT_ADMIN_PASS env var or provide interactively.'
-            );
+            $adminPass = $this->generateTemporaryAdminPassword();
+            $io->warning('No se recibió contraseña admin. Se generó una contraseña temporal.');
+            $io->note('Contraseña temporal admin: ' . $adminPass);
+            $io->note('Solicita cambio de contraseña en el primer inicio de sesión.');
         }
         $setup->adminPassword = $adminPass;
 
@@ -532,5 +523,12 @@ class TenantProvisionCommand extends Command
             ?: $io->ask('Branch phone', '999999999'));
 
         return $setup;
+    }
+
+    private function generateTemporaryAdminPassword(): string
+    {
+        $suffix = bin2hex(random_bytes(8));
+
+        return 'Tmp#' . $suffix . '9A';
     }
 }

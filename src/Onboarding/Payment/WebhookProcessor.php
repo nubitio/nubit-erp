@@ -219,8 +219,15 @@ final readonly class WebhookProcessor
             tenantName: (string) $provision['tenant_name'],
             subdomain: $this->extractSubdomain((string) $provision['domain']),
             domain: (string) $provision['domain'],
-            adminPassword: '',
+            adminPassword: (string) ($provision['admin_password'] ?? ''),
         ));
+
+        // Remove the raw password once the provisioning job is queued.
+        $conn->executeStatement(
+            'UPDATE tenant_provisions SET admin_password = NULL WHERE id = ?',
+            [(int) $provision['id']],
+            [ParameterType::INTEGER]
+        );
     }
 
     private function suspendTenant(int $tenantId): void

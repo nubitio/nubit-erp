@@ -87,6 +87,7 @@
             justify-content: center;
             gap: 8px;
             background: var(--color-gray-100);
+            border: 1px solid var(--color-gray-200);
             border-radius: var(--radius);
             padding: 3px;
             margin-bottom: 12px;
@@ -105,9 +106,20 @@
             text-align: center;
         }
         .billing-toggle-sm-btn--active {
-            background: #fff;
+            background: var(--color-surface-elevated);
             color: var(--color-gray-800);
-            box-shadow: 0 1px 2px rgba(0,0,0,.08);
+            border: 1px solid var(--color-gray-300);
+            box-shadow: 0 1px 2px rgba(0,0,0,.16);
+        }
+        .billing-savings {
+            display: inline-block;
+            background: var(--color-success-light);
+            color: var(--color-success);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+            margin-left: 3px;
         }
         .cancel-section {
             border-top: 1px solid var(--color-gray-200);
@@ -190,7 +202,7 @@
 
             <div class="billing-toggle-sm" id="billing-toggle">
                 <button type="button" class="billing-toggle-sm-btn {{ (not subscription or subscription.billing_cycle != 'annual') ? 'billing-toggle-sm-btn--active' : '' }}" data-cycle="monthly">Mensual</button>
-                <button type="button" class="billing-toggle-sm-btn {{ (subscription and subscription.billing_cycle == 'annual') ? 'billing-toggle-sm-btn--active' : '' }}" data-cycle="annual">Anual <span class="billing-savings" style="display:inline-block;background:var(--color-success-light);color:var(--color-success);font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:3px;">-17%</span></button>
+                <button type="button" class="billing-toggle-sm-btn {{ (subscription and subscription.billing_cycle == 'annual') ? 'billing-toggle-sm-btn--active' : '' }}" data-cycle="annual">Anual <span class="billing-savings">-17%</span></button>
             </div>
 
             {% set current_plan = tenant.plan ?: 'free' %}

@@ -20,8 +20,8 @@ final readonly class ProvisionTenantHandler
         private ConnectionRegistry $connectionRegistry,
         private TenantProvisioningService $tenantProvisioningService,
         private LoggerInterface $logger,
-        #[Autowire(env: 'ONBOARDING_TENANT_DB_PASS')]
-        private string $onboardingTenantDbPass,
+        #[Autowire(env: 'TENANT_DB_PASS')]
+        private string $tenantDbPass,
         #[Autowire(env: 'DATABASE_URL')]
         private string $databaseUrl,
     ) {
@@ -88,7 +88,7 @@ final readonly class ProvisionTenantHandler
         }
 
         $this->cp()->executeStatement(
-            'UPDATE tenant_provisions SET tenant_id = ? WHERE id = ?',
+            'UPDATE tenant_provisions SET tenant_id = ?, admin_password = NULL WHERE id = ?',
             [$tenantId, $message->provisionId],
             [ParameterType::INTEGER, ParameterType::INTEGER]
         );
@@ -106,7 +106,7 @@ final readonly class ProvisionTenantHandler
     {
         $this->cp()->executeStatement(
             'UPDATE tenant_provisions
-             SET status = ?, error_message = ?, completed_at = NOW()
+             SET status = ?, error_message = ?, admin_password = NULL, completed_at = NOW()
              WHERE id = ?',
             ['failed', mb_substr($error, 0, 65535), $provisionId],
             [ParameterType::STRING, ParameterType::STRING, ParameterType::INTEGER]
@@ -123,7 +123,7 @@ final readonly class ProvisionTenantHandler
 
     private function resolveTenantDbPassword(): string
     {
-        $explicit = trim($this->onboardingTenantDbPass);
+        $explicit = trim($this->tenantDbPass);
         if ($explicit !== '') {
             return $explicit;
         }

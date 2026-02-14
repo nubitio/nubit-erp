@@ -53,6 +53,9 @@ final readonly class ProvisionCommandRunner
         if ($request->setup) {
             $command[] = '--setup';
             $command[] = '--admin-user=' . trim($request->adminUser);
+            if (trim($request->adminPassword) !== '') {
+                $command[] = '--admin-password=' . $request->adminPassword;
+            }
             $command[] = '--company-ruc=' . trim($request->companyRuc);
             $command[] = '--company-name=' . $displayName;
             $command[] = '--company-trade=' . $displayName;
@@ -75,9 +78,6 @@ final readonly class ProvisionCommandRunner
         }
 
         $env = [];
-        if (trim($request->adminPassword) !== '') {
-            $env['TENANT_ADMIN_PASS'] = $request->adminPassword;
-        }
         if (trim($request->tenantDbPassword) !== '') {
             $env['TENANT_DB_PASS'] = $request->tenantDbPassword;
         }

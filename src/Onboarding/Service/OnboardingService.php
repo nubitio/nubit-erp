@@ -112,7 +112,7 @@ final readonly class OnboardingService
 
         $token = bin2hex(random_bytes(32));
         $domain = $check['domain'];
-        $provisionId = $this->createProvisionRecord($accountId, $tenantName, $domain, $plan, $token);
+        $provisionId = $this->createProvisionRecord($accountId, $tenantName, $domain, $plan, $token, $adminPassword);
 
         $accountEmail = $this->getAccountEmail($accountId);
 
@@ -193,6 +193,7 @@ final readonly class OnboardingService
         string $domain,
         string $plan,
         string $token,
+        string $adminPassword = '',
     ): int {
         $conn = $this->cp();
         $conn->insert('tenant_provisions', [
@@ -202,6 +203,7 @@ final readonly class OnboardingService
             'domain' => $domain,
             'plan' => $plan,
             'admin_user' => 'admin',
+            'admin_password' => $adminPassword !== '' ? $adminPassword : null,
             'target_container' => '',
             'status' => 'dispatched',
             'public_token' => $token,
@@ -213,6 +215,7 @@ final readonly class OnboardingService
             ParameterType::STRING,
             ParameterType::STRING,
             ParameterType::STRING,
+            $adminPassword !== '' ? ParameterType::STRING : ParameterType::NULL,
             ParameterType::STRING,
             ParameterType::STRING,
             ParameterType::STRING,
