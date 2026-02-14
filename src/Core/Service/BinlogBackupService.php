@@ -22,8 +22,8 @@ final readonly class BinlogBackupService
         private ConnectionRegistry $connectionRegistry,
         private FilesystemOperator $defaultFilesystem,
         private LoggerInterface $logger,
-        #[Autowire(env: 'PROVISIONING_DATABASE_URL')]
-        private string $provisioningDatabaseUrl,
+        #[Autowire(env: 'BACKUP_DATABASE_URL')]
+        private string $backupDatabaseUrl,
     ) {
     }
 
@@ -361,7 +361,7 @@ final readonly class BinlogBackupService
      */
     private function getConnectionParams(): array
     {
-        $url = $this->provisioningDatabaseUrl;
+        $url = $this->backupDatabaseUrl;
 
         if ($url !== '') {
             $parts = parse_url($url);

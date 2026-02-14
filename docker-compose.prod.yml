@@ -3,6 +3,9 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     container_name: ${CONTAINER_NAME:-efact}
     restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
     expose:
       - "80"
     environment:
@@ -15,6 +18,9 @@ services:
       # Database
       DATABASE_URL: ${DATABASE_URL}
       CONTROL_PLANE_DATABASE_URL: ${CONTROL_PLANE_DATABASE_URL}
+      PROVISIONING_DATABASE_URL: ${PROVISIONING_DATABASE_URL}
+      BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
       # Redis
       REDIS_URL: ${REDIS_URL}
       # Mailer
@@ -52,7 +58,6 @@ services:
     volumes:
       - app-var:/app/var
       - app-public-uploads:/app/public/uploads
-      - ./config/qz:/app/config/qz:ro
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -78,13 +83,19 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
-      - web
+      web:
+        condition: service_healthy
+      database:
+        condition: service_healthy
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
       CONTROL_PLANE_DATABASE_URL: ${CONTROL_PLANE_DATABASE_URL}
+      PROVISIONING_DATABASE_URL: ${PROVISIONING_DATABASE_URL}
+      BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
@@ -137,13 +148,19 @@ services:
     image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
     restart: unless-stopped
     depends_on:
-      - web
+      web:
+        condition: service_healthy
+      database:
+        condition: service_healthy
     environment:
       SKIP_MIGRATIONS: "true"
       APP_ENV: ${APP_ENV}
       APP_SECRET: ${APP_SECRET}
       DATABASE_URL: ${DATABASE_URL}
       CONTROL_PLANE_DATABASE_URL: ${CONTROL_PLANE_DATABASE_URL}
+      PROVISIONING_DATABASE_URL: ${PROVISIONING_DATABASE_URL}
+      BACKUP_DATABASE_URL: ${BACKUP_DATABASE_URL}
+      TENANT_DB_PASS: ${TENANT_DB_PASS}
       MAILER_DSN: ${MAILER_DSN}
       REDIS_URL: ${REDIS_URL}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN}
@@ -192,10 +209,44 @@ services:
       retries: 3
       start_period: 20s
 
+  database:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: efact
+      MARIADB_USER: efact
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --log-bin=mariadb-bin
+      --binlog-format=ROW
+      --expire-logs-days=7
+      --max-binlog-size=100M
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      - ./scripts/setup-mariadb-users.sql:/docker-entrypoint-initdb.d/01-setup-users.sql:ro
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   app-var:
     driver: local
   app-public-uploads:
+    driver: local
+  mariadb-data:
     driver: local
 
 networks:
