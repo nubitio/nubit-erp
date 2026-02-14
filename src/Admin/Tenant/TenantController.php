@@ -624,6 +624,7 @@ class TenantController extends AbstractController
         }
 
         $adminUser = trim((string)$request->request->get('admin_user', 'admin'));
+        $adminPass = (string)$request->request->get('admin_pass', '');
         $domain = trim((string)$request->request->get('domain', ''));
 
         if ($domain === '') {
@@ -639,10 +640,13 @@ class TenantController extends AbstractController
 
         $result = $this->commandRunner->run(new ProvisionCommandRequest(
             tenant: (string)$tenant['name'],
+            tenantDisplayName: (string)$tenant['name'],
             domain: $domain,
             adminUser: $adminUser,
+            adminPassword: $adminPass,
             provisionId: $provisionId,
             createUser: true,
+            setup: true,
         ));
 
         if (!$result['successful']) {
