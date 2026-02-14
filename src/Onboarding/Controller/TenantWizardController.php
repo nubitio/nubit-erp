@@ -103,9 +103,6 @@ final class TenantWizardController extends AbstractController
                 return $this->redirectToRoute('onboarding_status_page', ['token' => $result['token']]);
             }
 
-            // Paid plan: store admin password in session temporarily for post-payment provisioning
-            $request->getSession()->set('onboarding_admin_password', $adminPassword);
-
             $result = $this->onboardingService->startPaidProvisioning(
                 accountId: $accountId,
                 tenantName: $tenantName,
@@ -161,6 +158,7 @@ final class TenantWizardController extends AbstractController
         if ($sessionToken === $token) {
             $request->getSession()->remove('onboarding_provision_token');
         }
+        $request->getSession()->remove('onboarding_admin_password');
 
         $this->addFlash('warning', 'El pago fue cancelado. Puedes intentar nuevamente.');
 
@@ -233,21 +231,6 @@ final class TenantWizardController extends AbstractController
             return '';
         }
 
-        $technicalMarkers = [
-            'Provisioning command failed',
-            'DB user password is required',
-            'TENANT_DB_PASS',
-            'ONBOARDING_TENANT_DB_PASS',
-            'DATABASE_URL',
-            '[ERROR]',
-        ];
-
-        foreach ($technicalMarkers as $marker) {
-            if (str_contains($errorMessage, $marker)) {
-                return 'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.';
-            }
-        }
-
-        return $errorMessage;
+        return 'No pudimos completar la creacion de tu empresa. Intenta nuevamente en unos minutos.';
     }
 }

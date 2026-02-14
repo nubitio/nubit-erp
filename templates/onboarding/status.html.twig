@@ -2,6 +2,22 @@
 
 {% block title %}Creando tu empresa | eFact{% endblock %}
 
+{% block head %}
+    <style>
+        .status-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+
+        .status-actions .btn {
+            white-space: nowrap;
+            width: auto;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <div class="status-container" id="status-container">
         <div id="status-spinner" class="status-spinner" {% if status.status == 'completed' or status.status == 'failed' %}style="display:none;"{% endif %}></div>
@@ -36,7 +52,7 @@
         </div>
     </div>
 
-    <div class="mt-24" style="display:flex;gap:12px;justify-content:center;">
+    <div class="mt-24 status-actions">
         <a href="{{ path('onboarding_account_dashboard') }}" class="btn btn--secondary" id="btn-dashboard">Ir al dashboard</a>
         <a href="" class="btn btn--primary" id="btn-open" target="_blank" rel="noopener" {% if not tenant_url %}style="display:none;"{% endif %}>
             Abrir mi empresa
