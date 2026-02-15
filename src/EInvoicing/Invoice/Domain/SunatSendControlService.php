@@ -16,6 +16,14 @@ readonly class SunatSendControlService
 {
     private const string ALERT_RECIPIENTS_KEY = 'app_alert_recipients';
     private const string ACCOUNTING_EMAIL_KEY = 'email_accounting';
+    /**
+     * SUNAT codes that must be resolved via CDR consult instead of counting as hard rejection.
+     *
+     * @var array<int, true>
+     */
+    private const CONSULT_REQUIRED_CODES = [
+        1032 => true,
+    ];
 
     public function __construct(
         private SettingsService $settings,
@@ -99,6 +107,10 @@ readonly class SunatSendControlService
 
     public function isSunatRejection(?string $code, string $message): bool
     {
+        if ($this->requiresConsult($code, $message)) {
+            return false;
+        }
+
         if ($code !== null && $code !== '' && ctype_digit($code)) {
             $numericCode = (int)$code;
             if ($numericCode >= 2000 && $numericCode < 4000) {
@@ -107,6 +119,18 @@ readonly class SunatSendControlService
         }
 
         return stripos($message, 'rechaz') !== false;
+    }
+
+    public function requiresConsult(?string $code, string $message): bool
+    {
+        if ($code !== null && $code !== '' && ctype_digit($code)) {
+            if (isset(self::CONSULT_REQUIRED_CODES[(int)$code])) {
+                return true;
+            }
+        }
+
+        return stripos($message, 'ya esta informado') !== false
+            || stripos($message, 'ya está informado') !== false;
     }
 
     public function pauseSunatSendingAfterRejection(
