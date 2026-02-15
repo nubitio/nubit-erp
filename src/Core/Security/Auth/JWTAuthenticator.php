@@ -50,12 +50,12 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     #[Override]
     public function supports(Request $request): ?bool
     {
-        $isAuthHeaderPresent = $request->headers->has(self::AUTH_HEADER);
+        $isBearerHeaderPresent = $this->hasBearerHeader($request->headers->get(self::AUTH_HEADER));
         $isAuthCookiePresent = $request->cookies->has(self::AUTH_COOKIE);
         $isLoginRoute = self::LOGIN_ROUTE === $request->attributes->get('_route');
         $isPostMethod = $request->isMethod('POST');
 
-        return (($isAuthHeaderPresent || $isAuthCookiePresent) && !$isLoginRoute) || ($isPostMethod && $isLoginRoute);
+        return (($isBearerHeaderPresent || $isAuthCookiePresent) && !$isLoginRoute) || ($isPostMethod && $isLoginRoute);
     }
 
     public function getCredentials(Request $request): array
@@ -72,8 +72,8 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
             }
         }
 
-        $jwtToken = $request->headers->get(self::AUTH_HEADER);
-        if (!$jwtToken) {
+        $jwtToken = $this->extractBearerToken($request->headers->get(self::AUTH_HEADER));
+        if ($jwtToken === null || $jwtToken === '') {
             $jwtToken = $request->cookies->get(self::AUTH_COOKIE);
         }
 
@@ -100,7 +100,6 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
     private function authenticateWithJWT(string $jwtToken): SelfValidatingPassport
     {
         try {
-            $jwtToken = str_replace('Bearer ', '', $jwtToken);
             $tokenData = $this->jwtManager->decode($jwtToken);
         } catch (ExpiredException $e) {
             $this->logger->warning('JWT token expired', [
@@ -145,6 +144,30 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         ]);
 
         return $passport;
+    }
+
+    private function hasBearerHeader(?string $authHeader): bool
+    {
+        if ($authHeader === null) {
+            return false;
+        }
+
+        return preg_match('/^\s*Bearer\s+.+$/i', $authHeader) === 1;
+    }
+
+    private function extractBearerToken(?string $authHeader): ?string
+    {
+        if ($authHeader === null) {
+            return null;
+        }
+
+        if (preg_match('/^\s*Bearer\s+(.+)$/i', $authHeader, $matches) !== 1) {
+            return null;
+        }
+
+        $token = trim($matches[1]);
+
+        return $token === '' ? null : $token;
     }
 
     private function authenticateWithCredentials(array $credentials): Passport
