@@ -78,6 +78,7 @@ readonly class SaleVoidUseCase
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
             $this->entityManager->persist($sale);
+            $this->cashRefundRegistrar->register($sale, $userId);
             $this->entityManager->flush();
 
             $this->auditLogger->log('sale.void.result', [
