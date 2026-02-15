@@ -23,6 +23,7 @@ readonly class InvoiceSendUseCase
     public function __construct(
         private BillSendUseCase $billSendUseCase,
         private BillConsultUseCase $billConsultUseCase,
+        private SunatSendControlService $sunatSendControlService,
         private FileManager $fileManager,
         private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
@@ -67,7 +68,7 @@ readonly class InvoiceSendUseCase
             } else {
                 $errorCode = $response->sunatResponse->getError()?->getCode();
                 $errorMessage = $response->sunatResponse->getError()?->getMessage();
-                $retryable = !$this->isSunatRejection($errorCode, $errorMessage);
+                $retryable = !$this->sunatSendControlService->isSunatRejection($errorCode, (string)$errorMessage);
                 $recoveredByConsult = false;
 
                 if ($retryable) {
@@ -136,17 +137,5 @@ readonly class InvoiceSendUseCase
 
             throw $throwable;
         }
-    }
-
-    private function isSunatRejection(?string $code, ?string $message): bool
-    {
-        if ($code !== null && $code !== '' && ctype_digit($code)) {
-            $numericCode = (int)$code;
-            if ($numericCode >= 2000 && $numericCode < 4000) {
-                return true;
-            }
-        }
-
-        return stripos((string)$message, 'rechaz') !== false;
     }
 }
