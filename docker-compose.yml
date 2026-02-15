@@ -5,6 +5,8 @@ services:
     build:
       context: .
       target: dev
+      args:
+        PHP_VERSION: 8.5
     ports:
       - '8080:80'
       - '8443:443'
