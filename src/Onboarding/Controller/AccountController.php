@@ -100,7 +100,11 @@ final class AccountController extends AbstractController
         ]);
     }
 
-    #[Route('/account/dashboard/provisions/{provisionId}/dismiss', name: 'onboarding_account_dashboard_provision_dismiss', methods: ['POST'])]
+    #[Route(
+        '/account/dashboard/provisions/{provisionId}/dismiss',
+        name: 'onboarding_account_dashboard_provision_dismiss',
+        methods: ['POST']
+    )]
     public function dismissProvision(Request $request, int $provisionId): JsonResponse
     {
         $accountId = $this->getSessionAccountId($request);
