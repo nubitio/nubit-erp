@@ -19,7 +19,7 @@ final class Version20260213200000 extends AbstractMigration
         $this->addSql(<<<'SQL'
             CREATE TABLE IF NOT EXISTS tenant_notification_targets (
                 id INT UNSIGNED AUTO_INCREMENT NOT NULL,
-                tenant_id INT UNSIGNED NOT NULL,
+                tenant_id INT NOT NULL,
                 event_key VARCHAR(64) NOT NULL,
                 channel VARCHAR(32) NOT NULL,
                 severity VARCHAR(16) NOT NULL DEFAULT 'info',
@@ -40,7 +40,7 @@ final class Version20260213200000 extends AbstractMigration
         $this->addSql(<<<'SQL'
             CREATE TABLE IF NOT EXISTS tenant_notification_deliveries (
                 id BIGINT UNSIGNED AUTO_INCREMENT NOT NULL,
-                tenant_id INT UNSIGNED NOT NULL,
+                tenant_id INT NOT NULL,
                 event_key VARCHAR(64) NOT NULL,
                 channel VARCHAR(32) NOT NULL,
                 severity VARCHAR(16) NOT NULL DEFAULT 'info',
