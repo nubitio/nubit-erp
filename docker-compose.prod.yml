@@ -220,15 +220,17 @@ services:
     restart: unless-stopped
     command: ["--config", "/etc/otelcol-contrib/config.yaml"]
     volumes:
-      - ./docker/otel/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    configs:
+      - source: otel_collector_config
+        target: /etc/otelcol-contrib/config.yaml
     environment:
       MYSQL_ENDPOINT: database:3306
       MYSQL_MONITORING_USER: efact_monitor
       MYSQL_MONITORING_PASSWORD: ${OTEL_MYSQL_MONITORING_PASSWORD}
       REDIS_ENDPOINT: redis:6379
       CADDY_METRICS_ENDPOINT: web:2019
-      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT}
+      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-ingest.nubit.io:443}
       SIGNOZ_TLS_INSECURE: ${SIGNOZ_TLS_INSECURE:-false}
       DEPLOYMENT_ENV: ${APP_ENV}
     depends_on:
@@ -320,6 +322,10 @@ volumes:
     driver: local
   redis-data:
     driver: local
+
+configs:
+  otel_collector_config:
+    file: ./docker/otel/otel-collector.yaml
 
 networks:
   default:
