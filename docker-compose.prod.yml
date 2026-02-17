@@ -40,7 +40,7 @@ services:
       OTEL_LOGS_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_PROPAGATORS: baggage,tracecontext
       # AWS S3
       S3_ENDPOINT: ${S3_ENDPOINT}
@@ -112,7 +112,7 @@ services:
       OTEL_LOGS_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_PROPAGATORS: baggage,tracecontext
       # AWS S3
       S3_ENDPOINT: ${S3_ENDPOINT}
@@ -179,7 +179,7 @@ services:
       OTEL_LOGS_EXPORTER: otlp
       OTEL_METRICS_EXPORTER: otlp
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
       OTEL_PROPAGATORS: baggage,tracecontext
       # AWS S3
       S3_ENDPOINT: ${S3_ENDPOINT}
@@ -215,6 +215,41 @@ services:
       retries: 3
       start_period: 20s
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    restart: unless-stopped
+    command: ["--config", "/etc/otelcol/otel-collector.yaml"]
+    volumes:
+      - ./docker/otel/otel-collector.yaml:/etc/otelcol/otel-collector.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      MYSQL_ENDPOINT: database:3306
+      MYSQL_MONITORING_USER: efact_monitor
+      MYSQL_MONITORING_PASSWORD: ${OTEL_MYSQL_MONITORING_PASSWORD}
+      REDIS_ENDPOINT: redis:6379
+      CADDY_METRICS_ENDPOINT: web:2019
+      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT}
+      SIGNOZ_TLS_INSECURE: ${SIGNOZ_TLS_INSECURE:-false}
+      DEPLOYMENT_ENV: ${APP_ENV}
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   database:
     image: mariadb:11.4
     restart: unless-stopped
@@ -232,6 +267,10 @@ services:
       --binlog-format=ROW
       --expire-logs-days=7
       --max-binlog-size=100M
+      --slow-query-log=1
+      --long-query-time=1
+      --log-queries-not-using-indexes=0
+      --performance-schema=ON
     volumes:
       - mariadb-data:/var/lib/mysql
     networks:
@@ -251,7 +290,11 @@ services:
   redis:
     image: redis:8-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
     volumes:
       - redis-data:/data
     networks:

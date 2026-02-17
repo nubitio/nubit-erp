@@ -11,6 +11,7 @@
 -- Users created:
 --   1. efact_provision  - Provisioning: creates tenant DBs, users, runs migrations
 --   2. efact_backup     - Backups: mariadb-dump, binary logs, retention pruning
+--   3. efact_monitor    - OTEL Collector: read-only metrics scraping
 --
 -- The provisioning user gets broad access because it needs to CREATE DATABASE
 -- with arbitrary names. Each tenant DB user gets scoped grants at provision time.
@@ -59,6 +60,16 @@ GRANT SELECT, INSERT, UPDATE, DELETE
 GRANT SELECT ON efact.tenants TO 'efact_backup'@'%';
 
 -- ------------------------------------
+-- 3. OTEL MONITORING USER
+-- ------------------------------------
+
+CREATE USER IF NOT EXISTS 'efact_monitor'@'%'
+    IDENTIFIED BY 'CHANGE_ME_monitor_password';
+
+-- MySQL receiver: read performance_schema, process list, global status
+GRANT SELECT, PROCESS, REPLICATION CLIENT ON *.* TO 'efact_monitor'@'%';
+
+-- ------------------------------------
 -- Apply
 -- ------------------------------------
 
@@ -69,8 +80,9 @@ FLUSH PRIVILEGES;
 -- ------------------------------------
 
 SELECT User, Host FROM mysql.user
-WHERE User IN ('efact_provision', 'efact_backup')
+WHERE User IN ('efact_provision', 'efact_backup', 'efact_otel')
 ORDER BY User;
 
 SHOW GRANTS FOR 'efact_provision'@'%';
 SHOW GRANTS FOR 'efact_backup'@'%';
+SHOW GRANTS FOR 'efact_otel'@'%';

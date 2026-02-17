@@ -51,7 +51,7 @@ when@prod:
             opentelemetry:
                 type: service
                 id: open_telemetry.monolog.handler
-                level: error
+                level: warning
             console:
                 type: console
                 process_psr_3_messages: false

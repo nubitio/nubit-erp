@@ -3,6 +3,9 @@
     frankenphp {
         {$FRANKENPHP_CONFIG}
     }
+    servers {
+        metrics
+    }
     # Increase default timeouts for slow operations
     grace_period 30s
 }
