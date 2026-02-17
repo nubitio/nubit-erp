@@ -12,7 +12,7 @@ processors:
     timeout: 2s
 
 exporters:
-  otlphttp/signoz:
+  otlp_http/signoz:
     endpoint: ${env:SIGNOZ_ENDPOINT}
 
 extensions:
@@ -25,17 +25,17 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlp_http/signoz]
 
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlp_http/signoz]
 
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlphttp/signoz]
+      exporters: [otlp_http/signoz]
 
   telemetry:
     logs:
