@@ -12,10 +12,8 @@ processors:
     timeout: 2s
 
 exporters:
-  otlp/signoz:
+  otlphttp/signoz:
     endpoint: ${env:SIGNOZ_ENDPOINT}
-    tls:
-      insecure: ${env:SIGNOZ_TLS_INSECURE}
 
 extensions:
   health_check:
@@ -27,20 +25,25 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlphttp/signoz]
 
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlphttp/signoz]
 
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/signoz]
+      exporters: [otlphttp/signoz]
 
   telemetry:
     logs:
       level: info
     metrics:
-      address: 0.0.0.0:8888
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888

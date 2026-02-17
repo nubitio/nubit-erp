@@ -217,6 +217,7 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.145.0
+    user: "0:0"
     restart: unless-stopped
     command: ["--config", "/etc/otelcol-contrib/config.yaml"]
     volumes:
@@ -228,7 +229,7 @@ services:
       MYSQL_MONITORING_PASSWORD: ${OTEL_MYSQL_MONITORING_PASSWORD}
       REDIS_ENDPOINT: redis:6379
       CADDY_METRICS_ENDPOINT: web:2019
-      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-ingest.nubit.io:443}
+      SIGNOZ_ENDPOINT: ${SIGNOZ_ENDPOINT:-https://ingest.nubit.io}
       SIGNOZ_TLS_INSECURE: ${SIGNOZ_TLS_INSECURE:-false}
       DEPLOYMENT_ENV: ${APP_ENV}
     depends_on:

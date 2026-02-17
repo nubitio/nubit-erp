@@ -35,12 +35,13 @@ services:
       OTEL_PHP_LOG_DESTINATION: "stderr"
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.145.0
+    user: "0:0"
     command: ["--config", "/etc/otelcol-contrib/config.yaml"]
     configs:
       - source: otel_collector_dev_config
         target: /etc/otelcol-contrib/config.yaml
     environment:
-      SIGNOZ_ENDPOINT: "ingest.nubit.io:443"
+      SIGNOZ_ENDPOINT: "https://ingest.nubit.io"
       SIGNOZ_TLS_INSECURE: "false"
     ports:
       - '4317:4317'
