@@ -33,6 +33,7 @@ services:
       SERVER_NAME: ${SERVER_NAME}
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
       FRANKENPHP_CONFIG: ${FRANKENPHP_CONFIG}
+      CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-admin 0.0.0.0:2019}
       # OpenTelemetry
       OTEL_PHP_AUTOLOAD_ENABLED: true
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
