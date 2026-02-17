@@ -7,6 +7,7 @@ namespace App\Core\Service;
 use App\Core\Util\Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
@@ -34,7 +35,7 @@ final readonly class BinlogBackupService
     public function backupBinlogs(): array
     {
         $conn = $this->getControlPlaneConnection();
-        $dbConn = $this->getProvisioningConnection();
+        $dbConn = $this->getBackupConnection();
 
         $logBin = $dbConn->fetchAssociative("SHOW VARIABLES LIKE 'log_bin'");
         if ($logBin === false || strtolower((string)($logBin['Value'] ?? '')) !== 'on') {
@@ -184,7 +185,7 @@ final readonly class BinlogBackupService
      */
     public function getCurrentMasterStatus(): array
     {
-        $dbConn = $this->getProvisioningConnection();
+        $dbConn = $this->getBackupConnection();
         $row = $dbConn->fetchAssociative('SHOW MASTER STATUS');
 
         if ($row === false) {
@@ -392,8 +393,17 @@ final readonly class BinlogBackupService
         return $this->connectionRegistry->getConnection('control_plane');
     }
 
-    private function getProvisioningConnection(): Connection
+    private function getBackupConnection(): Connection
     {
-        return $this->connectionRegistry->getConnection('tenant');
+        if ($this->backupDatabaseUrl === '') {
+            return $this->connectionRegistry->getConnection('tenant');
+        }
+
+        /** @var Connection $connection */
+        $connection = DriverManager::getConnection([
+            'url' => $this->backupDatabaseUrl,
+        ]);
+
+        return $connection;
     }
 }
