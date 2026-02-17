@@ -1,0 +1,102 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  mysql:
+    endpoint: ${env:MYSQL_ENDPOINT}
+    username: ${env:MYSQL_MONITORING_USER}
+    password: ${env:MYSQL_MONITORING_PASSWORD}
+    collection_interval: 30s
+    metrics:
+      mysql.buffer_pool.usage:
+        enabled: true
+      mysql.connection.count:
+        enabled: true
+      mysql.query.count:
+        enabled: true
+      mysql.locks:
+        enabled: true
+
+  redis:
+    endpoint: ${env:REDIS_ENDPOINT}
+    collection_interval: 30s
+    metrics:
+      redis.memory.used:
+        enabled: true
+      redis.clients.connected:
+        enabled: true
+      redis.keys.total:
+        enabled: true
+      redis.commands.processed:
+        enabled: true
+      redis.keyspace.hits:
+        enabled: true
+      redis.keyspace.misses:
+        enabled: true
+
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 30s
+    provide_per_core_cpu_metrics: false
+
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: caddy
+          scrape_interval: 30s
+          static_configs:
+            - targets:
+                - ${env:CADDY_METRICS_ENDPOINT}
+
+processors:
+  batch:
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+    timeout: 5s
+
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: ${env:DEPLOYMENT_ENV}
+        action: upsert
+      - key: service.namespace
+        value: efact
+        action: upsert
+
+exporters:
+  otlp/signoz:
+    endpoint: ${env:SIGNOZ_ENDPOINT}
+    tls:
+      insecure: ${env:SIGNOZ_TLS_INSECURE}
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/signoz]
+
+    metrics:
+      receivers: [otlp, mysql, redis, docker_stats, prometheus]
+      processors: [batch, resource]
+      exporters: [otlp/signoz]
+
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/signoz]
+
+  telemetry:
+    logs:
+      level: warn
+    metrics:
+      address: 0.0.0.0:8888

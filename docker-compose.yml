@@ -28,11 +28,23 @@ services:
       OTEL_LOGS_EXPORTER: "otlp"
       OTEL_METRICS_EXPORTER: "otlp"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://ingest.nubit.io"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
       OTEL_PROPAGATORS: "baggage,tracecontext"
       OTEL_TRACES_SAMPLER: "always_on"
       OTEL_LOG_LEVEL: "debug"
       OTEL_PHP_LOG_DESTINATION: "stderr"
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    command: ["--config", "/etc/otelcol/otel-collector.yaml"]
+    volumes:
+      - ./docker/otel/otel-collector.dev.yaml:/etc/otelcol/otel-collector.yaml:ro
+    environment:
+      SIGNOZ_ENDPOINT: "https://ingest.nubit.io"
+      SIGNOZ_TLS_INSECURE: "false"
+    ports:
+      - '4317:4317'
+      - '4318:4318'
+
   database:
     image: mariadb:11.4
     environment:
