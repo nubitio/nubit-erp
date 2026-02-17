@@ -29,8 +29,6 @@ receivers:
         enabled: true
       redis.clients.connected:
         enabled: true
-      redis.keys.total:
-        enabled: true
       redis.commands.processed:
         enabled: true
       redis.keyspace.hits:
@@ -41,7 +39,6 @@ receivers:
   docker_stats:
     endpoint: unix:///var/run/docker.sock
     collection_interval: 30s
-    provide_per_core_cpu_metrics: false
 
   prometheus:
     config:
