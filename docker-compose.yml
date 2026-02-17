@@ -36,10 +36,11 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.120.0
     command: ["--config", "/etc/otelcol-contrib/config.yaml"]
-    volumes:
-      - ./docker/otel/otel-collector.dev.yaml:/etc/otelcol-contrib/config.yaml:ro
+    configs:
+      - source: otel_collector_dev_config
+        target: /etc/otelcol-contrib/config.yaml
     environment:
-      SIGNOZ_ENDPOINT: "https://ingest.nubit.io"
+      SIGNOZ_ENDPOINT: "ingest.nubit.io:443"
       SIGNOZ_TLS_INSECURE: "false"
     ports:
       - '4317:4317'
@@ -72,3 +73,7 @@ services:
 
 volumes:
   db-data:
+
+configs:
+  otel_collector_dev_config:
+    file: ./docker/otel/otel-collector.dev.yaml
