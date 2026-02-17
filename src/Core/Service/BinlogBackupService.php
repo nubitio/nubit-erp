@@ -400,10 +400,52 @@ final readonly class BinlogBackupService
         }
 
         /** @var Connection $connection */
-        $connection = DriverManager::getConnection([
-            'url' => $this->backupDatabaseUrl,
-        ]);
+        $connection = DriverManager::getConnection($this->buildBackupConnectionParams($this->backupDatabaseUrl));
 
         return $connection;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildBackupConnectionParams(string $url): array
+    {
+        $parts = parse_url($url);
+        if ($parts === false) {
+            throw new RuntimeException('Invalid BACKUP_DATABASE_URL.');
+        }
+
+        $query = [];
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $query);
+        }
+
+        $params = [
+            'driver' => 'pdo_mysql',
+            'host' => $parts['host'] ?? null,
+            'port' => isset($parts['port']) ? (int)$parts['port'] : 3306,
+            'user' => isset($parts['user']) ? urldecode($parts['user']) : null,
+            'password' => isset($parts['pass']) ? urldecode($parts['pass']) : null,
+        ];
+
+        if (!empty($parts['path']) && $parts['path'] !== '/') {
+            $params['dbname'] = ltrim($parts['path'], '/');
+        }
+
+        if (isset($query['serverVersion']) && $query['serverVersion'] !== '') {
+            $params['serverVersion'] = (string)$query['serverVersion'];
+        }
+        if (isset($query['charset']) && $query['charset'] !== '') {
+            $params['charset'] = (string)$query['charset'];
+        }
+        if (isset($query['unix_socket']) && $query['unix_socket'] !== '') {
+            $params['unix_socket'] = (string)$query['unix_socket'];
+        }
+
+        if (empty($params['host']) && empty($params['unix_socket'])) {
+            throw new RuntimeException('Backup DB host or unix_socket is required in BACKUP_DATABASE_URL.');
+        }
+
+        return $params;
     }
 }
