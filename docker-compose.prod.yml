@@ -220,10 +220,8 @@ services:
     restart: unless-stopped
     command: ["--config", "/etc/otelcol-contrib/config.yaml"]
     volumes:
+      - /opt/efact/otel/config.yaml:/etc/otelcol-contrib/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    configs:
-      - source: otel_collector_config
-        target: /etc/otelcol-contrib/config.yaml
     environment:
       MYSQL_ENDPOINT: database:3306
       MYSQL_MONITORING_USER: efact_monitor
@@ -322,10 +320,6 @@ volumes:
     driver: local
   redis-data:
     driver: local
-
-configs:
-  otel_collector_config:
-    file: ./docker/otel/otel-collector.yaml
 
 networks:
   default:
