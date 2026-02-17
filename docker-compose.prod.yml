@@ -218,9 +218,9 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.120.0
     restart: unless-stopped
-    command: ["--config", "/etc/otelcol/otel-collector.yaml"]
+    command: ["--config", "/etc/otelcol-contrib/config.yaml"]
     volumes:
-      - ./docker/otel/otel-collector.yaml:/etc/otelcol/otel-collector.yaml:ro
+      - ./docker/otel/otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       MYSQL_ENDPOINT: database:3306
