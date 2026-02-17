@@ -234,7 +234,6 @@ services:
       --max-binlog-size=100M
     volumes:
       - mariadb-data:/var/lib/mysql
-      - ./scripts/setup-mariadb-users.sql:/docker-entrypoint-initdb.d/01-setup-users.sql:ro
     networks:
       - default
     healthcheck:
