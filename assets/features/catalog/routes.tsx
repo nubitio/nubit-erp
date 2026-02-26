@@ -1,30 +1,18 @@
 import type { AppRouteDefinition } from '@app/router/types';
-import { lazyNamed } from '@app/router/lazy';
-
-const ProductPage = lazyNamed(() => import('@pages/Product/ProductPage'), 'ProductPage');
-const CategoryPage = lazyNamed(() => import('@pages/Category/CategoryPage'), 'CategoryPage');
-const CustomerPage = lazyNamed(() => import('@pages/Customer/CustomerPage'), 'CustomerPage');
-const WarehousePage = lazyNamed(() => import('@pages/Warehouse/WarehousePage'), 'WarehousePage');
-const PriceListPage = lazyNamed(() => import('@pages/PriceList/PriceListPage'), 'PriceListPage');
-const SupplierPage = lazyNamed(() => import('@pages/Supplier/SupplierPage'), 'SupplierPage');
-const UnitOfMeasurePage = lazyNamed(
-  () => import('@pages/UnitOfMeasure/UnitOfMeasurePage'),
-  'UnitOfMeasurePage',
-);
-const SunatCatalogPage = lazyNamed(
-  () => import('@pages/SunatCatalog/SunatCatalogPage'),
-  'SunatCatalogPage',
-);
-const VoucherSeriesPage = lazyNamed(
-  () => import('@pages/VoucherSeries/VoucherSeriesPage'),
-  'VoucherSeriesPage',
-);
-const VoucherTypePage = lazyNamed(() => import('@pages/VoucherType/VoucherTypePage'), 'VoucherTypePage');
-const PaymentMethodPage = lazyNamed(
-  () => import('@pages/PaymentMethod/PaymentMethodPage'),
-  'PaymentMethodPage',
-);
-const OperationPage = lazyNamed(() => import('@pages/Operation/OperationPage'), 'OperationPage');
+import {
+  CategoryPage,
+  CustomerPage,
+  OperationPage,
+  PaymentMethodPage,
+  PriceListPage,
+  ProductPage,
+  SunatCatalogPage,
+  SupplierPage,
+  UnitOfMeasurePage,
+  VoucherSeriesPage,
+  VoucherTypePage,
+  WarehousePage,
+} from './route-pages';
 
 export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/product', element: ProductPage },

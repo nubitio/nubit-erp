@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { FORM_EVENTS, type DxFormEvents } from '@platform/form/DxForm';
-import { loadMovementItemsOnEdit } from '@features/movement';
+import { loadMovementItemsOnEdit } from '../lib/loadMovementItemsOnEdit';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
