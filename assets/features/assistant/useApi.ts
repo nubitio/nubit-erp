@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { type ChatTypes } from 'devextreme-react/chat';
 import { CustomStore, DataSource } from 'devextreme-react/common/data';
 import { ALERT_TIMEOUT, assistant, REGENERATION_TEXT } from './data';
-import { assistantService, type AssistantChatMessage } from '../../service/assistant.service';
+import { assistantService, type AssistantChatMessage } from '../../features/assistant';
 
 const wait = (delay: number): Promise<void> =>
   new Promise((resolve) => {

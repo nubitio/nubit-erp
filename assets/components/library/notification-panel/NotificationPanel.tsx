@@ -3,8 +3,6 @@ import React, { useEffect, useState } from 'react';
 
 import './NotificationPanel.scss';
 import { useNavigate } from 'react-router-dom';
-import { httpClient } from '../../../core/http/HttpClient';
-import { Constants } from '../../../core/common/Constants';
 
 interface NotificationPanelProps {
   visible: boolean;
@@ -13,7 +11,7 @@ interface NotificationPanelProps {
 
 const NotificationPanel = (props: NotificationPanelProps) => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages] = useState<any[]>([]);
 
   const showAll = () => {
     navigate('/message');

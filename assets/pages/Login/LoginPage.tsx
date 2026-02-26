@@ -1,8 +1,6 @@
 import { useScreenSizeClass } from '../../utils/media-query';
 import { useEffect } from 'react';
-import { loadMessages, locale } from 'devextreme/localization';
-import config from 'devextreme/core/config';
-import esMessages from 'devextreme/localization/messages/es.json';
+import { configureDevExtreme } from '@app/providers/devextreme';
 
 import '../../styles.scss';
 import '../../theme/theme';
@@ -13,11 +11,7 @@ export const LoginPage = () => {
   const screenSizeClass = useScreenSizeClass();
 
   useEffect(() => {
-    loadMessages(esMessages);
-    locale('es-PE');
-    config({
-      defaultCurrency: 'PEN',
-    });
+    configureDevExtreme();
   }, []);
 
   return (

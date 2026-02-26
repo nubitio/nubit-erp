@@ -1,14 +1,20 @@
 import './CreditNotePage.scss';
-import {Constants} from '../../core/common/Constants';
-import {DxDataGrid, DxDataGridEvents} from '../../core/datagrid/DxDataGrid';
-import {DxDialog} from '../../core/dialog/DxDialog';
-import {DxForm, DxFormEvents, FORM_EVENTS} from '../../core/form/DxForm';
-import {CreditNoteDetailFields, CreditNoteFields} from './CreditNoteFields';
-import {useEffect, useRef, useState} from 'react';
-import toast from "../../core/utils/SharedUtils";
-import {taxDocumentService} from "../../service/taxDocument.service";
-import {useEvents} from "../../core/event/EventHook";
-import {httpClient} from "../../core/http/HttpClient";
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
+import { useRef } from 'react';
+import toast from '@shared/lib/SharedUtils';
+import { useEvents } from '@platform/event/EventHook';
+import {
+  createCreditNoteToolbar,
+  creditNoteEvents,
+  runOpenCreditNoteReceiptAction,
+  runSendCreditNoteToSunatAction,
+  useCreditNoteRelatedDocumentObserver,
+  useCreditNoteSelectionState,
+} from '@features/creditNote';
 
 export const CreditNotePage = () => {
   const [on] = useEvents();
@@ -17,97 +23,25 @@ export const CreditNotePage = () => {
   const detailFields = CreditNoteDetailFields();
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
-  const [editDisabled, setEditDisabled] = useState<boolean>(true);
-  const [deleteDisabled, setDeleteDisabled] = useState<boolean>(true);
+  const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
 
   const API_URL = Constants.API_BASE_URL + 'tax-documents';
 
-  const EVENTS = {
-    ADD: 'credit-note:add',
-    EDIT: 'credit-note:edit',
-    DELETE: 'credit-note:delete',
-    SAVE: 'credit-note:save',
-    CANCEL: 'credit-note:cancel',
-    SUCCESS: 'credit-note:success',
-    LOADING: 'credit-note:loading',
+  useCreditNoteRelatedDocumentObserver({ on, apiUrl: API_URL, formRef });
+
+  const actionDeps = {
+    getSelectedRow: () => gridRef.current?.getSelectedRow(),
+    showLoading: (message?: string) => gridRef.current?.showLoading(message),
+    hideLoading: () => gridRef.current?.hideLoading(),
+    refreshGrid: () => gridRef.current?.refresh(),
+    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => toast(message, type),
   };
 
-  useEffect(() => {
-    on<{ field: string; value: any }>(FORM_EVENTS.FIELD_CHANGED, ({field, value}) => {
-      if (field !== 'relatedTaxDocument') return;
-      if (!value) {
-        formRef.current?.setDetailData([]);
-        return;
-      }
-      httpClient
-        .get<any>(`${API_URL}/${value}/lines`)
-        .subscribe((response) => {
-          formRef.current?.setDetailData(response.data ?? []);
-        });
-    });
-  }, []);
-
-  const toolbar = [
-    {
-      text: 'Enviar a SUNAT',
-      type: 'info',
-      onClick: () => {
-        const selectedRow = gridRef.current?.getSelectedRow();
-        if (selectedRow) {
-          if (selectedRow.sunatStatus === '0') {
-            toast(
-              "El comprobante ya fue enviado a SUNAT",
-              "warning",
-            )
-            return;
-          }
-
-          gridRef.current?.showLoading('Enviando comprobante a SUNAT...');
-          taxDocumentService.sendDocument(selectedRow.id)
-            .subscribe((response) => {
-              toast(
-                response.data.message,
-                response.data.success ? "success" : "error"
-              )
-              gridRef.current?.refresh();
-            })
-            .add(() => {
-              gridRef.current?.hideLoading();
-            });
-        } else {
-          toast(
-            "Debe seleccionar una nota",
-            "warning",
-          )
-        }
-      },
-    },
-    {
-      text: 'Enviar por correo',
-      type: 'success',
-      onClick: () => {
-        toast(
-          "Funcionalidad no implementada",
-          "warning",
-        )
-      },
-    },
-    {
-      text: 'Ver',
-      type: 'primary',
-      onClick: () => {
-        const selectedRow = gridRef.current?.getSelectedRow();
-        if (!selectedRow) {
-          toast(
-            "Debe seleccionar una nota",
-            "warning"
-          )
-          return;
-        }
-        window.open(selectedRow.publicReceiptUrl, '_blank');
-      },
-    },
-  ];
+  const toolbar = createCreditNoteToolbar({
+    onSendSunat: () => runSendCreditNoteToSunatAction(actionDeps),
+    onSendEmail: () => toast('Funcionalidad no implementada', 'warning'),
+    onView: () => runOpenCreditNoteReceiptAction(actionDeps),
+  });
 
   return (
     <div id={container}>
@@ -125,15 +59,10 @@ export const CreditNotePage = () => {
         editDisabled={editDisabled}
         deleteDisabled={deleteDisabled}
         fields={fields}
-        events={EVENTS}
-        onSelectionChanged={(e) => {
-          const selectedRow = e.component.getSelectedRowsData()[0];
-          const isPending = selectedRow.sunatStatus === undefined;
-          setEditDisabled(!isPending);
-          setDeleteDisabled(!isPending);
-        }}
+        events={creditNoteEvents}
+        onSelectionChanged={handleSelectionChanged}
       />
-      <DxDialog width={1200} height={720} events={EVENTS}>
+      <DxDialog width={1200} height={720} events={creditNoteEvents}>
         <DxForm
           ref={formRef}
           url={API_URL}
@@ -145,7 +74,7 @@ export const CreditNotePage = () => {
           allowDeleting={true}
           allowUpdating={true}
           requiredDetail={true}
-          events={EVENTS}
+          events={creditNoteEvents}
           useIRI={true}
         />
       </DxDialog>

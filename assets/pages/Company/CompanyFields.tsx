@@ -1,12 +1,12 @@
 import { Field } from '../../core/field/Field';
 import { FieldBuilder } from '../../core/field/FieldBuilder';
 import { FieldType } from '../../core/field/FieldType';
-import toast, { SharedUtils } from '../../core/utils/SharedUtils';
+import toast, { SharedUtils } from '../../shared/lib/SharedUtils';
 import { Constants } from '../../core/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import { textField } from '../../core/field/TextFieldBuilder';
 import { DxFormEvents } from '../../core/form/DxForm';
-import { consultService } from '../../service/consult.service';
+import { consultService } from '../../features/consult';
 
 export const CompanyFields = (formRef: DxFormEvents | null) => {
   const fields: Field[] = [];

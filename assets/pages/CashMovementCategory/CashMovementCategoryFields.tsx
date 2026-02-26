@@ -1,8 +1,8 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { SharedUtils } from '../../core/utils/SharedUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashMovementCategoryFields = () => {
   const fields: Field[] = [];

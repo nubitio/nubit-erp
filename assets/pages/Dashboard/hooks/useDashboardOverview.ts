@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Subscription } from 'rxjs';
-import { httpClient } from '../../../core/http/HttpClient';
+import { httpClient } from '../../../shared/api/HttpClient';
 import { Constants } from '../../../core/common/Constants';
-import toast from '../../../core/utils/SharedUtils';
+import toast from '../../../shared/lib/SharedUtils';
 import { DashboardData } from '../types';
 
 const initialData: DashboardData = {

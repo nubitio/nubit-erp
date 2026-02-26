@@ -1,0 +1,1 @@
+export { voucherTypeEvents } from './events';

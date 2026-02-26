@@ -1,10 +1,10 @@
-import {Field} from '../../core/field/Field';
-import {FieldBuilder} from '../../core/field/FieldBuilder';
-import {FieldType} from '../../core/field/FieldType';
-import {Constants} from '../../core/common/Constants';
-import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
-import {SharedUtils} from '../../core/utils/SharedUtils';
-import NumberUtils from '../../core/utils/NumberUtils';
+import { Constants } from '@platform/common/Constants';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import NumberUtils from '@shared/lib/NumberUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
+import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 const reasonCodes: { value: string; text: string }[] = [
   {
@@ -81,7 +81,7 @@ export const CreditNoteFields = () => {
       .itemFormatter((data: any) => {
         return (
           <div>
-            <b>{data.series + '-' + data.number ?? ''}</b>
+            <b>{`${data.series ?? ''}-${data.number ?? ''}`}</b>
             <br/>
             {data.customer?.businessName ?? ''}
             <br/>

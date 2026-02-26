@@ -1,6 +1,6 @@
 import {Field} from '../field/Field';
 import {FieldType} from '../field/FieldType';
-import {dxUtils} from '../common/DxUtils';
+import { dxUtils } from '../../shared/data/DxUtils';
 import {
   CompareRule,
   CustomRule,
@@ -80,14 +80,13 @@ export const buildField = (
                 formRef.current?.instance()?.getEditor(field.name)?.option('value', v);
               }
             })
-            .catch((err: any) => {
-              // Non-blocking: just log for debugging
-              console.debug('auto-select single entity failed for', field.name, err);
+            .catch((_err: any) => {
+              // Non-blocking: ignore when auto-select cannot resolve
             });
         }
       }
-    } catch (e) {
-      console.debug('auto-select logic error for field', field.name, e);
+    } catch (_e) {
+      // Ignore optional auto-select setup failures.
     }
   }
   if (field.type === FieldType.ENUM || field.type === FieldType.SELECT) {
@@ -109,15 +108,13 @@ export const buildField = (
         accept: field.accept,
         uploadUrl: field.url,
         name: 'file',
-        onBeforeSend: (e: any) => {
-        },
+        onBeforeSend: (_e: any) => {},
         onUploaded: (e: any) => {
           const response = JSON.parse(e.request.response);
           uploadedFiles.current.push({
             name: field.name,
             iri: getIRI(field.url ?? '', response.id.toString()),
           });
-          console.log(uploadedFiles.current);
         },
       };
     }
@@ -229,19 +226,29 @@ export const buildField = (
     ...field.editorOptions,
   };
 
+  const shouldHideLabel = [FieldType.CHECKBOX, FieldType.SWITCH].includes(field.type);
+  const useFloatingEditorLabel = !shouldHideLabel && field.type !== FieldType.FILE && field.type !== FieldType.HTML;
+
+  if (useFloatingEditorLabel) {
+    editorOptions = {
+      ...editorOptions,
+      label: field.label,
+      labelMode: 'floating',
+    };
+  }
+
   if (field.buttons && field.buttons.length > 0) {
     editorOptions.buttons = [...(editorOptions.buttons ?? []), ...(field.buttons ?? [])];
   }
 
   const className = field.hidden ? 'dx-hidden' : '';
-  const shouldHideLabel = true; // For checkboxes and switches, we use the editor's built-in label, so we hide the form label to avoid duplication
 
   return (
     <SimpleItem
       key={key}
       dataField={field.name}
       editorType={getEditorType(field)}
-      label={{text: field.label, visible: !shouldHideLabel}}
+      label={{text: field.label, visible: !useFloatingEditorLabel && !shouldHideLabel}}
       isRequired={field.required}
       editorOptions={editorOptions}
       helpText={field.helpText}

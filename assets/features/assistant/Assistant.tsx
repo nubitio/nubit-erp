@@ -4,7 +4,7 @@ import { loadMessages } from 'devextreme-react/common/core/localization';
 import { assistant, CHAT_DISABLED_CLASS, user } from './data';
 import Message from './Message';
 import { dataSource, useApi } from './useApi';
-import { AppToolbar } from '../../components/utils/toolbar/AppToolbar';
+import { AppToolbar } from '../../shared/ui/toolbar/AppToolbar';
 
 loadMessages({
   es: {

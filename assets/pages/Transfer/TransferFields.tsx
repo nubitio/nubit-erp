@@ -1,10 +1,10 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import { StorageUtils } from '../../core/utils/StorageUtils';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import { SharedUtils } from '@shared/lib/SharedUtils';
+import { StorageUtils } from '@shared/lib/StorageUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { SharedUtils } from '../../core/utils/SharedUtils';
 
 export const TransferFields = () => {
   const fields: Field[] = [];

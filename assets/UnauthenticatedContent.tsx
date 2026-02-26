@@ -1,7 +1,12 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { LoginPage } from './pages/Login/LoginPage';
-import { InitialSetupPage } from './pages/InitialSetup/InitialSetupPage';
+import { lazyNamed } from './routes/lazy';
+
+const LoginPage = lazyNamed(() => import('./pages/Login/LoginPage'), 'LoginPage');
+const InitialSetupPage = lazyNamed(
+  () => import('./pages/InitialSetup/InitialSetupPage'),
+  'InitialSetupPage',
+);
 
 export const UnauthenticatedContent = () => {
   return (

@@ -1,5 +1,5 @@
 import { DataGrid } from 'devextreme-react';
-import { dxUtils } from '../common/DxUtils';
+import { dxUtils } from '../../shared/data/DxUtils';
 import CustomStore from 'devextreme/data/custom_store';
 import { useEffect, useState } from 'react';
 import { buildColumns, getIdField } from './DxDataGridUtils';
@@ -14,7 +14,7 @@ export const DxDetailDataGrid = ({ options }: DxDetailDataGridProps) => {
 
   useEffect(() => {
     setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
-  }, []);
+  }, [options.fields, options.url]);
 
   return (
     <div className="grid-detail">

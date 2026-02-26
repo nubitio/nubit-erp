@@ -40,6 +40,35 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'prefer-const': 'warn',
     'no-var': 'warn',
+    'no-restricted-imports': [
+      'warn',
+      {
+        patterns: [
+          {
+            group: ['**/assets/service/*', './service/*', '../service/*', '../../service/*'],
+            message: 'Use `assets/features/*` exports directly; `assets/service/*` is legacy compatibility.',
+          },
+          {
+            group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
+            message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+          },
+          {
+            group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
+            message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
+          },
+        ],
+        paths: [
+          {
+            name: '@widgets/utils/toolbar/AppToolbar',
+            message: 'Use `@shared/ui/toolbar/AppToolbar` directly.',
+          },
+          {
+            name: '@widgets/utils/async-state/AsyncState',
+            message: 'Use `@shared/ui/async-state/AsyncState` directly.',
+          },
+        ],
+      },
+    ],
   },
   ignorePatterns: [
     'node_modules/',
@@ -48,5 +77,91 @@ module.exports = {
     'vendor/',
     'dist/',
     '*.min.js',
+  ],
+  overrides: [
+    {
+      files: ['assets/shared/**/*.{ts,tsx,js,jsx}'],
+      rules: {
+        'no-restricted-imports': [
+          'warn',
+          {
+            patterns: [
+              {
+                group: ['**/assets/service/*', './service/*', '../service/*', '../../service/*'],
+                message:
+                  'Use `assets/features/*` exports directly; `assets/service/*` is legacy compatibility.',
+              },
+              {
+                group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
+                message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+              },
+              {
+                group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
+                message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
+              },
+              {
+                group: ['@features/*', '**/features/**'],
+                message: 'Layer violation: `shared` must not import `features`.',
+              },
+              {
+                group: ['@pages/*', '**/pages/**'],
+                message: 'Layer violation: `shared` must not import `pages`.',
+              },
+            ],
+            paths: [
+              {
+                name: '@widgets/utils/toolbar/AppToolbar',
+                message: 'Use `@shared/ui/toolbar/AppToolbar` directly.',
+              },
+              {
+                name: '@widgets/utils/async-state/AsyncState',
+                message: 'Use `@shared/ui/async-state/AsyncState` directly.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      files: ['assets/features/**/*.{ts,tsx,js,jsx}'],
+      excludedFiles: ['assets/features/**/routes.ts', 'assets/features/**/routes.tsx'],
+      rules: {
+        'no-restricted-imports': [
+          'warn',
+          {
+            patterns: [
+              {
+                group: ['**/assets/service/*', './service/*', '../service/*', '../../service/*'],
+                message:
+                  'Use `assets/features/*` exports directly; `assets/service/*` is legacy compatibility.',
+              },
+              {
+                group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
+                message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+              },
+              {
+                group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
+                message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
+              },
+              {
+                group: ['@pages/*', '../../../pages/**', '../../../../pages/**', '../../pages/**'],
+                message:
+                  'Layer violation: feature internals should not import top-level `pages` (route composition only).',
+              },
+            ],
+            paths: [
+              {
+                name: '@widgets/utils/toolbar/AppToolbar',
+                message: 'Use `@shared/ui/toolbar/AppToolbar` directly.',
+              },
+              {
+                name: '@widgets/utils/async-state/AsyncState',
+                message: 'Use `@shared/ui/async-state/AsyncState` directly.',
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
 };

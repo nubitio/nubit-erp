@@ -1,23 +1,23 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import { Constants } from '../../core/common/Constants';
-import toast, { SharedUtils } from '../../core/utils/SharedUtils';
+import { Constants } from '@platform/common/Constants';
+import { dispatch } from '@platform/event/EventHook';
+import { DxFormEvents } from '@platform/form/DxForm';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import { userInformation } from '@platform/common/UserInformation';
+import toast, { SharedUtils } from '@shared/lib/SharedUtils';
+import NumberUtils from '@shared/lib/NumberUtils';
+import { httpClient } from '@shared/api/HttpClient';
+import { productService } from '@features/product';
+import { GetStockUseCase } from '@assets/common/GetStockUseCase';
+import { ProductDto } from '@dto/product.dto';
+import { PriceListItemDto } from '@dto/PriceListItemDto';
+import { DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
+import { Setting, settings } from '@assets/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import NumberUtils from '../../core/utils/NumberUtils';
-import { ProductDto } from '../../dto/product.dto';
-import { productService } from '../../service/product.service';
-import { GetStockUseCase } from '../../common/GetStockUseCase';
 import notify from 'devextreme/ui/notify';
-import { DxFormEvents } from '../../core/form/DxForm';
-import { httpClient } from '../../core/http/HttpClient';
-import { PriceListItemDto } from '../../dto/PriceListItemDto';
 import { lastValueFrom } from 'rxjs';
-import { DiscountDialogEvent } from '../../components/discount-dialog/DiscountDialog';
-import { Setting, settings } from '../../Settings';
 import { CustomerPage } from '../Customer/CustomerPage';
-import { dispatch } from '../../core/event/EventHook';
-import { userInformation } from '../../core/common/UserInformation';
 
 let priceList: PriceListItemDto[] = [];
 let selectedWarehouseId = '';
@@ -104,7 +104,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
           options: {
             icon: 'add',
             stylingMode: 'text',
-            onClick: (e: any) => {
+            onClick: (_e: any) => {
               dispatch(CustomerPage.EVENTS.ADD);
             },
           },
@@ -184,13 +184,13 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .align('right')
       .defaultValue(0)
       .readonly(true)
-      .onClick((e: any) => {
+      .onClick((_e: any) => {
         const total = form?.getFieldValue('total');
         let discountPercent = form?.getFieldValue('descuento');
         discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
         dispatch(DiscountDialogEvent.OPEN, { total, discountPercent });
       })
-      .onChange((e: any) => {
+      .onChange((_e: any) => {
         setTotal(form);
       })
       .sendAsString(true)

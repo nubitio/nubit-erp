@@ -1,4 +1,4 @@
-import { productService } from '../service/product.service';
+import { productService } from '../features/product';
 import { lastValueFrom } from 'rxjs';
 
 export const GetStockUseCase = async (productId: string, warehouseId: string) => {

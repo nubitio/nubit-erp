@@ -1,14 +1,2 @@
-import { httpClient } from '../core/http/HttpClient';
-import { SideNavigationItem } from '../components/library/side-navigation-menu/SideNavigationMenu';
-import { Constants } from '../core/common/Constants';
-
-class MenuService {
-  getMenuByRoleId(roleId: number) {
-    if (roleId === null || roleId === undefined) {
-      roleId = 0;
-    }
-    return httpClient.get<SideNavigationItem[]>(Constants.API_BASE_URL + `menu/${roleId}`);
-  }
-}
-
-export const menuService = new MenuService();
+/** @deprecated Import from `assets/features/navigation` instead. */
+export { menuService } from '../features/navigation';

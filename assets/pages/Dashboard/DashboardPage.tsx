@@ -26,7 +26,7 @@ import { StatCard } from '../../components/dashboard/StatCard';
 import { currencyFormatter, decimalFormatter } from '../../components/dashboard/formatters';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { CashRegisterStatus } from './types';
-import { httpClient } from '../../core/http/HttpClient';
+import { httpClient } from '../../shared/api/HttpClient';
 import { Constants } from '../../core/common/Constants';
 import toast from '../../core/utils/SharedUtils';
 

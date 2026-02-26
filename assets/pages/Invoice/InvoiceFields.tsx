@@ -1,10 +1,10 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
+import { Constants } from '@platform/common/Constants';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import NumberUtils from '@shared/lib/NumberUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import NumberUtils from '../../core/utils/NumberUtils';
-import { SharedUtils } from '../../core/utils/SharedUtils';
-import { Constants } from '../../core/common/Constants';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];

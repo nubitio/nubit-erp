@@ -1,8 +1,9 @@
 import './CashRegisterShiftsPage.scss';
-import { useNavigate, useParams } from 'react-router-dom';
-import { DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
+import { useParams } from 'react-router-dom';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { CashRegisterShiftsFields } from './CashRegisterShiftsFields';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { createCashRegisterShiftsToolbar } from '@features/cashRegister';
 import { useRef } from 'react';
 
 type CashRegisterShiftParams = {
@@ -11,23 +12,17 @@ type CashRegisterShiftParams = {
 
 export const CashRegisterShiftsPage = () => {
   const { id } = useParams<CashRegisterShiftParams>();
-  const navigate = useNavigate();
   const gridRef = useRef<DxDataGridEvents>(null);
   const fields = CashRegisterShiftsFields();
   const API_URL = `${Constants.API_BASE_URL}cash-registers/${id}/shifts`;
 
-  const toolbar = [
-    {
-      text: 'Exportar PDF',
-      icon: 'print',
-      type: 'default',
-      onClick: () => {
-        const row = gridRef.current?.getSelectedRow();
-        if (!row) return;
-        window.open(`${Constants.API_BASE_URL}cash-shifts/${row.id}/closure-report`, '_blank');
-      },
+  const toolbar = createCashRegisterShiftsToolbar({
+    onExportPdf: () => {
+      const row = gridRef.current?.getSelectedRow();
+      if (!row) return;
+      window.open(`${Constants.API_BASE_URL}cash-shifts/${row.id}/closure-report`, '_blank');
     },
-  ];
+  });
 
   return (
     <div id="wrapper">

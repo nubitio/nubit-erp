@@ -4,7 +4,7 @@ import Form, { ButtonItem, ButtonOptions, Item, Label, RequiredRule } from 'deve
 import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
-import { authService } from '../../../service/auth.service';
+import { authService } from '../../../features/auth';
 import { BranchPicker } from '../../utils/branch-picker/BranchPicker';
 
 export const LoginForm = () => {
@@ -23,7 +23,7 @@ export const LoginForm = () => {
     setLoading(true);
 
     authService.login(username, password).subscribe({
-      next: (response) => {
+      next: (_response) => {
         setShowLocalPicker(true);
       },
       error: (error) => {

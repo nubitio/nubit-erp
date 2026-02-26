@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { Card } from '../../components';
 import SelectBox from 'devextreme-react/select-box';
-import { DateUtils } from '../../core/utils/DateUtils';
+import { DateUtils } from '../../shared/lib/DateUtils';
 import {Constants} from "../../core/common/Constants";
 
 const reportTypes = [

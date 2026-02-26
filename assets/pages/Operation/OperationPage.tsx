@@ -1,8 +1,9 @@
 import './OperationPage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { operationEvents } from '@features/operation';
 import { OperationFields } from './OperationFields';
 
 export const OperationPage = () => {
@@ -10,16 +11,6 @@ export const OperationPage = () => {
   const fields = OperationFields();
 
   const API_URL = Constants.API_BASE_URL + 'logistic-operations';
-
-  const EVENTS = {
-    ADD: 'operation:add',
-    EDIT: 'operation:edit',
-    DELETE: 'operation:delete',
-    SAVE: 'operation:save',
-    CANCEL: 'operation:cancel',
-    SUCCESS: 'operation:success',
-    LOADING: 'operation:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const OperationPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={operationEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={operationEvents}>
+        <DxForm url={API_URL} fields={fields} events={operationEvents} />
       </DxDialog>
     </div>
   );

@@ -1,8 +1,8 @@
 import './CustomerPage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '../../core/form/DxForm';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { customerApiUrl, customerEvents } from '@features/customer';
 import { CustomerFields } from './CustomerFields';
 import { useRef } from 'react';
 
@@ -16,33 +16,24 @@ export const CustomerPage = () => {
       <DxDataGrid
         id={'customer'}
         title={'Clientes'}
-        url={CustomerPage.API_URL}
+        url={customerApiUrl}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={CustomerPage.EVENTS}
+        events={customerEvents}
       />
-      <DxDialog events={CustomerPage.EVENTS}>
+      <DxDialog events={customerEvents}>
         <DxForm
           ref={formRef}
-          url={CustomerPage.API_URL}
+          url={customerApiUrl}
           fields={fields}
-          events={CustomerPage.EVENTS}
+          events={customerEvents}
         />
       </DxDialog>
     </div>
   );
 };
 
-CustomerPage.EVENTS = {
-  ADD: 'customer:add',
-  EDIT: 'customer:edit',
-  DELETE: 'customer:delete',
-  SAVE: 'customer:save',
-  CANCEL: 'customer:cancel',
-  SUCCESS: 'customer:success',
-  LOADING: 'customer:loading',
-};
-
-CustomerPage.API_URL = Constants.API_BASE_URL + 'customers';
+CustomerPage.EVENTS = customerEvents;
+CustomerPage.API_URL = customerApiUrl;

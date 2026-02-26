@@ -1,11 +1,2 @@
-import { AxiosResponse, AxiosResponseHeaders } from 'axios';
-
-export default class ApiResponse<T> {
-  headers: any;
-  data: T;
-
-  constructor(response: AxiosResponse<T>) {
-    this.headers = response.headers;
-    this.data = response.data;
-  }
-}
+/** @deprecated Import from `assets/shared/api/ApiResponse` instead. */
+export { default } from '../../shared/api/ApiResponse';

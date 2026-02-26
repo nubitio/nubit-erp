@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import POSPage from './pages/POS/POSPage';
+
+const POSPage = lazy(() => import('./pages/POS/POSPage'));
 
 export const FullScreenContent = () => {
   return (

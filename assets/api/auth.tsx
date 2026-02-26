@@ -1,6 +1,6 @@
 import { User } from '../types';
-import { StorageUtils } from '../core/utils/StorageUtils';
-import { branchService } from '../service/branch.service';
+import { StorageUtils } from '../shared/lib/StorageUtils';
+import { branchService } from '../features/branch';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 export async function signIn(email: string, password: string) {

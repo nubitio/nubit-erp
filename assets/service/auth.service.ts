@@ -1,24 +1,2 @@
-import { httpClient } from '../core/http/HttpClient';
-import AuthResponse from '../core/http/AuthResponse';
-import { Constants } from '../core/common/Constants';
-
-class AuthService {
-  login(username: string, password: string) {
-    return httpClient.post<AuthResponse>(Constants.API_BASE_URL + 'auth/login', {
-      username,
-      password,
-    });
-  }
-
-  selectBranch(branchId: string) {
-    return httpClient.post<AuthResponse>(Constants.API_BASE_URL + 'auth/select-branch', {
-      branchId,
-    });
-  }
-
-  logout() {
-    return httpClient.post(Constants.API_BASE_URL + 'auth/logout');
-  }
-}
-
-export const authService = new AuthService();
+/** @deprecated Import from `assets/features/auth` instead. */
+export { authService } from '../features/auth';

@@ -1,12 +1,13 @@
 import './CompanyPage.scss';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm, FORM_EVENTS } from '../../core/form/DxForm';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { useEvents } from '@platform/event/EventHook';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm, FORM_EVENTS } from '@platform/form/DxForm';
+import { companyEvents } from '@features/company';
+import { httpClient } from '@shared/api/HttpClient';
 import { CompanyFields } from './CompanyFields';
 import { useEffect, useRef } from 'react';
-import { httpClient } from '../../core/http/HttpClient';
-import { useEvents } from '../../core/event/EventHook';
 
 export const CompanyPage = () => {
   const container = 'wrapper';
@@ -15,16 +16,6 @@ export const CompanyPage = () => {
   const [on, emit] = useEvents();
 
   const API_URL = Constants.API_BASE_URL + 'companies';
-
-  const EVENTS = {
-    ADD: 'company:add',
-    EDIT: 'company:edit',
-    DELETE: 'company:delete',
-    SAVE: 'company:save',
-    CANCEL: 'company:cancel',
-    SUCCESS: 'company:success',
-    LOADING: 'company:loading',
-  };
 
   useEffect(() => {
     const sub = on<any>(FORM_EVENTS.FIELD_CHANGED, (data) => {
@@ -40,7 +31,7 @@ export const CompanyPage = () => {
         return;
       }
 
-      emit(EVENTS.LOADING, true);
+      emit(companyEvents.LOADING, true);
       httpClient
         .get<any>(`${Constants.API_BASE_URL}ubigeos/${data.value}`)
         .subscribe({
@@ -58,7 +49,7 @@ export const CompanyPage = () => {
             formRef.current?.setFieldValue('district', '');
           },
         })
-        .add(() => emit(EVENTS.LOADING, false));
+        .add(() => emit(companyEvents.LOADING, false));
     });
 
     return () => sub?.unsubscribe();
@@ -74,10 +65,16 @@ export const CompanyPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={companyEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} ref={formRef} />
+      <DxDialog events={companyEvents}>
+        <DxForm
+          url={API_URL}
+          fields={fields}
+          events={companyEvents}
+          useIRI={true}
+          ref={formRef}
+        />
       </DxDialog>
     </div>
   );

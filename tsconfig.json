@@ -12,6 +12,22 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "sourceMap": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["assets/app/*"],
+      "@shared/*": ["assets/shared/*"],
+      "@platform/*": ["assets/core/*"],
+      "@features/*": ["assets/features/*"],
+      "@pages/*": ["assets/pages/*"],
+      "@widgets/*": ["assets/components/*"],
+      "@layouts/*": ["assets/layouts/*"],
+      "@contexts/*": ["assets/contexts/*"],
+      "@utils/*": ["assets/utils/*"],
+      "@theme/*": ["assets/theme/*"],
+      "@dto/*": ["assets/dto/*"],
+      "@types/*": ["assets/types/*"],
+      "@assets/*": ["assets/*"]
+    }
   }
 }

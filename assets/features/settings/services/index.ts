@@ -1,0 +1,2 @@
+export { settingsService } from './settingsService';
+

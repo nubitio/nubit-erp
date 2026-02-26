@@ -1,4 +1,4 @@
-import { settingsService } from './service/settings.service';
+import { settingsService } from './features/settings';
 import { SettingDto } from './dto/setting.dto';
 import { lastValueFrom } from 'rxjs';
 
@@ -34,7 +34,6 @@ class Settings {
       !settingsUpdatedAt ||
       new Date(settingsUpdatedAt).getTime() < new Date().getTime() - 5 * 60 * 1000
     ) {
-      console.log('Updating settings cache...');
       await this.init();
     }
     return this.settings.find((s) => s.name === key);

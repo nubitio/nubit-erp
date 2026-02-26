@@ -1,13 +1,13 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import { Constants } from '../../core/common/Constants';
-import { SharedUtils } from '../../core/utils/SharedUtils';
+import { Constants } from '@platform/common/Constants';
+import { DxFormEvents } from '@platform/form/DxForm';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { textField } from '@platform/field/TextFieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import { consultService } from '@features/consult';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { DxFormEvents } from '../../core/form/DxForm';
-import { consultService } from '../../service/consult.service';
 import notify from 'devextreme/ui/notify';
-import { textField } from '../../core/field/TextFieldBuilder';
 
 export const CustomerFields = (formRef: DxFormEvents | null) => {
   const fields: Field[] = [];
@@ -40,7 +40,7 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (e: any) => {
+            validationCallback: (_e: any) => {
               const doc = formRef?.getFieldValue('ruc');
               if (doc.length === 8) {
                 return true;
@@ -61,7 +61,7 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (e: any) => {
+            onClick: (_e: any) => {
               const doc = formRef?.getFieldValue('ruc');
               if (doc.length === 8) {
                 consultService.consultDni(doc).subscribe((response) => {

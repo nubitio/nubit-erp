@@ -1,15 +1,15 @@
 import './OutboundPage.scss';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '../../core/form/DxForm';
-import { Constants } from '../../core/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm, DxFormEvents } from '@platform/form/DxForm';
+import { Constants } from '@platform/common/Constants';
 import { OutboundDetailFields, OutboundFields } from './OutboundFields';
-import { useEffect, useRef } from 'react';
-import { httpClient } from '../../core/http/HttpClient';
-import { useEvents } from '../../core/event/EventHook';
+import { useRef } from 'react';
+import { useEvents } from '@platform/event/EventHook';
+import { outboundEvents, useOutboundFormObservers } from '@features/outbound';
 
 export const OutboundPage = () => {
-  const [on, emit] = useEvents();
+  const [on] = useEvents();
   const container = 'wrapper';
   const fields = OutboundFields();
   const detailFields = OutboundDetailFields();
@@ -17,32 +17,12 @@ export const OutboundPage = () => {
 
   const API_URL = Constants.API_BASE_URL + 'movements';
 
-  const EVENTS = {
-    ADD: 'outbound:add',
-    EDIT: 'outbound:edit',
-    DELETE: 'outbound:delete',
-    SAVE: 'outbound:save',
-    CANCEL: 'outbound:cancel',
-    SUCCESS: 'outbound:success',
-    LOADING: 'outbound:loading',
-  };
-
-  let alreadySetup = false;
-
-  const setupObservers = () => {
-    on(EVENTS.EDIT, (payload: any) => {
-      httpClient.get<any>(`${API_URL}/${payload.row.id}/items`).subscribe((response) => {
-        formRef.current?.setDetailData(response.data);
-      });
-    });
-  };
-
-  useEffect(() => {
-    if (!alreadySetup) {
-      setupObservers();
-      alreadySetup = true;
-    }
-  }, []);
+  useOutboundFormObservers({
+    on,
+    apiUrl: API_URL,
+    editEventName: outboundEvents.EDIT,
+    formRef,
+  });
 
   return (
     <div id={container}>
@@ -56,15 +36,15 @@ export const OutboundPage = () => {
         allowDelete={true}
         fields={fields}
         detailFields={detailFields}
-        events={EVENTS}
+        events={outboundEvents}
       />
-      <DxDialog width={800} height={450} events={EVENTS}>
+      <DxDialog width={800} height={450} events={outboundEvents}>
         <DxForm
           ref={formRef}
           url={API_URL}
           fields={fields}
           detailFields={detailFields}
-          events={EVENTS}
+          events={outboundEvents}
         />
       </DxDialog>
     </div>

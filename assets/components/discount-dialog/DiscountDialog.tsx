@@ -1,7 +1,7 @@
 import { NumberBox, Popup } from 'devextreme-react';
 import { ToolbarItem } from 'devextreme-react/popup';
-import { useCallback, useEffect, useState } from 'react';
-import NumberUtils from '../../core/utils/NumberUtils';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEvents } from '../../core/event/EventHook';
 
 export enum DiscountDialogEvent {
@@ -16,9 +16,14 @@ export const DiscountDialog = () => {
   const [discountPercent, setDiscountPercent] = useState(0.0);
   const [discountAmount, setDiscountAmount] = useState(0.0);
 
+  const emitRef = useRef(emit);
+  emitRef.current = emit;
+  const onRef = useRef(on);
+  onRef.current = on;
+
   const onApply = useCallback((discountPercent: number) => {
     setVisible(false);
-    emit<number>(DiscountDialogEvent.APPLY, discountPercent);
+    emitRef.current<number>(DiscountDialogEvent.APPLY, discountPercent);
   }, []);
 
   useEffect(() => {
@@ -32,7 +37,7 @@ export const DiscountDialog = () => {
   }, [discountAmount, total]);
 
   useEffect(() => {
-    on<{ discountPercent: number; total: number }>(DiscountDialogEvent.OPEN, (data) => {
+    onRef.current<{ discountPercent: number; total: number }>(DiscountDialogEvent.OPEN, (data) => {
       setTotal(data.total);
       setDiscountPercent(data.discountPercent);
       setDiscountAmount(data.discountPercent * data.total);

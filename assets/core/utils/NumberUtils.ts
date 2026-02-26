@@ -1,16 +1,2 @@
-export default class NumberUtils {
-  static isNumber(value: any): boolean {
-    return (
-      (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) &&
-      !isNaN(value as number)
-    );
-  }
+export { default } from '../../shared/lib/NumberUtils';
 
-  static formatNumber(value: number, decimal: number = 2): string {
-    return value.toFixed(decimal);
-  }
-
-  static formatCurrency(value: number): string {
-    return Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
-  }
-}

@@ -5,9 +5,10 @@ import { TreeView, TreeViewRef } from 'devextreme-react/tree-view';
 import { AppFooter } from '../..';
 import { useNavigation } from '../../../contexts/navigation';
 import { useScreenSize } from '../../../utils/media-query';
+import { useLocation } from 'react-router-dom';
 
 import type { SideNavigationMenuProps } from '../../../types';
-import { menuService } from '../../../service/menu.service';
+import { menuService } from '../../../features/navigation';
 
 import './SideNavigationMenu.scss';
 
@@ -28,18 +29,12 @@ export type SideNavigationItem = {
 export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigationMenuProps>) => {
   const { children, selectedItemChanged, openMenu, compactMode, onMenuReady } = props;
   const [items, setItems] = useState<SideNavigationItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { isLarge } = useScreenSize();
 
-  useEffect(() => {
-    const roleId = userInformation().currentUserRoleId;
-    menuService.getMenuByRoleId(roleId).subscribe((response) => {
-      const items = normalizePath(response.data);
-      setItems(items);
-    });
-  }, []);
-
-  function normalizePath(items: SideNavigationItem[]) {
-    return items.map((item) => ({
+  const normalizePath = useCallback(
+    (items: SideNavigationItem[]) =>
+      items.map((item) => ({
       ...item,
       expanded: isLarge,
       path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path,
@@ -47,12 +42,36 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
         ...subItem,
         path: subItem.path && !/^\//.test(subItem.path) ? `/${subItem.path}` : subItem.path,
       })),
-    }));
-  }
+      })),
+    [isLarge],
+  );
+
+  useEffect(() => {
+    const roleId = userInformation().currentUserRoleId;
+    const subscription = menuService.getMenuByRoleId(roleId).subscribe({
+      next: (response) => {
+        const items = normalizePath(response.data);
+        setItems(items);
+      },
+      complete: () => setIsLoading(false),
+      error: () => setIsLoading(false),
+    });
+    return () => subscription.unsubscribe();
+  }, [normalizePath]);
+
+  useEffect(() => {
+    setItems((prev) =>
+      prev.map((item) => ({
+        ...item,
+        expanded: isLarge,
+      })),
+    );
+  }, [isLarge]);
 
   const {
     navigationData: { currentPath },
   } = useNavigation();
+  const location = useLocation();
 
   const treeViewRef = useRef<TreeViewRef>(null);
   const wrapperRef = useRef();
@@ -77,25 +96,52 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
       return;
     }
 
-    if (currentPath !== undefined) {
-      treeView.selectItem(currentPath);
-      treeView.expandItem(currentPath);
+    const normalizeRoute = (path?: string) => {
+      if (!path) return '';
+      const normalized = path.startsWith('/') ? path : `/${path}`;
+      return normalized.length > 1 ? normalized.replace(/\/+$/, '') : normalized;
+    };
+
+    const flattenPaths = (menuItems: SideNavigationItem[]) => {
+      const paths: string[] = [];
+      menuItems.forEach((item) => {
+        if (item.path) paths.push(normalizeRoute(item.path));
+        item.items?.forEach((subItem) => {
+          if (subItem.path) paths.push(normalizeRoute(subItem.path));
+        });
+      });
+      return paths.filter(Boolean);
+    };
+
+    const requestedPath = normalizeRoute(currentPath || location.pathname);
+    const allPaths = flattenPaths(items);
+    const activePath =
+      allPaths.find((path) => path === requestedPath) ??
+      allPaths
+        .filter((path) => requestedPath.startsWith(path) && path !== '/')
+        .sort((a, b) => b.length - a.length)[0];
+
+    if (activePath) {
+      treeView.selectItem(activePath);
+      treeView.expandItem(activePath);
     }
 
     if (compactMode) {
       treeView.collapseAll();
     }
-  }, [currentPath, compactMode]);
+  }, [currentPath, location.pathname, compactMode, items]);
 
   return (
     <div className="dx-swatch-additional side-navigation-menu" ref={getWrapperRef}>
       {children}
       <div className="menu-container theme-dependent">
+        {isLoading && <div className="menu-loading">Cargando menú...</div>}
         <TreeView
           ref={treeViewRef}
           items={items}
           keyExpr="path"
           selectionMode="single"
+          noDataText={isLoading ? '' : 'No hay opciones disponibles'}
           focusStateEnabled={false}
           expandEvent="click"
           onItemClick={selectedItemChanged}

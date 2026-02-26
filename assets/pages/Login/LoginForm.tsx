@@ -3,9 +3,9 @@ import Form, { ButtonItem, ButtonOptions, Item, Label, RequiredRule } from 'deve
 import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
-import { authService } from '../../service/auth.service';
+import { authService } from '../../features/auth';
 import { BranchPicker } from '../../components/utils/branch-picker/BranchPicker';
-import { StorageUtils } from '../../core/utils/StorageUtils';
+import { StorageUtils } from '../../shared/lib/StorageUtils';
 
 export const LoginForm = () => {
   const [loading, setLoading] = useState(false);

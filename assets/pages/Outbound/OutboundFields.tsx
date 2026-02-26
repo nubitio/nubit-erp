@@ -1,12 +1,12 @@
-import { Field } from '../../core/field/Field';
-import { FieldBuilder } from '../../core/field/FieldBuilder';
-import { FieldType } from '../../core/field/FieldType';
-import { SharedUtils } from '../../core/utils/SharedUtils';
+import { Constants } from '@platform/common/Constants';
+import { userInformation } from '@platform/common/UserInformation';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import { productService } from '@features/product';
+import { ProductDto } from '@dto/product.dto';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { Constants } from '../../core/common/Constants';
-import { userInformation } from '../../core/common/UserInformation';
-import { productService } from '../../service/product.service';
-import { ProductDto } from '../../dto/product.dto';
 
 export const OutboundFields = () => {
   const fields: Field[] = [];

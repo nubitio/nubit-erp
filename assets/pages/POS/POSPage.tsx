@@ -4,7 +4,7 @@ import Splitter, { Item } from 'devextreme-react/splitter';
 import './POSPage.scss';
 import { POSItem } from './POSItem';
 import type { Category, PosItem } from './types';
-import { httpClient } from '../../core/http/HttpClient';
+import { httpClient } from '../../shared/api/HttpClient';
 import { Constants } from '../../core/common/Constants';
 
 const POSPage = () => {

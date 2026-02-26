@@ -1,10 +1,10 @@
 import {Field} from '../../core/field/Field';
 import {FieldBuilder} from '../../core/field/FieldBuilder';
 import {FieldType} from '../../core/field/FieldType';
-import toast, {SharedUtils} from '../../core/utils/SharedUtils';
+import toast, {SharedUtils} from '../../shared/lib/SharedUtils';
 import {textField} from '../../core/field/TextFieldBuilder';
 import {DxFormEvents} from '../../core/form/DxForm';
-import {consultService} from '../../service/consult.service';
+import {consultService} from '../../features/consult';
 
 export const SupplierFields = (formRef: DxFormEvents | null) => {
   const fields: Field[] = [];
@@ -36,7 +36,7 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (e: any) => {
+            validationCallback: (_e: any) => {
               const doc = formRef?.getFieldValue('ruc');
               if (doc.length === 8) {
                 return true;
@@ -55,7 +55,7 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (e: any) => {
+            onClick: (_e: any) => {
               const doc = formRef?.getFieldValue('ruc');
               consultService.consultRuc(doc).subscribe((response) => {
                 if (!response.data.active) {

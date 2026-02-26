@@ -1,9 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { getUser, signIn as sendSignInRequest } from '../api/auth';
 import type { AuthContextType, User } from '../types';
-import { StorageUtils } from '../core/utils/StorageUtils';
-import { branchService } from '../service/branch.service';
-import { authService } from '../service/auth.service';
+import { StorageUtils } from '../shared/lib/StorageUtils';
+import { branchService } from '../features/branch';
+import { authService } from '../features/auth';
 
 function AuthProvider(props: React.PropsWithChildren<unknown>) {
   const [user, setUser] = useState<User>();

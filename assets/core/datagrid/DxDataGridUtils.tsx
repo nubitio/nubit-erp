@@ -8,7 +8,7 @@ import {
   RequiredRule,
   TotalItem,
 } from 'devextreme-react/data-grid';
-import { dxUtils } from '../common/DxUtils';
+import { dxUtils } from '../../shared/data/DxUtils';
 import { Button } from 'devextreme-react';
 import React from 'react';
 
