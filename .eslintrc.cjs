@@ -124,7 +124,6 @@ module.exports = {
     },
     {
       files: ['assets/features/**/*.{ts,tsx,js,jsx}'],
-      excludedFiles: ['assets/features/**/routes.ts', 'assets/features/**/routes.tsx'],
       rules: {
         'no-restricted-imports': [
           'warn',

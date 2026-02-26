@@ -1,10 +1,10 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { lazyNamed } from './routes/lazy';
+import { lazyNamed } from '@app/router/lazy';
 
-const LoginPage = lazyNamed(() => import('./pages/Login/LoginPage'), 'LoginPage');
+const LoginPage = lazyNamed(() => import('@features/auth/pages/LoginPage'), 'LoginPage');
 const InitialSetupPage = lazyNamed(
-  () => import('./pages/InitialSetup/InitialSetupPage'),
+  () => import('@features/setup/pages/InitialSetupPage'),
   'InitialSetupPage',
 );
 

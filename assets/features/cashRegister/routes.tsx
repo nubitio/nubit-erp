@@ -1,28 +1,13 @@
 import type { AppRouteDefinition } from '@app/router/types';
-import { lazyNamed } from '@app/router/lazy';
-
-const CashRegisterDashboard = lazyNamed(
-  () => import('@features/cashRegister/pages/CashRegisterDashboard'),
-  'CashRegisterDashboard',
-);
-const CashRegisterOpen = lazyNamed(
-  () => import('@features/cashRegister/pages/CashRegisterOpen'),
-  'CashRegisterOpen',
-);
-const CashRegisterClose = lazyNamed(
-  () => import('@features/cashRegister/pages/CashRegisterClose'),
-  'CashRegisterClose',
-);
-const CashMovements = lazyNamed(() => import('@features/cashRegister/pages/CashMovements'), 'CashMovements');
-const CashRegisterPage = lazyNamed(() => import('@pages/CashRegister/CashRegisterPage'), 'CashRegisterPage');
-const CashMovementCategoryPage = lazyNamed(
-  () => import('@pages/CashMovementCategory/CashMovementCategoryPage'),
-  'CashMovementCategoryPage',
-);
-const CashRegisterShiftsPage = lazyNamed(
-  () => import('@pages/CashRegisterShifts/CashRegisterShiftsPage'),
-  'CashRegisterShiftsPage',
-);
+import {
+  CashMovementCategoryPage,
+  CashMovements,
+  CashRegisterClose,
+  CashRegisterDashboard,
+  CashRegisterOpen,
+  CashRegisterPage,
+  CashRegisterShiftsPage,
+} from './route-pages';
 
 export const cashRegisterRoutes: AppRouteDefinition[] = [
   { path: '/cashbox', element: CashRegisterDashboard },

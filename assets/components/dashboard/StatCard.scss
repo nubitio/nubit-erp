@@ -87,12 +87,12 @@
 }
 
 $metric-accents: (
-  blue: #2563eb,
-  green: #047857,
-  yellow: #b45309,
-  rose: #be123c,
-  purple: #6d28d9,
-  gray: #4b5563,
+  'blue': #2563eb,
+  'green': #047857,
+  'yellow': #b45309,
+  'rose': #be123c,
+  'purple': #6d28d9,
+  'gray': #4b5563,
 );
 
 @each $name, $accent in $metric-accents {

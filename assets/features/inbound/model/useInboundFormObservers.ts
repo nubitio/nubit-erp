@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import type { DxFormEvents } from '@platform/form/DxForm';
-import { useMovementFormObservers } from '@features/movement';
+import { useMovementFormObservers } from '@features/movement/model/useMovementFormObservers';
 
 type UseInboundFormObserversParams = {
   on: OnEventFn;
