@@ -16,6 +16,7 @@ use App\Core\Util\Money;
 use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
+use App\Entity\Customer;
 use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
@@ -127,6 +128,7 @@ readonly class SaleProcessor implements ProcessorInterface
             }
 
             $data = $this->saleUtils->fillSaleValues($data);
+            $this->ensureSaleCustomer($data);
             $this->logger->debug('Sale values filled');
         }
 
@@ -164,12 +166,44 @@ readonly class SaleProcessor implements ProcessorInterface
             'total' => Money::toString($total),
         ]);
 
+        if ($isNew) {
+            // `has_invoice` reflects the actual emitted document, not a client intent flag.
+            $data->setHasInvoice(false);
+        }
+
         // Update warehouse-specific stock
         if ($data->getAlmacen()) {
             $this->logger->info('Updating warehouse stock', [
                 'warehouse_id' => $data->getAlmacen()->getId(),
                 'sale_type_id' => $data->getTipoId(),
             ]);
+            $checkStockEnabled = filter_var(
+                $this->settings->get(Constants::CHECK_STOCK, 'true'),
+                FILTER_VALIDATE_BOOLEAN
+            );
+
+            if ($data->getTipoId() === 2 && $checkStockEnabled) {
+                /** @var SaleItem $item */
+                foreach ($data->getItems() as $item) {
+                    if (!$item->getProducto()) {
+                        continue;
+                    }
+
+                    $currentStock = $this->productStockService->getStockForProductInWarehouse(
+                        $item->getProducto(),
+                        $data->getAlmacen()
+                    );
+
+                    if ($currentStock < $item->getCantidad()) {
+                        throw new ServiceException(sprintf(
+                            'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
+                            $item->getProducto()->getName(),
+                            rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
+                            rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
+                        ));
+                    }
+                }
+            }
 
             /** @var SaleItem $item */
             foreach ($data->getItems() as $item) {
@@ -206,7 +240,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         );
                     } elseif ($data->getTipoId() === 2) {
                         // Reduce stock for sales (tipo_id = 2)
-                        $newStock = max(0.0, $currentStock - $item->getCantidad());
+                        $newStock = $currentStock - $item->getCantidad();
                         $this->logger->info('Decreasing stock for sale', [
                             'product_id' => $productId,
                             'warehouse_id' => $warehouseId,
@@ -378,6 +412,22 @@ readonly class SaleProcessor implements ProcessorInterface
         if ($sale->getTipoOperacion() === null) {
             $sale->setTipoOperacion('1001');
         }
+    }
+
+    private function ensureSaleCustomer(Sale $sale): void
+    {
+        if ($sale->getTipoId() !== 2 || $sale->getCliente() instanceof Customer) {
+            return;
+        }
+
+        $defaultCustomer = $this->entityManager->find(Customer::class, 1);
+        if (!$defaultCustomer instanceof Customer) {
+            throw new ServiceException(
+                'Debe seleccionar un cliente para la venta y no existe el cliente general (ID 1).'
+            );
+        }
+
+        $sale->setCliente($defaultCustomer);
     }
 
     private function getDetractionThreshold(string $code): float

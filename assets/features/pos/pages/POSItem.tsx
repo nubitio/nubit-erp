@@ -4,47 +4,76 @@ import type { PosItem } from './types';
 import './POSPage.scss';
 
 interface POSItemProps {
-  key: any;
   item: PosItem;
-  onAdd: (item: PosItem) => void;
+  onAdd: (item: PosItem) => void | Promise<void>;
   onRemove: (id: string) => void;
   quantity: number;
+  stockOverride?: number;
+  enforceStockCheck?: boolean;
 }
 
-export function POSItem({ key, item, onAdd, onRemove, quantity }: POSItemProps) {
+export function POSItem({
+  item,
+  onAdd,
+  onRemove,
+  quantity,
+  stockOverride,
+  enforceStockCheck = true,
+}: POSItemProps) {
+  const stockSource = stockOverride ?? item.stock;
+  const stockValue = typeof stockSource === 'number' ? stockSource : null;
+  const isOutOfStock = enforceStockCheck && stockValue !== null && stockValue <= 0;
+  const unitPrice =
+    typeof item.salePrice === 'number'
+      ? item.salePrice
+      : Number.parseFloat(String(item.salePrice ?? 0)) || 0;
+
   return (
-    <div key={key} className="bg-white rounded-xl p-4">
-      <div className="flex items-center gap-3 mb-2">
+    <article className={`pos-product-card ${isOutOfStock ? 'is-disabled' : ''}`}>
+      <div className="pos-product-card__media">
         <img
-          src={item.photo?.path || `https://ui-avatars.com/api/?name=${item.name}`}
+          src={item.photo?.path || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`}
           alt={item.name}
-          className="w-16 h-16 object-cover rounded-md"
+          className="pos-product-card__image"
         />
-        <div className="text-sm font-medium">{item.name}</div>
       </div>
-      <div className="flex items-center justify-between">
-        <span className="text-2xl font-bold">
-          <span className="text-gray-500">S/</span>
-          {item.salePrice.toFixed(2)}
-        </span>
-        <div className="flex items-center rounded-full bg-gray-100 border border-gray-200">
+
+      <div className="pos-product-card__body">
+        <div className="pos-product-card__title" title={item.name}>
+          {item.name}
+        </div>
+        <div className="pos-product-card__meta">
+          {item.sku && <span>{item.sku}</span>}
+          {stockValue !== null && (
+            <span className={stockValue <= 3 ? 'is-low' : ''}>Stock: {stockValue}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="pos-product-card__footer">
+        <span className="pos-product-card__price">S/{unitPrice.toFixed(2)}</span>
+        <div className="pos-stepper" aria-label={`Cantidad de ${item.name}`}>
           <button
+            type="button"
             onClick={() => onRemove(item.id)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-white"
+            className="pos-stepper__btn"
+            disabled={quantity <= 0}
+            aria-label={`Quitar ${item.name}`}
           >
-            <Minus className="w-4 h-4" />
+            <Minus size={16} />
           </button>
-          <span className="w-8 text-center text-gray-500">{quantity || 0}</span>
+          <span className="pos-stepper__value">{quantity || 0}</span>
           <button
+            type="button"
             onClick={() => onAdd(item)}
-            className={`w-8 h-8 flex items-center justify-center rounded-full ${
-              quantity > 0 ? 'bg-blue-500 text-white' : 'bg-white text-blue-500'
-            }`}
+            className={`pos-stepper__btn pos-stepper__btn--primary ${quantity > 0 ? 'is-active' : ''}`}
+            disabled={isOutOfStock}
+            aria-label={`Agregar ${item.name}`}
           >
-            <Plus className="w-4 h-4" />
+            <Plus size={16} />
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
