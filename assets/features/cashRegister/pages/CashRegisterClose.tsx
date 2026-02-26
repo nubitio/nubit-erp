@@ -3,10 +3,10 @@ import { Button, DataGrid } from 'devextreme-react';
 import { useEffect, useRef, useState } from 'react';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
-import { httpClient } from '../../../core/http/HttpClient';
+import { httpClient } from '../../../shared/api/HttpClient';
 import { Constants } from '../../../core/common/Constants';
 import { useNavigate, useParams } from 'react-router-dom';
-import toast from '../../../core/utils/SharedUtils';
+import toast from '../../../shared/lib/SharedUtils';
 import cashRegisterService from '../services/cashRegisterService';
 import './CashRegisterClose.scss';
 import { confirm } from 'devextreme/ui/dialog';
@@ -72,7 +72,7 @@ export const CashRegisterClose = () => {
     cashRegisterService()
       .closeCashRegister(id, data)
       .subscribe((response) => {
-        console.log(response);
+        void response;
         toast('Caja cerrada correctamente', 'success');
         navigate('/cash-register-dashboard');
       });
@@ -92,7 +92,7 @@ export const CashRegisterClose = () => {
         data.current.reload();
         gridRef.current?.instance().endCustomLoading();
       });
-  }, []);
+  }, [id]);
 
   return (
     <div className="view datagrid-list">

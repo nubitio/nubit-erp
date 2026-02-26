@@ -1,4 +1,4 @@
-import { httpClient } from '../../../core/http/HttpClient';
+import { httpClient } from '../../../shared/api/HttpClient';
 import { Constants } from '../../../core/common/Constants';
 
 const cashRegisterService = () => {

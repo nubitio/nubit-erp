@@ -1,11 +1,16 @@
+import './CashMovements.scss';
 import { DxDataGrid, DxDataGridEvents } from '../../../core/datagrid/DxDataGrid';
-import NumberUtils from '../../../core/utils/NumberUtils';
+import NumberUtils from '../../../shared/lib/NumberUtils';
 import { DxDialog } from '../../../core/dialog/DxDialog';
 import { DxForm } from '../../../core/form/DxForm';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Constants } from '../../../core/common/Constants';
 import cashMovementsFields from '../components/fields/cashMovementsFields';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AsyncState } from '../../../shared/ui/async-state/AsyncState';
+import { Item } from 'devextreme-react/data-grid';
+import { useEvents } from '../../../core/event/EventHook';
+import { HTTP_ERROR_EVENT } from '../../../shared/api/HttpClient';
 
 type CashMovementsParams = {
   id: string;
@@ -17,7 +22,9 @@ export const CashMovements = () => {
   const gridRef = useRef<DxDataGridEvents>(null);
   const fields = cashMovementsFields(id);
   const [balance, setBalance] = useState<number | undefined>(undefined);
+  const [gridError, setGridError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [on] = useEvents();
 
   const EVENTS = {
     ADD: 'cash-movement:add',
@@ -40,6 +47,7 @@ export const CashMovements = () => {
   ];
 
   const onContentReady = () => {
+    setGridError(null);
     let balance = 0;
     gridRef.current
       ?.getDataSource()
@@ -52,12 +60,18 @@ export const CashMovements = () => {
       });
   };
 
+  useEffect(() => {
+    on<string>(HTTP_ERROR_EVENT, (message) => {
+      setGridError(message || 'No se pudo cargar movimientos de caja');
+    });
+  }, [on]);
+
   return (
-    <>
+    <div className="cash-movements-page">
       <DxDataGrid
         ref={gridRef}
         id="cash-movements"
-        title="Cashbox"
+        title="Movimientos de caja"
         toolbar={toolbar}
         url={Constants.API_BASE_URL + 'cash-shifts/' + id + '/movements'}
         allowAdd={true}
@@ -69,17 +83,45 @@ export const CashMovements = () => {
           {
             column: 'amount',
             summaryType: 'custom',
-            customizeText: (e) => {
+            customizeText: (_e) => {
               return 'Balance: ' + NumberUtils.formatCurrency(balance ?? 0);
             },
           },
         ]}
         onContentReady={onContentReady}
         paging={false}
+        beforeToolbar={() => (
+          <Item location="before" locateInMenu="never">
+            <div className="page-toolbar-state">
+              {gridError ? (
+                <AsyncState
+                  compact
+                  variant="error"
+                  title="Error de carga"
+                  description={gridError}
+                  onRetry={() => gridRef.current?.refresh()}
+                />
+              ) : (
+                <AsyncState
+                  compact
+                  variant="info"
+                  title="Turno en caja"
+                  description="Registra ingresos/salidas y revisa el balance acumulado del turno."
+                />
+              )}
+            </div>
+          </Item>
+        )}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+      <DxDialog title="Movimiento de caja" width={720} maxHeight={700} events={EVENTS}>
+        <DxForm
+          className="plain-styled-form entity-form"
+          url={API_URL}
+          fields={fields}
+          events={EVENTS}
+          useIRI={true}
+        />
       </DxDialog>
-    </>
+    </div>
   );
 };

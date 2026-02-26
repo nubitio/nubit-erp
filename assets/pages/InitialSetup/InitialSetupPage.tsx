@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Stepper } from 'devextreme-react/stepper';
 import Button from 'devextreme-react/button';
 import LoadIndicator from 'devextreme-react/load-indicator';
-import LoadPanel from 'devextreme-react/load-panel';
 import Form, {
   FormRef,
   GroupItem,
@@ -14,7 +13,7 @@ import Form, {
 } from 'devextreme-react/form';
 
 import './InitialSetupPage.scss';
-import { SetupPayload, setupService, SetupStatus } from '../../service/setup.service';
+import { SetupPayload, setupService } from '../../features/setup';
 import { useScreenSizeClass } from '../../utils/media-query';
 
 const steps = [
@@ -46,7 +45,6 @@ export const InitialSetupPage = () => {
   const formRef = useRef<FormRef | null>(null);
 
   const [formData, setFormData] = useState<SetupPayload>(defaultFormData);
-  const [status, setStatus] = useState<SetupStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -55,7 +53,6 @@ export const InitialSetupPage = () => {
     const subscription = setupService.getStatus().subscribe({
       next: (response) => {
         const data = response.data;
-        setStatus(data);
         if (data.configured || data.userCount > 0) {
           navigate('/');
           return;

@@ -1,8 +1,9 @@
 import './ProductPage.scss';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxForm } from '../../core/form/DxForm';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { Constants } from '../../core/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxForm } from '@platform/form/DxForm';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { Constants } from '@platform/common/Constants';
+import { productEvents } from '@features/product';
 import { ProductFields } from './ProductFields';
 
 export const ProductPage = () => {
@@ -10,16 +11,6 @@ export const ProductPage = () => {
   const fields = ProductFields();
 
   const API_URL = Constants.API_BASE_URL + 'products';
-
-  const EVENTS = {
-    ADD: 'product:add',
-    EDIT: 'product:edit',
-    DELETE: 'product:delete',
-    SAVE: 'product:save',
-    CANCEL: 'product:cancel',
-    SUCCESS: 'product:success',
-    LOADING: 'product:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,11 +22,11 @@ export const ProductPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={productEvents}
         sort={[{ selector: 'name', desc: false }]}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+      <DxDialog events={productEvents}>
+        <DxForm url={API_URL} fields={fields} events={productEvents} useIRI={true} />
       </DxDialog>
     </div>
   );

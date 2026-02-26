@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 
 import { HashRouter as Router, useLocation } from 'react-router-dom';
 
@@ -8,11 +8,8 @@ import { NavigationProvider } from './contexts/navigation';
 import { AuthProvider, useAuth } from './contexts/auth';
 import { useScreenSizeClass } from './utils/media-query';
 import { Content } from './Content';
-
-import esMessages from 'devextreme/localization/messages/es.json';
 import { ThemeContext, useThemeContext } from './theme/theme';
-import { loadMessages, locale } from 'devextreme/localization';
-import config from 'devextreme/core/config';
+import { configureDevExtreme } from '@app/providers/devextreme';
 
 import './styles.scss';
 import './theme/theme';
@@ -48,11 +45,7 @@ export const EfactApp = () => {
   const themeContext = useThemeContext();
 
   useEffect(() => {
-    loadMessages(esMessages);
-    locale('es-PE');
-    config({
-      defaultCurrency: 'PEN',
-    });
+    configureDevExtreme();
   }, []);
 
   return (
@@ -61,7 +54,13 @@ export const EfactApp = () => {
         <AuthProvider>
           <NavigationProvider>
             <div className={`app ${screenSizeClass}`}>
-              {themeContext.isLoaded ? <RootApp /> : ''}
+              {themeContext.isLoaded ? (
+                <Suspense fallback={<LoadPanel visible />}>
+                  <RootApp />
+                </Suspense>
+              ) : (
+                ''
+              )}
             </div>
           </NavigationProvider>
         </AuthProvider>

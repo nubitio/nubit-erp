@@ -34,7 +34,7 @@ import { saveAs } from 'file-saver';
 import { Workbook } from 'exceljs';
 import { exportDataGrid as exportDataGridToPdf } from 'devextreme/pdf_exporter';
 import { exportDataGrid as exportDataGridToXLSX } from 'devextreme/excel_exporter';
-import { dxUtils } from '../common/DxUtils';
+import { dxUtils } from '../../shared/data/DxUtils';
 import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
 import { DxDetailDataGrid } from './DxDetailDataGrid';
 import { DxFilterRule } from '../common/FilterRule';
@@ -108,6 +108,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const exportFormats = ['xlsx', 'pdf'];
   const viewMode = options.mode ?? 'full';
   const [on, emit] = useEvents();
+  const noDataText = 'No hay registros para mostrar';
 
   const refresh = () => {
     gridRef.current?.instance().refresh();
@@ -175,17 +176,22 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
     }
   };
 
+  const setupObserversRef = useRef(setupObservers);
+  setupObserversRef.current = setupObservers;
+  const initialOptionsRef = useRef(options);
+
   useEffect(() => {
-    setupObservers();
-    if (options.manualLoad) {
+    setupObserversRef.current();
+    const initialOptions = initialOptionsRef.current;
+    if (initialOptions.manualLoad) {
       return;
     }
     const newDataStore = dxUtils.getDataStore(
-      options.url,
-      getIdField(options.fields),
-      options.url,
-      options.filter,
-      options.sort,
+      initialOptions.url,
+      getIdField(initialOptions.fields),
+      initialOptions.url,
+      initialOptions.filter,
+      initialOptions.sort,
     );
     setData(newDataStore);
   }, []);
@@ -290,13 +296,15 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         <DataGrid
           ref={gridRef}
           className="grid theme-dependent"
-          noDataText=""
+          noDataText={noDataText}
           focusedRowEnabled
           height="100%"
           width="100%"
           dataSource={data}
           allowColumnReordering
           showBorders={true}
+          rowAlternationEnabled={true}
+          hoverStateEnabled={true}
           remoteOperations={options.paging ?? true}
           syncLookupFilterValues={false}
           onSelectionChanged={options.onSelectionChanged ?? onSelectionChanged}
@@ -369,7 +377,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             </Item>
             {buildToolbar(options.toolbar)}
             <Item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton">
-              <Button icon="refresh" text="Refresh" stylingMode="text" onClick={refresh} />
+              <Button icon="refresh" text="Actualizar" stylingMode="text" onClick={refresh} />
             </Item>
             {options.allowExport && (
               <Item location="after" locateInMenu="auto">

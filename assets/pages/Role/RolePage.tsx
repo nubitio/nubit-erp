@@ -1,17 +1,18 @@
 import './RolePage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { useEvents } from '@platform/event/EventHook';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { permissionEvents, roleEvents } from '@features/role';
+import AppResponse from '@shared/api/AppResponse';
+import { httpClient } from '@shared/api/HttpClient';
 import { RoleFields } from './RoleFields';
 import { useEffect, useRef } from 'react';
 import notify from 'devextreme/ui/notify';
 import TreeView, { TreeViewRef } from 'devextreme-react/tree-view';
-import { httpClient } from '../../core/http/HttpClient';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
-import { useEvents } from '../../core/event/EventHook';
-import AppResponse from '../../core/http/AppResponse';
 
 type RoleMenu = {
   id: number;
@@ -42,26 +43,6 @@ export const RolePage = () => {
 
   const API_URL = Constants.API_BASE_URL + 'roles';
 
-  const EVENTS = {
-    ADD: 'role:add',
-    EDIT: 'role:edit',
-    DELETE: 'role:delete',
-    SAVE: 'role:save',
-    CANCEL: 'role:cancel',
-    SUCCESS: 'role:success',
-    LOADING: 'role:loading',
-  };
-
-  const PERMISSION_EVENTS = {
-    ADD: 'permission:add',
-    EDIT: 'permission:edit',
-    DELETE: 'permission:delete',
-    SAVE: 'permission:save',
-    CANCEL: 'permission:cancel',
-    SUCCESS: 'permission:success',
-    LOADING: 'permission:loading',
-  };
-
   const toolbar = [
     {
       text: 'Permisos',
@@ -69,7 +50,7 @@ export const RolePage = () => {
       onClick: () => {
         const row = gridRef.current?.getSelectedRow();
         if (row) {
-          emit(PERMISSION_EVENTS.ADD, { title: 'Permisos de ' + row.name });
+          emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
           httpClient
             .get<RoleMenu[]>(Constants.API_BASE_URL + `role-menu/${row.id}`)
             .subscribe((response) => {
@@ -94,10 +75,10 @@ export const RolePage = () => {
     },
   ];
 
-  let alreadySetup = false;
+  const setupEventsRef = useRef<() => void>(() => {});
 
   const setupEvents = () => {
-    on(PERMISSION_EVENTS.SAVE, () => {
+    on(permissionEvents.SAVE, () => {
       const row = gridRef.current?.getSelectedRow();
       if (row) {
         const data = treeRef.current?.instance().getSelectedNodes();
@@ -123,17 +104,16 @@ export const RolePage = () => {
               },
               { position: 'top right' },
             );
-            emit(PERMISSION_EVENTS.SUCCESS);
+            emit(permissionEvents.SUCCESS);
           });
       }
     });
   };
 
+  setupEventsRef.current = setupEvents;
+
   useEffect(() => {
-    if (!alreadySetup) {
-      setupEvents();
-      alreadySetup = true;
-    }
+    setupEventsRef.current();
   }, []);
 
   return (
@@ -148,12 +128,12 @@ export const RolePage = () => {
         allowDelete={true}
         toolbar={toolbar}
         fields={fields}
-        events={EVENTS}
+        events={roleEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={roleEvents}>
+        <DxForm url={API_URL} fields={fields} events={roleEvents} />
       </DxDialog>
-      <DxDialog events={PERMISSION_EVENTS}>
+      <DxDialog events={permissionEvents}>
         <TreeView
           ref={treeRef}
           dataSource={permissionsData.current}

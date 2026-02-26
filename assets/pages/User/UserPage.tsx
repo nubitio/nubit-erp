@@ -1,8 +1,9 @@
 import './UserPage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { userEvents } from '@features/user';
 import { UserFields } from './UserFields';
 
 export const UserPage = () => {
@@ -10,16 +11,6 @@ export const UserPage = () => {
   const fields = UserFields();
 
   const API_URL = Constants.API_BASE_URL + 'users';
-
-  const EVENTS = {
-    ADD: 'user:add',
-    EDIT: 'user:edit',
-    DELETE: 'user:delete',
-    SAVE: 'user:save',
-    CANCEL: 'user:cancel',
-    SUCCESS: 'user:success',
-    LOADING: 'user:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const UserPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={userEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+      <DxDialog events={userEvents}>
+        <DxForm url={API_URL} fields={fields} events={userEvents} useIRI={true} />
       </DxDialog>
     </div>
   );

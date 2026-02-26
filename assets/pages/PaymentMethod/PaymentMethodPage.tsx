@@ -1,24 +1,15 @@
 import './PaymentMethodPage.scss';
 import { PaymentMethodFields } from './PaymentMethodFields';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxForm } from '../../core/form/DxForm';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxForm } from '@platform/form/DxForm';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { paymentMethodEvents } from '@features/paymentMethod';
 
 export const PaymentMethodPage = () => {
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'payment-methods';
   const fields = PaymentMethodFields();
-  const EVENTS = {
-    ADD: 'payment-methods:add',
-    EDIT: 'payment-methods:edit',
-    DELETE: 'payment-methods:delete',
-    SAVE: 'payment-methods:save',
-    CANCEL: 'payment-methods:cancel',
-    SUCCESS: 'payment-methods:success',
-    LOADING: 'payment-methods:loading',
-  };
-
   return (
     <div id={container}>
       <DxDataGrid
@@ -29,10 +20,10 @@ export const PaymentMethodPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={paymentMethodEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={paymentMethodEvents}>
+        <DxForm url={API_URL} fields={fields} events={paymentMethodEvents} />
       </DxDialog>
     </div>
   );

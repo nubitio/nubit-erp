@@ -1,7 +1,7 @@
 import { Field } from '../../core/field/Field';
 import { FieldBuilder } from '../../core/field/FieldBuilder';
 import { FieldType } from '../../core/field/FieldType';
-import { SharedUtils } from '../../core/utils/SharedUtils';
+import { SharedUtils } from '../../shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const UnitOfMeasureFields = () => {

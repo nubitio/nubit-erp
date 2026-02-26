@@ -3,7 +3,7 @@ import { FieldType } from '../../../../core/field/FieldType';
 import { Field } from '../../../../core/field/Field';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import { Button } from 'devextreme-react';
-import NumberUtils from '../../../../core/utils/NumberUtils';
+import NumberUtils from '../../../../shared/lib/NumberUtils';
 
 const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
   const fields: Field[] = [];

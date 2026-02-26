@@ -1,9 +1,2 @@
-import { httpClient } from '../core/http/HttpClient';
-
-class CashboxService {
-  getLast() {
-    return httpClient.get<any>(`cashbox/last`);
-  }
-}
-
-export const cashboxService = new CashboxService();
+/** @deprecated Import from `assets/features/cashRegister` instead. */
+export { cashboxService } from '../features/cashRegister';

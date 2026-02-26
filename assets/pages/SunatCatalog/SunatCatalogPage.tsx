@@ -1,23 +1,14 @@
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxForm } from '../../core/form/DxForm';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxForm } from '@platform/form/DxForm';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { sunatCatalogEvents } from '@features/sunatCatalog';
 import { SunatCatalogFields } from './SunatCatalogFields';
 
 export const SunatCatalogPage = () => {
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'sunat-catalogs';
   const fields = SunatCatalogFields();
-  const EVENTS = {
-    ADD: 'sunat-catalog:add',
-    EDIT: 'sunat-catalog:edit',
-    DELETE: 'sunat-catalog:delete',
-    SAVE: 'sunat-catalog:save',
-    CANCEL: 'sunat-catalog:cancel',
-    SUCCESS: 'sunat-catalog:success',
-    LOADING: 'sunat-catalog:loading',
-  };
-
   return (
     <div id={container}>
       <DxDataGrid
@@ -28,10 +19,10 @@ export const SunatCatalogPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={sunatCatalogEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={sunatCatalogEvents}>
+        <DxForm url={API_URL} fields={fields} events={sunatCatalogEvents} />
       </DxDialog>
     </div>
   );

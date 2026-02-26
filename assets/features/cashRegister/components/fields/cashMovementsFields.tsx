@@ -2,7 +2,7 @@ import { FieldBuilder } from '../../../../core/field/FieldBuilder';
 import { FieldType } from '../../../../core/field/FieldType';
 import { Field } from '../../../../core/field/Field';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import NumberUtils from '../../../../core/utils/NumberUtils';
+import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { Constants } from '../../../../core/common/Constants';
 
 const cashMovementsFields = (cashShiftId: string | undefined) => {

@@ -21,8 +21,6 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
   const formRef = useRef<DxFormEvents | null>(null);
   const [editing, setEditing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const [data, setData] = useState<any>({});
-
   const [on, emit] = useEvents();
 
   const toggleEditing = () => {
@@ -56,7 +54,6 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
     httpClient
       .get(props.url + '/' + props.sub)
       .subscribe((response) => {
-        setData(response.data);
         formRef.current?.setValues(response.data);
       })
       .add(() => setLoading(false));
@@ -64,9 +61,14 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
 
   useImperativeHandle(ref, () => formRef.current!);
 
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
+  const setupObserversRef = useRef(setupObservers);
+  setupObserversRef.current = setupObservers;
+
   useEffect(() => {
-    loadData();
-    setupObservers();
+    loadDataRef.current();
+    setupObserversRef.current();
   }, [props.sub]);
 
   return (

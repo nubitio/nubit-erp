@@ -8,7 +8,7 @@ import { FieldType } from '../../../core/field/FieldType';
 import { buildField } from '../../../core/form/FormUtils';
 import cashRegisterService from '../services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
-import toast from '../../../core/utils/SharedUtils';
+import toast from '../../../shared/lib/SharedUtils';
 
 type CashRegisterOpenParams = {
   id: string;

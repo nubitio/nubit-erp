@@ -1,8 +1,9 @@
 import './BranchPage.scss';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { branchEvents } from '@features/branch';
 import { BranchFields } from './BranchFields';
 
 export const BranchPage = () => {
@@ -10,16 +11,6 @@ export const BranchPage = () => {
   const fields = BranchFields();
 
   const API_URL = Constants.API_BASE_URL + 'branches';
-
-  const EVENTS = {
-    ADD: 'branch:add',
-    EDIT: 'branch:edit',
-    DELETE: 'branch:delete',
-    SAVE: 'branch:save',
-    CANCEL: 'branch:cancel',
-    SUCCESS: 'branch:success',
-    LOADING: 'branch:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const BranchPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={branchEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={branchEvents}>
+        <DxForm url={API_URL} fields={fields} events={branchEvents} />
       </DxDialog>
     </div>
   );

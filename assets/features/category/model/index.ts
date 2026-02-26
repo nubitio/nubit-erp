@@ -1,0 +1,1 @@
+export { categoryEvents } from './events';

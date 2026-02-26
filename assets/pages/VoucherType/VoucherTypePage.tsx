@@ -1,8 +1,9 @@
 import './VoucherTypePage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { voucherTypeEvents } from '@features/voucherType';
 import { VoucherTypeFields } from './VoucherTypeFields';
 
 export const VoucherTypePage = () => {
@@ -10,16 +11,6 @@ export const VoucherTypePage = () => {
   const fields = VoucherTypeFields();
 
   const API_URL = Constants.API_BASE_URL + 'voucher-types';
-
-  const EVENTS = {
-    ADD: 'voucherType:add',
-    EDIT: 'voucherType:edit',
-    DELETE: 'voucherType:delete',
-    SAVE: 'voucherType:save',
-    CANCEL: 'voucherType:cancel',
-    SUCCESS: 'voucherType:success',
-    LOADING: 'voucherType:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const VoucherTypePage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={voucherTypeEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={voucherTypeEvents}>
+        <DxForm url={API_URL} fields={fields} events={voucherTypeEvents} />
       </DxDialog>
     </div>
   );

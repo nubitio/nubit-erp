@@ -1,12 +1,12 @@
 import './CashRegisterPage.scss';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxForm } from '../../core/form/DxForm';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { Constants } from '../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxForm } from '@platform/form/DxForm';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { cashRegisterEvents, createCashRegisterToolbar } from '@features/cashRegister';
 import { CashRegisterFields } from './CashRegisterFields';
 import { useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
-import { DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
 
 export const CashRegisterPage = () => {
   const navigate = useNavigate();
@@ -14,27 +14,13 @@ export const CashRegisterPage = () => {
   const container = 'wrapper';
   const API_URL = Constants.API_BASE_URL + 'cash-registers';
   const fields = CashRegisterFields();
-  const EVENTS = {
-    ADD: 'cash-register:add',
-    EDIT: 'cash-register:edit',
-    DELETE: 'cash-register:delete',
-    SAVE: 'cash-register:save',
-    CANCEL: 'cash-register:cancel',
-    SUCCESS: 'cash-register:success',
-    LOADING: 'cash-register:loading',
-  };
-
-  const toolbar = [
-    {
-      text: 'Ver turnos',
-      type: 'info',
-      onClick: () => {
-        const row = gridRef.current?.getSelectedRow();
-        if (!row) return;
-        navigate(`/cash-register/${row.id}/shifts`);
-      },
+  const toolbar = createCashRegisterToolbar({
+    onViewShifts: () => {
+      const row = gridRef.current?.getSelectedRow();
+      if (!row) return;
+      navigate(`/cash-register/${row.id}/shifts`);
     },
-  ];
+  });
 
   return (
     <div id={container}>
@@ -48,11 +34,11 @@ export const CashRegisterPage = () => {
         allowDelete={true}
         selectionMode="single"
         fields={fields}
-        events={EVENTS}
+        events={cashRegisterEvents}
         toolbar={toolbar}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
+      <DxDialog events={cashRegisterEvents}>
+        <DxForm url={API_URL} fields={fields} events={cashRegisterEvents} useIRI={true} />
       </DxDialog>
     </div>
   );

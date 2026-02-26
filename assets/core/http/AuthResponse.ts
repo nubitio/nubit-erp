@@ -1,9 +1,2 @@
-export default interface AuthResponse {
-  token?: string;
-  refreshToken?: string;
-  user?: any;
-  branch?: {
-    id: string;
-    name: string | null;
-  };
-}
+/** @deprecated Import from `assets/shared/api/AuthResponse` instead. */
+export { default } from '../../shared/api/AuthResponse';

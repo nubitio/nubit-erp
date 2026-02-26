@@ -27,7 +27,6 @@ export const useEvents = () => {
   };
 
   const emit = <T>(name: string, payload?: T) => {
-    console.log({ name, payload });
     const event: EventObject<T> = { name: name, data: payload };
     eventBus.next(event);
   };

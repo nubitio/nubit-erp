@@ -1,0 +1,2 @@
+export { kardexService } from './kardexService';
+

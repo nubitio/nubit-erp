@@ -8,12 +8,12 @@ import { useEffect, useRef } from 'react';
 import notify from 'devextreme/ui/notify';
 import { DataGrid } from 'devextreme-react';
 import { Column, DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
-import { httpClient } from '../../core/http/HttpClient';
+import { httpClient } from '../../shared/api/HttpClient';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import NumberUtils from '../../core/utils/NumberUtils';
+import NumberUtils from '../../shared/lib/NumberUtils';
 import { useEvents } from '../../core/event/EventHook';
-import AppResponse from '../../core/http/AppResponse';
-import toast from '../../core/utils/SharedUtils';
+import AppResponse from '../../shared/api/AppResponse';
+import toast from '../../shared/lib/SharedUtils';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
 
@@ -133,9 +133,12 @@ export const PriceListPage = () => {
     });
   };
 
+  const setupObserversRef = useRef(setupObservers);
+  setupObserversRef.current = setupObservers;
+
   useEffect(() => {
     if (!alreadySetup.current) {
-      setupObservers();
+      setupObserversRef.current();
       alreadySetup.current = true;
     }
   }, []);

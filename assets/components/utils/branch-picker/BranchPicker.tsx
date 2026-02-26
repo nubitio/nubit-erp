@@ -4,10 +4,10 @@ import { Button } from 'devextreme-react';
 import { useEffect, useRef, useState } from 'react';
 import { useScreenSize } from '../../../utils/media-query';
 import ArrayStore from 'devextreme/data/array_store';
-import { branchService } from '../../../service/branch.service';
-import toast from '../../../core/utils/SharedUtils';
+import { branchService } from '../../../features/branch';
+import toast from '../../../shared/lib/SharedUtils';
 import List from 'devextreme-react/list';
-import { authService } from '../../../service/auth.service';
+import { authService } from '../../../features/auth';
 
 export const BranchPicker = ({ visible, setVisible }) => {
   const ref = useRef<PopupRef>(null);

@@ -5,7 +5,7 @@ import { Item as ToolbarItem, Toolbar } from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from 'devextreme-react/date-box';
-import { kardexService } from '../../service/kardex.service';
+import { kardexService } from '../../features/kardex';
 import DataGrid, {
   Column,
   DataGridRef,
@@ -13,7 +13,7 @@ import DataGrid, {
   MasterDetail,
   Selection,
 } from 'devextreme-react/data-grid';
-import { DateUtils } from '../../core/utils/DateUtils';
+import { DateUtils } from '../../shared/lib/DateUtils';
 import { KardexDetailPage } from './KardexDetailPage';
 
 export const KardexPage = () => {
@@ -26,7 +26,6 @@ export const KardexPage = () => {
     kardexService
       .getAll(DateUtils.dateFormatter(dateFrom), DateUtils.dateFormatter(dateTo))
       .subscribe((response) => {
-        console.log(response.data);
         setData(response.data);
       });
   }, [dateFrom, dateTo]);
@@ -44,7 +43,7 @@ export const KardexPage = () => {
 
   useEffect(() => {
     loadData();
-  }, [dateFrom, dateTo]);
+  }, [loadData]);
 
   return (
     <ScrollView className="view-wrapper-scroll">

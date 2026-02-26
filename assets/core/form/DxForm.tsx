@@ -3,7 +3,7 @@ import Form, { FormRef, GroupItem, Item } from 'devextreme-react/form';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { FORM_ERRORS_EVENT, httpClient } from '../http/HttpClient';
+import { FORM_ERRORS_EVENT, httpClient } from '../../shared/api/HttpClient';
 import { confirm } from 'devextreme/ui/dialog';
 import DataGrid, {
   DataGridRef,
@@ -17,8 +17,8 @@ import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 import { useEvents } from '../event/EventHook';
 import { buildField } from './FormUtils';
-import { DateUtils } from '../utils/DateUtils';
-import toast, { getIRI } from '../utils/SharedUtils';
+import { DateUtils } from '../../shared/lib/DateUtils';
+import toast, { getIRI } from '../../shared/lib/SharedUtils';
 
 export interface DxFormOptions {
   className?: string;
@@ -86,6 +86,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   );
   const [on, emit] = useEvents();
   const detailPropertyName = options.detailPropertyName ?? 'items';
+  const detailNoDataText = options.requiredDetail
+    ? 'Agrega al menos un ítem para continuar'
+    : 'No hay ítems agregados';
 
   const getIdField = () => {
     return options.fields.find((field) => field.isIdentity)?.name ?? '';
@@ -117,13 +120,22 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     const formValidation = formRef.current?.instance().validate();
     const formValid = formValidation?.isValid ?? true;
     let gridValid = !gridRef.current?.instance().hasEditData();
+    let detailRequiredMissing = false;
 
     if (options.requiredDetail) {
       gridValid = (gridRef.current?.instance().totalCount() ?? 0) > 0;
+      if (!gridValid) {
+        detailRequiredMissing = true;
+      }
     }
 
     if (!formValid || !gridValid) {
-      toast('Uno o más campos del formulario no son válidos', 'error');
+      toast(
+        detailRequiredMissing && formValid
+          ? detailNoDataText
+          : 'Uno o más campos del formulario no son válidos',
+        detailRequiredMissing && formValid ? 'warning' : 'error',
+      );
     }
 
     return formValid && gridValid;
@@ -177,6 +189,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         gridRef.current?.instance().beginCustomLoading('Cargando...');
       } else {
         gridRef.current?.instance().endCustomLoading();
+        gridRef.current?.instance().option('noDataText', detailNoDataText);
       }
     });
 
@@ -252,11 +265,9 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       emit(options.events?.LOADING, true);
       const _formData = formRef.current?.instance().option('formData');
       let formData = { ..._formData };
-      console.log(uploadedFiles.current);
       uploadedFiles.current.forEach((file) => {
         formData[file.name] = file.iri;
       });
-      console.log(formData);
       options.fields.forEach((field: Field) => {
         if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
           const type = typeof formData[field.name];
@@ -384,8 +395,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
         formData = getMultipartFormData(formData);
       }
 
-      const hasId = formData[getIdField()] !== undefined;
-
       if (isEdit.current) {
         httpClient
           .patch(`${options.url}/${id}`, formData)
@@ -412,8 +421,11 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     return form;
   };
 
+  const setupObserversRef = useRef(setupObservers);
+  setupObserversRef.current = setupObservers;
+
   useEffect(() => {
-    setupObservers();
+    setupObserversRef.current();
   }, []);
 
   const getFormData = () => {
@@ -525,13 +537,16 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             <GroupItem colSpan={3}>
               <DataGrid
                 id={'form-detail-grid'}
+                className="dx-form-detail-grid"
                 ref={gridRef}
                 keyExpr={getDetailIdField()}
                 dataSource={data.current}
+                noDataText={detailNoDataText}
                 showBorders={true}
                 showRowLines={true}
                 showColumnLines={true}
                 focusedRowEnabled={true}
+                hoverStateEnabled={true}
                 repaintChangesOnly={true}
                 onInitNewRow={(e: any) => {
                   e.data = buildEmptyRow(options.detailFields ?? []);

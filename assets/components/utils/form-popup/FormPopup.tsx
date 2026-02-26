@@ -29,21 +29,21 @@ export const FormPopup = ({
   const { isXSmall } = useScreenSize();
   const validationGroup = useRef<ValidationGroupRef>(null);
 
-  const close = () => {
+  const close = useCallback(() => {
     validationGroup.current?.instance().reset();
     setVisible(false);
-  };
+  }, [setVisible]);
 
   const onCancelClick = useCallback(() => {
     close();
-  }, [close, validationGroup]);
+  }, [close]);
 
   const onSaveClick = useCallback(() => {
     if (!validationGroup.current?.instance().validate().isValid) return;
 
-    onSave && onSave();
+    onSave?.();
     close();
-  }, [validationGroup]);
+  }, [close, onSave]);
 
   return (
     <Popup

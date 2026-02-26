@@ -1,8 +1,9 @@
 import './TransferPage.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { transferEvents } from '@features/transfer';
 import { TransferFields } from './TransferFields';
 
 export const TransferPage = () => {
@@ -10,16 +11,6 @@ export const TransferPage = () => {
   const fields = TransferFields();
 
   const API_URL = Constants.API_BASE_URL + 'transfers';
-
-  const EVENTS = {
-    ADD: 'transfer:add',
-    EDIT: 'transfer:edit',
-    DELETE: 'transfer:delete',
-    SAVE: 'transfer:save',
-    CANCEL: 'transfer:cancel',
-    SUCCESS: 'transfer:success',
-    LOADING: 'transfer:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const TransferPage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={transferEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={transferEvents}>
+        <DxForm url={API_URL} fields={fields} events={transferEvents} />
       </DxDialog>
     </div>
   );

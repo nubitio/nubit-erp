@@ -1,36 +1,41 @@
 import './SalePage.scss';
-import { DATA_GRID_EVENTS, DxDataGrid, DxDataGridEvents } from '../../core/datagrid/DxDataGrid';
-import { DxForm, DxFormEvents, FORM_EVENTS } from '../../core/form/DxForm';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { Constants } from '../../core/common/Constants';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { DxForm, DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { Constants } from '@platform/common/Constants';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useRef, useState } from 'react';
 import {
   DiscountDialog,
   DiscountDialogEvent,
-} from '../../components/discount-dialog/DiscountDialog';
-import { saleService } from '../../service/sale.service';
-import * as qz from 'qz-tray';
+} from '@widgets/discount-dialog/DiscountDialog';
+import {
+  applySaleAutoInvoiceOnAdd,
+  cloneSaleToForm,
+  createQzInvoicePrinter,
+  createSaleToolbar,
+  runMakeInvoiceAction,
+  runVoidSaleAction,
+  saleEvents,
+  useSalePrintPreview,
+  useSalePageObservers,
+} from '@features/sale';
 import { CustomerPage } from '../Customer/CustomerPage';
 import { CustomerFields } from '../Customer/CustomerFields';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
-import { useEvents } from '../../core/event/EventHook';
-import { httpClient } from '../../core/http/HttpClient';
-import { forkJoin, map, of, switchMap } from 'rxjs';
-import toast from '../../core/utils/SharedUtils';
-import { prompt } from '../../components/library/prompt-dialog/PromptDialog';
-import { Setting, settings } from '../../Settings';
+import { useEvents } from '@platform/event/EventHook';
+import toast from '@shared/lib/SharedUtils';
+import { prompt } from '@widgets/library/prompt-dialog/PromptDialog';
 
 export const SalePage = () => {
   const [on, emit] = useEvents();
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const customerFormRef = useRef<DxFormEvents>(null);
-  const [printerName, setPrinterName] = useState<string | undefined>(undefined);
+  const qzInvoicePrinterRef = useRef(createQzInvoicePrinter());
+  const salePrintPreview = useSalePrintPreview();
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
-  const [isPreviewVisible, setIsPreviewVisible] = useState<boolean>(false);
-  const selectedSaleId = useRef<string | undefined>(undefined);
 
   const container = 'wrapper';
   const fields = SaleFields(formRef.current);
@@ -38,261 +43,81 @@ export const SalePage = () => {
 
   const API_URL = Constants.API_BASE_URL + 'movements';
 
-  const EVENTS = {
-    ADD: 'sale:add',
-    EDIT: 'sale:edit',
-    DELETE: 'sale:delete',
-    SAVE: 'sale:save',
-    CANCEL: 'sale:cancel',
-    SUCCESS: 'sale:success',
-    LOADING: 'sale:loading',
+  const setupPrinter = () => {
+    qzInvoicePrinterRef.current.initialize().catch((err: any) => {
+      console.error(err);
+    });
   };
+  const setupPrinterRef = useRef(setupPrinter);
 
-  const setupObservers = () => {
-    on<number>(DiscountDialogEvent.APPLY, (discountPercent: number) => {
+  useSalePageObservers({
+    on,
+    discountApplyEvent: DiscountDialogEvent.APPLY,
+    saleEvents,
+    customerSuccessEvent: CustomerPage.EVENTS.SUCCESS,
+    setPrintEnabled,
+    setCloneEnabled,
+    onDiscountApply: (discountPercent) => {
       const discount = Number(discountPercent * 100).toFixed(2);
       formRef.current?.setFieldValue('descuento', Number(discount));
-    });
-
-    on(FORM_EVENTS.ROW_ADDED, () => {
+    },
+    onDetailRowsChanged: () => {
       setTotal(formRef.current);
-    });
-
-    on(FORM_EVENTS.ROW_UPDATED, () => {
-      setTotal(formRef.current);
-    });
-
-    on(FORM_EVENTS.ROW_REMOVED, () => {
-      setTotal(formRef.current);
-    });
-
-    on(DATA_GRID_EVENTS.SELECTION_CHANGED, (e: any) => {
-      if (e.length === 1) {
-        setPrintEnabled(true);
-        setCloneEnabled(true);
-      } else {
-        setPrintEnabled(false);
-        setCloneEnabled(false);
-      }
-    });
-
-    on(CustomerPage.EVENTS.SUCCESS, (payload: any) => {
+    },
+    onCustomerCreated: (payload) => {
       formRef.current?.setFieldValue('cliente', payload.data);
-    });
+    },
+    onSaleAdd: async () => {
+      await applySaleAutoInvoiceOnAdd(formRef);
+    },
+  });
 
-    on(EVENTS.ADD, async () => {
-      const autoInvoice = await settings.get(Setting.AUTO_INVOICE);
-      if (autoInvoice) {
-        formRef.current?.setFieldValue('emit_invoice', autoInvoice.value === 'true');
-      }
+  useEffect(() => {
+    setupPrinterRef.current();
+  }, []);
+
+  const voidSale = async (saleId: string) => {
+    await runVoidSaleAction(saleId, {
+      askReason: () => prompt('Anular comprobante', 'Motivo de anulación'),
+      showLoading: (message) => gridRef.current?.showLoading(message),
+      hideLoading: () => gridRef.current?.hideLoading(),
+      refreshGrid: () => gridRef.current?.refresh(),
+      notify: (message, type) => toast(message, type),
     });
   };
 
-  const setupPrinter = () => {
-    qz.security.setSignatureAlgorithm('SHA256');
-    qz.security.setCertificatePromise(
-      (resolve: (value: string) => void, reject: (reason?: any) => void) => {
-        fetch(`${Constants.API_BASE_URL}qz/certificate`, { cache: 'no-store' })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('No se pudo cargar el certificado de QZ Tray.');
-            }
-            return response.text();
-          })
-          .then(resolve)
-          .catch(reject);
-      },
-    );
-    qz.security.setSignaturePromise((toSign: string) => {
-      return (resolve: (value: string) => void, reject: (reason?: any) => void) => {
-        fetch(`${Constants.API_BASE_URL}qz/sign`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ data: toSign }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error('No se pudo firmar el mensaje de QZ Tray.');
-            }
-            return response.text();
-          })
-          .then(resolve)
-          .catch(reject);
-      };
+  const makeInvoice = (saleId: string) => {
+    runMakeInvoiceAction(saleId, {
+      showLoading: (message) => gridRef.current?.showLoading(message),
+      hideLoading: () => gridRef.current?.hideLoading(),
+      refreshGrid: () => gridRef.current?.refresh(),
+      notify: (message, type) => toast(message, type),
+      printSale: print,
     });
+  };
 
-    ensureQzConnection().catch((err: any) => {
+  const print = (saleId: string) => {
+    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((err: any) => {
       console.error(err);
     });
   };
 
-  const ensureQzConnection = async (): Promise<string> => {
-    if (!qz.websocket.isActive()) {
-      await qz.websocket.connect();
-    }
-    const activePrinter = printerName ?? (await qz.printers.getDefault());
-    if (!printerName) {
-      setPrinterName(activePrinter);
-    }
-    return activePrinter;
-  };
-
-  let alreadySetup = false;
-
-  useEffect(() => {
-    if (!alreadySetup) {
-      setupObservers();
-      setupPrinter();
-      alreadySetup = true;
-    }
-  }, []);
-
-  const voidSale = async (saleId: string) => {
-    const reason = await prompt('Anular comprobante', 'Motivo de anulación');
-    if (!reason || reason.trim() === '') {
-      return;
-    }
-    gridRef.current?.showLoading('Anulando comprobante...');
-    saleService
-      .voidSale(saleId, reason)
-      .subscribe((response) => {
-        toast(response.data.message, response.data.success ? 'success' : 'error');
-        gridRef.current?.refresh();
-      })
-      .add(() => {
-        gridRef.current?.hideLoading();
-      });
-  };
-
-  const makeInvoice = (saleId: string) => {
-    gridRef.current?.showLoading('Generando comprobante...');
-    saleService
-      .makeInvoice(saleId)
-      .subscribe((response) => {
-        toast(response.data.message, response.data.success ? 'success' : 'error');
-        gridRef.current?.refresh();
-        print(saleId);
-      })
-      .add(() => {
-        gridRef.current?.hideLoading();
-      });
-  };
-
-  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  };
-
-  const print = (saleId: string) => {
-    ensureQzConnection()
-      .then((activePrinter) => {
-        const config = qz.configs.create(activePrinter);
-        saleService.printInvoice(saleId).subscribe((response) => {
-          const base64Data = arrayBufferToBase64(response.data);
-          const printData = [
-            {
-              type: 'raw',
-              format: 'base64',
-              data: base64Data,
-            },
-          ];
-          qz.print(config, printData).catch((err: any) => {
-            console.error(err);
-          });
-        });
-      })
-      .catch((err: any) => {
-        console.error(err);
-      });
-  };
-
-  const toolbar = [
-    {
-      text: 'Vista previa',
-      type: 'info',
-      onClick: () => {
-        const saleId = gridRef.current?.getSelectedRowKey();
-        if (saleId) {
-          selectedSaleId.current = saleId;
-          setIsPreviewVisible(true);
-        } else {
-          toast('Debe seleccionar una venta', 'warning');
-        }
-      },
-    },
-    {
-      text: 'Imprimir',
-      type: 'primary',
-      onClick: () => {
-        const saleId = gridRef.current?.getSelectedRowKey();
-        if (saleId) {
-          print(saleId);
-        } else {
-          toast('Debe seleccionar una venta', 'warning');
-        }
-      },
-      disabled: !printEnabled,
-    },
-    {
-      text: 'Anular',
-      type: 'danger',
-      onClick: () => {
-        const saleId = gridRef.current?.getSelectedRowKey();
-        if (saleId) {
-          voidSale(saleId);
-        } else {
-          toast('Debe seleccionar una venta', 'warning');
-        }
-      },
-    },
-    {
-      text: 'Generar comprobante',
-      type: 'warning',
-      onClick: () => {
-        const saleId = gridRef.current?.getSelectedRowKey();
-        if (saleId) {
-          makeInvoice(saleId);
-        } else {
-          toast('Debe seleccionar una venta', 'warning');
-        }
-      },
-    },
-    {
-      text: 'Duplicar',
-      type: 'info',
-      onClick: () => {
-        emit(FORM_EVENTS.LOADING, true);
-        const saleId = gridRef.current?.getSelectedRowKey();
-        httpClient
-          .get<any>(Constants.API_BASE_URL + 'movements/' + saleId)
-          .pipe(
-            switchMap((saleResponse) =>
-              forkJoin({
-                sale: of(saleResponse),
-                items: httpClient.get<any>(
-                  Constants.API_BASE_URL + 'movements/' + saleId + '/items',
-                ),
-              }),
-            ),
-            map(({ sale, items }) => ({
-              ...sale.data,
-              items: items.data,
-            })),
-          )
-          .subscribe({
-            next: (data) => {
-              emit(EVENTS.ADD, data);
-            },
-            complete: () => emit(FORM_EVENTS.LOADING, false),
-          });
-      },
-      disabled: !cloneEnabled,
-    },
-  ];
+  const toolbar = createSaleToolbar({
+    getSelectedSaleId: () => gridRef.current?.getSelectedRowKey(),
+    onPreview: salePrintPreview.openPreview,
+    onPrint: print,
+    onVoid: voidSale,
+    onMakeInvoice: makeInvoice,
+    onClone: (saleId) =>
+      cloneSaleToForm({
+        saleId,
+        emit,
+        addEventName: saleEvents.ADD,
+        loadingEventName: FORM_EVENTS.LOADING,
+      }),
+    printEnabled,
+    cloneEnabled,
+  });
 
   return (
     <div id={container}>
@@ -306,16 +131,16 @@ export const SalePage = () => {
         toolbar={toolbar}
         detailUrl={API_URL + '/{id}/items'}
         detailFields={detailFields}
-        events={EVENTS}
+        events={saleEvents}
         sort={[{ selector: 'date_created', desc: true }]}
       />
-      <DxDialog width={1000} height={760} events={EVENTS}>
+      <DxDialog width={1000} height={760} events={saleEvents}>
         <DxForm
           ref={formRef}
           url={API_URL}
           fields={fields}
           detailFields={detailFields}
-          events={EVENTS}
+          events={saleEvents}
           useIRI={true}
         />
       </DxDialog>
@@ -329,15 +154,10 @@ export const SalePage = () => {
         />
       </DxDialog>
       <SalePrintPreviewPopup
-        saleId={selectedSaleId.current}
-        visible={isPreviewVisible}
-        onPositive={() => {
-          setIsPreviewVisible(false);
-          window.open(`/receipt/${selectedSaleId.current}/ticket`, '_blank');
-        }}
-        onNegative={() => {
-          setIsPreviewVisible(false);
-        }}
+        saleId={salePrintPreview.selectedSaleIdRef.current}
+        visible={salePrintPreview.isPreviewVisible}
+        onPositive={salePrintPreview.confirmPreview}
+        onNegative={salePrintPreview.closePreview}
       />
     </div>
   );

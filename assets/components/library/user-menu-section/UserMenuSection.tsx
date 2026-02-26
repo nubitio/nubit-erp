@@ -40,7 +40,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
         onClick: signOut,
       },
     ],
-    [],
+    [navigate, signOut],
   );
 
   const listElementAttr = {

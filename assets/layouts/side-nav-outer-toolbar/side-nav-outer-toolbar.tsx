@@ -104,12 +104,12 @@ export const SideNavOuterToolbar = ({
         event?.stopPropagation();
       }
     },
-    [navigate, menuStatus, isLarge],
+    [navigate, menuStatus, isLarge, getMenuOpenState, getMenuStatus],
   ) as (e: TreeViewTypes.ItemClickEvent) => void;
 
   useEffect(() => {
     changeMenuStatus(() => menuStatus);
-  }, [isLarge]);
+  }, [isLarge, changeMenuStatus, menuStatus]);
 
   return (
     <div className="side-nav-outer-toolbar">

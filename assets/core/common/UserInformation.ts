@@ -1,6 +1,6 @@
 import { StorageUtils } from '../utils/StorageUtils';
 import { User } from '../../types';
-import { branchService } from '../../service/branch.service';
+import { branchService } from '../../features/branch';
 
 export const userInformation = () => {
   const user = StorageUtils.getItem('user') as User;

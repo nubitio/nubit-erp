@@ -58,7 +58,7 @@ export function useThemeContext() {
 
   useEffect(() => {
     setThemeToDOM(theme).then(() => setIsLoaded(true));
-  }, []);
+  }, [theme]);
 
   useEffect(() => {
     if (isLoaded) {

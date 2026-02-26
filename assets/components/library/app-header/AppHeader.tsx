@@ -13,13 +13,16 @@ import './AppHeader.scss';
 import NotificationPanel from '../notification-panel/NotificationPanel';
 import { Popover } from 'devextreme-react';
 import Assistant from '../../../features/assistant/Assistant';
+import { useScreenSize } from '../../../utils/media-query';
 
 export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
   const [assistantVisible, setAssistantVisible] = useState(false);
+  const { isXSmall } = useScreenSize();
 
   const toggleNotificationPanel = () => {
-    setNotificationPanelVisible(!notificationPanelVisible);
+    setAssistantVisible(false);
+    setNotificationPanelVisible((prev) => !prev);
   };
 
   return (
@@ -45,14 +48,16 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
           <Popover
             target="#notification"
             position="bottom"
-            width={400}
+            width={isXSmall ? 'calc(100vw - 20px)' : 400}
             height={380}
             visible={notificationPanelVisible}
-            onHiding={toggleNotificationPanel}
+            onHiding={() => setNotificationPanelVisible(false)}
+            hideOnOutsideClick
+            shading={false}
           >
             <NotificationPanel
               visible={notificationPanelVisible}
-              onHiding={toggleNotificationPanel}
+              onHiding={() => setNotificationPanelVisible(false)}
             />
           </Popover>
         </Item>
@@ -62,16 +67,19 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
               icon="ph ph-question"
               stylingMode="text"
               hint="Assistant"
-              onClick={() => setAssistantVisible((prev) => !prev)}
+              onClick={() => {
+                setNotificationPanelVisible(false);
+                setAssistantVisible((prev) => !prev);
+              }}
             />
           </div>
           <Popover
             target="#assistant-trigger"
             position="bottom"
-            width="calc(100vw - 32px)"
-            height="calc(100vh - 120px)"
-            maxWidth={520}
-            maxHeight={650}
+            width={isXSmall ? 'calc(100vw - 20px)' : 'calc(100vw - 32px)'}
+            height={isXSmall ? 'calc(100vh - 88px)' : 'calc(100vh - 120px)'}
+            maxWidth={isXSmall ? undefined : 520}
+            maxHeight={isXSmall ? undefined : 650}
             visible={assistantVisible}
             onHiding={() => setAssistantVisible(false)}
             shading={false}

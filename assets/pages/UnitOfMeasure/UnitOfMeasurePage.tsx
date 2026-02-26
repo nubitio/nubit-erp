@@ -1,8 +1,9 @@
 import './UnitOfMeasure.scss';
-import { Constants } from '../../core/common/Constants';
-import { DxDataGrid } from '../../core/datagrid/DxDataGrid';
-import { DxDialog } from '../../core/dialog/DxDialog';
-import { DxForm } from '../../core/form/DxForm';
+import { Constants } from '@platform/common/Constants';
+import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { unitOfMeasureEvents } from '@features/unitOfMeasure';
 import { UnitOfMeasureFields } from './UnitOfMeasureFields';
 
 export const UnitOfMeasurePage = () => {
@@ -10,16 +11,6 @@ export const UnitOfMeasurePage = () => {
   const fields = UnitOfMeasureFields();
 
   const API_URL = Constants.API_BASE_URL + 'unit-of-measures';
-
-  const EVENTS = {
-    ADD: 'unit-of-measure:add',
-    EDIT: 'unit-of-measure:edit',
-    DELETE: 'unit-of-measure:delete',
-    SAVE: 'unit-of-measure:save',
-    CANCEL: 'unit-of-measure:cancel',
-    SUCCESS: 'unit-of-measure:success',
-    LOADING: 'unit-of-measure:loading',
-  };
 
   return (
     <div id={container}>
@@ -31,10 +22,10 @@ export const UnitOfMeasurePage = () => {
         allowEdit={true}
         allowDelete={true}
         fields={fields}
-        events={EVENTS}
+        events={unitOfMeasureEvents}
       />
-      <DxDialog events={EVENTS}>
-        <DxForm url={API_URL} fields={fields} events={EVENTS} />
+      <DxDialog events={unitOfMeasureEvents}>
+        <DxForm url={API_URL} fields={fields} events={unitOfMeasureEvents} />
       </DxDialog>
     </div>
   );

@@ -1,8 +1,6 @@
 import { Field } from '../../core/field/Field';
 import { FieldBuilder } from '../../core/field/FieldBuilder';
 import { FieldType } from '../../core/field/FieldType';
-import { Constants } from '../../core/common/Constants';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const KardexFields = () => {
   const fields: Field[] = [];

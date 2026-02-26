@@ -1,5 +1,5 @@
 import './DxDialog.scss';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { Popup, ToolbarItem } from 'devextreme-react/popup';
 import { useScreenSize } from '../../utils/media-query';
@@ -71,8 +71,11 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
     on(options.events?.SUCCESS, () => close());
   };
 
+  const setupObserversRef = useRef(setupObservers);
+  setupObserversRef.current = setupObservers;
+
   useEffect(() => {
-    setupObservers();
+    setupObserversRef.current();
   }, []);
 
   useImperativeHandle(ref, () => ({
@@ -89,6 +92,14 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
         width={width}
         height={options.height ?? 'auto'}
         maxHeight={options.maxHeight ?? '90%'}
+        showCloseButton={true}
+        dragEnabled={false}
+        hideOnOutsideClick={false}
+        onHiding={(e) => {
+          if (isProcessing) {
+            e.cancel = true;
+          }
+        }}
         wrapperAttr={{ id: dialogId, class: options.fitContent ? 'fit-content' : 'form-popup' }}
       >
         {(options.footerVisible ?? true) && (
@@ -105,6 +116,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
                 type="default"
                 onClick={onSaveClick}
                 disabled={isProcessing}
+                className="dialog-save-button"
               >
                 <LoadIndicator className="button-indicator" visible={isProcessing} />
                 <span className="dx-button-text">{options.positiveText ?? 'Guardar'}</span>

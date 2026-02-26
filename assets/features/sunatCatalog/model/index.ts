@@ -1,0 +1,1 @@
+export { sunatCatalogEvents } from './events';
