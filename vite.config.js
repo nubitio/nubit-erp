@@ -44,6 +44,9 @@ export default defineConfig({
         start_url: '/#/pos',
       },
       workbox: {
+        // DevExtreme/vendor chunks can exceed Workbox default precache limit (2 MiB).
+        // Keep them precacheable to avoid failing CI image builds.
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         navigateFallback: '/index.html',
         runtimeCaching: [
           {
