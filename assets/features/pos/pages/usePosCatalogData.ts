@@ -90,7 +90,7 @@ export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) 
     );
 
     subscriptions.push(
-      httpClient.get<PosItem[]>(`${Constants.API_BASE_URL}products`).subscribe({
+      httpClient.get<PosItem[]>(`${Constants.API_BASE_URL}products?itemsPerPage=9999`).subscribe({
         next: (response) => {
           const products = (response.data ?? []).map(normalizeProduct);
           setMenuData(products);
