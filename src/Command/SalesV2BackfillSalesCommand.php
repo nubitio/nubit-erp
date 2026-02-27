@@ -244,7 +244,53 @@ SQL,
         $branchId = $this->resolveBranchIdForSale($sale);
 
         if ($cashRegisterId !== null) {
-            $cashShiftId = $this->connection->fetchOne(
+            $cashSessionId = $this->connection->fetchOne(
+                <<<'SQL'
+SELECT id
+FROM cash_sessions
+WHERE cash_register_id = :cash_register_id
+  AND (:branch_id IS NULL OR branch_id = :branch_id)
+  AND opened_at <= :issued_at
+  AND (closed_at IS NULL OR closed_at >= :issued_at)
+ORDER BY
+    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
+    opened_at DESC
+LIMIT 1
+SQL,
+                [
+                    'cash_register_id' => $cashRegisterId,
+                    'branch_id' => $branchId,
+                    'issued_at' => $issuedAt,
+                ]
+            );
+
+            if ($cashSessionId === false) {
+                $cashSessionId = $this->connection->fetchOne(
+                    <<<'SQL'
+SELECT id
+FROM cash_sessions
+WHERE cash_register_id = :cash_register_id
+  AND (:branch_id IS NULL OR branch_id = :branch_id)
+ORDER BY
+    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
+    opened_at DESC
+LIMIT 1
+SQL,
+                    [
+                        'cash_register_id' => $cashRegisterId,
+                        'branch_id' => $branchId,
+                    ]
+                );
+            }
+
+            if ($cashSessionId !== false) {
+                return [
+                    'cashSessionId' => (int) $cashSessionId,
+                    'cashRegisterId' => $cashRegisterId,
+                ];
+            }
+
+            $legacyShiftId = $this->connection->fetchOne(
                 <<<'SQL'
 SELECT id
 FROM cash_shift
@@ -262,38 +308,17 @@ SQL,
                 ]
             );
 
-            if ($cashShiftId === false) {
-                $cashShiftId = $this->connection->fetchOne(
-                    <<<'SQL'
-SELECT id
-FROM cash_shift
-WHERE cash_register_id = :cash_register_id
-ORDER BY
-    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-    opened_at DESC
-LIMIT 1
-SQL,
-                    [
-                        'cash_register_id' => $cashRegisterId,
-                    ]
-                );
-            }
-
-            if ($cashShiftId !== false) {
-                return [
-                    'cashSessionId' => (int) $cashShiftId,
-                    'cashRegisterId' => $cashRegisterId,
-                ];
+            if ($legacyShiftId !== false) {
+                return $this->upsertCashSessionFromLegacyShift((int) $legacyShiftId, $branchId);
             }
         }
 
         if ($branchId !== null) {
             $row = $this->connection->fetchAssociative(
                 <<<'SQL'
-SELECT cs.id AS cash_shift_id, cr.id AS cash_register_id
-FROM cash_shift cs
-INNER JOIN cash_register cr ON cr.id = cs.cash_register_id
-WHERE cr.branch_id = :branch_id
+SELECT cs.id AS cash_session_id, cs.cash_register_id
+FROM cash_sessions cs
+WHERE cs.branch_id = :branch_id
   AND cs.opened_at <= :issued_at
   AND (cs.closed_at IS NULL OR cs.closed_at >= :issued_at)
 ORDER BY
@@ -306,9 +331,9 @@ SQL,
                     'issued_at' => $issuedAt,
                 ]
             );
-            if (is_array($row) && isset($row['cash_shift_id'], $row['cash_register_id'])) {
+            if (is_array($row) && isset($row['cash_session_id'], $row['cash_register_id'])) {
                 return [
-                    'cashSessionId' => (int) $row['cash_shift_id'],
+                    'cashSessionId' => (int) $row['cash_session_id'],
                     'cashRegisterId' => (int) $row['cash_register_id'],
                 ];
             }
@@ -317,10 +342,9 @@ SQL,
         if ($branchId !== null) {
             $row = $this->connection->fetchAssociative(
                 <<<'SQL'
-SELECT cs.id AS cash_shift_id, cr.id AS cash_register_id
-FROM cash_shift cs
-INNER JOIN cash_register cr ON cr.id = cs.cash_register_id
-WHERE cr.branch_id = :branch_id
+SELECT cs.id AS cash_session_id, cs.cash_register_id
+FROM cash_sessions cs
+WHERE cs.branch_id = :branch_id
 ORDER BY
     CASE WHEN cs.status = 'OPEN' THEN 0 ELSE 1 END,
     cs.opened_at DESC
@@ -330,9 +354,9 @@ SQL,
                     'branch_id' => $branchId,
                 ]
             );
-            if (is_array($row) && isset($row['cash_shift_id'], $row['cash_register_id'])) {
+            if (is_array($row) && isset($row['cash_session_id'], $row['cash_register_id'])) {
                 return [
-                    'cashSessionId' => (int) $row['cash_shift_id'],
+                    'cashSessionId' => (int) $row['cash_session_id'],
                     'cashRegisterId' => (int) $row['cash_register_id'],
                 ];
             }
@@ -373,19 +397,23 @@ SQL,
 
         $this->connection->executeStatement(
             <<<'SQL'
-INSERT INTO cash_shift (
+INSERT INTO cash_sessions (
+    legacy_cash_shift_id,
     cash_register_id,
+    branch_id,
     opened_by,
     status,
-    opening_balance,
+    opening_amount,
     opened_at,
     closed_at,
     expected_amount,
     counted_amount,
-    difference,
-    note
+    difference_amount,
+    close_note
 ) VALUES (
+    NULL,
     :cash_register_id,
+    :branch_id,
     :opened_by,
     'CLOSED',
     0.00,
@@ -399,16 +427,132 @@ INSERT INTO cash_shift (
 SQL,
             [
                 'cash_register_id' => (int) $fallbackRegisterId,
+                'branch_id' => $branchId,
                 'opened_by' => $openedBy,
                 'opened_at' => $issuedAt,
                 'closed_at' => $issuedAt,
             ]
         );
-        $cashShiftId = $this->connection->lastInsertId();
+        $cashSessionId = $this->connection->lastInsertId();
 
         return [
-            'cashSessionId' => (int) $cashShiftId,
+            'cashSessionId' => (int) $cashSessionId,
             'cashRegisterId' => (int) $fallbackRegisterId,
+        ];
+    }
+
+    /**
+     * @return array{cashSessionId: int, cashRegisterId: int}
+     */
+    private function upsertCashSessionFromLegacyShift(int $legacyShiftId, ?string $branchId): array
+    {
+        $existing = $this->connection->fetchAssociative(
+            'SELECT id, cash_register_id FROM cash_sessions WHERE legacy_cash_shift_id = ? LIMIT 1',
+            [$legacyShiftId]
+        );
+        if (is_array($existing) && isset($existing['id'], $existing['cash_register_id'])) {
+            return [
+                'cashSessionId' => (int) $existing['id'],
+                'cashRegisterId' => (int) $existing['cash_register_id'],
+            ];
+        }
+
+        $legacyShift = $this->connection->fetchAssociative(
+            <<<'SQL'
+SELECT
+    id,
+    cash_register_id,
+    opened_by,
+    closed_by,
+    status,
+    opening_balance,
+    expected_amount,
+    counted_amount,
+    difference,
+    opened_at,
+    closed_at,
+    branch_id,
+    note
+FROM cash_shift
+WHERE id = ?
+LIMIT 1
+SQL,
+            [$legacyShiftId]
+        );
+
+        if (!is_array($legacyShift) || !isset($legacyShift['cash_register_id'], $legacyShift['opened_by'])) {
+            throw new \RuntimeException(sprintf(
+                'No se pudo cargar cash_shift %d para generar cash_session.',
+                $legacyShiftId
+            ));
+        }
+
+        $resolvedBranchId = $branchId;
+        if ($resolvedBranchId === null || trim($resolvedBranchId) === '') {
+            $resolvedBranchId = (string) ($legacyShift['branch_id'] ?? '');
+        }
+        if ($resolvedBranchId === '') {
+            $resolvedBranchId = (string) $this->connection->fetchOne(
+                'SELECT branch_id FROM cash_register WHERE id = ? LIMIT 1',
+                [(int) $legacyShift['cash_register_id']]
+            );
+        }
+
+        $statusRaw = strtoupper((string) ($legacyShift['status'] ?? 'CLOSED'));
+        $status = $statusRaw === 'OPEN' ? 'OPEN' : 'CLOSED';
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+INSERT INTO cash_sessions (
+    legacy_cash_shift_id,
+    cash_register_id,
+    branch_id,
+    opened_by,
+    closed_by,
+    status,
+    opening_amount,
+    expected_amount,
+    counted_amount,
+    difference_amount,
+    opened_at,
+    closed_at,
+    close_note
+) VALUES (
+    :legacy_cash_shift_id,
+    :cash_register_id,
+    :branch_id,
+    :opened_by,
+    :closed_by,
+    :status,
+    :opening_amount,
+    :expected_amount,
+    :counted_amount,
+    :difference_amount,
+    :opened_at,
+    :closed_at,
+    :close_note
+)
+SQL,
+            [
+                'legacy_cash_shift_id' => $legacyShiftId,
+                'cash_register_id' => (int) $legacyShift['cash_register_id'],
+                'branch_id' => $resolvedBranchId,
+                'opened_by' => (int) $legacyShift['opened_by'],
+                'closed_by' => $legacyShift['closed_by'] !== null ? (int) $legacyShift['closed_by'] : null,
+                'status' => $status,
+                'opening_amount' => $legacyShift['opening_balance'] ?? 0,
+                'expected_amount' => $legacyShift['expected_amount'] ?? 0,
+                'counted_amount' => $legacyShift['counted_amount'] ?? 0,
+                'difference_amount' => $legacyShift['difference'] ?? 0,
+                'opened_at' => $legacyShift['opened_at'] ?? (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                'closed_at' => $legacyShift['closed_at'],
+                'close_note' => (string) ($legacyShift['note'] ?? 'Imported from legacy cash_shift'),
+            ]
+        );
+
+        return [
+            'cashSessionId' => (int) $this->connection->lastInsertId(),
+            'cashRegisterId' => (int) $legacyShift['cash_register_id'],
         ];
     }
 
