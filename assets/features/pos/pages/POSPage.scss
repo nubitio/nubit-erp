@@ -75,6 +75,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Operator Header — full-width first row
 // ─────────────────────────────────────────────────────────────────────────────
+// ─── Operator header — single compact bar ────────────────────────────────────
 .pos-operator-header {
   grid-column: 1 / -1;
   grid-row: 1;
@@ -244,7 +245,31 @@
   margin-left: 0.15rem;
 }
 
-// Network badge
+// Connectivity dot — minimal 8px pulsing indicator, tooltip on hover
+// Replaces the verbose text badge; all info in title/aria-label
+.pos-net-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: default;
+
+  &.is-online  { background: var(--pos-success); }
+  &.is-offline { background: var(--pos-danger); }
+
+  // Syncing: pulse animation draws attention without taking text space
+  &.is-syncing {
+    background: var(--pos-warning);
+    animation: pos-dot-pulse 1.2s ease-in-out infinite;
+  }
+}
+
+@keyframes pos-dot-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+// Network badge (legacy — kept for any other consumers)
 .pos-net-badge {
   display: inline-flex;
   align-items: center;
@@ -700,13 +725,23 @@
 // ─── Product grid ─────────────────────────────────────────────────────────────
 .pos-grid {
   display: grid;
+  // Minimum 160px; auto-fill prevents orphaned wide cards
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  // Enforce uniform row heights — all cards inside a row grow to the tallest one
+  // The card internal layout uses fixed-height zones so they are always identical
+  grid-auto-rows: 1fr;
   gap: 0.65rem;
   align-content: start;
   padding: 0.1rem;
 }
 
-// ─── Product Card (simplified: image + name + price + circular add button) ─────
+// ─── Product Card ─────────────────────────────────────────────────────────────
+// Geometry contract:
+//   [media]      — aspect-ratio 16/9, flex-shrink 0
+//   [title-zone] — EXACTLY 2 lines, regardless of actual text length
+//   [footer]     — price + add button, pinned to bottom via margin-top: auto
+// This guarantees the + button is always at the same Y position across all cards
+// in a row, even when names have wildly different lengths.
 .pos-product-card {
   display: flex;
   flex-direction: column;
@@ -837,32 +872,40 @@
 }
 
 .pos-product-card__body {
-  flex: 1;
+  // flex: 1 removed — body grows only to fill the title zone + footer
+  // The outer grid's grid-auto-rows: 1fr ensures all cards in a row are equal height
   min-width: 0;
   padding: 0.5rem 0.55rem 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
 }
 
+// ── Title zone: FIXED height = exactly 2 visual lines ─────────────────────
+// Even 1-line names reserve this height so the footer stays at a constant Y.
+// font-size: 0.82rem × line-height: 1.3 × 2 lines ≈ 2.132rem
 .pos-product-card__title {
   font-weight: 600;
   font-size: 0.82rem;
   line-height: 1.3;
+  // Hard-clamp at 2 lines
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  // Fixed-height zone anchors the footer position across all cards
+  height: calc(2 * 0.82rem * 1.3);
   color: var(--pos-text);
 }
 
-// Price + add button — same row footer
+// Price + add button — pinned to the bottom of the card body
 .pos-product-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.35rem;
   padding: 0.3rem 0 0.4rem;
+  // Push footer to the card bottom regardless of title height
+  margin-top: auto;
 }
 
 .pos-product-card__price {
@@ -1258,48 +1301,58 @@
   }
 }
 
+// ─── Cart line — rigid 3-column grid ─────────────────────────────────────────
+// Geometry contract:
+//   [info]     minmax(0,1fr)  — name + unit price, clamped; never expands width
+//   [qty]      auto           — − · 2 · + controls, fixed square buttons
+//   [total]    auto           — right-aligned price, fixed min-width
+//
+// min-height: var(--pos-touch) ensures 44px touch target regardless of content.
+// align-items: center vertically centres qty/total with the info block.
+// No flex: 1 anywhere — every column is constrained.
 .pos-line {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
+  column-gap: 0.55rem;
+  min-height: calc(var(--pos-touch) + 0.5rem); // ~3.25rem — comfortable touch target
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-radius);
   background: var(--pos-card-alt);
-  padding: 0.6rem 0.75rem;
+  padding: 0.5rem 0.65rem;
   transition: border-color var(--pos-transition);
 
   &:hover { border-color: var(--pos-primary-border); }
 }
 
+// Info block: constrained to available width, never bleeds into controls
 .pos-line__body {
-  min-width: 0;
-  flex: 1 1 auto;
+  min-width: 0;  // critical for text-overflow to work inside grid
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
 }
 
+// Name: single line + ellipsis — keeps row height deterministic
 .pos-line__name {
   font-weight: 700;
   font-size: 0.84rem;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: nowrap;  // single line — prevents row-height drift
   color: var(--pos-text);
+  max-width: 100%; // respects the grid column width
 }
 
 .pos-line__unit {
   font-size: 0.75rem;
   color: var(--pos-muted);
-  margin-top: 0.1rem;
+  white-space: nowrap;
 }
 
-.pos-line__controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
+// Controls column: qty group — vertically centred by grid align-items: center
+// (pos-line__controls wrapper removed from JSX; qty and total are now direct grid children)
 .pos-line__qty {
   display: flex;
   align-items: center;
@@ -1391,13 +1444,15 @@
   }
 }
 
+// Total column: right-aligned, fixed min-width prevents shift when value changes
 .pos-line__total {
   font-size: 0.875rem;
   font-weight: 800;
   color: var(--pos-text);
   white-space: nowrap;
-  min-width: 3.5rem;
+  min-width: 4rem;    // accommodates up to 6-digit amounts + currency symbol
   text-align: right;
+  align-self: center; // explicit — stays centred even if body grows taller
 }
 
 // ─── Note section (collapsible) ───────────────────────────────────────────────
@@ -1933,6 +1988,27 @@
 @media (max-width: 1280px) {
   .pos-shell {
     grid-template-columns: 1fr 420px;
+  }
+
+  // Tighten header on mid-range screens
+  .pos-operator-header {
+    font-size: 0.77rem;
+  }
+
+  // Context labels hidden to save space — icon + value is enough
+  .pos-operator-header__label {
+    display: none;
+  }
+
+  .pos-operator-header__ctx strong {
+    max-width: 90px;
+    font-size: 0.77rem;
+  }
+
+  // Compact category chips
+  .pos-chip {
+    padding: 0.32rem 0.65rem;
+    font-size: 0.78rem;
   }
 }
 
