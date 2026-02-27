@@ -50,6 +50,7 @@ const POSPage = () => {
   } = usePosCatalogData({ currentBranchId: branchId });
 
   const customersState = usePosCustomers();
+  const clearSelectedCustomer = customersState.clearSelectedCustomer;
 
   const filteredMenu = menuData.filter((item) => {
     const matchesCategory = !activeCategory || item.category.id === activeCategory;
@@ -223,6 +224,7 @@ const POSPage = () => {
         quickMode={quickMode}
         customerSearch={customersState.customerSearch}
         setCustomerSearch={customersState.setCustomerSearch}
+        clearSelectedCustomer={clearSelectedCustomer}
         selectedCustomerId={customersState.selectedCustomerId}
         setSelectedCustomerId={customersState.setSelectedCustomerId}
         customerOptions={customersState.customerOptions}

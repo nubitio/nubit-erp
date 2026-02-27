@@ -56,9 +56,13 @@ export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) 
             currentBranchId === ''
               ? list
               : list.filter(
-                  (warehouse) => String(warehouse.branch?.id ?? '') === currentBranchId || !warehouse.branch?.id,
+                  (warehouse) =>
+                    String(warehouse.branch?.id ?? '').trim() === currentBranchId.trim() ||
+                    String(warehouse.branch ?? '').trim() === currentBranchId.trim() ||
+                    !warehouse.branch?.id,
                 );
 
+          // Fall back to full list if filtering removed everything
           const finalList = filteredByBranch.length > 0 ? filteredByBranch : list;
           setWarehouses(finalList);
           if (finalList.length > 0) {

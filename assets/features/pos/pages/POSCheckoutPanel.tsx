@@ -31,6 +31,7 @@ interface POSCheckoutPanelProps {
   quickMode: boolean;
   customerSearch: string;
   setCustomerSearch: (value: string) => void;
+  clearSelectedCustomer: () => void;
   selectedCustomerId: number | null;
   setSelectedCustomerId: (value: number | null) => void;
   customerOptions: CustomerOption[];
@@ -92,6 +93,7 @@ export function POSCheckoutPanel({
   quickMode,
   customerSearch,
   setCustomerSearch,
+  clearSelectedCustomer,
   selectedCustomerId,
   setSelectedCustomerId,
   customerOptions,
@@ -310,8 +312,7 @@ export function POSCheckoutPanel({
                   type="button"
                   className="pos-section-toggle__clear"
                   onClick={() => {
-                    setSelectedCustomerId(null);
-                    setCustomerSearch('');
+                    clearSelectedCustomer();
                     setCustomerOpen(false);
                   }}
                   aria-label="Quitar cliente"
