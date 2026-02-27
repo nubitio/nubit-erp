@@ -22,7 +22,8 @@ readonly class DashboardRepository
     {
         $ctx = $this->buildQueryContext($branchId);
         $params = $ctx['params'];
-        $receiptFilter = $ctx['receiptFilter'];
+        $receiptFilter = $ctx['receiptFilterSales'];
+        $summaryReceiptFilter = $ctx['receiptFilterSummary'];
         $failedSegments = [];
 
         $summary = $this->safeQuery('summary', fn () => $this->connection->fetchAssociative("
@@ -42,29 +43,34 @@ readonly class DashboardRepository
                     DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN m.cliente_id END
                 ) AS customers_month,
                 COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN m.cliente_id END) AS customers_week
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
-              AND a.local_id = :branchId
-              {$receiptFilter}
+            FROM (
+                SELECT
+                    s.id,
+                    s.grand_total AS total,
+                    s.customer_id AS cliente_id,
+                    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) AS sale_date,
+                    s.legacy_movimiento_id
+                FROM sales s
+                WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                  AND s.branch_id = :branchId
+            ) m
+                INNER JOIN time_dimension td ON td.date = m.sale_date
+            WHERE 1 = 1
+              {$summaryReceiptFilter}
         ", $params) ?: [], [], $failedSegments);
 
         $salesByDay = $this->safeQuery('salesByDay', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 td.day AS day,
                 td.day_name AS day_name,
-                COALESCE(SUM(m.total), 0) AS total
+                COALESCE(SUM(s.grand_total), 0) AS total
             FROM time_dimension td
-            LEFT JOIN movimiento m
-                ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-                AND m.estado = 1
-                AND m.tipo_id = 2
-            LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
+            LEFT JOIN sales s
+                ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+                AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                AND s.branch_id = :branchId
             WHERE td.year = :currentYear
               AND td.month = :currentMonth
-              AND (m.movimiento_id IS NULL OR a.local_id = :branchId)
               {$receiptFilter}
             GROUP BY td.id, td.day
             ORDER BY td.day
@@ -75,16 +81,14 @@ readonly class DashboardRepository
                 CONCAT(LEFT(td.month_name, 3), ' ', td.year) AS label,
                 td.year,
                 td.month,
-                COALESCE(SUM(m.total), 0) AS total
+                COALESCE(SUM(s.grand_total), 0) AS total
             FROM time_dimension td
-            LEFT JOIN movimiento m
-                ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-                AND m.estado = 1
-                AND m.tipo_id = 2
-            LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
+            LEFT JOIN sales s
+                ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+                AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                AND s.branch_id = :branchId
             WHERE td.date >= :monthsBackDate
               AND td.date <= :today
-              AND (m.movimiento_id IS NULL OR a.local_id = :branchId)
               {$receiptFilter}
             GROUP BY td.year, td.month
             ORDER BY td.year, td.month
@@ -93,13 +97,13 @@ readonly class DashboardRepository
         $paymentMethodShare = $this->safeQuery('paymentMethods', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
-                COALESCE(SUM(m.total), 0) AS total
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
+                COALESCE(SUM(sp.amount), 0) AS total
+            FROM sales s
+                INNER JOIN sale_payments sp ON sp.sale_id = s.id
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               AND td.date >= :last30days
               {$receiptFilter}
             GROUP BY pm.id, pm.name
@@ -113,17 +117,16 @@ readonly class DashboardRepository
                     td.date AS date_value,
                     DATE_FORMAT(td.date, '%d %b') AS label,
                     COALESCE(pm.name, 'Sin método') AS method,
-                    COALESCE(SUM(m.total), 0) AS total
+                    COALESCE(SUM(sp.amount), 0) AS total
                 FROM time_dimension td
-                LEFT JOIN movimiento m
-                    ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-                    AND m.estado = 1
-                    AND m.tipo_id = 2
-                LEFT JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
+                LEFT JOIN sales s
+                    ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+                    AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                    AND s.branch_id = :branchId
+                LEFT JOIN sale_payments sp ON sp.sale_id = s.id
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
                 WHERE td.date >= :last30days
                   AND td.date <= :today
-                  AND (m.movimiento_id IS NULL OR a.local_id = :branchId)
                   {$receiptFilter}
                 GROUP BY td.date, pm.id, pm.name
                 ORDER BY td.date
@@ -135,16 +138,17 @@ readonly class DashboardRepository
         $topProducts = $this->safeQuery('topProducts', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(p.descripcion, 'Sin producto') AS product,
-                SUM(md.cantidad) AS quantity,
-                SUM(md.precio_total) AS total
-            FROM movimiento_detalle md
-                INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN producto p ON md.producto_id = p.producto_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
+                SUM(si.qty) AS quantity,
+                SUM(si.net_amount) AS total
+            FROM sale_items si
+                INNER JOIN sales s ON s.id = si.sale_id
+                    AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                    AND s.branch_id = :branchId
+                LEFT JOIN producto p ON si.product_id = p.producto_id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
             WHERE td.date >= :last30days
               {$receiptFilter}
-            GROUP BY md.producto_id, p.descripcion
+            GROUP BY si.product_id, p.descripcion
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);
@@ -153,13 +157,12 @@ readonly class DashboardRepository
             SELECT
                 COALESCE(c.razon_social, 'Cliente') AS customer,
                 COUNT(*) AS invoices,
-                SUM(m.total) AS total
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN cliente c ON m.cliente_id = c.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
+                SUM(s.grand_total) AS total
+            FROM sales s
+                LEFT JOIN cliente c ON s.customer_id = c.id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               AND td.date >= :last30days
               {$receiptFilter}
             GROUP BY c.id, c.razon_social
@@ -173,8 +176,9 @@ readonly class DashboardRepository
                 COUNT(*) AS count,
                 SUM(i.total) AS total
             FROM tax_document i
-                INNER JOIN movimiento m ON i.movimiento_id = m.movimiento_id AND m.estado = 1 AND m.tipo_id = 2
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
+                INNER JOIN sales s ON i.movimiento_id = s.legacy_movimiento_id
+                    AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                    AND s.branch_id = :branchId
                 LEFT JOIN tipo_comprobante vt ON i.document_type = vt.codigo
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
             WHERE td.year = :currentYear AND td.month = :currentMonth
@@ -205,10 +209,9 @@ readonly class DashboardRepository
                     CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN n.total ELSE 0 END
                 ) AS refunds_month
             FROM tax_document n
-                INNER JOIN movimiento m ON n.movimiento_id = m.movimiento_id
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.issue_date, 'UTC', 'America/Lima'))
             WHERE n.document_type IN ('07', '08')
+              AND n.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
         $payload = $this->emptyOverviewPayload();
@@ -317,7 +320,8 @@ readonly class DashboardRepository
     {
         $ctx = $this->buildQueryContext($branchId);
         $params = $ctx['params'];
-        $receiptFilter = $ctx['receiptFilter'];
+        $receiptFilter = $ctx['receiptFilterSales'];
+        $summaryReceiptFilter = $ctx['receiptFilterSummary'];
         $failedSegments = [];
         $payload = $this->emptyLitePayload();
 
@@ -325,35 +329,40 @@ readonly class DashboardRepository
             SELECT
                 SUM(CASE WHEN td.date = :today THEN m.total ELSE 0 END) AS sales_today,
                 SUM(CASE WHEN td.date = :today THEN 1 ELSE 0 END) AS invoices_today
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
-              AND a.local_id = :branchId
-              {$receiptFilter}
+            FROM (
+                SELECT
+                    s.id,
+                    s.grand_total AS total,
+                    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) AS sale_date,
+                    s.legacy_movimiento_id
+                FROM sales s
+                WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+                  AND s.branch_id = :branchId
+            ) m
+                INNER JOIN time_dimension td ON td.date = m.sale_date
+            WHERE 1 = 1
+              {$summaryReceiptFilter}
         ", $params) ?: [], [], $failedSegments);
 
         $refunds = $this->safeQuery('refundsLite', fn () => $this->connection->fetchAssociative("
             SELECT
                 SUM(CASE WHEN td.date = :today THEN n.total ELSE 0 END) AS refunds_today
             FROM tax_document n
-                INNER JOIN movimiento m ON n.movimiento_id = m.movimiento_id
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
                 INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.issue_date, 'UTC', 'America/Lima'))
             WHERE n.document_type IN ('07', '08')
+              AND n.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
         $paymentMethodsToday = $this->safeQuery('paymentMethodsToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
-                COALESCE(SUM(m.total), 0) AS total
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
+                COALESCE(SUM(sp.amount), 0) AS total
+            FROM sales s
+                INNER JOIN sale_payments sp ON sp.sale_id = s.id
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               AND td.date = :today
               {$receiptFilter}
             GROUP BY pm.id, pm.name
@@ -363,13 +372,12 @@ readonly class DashboardRepository
 
         $hourlySalesToday = $this->safeQuery('hourlySalesToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
-                DATE_FORMAT(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'), '%H:00') AS hour_label,
-                COALESCE(SUM(m.total), 0) AS total
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
+                DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:00') AS hour_label,
+                COALESCE(SUM(s.grand_total), 0) AS total
+            FROM sales s
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               AND td.date = :today
               {$receiptFilter}
             GROUP BY hour_label
@@ -378,19 +386,20 @@ readonly class DashboardRepository
 
         $recentSalesToday = $this->safeQuery('recentSalesToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
-                m.movimiento_id AS id,
-                DATE_FORMAT(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
+                s.id AS id,
+                DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:%i') AS issued_at,
                 COALESCE(pm.name, 'Sin método') AS payment_method,
-                m.total AS total
-            FROM movimiento m
-                INNER JOIN almacen a ON m.almacen_id = a.almacen_id AND a.local_id = :branchId
-                LEFT JOIN payment_method pm ON m.tipo_pago = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(m.fecha, 'UTC', 'America/Lima'))
-            WHERE m.estado = 1
-              AND m.tipo_id = 2
+                s.grand_total AS total
+            FROM sales s
+                LEFT JOIN sale_payments sp ON sp.sale_id = s.id
+                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               AND td.date = :today
               {$receiptFilter}
-            ORDER BY m.fecha DESC
+            GROUP BY s.id, issued_at, payment_method, total
+            ORDER BY s.issued_at DESC
             LIMIT 10
         ", $params), [], $failedSegments);
 
@@ -414,7 +423,7 @@ readonly class DashboardRepository
             'total' => (float) $row['total'],
         ], $hourlySalesToday);
         $payload['recentSalesToday'] = array_map(static fn (array $row): array => [
-            'id' => (int) $row['id'],
+            'id' => (string) $row['id'],
             'issuedAt' => $row['issued_at'],
             'paymentMethod' => $row['payment_method'],
             'total' => (float) $row['total'],
@@ -448,7 +457,8 @@ readonly class DashboardRepository
                 'last7days' => $lastWeekStart->format('Y-m-d'),
                 'monthsBackDate' => $today->modify('-11 months')->format('Y-m-d'),
             ],
-            'receiptFilter' => $this->receiptFilter(),
+            'receiptFilterSales' => $this->receiptFilter('s'),
+            'receiptFilterSummary' => $this->receiptFilter('m'),
         ];
     }
 
@@ -526,11 +536,11 @@ readonly class DashboardRepository
         }
     }
 
-    private function receiptFilter(): string
+    private function receiptFilter(string $salesAlias = 's'): string
     {
         if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
             return 'AND EXISTS (SELECT 1 FROM tax_document td2 '
-                . 'WHERE td2.movimiento_id = m.movimiento_id '
+                . "WHERE td2.movimiento_id = {$salesAlias}.legacy_movimiento_id "
                 . "AND td2.document_type IN ('01','03'))";
         }
 

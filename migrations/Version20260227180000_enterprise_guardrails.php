@@ -322,6 +322,20 @@ WHERE fix.target_session_id IS NOT NULL
   )
 SQL);
 
+        // Last-resort cleanup: unresolved session references must be nullable
+        // so strict branch/session FK can be added safely.
+        $this->addSql(<<<'SQL'
+UPDATE sales s
+SET s.cash_session_id = NULL
+WHERE s.cash_session_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM cash_sessions v
+      WHERE v.id = s.cash_session_id
+        AND v.branch_id = s.branch_id
+  )
+SQL);
+
         // Fix returns.session with branch-safe fallback.
         $this->addSql(<<<'SQL'
 UPDATE returns r
@@ -356,6 +370,19 @@ INNER JOIN (
 SET r.cash_session_id = fix.target_session_id
 WHERE r.cash_session_id IS NOT NULL
   AND fix.target_session_id IS NOT NULL
+  AND NOT EXISTS (
+      SELECT 1
+      FROM cash_sessions v
+      WHERE v.id = r.cash_session_id
+        AND v.branch_id = r.branch_id
+  )
+SQL);
+
+        // Same cleanup for returns to avoid FK violations on legacy rows.
+        $this->addSql(<<<'SQL'
+UPDATE returns r
+SET r.cash_session_id = NULL
+WHERE r.cash_session_id IS NOT NULL
   AND NOT EXISTS (
       SELECT 1
       FROM cash_sessions v
