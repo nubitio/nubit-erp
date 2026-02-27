@@ -16,6 +16,7 @@ use App\Entity\Sale;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;
+use App\State\Sale\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
 use DateTime;
 use Doctrine\DBAL\Exception;
@@ -32,6 +33,7 @@ readonly class SaleVoidUseCase
         private TaxDocumentVoidUpdater $taxDocumentVoidUpdater,
         private CashRefundRegistrar $cashRefundRegistrar,
         private AuditLogger $auditLogger,
+        private SalesWriteGateway $salesWriteGateway,
     ) {
     }
 
@@ -80,6 +82,7 @@ readonly class SaleVoidUseCase
             $this->entityManager->persist($sale);
             $this->cashRefundRegistrar->register($sale, $userId);
             $this->entityManager->flush();
+            $this->syncVoidToSalesV2($sale, $reason);
 
             $this->auditLogger->log('sale.void.result', [
                 'sale_id' => $saleId,
@@ -127,6 +130,7 @@ readonly class SaleVoidUseCase
             $this->cashRefundRegistrar->register($sale, $userId);
 
             $this->entityManager->flush();
+            $this->syncVoidToSalesV2($sale, $reason);
             $connection->commit();
 
             $message = $sunatResponse->success
@@ -150,6 +154,18 @@ readonly class SaleVoidUseCase
                 'error' => $throwable->getMessage(),
             ]);
             throw $throwable;
+        }
+    }
+
+    private function syncVoidToSalesV2(Sale $sale, string $reason): void
+    {
+        try {
+            $this->salesWriteGateway->markVoided($sale, $reason);
+        } catch (\Throwable $exception) {
+            $this->auditLogger->log('sale.void.sales_v2_sync_failed', [
+                'sale_id' => $sale->getId(),
+                'error' => $exception->getMessage(),
+            ]);
         }
     }
 }

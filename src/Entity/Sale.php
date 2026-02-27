@@ -293,6 +293,16 @@ class Sale
         return $this->id;
     }
 
+    /**
+     * Transitional setter to allow application-assigned ids during migration.
+     */
+    public function setId(?string $id): static
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
     public function getOperacion(): ?LogisticOperation
     {
         return $this->operacion;
