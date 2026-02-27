@@ -6,6 +6,8 @@ namespace App\Command;
 
 use App\Core\Service\TenantNotificationService;
 use Override;
+use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 use RuntimeException;
 use App\Core\Application\Command\TenantAwareCommand;
@@ -49,12 +51,14 @@ class SendDailySummaryCommand extends TenantAwareCommand
                 'SELECT nombre_comercial FROM empresa LIMIT 1'
             );
 
-            // Get today's date in Y-m-d format
-            $today = date('Y-m-d');
+            // Keep day boundaries aligned with operational reporting timezone.
+            $today = (new DateTimeImmutable('now', new DateTimeZone('America/Lima')))->format('Y-m-d');
 
-            // Get sales count for today
+            // Get sales count for today from Sales V2.
             $salesCount = (int)$this->connection->fetchOne(
-                'SELECT COUNT(*) FROM movimiento WHERE tipo_id = 2 AND DATE(fecha) = ?',
+                "SELECT COUNT(*)
+                 FROM sales s
+                 WHERE DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) = ?",
                 [$today]
             );
 
@@ -106,8 +110,10 @@ class SendDailySummaryCommand extends TenantAwareCommand
             );
             $cancellationsCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document t
-                 INNER JOIN movimiento m ON m.movimiento_id = t.movimiento_id
-                 WHERE t.document_type IN ('01', '03') AND m.estado = 2 AND DATE(t.issue_date) = ?",
+                 INNER JOIN sales s ON s.legacy_movimiento_id = t.movimiento_id
+                 WHERE t.document_type IN ('01', '03')
+                   AND s.status = 'VOIDED'
+                   AND DATE(CONVERT_TZ(t.issue_date, 'UTC', 'America/Lima')) = ?",
                 [$today]
             );
             $invoicesErrorCount = $invoicesRejectedCount + $invoicesTechnicalErrorCount;

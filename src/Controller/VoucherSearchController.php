@@ -60,6 +60,10 @@ class VoucherSearchController extends AbstractController
                 );
 
                 if ($document !== null) {
+                    $saleStatusV2 = strtoupper(trim((string) ($document['sale_status_v2'] ?? '')));
+                    $legacySaleStatus = (int) ($document['sale_status'] ?? 1);
+                    $isVoided = $saleStatusV2 === 'VOIDED' || in_array($legacySaleStatus, [0, 2], true);
+
                     $result = [
                         'type' => self::VOUCHER_TYPES[strval($document['document_type'])] ?? 'Comprobante',
                         'series' => $document['series'],
@@ -67,7 +71,7 @@ class VoucherSearchController extends AbstractController
                         'date' => date('d/m/Y', strtotime(strval($document['issue_date']))),
                         'total' => $document['total'],
                         'hash' => $document['digest'],
-                        'status' => (int) ($document['sale_status'] ?? 1) === 2 ? 'ANULADO' : 'ACEPTADO',
+                        'status' => $isVoided ? 'ANULADO' : 'ACEPTADO',
                         'pdf_url' => ReceiptPayload::publicUrl(
                             strval($document['document_type']),
                             strval($document['movimiento_id'])
