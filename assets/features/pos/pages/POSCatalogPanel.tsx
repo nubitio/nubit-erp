@@ -72,6 +72,12 @@ export function POSCatalogPanel({
             placeholder="Buscar producto… (F2)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && filteredMenu.length > 0 && !loading) {
+                e.preventDefault();
+                void onAddToCart(filteredMenu[0]);
+              }
+            }}
             autoComplete="off"
             autoFocus
           />
@@ -129,8 +135,14 @@ export function POSCatalogPanel({
       {/* Scrollable product grid */}
       <div className="pos-catalog__scroll">
         {loading ? (
-          <div className="pos-state">
-            <p>Cargando catálogo...</p>
+          <div className="pos-skeleton-grid">
+            {Array.from({ length: 12 }, (_, i) => (
+              <div key={i} className="pos-skeleton-card">
+                <div className="pos-skeleton-card__media" />
+                <div className="pos-skeleton-card__line" />
+                <div className="pos-skeleton-card__line pos-skeleton-card__line--short" />
+              </div>
+            ))}
           </div>
         ) : loadError ? (
           <div className="pos-state is-error">
@@ -138,9 +150,22 @@ export function POSCatalogPanel({
           </div>
         ) : filteredMenu.length === 0 ? (
           <div className="pos-state">
-            <PackageSearch size={32} />
-            <p>Sin resultados</p>
-            <span>Prueba con otro nombre, SKU o categoría.</span>
+            <PackageSearch size={36} strokeWidth={1.4} />
+            <p>{searchQuery ? 'Sin resultados' : 'Catálogo vacío'}</p>
+            <span>
+              {searchQuery
+                ? 'Prueba con otro nombre, SKU o código de barras.'
+                : 'No hay productos disponibles en este almacén.'}
+            </span>
+            {searchQuery && (
+              <button
+                type="button"
+                className="pos-state__action-btn"
+                onClick={() => setSearchQuery('')}
+              >
+                Limpiar búsqueda
+              </button>
+            )}
           </div>
         ) : (
           <div className="pos-grid">

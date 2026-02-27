@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   BadgePercent,
   Banknote,
@@ -8,6 +8,8 @@ import {
   Eraser,
   Link,
   MessageSquare,
+  Minus,
+  Plus,
   Receipt,
   ShoppingCart,
   Smartphone,
@@ -132,6 +134,43 @@ export function POSCheckoutPanel({
   const [customerOpen, setCustomerOpen] = useState(false);
   const [showMorePayments, setShowMorePayments] = useState(false);
 
+  // ── Micro-interaction state ───────────────────────────────────────────────
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [newItemIds, setNewItemIds] = useState<Set<string>>(new Set());
+  const [totalUpdated, setTotalUpdated] = useState(false);
+  const prevProcessing = useRef(false);
+  const prevCartIds = useRef<Set<string>>(new Set());
+  const prevTotal = useRef(total);
+
+  // Success flash: fires when isProcessingSale goes true → false
+  useEffect(() => {
+    if (prevProcessing.current && !isProcessingSale) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1700);
+    }
+    prevProcessing.current = isProcessingSale;
+  }, [isProcessingSale]);
+
+  // New line entrance animation
+  useEffect(() => {
+    const incoming = cart.map((i) => i.id).filter((id) => !prevCartIds.current.has(id));
+    if (incoming.length > 0) {
+      const next = new Set(incoming);
+      setNewItemIds(next);
+      setTimeout(() => setNewItemIds(new Set()), 300);
+    }
+    prevCartIds.current = new Set(cart.map((i) => i.id));
+  }, [cart]);
+
+  // Total flash when value changes
+  useEffect(() => {
+    if (prevTotal.current !== total && total > 0) {
+      setTotalUpdated(true);
+      setTimeout(() => setTotalUpdated(false), 420);
+    }
+    prevTotal.current = total;
+  }, [total]);
+
   const selectedCustomer =
     selectedCustomerId !== null ? customerOptions.find((c) => c.id === selectedCustomerId) : null;
 
@@ -179,13 +218,13 @@ export function POSCheckoutPanel({
         <div className="pos-cart-lines">
           {cart.length === 0 ? (
             <div className="pos-empty-cart">
-              <ShoppingCart size={26} />
-              <p>Carrito vacío</p>
-              <span>Agrega productos desde el catálogo.</span>
+              <ShoppingCart size={30} strokeWidth={1.5} />
+              <p>Orden vacía</p>
+              <span>Presiona <kbd>F2</kbd> para buscar productos</span>
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="pos-line">
+              <div key={item.id} className={`pos-line${newItemIds.has(item.id) ? ' is-new' : ''}`}>
                 <div className="pos-line__body">
                   <div className="pos-line__name">{item.name}</div>
                   <div className="pos-line__unit">{formatMoney(toNumber(item.salePrice))} c/u</div>
@@ -194,10 +233,15 @@ export function POSCheckoutPanel({
                   <div className="pos-line__qty">
                     <button
                       type="button"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      aria-label="Restar uno"
+                      className={item.quantity === 1 ? 'is-remove' : ''}
+                      onClick={() =>
+                        item.quantity === 1
+                          ? removeFromCart(item.id)
+                          : updateQuantity(item.id, item.quantity - 1)
+                      }
+                      aria-label={item.quantity === 1 ? `Quitar ${item.name}` : 'Restar uno'}
                     >
-                      −
+                      {item.quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
                     </button>
                     <span>{item.quantity}</span>
                     <button
@@ -205,20 +249,12 @@ export function POSCheckoutPanel({
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       aria-label="Sumar uno"
                     >
-                      +
+                      <Plus size={11} />
                     </button>
                   </div>
                   <strong className="pos-line__total">
                     {formatMoney(toNumber(item.salePrice) * item.quantity)}
                   </strong>
-                  <button
-                    type="button"
-                    className="pos-line__remove"
-                    onClick={() => removeFromCart(item.id)}
-                    aria-label={`Quitar ${item.name}`}
-                  >
-                    ×
-                  </button>
                 </div>
               </div>
             ))
@@ -254,34 +290,36 @@ export function POSCheckoutPanel({
         {/* [3] Customer — collapsible, hidden in quickMode */}
         {!quickMode && (
           <div className="pos-customer-section">
-            <button
-              type="button"
-              className={`pos-section-toggle ${customerOpen || selectedCustomer ? 'is-open' : ''}`}
-              onClick={() => setCustomerOpen((v) => !v)}
-              aria-expanded={customerOpen}
-            >
-              <User2 size={13} />
-              <span>
-                {selectedCustomer
-                  ? selectedCustomer.businessName
-                  : 'Cliente (opcional)'}
-              </span>
+            <div className={`pos-section-toggle ${customerOpen || selectedCustomer ? 'is-open' : ''}`}>
+              <button
+                type="button"
+                className="pos-section-toggle__btn"
+                onClick={() => setCustomerOpen((v) => !v)}
+                aria-expanded={customerOpen}
+              >
+                <User2 size={13} />
+                <span>
+                  {selectedCustomer
+                    ? selectedCustomer.businessName
+                    : 'Cliente (opcional)'}
+                </span>
+                {!selectedCustomer && <ChevronDown size={12} className="pos-note-toggle__chevron" />}
+              </button>
               {selectedCustomer && (
                 <button
                   type="button"
                   className="pos-section-toggle__clear"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     setSelectedCustomerId(null);
                     setCustomerSearch('');
+                    setCustomerOpen(false);
                   }}
                   aria-label="Quitar cliente"
                 >
                   ×
                 </button>
               )}
-              {!selectedCustomer && <ChevronDown size={12} className="pos-note-toggle__chevron" />}
-            </button>
+            </div>
 
             {(customerOpen || selectedCustomer) && (
               <div className="pos-customer-wrap">
@@ -523,7 +561,7 @@ export function POSCheckoutPanel({
           </div>
         )}
 
-        <div className="pos-total-hero">
+          <div className={`pos-total-hero${totalUpdated ? ' is-updated' : ''}`}>
           <span>TOTAL</span>
           <strong>{formatMoney(total)}</strong>
         </div>
@@ -546,6 +584,16 @@ export function POSCheckoutPanel({
           )}
         </button>
       </div>
+
+      {/* ── Checkout success flash overlay ── */}
+      {showSuccess && (
+        <div className="pos-checkout-success-flash" aria-live="assertive" role="status">
+          <div className="pos-checkout-success-flash__inner">
+            <div className="pos-checkout-success-flash__check">✓</div>
+            <h2>¡Venta completada!</h2>
+          </div>
+        </div>
+      )}
 
     </aside>
   );
