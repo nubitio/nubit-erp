@@ -6,7 +6,6 @@ namespace App\Service;
 
 use App\Core\Util\Money;
 use App\Entity\Sale;
-use App\Entity\SaleItem;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
@@ -166,7 +165,7 @@ SQL,
 
             $lineNo = 1;
             foreach ($sale->getItems() as $item) {
-                if (!$item instanceof SaleItem || $item->getProducto() === null) {
+                if ($item->getProducto() === null) {
                     continue;
                 }
 
@@ -241,7 +240,7 @@ SQL,
                 );
             }
 
-            if ($sale->getTipoPago()?->getId() !== null) {
+            if ($sale->getTipoPago()->getId() !== null) {
                 $this->connection->executeStatement(
                     <<<'SQL'
 INSERT INTO sale_payments (
@@ -266,7 +265,7 @@ INSERT INTO sale_payments (
 SQL,
                     [
                         'sale_id' => $saleId,
-                        'payment_method_id' => $sale->getTipoPago()?->getId(),
+                        'payment_method_id' => $sale->getTipoPago()->getId(),
                         'amount' => Money::toString($grandTotal),
                         'currency' => 'PEN',
                         'tendered_amount' => null,
