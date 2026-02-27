@@ -47,16 +47,27 @@ export default defineConfig({
         // DevExtreme/vendor chunks can exceed Workbox default precache limit (2 MiB).
         // Keep them precacheable to avoid failing CI image builds.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        navigateFallback: '/index.html',
+        // NOTE: Do NOT set navigateFallback here. The app shell is served by
+        // Symfony/PHP (index.php → Twig) — there is no static /index.html.
+        // Using navigateFallback: '/index.html' causes offline reloads to fail
+        // because Workbox looks for a precached '/index.html' that never exists.
         runtimeCaching: [
           {
-            urlPattern: ({ request }) => request.mode === 'navigate',
-            handler: 'CacheFirst',
+            // Cache the Symfony-rendered HTML shell. NetworkFirst ensures the SW
+            // tries the network first (5 s timeout) and falls back to the cached
+            // response when offline, enabling offline reloads after the first visit.
+            urlPattern: ({ request, url }) =>
+              request.mode === 'navigate' && !url.pathname.startsWith('/api/'),
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'app-shell',
+              networkTimeoutSeconds: 5,
               expiration: {
-                maxEntries: 20,
+                maxEntries: 10,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+              cacheableResponse: {
+                statuses: [200],
               },
             },
           },
