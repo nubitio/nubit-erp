@@ -30,6 +30,14 @@ final readonly class InvoiceCreationService
      */
     public function createForSale(Sale $sale): array
     {
+        $saleId = $sale->getId();
+        if ($saleId === null || $saleId === '') {
+            return [
+                'success' => false,
+                'message' => 'La venta no tiene un identificador válido.',
+            ];
+        }
+
         if ($sale->isHasInvoice() && $sale->getInvoice() !== null) {
             return [
                 'success' => false,
@@ -91,7 +99,7 @@ final readonly class InvoiceCreationService
                    AND document_type IN (:facturaDocType, :boletaDocType)
                  LIMIT 1 FOR UPDATE",
                 [
-                    'saleId' => $sale->getId(),
+                    'saleId' => $saleId,
                     'facturaDocType' => DocType::FACTURA->value,
                     'boletaDocType' => DocType::BOLETA->value,
                 ]
@@ -138,9 +146,11 @@ final readonly class InvoiceCreationService
                 ]
             );
 
+            $taxDocumentId = (string) $this->connection->fetchOne('SELECT UUID()');
+
             $connection->insert('tax_document', [
-                'tax_document_id' => $this->connection->fetchOne('SELECT UUID()'),
-                'movimiento_id' => $sale->getId(),
+                'tax_document_id' => $taxDocumentId,
+                'movimiento_id' => $saleId,
                 'issue_date' => $saleDateUtc->format('Y-m-d H:i:s'),
                 'document_type' => $voucherType,
                 'series' => $series,
@@ -164,22 +174,6 @@ final readonly class InvoiceCreationService
                 'created_at' => $sale->getDateCreated()?->format('Y-m-d H:i:s'),
                 'branch_id' => $sale->getBranch()?->getId(),
             ]);
-
-            $taxDocumentId = $connection->fetchOne(
-                "SELECT tax_document_id
-                 FROM tax_document
-                 WHERE movimiento_id = :saleId
-                   AND document_type = :voucherType
-                   AND series = :series
-                   AND number = :number
-                 LIMIT 1",
-                [
-                    'saleId' => $sale->getId(),
-                    'voucherType' => $voucherType,
-                    'series' => $series,
-                    'number' => strval($nextNumber),
-                ]
-            );
 
             $saleItems = array_values($sale->getItems()->toArray());
             $lineNumber = 0;
@@ -222,15 +216,60 @@ final readonly class InvoiceCreationService
         $sale->setInvoice($series . '-' . $nextNumber);
         $sale->setTotal($invoiceAmounts->getTotal());
 
-        $this->connection->executeStatement(
-            'UPDATE movimiento SET has_invoice = 1, invoice = ?, total = ? WHERE movimiento_id = ?',
-            [$sale->getInvoice(), $sale->getTotal(), $sale->getId()]
-        );
+        $this->syncInvoicedSaleState($saleId, (string) $sale->getInvoice(), (string) $sale->getTotal());
 
         return [
             'success' => true,
             'invoiceId' => $taxDocumentId,
             'message' => 'Comprobante emitido correctamente.',
         ];
+    }
+
+    private function syncInvoicedSaleState(string $saleId, string $invoiceCode, string $total): void
+    {
+        // V2 first: keep new sales table in sync when available.
+        if ($this->tableExists('sales')) {
+            $this->connection->executeStatement(
+                <<<'SQL'
+UPDATE sales
+SET grand_total = :total,
+    paid_total = :total,
+    balance_due = 0,
+    updated_at = UTC_TIMESTAMP(),
+    sync_status = 'SYNCED'
+WHERE id = :sale_id OR legacy_movimiento_id = :sale_id
+SQL,
+                [
+                    'total' => $total,
+                    'sale_id' => $saleId,
+                ]
+            );
+        }
+
+        // Transitional compatibility with legacy movimiento fields.
+        if ($this->tableExists('movimiento')) {
+            $this->connection->executeStatement(
+                'UPDATE movimiento SET has_invoice = 1, invoice = ?, total = ? WHERE movimiento_id = ?',
+                [$invoiceCode, $total, $saleId]
+            );
+        }
+    }
+
+    private function tableExists(string $tableName): bool
+    {
+        $exists = $this->connection->fetchOne(
+            <<<'SQL'
+SELECT 1
+FROM information_schema.tables
+WHERE table_schema = DATABASE()
+  AND table_name = :table_name
+LIMIT 1
+SQL,
+            [
+                'table_name' => $tableName,
+            ]
+        );
+
+        return $exists !== false;
     }
 }
