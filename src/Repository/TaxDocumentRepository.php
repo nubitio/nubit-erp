@@ -492,10 +492,20 @@ class TaxDocumentRepository extends ServiceEntityRepository
             }
 
             $sale = $row->getSale();
+            $legacySaleId = $sale->getId();
+            $saleStatusV2 = null;
+
+            if ($legacySaleId !== null && $legacySaleId !== '') {
+                $status = $this->getEntityManager()->getConnection()->fetchOne(
+                    'SELECT status FROM sales WHERE legacy_movimiento_id = :legacy_sale_id LIMIT 1',
+                    ['legacy_sale_id' => $legacySaleId]
+                );
+                $saleStatusV2 = $status !== false ? (string)$status : null;
+            }
 
             return [
                 'tax_document_id' => $row->getId(),
-                'movimiento_id' => $sale->getId(),
+                'movimiento_id' => $legacySaleId,
                 'document_type' => $row->getDocumentType(),
                 'series' => $row->getSeries(),
                 'number' => $row->getNumber(),
@@ -504,6 +514,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
                 'digest' => $row->getDigest(),
                 'sunat_status' => $row->getSunatStatus(),
                 'sale_status' => $sale->getEstado(),
+                'sale_status_v2' => $saleStatusV2,
             ];
         }
 

@@ -35,9 +35,27 @@ final class SalesV2BaselineCommand extends TenantAwareCommand
         parent::configure();
 
         $this
-            ->addOption('mode', null, InputOption::VALUE_OPTIONAL, 'legacy | dual_write | v2_authoritative', 'dual_write')
-            ->addOption('write-new-schema', null, InputOption::VALUE_OPTIONAL, 'Enable writes to Sales V2 tables in dual_write mode', '1')
-            ->addOption('strict', null, InputOption::VALUE_OPTIONAL, 'Fail sale when Sales V2 write fails (dual_write mode)', '1')
+            ->addOption(
+                'mode',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'legacy | dual_write | v2_authoritative',
+                'dual_write'
+            )
+            ->addOption(
+                'write-new-schema',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Enable writes to Sales V2 tables in dual_write mode',
+                '1'
+            )
+            ->addOption(
+                'strict',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Fail sale when Sales V2 write fails (dual_write mode)',
+                '1'
+            )
             ->addOption('cutover-date', null, InputOption::VALUE_OPTIONAL, 'Cutover date (Y-m-d), empty to clear', '')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only print intended config changes');
     }
