@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import symfonyPlugin from 'vite-plugin-symfony';
+import { VitePWA } from 'vite-plugin-pwa';
 
 import react from '@vitejs/plugin-react';
 
@@ -19,6 +20,7 @@ export default defineConfig({
       '@dto': fileURLToPath(new URL('./assets/dto', import.meta.url)),
       '@types': fileURLToPath(new URL('./assets/types', import.meta.url)),
       '@assets': fileURLToPath(new URL('./assets', import.meta.url)),
+      '@offline': fileURLToPath(new URL('./assets/offline', import.meta.url)),
     },
   },
   server: {
@@ -29,6 +31,74 @@ export default defineConfig({
     react(),
     symfonyPlugin({
       viteDevServerHostname: 'localhost',
+    }),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'robots.txt'],
+      manifest: {
+        name: 'efact POS',
+        short_name: 'efact',
+        theme_color: '#1463ff',
+        background_color: '#ffffff',
+        display: 'standalone',
+        start_url: '/#/pos',
+      },
+      workbox: {
+        navigateFallback: '/index.html',
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'app-shell',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) =>
+              request.destination === 'script' ||
+              request.destination === 'style' ||
+              request.destination === 'font' ||
+              request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-assets',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: ({ url, request }) =>
+              request.method === 'GET' && url.pathname.includes('/api/products'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-products',
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: ({ url, request }) =>
+              request.method === 'GET' && url.pathname.includes('/api/customers'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-customers',
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
+      devOptions: {
+        enabled: true,
+      },
     }),
   ],
   build: {

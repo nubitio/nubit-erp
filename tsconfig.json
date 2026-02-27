@@ -27,7 +27,8 @@
       "@theme/*": ["assets/theme/*"],
       "@dto/*": ["assets/dto/*"],
       "@types/*": ["assets/types/*"],
-      "@assets/*": ["assets/*"]
+      "@assets/*": ["assets/*"],
+      "@offline/*": ["assets/offline/*"]
     }
   }
 }

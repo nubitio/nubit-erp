@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle2, Package, Store, User, Wifi, WifiOff, Zap } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft, CheckCircle2, Package, Store, User, Zap } from 'lucide-react';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
+import type { LocalSale } from '@offline/types';
+import { ConnectivityBadge } from './ConnectivityBadge';
+import { PendingSalesIndicator } from './PendingSalesIndicator';
 
 interface POSOperatorHeaderProps {
   branchName: string;
@@ -16,6 +19,11 @@ interface POSOperatorHeaderProps {
   cartItemsCount: number;
   hasCartItems: boolean;
   lastSaleCode: string | null;
+  isOnline: boolean;
+  isSyncing: boolean;
+  pendingSalesCount: number;
+  outboxSales: LocalSale[];
+  onRetrySale: (saleId: string) => void;
 }
 
 export function POSOperatorHeader({
@@ -31,20 +39,12 @@ export function POSOperatorHeader({
   cartItemsCount,
   hasCartItems,
   lastSaleCode,
+  isOnline,
+  isSyncing,
+  pendingSalesCount,
+  outboxSales,
+  onRetrySale,
 }: POSOperatorHeaderProps) {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  useEffect(() => {
-    const up = () => setIsOnline(true);
-    const dn = () => setIsOnline(false);
-    window.addEventListener('online', up);
-    window.addEventListener('offline', dn);
-    return () => {
-      window.removeEventListener('online', up);
-      window.removeEventListener('offline', dn);
-    };
-  }, []);
-
   function handleWarehouseChange(newId: string) {
     if (hasCartItems && newId !== selectedWarehouseId) {
       if (!window.confirm('Cambiar de almacén vaciará el carrito. ¿Continuar?')) return;
@@ -125,11 +125,17 @@ export function POSOperatorHeader({
           </div>
         )}
 
-        {/* Network indicator */}
-        <div className={`pos-net-badge ${isOnline ? 'is-online' : 'is-offline'}`}>
-          {isOnline ? <Wifi size={11} /> : <WifiOff size={11} />}
-          <span>{isOnline ? 'Online' : 'Offline'}</span>
-        </div>
+        <ConnectivityBadge
+          isOnline={isOnline}
+          isSyncing={isSyncing}
+          pendingSalesCount={pendingSalesCount}
+        />
+
+        <PendingSalesIndicator
+          pendingSalesCount={pendingSalesCount}
+          sales={outboxSales}
+          onRetrySale={onRetrySale}
+        />
 
         {/* Quick mode toggle */}
         <button

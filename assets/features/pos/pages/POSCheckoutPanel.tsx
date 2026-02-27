@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import { isCashPaymentMethod, normalizeText, toNumber } from './posHelpers';
+import type { LocalSale } from '@offline/types';
+import { SaleSyncStatus } from './SaleSyncStatus';
 
 interface POSCheckoutPanelProps {
   cart: CartItem[];
@@ -61,6 +63,8 @@ interface POSCheckoutPanelProps {
   checkoutDisabled: boolean;
   handleCheckout: () => void;
   isProcessingSale: boolean;
+  syncSales: LocalSale[];
+  onRetrySale: (saleId: string) => void;
 }
 
 const MAX_VISIBLE_PAYMENT_METHODS = 3;
@@ -120,6 +124,8 @@ export function POSCheckoutPanel({
   checkoutDisabled,
   handleCheckout,
   isProcessingSale,
+  syncSales,
+  onRetrySale,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -352,21 +358,27 @@ export function POSCheckoutPanel({
 
           {/* [4] Payment methods */}
           <div className="pos-payment__section-label">Método de pago</div>
-          <div className="pos-payment__methods">
+          <div className="pos-payment__methods" role="radiogroup" aria-label="Método de pago">
             {visiblePaymentMethods.map((method) => {
               const Icon = getPaymentIcon(method.name);
               return (
-                <button
+                <label
                   key={method.id}
-                  type="button"
                   className={`pos-payment-btn ${
                     selectedPaymentMethodId === method.id ? 'is-active' : ''
                   }`}
-                  onClick={() => setSelectedPaymentMethodId(method.id)}
+                  role="radio"
+                  aria-checked={selectedPaymentMethodId === method.id}
                 >
+                  <input
+                    type="radio"
+                    name="pos-payment-method"
+                    checked={selectedPaymentMethodId === method.id}
+                    onChange={() => setSelectedPaymentMethodId(method.id)}
+                  />
                   <Icon size={14} />
                   <span>{method.name}</span>
-                </button>
+                </label>
               );
             })}
             {hasMorePayments && (
@@ -481,6 +493,17 @@ export function POSCheckoutPanel({
               <span>IGV incluido (18%)</span>
               <strong>{formatMoney(includedTax)}</strong>
             </div>
+          </div>
+
+          <div className="pos-sync-section">
+            <div className="pos-payment__section-label">Estado de sincronización</div>
+            {syncSales.length === 0 ? (
+              <div className="pos-sync-section__empty">Sin ventas locales recientes.</div>
+            ) : (
+              syncSales.slice(0, 6).map((sale) => (
+                <SaleSyncStatus key={sale.id} sale={sale} onRetry={onRetrySale} />
+              ))
+            )}
           </div>
         </div>
       </div>

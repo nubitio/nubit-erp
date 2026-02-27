@@ -18,6 +18,8 @@ interface POSCatalogPanelProps {
   getEffectiveStock: (item: PosItem) => number | undefined;
   enforceStockCheck: boolean;
   searchInputRef: React.RefObject<HTMLInputElement>;
+  usingOfflineCatalog: boolean;
+  lastCatalogSyncAt: string | null;
 }
 
 export function POSCatalogPanel({
@@ -35,6 +37,8 @@ export function POSCatalogPanel({
   getEffectiveStock,
   enforceStockCheck,
   searchInputRef,
+  usingOfflineCatalog,
+  lastCatalogSyncAt,
 }: POSCatalogPanelProps) {
 
   // F2 or '/' to focus search; Escape to clear
@@ -90,6 +94,13 @@ export function POSCatalogPanel({
       </header>
 
       {/* Category bar — fixed outside scroll, single-row, horizontally scrollable */}
+      {usingOfflineCatalog && (
+        <div className="pos-offline-banner" role="status">
+          Mostrando catálogo offline
+          {lastCatalogSyncAt ? ` (última actualización: ${new Date(lastCatalogSyncAt).toLocaleString('es-PE')})` : ''}
+        </div>
+      )}
+
       <nav className="pos-categories" role="tablist" aria-label="Filtrar por categoría">
         <button
           type="button"

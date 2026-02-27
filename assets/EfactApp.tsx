@@ -16,6 +16,8 @@ import './theme/theme';
 import './styles/custom.scss';
 import { UnauthenticatedContent } from './UnauthenticatedContent';
 import { FullScreenContent } from './FullScreenContent';
+import { ConnectivityProvider } from '@offline/connectivity/ConnectivityContext';
+import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
 
 function RootApp() {
   const { user, loading } = useAuth();
@@ -52,17 +54,21 @@ export const EfactApp = () => {
     <Router>
       <ThemeContext.Provider value={themeContext}>
         <AuthProvider>
-          <NavigationProvider>
-            <div className={`app ${screenSizeClass}`}>
-              {themeContext.isLoaded ? (
-                <Suspense fallback={<LoadPanel visible />}>
-                  <RootApp />
-                </Suspense>
-              ) : (
-                ''
-              )}
-            </div>
-          </NavigationProvider>
+          <ConnectivityProvider>
+            <OutboxSyncProvider>
+              <NavigationProvider>
+                <div className={`app ${screenSizeClass}`}>
+                  {themeContext.isLoaded ? (
+                    <Suspense fallback={<LoadPanel visible />}>
+                      <RootApp />
+                    </Suspense>
+                  ) : (
+                    ''
+                  )}
+                </div>
+              </NavigationProvider>
+            </OutboxSyncProvider>
+          </ConnectivityProvider>
         </AuthProvider>
       </ThemeContext.Provider>
     </Router>
