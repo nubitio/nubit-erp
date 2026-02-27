@@ -2,6 +2,24 @@ import React, { useState } from 'react';
 import type { PosItem } from './types';
 import './POSPage.scss';
 
+// Muted, desaturated palette — professional look for B2B POS
+const AVATAR_COLORS = [
+  '#4a6fa5', '#3d8a74', '#7a6099', '#4a8ab5',
+  '#6a7f5e', '#a06050', '#526a7d', '#7d7040',
+];
+
+function nameToColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xfffffff;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function nameToInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
 interface POSItemProps {
   item: PosItem;
   onAdd: (item: PosItem) => void | Promise<void>;
@@ -57,15 +75,22 @@ export function POSItem({
     >
       {/* Image with status badges */}
       <div className="pos-product-card__media">
-        <img
-          src={
-            item.photo?.path ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&bold=true&size=128`
-          }
-          alt={item.name}
-          className="pos-product-card__image"
-          loading="lazy"
-        />
+        {item.photo?.path ? (
+          <img
+            src={item.photo.path}
+            alt={item.name}
+            className="pos-product-card__image"
+            loading="lazy"
+          />
+        ) : (
+          <div
+            className="pos-product-card__no-photo"
+            style={{ background: nameToColor(item.name) }}
+            aria-hidden="true"
+          >
+            {nameToInitials(item.name)}
+          </div>
+        )}
         {quantity > 0 && (
           <div className="pos-product-card__qty-badge" aria-label={`${quantity} en carrito`}>
             {quantity}

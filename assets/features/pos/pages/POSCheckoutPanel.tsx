@@ -20,7 +20,6 @@ import {
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import { isCashPaymentMethod, normalizeText, toNumber } from './posHelpers';
 import type { LocalSale } from '@offline/types';
-import { SaleSyncStatus } from './SaleSyncStatus';
 
 interface POSCheckoutPanelProps {
   cart: CartItem[];
@@ -32,6 +31,7 @@ interface POSCheckoutPanelProps {
   customerSearch: string;
   setCustomerSearch: (value: string) => void;
   clearSelectedCustomer: () => void;
+  focusCustomerTrigger?: number;
   selectedCustomerId: number | null;
   setSelectedCustomerId: (value: number | null) => void;
   customerOptions: CustomerOption[];
@@ -66,8 +66,10 @@ interface POSCheckoutPanelProps {
   checkoutDisabled: boolean;
   handleCheckout: () => void;
   isProcessingSale: boolean;
-  syncSales: LocalSale[];
-  onRetrySale: (saleId: string) => void;
+  lastSaleCode?: string | null;
+  onPrintLastSale?: () => void;
+  syncSales?: LocalSale[];
+  onRetrySale?: (saleId: string) => void;
 }
 
 const MAX_VISIBLE_PAYMENT_METHODS = 3;
@@ -94,6 +96,7 @@ export function POSCheckoutPanel({
   customerSearch,
   setCustomerSearch,
   clearSelectedCustomer,
+  focusCustomerTrigger,
   selectedCustomerId,
   setSelectedCustomerId,
   customerOptions,
@@ -128,13 +131,22 @@ export function POSCheckoutPanel({
   checkoutDisabled,
   handleCheckout,
   isProcessingSale,
-  syncSales,
+  lastSaleCode,
+  onPrintLastSale,
+  syncSales = [],
   onRetrySale,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [customerOpen, setCustomerOpen] = useState(false);
   const [showMorePayments, setShowMorePayments] = useState(false);
+  // Inline quantity editing
+  const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
+  const [editingQtyVal, setEditingQtyVal] = useState<string>('');
+  // Customer field ref (for F3 shortcut focus)
+  const customerInputRef = useRef<HTMLInputElement>(null);
+  // Set to true when F3 fires; consumed once the input actually mounts
+  const pendingCustomerFocusRef = useRef(false);
 
   // ── Micro-interaction state ───────────────────────────────────────────────
   const [showSuccess, setShowSuccess] = useState(false);
@@ -143,15 +155,25 @@ export function POSCheckoutPanel({
   const prevProcessing = useRef(false);
   const prevCartIds = useRef<Set<string>>(new Set());
   const prevTotal = useRef(total);
+  // Snapshot of change info captured at the moment of successful sale
+  const successChangeRef = useRef(0);
+  const successWasCashRef = useRef(false);
+  const successCodeRef = useRef<string | null>(null);
+  const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Success flash: fires when isProcessingSale goes true → false
+  // Success overlay: fires when isProcessingSale goes true → false
   useEffect(() => {
     if (prevProcessing.current && !isProcessingSale) {
+      successChangeRef.current = changeAmount;
+      successWasCashRef.current = isCashPaymentSelected && amountReceivedNumber > 0;
+      successCodeRef.current = lastSaleCode ?? null;
       setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 1700);
+      // Auto-dismiss after 8s if the cashier doesn't interact
+      if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
+      successDismissTimer.current = setTimeout(() => setShowSuccess(false), 8000);
     }
     prevProcessing.current = isProcessingSale;
-  }, [isProcessingSale]);
+  }, [isProcessingSale, changeAmount, isCashPaymentSelected, amountReceivedNumber, lastSaleCode]);
 
   // New line entrance animation
   useEffect(() => {
@@ -173,6 +195,16 @@ export function POSCheckoutPanel({
     prevTotal.current = total;
   }, [total]);
 
+  // F3 → open customer field; mark pending focus (input may not be mounted yet)
+  useEffect(() => {
+    if (!focusCustomerTrigger) return;
+    pendingCustomerFocusRef.current = true;
+    // Always clear so the search <input> mounts (clearSelectedCustomer is idempotent)
+    clearSelectedCustomer();
+    setCustomerOpen(true);
+    setShowCustomerSuggestions(true);
+  }, [focusCustomerTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const selectedCustomer =
     selectedCustomerId !== null ? customerOptions.find((c) => c.id === selectedCustomerId) : null;
 
@@ -186,12 +218,12 @@ export function POSCheckoutPanel({
 
       {/* ── Panel header ── */}
       <div className="pos-panel__header">
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <h2>Orden</h2>
-          {selectedWarehouseName && (
-            <p className="pos-panel__warehouse">
-              Almacén: {selectedWarehouseName}
-            </p>
+          {cart.length > 0 && (
+            <span className="pos-panel__count" aria-label={`${cart.length} productos en carrito`}>
+              {cart.length}
+            </span>
           )}
         </div>
         <button
@@ -245,7 +277,46 @@ export function POSCheckoutPanel({
                     >
                       {item.quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
                     </button>
-                    <span>{item.quantity}</span>
+                    {editingQtyId === item.id ? (
+                      <input
+                        type="number"
+                        className="pos-line__qty-input"
+                        value={editingQtyVal}
+                        min={0}
+                        autoFocus
+                        onChange={(e) => setEditingQtyVal(e.target.value)}
+                        onBlur={() => {
+                          const n = parseInt(editingQtyVal, 10);
+                          if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
+                          else if (!isNaN(n) && n === 0) removeFromCart(item.id);
+                          setEditingQtyId(null);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                          if (e.key === 'Escape') setEditingQtyId(null);
+                        }}
+                        aria-label="Cantidad"
+                      />
+                    ) : (
+                      <span
+                        className="pos-line__qty-display"
+                        role="button"
+                        tabIndex={0}
+                        title="Editar cantidad"
+                        onClick={() => {
+                          setEditingQtyId(item.id);
+                          setEditingQtyVal(String(item.quantity));
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setEditingQtyId(item.id);
+                            setEditingQtyVal(String(item.quantity));
+                          }
+                        }}
+                      >
+                        {item.quantity}
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
@@ -342,7 +413,18 @@ export function POSCheckoutPanel({
                       autoComplete="off"
                       className="pos-config-input"
                       autoFocus
+                      ref={(el) => {
+                        (customerInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                        // Consume pending focus from F3 shortcut
+                        if (el && pendingCustomerFocusRef.current) {
+                          pendingCustomerFocusRef.current = false;
+                          el.focus();
+                        }
+                      }}
                     />
+                    {customerSearch.length > 0 && !customersLoading && customerOptions.length === 0 && (
+                      <p className="pos-customer-no-results">Sin resultados</p>
+                    )}
                     {showCustomerSuggestions && customerOptions.length > 0 && (
                       <div
                         className="pos-customer-suggestions"
@@ -483,6 +565,19 @@ export function POSCheckoutPanel({
                 </button>
               </div>
             </div>
+
+            <div className="pos-discount-presets">
+              {[5, 10, 15, 20].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  className={`pos-discount-preset${discountPercent === pct ? ' is-active' : ''}`}
+                  onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
+                >
+                  {pct}%
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* [6] Monto recibido — only for efectivo */}
@@ -499,12 +594,19 @@ export function POSCheckoutPanel({
                 onChange={(e) => setAmountReceived(e.target.value)}
                 autoFocus
               />
-              <div className="pos-quick-amounts">
+              <div className="pos-discount-presets">
                 {quickCashActions.map((action) => (
                   <button
                     key={action.label}
                     type="button"
-                    onClick={() => setAmountReceived(action.value.toFixed(2))}
+                    className={`pos-discount-preset${
+                      amountReceived === action.value.toFixed(2) ? ' is-active' : ''
+                    }`}
+                    onClick={() =>
+                      setAmountReceived(
+                        amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2)
+                      )
+                    }
                     disabled={total <= 0}
                   >
                     {action.label}
@@ -534,16 +636,7 @@ export function POSCheckoutPanel({
             </div>
           </div>
 
-          <div className="pos-sync-section">
-            <div className="pos-payment__section-label">Estado de sincronización</div>
-            {syncSales.length === 0 ? (
-              <div className="pos-sync-section__empty">Sin ventas locales recientes.</div>
-            ) : (
-              syncSales.slice(0, 6).map((sale) => (
-                <SaleSyncStatus key={sale.id} sale={sale} onRetry={onRetrySale} />
-              ))
-            )}
-          </div>
+
         </div>
       </div>
 
@@ -586,12 +679,44 @@ export function POSCheckoutPanel({
         </button>
       </div>
 
-      {/* ── Checkout success flash overlay ── */}
+      {/* ── Post-sale overlay ── */}
       {showSuccess && (
-        <div className="pos-checkout-success-flash" aria-live="assertive" role="status">
-          <div className="pos-checkout-success-flash__inner">
-            <div className="pos-checkout-success-flash__check">✓</div>
-            <h2>¡Venta completada!</h2>
+        <div className="pos-postsale" aria-live="assertive" role="status">
+          <div className="pos-postsale__card">
+            <div className="pos-postsale__check">✓</div>
+            <h2 className="pos-postsale__title">¡Venta completada!</h2>
+            {successCodeRef.current && (
+              <p className="pos-postsale__code">{successCodeRef.current}</p>
+            )}
+            {successWasCashRef.current && successChangeRef.current > 0 && (
+              <div className="pos-postsale__change">
+                <span>Vuelto</span>
+                <strong>{formatMoney(successChangeRef.current)}</strong>
+              </div>
+            )}
+            <div className="pos-postsale__actions">
+              {onPrintLastSale && (
+                <button
+                  type="button"
+                  className="pos-postsale__btn pos-postsale__btn--secondary"
+                  onClick={onPrintLastSale}
+                >
+                  Imprimir ticket
+                </button>
+              )}
+              <button
+                type="button"
+                className="pos-postsale__btn pos-postsale__btn--primary"
+                onClick={() => {
+                  if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
+                  setShowSuccess(false);
+                }}
+                // eslint-disable-next-line jsx-a11y/no-autofocus
+                autoFocus
+              >
+                Nueva venta
+              </button>
+            </div>
           </div>
         </div>
       )}

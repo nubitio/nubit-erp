@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import { LayoutGrid, ShoppingCart } from 'lucide-react';
 import './POSPage.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -28,11 +29,18 @@ const POSPage = () => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [enforceStockCheck, setEnforceStockCheck] = useState(true);
-  const [cajaAbierta, setCajaAbierta] = useState(true);
+  const [cajaAbierta, setCajaAbierta] = useState(
+    () => localStorage.getItem('pos_caja_abierta') !== 'false',
+  );
   const [quickMode, setQuickMode] = useState(false);
+  const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
+  const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
 
   const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createQzInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // Barcode scanner: rapidly-typed chars (< 80 ms apart) followed by Enter
+  const barcodeBufferRef = useRef<string>('');
+  const barcodeLastKeyRef = useRef<number>(0);
 
   const {
     loading,
@@ -116,6 +124,37 @@ const POSPage = () => {
   const formatMoney = (value: number) =>
     NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)));
 
+  // ── Caja session timestamp ────────────────────────────────────────────────────────────────
+  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(
+    () => localStorage.getItem('pos_caja_opened_at'),
+  );
+
+  // ── Persist caja state ─────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    localStorage.setItem('pos_caja_abierta', String(cajaAbierta));
+    if (cajaAbierta) {
+      if (!localStorage.getItem('pos_caja_opened_at')) {
+        const now = new Date().toISOString();
+        localStorage.setItem('pos_caja_opened_at', now);
+        setCajaOpenedAt(now);
+      }
+    } else {
+      localStorage.removeItem('pos_caja_opened_at');
+      setCajaOpenedAt(null);
+    }
+  }, [cajaAbierta]);
+
+  // ── Notify once if a draft cart was restored ──────────────────────────────────────────────
+  const draftNotifiedRef = useRef(false);
+  useEffect(() => {
+    if (!draftNotifiedRef.current && cart.length > 0) {
+      draftNotifiedRef.current = true;
+      toast(`Orden anterior restaurada (${cart.length} ${cart.length === 1 ? 'producto' : 'productos'})`, 'info');
+    }
+  // Only on mount — intentional empty-ish deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ── Load settings ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
@@ -138,15 +177,46 @@ const POSPage = () => {
       const tag = (e.target as HTMLElement).tagName;
       const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
 
+      // Barcode scanner: single printable char arriving fast → buffer; Enter → resolve
+      if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !isInput) {
+        const now = Date.now();
+        if (now - barcodeLastKeyRef.current > 100) barcodeBufferRef.current = '';
+        barcodeBufferRef.current += e.key;
+        barcodeLastKeyRef.current = now;
+      }
+
       // F2 → focus search
       if (e.key === 'F2') {
         e.preventDefault();
         searchInputRef.current?.focus();
+        barcodeBufferRef.current = '';
         return;
       }
 
-      // Enter → checkout when nothing is focused and cart has items
+      // F3 → open & focus customer field
+      if (e.key === 'F3') {
+        e.preventDefault();
+        setQuickMode(false); // ensure customer section is visible
+        setFocusCustomerTrigger((n) => n + 1);
+        return;
+      }
+
+      // Enter → try barcode match first, then checkout
       if (e.key === 'Enter' && !isInput && !e.shiftKey && !e.ctrlKey) {
+        const scanned = barcodeBufferRef.current.trim();
+        barcodeBufferRef.current = '';
+        if (scanned.length >= 3) {
+          const match = menuData.find(
+            (item) =>
+              normalizeText(item.barcode ?? '') === normalizeText(scanned) ||
+              normalizeText(item.sku ?? '') === normalizeText(scanned),
+          );
+          if (match) {
+            e.preventDefault();
+            void addToCart(match);
+            return;
+          }
+        }
         if (!checkoutDisabled && cajaAbierta && cart.length > 0) {
           e.preventDefault();
           handleCheckout();
@@ -165,12 +235,12 @@ const POSPage = () => {
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart]);
+  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart, menuData, addToCart]);
 
   const selectedWarehouse = warehouses.find((w) => w.id === selectedWarehouseId);
 
   return (
-    <div className="pos-shell" data-theme={resolvedTheme}>
+    <div className="pos-shell" data-theme={resolvedTheme} data-active-panel={activePanel}>
       {/* ── Operational context header ── */}
       <POSOperatorHeader
         branchName={currentBranchName}
@@ -180,6 +250,7 @@ const POSPage = () => {
         setSelectedWarehouseId={setSelectedWarehouseId}
         cajaAbierta={cajaAbierta}
         setCajaAbierta={setCajaAbierta}
+        cajaOpenedAt={cajaOpenedAt}
         quickMode={quickMode}
         setQuickMode={setQuickMode}
         cartItemsCount={cartItemsCount}
@@ -193,6 +264,33 @@ const POSPage = () => {
           void retrySale(saleId);
         }}
       />
+
+      {/* ── Mobile tab bar (hidden on desktop via CSS) ── */}
+      <div className="pos-mobile-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePanel === 'catalog'}
+          className={`pos-mobile-tabs__btn${activePanel === 'catalog' ? ' is-active' : ''}`}
+          onClick={() => setActivePanel('catalog')}
+        >
+          <LayoutGrid size={16} />
+          <span>Productos</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activePanel === 'cart'}
+          className={`pos-mobile-tabs__btn${activePanel === 'cart' ? ' is-active' : ''}`}
+          onClick={() => setActivePanel('cart')}
+        >
+          <ShoppingCart size={16} />
+          <span>Carrito</span>
+          {cartItemsCount > 0 && (
+            <span className="pos-mobile-tabs__badge">{cartItemsCount}</span>
+          )}
+        </button>
+      </div>
 
       {/* ── Left: catalogue ── */}
       <POSCatalogPanel
@@ -225,6 +323,13 @@ const POSPage = () => {
         customerSearch={customersState.customerSearch}
         setCustomerSearch={customersState.setCustomerSearch}
         clearSelectedCustomer={clearSelectedCustomer}
+        focusCustomerTrigger={focusCustomerTrigger}
+        lastSaleCode={lastSaleCode}
+        onPrintLastSale={() => {
+          if (lastSaleCode) {
+            void qzInvoicePrinterRef.current.printSaleInvoice(lastSaleCode);
+          }
+        }}
         selectedCustomerId={customersState.selectedCustomerId}
         setSelectedCustomerId={customersState.setSelectedCustomerId}
         customerOptions={customersState.customerOptions}
