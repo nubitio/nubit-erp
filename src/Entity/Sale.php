@@ -82,7 +82,7 @@ class Sale
         'outbound:read',
     ])]
     #[ORM\Column(name: 'tipo_id', type: 'integer')]
-    private int $tipo_id;
+    private int $tipo_id = 2;
 
     #[Assert\NotBlank]
     #[Groups([
@@ -363,14 +363,14 @@ class Sale
         return $this;
     }
 
-    public function getTipoId(): ?int
+    public function getTipoId(): int
     {
         return $this->tipo_id;
     }
 
     public function setTipoId(?int $tipo_id): static
     {
-        $this->tipo_id = $tipo_id;
+        $this->tipo_id = $tipo_id ?? 2;
 
         return $this;
     }
