@@ -30,9 +30,11 @@ class SeedTestDataCommand extends TenantAwareCommand
 
     protected function configure(): void
     {
+        parent::configure();
+
         $this
             ->addOption('customers', 'c', InputOption::VALUE_OPTIONAL, 'Number of customers to create', 300)
-            ->addOption('products', 'p', InputOption::VALUE_OPTIONAL, 'Number of products to create', 500)
+            ->addOption('products', null, InputOption::VALUE_OPTIONAL, 'Number of products to create', 500)
             ->addOption('suppliers', 's', InputOption::VALUE_OPTIONAL, 'Number of suppliers to create', 20)
             ->addOption('sales', null, InputOption::VALUE_OPTIONAL, 'Number of sales to create', 200)
             ->addOption('batch-size', 'b', InputOption::VALUE_OPTIONAL, 'Batch size for flushing', 50)
@@ -52,7 +54,7 @@ It creates:
 Example usage:
   php bin/console app:seed:test-data
   php bin/console app:seed:test-data --customers=500 --products=1000
-  php bin/console app:seed:test-data -c 100 -p 200 -s 10 --sales=50
+  php bin/console app:seed:test-data -c 100 --products=200 -s 10 --sales=50
   php bin/console app:seed:test-data --purge  # Clear existing data first
 
 Note: This command is idempotent - it will skip existing records based on unique identifiers.

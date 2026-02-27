@@ -5,10 +5,10 @@ import { ThemeContext } from '../../../theme/theme';
 export const ThemeSwitcher = () => {
   const themeContext = useContext(ThemeContext);
   const mode = themeContext?.mode ?? 'light';
-  const iconByMode = {
-    light: 'sun',
-    dark: 'moon',
-    auto: 'preferences',
+  const labelByMode = {
+    light: 'CL',
+    dark: 'OS',
+    auto: 'SO',
   } as const;
   const hintByMode = {
     light: 'Tema: Claro',
@@ -25,7 +25,7 @@ export const ThemeSwitcher = () => {
       <Button
         className="theme-button"
         stylingMode="text"
-        icon={iconByMode[mode]}
+        text={labelByMode[mode]}
         hint={hintByMode[mode]}
         elementAttr={{ 'aria-label': hintByMode[mode] }}
         onClick={onButtonClick}

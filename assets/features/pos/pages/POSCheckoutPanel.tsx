@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
 import {
   BadgePercent,
+  Banknote,
+  Building2,
+  ChevronDown,
   CreditCard,
   Eraser,
+  Link,
+  MessageSquare,
   Receipt,
   ShoppingCart,
   Smartphone,
   Trash2,
+  User2,
+  Wallet,
 } from 'lucide-react';
-import type { CartItem, CustomerOption, PaymentMethodOption, WarehouseOption } from './types';
+import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import { isCashPaymentMethod, normalizeText, toNumber } from './posHelpers';
 
 interface POSCheckoutPanelProps {
   cart: CartItem[];
   cartItemsCount: number;
   clearCart: () => void;
-  warehouses: WarehouseOption[];
-  selectedWarehouseId: string;
-  setSelectedWarehouseId: (value: string) => void;
+  selectedWarehouseName: string;
+  cajaAbierta: boolean;
+  quickMode: boolean;
   customerSearch: string;
   setCustomerSearch: (value: string) => void;
   selectedCustomerId: number | null;
@@ -56,13 +63,27 @@ interface POSCheckoutPanelProps {
   isProcessingSale: boolean;
 }
 
+const MAX_VISIBLE_PAYMENT_METHODS = 3;
+
+function getPaymentIcon(methodName: string) {
+  const n = normalizeText(methodName);
+  if (isCashPaymentMethod({ id: 0, name: methodName })) return Receipt;
+  if (n.includes('debito')) return CreditCard;
+  if (n.includes('credito') || n.includes('tarjet')) return CreditCard;
+  if (n.includes('transferencia')) return Building2;
+  if (n.includes('yape') || n.includes('plin') || n.includes('wallet')) return Wallet;
+  if (n.includes('link')) return Link;
+  if (n.includes('deposito')) return Banknote;
+  return Smartphone;
+}
+
 export function POSCheckoutPanel({
   cart,
   cartItemsCount,
   clearCart,
-  warehouses,
-  selectedWarehouseId,
-  setSelectedWarehouseId,
+  selectedWarehouseName,
+  cajaAbierta,
+  quickMode,
   customerSearch,
   setCustomerSearch,
   selectedCustomerId,
@@ -101,175 +122,319 @@ export function POSCheckoutPanel({
   isProcessingSale,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [showMorePayments, setShowMorePayments] = useState(false);
+
+  const selectedCustomer =
+    selectedCustomerId !== null ? customerOptions.find((c) => c.id === selectedCustomerId) : null;
+
+  const hasMorePayments = paymentMethods.length > MAX_VISIBLE_PAYMENT_METHODS;
+  const visiblePaymentMethods = hasMorePayments && !showMorePayments
+    ? paymentMethods.slice(0, MAX_VISIBLE_PAYMENT_METHODS)
+    : paymentMethods;
 
   return (
     <aside className="pos-cart-panel">
-      <div className="pos-panel">
-        <div className="pos-panel__header">
-          <div>
-            <h2>Carrito</h2>
-            <p>{cartItemsCount} productos agregados</p>
-          </div>
-          <button
-            type="button"
-            className="pos-icon-btn"
-            onClick={clearCart}
-            disabled={cart.length === 0}
-            title="Vaciar carrito"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
 
-        <div className="pos-customer-fields">
-          <select
-            value={selectedWarehouseId}
-            onChange={(e) => setSelectedWarehouseId(e.target.value)}
-            aria-label="Almacen"
-          >
-            <option value="">Selecciona almacen</option>
-            {warehouses.map((warehouse) => (
-              <option key={warehouse.id} value={warehouse.id}>
-                {warehouse.name}
-              </option>
-            ))}
-          </select>
-          <input
-            type="text"
-            placeholder="Buscar y seleccionar cliente..."
-            value={customerSearch}
-            onChange={(e) => {
-              setCustomerSearch(e.target.value);
-              setShowCustomerSuggestions(true);
-            }}
-            onFocus={() => setShowCustomerSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowCustomerSuggestions(false), 120)}
-            aria-label="Cliente"
-          />
-          {showCustomerSuggestions && customerOptions.length > 0 && (
-            <div className="pos-customer-suggestions" role="listbox" aria-label="Sugerencias de clientes">
-              {customerOptions.slice(0, 8).map((customer) => (
-                <button
-                  key={customer.id}
-                  type="button"
-                  className={`pos-customer-option ${selectedCustomerId === customer.id ? 'is-active' : ''}`}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setSelectedCustomerId(customer.id);
-                    setShowCustomerSuggestions(false);
-                  }}
-                >
-                  <span>{customer.businessName}</span>
-                  {customer.doc && <small>{customer.doc}</small>}
-                </button>
-              ))}
-            </div>
+      {/* ── Panel header ── */}
+      <div className="pos-panel__header">
+        <div>
+          <h2>Orden</h2>
+          {selectedWarehouseName && (
+            <p className="pos-panel__warehouse">
+              Almacén: {selectedWarehouseName}
+            </p>
           )}
-          {(customersLoading || customersHasMore) && (
-            <button
-              type="button"
-              onClick={() => loadCustomers(deferredCustomerSearch, customersPage + 1, true)}
-              disabled={customersLoading || !customersHasMore}
-            >
-              {customersLoading ? 'Buscando clientes...' : 'Cargar más clientes'}
-            </button>
-          )}
-          <input
-            type="text"
-            placeholder="Nota / referencia"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
         </div>
+        <button
+          type="button"
+          className="pos-icon-btn"
+          onClick={clearCart}
+          disabled={cart.length === 0}
+          title="Vaciar carrito"
+          aria-label="Vaciar carrito"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
 
+      {/* ── Caja cerrada overlay ── */}
+      {!cajaAbierta && (
+        <div className="pos-caja-closed-banner" role="alert">
+          <span>🔴 Caja cerrada — no se puede cobrar</span>
+        </div>
+      )}
+
+      {/* ── Single scrollable body ── */}
+      <div className="pos-cart-body">
+
+        {/* [1] Cart line items */}
         <div className="pos-cart-lines">
           {cart.length === 0 ? (
             <div className="pos-empty-cart">
               <ShoppingCart size={26} />
-              <p>El carrito está vacío</p>
-              <span>Selecciona productos para iniciar la venta.</span>
+              <p>Carrito vacío</p>
+              <span>Agrega productos desde el catálogo.</span>
             </div>
           ) : (
             cart.map((item) => (
               <div key={item.id} className="pos-line">
-                <img
-                  src={item.photo?.path || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}`}
-                  alt={item.name}
-                  className="pos-line__image"
-                />
-                <div className="pos-line__content">
-                  <div className="pos-line__title">{item.name}</div>
-                  <div className="pos-line__price">{formatMoney(toNumber(item.salePrice))}</div>
+                <div className="pos-line__body">
+                  <div className="pos-line__name">{item.name}</div>
+                  <div className="pos-line__unit">{formatMoney(toNumber(item.salePrice))} c/u</div>
+                </div>
+                <div className="pos-line__controls">
                   <div className="pos-line__qty">
-                    <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                      -
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      aria-label="Restar uno"
+                    >
+                      −
                     </button>
                     <span>{item.quantity}</span>
-                    <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      aria-label="Sumar uno"
+                    >
                       +
                     </button>
                   </div>
-                </div>
-                <div className="pos-line__side">
-                  <strong>{formatMoney(toNumber(item.salePrice) * item.quantity)}</strong>
-                  <button type="button" onClick={() => removeFromCart(item.id)}>
-                    Quitar
+                  <strong className="pos-line__total">
+                    {formatMoney(toNumber(item.salePrice) * item.quantity)}
+                  </strong>
+                  <button
+                    type="button"
+                    className="pos-line__remove"
+                    onClick={() => removeFromCart(item.id)}
+                    aria-label={`Quitar ${item.name}`}
+                  >
+                    ×
                   </button>
                 </div>
               </div>
             ))
           )}
         </div>
-      </div>
 
-      <div className="pos-panel">
+        {/* [2] Note — collapsible, hidden in quickMode */}
+        {!quickMode && (
+          <div className="pos-note-section">
+            <button
+              type="button"
+              className={`pos-note-toggle ${noteOpen || note ? 'is-open' : ''}`}
+              onClick={() => setNoteOpen((v) => !v)}
+              aria-expanded={noteOpen}
+            >
+              <MessageSquare size={13} />
+              <span>{note ? `Nota: ${note}` : 'Agregar nota interna'}</span>
+              <ChevronDown size={12} className="pos-note-toggle__chevron" />
+            </button>
+            {(noteOpen || note) && (
+              <textarea
+                className="pos-note-input"
+                rows={2}
+                placeholder="Nota o referencia interna..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                autoFocus={noteOpen && !note}
+              />
+            )}
+          </div>
+        )}
+
+        {/* [3] Customer — collapsible, hidden in quickMode */}
+        {!quickMode && (
+          <div className="pos-customer-section">
+            <button
+              type="button"
+              className={`pos-section-toggle ${customerOpen || selectedCustomer ? 'is-open' : ''}`}
+              onClick={() => setCustomerOpen((v) => !v)}
+              aria-expanded={customerOpen}
+            >
+              <User2 size={13} />
+              <span>
+                {selectedCustomer
+                  ? selectedCustomer.businessName
+                  : 'Cliente (opcional)'}
+              </span>
+              {selectedCustomer && (
+                <button
+                  type="button"
+                  className="pos-section-toggle__clear"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedCustomerId(null);
+                    setCustomerSearch('');
+                  }}
+                  aria-label="Quitar cliente"
+                >
+                  ×
+                </button>
+              )}
+              {!selectedCustomer && <ChevronDown size={12} className="pos-note-toggle__chevron" />}
+            </button>
+
+            {(customerOpen || selectedCustomer) && (
+              <div className="pos-customer-wrap">
+                {!selectedCustomer && (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Buscar cliente por nombre o RUC..."
+                      value={customerSearch}
+                      onChange={(e) => {
+                        setCustomerSearch(e.target.value);
+                        setShowCustomerSuggestions(true);
+                      }}
+                      onFocus={() => setShowCustomerSuggestions(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowCustomerSuggestions(false), 120)
+                      }
+                      aria-label="Cliente"
+                      autoComplete="off"
+                      className="pos-config-input"
+                      autoFocus
+                    />
+                    {showCustomerSuggestions && customerOptions.length > 0 && (
+                      <div
+                        className="pos-customer-suggestions"
+                        role="listbox"
+                        aria-label="Sugerencias"
+                      >
+                        {customerOptions.slice(0, 8).map((customer) => (
+                          <button
+                            key={customer.id}
+                            type="button"
+                            role="option"
+                            aria-selected={selectedCustomerId === customer.id}
+                            className={`pos-customer-option ${selectedCustomerId === customer.id ? 'is-active' : ''}`}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => {
+                              setSelectedCustomerId(customer.id);
+                              setShowCustomerSuggestions(false);
+                              setCustomerOpen(false);
+                            }}
+                          >
+                            <span>{customer.businessName}</span>
+                            {customer.doc && <small>{customer.doc}</small>}
+                          </button>
+                        ))}
+                        {(customersLoading || customersHasMore) && (
+                          <button
+                            type="button"
+                            className="pos-load-more-customers"
+                            onClick={() =>
+                              loadCustomers(
+                                deferredCustomerSearch,
+                                customersPage + 1,
+                                true,
+                              )
+                            }
+                            disabled={customersLoading || !customersHasMore}
+                          >
+                            {customersLoading ? 'Buscando...' : 'Ver más'}
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Payment block ── */}
         <div className="pos-payment">
-          <div className="pos-payment__methods">
-            {paymentMethods.map((method) => {
-              const name = normalizeText(method.name);
-              const Icon =
-                isCashPaymentMethod(method) ? Receipt : name.includes('tarjet') ? CreditCard : Smartphone;
 
+          {/* [4] Payment methods */}
+          <div className="pos-payment__section-label">Método de pago</div>
+          <div className="pos-payment__methods">
+            {visiblePaymentMethods.map((method) => {
+              const Icon = getPaymentIcon(method.name);
               return (
                 <button
                   key={method.id}
                   type="button"
-                  className={`pos-payment-btn ${selectedPaymentMethodId === method.id ? 'is-active' : ''}`}
+                  className={`pos-payment-btn ${
+                    selectedPaymentMethodId === method.id ? 'is-active' : ''
+                  }`}
                   onClick={() => setSelectedPaymentMethodId(method.id)}
                 >
-                  <Icon size={16} />
-                  {method.name}
+                  <Icon size={14} />
+                  <span>{method.name}</span>
                 </button>
               );
             })}
+            {hasMorePayments && (
+              <button
+                type="button"
+                className={`pos-payment-btn pos-payment-btn--more ${
+                  showMorePayments ? 'is-expanded' : ''
+                }`}
+                onClick={() => setShowMorePayments((v) => !v)}
+              >
+                <ChevronDown size={14} className={showMorePayments ? 'is-flipped' : ''} />
+                <span>{showMorePayments ? 'Menos' : 'Más'}</span>
+              </button>
+            )}
           </div>
 
-          <div className="pos-payment__discount">
-            <label className="pos-inline-check">
-              <input type="checkbox" checked={emitInvoice} onChange={(e) => setEmitInvoice(e.target.checked)} />
+          {/* [5] Invoice toggle + discount */}
+          <div className="pos-payment__options">
+            <label className="pos-toggle-row">
               <span>Emitir comprobante</span>
+              <span className="pos-toggle">
+                <input
+                  type="checkbox"
+                  checked={emitInvoice}
+                  onChange={(e) => setEmitInvoice(e.target.checked)}
+                />
+                <span className="pos-toggle__track" />
+              </span>
             </label>
-            <label htmlFor="pos-discount">
-              <BadgePercent size={15} /> Descuento (%)
-            </label>
-            <div className="pos-payment__discount-controls">
-              <input
-                id="pos-discount"
-                type="number"
-                min={0}
-                max={100}
-                step={1}
-                value={discountPercent}
-                onChange={(e) =>
-                  setDiscountPercent(Math.max(0, Math.min(100, Number.parseFloat(e.target.value || '0') || 0)))
-                }
-              />
-              <button type="button" onClick={() => setDiscountPercent(0)} title="Limpiar descuento">
-                <Eraser size={14} />
-              </button>
+
+            <div className="pos-discount-row">
+              <label className="pos-discount-label" htmlFor="pos-discount">
+                <BadgePercent size={13} />
+                Descuento (%)
+              </label>
+              <div className="pos-payment__discount-controls">
+                <input
+                  id="pos-discount"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={discountPercent}
+                  onChange={(e) =>
+                    setDiscountPercent(
+                      Math.max(
+                        0,
+                        Math.min(
+                          100,
+                          Number.parseFloat(e.target.value || '0') || 0,
+                        ),
+                      ),
+                    )
+                  }
+                />
+                <button
+                  type="button"
+                  onClick={() => setDiscountPercent(0)}
+                  title="Limpiar descuento"
+                  aria-label="Limpiar descuento"
+                >
+                  <Eraser size={13} />
+                </button>
+              </div>
             </div>
           </div>
 
+          {/* [6] Monto recibido — only for efectivo */}
           {isCashPaymentSelected && (
             <div className="pos-payment__cash">
               <label htmlFor="pos-amount-received">Monto recibido</label>
@@ -281,6 +446,7 @@ export function POSCheckoutPanel({
                 placeholder="0.00"
                 value={amountReceived}
                 onChange={(e) => setAmountReceived(e.target.value)}
+                autoFocus
               />
               <div className="pos-quick-amounts">
                 {quickCashActions.map((action) => (
@@ -297,42 +463,67 @@ export function POSCheckoutPanel({
             </div>
           )}
 
+          {/* [7] Summary */}
           <div className="pos-summary">
             <div className="pos-summary__row">
               <span>Subtotal</span>
               <strong>{formatMoney(subtotal)}</strong>
             </div>
-            <div className="pos-summary__row">
-              <span>Descuento</span>
-              <strong>- {formatMoney(discountAmount)}</strong>
-            </div>
+            {discountAmount > 0 && (
+              <div className="pos-summary__row">
+                <span>Descuento</span>
+                <strong className="pos-summary__discount">
+                  − {formatMoney(discountAmount)}
+                </strong>
+              </div>
+            )}
             <div className="pos-summary__row">
               <span>IGV incluido (18%)</span>
               <strong>{formatMoney(includedTax)}</strong>
             </div>
-            <div className="pos-summary__row is-total">
-              <span>Total a cobrar</span>
-              <strong>{formatMoney(total)}</strong>
-            </div>
-            {isCashPaymentSelected && (
-              <>
-                <div className="pos-summary__row">
-                  <span>Recibido</span>
-                  <strong>{formatMoney(amountReceivedNumber)}</strong>
-                </div>
-                <div className={`pos-summary__row ${amountMissing > 0 ? 'is-warning' : 'is-change'}`}>
-                  <span>{amountMissing > 0 ? 'Falta' : 'Vuelto'}</span>
-                  <strong>{formatMoney(amountMissing > 0 ? amountMissing : changeAmount)}</strong>
-                </div>
-              </>
-            )}
           </div>
-
-          <button type="button" className="pos-checkout" onClick={handleCheckout} disabled={checkoutDisabled}>
-            {isProcessingSale ? 'Procesando...' : `Cobrar ${formatMoney(total)}`}
-          </button>
         </div>
       </div>
+
+      {/* ── Always-visible footer: change + total + cobrar ── */}
+      <div className="pos-checkout-footer">
+        {isCashPaymentSelected && amountReceivedNumber > 0 && (
+          <div
+            className={`pos-change-row ${
+              amountMissing > 0 ? 'is-missing' : 'is-change'
+            }`}
+          >
+            <span>{amountMissing > 0 ? 'Falta' : 'Vuelto'}</span>
+            <strong>
+              {formatMoney(amountMissing > 0 ? amountMissing : changeAmount)}
+            </strong>
+          </div>
+        )}
+
+        <div className="pos-total-hero">
+          <span>TOTAL</span>
+          <strong>{formatMoney(total)}</strong>
+        </div>
+
+        <button
+          type="button"
+          className="pos-checkout"
+          onClick={handleCheckout}
+          disabled={checkoutDisabled || !cajaAbierta}
+        >
+          {isProcessingSale ? (
+            <span className="pos-checkout__processing">Procesando...</span>
+          ) : !cajaAbierta ? (
+            <span className="pos-checkout__processing">Caja cerrada</span>
+          ) : (
+            <>
+              <span>Cobrar</span>
+              <strong>{formatMoney(total)}</strong>
+            </>
+          )}
+        </button>
+      </div>
+
     </aside>
   );
 }

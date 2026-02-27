@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './POSPage.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { userInformation } from '@platform/common/UserInformation';
 import { Setting, settings } from '@assets/Settings';
 import { createQzInvoicePrinter } from '@features/sale';
+import { ThemeContext } from '@assets/theme/theme';
+import { POSOperatorHeader } from './POSOperatorHeader';
 import { POSCatalogPanel } from './POSCatalogPanel';
 import { POSCheckoutPanel } from './POSCheckoutPanel';
 import { usePosCustomers } from './usePosCustomers';
@@ -15,12 +17,20 @@ import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } fro
 type QzInvoicePrinter = ReturnType<typeof createQzInvoicePrinter>;
 
 const POSPage = () => {
-  const currentBranchId = String(userInformation().currentBranchId ?? '');
+  const themeContext = useContext(ThemeContext);
+  const resolvedTheme = themeContext?.theme ?? 'light';
+
+  const { currentBranchId, currentBranchName, currentUserName } = userInformation();
+  const branchId = String(currentBranchId ?? '');
+
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [enforceStockCheck, setEnforceStockCheck] = useState(true);
+  const [cajaAbierta, setCajaAbierta] = useState(true);
+  const [quickMode, setQuickMode] = useState(false);
 
   const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createQzInvoicePrinter());
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const {
     loading,
@@ -33,20 +43,15 @@ const POSPage = () => {
     warehouses,
     selectedWarehouseId,
     setSelectedWarehouseId,
-  } = usePosCatalogData({ currentBranchId });
+  } = usePosCatalogData({ currentBranchId: branchId });
 
   const customersState = usePosCustomers();
+
   const filteredMenu = menuData.filter((item) => {
     const matchesCategory = !activeCategory || item.category.id === activeCategory;
-    if (!matchesCategory) {
-      return false;
-    }
-
+    if (!matchesCategory) return false;
     const query = normalizeText(searchQuery);
-    if (!query) {
-      return true;
-    }
-
+    if (!query) return true;
     const fields = [item.name, item.sku ?? '', item.barcode ?? ''];
     return fields.some((value) => normalizeText(value).includes(query));
   });
@@ -92,11 +97,11 @@ const POSPage = () => {
     visibleProducts: filteredMenu,
     printSaleInvoice: (saleId: string) => qzInvoicePrinterRef.current.printSaleInvoice(saleId),
   });
-  const selectedCategoryLabel =
-    activeCategory === null ? 'Todos' : categories.find((category) => category.id === activeCategory)?.name;
 
-  const formatMoney = (value: number) => NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)));
+  const formatMoney = (value: number) =>
+    NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)));
 
+  // ── Load settings ─────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     (async () => {
       const checkStockSetting = await settings.get(Setting.CHECK_STOCK);
@@ -112,34 +117,87 @@ const POSPage = () => {
     });
   }, []);
 
+  // ── Global keyboard shortcuts ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName;
+      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+      // F2 → focus search
+      if (e.key === 'F2') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        return;
+      }
+
+      // Enter → checkout when nothing is focused and cart has items
+      if (e.key === 'Enter' && !isInput && !e.shiftKey && !e.ctrlKey) {
+        if (!checkoutDisabled && cajaAbierta && cart.length > 0) {
+          e.preventDefault();
+          handleCheckout();
+        }
+        return;
+      }
+
+      // Esc → clear cart with confirmation
+      if (e.key === 'Escape' && !isInput) {
+        if (cart.length > 0) {
+          if (window.confirm('¿Cancelar la venta y vaciar el carrito?')) {
+            clearCart();
+          }
+        }
+      }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart]);
+
+  const selectedWarehouse = warehouses.find((w) => w.id === selectedWarehouseId);
+
   return (
-    <div className="pos-shell">
+    <div className="pos-shell" data-theme={resolvedTheme}>
+      {/* ── Operational context header ── */}
+      <POSOperatorHeader
+        branchName={currentBranchName}
+        userName={currentUserName}
+        warehouses={warehouses}
+        selectedWarehouseId={selectedWarehouseId}
+        setSelectedWarehouseId={setSelectedWarehouseId}
+        cajaAbierta={cajaAbierta}
+        setCajaAbierta={setCajaAbierta}
+        quickMode={quickMode}
+        setQuickMode={setQuickMode}
+        cartItemsCount={cartItemsCount}
+        hasCartItems={cart.length > 0}
+        lastSaleCode={lastSaleCode}
+      />
+
+      {/* ── Left: catalogue ── */}
       <POSCatalogPanel
         loading={loading}
         loadError={loadError}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         cartItemsCount={cartItemsCount}
-        selectedCategoryLabel={selectedCategoryLabel}
         filteredMenu={filteredMenu}
-        lastSaleCode={lastSaleCode}
         categories={categories}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
         onAddToCart={addToCart}
-        onRemoveFromCart={removeFromCart}
         getItemQuantity={(id) => cart.find((cartItem) => cartItem.id === id)?.quantity || 0}
         getEffectiveStock={getEffectiveStock}
         enforceStockCheck={enforceStockCheck}
+        searchInputRef={searchInputRef}
       />
 
+      {/* ── Right: checkout ── */}
       <POSCheckoutPanel
         cart={cart}
         cartItemsCount={cartItemsCount}
         clearCart={clearCart}
-        warehouses={warehouses}
-        selectedWarehouseId={selectedWarehouseId}
-        setSelectedWarehouseId={setSelectedWarehouseId}
+        selectedWarehouseName={selectedWarehouse?.name ?? ''}
+        cajaAbierta={cajaAbierta}
+        quickMode={quickMode}
         customerSearch={customersState.customerSearch}
         setCustomerSearch={customersState.setCustomerSearch}
         selectedCustomerId={customersState.selectedCustomerId}
