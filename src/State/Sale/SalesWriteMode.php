@@ -21,4 +21,3 @@ final class SalesWriteMode
         return self::DUAL_WRITE;
     }
 }
-

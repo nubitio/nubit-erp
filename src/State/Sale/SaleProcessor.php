@@ -98,7 +98,8 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $user = $this->security->connectedUser();
         $cashShiftForMovement = null;
-        $salesWritePolicy = null;
+        $isOperationalSale = $data->getTipoId() === 2;
+        $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
 
         if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
@@ -285,12 +286,10 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setUpdatedBy($user->userId);
         }
 
-        if ($data->getTipoId() === 2) {
-            $salesWritePolicy = $this->salesWritePolicyResolver->resolve();
-
+        if ($isOperationalSale) {
             if (
                 $isNew
-                && $salesWritePolicy->mode === SalesWriteMode::AUTHORITATIVE
+                && $salesWritePolicy?->mode === SalesWriteMode::AUTHORITATIVE
                 && $data->getId() === null
             ) {
                 // Decouple new-schema identity from legacy movimiento id generation.
@@ -307,7 +306,11 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($data->getTipoId() === 2 && $salesWritePolicy instanceof SalesWritePolicy) {
+        if ($isOperationalSale) {
+            if (!$salesWritePolicy instanceof SalesWritePolicy) {
+                throw new \LogicException('Sales write policy must be resolved for operational sale flow.');
+            }
+
             $this->logger->info('Sales V2 runtime mode resolved', [
                 'sale_id' => $data->getId(),
                 'mode' => $salesWritePolicy->mode,
@@ -317,7 +320,11 @@ readonly class SaleProcessor implements ProcessorInterface
 
             if ($salesWritePolicy->writeNewSchema) {
                 try {
-                    $cashSessionId = $this->resolveCashSessionId($cashShiftForMovement, $data->getCajaId(), $data->getId());
+                    $cashSessionId = $this->resolveCashSessionId(
+                        $cashShiftForMovement,
+                        $data->getCajaId(),
+                        $data->getId()
+                    );
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
                     $this->logger->error('Sales V2 dual-write failed', [

@@ -78,6 +78,7 @@ export const LoginForm = () => {
           </ButtonOptions>
         </ButtonItem>
       </Form>
+
       <BranchPicker
         visible={showLocalPicker}
         setVisible={setShowLocalPicker}
