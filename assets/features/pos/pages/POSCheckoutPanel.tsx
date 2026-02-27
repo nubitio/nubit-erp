@@ -88,9 +88,9 @@ function getPaymentIcon(methodName: string) {
 
 export function POSCheckoutPanel({
   cart,
-  cartItemsCount,
+  cartItemsCount: _cartItemsCount,
   clearCart,
-  selectedWarehouseName,
+  selectedWarehouseName: _selectedWarehouseName,
   cajaAbierta,
   quickMode,
   customerSearch,
@@ -133,8 +133,8 @@ export function POSCheckoutPanel({
   isProcessingSale,
   lastSaleCode,
   onPrintLastSale,
-  syncSales = [],
-  onRetrySale,
+  syncSales: _syncSales = [],
+  onRetrySale: _onRetrySale,
 }: POSCheckoutPanelProps) {
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -711,7 +711,6 @@ export function POSCheckoutPanel({
                   if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
                   setShowSuccess(false);
                 }}
-                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
               >
                 Nueva venta
