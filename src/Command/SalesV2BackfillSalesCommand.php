@@ -101,7 +101,9 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
                         continue;
                     }
 
-                    $cashSessionId = $this->resolveCashSessionId($sale);
+                    $cashContext = $this->resolveCashContext($sale);
+                    $sale->setCajaId($cashContext['cashRegisterId']);
+                    $cashSessionId = $cashContext['cashSessionId'];
                     $this->salesWriteGateway->write($sale, $cashSessionId);
                     ++$processed;
                 } catch (\Throwable $exception) {
@@ -121,7 +123,9 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
         }
 
         if ($failed > 0) {
-            $io->warning(sprintf('Sales V2 backfill finished with warnings. processed=%d failed=%d', $processed, $failed));
+            $io->warning(
+                sprintf('Sales V2 backfill finished with warnings. processed=%d failed=%d', $processed, $failed)
+            );
         } else {
             $io->success(sprintf('Sales V2 backfill completed. processed=%d failed=%d', $processed, $failed));
         }
@@ -150,7 +154,7 @@ SQL,
             )
         );
 
-        return array_values(array_map(static fn ($id): string => (string) $id, $rows));
+        return array_map(static fn ($id): string => (string) $id, $rows);
     }
 
     /**
@@ -174,19 +178,20 @@ SQL,
             ->getOneOrNullResult();
     }
 
-    private function resolveCashSessionId(Sale $sale): int
+    /**
+     * @return array{cashSessionId: int, cashRegisterId: int}
+     */
+    private function resolveCashContext(Sale $sale): array
     {
         $issuedAt = ($sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s');
         $cashRegisterId = $sale->getCajaId();
+        $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
 
-        if ($cashRegisterId === null) {
-            throw new \RuntimeException(sprintf('Sale %s does not have caja_id.', (string) $sale->getId()));
-        }
-
-        $cashSessionId = $this->connection->fetchOne(
-            <<<'SQL'
+        if ($cashRegisterId !== null) {
+            $cashShiftId = $this->connection->fetchOne(
+                <<<'SQL'
 SELECT id
-FROM cash_sessions
+FROM cash_shift
 WHERE cash_register_id = :cash_register_id
   AND opened_at <= :issued_at
   AND (closed_at IS NULL OR closed_at >= :issued_at)
@@ -195,39 +200,169 @@ ORDER BY
     opened_at DESC
 LIMIT 1
 SQL,
-            [
-                'cash_register_id' => $cashRegisterId,
-                'issued_at' => $issuedAt,
-            ]
-        );
+                [
+                    'cash_register_id' => $cashRegisterId,
+                    'issued_at' => $issuedAt,
+                ]
+            );
 
-        if ($cashSessionId !== false) {
-            return (int) $cashSessionId;
-        }
-
-        $fallback = $this->connection->fetchOne(
-            <<<'SQL'
+            if ($cashShiftId === false) {
+                $cashShiftId = $this->connection->fetchOne(
+                    <<<'SQL'
 SELECT id
-FROM cash_sessions
+FROM cash_shift
 WHERE cash_register_id = :cash_register_id
 ORDER BY
     CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
     opened_at DESC
 LIMIT 1
 SQL,
+                    [
+                        'cash_register_id' => $cashRegisterId,
+                    ]
+                );
+            }
+
+            if ($cashShiftId !== false) {
+                return [
+                    'cashSessionId' => (int) $cashShiftId,
+                    'cashRegisterId' => $cashRegisterId,
+                ];
+            }
+        }
+
+        if ($branchId !== null) {
+            $row = $this->connection->fetchAssociative(
+                <<<'SQL'
+SELECT cs.id AS cash_shift_id, cr.id AS cash_register_id
+FROM cash_shift cs
+INNER JOIN cash_register cr ON cr.id = cs.cash_register_id
+WHERE cr.branch_id = :branch_id
+  AND cs.opened_at <= :issued_at
+  AND (cs.closed_at IS NULL OR cs.closed_at >= :issued_at)
+ORDER BY
+    CASE WHEN cs.status = 'OPEN' THEN 0 ELSE 1 END,
+    cs.opened_at DESC
+LIMIT 1
+SQL,
+                [
+                    'branch_id' => $branchId,
+                    'issued_at' => $issuedAt,
+                ]
+            );
+            if (is_array($row) && isset($row['cash_shift_id'], $row['cash_register_id'])) {
+                return [
+                    'cashSessionId' => (int) $row['cash_shift_id'],
+                    'cashRegisterId' => (int) $row['cash_register_id'],
+                ];
+            }
+        }
+
+        if ($branchId !== null) {
+            $row = $this->connection->fetchAssociative(
+                <<<'SQL'
+SELECT cs.id AS cash_shift_id, cr.id AS cash_register_id
+FROM cash_shift cs
+INNER JOIN cash_register cr ON cr.id = cs.cash_register_id
+WHERE cr.branch_id = :branch_id
+ORDER BY
+    CASE WHEN cs.status = 'OPEN' THEN 0 ELSE 1 END,
+    cs.opened_at DESC
+LIMIT 1
+SQL,
+                [
+                    'branch_id' => $branchId,
+                ]
+            );
+            if (is_array($row) && isset($row['cash_shift_id'], $row['cash_register_id'])) {
+                return [
+                    'cashSessionId' => (int) $row['cash_shift_id'],
+                    'cashRegisterId' => (int) $row['cash_register_id'],
+                ];
+            }
+        }
+
+        if ($branchId === null) {
+            throw new \RuntimeException(sprintf(
+                'No se pudo resolver branch_id para la venta %s sin caja_id.',
+                (string) $sale->getId()
+            ));
+        }
+
+        $fallbackRegisterId = $this->connection->fetchOne(
+            <<<'SQL'
+SELECT id
+FROM cash_register
+WHERE branch_id = :branch_id
+ORDER BY id ASC
+LIMIT 1
+SQL,
             [
-                'cash_register_id' => $cashRegisterId,
+                'branch_id' => $branchId,
             ]
         );
 
-        if ($fallback !== false) {
-            return (int) $fallback;
+        if ($fallbackRegisterId === false) {
+            $this->connection->executeStatement(
+                'INSERT INTO cash_register (branch_id, name) VALUES (:branch_id, :name)',
+                [
+                    'branch_id' => $branchId,
+                    'name' => 'MIGRATION_AUTO',
+                ]
+            );
+            $fallbackRegisterId = $this->connection->lastInsertId();
         }
 
-        throw new \RuntimeException(sprintf(
-            'No cash_session found for sale %s (cash_register_id=%d).',
-            (string) $sale->getId(),
-            $cashRegisterId
-        ));
+        $openedBy = $sale->getCreatedBy() ?? $sale->getUpdatedBy();
+        if ($openedBy === null) {
+            $openedById = $this->connection->fetchOne('SELECT MIN(usuario_id) FROM usuario');
+            if ($openedById === false || $openedById === null) {
+                throw new \RuntimeException(sprintf(
+                    'No users found to create fallback cash_shift for sale %s.',
+                    (string) $sale->getId()
+                ));
+            }
+            $openedBy = (int) $openedById;
+        }
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+INSERT INTO cash_shift (
+    cash_register_id,
+    opened_by,
+    status,
+    opening_balance,
+    opened_at,
+    closed_at,
+    expected_amount,
+    counted_amount,
+    difference,
+    note
+) VALUES (
+    :cash_register_id,
+    :opened_by,
+    'CLOSED',
+    0.00,
+    :opened_at,
+    :closed_at,
+    0.00,
+    0.00,
+    0.00,
+    'Auto-generated by sales v2 backfill for tenants without cashbox flow'
+)
+SQL,
+            [
+                'cash_register_id' => (int) $fallbackRegisterId,
+                'opened_by' => $openedBy,
+                'opened_at' => $issuedAt,
+                'closed_at' => $issuedAt,
+            ]
+        );
+        $cashShiftId = $this->connection->lastInsertId();
+
+        return [
+            'cashSessionId' => (int) $cashShiftId,
+            'cashRegisterId' => (int) $fallbackRegisterId,
+        ];
     }
 }
