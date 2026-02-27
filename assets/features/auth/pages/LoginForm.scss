@@ -1,37 +1,121 @@
-@use '../../../variables.scss' as *;
+// ─── Login form ──────────────────────────────────────────────────────────────
 
 .login-form {
-  .form-text {
-    color: var(--base-text-color-alpha);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  // ── DevExtreme form wrapper ─────────────────────────────────────────────
+  .dx-form {
+    background: transparent;
   }
 
-  // Password toggle button styling
+  // ── Field items ─────────────────────────────────────────────────────────
+  .dx-field-item {
+    padding-bottom: 16px !important;
+  }
+
+  // ── Text editor base ────────────────────────────────────────────────────
+  .dx-texteditor {
+    border-radius: 10px !important;
+    border: 1.5px solid var(--border-color) !important;
+    background: var(--surface-2) !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+    &.dx-state-focused {
+      border-color: var(--accent-color) !important;
+      background: var(--card-background) !important;
+      box-shadow: var(--focus-ring-color) 0 0 0 3.5px !important;
+    }
+
+    &.dx-state-hover:not(.dx-state-focused) {
+      border-color: var(--text-secondary) !important;
+      background: var(--card-background) !important;
+    }
+
+    // hide the default DevExtreme border
+    &.dx-texteditor-with-label::before,
+    &::before,
+    &::after { display: none !important; }
+  }
+
+  // outlined styling overrides
+  .dx-texteditor-input-container,
+  .dx-texteditor-container {
+    border-radius: 10px !important;
+  }
+
+  .dx-texteditor-input {
+    padding: 13px 14px !important;
+    font-size: 14px !important;
+    color: var(--text-primary) !important;
+    background: transparent !important;
+    height: auto !important;
+  }
+
+  // DevExtreme Fluent renders placeholder text via .dx-placeholder::before { content: attr(data-dx_placeholder) }
+  // Full path needed to beat DevExtreme's internal specificity
+  .dx-texteditor.dx-editor-outlined .dx-texteditor-input-container .dx-placeholder,
+  .dx-texteditor.dx-editor-outlined .dx-texteditor-input-container .dx-placeholder::before {
+    color: var(--texteditor-label-color) !important;
+    opacity: 1 !important;
+    font-size: 14px !important;
+  }
+
+  // ── Password toggle button ──────────────────────────────────────────────
   .dx-texteditor-buttons-container {
     .dx-button {
+      margin: 0 4px !important;
+      border-radius: 6px !important;
+
       &.dx-button-mode-text {
-        opacity: 0.6;
+        opacity: 0.5;
         transition: opacity 0.2s ease;
 
-        &:hover {
-          opacity: 1;
-        }
+        &:hover { opacity: 1; }
 
         .dx-icon {
-          font-size: 18px;
-          color: var(--base-text-color);
+          font-size: 17px;
+          color: var(--text-secondary);
         }
       }
     }
   }
-}
 
-.reset-link {
-  text-align: center;
-  font-size: 12px;
-  font-style: normal;
-  margin: 6px 0 50px 0;
+  // ── Submit button ───────────────────────────────────────────────────────
+  .dx-button-submit-input + .dx-button,
+  .dx-field-button-item .dx-button {
+    border-radius: 10px !important;
+    height: 46px !important;
+    background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 80%, #000) 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 14px var(--focus-ring-color) !important;
+    transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease !important;
 
-  a {
-    cursor: pointer;
+    &:hover {
+      opacity: 0.93 !important;
+      box-shadow: 0 6px 20px var(--focus-ring-color) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    &:active {
+      transform: translateY(0) !important;
+      box-shadow: 0 2px 8px var(--focus-ring-color) !important;
+    }
+
+    .dx-button-content {
+      padding: 0 !important;
+    }
+
+    .dx-button-text,
+    .dx-button-text * {
+      color: #fff !important;
+      font-size: 15px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.2px;
+    }
   }
 }
+
+
+

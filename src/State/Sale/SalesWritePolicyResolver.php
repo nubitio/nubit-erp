@@ -70,4 +70,3 @@ final readonly class SalesWritePolicyResolver
         );
     }
 }
-
