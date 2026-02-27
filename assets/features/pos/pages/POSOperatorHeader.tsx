@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, CheckCircle2, HelpCircle, Maximize2, Minimize2, Package, Store, User, Zap } from 'lucide-react';
+import { ArrowLeft, HelpCircle, Maximize2, Minimize2, Package, Store, User } from 'lucide-react';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
@@ -15,11 +15,8 @@ interface POSOperatorHeaderProps {
   cajaAbierta: boolean;
   setCajaAbierta: (v: boolean) => void;
   cajaOpenedAt: string | null;
-  quickMode: boolean;
-  setQuickMode: (v: boolean) => void;
   cartItemsCount: number;
   hasCartItems: boolean;
-  lastSaleCode: string | null;
   isOnline: boolean;
   isSyncing: boolean;
   pendingSalesCount: number;
@@ -36,11 +33,8 @@ export function POSOperatorHeader({
   cajaAbierta,
   setCajaAbierta,
   cajaOpenedAt,
-  quickMode,
-  setQuickMode,
   cartItemsCount,
   hasCartItems,
-  lastSaleCode,
   isOnline,
   isSyncing,
   pendingSalesCount,
@@ -73,7 +67,7 @@ export function POSOperatorHeader({
 
   return (
     <header className="pos-operator-header">
-      {/* ── Left cluster: navigation + operational context ── */}
+      {/* ── Left: context data ── */}
       <div className="pos-operator-header__left">
         <button
           type="button"
@@ -97,7 +91,7 @@ export function POSOperatorHeader({
         {/* Caja status pill */}
         <div className={`pos-caja-badge ${cajaAbierta ? 'is-open' : 'is-closed'}`}>
           <span className="pos-caja-badge__dot" />
-          <span>Caja {cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
+          <span>{cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
           {cajaAbierta && cajaOpenedAt && (
             <span className="pos-caja-badge__time">
               {new Date(cajaOpenedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
@@ -140,19 +134,9 @@ export function POSOperatorHeader({
         </div>
       </div>
 
-      {/* ── Right cluster: status + controls ── */}
+      {/* ── Right: compact status + actions ── */}
       <div className="pos-operator-header__right">
-        {lastSaleCode && (
-          <div
-            className="pos-operator-header__last-sale"
-            title={`Última venta: ${lastSaleCode}`}
-            aria-live="polite"
-          >
-            <CheckCircle2 size={11} />
-            <span>{lastSaleCode}</span>
-          </div>
-        )}
-
+        {/* Connectivity: icon-only dot, tooltip on hover */}
         <ConnectivityBadge
           isOnline={isOnline}
           isSyncing={isSyncing}
@@ -165,19 +149,8 @@ export function POSOperatorHeader({
           onRetrySale={onRetrySale}
         />
 
-        {/* Quick mode toggle */}
-        <button
-          type="button"
-          className={`pos-mode-btn ${quickMode ? 'is-active' : ''}`}
-          onClick={() => setQuickMode(!quickMode)}
-          title="Modo caja rápida — oculta cliente y nota"
-          aria-pressed={quickMode}
-        >
-          <Zap size={12} />
-          <span>Rápido</span>
-        </button>
+        <div className="pos-operator-header__sep" />
 
-        {/* Caja opening/closing */}
         {cajaAbierta ? (
           <button
             type="button"
@@ -205,7 +178,6 @@ export function POSOperatorHeader({
         <div className="pos-operator-header__sep" />
         <ThemeSwitcher />
 
-        {/* Fullscreen toggle */}
         <button
           type="button"
           className="pos-shortcuts-btn"
@@ -216,7 +188,6 @@ export function POSOperatorHeader({
           {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
         </button>
 
-        {/* Keyboard shortcuts button */}
         <button
           type="button"
           className="pos-shortcuts-btn"

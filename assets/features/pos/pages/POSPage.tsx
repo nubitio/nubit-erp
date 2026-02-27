@@ -251,11 +251,8 @@ const POSPage = () => {
         cajaAbierta={cajaAbierta}
         setCajaAbierta={setCajaAbierta}
         cajaOpenedAt={cajaOpenedAt}
-        quickMode={quickMode}
-        setQuickMode={setQuickMode}
         cartItemsCount={cartItemsCount}
         hasCartItems={cart.length > 0}
-        lastSaleCode={lastSaleCode}
         isOnline={isOnline}
         isSyncing={isSyncing}
         pendingSalesCount={pendingSalesCount}

@@ -13,26 +13,32 @@ export const ConnectivityBadge = ({
 }: ConnectivityBadgeProps) => {
   if (isSyncing) {
     return (
-      <div className="pos-net-badge is-syncing" aria-live="polite">
-        <span>🟡</span>
-        <span>Sincronizando ({pendingSalesCount} pendientes)</span>
-      </div>
+      <div
+        className="pos-net-dot is-syncing"
+        aria-live="polite"
+        title={`Sincronizando — ${pendingSalesCount} venta${pendingSalesCount !== 1 ? 's' : ''} pendiente${pendingSalesCount !== 1 ? 's' : ''}`}
+        aria-label={`Sincronizando, ${pendingSalesCount} pendientes`}
+      />
     );
   }
 
   if (isOnline) {
     return (
-      <div className="pos-net-badge is-online" aria-live="polite">
-        <span>🟢</span>
-        <span>Conectado</span>
-      </div>
+      <div
+        className="pos-net-dot is-online"
+        aria-live="polite"
+        title="Conectado"
+        aria-label="Conectado"
+      />
     );
   }
 
   return (
-    <div className="pos-net-badge is-offline" aria-live="polite">
-      <span>🔴</span>
-      <span>Sin conexión (modo offline)</span>
-    </div>
+    <div
+      className="pos-net-dot is-offline"
+      aria-live="polite"
+      title="Sin conexión — modo offline"
+      aria-label="Sin conexión"
+    />
   );
 };

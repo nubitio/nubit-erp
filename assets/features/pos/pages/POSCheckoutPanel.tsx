@@ -259,76 +259,77 @@ export function POSCheckoutPanel({
           ) : (
             cart.map((item) => (
               <div key={item.id} className={`pos-line${newItemIds.has(item.id) ? ' is-new' : ''}`}>
+                {/* Column 1 — product info (grows, truncates) */}
                 <div className="pos-line__body">
                   <div className="pos-line__name">{item.name}</div>
                   <div className="pos-line__unit">{formatMoney(toNumber(item.salePrice))} c/u</div>
                 </div>
-                <div className="pos-line__controls">
-                  <div className="pos-line__qty">
-                    <button
-                      type="button"
-                      className={item.quantity === 1 ? 'is-remove' : ''}
-                      onClick={() =>
-                        item.quantity === 1
-                          ? removeFromCart(item.id)
-                          : updateQuantity(item.id, item.quantity - 1)
-                      }
-                      aria-label={item.quantity === 1 ? `Quitar ${item.name}` : 'Restar uno'}
-                    >
-                      {item.quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
-                    </button>
-                    {editingQtyId === item.id ? (
-                      <input
-                        type="number"
-                        className="pos-line__qty-input"
-                        value={editingQtyVal}
-                        min={0}
-                        autoFocus
-                        onChange={(e) => setEditingQtyVal(e.target.value)}
-                        onBlur={() => {
-                          const n = parseInt(editingQtyVal, 10);
-                          if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
-                          else if (!isNaN(n) && n === 0) removeFromCart(item.id);
-                          setEditingQtyId(null);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-                          if (e.key === 'Escape') setEditingQtyId(null);
-                        }}
-                        aria-label="Cantidad"
-                      />
-                    ) : (
-                      <span
-                        className="pos-line__qty-display"
-                        role="button"
-                        tabIndex={0}
-                        title="Editar cantidad"
-                        onClick={() => {
+                {/* Column 2 — qty stepper (fixed width, always vertically centred) */}
+                <div className="pos-line__qty">
+                  <button
+                    type="button"
+                    className={item.quantity === 1 ? 'is-remove' : ''}
+                    onClick={() =>
+                      item.quantity === 1
+                        ? removeFromCart(item.id)
+                        : updateQuantity(item.id, item.quantity - 1)
+                    }
+                    aria-label={item.quantity === 1 ? `Quitar ${item.name}` : 'Restar uno'}
+                  >
+                    {item.quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
+                  </button>
+                  {editingQtyId === item.id ? (
+                    <input
+                      type="number"
+                      className="pos-line__qty-input"
+                      value={editingQtyVal}
+                      min={0}
+                      autoFocus
+                      onChange={(e) => setEditingQtyVal(e.target.value)}
+                      onBlur={() => {
+                        const n = parseInt(editingQtyVal, 10);
+                        if (!isNaN(n) && n > 0) void updateQuantity(item.id, n);
+                        else if (!isNaN(n) && n === 0) removeFromCart(item.id);
+                        setEditingQtyId(null);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                        if (e.key === 'Escape') setEditingQtyId(null);
+                      }}
+                      aria-label="Cantidad"
+                    />
+                  ) : (
+                    <span
+                      className="pos-line__qty-display"
+                      role="button"
+                      tabIndex={0}
+                      title="Editar cantidad"
+                      onClick={() => {
+                        setEditingQtyId(item.id);
+                        setEditingQtyVal(String(item.quantity));
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
                           setEditingQtyId(item.id);
                           setEditingQtyVal(String(item.quantity));
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setEditingQtyId(item.id);
-                            setEditingQtyVal(String(item.quantity));
-                          }
-                        }}
-                      >
-                        {item.quantity}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      aria-label="Sumar uno"
+                        }
+                      }}
                     >
-                      <Plus size={11} />
-                    </button>
-                  </div>
-                  <strong className="pos-line__total">
-                    {formatMoney(toNumber(item.salePrice) * item.quantity)}
-                  </strong>
+                      {item.quantity}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    aria-label="Sumar uno"
+                  >
+                    <Plus size={11} />
+                  </button>
                 </div>
+                {/* Column 3 — line total (fixed min-width, always right-aligned) */}
+                <strong className="pos-line__total">
+                  {formatMoney(toNumber(item.salePrice) * item.quantity)}
+                </strong>
               </div>
             ))
           )}
