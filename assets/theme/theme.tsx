@@ -3,17 +3,30 @@ import { current as getCurrentDXTheme } from 'devextreme/ui/themes';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 const themes = ['light', 'dark'] as const;
+const themeModes = ['light', 'dark', 'auto'] as const;
 const storageKey = 'app-theme';
 const themePrefix = 'app-theme-';
 
 export type Theme = (typeof themes)[number];
+export type ThemeMode = (typeof themeModes)[number];
 
-function getNextTheme(theme?: Theme): Theme {
-  return themes[themes.indexOf(theme as Theme) + 1] || themes[0];
+function getNextThemeMode(mode?: ThemeMode): ThemeMode {
+  return themeModes[themeModes.indexOf(mode as ThemeMode) + 1] || themeModes[0];
 }
 
-function getCurrentTheme(): Theme {
-  return (window.localStorage[storageKey] as Theme) || 'light';
+function getCurrentThemeMode(): ThemeMode {
+  const persisted = window.localStorage[storageKey] as ThemeMode | undefined;
+  if (persisted && themeModes.includes(persisted)) {
+    return persisted;
+  }
+  return 'auto';
+}
+
+function resolveTheme(mode: ThemeMode): Theme {
+  if (mode !== 'auto') {
+    return mode;
+  }
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
 function setThemeToDOM(theme: Theme): Promise<void> {
@@ -46,36 +59,48 @@ async function setAppTheme(theme: Theme) {
   refreshTheme();
 }
 
-function toggleTheme(currentTheme: Theme): Theme {
-  const newTheme = getNextTheme(currentTheme);
-  window.localStorage[storageKey] = newTheme;
-  return newTheme;
+function toggleTheme(currentMode: ThemeMode): ThemeMode {
+  const newMode = getNextThemeMode(currentMode);
+  window.localStorage[storageKey] = newMode;
+  return newMode;
 }
 
 export function useThemeContext() {
-  const [theme, setTheme] = useState(getCurrentTheme());
+  const [mode, setMode] = useState<ThemeMode>(getCurrentThemeMode());
   const [isLoaded, setIsLoaded] = useState(false);
+  const theme = useMemo(() => resolveTheme(mode), [mode]);
 
   useEffect(() => {
-    setThemeToDOM(theme).then(() => setIsLoaded(true));
+    setAppTheme(theme).then(() => setIsLoaded(true));
   }, [theme]);
 
   useEffect(() => {
-    if (isLoaded) {
-      setAppTheme(theme);
-      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-      if (metaThemeColor) {
-        const baseBgColor = getComputedStyle(document.body).getPropertyValue('--base-bg').trim();
-        metaThemeColor.setAttribute(
-          'content',
-          baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff'),
-        );
-      }
+    if (!isLoaded) {
+      return;
+    }
+
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      const baseBgColor = getComputedStyle(document.body).getPropertyValue('--base-bg').trim();
+      metaThemeColor.setAttribute('content', baseBgColor || (theme === 'dark' ? '#000000' : '#ffffff'));
     }
   }, [theme, isLoaded]);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyAutoTheme = () => {
+      if (mode === 'auto') {
+        void setAppTheme(resolveTheme('auto'));
+      }
+    };
+    mediaQuery.addEventListener('change', applyAutoTheme);
+    return () => {
+      mediaQuery.removeEventListener('change', applyAutoTheme);
+    };
+  }, [mode]);
+
   const switchTheme = useCallback(() => {
-    setTheme((currentTheme) => toggleTheme(currentTheme));
+    setMode((currentMode) => toggleTheme(currentMode));
   }, []);
 
   const isFluent = useCallback(() => {
@@ -83,8 +108,8 @@ export function useThemeContext() {
   }, []);
 
   return useMemo(
-    () => ({ theme, switchTheme, isLoaded, isFluent }),
-    [theme, switchTheme, isLoaded, isFluent],
+    () => ({ theme, mode, switchTheme, isLoaded, isFluent }),
+    [theme, mode, switchTheme, isLoaded, isFluent],
   );
 }
 

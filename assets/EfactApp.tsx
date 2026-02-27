@@ -29,12 +29,12 @@ function RootApp() {
     return <LoadPanel visible />;
   }
 
-  if (user && !isLoginForm && !isFullScreen) {
-    return <Content />;
-  }
+  if (user && !isLoginForm) {
+    if (isFullScreen) {
+      return <FullScreenContent />;
+    }
 
-  if (isFullScreen) {
-    return <FullScreenContent />;
+    return <Content />;
   }
 
   return <UnauthenticatedContent />;
