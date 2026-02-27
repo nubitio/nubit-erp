@@ -138,9 +138,11 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
 
     private function resolveSellerUserId(Sale $sale): int
     {
+        $createdBy = $this->safeGetUserId(static fn (Sale $item): ?int => $item->getCreatedBy(), $sale);
+        $updatedBy = $this->safeGetUserId(static fn (Sale $item): ?int => $item->getUpdatedBy(), $sale);
         $candidateIds = array_values(
             array_filter(
-                [$sale->getCreatedBy(), $sale->getUpdatedBy()],
+                [$createdBy, $updatedBy],
                 static fn (?int $value): bool => $value !== null
             )
         );
@@ -167,6 +169,20 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
         }
 
         return $this->fallbackSellerUserId;
+    }
+
+    /**
+     * Legacy rows can contain NULLs on non-nullable mapped fields, which raises Error on typed properties.
+     */
+    private function safeGetUserId(callable $getter, Sale $sale): ?int
+    {
+        try {
+            $value = $getter($sale);
+        } catch (\Error) {
+            return null;
+        }
+
+        return $value;
     }
 
     /**
