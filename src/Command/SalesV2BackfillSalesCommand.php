@@ -134,17 +134,20 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
      */
     private function fetchPendingLegacySaleIds(int $limit): array
     {
+        $safeLimit = max(1, $limit);
         $rows = $this->connection->fetchFirstColumn(
-            <<<'SQL'
+            sprintf(
+                <<<'SQL'
 SELECT m.movimiento_id
 FROM movimiento m
 LEFT JOIN sales s ON s.legacy_movimiento_id = m.movimiento_id
 WHERE m.tipo_id = 2
   AND s.id IS NULL
 ORDER BY m.date_created ASC, m.movimiento_id ASC
-LIMIT ?
+LIMIT %d
 SQL,
-            [$limit]
+                $safeLimit
+            )
         );
 
         return array_values(array_map(static fn ($id): string => (string) $id, $rows));
