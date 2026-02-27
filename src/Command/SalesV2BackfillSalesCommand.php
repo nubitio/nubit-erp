@@ -241,7 +241,7 @@ SQL,
             ?? new \DateTimeImmutable();
         $issuedAt = $issuedAtDate->format('Y-m-d H:i:s');
         $cashRegisterId = $sale->getCajaId();
-        $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
+        $branchId = $this->resolveBranchIdForSale($sale);
 
         if ($cashRegisterId !== null) {
             $cashShiftId = $this->connection->fetchOne(
@@ -410,6 +410,46 @@ SQL,
             'cashSessionId' => (int) $cashShiftId,
             'cashRegisterId' => (int) $fallbackRegisterId,
         ];
+    }
+
+    private function resolveBranchIdForSale(Sale $sale): ?string
+    {
+        $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
+        if ($branchId !== null && trim($branchId) !== '') {
+            return $branchId;
+        }
+
+        $saleId = $sale->getId();
+        if ($saleId !== null && trim($saleId) !== '') {
+            $row = $this->connection->fetchAssociative(
+                <<<'SQL'
+SELECT m.branch_id, a.local_id AS warehouse_branch_id
+FROM movimiento m
+LEFT JOIN almacen a ON a.almacen_id = m.almacen_id
+WHERE m.movimiento_id = :sale_id
+LIMIT 1
+SQL,
+                ['sale_id' => $saleId]
+            );
+            if (is_array($row)) {
+                $fromMovimiento = isset($row['branch_id']) ? trim((string) $row['branch_id']) : '';
+                if ($fromMovimiento !== '') {
+                    return $fromMovimiento;
+                }
+
+                $fromWarehouse = isset($row['warehouse_branch_id']) ? trim((string) $row['warehouse_branch_id']) : '';
+                if ($fromWarehouse !== '') {
+                    return $fromWarehouse;
+                }
+            }
+        }
+
+        $fallbackBranchId = $this->connection->fetchOne('SELECT local_id FROM local ORDER BY local_id ASC LIMIT 1');
+        if ($fallbackBranchId === false || $fallbackBranchId === null) {
+            return null;
+        }
+
+        return (string) $fallbackBranchId;
     }
 
     private function normalizeLegacySaleForBackfill(Sale $sale): void
