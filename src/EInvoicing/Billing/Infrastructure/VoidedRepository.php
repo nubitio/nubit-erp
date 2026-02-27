@@ -39,15 +39,30 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
     #[Override]
     public function getLastCorrelativeByDate(string $date): int
     {
+        if ($this->tableExists('sales') && $this->tableExists('tax_document')) {
+            $count = $this->connection->fetchOne(
+                <<<'SQL'
+SELECT COUNT(*) AS correlative
+FROM tax_document td
+INNER JOIN sales s ON s.legacy_movimiento_id = td.movimiento_id
+WHERE td.document_type IN ('01', '03')
+  AND s.status = 'VOIDED'
+  AND DATE(CONVERT_TZ(td.issue_date, 'UTC', 'America/Lima')) = :date_value
+SQL,
+                [
+                    'date_value' => $date,
+                ]
+            );
+
+            return (int) ($count !== false ? $count : 0);
+        }
+
+        // Fallback for tenants still running legacy-only flow.
         $sql = 'SELECT COUNT(*) AS correlative FROM movimiento WHERE estado = 2 AND fecha = ?';
         /** @var false|array<string, bool|float|int|string|null> $result */
         $result = $this->connection->executeQuery($sql, [$date])->fetchAssociative();
 
-        if (!$result) {
-            return 0;
-        }
-
-        return intval($result['correlative']);
+        return (int) ($result['correlative'] ?? 0);
     }
 
     /**
@@ -92,5 +107,23 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
         $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');
 
         return $statusResponse;
+    }
+
+    private function tableExists(string $tableName): bool
+    {
+        $exists = $this->connection->fetchOne(
+            <<<'SQL'
+SELECT 1
+FROM information_schema.tables
+WHERE table_schema = DATABASE()
+  AND table_name = :table_name
+LIMIT 1
+SQL,
+            [
+                'table_name' => $tableName,
+            ]
+        );
+
+        return $exists !== false;
     }
 }
