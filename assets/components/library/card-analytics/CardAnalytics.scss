@@ -1,6 +1,7 @@
 @use '../../../variables.scss' as *;
 
 .card {
+  border-radius: var(--radius-xl) !important;
   border-radius: 4px;
   box-shadow: none;
   position: relative;
@@ -30,9 +31,9 @@
 
   .card-contents {
     padding: 0 var(--content-padding) var(--content-padding);
-    box-sizing: content-box;
+    box-sizing: border-box;
     font-size: 14px;
     line-height: 17px;
-    height: 270px;
+    min-height: 0;
   }
 }

@@ -10,33 +10,33 @@ import {
   Tooltip,
   ValueAxis,
 } from 'devextreme-react/chart';
-import {
-  Label as PieLabel,
-  Legend as PieLegend,
-  PieChart,
-  Series as PieSeries,
-  Size as PieSize,
-  Tooltip as PieTooltip,
-} from 'devextreme-react/pie-chart';
 import LoadPanel from 'devextreme-react/load-panel';
 import { AppToolbar } from '@shared/ui/toolbar/AppToolbar';
 import { CardAnalytics } from '@widgets/library/card-analytics/CardAnalytics';
 import ScrollView from 'devextreme-react/scroll-view';
-import { StatCard } from '@widgets/dashboard/StatCard';
 import { currencyFormatter, decimalFormatter } from '@widgets/dashboard/formatters';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
 import { CashRegisterStatus } from './types';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@platform/common/Constants';
 import toast from '@platform/utils/SharedUtils';
+import { userInformation } from '@platform/common/UserInformation';
+
+function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="dash-section-header">
+      <span className="dash-section-header__title">{title}</span>
+      {subtitle && <span className="dash-section-header__sub">{subtitle}</span>}
+    </div>
+  );
+}
 
 export const DashboardPage = () => {
   const { data, loading, error, refetch } = useDashboardOverview();
   const [cashRegisters, setCashRegisters] = useState<CashRegisterStatus[]>([]);
   const [cashboxLoading, setCashboxLoading] = useState(false);
   const summary = useMemo(() => data.summary, [data]);
-  const paymentTrendMethods = data.paymentMethodTrend.methods ?? [];
-  const paymentTrendPoints = data.paymentMethodTrend.points ?? [];
+  const { currentUserName, currentBranchName } = userInformation();
 
   const loadCashRegisters = useCallback(() => {
     setCashboxLoading(true);
@@ -59,217 +59,156 @@ export const DashboardPage = () => {
     loadCashRegisters();
   }, [loadCashRegisters]);
 
+  // ── Derived operational values ──────────────────────────────────────────────
+  const openCashCount = cashRegisters.filter((c) => c.status === 'open').length;
+  const criticalStockCount = data.lowStockProducts.filter((p) => p.stockPercentage < 30).length;
+  const warnStockCount = data.lowStockProducts.filter(
+    (p) => p.stockPercentage >= 30 && p.stockPercentage < 60,
+  ).length;
+  const totalStockAlerts = criticalStockCount + warnStockCount;
+  const growthUp =
+    summary.dailyGrowth !== null &&
+    summary.dailyGrowth !== undefined &&
+    summary.dailyGrowth >= 0;
+  const monthGrowthUp =
+    summary.monthGrowth !== null &&
+    summary.monthGrowth !== undefined &&
+    summary.monthGrowth >= 0;
+
   return (
     <ScrollView className="view-wrapper-scroll">
       <AppToolbar title="Dashboard" onRefresh={refetch}>
+
         {error && <div className="dashboard-error">{error}</div>}
         {data.meta?.partial && !error && (
-          <div className="dashboard-error">
-            Se cargó información parcial del dashboard. Algunos bloques no están disponibles.
-          </div>
+          <div className="dashboard-error">Se cargó información parcial del dashboard.</div>
         )}
 
-        <div className="cards metrics">
-          <StatCard
-            title="Venta hoy"
-            value={currencyFormatter(summary.salesToday)}
-            description={`${decimalFormatter(summary.invoicesToday)} comprobantes`}
-            accent="blue"
-            delta={summary.dailyGrowth}
-            deltaLabel="vs ayer"
-          />
-          <StatCard
-            title="Venta semanal"
-            value={currencyFormatter(summary.salesWeek)}
-            description="Últimos 7 días acumulados"
-            accent="purple"
-          />
-          <StatCard
-            title="Venta del mes"
-            value={currencyFormatter(summary.salesThisMonth)}
-            description={`${decimalFormatter(summary.invoicesThisMonth)} comprobantes emitidos`}
-            accent="green"
-            delta={summary.monthGrowth}
-            deltaLabel="vs mes anterior"
-          />
-          <StatCard
-            title="Venta neta mes"
-            value={currencyFormatter(summary.netSalesThisMonth)}
-            description={`Bruta: ${currencyFormatter(summary.salesThisMonth)}`}
-            accent="gray"
-          />
-          <StatCard
-            title="Reembolsos (mes)"
-            value={currencyFormatter(summary.refundsThisMonth)}
-            description={`Hoy: ${currencyFormatter(summary.refundsToday)}`}
-            accent="rose"
-          />
-          <StatCard
-            title="Ticket promedio"
-            value={currencyFormatter(summary.avgTicket)}
-            description={`Hoy: ${currencyFormatter(summary.avgTicketToday)}`}
-            accent="yellow"
-          />
-          <StatCard
-            title="Clientes activos"
-            value={decimalFormatter(summary.customersThisMonth)}
-            description={`${decimalFormatter(summary.customersWeek)} últimos 7 días`}
-            accent="rose"
-          />
+        {/* ── 1. Operación viva ────────────────────────── */}
+        <div className="dash-status-bar">
+          <span className={`dash-status-pill ${openCashCount > 0 ? 'ok' : 'neutral'}`}>
+            <i className="ph ph-cash-register" />
+            {cashboxLoading
+              ? 'Cargando cajas…'
+              : `${openCashCount} ${openCashCount === 1 ? 'caja abierta' : 'cajas abiertas'}`}
+          </span>
+
+          <span
+            className={`dash-status-pill ${
+              criticalStockCount > 0 ? 'critical' : totalStockAlerts > 0 ? 'warn' : 'ok'
+            }`}
+          >
+            <i className="ph ph-package" />
+            {criticalStockCount > 0
+              ? `${criticalStockCount} productos sin stock`
+              : totalStockAlerts > 0
+                ? `${totalStockAlerts} productos stock bajo`
+                : 'Stock OK'}
+          </span>
+
+          {summary.dailyGrowth !== null && summary.dailyGrowth !== undefined && (
+            <span className={`dash-status-pill ${growthUp ? 'ok' : 'warn'}`}>
+              <i className={`ph ph-trend-${growthUp ? 'up' : 'down'}`} />
+              {growthUp ? '+' : ''}
+              {summary.dailyGrowth.toFixed(1)}% vs ayer
+            </span>
+          )}
+
+          {data.meta?.partial && (
+            <span className="dash-status-pill warn">
+              <i className="ph ph-warning" /> Datos parciales
+            </span>
+          )}
+
+          <span className="dash-status-bar__branch">
+            <i className="ph ph-map-pin" />
+            {currentBranchName}
+          </span>
         </div>
 
-        <div className="cards normal">
-          <CardAnalytics
-            title="Evolución mensual (12 meses)"
-            contentClass="chart-card"
-            menuVisible={false}
-          >
-            <Chart dataSource={data.salesByMonth} id="sales-by-month">
-              <Size height={280} />
-              <ArgumentAxis discreteAxisDivisionMode="betweenLabels" />
-              <Series
-                valueField="total"
-                argumentField="label"
-                type="bar"
-                color="var(--accent-color)"
-              />
-              <ValueAxis>
-                <Label customizeText={(arg) => currencyFormatter(Number(arg.value))} />
-              </ValueAxis>
-              <Tooltip
-                enabled
-                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
-              />
-              <Legend visible={false} />
-            </Chart>
-          </CardAnalytics>
+        {/* ── 2. Dinero hoy ────────────────────────────── */}
+        <div className="dash-today">
+          <div className="dash-today__main">
+            <span className="dash-today__label">Ventas hoy · {currentUserName}</span>
+            <span className="dash-today__amount">{currencyFormatter(summary.salesToday)}</span>
+            <div className="dash-today__row">
+              {summary.dailyGrowth !== null && summary.dailyGrowth !== undefined && (
+                <span className={`dash-today__delta ${growthUp ? 'up' : 'down'}`}>
+                  {growthUp ? '▲' : '▼'} {Math.abs(summary.dailyGrowth).toFixed(1)}% vs ayer
+                </span>
+              )}
+              <span className="dash-today__pill">
+                {decimalFormatter(summary.invoicesToday)} comprobantes
+              </span>
+              <span className="dash-today__pill">
+                Ticket prom: {currencyFormatter(summary.avgTicketToday)}
+              </span>
+            </div>
+          </div>
 
-          <CardAnalytics
-            title="Ventas diarias (mes actual)"
-            contentClass="chart-card"
-            menuVisible={false}
-          >
-            <Chart dataSource={data.salesByDay} id="sales-by-day">
-              <Size height={280} />
-              <ArgumentAxis argumentType="numeric" />
-              <Series
-                valueField="total"
-                argumentField="day"
-                type="splinearea"
-                color="var(--accent-color)"
-              />
-              <ValueAxis>
-                <Label customizeText={(arg) => currencyFormatter(Number(arg.value))} />
-              </ValueAxis>
-              <Tooltip
-                enabled
-                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
-              />
-              <Legend visible={false} />
-            </Chart>
-          </CardAnalytics>
+          <div className="dash-today__side">
+            <div className="dash-today__stat">
+              <span className="dash-today__stat-label">Esta semana</span>
+              <span className="dash-today__stat-value">{currencyFormatter(summary.salesWeek)}</span>
+            </div>
+            <div className="dash-today__divider" />
+            <div className="dash-today__stat">
+              <span className="dash-today__stat-label">Este mes</span>
+              <span className="dash-today__stat-value">
+                {currencyFormatter(summary.salesThisMonth)}
+              </span>
+              {summary.monthGrowth !== null && summary.monthGrowth !== undefined && (
+                <span className={`dash-today__stat-delta ${monthGrowthUp ? 'up' : 'down'}`}>
+                  {monthGrowthUp ? '+' : ''}
+                  {summary.monthGrowth.toFixed(1)}% vs mes anterior
+                </span>
+              )}
+            </div>
+            <div className="dash-today__divider" />
+            <div className="dash-today__stat">
+              <span className="dash-today__stat-label">Ticket promedio mes</span>
+              <span className="dash-today__stat-value">{currencyFormatter(summary.avgTicket)}</span>
+            </div>
+            <div className="dash-today__divider" />
+            <div className="dash-today__stat">
+              <span className="dash-today__stat-label">Reembolsos hoy</span>
+              <span className="dash-today__stat-value dash-today__stat-value--muted">
+                {currencyFormatter(summary.refundsToday)}
+              </span>
+            </div>
+          </div>
+        </div>
 
+        {/* ── 3. Estado operacional ─────────────────────── */}
+        <SectionHeader title="Estado operacional" />
+        <div className="dash-ops-grid">
           <CardAnalytics
-            title="Medios de pago (30 días, tendencia)"
-            contentClass="chart-card"
-            menuVisible={false}
-          >
-            <Chart dataSource={paymentTrendPoints} id="payment-methods-trend">
-              <Size height={280} />
-              <ArgumentAxis discreteAxisDivisionMode="betweenLabels" />
-              {paymentTrendMethods.map((method) => (
-                <Series
-                  key={method}
-                  valueField={method}
-                  argumentField="label"
-                  type="stackedbar"
-                  name={method}
-                />
-              ))}
-              <ValueAxis>
-                <Label customizeText={(arg) => currencyFormatter(Number(arg.value))} />
-              </ValueAxis>
-              <Tooltip
-                enabled
-                customizeTooltip={(arg) => ({
-                  text: `${arg.seriesName}: ${currencyFormatter(arg.value)}`,
-                })}
-              />
-              <Legend visible horizontalAlignment="center" verticalAlignment="bottom" />
-            </Chart>
-          </CardAnalytics>
-
-          <CardAnalytics
-            title="Top productos (últimos 30 días)"
+            title="Cajas"
             contentClass="list-card"
             menuVisible={false}
+            isLoading={cashboxLoading}
           >
             <ul className="ranked-list">
-              {data.topProducts.map((item) => (
-                <li key={item.product}>
-                  <div className="ranked-list__title">{item.product}</div>
+              {cashRegisters.map((item) => (
+                <li key={item.id}>
+                  <div className="ranked-list__title">{item.name}</div>
                   <div className="ranked-list__meta">
-                    <span>{decimalFormatter(item.quantity)} u.</span>
-                    <span>{currencyFormatter(item.total)}</span>
+                    <span className={item.status === 'open' ? 'cash-open' : 'cash-closed'}>
+                      <span className={`cash-dot ${item.status === 'open' ? 'open' : ''}`} />
+                      {item.status === 'open' ? 'Abierta' : 'Cerrada'}
+                      {item.cashier ? ` · ${item.cashier}` : ''}
+                    </span>
+                    <span>{currencyFormatter(item.balance ?? 0)}</span>
                   </div>
                 </li>
               ))}
-              {data.topProducts.length === 0 && <div className="empty">Sin datos disponibles</div>}
+              {cashRegisters.length === 0 && !cashboxLoading && (
+                <div className="empty">Sin cajas registradas</div>
+              )}
             </ul>
           </CardAnalytics>
 
-          <CardAnalytics
-            title="Top clientes (últimos 30 días)"
-            contentClass="list-card"
-            menuVisible={false}
-          >
-            <ul className="ranked-list">
-              {data.topCustomers.map((item) => (
-                <li key={item.customer}>
-                  <div className="ranked-list__title">{item.customer}</div>
-                  <div className="ranked-list__meta">
-                    <span>{decimalFormatter(item.invoices)} docs</span>
-                    <span>{currencyFormatter(item.total)}</span>
-                  </div>
-                </li>
-              ))}
-              {data.topCustomers.length === 0 && <div className="empty">Sin datos disponibles</div>}
-            </ul>
-          </CardAnalytics>
-
-          <CardAnalytics
-            title="Distribución por tipo de comprobante"
-            contentClass="chart-card"
-            menuVisible={false}
-          >
-            <PieChart
-              dataSource={data.voucherTypes}
-              id="voucher-types"
-              palette="Soft"
-              resolveLabelOverlapping="shift"
-            >
-              <PieSeries argumentField="type" valueField="total">
-                <PieLabel
-                  visible
-                  customizeText={(arg) => `${arg.argumentText}\n${arg.percentText}`}
-                />
-              </PieSeries>
-              <PieLegend visible horizontalAlignment="center" verticalAlignment="bottom" />
-              <PieTooltip
-                enabled
-                customizeTooltip={(arg) => ({
-                  text: `${arg.argumentText}: ${currencyFormatter(arg.value)} (${arg.point.data.count} docs)`,
-                })}
-              />
-              <PieSize height={280} />
-            </PieChart>
-          </CardAnalytics>
-
-          <CardAnalytics
-            title="⚠️ Productos con stock bajo o sin stock"
-            contentClass="list-card"
-            menuVisible={false}
-          >
+          <CardAnalytics title="Stock crítico" contentClass="list-card" menuVisible={false}>
             <ul className="ranked-list stock-alert">
               {data.lowStockProducts.map((item, idx) => (
                 <li
@@ -296,36 +235,100 @@ export const DashboardPage = () => {
               )}
             </ul>
           </CardAnalytics>
+        </div>
 
-          <CardAnalytics
-            title="Estado de cajas"
-            contentClass="list-card"
-            menuVisible={false}
-            isLoading={cashboxLoading}
-          >
+        {/* ── 4. Rankings ──────────────────────────────── */}
+        <SectionHeader title="Rankings" subtitle="Últimos 30 días" />
+        <div className="dash-rankings-grid">
+          <CardAnalytics title="Top productos" contentClass="list-card" menuVisible={false}>
             <ul className="ranked-list">
-              {cashRegisters.map((item) => (
-                <li key={item.id}>
-                  <div className="ranked-list__title">{item.name}</div>
+              {data.topProducts.map((item) => (
+                <li key={item.product}>
+                  <div className="ranked-list__title">{item.product}</div>
                   <div className="ranked-list__meta">
-                    <span
-                      style={{
-                        color: item.status === 'open' ? '#15803d' : 'var(--texteditor-label-color)',
-                      }}
-                    >
-                      {item.status === 'open' ? 'Abierta' : 'Cerrada'}
-                      {item.cashier ? ` · ${item.cashier}` : ''}
-                    </span>
-                    <span>{currencyFormatter(item.balance ?? 0)}</span>
+                    <span>{decimalFormatter(item.quantity)} u.</span>
+                    <span>{currencyFormatter(item.total)}</span>
                   </div>
                 </li>
               ))}
-              {cashRegisters.length === 0 && !cashboxLoading && (
-                <div className="empty">Sin cajas registradas</div>
+              {data.topProducts.length === 0 && (
+                <div className="empty">Sin datos disponibles</div>
+              )}
+            </ul>
+          </CardAnalytics>
+
+          <CardAnalytics title="Top clientes" contentClass="list-card" menuVisible={false}>
+            <ul className="ranked-list">
+              {data.topCustomers.map((item) => (
+                <li key={item.customer}>
+                  <div className="ranked-list__title">{item.customer}</div>
+                  <div className="ranked-list__meta">
+                    <span>{decimalFormatter(item.invoices)} docs</span>
+                    <span>{currencyFormatter(item.total)}</span>
+                  </div>
+                </li>
+              ))}
+              {data.topCustomers.length === 0 && (
+                <div className="empty">Sin datos disponibles</div>
               )}
             </ul>
           </CardAnalytics>
         </div>
+
+        {/* ── 5. Evolución ─────────────────────────────── */}
+        <SectionHeader title="Evolución de ventas" />
+        <div className="dash-charts-2col">
+          <CardAnalytics
+            title="Evolución mensual (12 meses)"
+            contentClass="chart-card"
+            menuVisible={false}
+          >
+            <Chart dataSource={data.salesByMonth} id="sales-by-month">
+              <Size height={260} />
+              <ArgumentAxis discreteAxisDivisionMode="betweenLabels" />
+              <Series
+                valueField="total"
+                argumentField="label"
+                type="bar"
+                color="var(--accent-color)"
+              />
+              <ValueAxis>
+                <Label customizeText={(arg) => currencyFormatter(Number(arg.value))} />
+              </ValueAxis>
+              <Tooltip
+                enabled
+                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
+              />
+              <Legend visible={false} />
+            </Chart>
+          </CardAnalytics>
+
+          <CardAnalytics
+            title="Ventas diarias (mes actual)"
+            contentClass="chart-card"
+            menuVisible={false}
+          >
+            <Chart dataSource={data.salesByDay} id="sales-by-day">
+              <Size height={260} />
+              <ArgumentAxis argumentType="numeric" />
+              <Series
+                valueField="total"
+                argumentField="day"
+                type="splinearea"
+                color="var(--accent-color)"
+              />
+              <ValueAxis>
+                <Label customizeText={(arg) => currencyFormatter(Number(arg.value))} />
+              </ValueAxis>
+              <Tooltip
+                enabled
+                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
+              />
+              <Legend visible={false} />
+            </Chart>
+          </CardAnalytics>
+        </div>
+
       </AppToolbar>
       <LoadPanel container=".content" visible={loading} position={{ of: '.layout-body' }} />
     </ScrollView>
