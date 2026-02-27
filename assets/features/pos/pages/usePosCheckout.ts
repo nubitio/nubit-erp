@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { Constants } from '@platform/common/Constants';
@@ -37,13 +37,46 @@ export const usePosCheckout = ({
   onQueuedSaleCreated,
   printSaleInvoice,
 }: UsePosCheckoutParams) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  // ── Draft-persistence helpers ────────────────────────────────────────────
+  const storageKey = `pos_draft_${storeId || 'default'}`;
+
+  function readDraft() {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return null;
+      return JSON.parse(raw) as { cart: CartItem[]; note: string; discountPercent: number };
+    } catch {
+      return null;
+    }
+  }
+
+  const draft = readDraft();
+
+  const [cart, setCart] = useState<CartItem[]>(() => draft?.cart ?? []);
   const [amountReceived, setAmountReceived] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [note, setNote] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(() => draft?.discountPercent ?? 0);
+  const [note, setNote] = useState(() => draft?.note ?? '');
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(false);
+
+  // Persist cart draft on every change (strip photo to keep storage lean)
+  useEffect(() => {
+    if (cart.length === 0 && !note && discountPercent === 0) {
+      localStorage.removeItem(storageKey);
+      return;
+    }
+    const payload = {
+      cart: cart.map(({ photo: _photo, ...rest }) => rest),
+      note,
+      discountPercent,
+    };
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(payload));
+    } catch {
+      // Safari private / quota — silently ignore
+    }
+  }, [cart, note, discountPercent, storageKey]);
 
   const { fetchWarehouseStock, getEffectiveStock } = useWarehouseStock(
     selectedWarehouseId,
@@ -127,6 +160,7 @@ export const usePosCheckout = ({
     setAmountReceived('');
     setDiscountPercent(0);
     setNote('');
+    localStorage.removeItem(storageKey);
   };
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);

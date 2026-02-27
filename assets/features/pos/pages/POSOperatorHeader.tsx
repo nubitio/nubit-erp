@@ -1,5 +1,5 @@
-import React from 'react';
-import { ArrowLeft, CheckCircle2, Package, Store, User, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, CheckCircle2, HelpCircle, Maximize2, Minimize2, Package, Store, User, Zap } from 'lucide-react';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
@@ -14,6 +14,7 @@ interface POSOperatorHeaderProps {
   setSelectedWarehouseId: (id: string) => void;
   cajaAbierta: boolean;
   setCajaAbierta: (v: boolean) => void;
+  cajaOpenedAt: string | null;
   quickMode: boolean;
   setQuickMode: (v: boolean) => void;
   cartItemsCount: number;
@@ -34,6 +35,7 @@ export function POSOperatorHeader({
   setSelectedWarehouseId,
   cajaAbierta,
   setCajaAbierta,
+  cajaOpenedAt,
   quickMode,
   setQuickMode,
   cartItemsCount,
@@ -45,6 +47,23 @@ export function POSOperatorHeader({
   outboxSales,
   onRetrySale,
 }: POSOperatorHeaderProps) {
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
   function handleWarehouseChange(newId: string) {
     if (hasCartItems && newId !== selectedWarehouseId) {
       if (!window.confirm('Cambiar de almacén vaciará el carrito. ¿Continuar?')) return;
@@ -79,6 +98,11 @@ export function POSOperatorHeader({
         <div className={`pos-caja-badge ${cajaAbierta ? 'is-open' : 'is-closed'}`}>
           <span className="pos-caja-badge__dot" />
           <span>Caja {cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
+          {cajaAbierta && cajaOpenedAt && (
+            <span className="pos-caja-badge__time">
+              {new Date(cajaOpenedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          )}
         </div>
 
         {warehouses.length > 0 && (
@@ -180,7 +204,68 @@ export function POSOperatorHeader({
 
         <div className="pos-operator-header__sep" />
         <ThemeSwitcher />
+
+        {/* Fullscreen toggle */}
+        <button
+          type="button"
+          className="pos-shortcuts-btn"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+          title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+        >
+          {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+        </button>
+
+        {/* Keyboard shortcuts button */}
+        <button
+          type="button"
+          className="pos-shortcuts-btn"
+          onClick={(e) => { e.stopPropagation(); setShowShortcuts(true); }}
+          aria-label="Atajos de teclado"
+          title="Atajos de teclado"
+        >
+          <HelpCircle size={14} />
+        </button>
       </div>
+
+      {/* ── Shortcuts modal ── */}
+      {showShortcuts && (
+        <div
+          className="pos-shortcuts-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Atajos de teclado"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowShortcuts(false); }}
+        >
+          <div className="pos-shortcuts-modal">
+            <div className="pos-shortcuts-modal__header">
+              <h3>Atajos de teclado</h3>
+              <button
+                type="button"
+                className="pos-shortcuts-modal__close"
+                onClick={() => setShowShortcuts(false)}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+            </div>
+            <ul className="pos-shortcuts-list">
+              {([
+                ['F2', 'Enfocar buscador de productos'],
+                ['F3', 'Seleccionar cliente'],
+                ['Enter', 'Cobrar (cuando el carrito tiene items)'],
+                ['Esc', 'Cancelar venta y vaciar carrito'],
+                ['Scanner → Enter', 'Añadir producto por código de barras'],
+              ] as [string, string][]).map(([key, desc]) => (
+                <li key={key} className="pos-shortcuts-list__item">
+                  <kbd className="pos-shortcuts-list__key">{key}</kbd>
+                  <span>{desc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

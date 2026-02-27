@@ -169,16 +169,24 @@ export function POSCatalogPanel({
           </div>
         ) : (
           <div className="pos-grid">
-            {filteredMenu.map((item) => (
-              <POSItem
-                key={item.id}
-                item={item}
-                onAdd={onAddToCart}
-                quantity={getItemQuantity(item.id)}
-                stockOverride={getEffectiveStock(item)}
-                enforceStockCheck={enforceStockCheck}
-              />
-            ))}
+            {filteredMenu.map((item) => {
+              const effectiveStock = getEffectiveStock(item);
+              const inCart = getItemQuantity(item.id);
+              const displayStock =
+                effectiveStock !== undefined
+                  ? Math.max(0, effectiveStock - inCart)
+                  : undefined;
+              return (
+                <POSItem
+                  key={item.id}
+                  item={item}
+                  onAdd={onAddToCart}
+                  quantity={inCart}
+                  stockOverride={displayStock}
+                  enforceStockCheck={enforceStockCheck}
+                />
+              );
+            })}
           </div>
         )}
       </div>
