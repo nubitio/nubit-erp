@@ -103,6 +103,7 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
                         continue;
                     }
 
+                    $this->normalizeLegacySaleForBackfill($sale);
                     $cashContext = $this->resolveCashContext($sale);
                     $sale->setCajaId($cashContext['cashRegisterId']);
                     $sale->setCreatedBy($this->resolveSellerUserId($sale));
@@ -235,7 +236,10 @@ SQL,
      */
     private function resolveCashContext(Sale $sale): array
     {
-        $issuedAt = ($sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s');
+        $issuedAtDate = $this->safeGetDate(static fn (Sale $item): ?\DateTimeImmutable => $item->getFecha(), $sale)
+            ?? $this->safeGetDate(static fn (Sale $item): ?\DateTimeImmutable => $item->getDateCreated(), $sale)
+            ?? new \DateTimeImmutable();
+        $issuedAt = $issuedAtDate->format('Y-m-d H:i:s');
         $cashRegisterId = $sale->getCajaId();
         $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
 
@@ -365,17 +369,7 @@ SQL,
             $fallbackRegisterId = $this->connection->lastInsertId();
         }
 
-        $openedBy = $sale->getCreatedBy() ?? $sale->getUpdatedBy();
-        if ($openedBy === null) {
-            $openedById = $this->connection->fetchOne('SELECT MIN(usuario_id) FROM usuario');
-            if ($openedById === false || $openedById === null) {
-                throw new \RuntimeException(sprintf(
-                    'No users found to create fallback cash_shift for sale %s.',
-                    (string) $sale->getId()
-                ));
-            }
-            $openedBy = (int) $openedById;
-        }
+        $openedBy = $this->resolveSellerUserId($sale);
 
         $this->connection->executeStatement(
             <<<'SQL'
@@ -416,5 +410,34 @@ SQL,
             'cashSessionId' => (int) $cashShiftId,
             'cashRegisterId' => (int) $fallbackRegisterId,
         ];
+    }
+
+    private function normalizeLegacySaleForBackfill(Sale $sale): void
+    {
+        $fecha = $this->safeGetDate(static fn (Sale $item): ?\DateTimeImmutable => $item->getFecha(), $sale);
+        $dateCreated = $this->safeGetDate(
+            static fn (Sale $item): ?\DateTimeImmutable => $item->getDateCreated(),
+            $sale
+        );
+        $fallbackDate = new \DateTimeImmutable();
+
+        if ($fecha === null) {
+            $sale->setFecha($dateCreated ?? $fallbackDate);
+        }
+
+        if ($dateCreated === null) {
+            $sale->setDateCreated($fecha ?? $fallbackDate);
+        }
+    }
+
+    private function safeGetDate(callable $getter, Sale $sale): ?\DateTimeImmutable
+    {
+        try {
+            $value = $getter($sale);
+        } catch (\Error) {
+            return null;
+        }
+
+        return $value;
     }
 }
