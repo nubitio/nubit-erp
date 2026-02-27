@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, PackageSearch, Search, ShoppingCart } from 'lucide-react';
 import { POSItem } from './POSItem';
 import type { Category, PosItem } from './types';
+import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 
 interface POSCatalogPanelProps {
   loading: boolean;
@@ -62,9 +63,14 @@ export function POSCatalogPanel({
           />
         </div>
 
-        <div className="pos-toolbar__pill">
-          <ShoppingCart size={16} />
-          <span>{cartItemsCount} items</span>
+        <div className="pos-toolbar__actions">
+          <div className="pos-toolbar__pill">
+            <ShoppingCart size={16} />
+            <span>{cartItemsCount} items</span>
+          </div>
+          <div className="pos-toolbar__theme">
+            <ThemeSwitcher />
+          </div>
         </div>
       </header>
 

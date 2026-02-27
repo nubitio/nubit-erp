@@ -95,6 +95,20 @@
   font-size: 0.85rem;
 }
 
+.pos-toolbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pos-toolbar__theme .theme-button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--pos-border);
+  border-radius: 0.75rem;
+  background: var(--pos-card);
+}
+
 .pos-catalog__header {
   display: flex;
   align-items: center;
@@ -720,7 +734,7 @@
     grid-template-columns: auto 1fr;
   }
 
-  .pos-toolbar__pill {
+  .pos-toolbar__actions {
     grid-column: 1 / -1;
     justify-self: flex-start;
   }

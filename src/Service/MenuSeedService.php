@@ -155,8 +155,17 @@ class MenuSeedService
             'parent_id' => 100,
         ],
         [
-            'id' => 202,
+            'id' => 201,
             'order_index' => 1,
+            'key_name' => 'Punto de venta',
+            'type' => 'route',
+            'route' => 'pos',
+            'icon' => '',
+            'parent_id' => 200,
+        ],
+        [
+            'id' => 202,
+            'order_index' => 2,
             'key_name' => 'Registro ventas',
             'type' => 'route',
             'route' => 'sale',
@@ -165,7 +174,7 @@ class MenuSeedService
         ],
         [
             'id' => 203,
-            'order_index' => 2,
+            'order_index' => 3,
             'key_name' => 'Consulta ventas',
             'type' => 'route',
             'route' => 'sale-consult',
@@ -174,7 +183,7 @@ class MenuSeedService
         ],
         [
             'id' => 204,
-            'order_index' => 3,
+            'order_index' => 4,
             'key_name' => 'Clientes',
             'type' => 'route',
             'route' => 'customer',
