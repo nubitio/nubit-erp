@@ -81,24 +81,28 @@ export function POSOperatorHeader({
           <span>Caja {cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
         </div>
 
-        {warehouses.length > 1 && (
+        {warehouses.length > 0 && (
           <>
             <div className="pos-operator-header__sep" />
             <div className="pos-operator-header__ctx">
               <Package size={11} />
               <span className="pos-operator-header__label">Almacén</span>
-              <select
-                className="pos-operator-header__select"
-                value={selectedWarehouseId}
-                onChange={(e) => handleWarehouseChange(e.target.value)}
-                aria-label="Almacén activo"
-              >
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </select>
+              {warehouses.length === 1 ? (
+                <strong>{warehouses[0].name}</strong>
+              ) : (
+                <select
+                  className="pos-operator-header__select"
+                  value={selectedWarehouseId}
+                  onChange={(e) => handleWarehouseChange(e.target.value)}
+                  aria-label="Almacén activo"
+                >
+                  {warehouses.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           </>
         )}

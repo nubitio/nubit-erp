@@ -74,6 +74,8 @@
 .pos-operator-header {
   grid-column: 1 / -1;
   grid-row: 1;
+  position: relative;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -86,7 +88,6 @@
   box-shadow: var(--pos-shadow-sm);
   flex-shrink: 0;
   font-size: 0.8rem;
-  overflow: hidden;
 }
 
 .pos-operator-header__left,
@@ -95,7 +96,6 @@
   align-items: center;
   gap: 0.55rem;
   min-width: 0;
-  overflow: hidden;
 }
 
 .pos-operator-header__right {
@@ -157,15 +157,24 @@
 }
 
 .pos-operator-header__select {
-  border: 0;
-  background: transparent;
-  color: var(--pos-text);
+  appearance: auto;
+  border: 1.5px solid var(--pos-primary-border);
+  background: var(--pos-primary-soft);
+  color: var(--pos-primary);
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   cursor: pointer;
   outline: 0;
-  padding-right: 0.2rem;
-  max-width: 130px;
+  border-radius: var(--pos-radius-pill);
+  padding: 0.18rem 0.5rem;
+  max-width: 140px;
+  min-width: 80px;
+  transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+
+  &:hover, &:focus {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 2px rgba(20, 99, 255, 0.15);
+  }
 }
 
 .pos-operator-header__last-sale {

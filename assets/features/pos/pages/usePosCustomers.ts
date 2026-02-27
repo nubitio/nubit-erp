@@ -18,6 +18,8 @@ export const usePosCustomers = () => {
 
   const customersRequestRef = useRef<Subscription | null>(null);
   const lastSelectedCustomerRef = useRef<CustomerOption | null>(null);
+  /** When true, the user explicitly cleared the customer — suppress auto-restore */
+  const clearedRef = useRef(false);
 
   const loadCustomers = useCallback((query: string, page: number, append: boolean) => {
     customersRequestRef.current?.unsubscribe();
@@ -42,7 +44,7 @@ export const usePosCustomers = () => {
         setCustomersHasMore(list.length >= CUSTOMER_PAGE_SIZE);
 
         if (list.length > 0) {
-          if (selectedCustomerId === null && !append) {
+          if (selectedCustomerId === null && !append && !clearedRef.current) {
             const defaultCustomer = list.find((item) => item.id === DEFAULT_CUSTOMER_ID) ?? list[0];
             setSelectedCustomerId(defaultCustomer.id);
             lastSelectedCustomerRef.current = defaultCustomer;
@@ -81,7 +83,7 @@ export const usePosCustomers = () => {
   }, [deferredCustomerSearch, loadCustomers]);
 
   useEffect(() => {
-    if (selectedCustomerId !== null) {
+    if (selectedCustomerId !== null || clearedRef.current) {
       return;
     }
 
@@ -130,6 +132,7 @@ export const usePosCustomers = () => {
 
   const selectCustomer = useCallback(
     (nextId: number | null) => {
+      clearedRef.current = false; // explicit selection resets the cleared flag
       setSelectedCustomerId(nextId);
       const selected = customerOptions.find((customer) => customer.id === nextId) ?? null;
       if (selected) {
@@ -140,12 +143,21 @@ export const usePosCustomers = () => {
     [customerOptions],
   );
 
+  /** Call this when the user explicitly removes the customer. Prevents auto-restore. */
+  const clearSelectedCustomer = useCallback(() => {
+    clearedRef.current = true;
+    setSelectedCustomerId(null);
+    setCustomerSearch('');
+    lastSelectedCustomerRef.current = null;
+  }, []);
+
   return {
     customerSearch,
     setCustomerSearch,
     deferredCustomerSearch,
     selectedCustomerId,
     setSelectedCustomerId: selectCustomer,
+    clearSelectedCustomer,
     customersPage,
     customersHasMore,
     customersLoading,
