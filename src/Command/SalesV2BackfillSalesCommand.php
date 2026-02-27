@@ -25,6 +25,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class SalesV2BackfillSalesCommand extends TenantAwareCommand
 {
+    private ?int $fallbackSellerUserId = null;
+
     public function __construct(
         private readonly Connection $connection,
         private readonly EntityManagerInterface $entityManager,
@@ -103,6 +105,7 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
 
                     $cashContext = $this->resolveCashContext($sale);
                     $sale->setCajaId($cashContext['cashRegisterId']);
+                    $sale->setCreatedBy($this->resolveSellerUserId($sale));
                     $cashSessionId = $cashContext['cashSessionId'];
                     $this->salesWriteGateway->write($sale, $cashSessionId);
                     ++$processed;
@@ -131,6 +134,39 @@ final class SalesV2BackfillSalesCommand extends TenantAwareCommand
         }
 
         return $strict && $failed > 0 ? Command::FAILURE : Command::SUCCESS;
+    }
+
+    private function resolveSellerUserId(Sale $sale): int
+    {
+        $candidateIds = array_values(
+            array_filter(
+                [$sale->getCreatedBy(), $sale->getUpdatedBy()],
+                static fn (?int $value): bool => $value !== null
+            )
+        );
+
+        foreach ($candidateIds as $candidateId) {
+            $exists = $this->connection->fetchOne(
+                'SELECT 1 FROM usuario WHERE usuario_id = :user_id LIMIT 1',
+                ['user_id' => $candidateId]
+            );
+            if ($exists !== false) {
+                return (int) $candidateId;
+            }
+        }
+
+        if ($this->fallbackSellerUserId === null) {
+            $fallback = $this->connection->fetchOne('SELECT MIN(usuario_id) FROM usuario');
+            if ($fallback === false || $fallback === null) {
+                throw new \RuntimeException(sprintf(
+                    'No users found in usuario table to backfill seller for sale %s.',
+                    (string) $sale->getId()
+                ));
+            }
+            $this->fallbackSellerUserId = (int) $fallback;
+        }
+
+        return $this->fallbackSellerUserId;
     }
 
     /**
