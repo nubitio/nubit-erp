@@ -35,6 +35,7 @@ use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Uid\Uuid;
 
 readonly class SaleProcessor implements ProcessorInterface
 {
@@ -64,6 +65,8 @@ readonly class SaleProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private MessageBusInterface $messageBus,
+        private SalesWritePolicyResolver $salesWritePolicyResolver,
+        private SalesWriteGateway $salesWriteGateway,
     ) {
     }
 
@@ -95,6 +98,7 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $user = $this->security->connectedUser();
         $cashShiftForMovement = null;
+        $salesWritePolicy = null;
 
         if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
@@ -281,6 +285,19 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setUpdatedBy($user->userId);
         }
 
+        if ($data->getTipoId() === 2) {
+            $salesWritePolicy = $this->salesWritePolicyResolver->resolve();
+
+            if (
+                $isNew
+                && $salesWritePolicy->mode === SalesWriteMode::AUTHORITATIVE
+                && $data->getId() === null
+            ) {
+                // Decouple new-schema identity from legacy movimiento id generation.
+                $data->setId(Uuid::v7()->toRfc4122());
+            }
+        }
+
         $this->logger->info('Persisting sale data', [
             'sale_id' => $data->getId(),
             'customer_id' => $data->getCliente()?->getId(),
@@ -289,6 +306,35 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+        if ($data->getTipoId() === 2 && $salesWritePolicy instanceof SalesWritePolicy) {
+            $this->logger->info('Sales V2 runtime mode resolved', [
+                'sale_id' => $data->getId(),
+                'mode' => $salesWritePolicy->mode,
+                'write_new_schema' => $salesWritePolicy->writeNewSchema,
+                'strict' => $salesWritePolicy->strict,
+            ]);
+
+            if ($salesWritePolicy->writeNewSchema) {
+                try {
+                    $cashSessionId = $this->resolveCashSessionId($cashShiftForMovement, $data->getCajaId(), $data->getId());
+                    $this->salesWriteGateway->write($data, $cashSessionId);
+                } catch (\Throwable $exception) {
+                    $this->logger->error('Sales V2 dual-write failed', [
+                        'sale_id' => $data->getId(),
+                        'mode' => $salesWritePolicy->mode,
+                        'strict' => $salesWritePolicy->strict,
+                        'error' => $exception->getMessage(),
+                    ]);
+
+                    if ($salesWritePolicy->strict) {
+                        throw new ServiceException(
+                            'No se pudo sincronizar la venta con Sales V2. Operación cancelada.'
+                        );
+                    }
+                }
+            }
+        }
 
         if (
             $isNew && $data->getTipoPago()?->getId() === PaymentMethod::CASH &&
@@ -327,6 +373,43 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $result;
+    }
+
+    private function resolveCashSessionId(?CashShift $cashShiftForMovement, ?int $cashRegisterId, ?string $saleId): int
+    {
+        $connection = $this->entityManager->getConnection();
+        $legacyCashShiftId = $cashShiftForMovement?->getId();
+
+        if ($legacyCashShiftId !== null) {
+            $cashSessionIdValue = $connection->fetchOne(
+                'SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ? LIMIT 1',
+                [$legacyCashShiftId]
+            );
+            if ($cashSessionIdValue !== false) {
+                return (int)$cashSessionIdValue;
+            }
+        }
+
+        if ($cashRegisterId !== null) {
+            $cashSessionIdValue = $connection->fetchOne(
+                "SELECT id
+                 FROM cash_sessions
+                 WHERE cash_register_id = ?
+                 ORDER BY
+                     CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
+                     opened_at DESC
+                 LIMIT 1",
+                [$cashRegisterId]
+            );
+            if ($cashSessionIdValue !== false) {
+                return (int)$cashSessionIdValue;
+            }
+        }
+
+        throw new ServiceException(sprintf(
+            'No se pudo resolver cash_session_id para la venta %s.',
+            (string)$saleId
+        ));
     }
 
     private function applyDetractionFromItems(Sale $sale): void

@@ -12,6 +12,7 @@ Sistema integral de facturación electrónica desarrollado con Symfony 7.4, API 
 - [Testing y Calidad](#-testing-y-calidad)
 - [Deployment](#-deployment)
 - [Guía para Agentes AI](#-guía-para-agentes-ai)
+- [Arquitectura POS 10x (DB)](#-arquitectura-pos-10x-db)
 
 ---
 
@@ -180,6 +181,13 @@ efact/
 ├── grumphp.yml               # Git hooks config
 └── vite.config.js            # Vite configuration
 ```
+
+---
+
+## 📐 Arquitectura POS 10x (DB)
+
+- Documento de referencia: [docs/pos-database-architecture-10x.md](docs/pos-database-architecture-10x.md)
+- Enfoque: `database-per-tenant`, multi-sucursal, multi-caja, multi-almacen, offline robusto y reporteria de alto rendimiento.
 
 ---
 
