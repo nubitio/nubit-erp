@@ -147,10 +147,22 @@ SQL,
                 ]
             );
 
-            $this->connection->executeStatement('DELETE FROM sale_taxes WHERE sale_id = :sale_id', ['sale_id' => $saleId]);
-            $this->connection->executeStatement('DELETE FROM sale_discounts WHERE sale_id = :sale_id', ['sale_id' => $saleId]);
-            $this->connection->executeStatement('DELETE FROM sale_payments WHERE sale_id = :sale_id', ['sale_id' => $saleId]);
-            $this->connection->executeStatement('DELETE FROM sale_items WHERE sale_id = :sale_id', ['sale_id' => $saleId]);
+            $this->connection->executeStatement(
+                'DELETE FROM sale_taxes WHERE sale_id = :sale_id',
+                ['sale_id' => $saleId]
+            );
+            $this->connection->executeStatement(
+                'DELETE FROM sale_discounts WHERE sale_id = :sale_id',
+                ['sale_id' => $saleId]
+            );
+            $this->connection->executeStatement(
+                'DELETE FROM sale_payments WHERE sale_id = :sale_id',
+                ['sale_id' => $saleId]
+            );
+            $this->connection->executeStatement(
+                'DELETE FROM sale_items WHERE sale_id = :sale_id',
+                ['sale_id' => $saleId]
+            );
 
             $lineNo = 1;
             foreach ($sale->getItems() as $item) {
@@ -322,7 +334,9 @@ INSERT INTO sale_taxes (
 SQL,
                     [
                         'sale_id' => $saleId,
-                        'tax_rate' => Money::of($sale->getIgv() ?? '0')->toScale(4, RoundingMode::HALF_UP)->__toString(),
+                        'tax_rate' => Money::of($sale->getIgv() ?? '0')
+                            ->toScale(4, RoundingMode::HALF_UP)
+                            ->__toString(),
                         'taxable_base' => Money::toString($grandTotal),
                         'tax_amount' => '0.00',
                         'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
