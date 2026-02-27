@@ -115,6 +115,8 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function getVoucher(string $saleId): Voucher
     {
+        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($saleId);
+
         $sale = $this->getEntityManager()->getRepository(Sale::class)
             ->createQueryBuilder('s')
             ->leftJoin('s.cliente', 'c')->addSelect('c')
@@ -127,7 +129,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             ->leftJoin('s.taxDocument', 'td')->addSelect('td')
             ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
             ->where('s.id = :saleId')
-            ->setParameter('saleId', $saleId)
+            ->setParameter('saleId', $resolvedSaleId)
             ->getQuery()
             ->getOneOrNullResult();
 
@@ -169,6 +171,28 @@ class TaxDocumentRepository extends ServiceEntityRepository
         );
 
         return $header->toVoucher($voucherItems);
+    }
+
+    private function resolveLegacySaleIdForVoucher(string $saleId): string
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $legacyId = $connection->fetchOne(
+            <<<'SQL'
+SELECT s.legacy_movimiento_id
+FROM sales s
+WHERE s.id = :sale_id
+   OR s.legacy_movimiento_id = :sale_id
+ORDER BY CASE WHEN s.legacy_movimiento_id = :sale_id THEN 0 ELSE 1 END
+LIMIT 1
+SQL,
+            ['sale_id' => $saleId]
+        );
+
+        if (is_string($legacyId) && $legacyId !== '') {
+            return $legacyId;
+        }
+
+        return $saleId;
     }
 
     /**
