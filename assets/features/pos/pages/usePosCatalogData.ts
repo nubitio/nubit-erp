@@ -2,36 +2,30 @@ import { useEffect, useState } from 'react';
 import type { Subscription } from 'rxjs';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@platform/common/Constants';
-import type { Category, PaymentMethodOption, PosItem, WarehouseOption } from './types';
-import { extractCollection, isCashPaymentMethod, normalizeProduct } from './posHelpers';
+import type { PaymentMethodOption, WarehouseOption } from './types';
+import { extractCollection, isCashPaymentMethod } from './posHelpers';
+import { useOfflineCatalog } from '@offline/hooks/useOfflineCatalog';
 
 type UsePosCatalogDataParams = {
   currentBranchId: string;
 };
 
 export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) => {
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [menuData, setMenuData] = useState<PosItem[]>([]);
+  const {
+    loading,
+    loadError,
+    categories,
+    menuData,
+    usingOfflineCatalog,
+    lastUpdatedAt,
+  } = useOfflineCatalog();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>([]);
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<number | null>(null);
   const [warehouses, setWarehouses] = useState<WarehouseOption[]>([]);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string>('');
 
   useEffect(() => {
-    setLoading(true);
-    setLoadError(null);
-
     const subscriptions: Subscription[] = [];
-    let categoriesLoaded = false;
-    let productsLoaded = false;
-
-    const markFinishedIfReady = () => {
-      if (categoriesLoaded && productsLoaded) {
-        setLoading(false);
-      }
-    };
 
     subscriptions.push(
       httpClient.get<any>(`${Constants.API_BASE_URL}payment-methods?itemsPerPage=100&page=1`).subscribe({
@@ -74,53 +68,6 @@ export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) 
       }),
     );
 
-    subscriptions.push(
-      httpClient.get<Category[]>(`${Constants.API_BASE_URL}categories`).subscribe({
-        next: (response) => {
-          setCategories(response.data ?? []);
-          categoriesLoaded = true;
-          markFinishedIfReady();
-        },
-        error: () => {
-          setCategories([]);
-          categoriesLoaded = true;
-          markFinishedIfReady();
-        },
-      }),
-    );
-
-    subscriptions.push(
-      httpClient.get<PosItem[]>(`${Constants.API_BASE_URL}products?itemsPerPage=9999`).subscribe({
-        next: (response) => {
-          const products = (response.data ?? []).map(normalizeProduct);
-          setMenuData(products);
-
-          setCategories((prev) => {
-            if (prev.length > 0) {
-              return prev;
-            }
-
-            const categoryMap = new Map<string, Category>();
-            products.forEach((product) => {
-              if (product.category?.id) {
-                categoryMap.set(product.category.id, product.category);
-              }
-            });
-
-            return Array.from(categoryMap.values());
-          });
-
-          productsLoaded = true;
-          markFinishedIfReady();
-        },
-        error: () => {
-          setLoadError('No se pudo cargar el catálogo para el POS');
-          productsLoaded = true;
-          markFinishedIfReady();
-        },
-      }),
-    );
-
     return () => {
       subscriptions.forEach((subscription) => subscription.unsubscribe());
     };
@@ -131,6 +78,8 @@ export const usePosCatalogData = ({ currentBranchId }: UsePosCatalogDataParams) 
     loadError,
     categories,
     menuData,
+    usingOfflineCatalog,
+    lastUpdatedAt,
     paymentMethods,
     selectedPaymentMethodId,
     setSelectedPaymentMethodId,

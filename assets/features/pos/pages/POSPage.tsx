@@ -13,6 +13,8 @@ import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
 import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
+import { useConnectivity } from '@offline/hooks/useConnectivity';
+import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 
 type QzInvoicePrinter = ReturnType<typeof createQzInvoicePrinter>;
 
@@ -37,6 +39,8 @@ const POSPage = () => {
     loadError,
     categories,
     menuData,
+    usingOfflineCatalog,
+    lastUpdatedAt,
     paymentMethods,
     selectedPaymentMethodId,
     setSelectedPaymentMethodId,
@@ -59,6 +63,8 @@ const POSPage = () => {
   const selectedPaymentMethod =
     paymentMethods.find((method) => method.id === selectedPaymentMethodId) ?? null;
   const isCashPaymentSelected = isCashPaymentMethod(selectedPaymentMethod);
+  const { isOnline } = useConnectivity();
+  const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } = useOutboxSync();
 
   const {
     cart,
@@ -89,12 +95,20 @@ const POSPage = () => {
     handleCheckout,
     getEffectiveStock,
   } = usePosCheckout({
+    tenantId: window.location.hostname || 'default-tenant',
+    storeId: branchId || 'default-store',
     selectedWarehouseId,
     selectedCustomerId: customersState.selectedCustomerId,
     selectedPaymentMethodId,
+    selectedPaymentMethodName: selectedPaymentMethod?.name,
     isCashPaymentSelected,
     enforceStockCheck,
     visibleProducts: filteredMenu,
+    isOnline,
+    onQueuedSaleCreated: async () => {
+      await refresh();
+      await processNow();
+    },
     printSaleInvoice: (saleId: string) => qzInvoicePrinterRef.current.printSaleInvoice(saleId),
   });
 
@@ -170,6 +184,13 @@ const POSPage = () => {
         cartItemsCount={cartItemsCount}
         hasCartItems={cart.length > 0}
         lastSaleCode={lastSaleCode}
+        isOnline={isOnline}
+        isSyncing={isSyncing}
+        pendingSalesCount={pendingSalesCount}
+        outboxSales={recentSales}
+        onRetrySale={(saleId) => {
+          void retrySale(saleId);
+        }}
       />
 
       {/* ── Left: catalogue ── */}
@@ -188,6 +209,8 @@ const POSPage = () => {
         getEffectiveStock={getEffectiveStock}
         enforceStockCheck={enforceStockCheck}
         searchInputRef={searchInputRef}
+        usingOfflineCatalog={usingOfflineCatalog}
+        lastCatalogSyncAt={lastUpdatedAt}
       />
 
       {/* ── Right: checkout ── */}
@@ -234,6 +257,10 @@ const POSPage = () => {
         checkoutDisabled={checkoutDisabled}
         handleCheckout={handleCheckout}
         isProcessingSale={isProcessingSale}
+        syncSales={recentSales}
+        onRetrySale={(saleId) => {
+          void retrySale(saleId);
+        }}
       />
     </div>
   );

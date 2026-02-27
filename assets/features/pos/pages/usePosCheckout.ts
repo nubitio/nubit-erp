@@ -1,29 +1,40 @@
 import { useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
-import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@platform/common/Constants';
 import type { CartItem, PosItem } from './types';
 import { IGV_RATE, toLocalIsoString, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
+import { createLocalSaleAndEnqueue } from '@offline/outbox';
+import { offlineDb } from '@offline/db';
 
 type UsePosCheckoutParams = {
+  tenantId: string;
+  storeId: string;
   selectedWarehouseId: string;
   selectedCustomerId: number | null;
   selectedPaymentMethodId: number | null;
+  selectedPaymentMethodName?: string;
   isCashPaymentSelected: boolean;
   enforceStockCheck: boolean;
   visibleProducts: PosItem[];
+  isOnline: boolean;
+  onQueuedSaleCreated: () => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
 };
 
 export const usePosCheckout = ({
+  tenantId,
+  storeId,
   selectedWarehouseId,
   selectedCustomerId,
   selectedPaymentMethodId,
+  selectedPaymentMethodName,
   isCashPaymentSelected,
   enforceStockCheck,
   visibleProducts,
+  isOnline,
+  onQueuedSaleCreated,
   printSaleInvoice,
 }: UsePosCheckoutParams) => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -137,26 +148,21 @@ export const usePosCheckout = ({
     cart.length === 0 ||
     isProcessingSale ||
     !selectedWarehouseId ||
-    !selectedCustomerId ||
     !selectedPaymentMethodId ||
     (isCashPaymentSelected && amountReceivedNumber < total);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (checkoutDisabled) {
       if (cart.length === 0) {
         toast('Agrega productos al carrito', 'warning');
         return;
       }
       if (!selectedWarehouseId) {
-        toast('Selecciona un almacen', 'warning');
-        return;
-      }
-      if (!selectedCustomerId) {
-        toast('Selecciona un cliente', 'warning');
+        toast('Selecciona un almacén', 'warning');
         return;
       }
       if (!selectedPaymentMethodId) {
-        toast('Selecciona un metodo de pago', 'warning');
+        toast('Selecciona un método de pago', 'warning');
         return;
       }
       if (isCashPaymentSelected && amountReceivedNumber < total) {
@@ -167,48 +173,78 @@ export const usePosCheckout = ({
 
     setIsProcessingSale(true);
 
-    const salePayload = {
-      fecha: toLocalIsoString(new Date()),
-      almacen: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
-      cliente: getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId)),
-      tipo_pago: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
-      glosa: note.trim() || null,
-      descuento: discountPercent.toFixed(2),
-      emit_invoice: emitInvoice,
-      items: cart.map((item) => ({
-        producto: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
-        cantidad: Number(item.quantity),
-        precio_unitario: toNumber(item.salePrice).toFixed(2),
-        descuento: '0.00',
-        precio_total: (toNumber(item.salePrice) * item.quantity).toFixed(2),
-      })),
-    };
+    try {
+      const salePayload = {
+        fecha: toLocalIsoString(new Date()),
+        almacen: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
+        cliente: selectedCustomerId
+          ? getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId))
+          : null,
+        tipo_pago: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
+        glosa: note.trim() || null,
+        descuento: discountPercent.toFixed(2),
+        emit_invoice: emitInvoice,
+        items: cart.map((item) => ({
+          producto: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
+          cantidad: Number(item.quantity),
+          precio_unitario: toNumber(item.salePrice).toFixed(2),
+          descuento: '0.00',
+          precio_total: (toNumber(item.salePrice) * item.quantity).toFixed(2),
+        })),
+      };
 
-    httpClient
-      .post<any>(`${Constants.API_BASE_URL}movements`, salePayload)
-      .subscribe({
-        next: (response) => {
-          const created = response.data;
-          const saleCode =
-            [created?.serie, created?.numero].filter(Boolean).join('-') ||
-            created?.invoice ||
-            created?.id ||
-            `POS-${Date.now()}-${Math.floor(Math.random() * 9000 + 1000)}`;
-
-          setLastSaleCode(String(saleCode));
-          toast(`Venta registrada (${saleCode})`, 'success');
-          clearCart();
-
-          if (created?.id) {
-            printSaleInvoice(String(created.id)).catch(() => {
-              toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
-            });
-          }
+      const { sale } = await createLocalSaleAndEnqueue({
+        tenantId,
+        storeId,
+        warehouseId: selectedWarehouseId,
+        endpointUrl: `${Constants.API_BASE_URL}movements`,
+        requestBody: salePayload,
+        items: cart.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unitPrice: toNumber(item.salePrice),
+          lineTotal: toNumber(item.salePrice) * item.quantity,
+        })),
+        payments: [
+          {
+            methodId: Number(selectedPaymentMethodId),
+            methodName: selectedPaymentMethodName,
+            amount: total,
+            amountReceived: isCashPaymentSelected ? amountReceivedNumber : total,
+            changeAmount: isCashPaymentSelected ? changeAmount : 0,
+          },
+        ],
+        totals: {
+          subtotal,
+          igv: includedTax,
+          discount: discountAmount,
+          total,
         },
-      })
-      .add(() => {
-        setIsProcessingSale(false);
       });
+
+      if (!isOnline) {
+        toast('Venta guardada localmente', 'success');
+        toast('Pendiente de sincronización', 'warning');
+        setLastSaleCode(sale.correlativoTemporal);
+        clearCart();
+        await onQueuedSaleCreated();
+        return;
+      }
+
+      toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
+      setLastSaleCode(sale.correlativoTemporal);
+      clearCart();
+      await onQueuedSaleCreated();
+      const syncedSale = await offlineDb.sales.get(sale.id);
+      if (syncedSale?.serverSaleId) {
+        printSaleInvoice(syncedSale.serverSaleId).catch(() => {
+          toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
+        });
+      }
+    } finally {
+      setIsProcessingSale(false);
+    }
   };
 
   return {

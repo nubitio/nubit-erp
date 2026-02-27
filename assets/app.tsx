@@ -4,6 +4,10 @@ import { EfactApp } from './EfactApp';
 import './app.scss';
 
 window.addEventListener('load', () => {
+  if ('serviceWorker' in navigator) {
+    void navigator.serviceWorker.register('/sw.js');
+  }
+
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
     //<React.StrictMode>

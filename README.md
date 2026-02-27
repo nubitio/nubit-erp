@@ -649,6 +649,62 @@ Browser DevTools + React DevTools
 
 ---
 
+## POS Offline-First (PWA)
+
+### Cómo funciona
+
+- La capa offline está en `assets/offline/` con IndexedDB (Dexie) y tablas:
+  - `products`
+  - `customers`
+  - `sales`
+  - `outbox`
+  - `sync_logs`
+- El checkout POS siempre crea una venta local (`sales`) y una tarea en cola (`outbox`) con `Idempotency-Key`.
+- Si no hay conexión:
+  - se confirma: `Venta guardada localmente`
+  - la venta queda en estado `pending` y “Pendiente de sincronización”.
+- Cuando vuelve internet:
+  - se procesa cola FIFO automáticamente
+  - cada venta pasa por estados `pending -> syncing -> synced` o `error`
+  - en errores recuperables hay reintentos automáticos con backoff exponencial (1s, 3s, 10s, 30s, 2m, 5m)
+  - en errores no recuperables (400/422) queda en `error` y se reintenta manualmente.
+
+### Conectividad y UI
+
+- Estado visible en header:
+  - `🟢 Conectado`
+  - `🔴 Sin conexión (modo offline)`
+  - `🟡 Sincronizando (N pendientes)`
+- Indicador de pendientes con acción `Ver detalle`.
+- Estado por venta (`pending`, `syncing`, `synced`, `error`) con botón `Reintentar` en errores.
+- Catálogo POS:
+  - online: API + persistencia en IndexedDB
+  - offline: lectura desde IndexedDB con banner `Mostrando catálogo offline (última actualización: ...)`.
+
+### PWA / Service Worker
+
+- Configurado con `vite-plugin-pwa` + Workbox en `vite.config.js`.
+- Estrategias:
+  - App shell y assets: `CacheFirst`
+  - `GET /api/products`: `StaleWhileRevalidate`
+  - `GET /api/customers`: `StaleWhileRevalidate`
+  - `POST` de ventas no se cachea (la resiliencia la maneja Outbox en la app).
+
+### Cómo probar
+
+1. Abrir POS, cargar productos y realizar al menos una venta online.
+2. En Chrome DevTools: `Network -> Offline`.
+3. Registrar una venta desde POS:
+   - debe mostrar `Venta guardada localmente`
+   - debe incrementar `Ventas pendientes`.
+4. Volver a `Online`:
+   - verificar transición de estados hasta `synced`.
+5. Forzar error:
+   - simular 500 o caída de red para ver `retrying` automático.
+   - simular 422 para ver estado `error` y usar `Reintentar`.
+
+---
+
 ## 📝 Notas Adicionales
 
 ### Performance
