@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  COVERAGE_MIN_PHP: '7.0'
+  COVERAGE_MIN_PHP: '8.0'
 
 jobs:
   backend:
