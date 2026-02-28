@@ -74,6 +74,29 @@ final class InventoryLedgerServiceTest extends TestCase
         $service->applyMovementFromSaleItem($sale, $item, 1, true);
     }
 
+    public function testServiceProductDoesNotWriteInventoryMovements(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects($this->never())->method('beginTransaction');
+        $connection->expects($this->never())->method('executeStatement');
+
+        $service = new InventoryLedgerService($connection);
+
+        $sale = (new Sale())
+            ->setId('sale-2')
+            ->setTipoId(2)
+            ->setFecha(new \DateTimeImmutable('2026-02-28 11:00:00'))
+            ->setAlmacen($this->newWarehouse('wh-1'));
+
+        $item = (new SaleItem())
+            ->setProducto($this->newServiceProduct('svc-1'))
+            ->setCantidad(1.0)
+            ->setPrecioUnitario('20.00')
+            ->setPrecioTotal('20.00');
+
+        $service->applyMovementFromSaleItem($sale, $item, 1, true);
+    }
+
     private function newProduct(string $id): Product
     {
         $product = new Product();
@@ -99,5 +122,14 @@ final class InventoryLedgerServiceTest extends TestCase
         $reflection = new \ReflectionObject($entity);
         $property = $reflection->getProperty('id');
         $property->setValue($entity, $id);
+    }
+
+    private function newServiceProduct(string $id): Product
+    {
+        $product = new Product();
+        $this->setEntityId($product, $id);
+        $product->setType(2);
+
+        return $product;
     }
 }

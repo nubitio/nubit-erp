@@ -110,7 +110,7 @@ SQL,
         if ($warehouse === null || $product === null) {
             return;
         }
-        if ($product->getType() !== 1) {
+        if (!$this->shouldTrackInventory($product)) {
             return;
         }
 
@@ -456,6 +456,19 @@ SQL,
             substr($hex, 16, 4),
             substr($hex, 20, 12),
         );
+    }
+
+    private function shouldTrackInventory(Product $product): bool
+    {
+        if (method_exists($product, 'getTrackInventory')) {
+            /** @var mixed $trackInventory */
+            $trackInventory = $product->getTrackInventory();
+            if (is_bool($trackInventory)) {
+                return $trackInventory;
+            }
+        }
+
+        return $product->getType() === 1;
     }
 
     private function shouldReadFromStockItems(): bool

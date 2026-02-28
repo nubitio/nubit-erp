@@ -2,6 +2,9 @@ export interface PosItem {
   id: string;
   name: string;
   salePrice: number;
+  productType?: 'STOCKABLE' | 'SERVICE' | 'DIGITAL' | 'COMPOSITE' | 'CONSUMABLE';
+  trackInventory?: boolean;
+  saleUnitCode?: string;
   sku?: string;
   barcode?: string;
   stock?: number;
