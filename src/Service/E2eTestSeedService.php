@@ -352,13 +352,15 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         $this->connection->executeStatement(
-            'DELETE FROM tax_document_event WHERE tax_document_id IN (SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
+            'DELETE FROM tax_document_event WHERE tax_document_id IN '
+            . '(SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
 
         $this->connection->executeStatement(
-            'DELETE FROM tax_document_line WHERE tax_document_id IN (SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
+            'DELETE FROM tax_document_line WHERE tax_document_id IN '
+            . '(SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
