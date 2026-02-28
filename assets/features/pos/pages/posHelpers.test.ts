@@ -37,13 +37,19 @@ describe('posHelpers', () => {
   });
 
   it('parses number and optional number values safely', () => {
+    expect(toNumber(5.5)).toBe(5.5);
     expect(toNumber('10.2')).toBe(10.2);
     expect(toNumber('invalid', 7)).toBe(7);
     expect(toOptionalNumber('12.8')).toBe(12.8);
     expect(toOptionalNumber('')).toBeUndefined();
   });
 
+  it('returns raw collections when payload is already an array', () => {
+    expect(extractCollection([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+
   it('detects cash payment methods by id and name', () => {
+    expect(isCashPaymentMethod(null)).toBe(false);
     expect(isCashPaymentMethod({ id: 1, name: 'Tarjeta' })).toBe(true);
     expect(isCashPaymentMethod({ id: 9, name: 'Efectivo' })).toBe(true);
     expect(isCashPaymentMethod({ id: 9, name: 'Transferencia' })).toBe(false);
@@ -59,6 +65,7 @@ describe('posHelpers', () => {
   });
 
   it('parses boolean settings with fallback', () => {
+    expect(parseBooleanSetting(true, false)).toBe(true);
     expect(parseBooleanSetting('true', false)).toBe(true);
     expect(parseBooleanSetting('0', true)).toBe(false);
     expect(parseBooleanSetting('unknown', true)).toBe(true);
