@@ -59,7 +59,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
   vite:
-    image: node:20.13.1
+    image: node:20.19.0
     #command: npm run watch
     working_dir: /home/node/app
     volumes:
