@@ -11,11 +11,13 @@ use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-#[AsCommand(name: 'app:sale:migrate', description: 'Migrate sales', help: <<<'TXT'
-Actualiza valores de las ventas
+#[AsCommand(name: 'app:sale:migrate', description: '[DEPRECATED] Legacy sale backfill over movimiento', help: <<<'TXT'
+Actualiza valores de ventas en tablas legacy (movimiento).
+Deprecated after POS V2 cutover; use only for controlled legacy recovery.
 TXT)]
 class SaleMigrateCommand extends TenantAwareCommand
 {
@@ -29,11 +31,22 @@ class SaleMigrateCommand extends TenantAwareCommand
     protected function configure(): void
     {
         parent::configure();
+        $this->addOption(
+            'force-legacy',
+            null,
+            InputOption::VALUE_NONE,
+            'Allow execution over legacy movimiento tables (deprecated path).'
+        );
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
+        if (!(bool) $input->getOption('force-legacy')) {
+            $io->warning('Deprecated legacy command. Re-run with --force-legacy if you explicitly need it.');
+            return Command::SUCCESS;
+        }
+
         try {
             $io->title('Actualizando valores de las ventas');
             $io->text('Esto puede tardar unos minutos');
