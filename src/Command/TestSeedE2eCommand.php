@@ -24,6 +24,8 @@ final class TestSeedE2eCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        unset($input);
+
         if ((string) ($_SERVER['E2E_SEED_ENABLED'] ?? '') !== '1') {
             $output->writeln('<error>app:test:seed-e2e requires E2E_SEED_ENABLED=1.</error>');
 
