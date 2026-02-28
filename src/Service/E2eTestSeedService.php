@@ -39,7 +39,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final class E2eTestSeedService
+final class E2eTestSeedService implements E2eTestSeedServiceInterface
 {
     private const string E2E_USERNAME = 'ci_e2e_user';
     private const string E2E_BRANCH_NAME = 'CI E2E Branch';
