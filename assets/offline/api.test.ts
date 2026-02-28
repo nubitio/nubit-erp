@@ -85,6 +85,57 @@ describe('sendApiRequest', () => {
     expect(result.errorMessage).toBe('temporary');
   });
 
+  it('marks 429 responses as recoverable and prioritizes hydra error description', async () => {
+    fetchMock.mockResolvedValueOnce(asResponse(429, { 'hydra:description': 'Slow down' }));
+
+    const result = await sendApiRequest({
+      method: 'GET',
+      url: '/api/orders',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(429);
+    expect(result.recoverable).toBe(true);
+    expect(result.errorMessage).toBe('Slow down');
+  });
+
+  it('returns requiresLogin when request is still unauthorized after a successful refresh', async () => {
+    fetchMock
+      .mockResolvedValueOnce(asResponse(401, { message: 'expired' }))
+      .mockResolvedValueOnce(asResponse(200, { refreshed: true }))
+      .mockResolvedValueOnce(asResponse(401, { message: 'still unauthorized' }));
+
+    const result = await sendApiRequest({
+      method: 'GET',
+      url: '/api/orders',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(401);
+    expect(result.requiresLogin).toBe(true);
+    expect(result.recoverable).toBe(false);
+  });
+
+  it('falls back to generic message when payload is not valid json', async () => {
+    const response = {
+      status: 400,
+      ok: false,
+      json: vi.fn().mockRejectedValue(new Error('invalid json')),
+    } as unknown as Response;
+    fetchMock.mockResolvedValueOnce(response);
+
+    const result = await sendApiRequest({
+      method: 'POST',
+      url: '/api/orders',
+      body: { total: 100 },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(400);
+    expect(result.recoverable).toBe(false);
+    expect(result.errorMessage).toBe('Error HTTP 400');
+  });
+
   it('returns recoverable network error when fetch throws', async () => {
     fetchMock.mockRejectedValueOnce(new Error('Network down'));
 
