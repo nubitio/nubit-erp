@@ -6,12 +6,12 @@
   display: contents;
 
   .dx-datagrid-header-panel {
-    padding: 0 var(--content-padding);
+    padding: 2px var(--content-padding) 6px;
   }
 
   .dx-toolbar {
     margin-bottom: 0;
-    padding: 10px 0;
+    padding: 8px 0;
   }
 
   .view-wrapper-datagrid-list {
@@ -34,6 +34,10 @@
 
       .dx-datagrid-content .dx-row {
         cursor: pointer;
+      }
+
+      .dx-datagrid-content .dx-data-row > td {
+        vertical-align: middle;
       }
 
       .grid-header {
