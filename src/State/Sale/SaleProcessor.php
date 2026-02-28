@@ -377,15 +377,12 @@ readonly class SaleProcessor implements ProcessorInterface
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
                 if ($resolvedCashSessionId !== null) {
                     try {
-                        $cashSaleCategory = $this->cashMovementCategoryRepository->findOneBy([
-                            'code' => CashMovementCategory::CASH_SALE,
-                        ]);
                         $this->salesWriteGateway->writeCashSaleMovement(
                             saleId: (string) $data->getId(),
                             cashSessionId: $resolvedCashSessionId,
                             createdBy: $user->userId,
                             amount: $cashCollected,
-                            categoryId: $cashSaleCategory?->getId(),
+                            categoryId: null,
                             paymentMethodId: \App\Entity\PaymentMethod::CASH,
                             createdAt: $data->getFecha() ?? new DateTimeImmutable()
                         );
@@ -402,7 +399,6 @@ readonly class SaleProcessor implements ProcessorInterface
                         }
                     }
                 }
-
             }
         }
 

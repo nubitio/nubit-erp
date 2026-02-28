@@ -74,8 +74,6 @@ final class InitialDataSeederTest extends TestCase
     private function invokePrivate(object $service, string $methodName): void
     {
         $method = new \ReflectionMethod($service, $methodName);
-        $method->setAccessible(true);
         $method->invoke($service);
     }
 }
-
