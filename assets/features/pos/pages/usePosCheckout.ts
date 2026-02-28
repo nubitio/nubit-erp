@@ -215,6 +215,14 @@ export const usePosCheckout = ({
           ? getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId))
           : null,
         tipo_pago: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
+        payments: [
+          {
+            payment_method_id: Number(selectedPaymentMethodId),
+            amount: total,
+            tendered_amount: isCashPaymentSelected ? amountReceivedNumber : total,
+            change_amount: isCashPaymentSelected ? changeAmount : 0,
+          },
+        ],
         glosa: note.trim() || null,
         descuento: discountPercent.toFixed(2),
         emit_invoice: emitInvoice,

@@ -231,10 +231,17 @@ SQL,
             ]
         );
 
-        $currentOnHand = (float) ($row['on_hand_qty'] ?? 0.0);
-        $currentReserved = (float) ($row['reserved_qty'] ?? 0.0);
-        $currentAvailable = (float) ($row['available_qty'] ?? 0.0);
-        $currentAvgCost = $row['avg_cost'] !== null ? (float) $row['avg_cost'] : null;
+        if ($row === false) {
+            $currentOnHand = 0.0;
+            $currentReserved = 0.0;
+            $currentAvailable = 0.0;
+            $currentAvgCost = null;
+        } else {
+            $currentOnHand = (float) ($row['on_hand_qty'] ?? 0.0);
+            $currentReserved = (float) ($row['reserved_qty'] ?? 0.0);
+            $currentAvailable = (float) ($row['available_qty'] ?? 0.0);
+            $currentAvgCost = $row['avg_cost'] !== null ? (float) $row['avg_cost'] : null;
+        }
 
         $newOnHand = round($currentOnHand + $delta, 3);
         $newAvailable = round($currentAvailable + $delta, 3);
