@@ -6,6 +6,15 @@ namespace App\Tests\Setup;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
+use App\Entity\CashMovementCategory;
+use App\Entity\Category;
+use App\Entity\Customer;
+use App\Entity\LogisticOperation;
+use App\Entity\PaymentMethod;
+use App\Entity\Role;
+use App\Entity\SunatCatalog;
+use App\Entity\UnitOfMeasure;
+use App\Entity\VoucherType;
 use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\CategoryRepository;
@@ -64,35 +73,169 @@ final class InitialSetupServiceTest extends TestCase
         $this->invokePrivate($service, 'seedSettings');
     }
 
-    private function newService(SettingsService $settings): InitialSetupService
+    public function testStatusReflectsRepositoryCounts(): void
     {
+        $userRepository = $this->createMock(UserRepository::class);
+        $userRepository->method('count')->willReturn(1);
+        $companyRepository = $this->createMock(CompanyRepository::class);
+        $companyRepository->method('count')->willReturn(1);
+        $branchRepository = $this->createMock(BranchRepository::class);
+        $branchRepository->method('count')->willReturn(1);
+
+        $service = $this->newService(
+            $this->createMock(SettingsService::class),
+            userRepository: $userRepository,
+            companyRepository: $companyRepository,
+            branchRepository: $branchRepository
+        );
+
+        $status = $service->status();
+        self::assertTrue($status->configured);
+        self::assertSame(1, $status->userCount);
+        self::assertSame(1, $status->companyCount);
+        self::assertSame(1, $status->branchCount);
+    }
+
+    public function testEnsureDefaultRolesCreatesAndReturnsSuperAdminRole(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::exactly(3))->method('executeStatement');
+
+        $superAdmin = (new Role())->setName('Super Administrador');
+        $roleRepository = $this->createMock(RoleRepository::class);
+        $roleRepository->method('find')->with(1)->willReturn($superAdmin);
+
+        $service = $this->newService(
+            $this->createMock(SettingsService::class),
+            connection: $connection,
+            roleRepository: $roleRepository
+        );
+
+        $result = $this->invokePrivate($service, 'ensureDefaultRoles');
+        self::assertSame($superAdmin, $result);
+    }
+
+    public function testEnsureDefaultRolesThrowsWhenRoleCannotBePrepared(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::exactly(3))->method('executeStatement');
+
+        $roleRepository = $this->createMock(RoleRepository::class);
+        $roleRepository->method('find')->willReturn(null);
+        $roleRepository->method('findOneBy')->willReturn(null);
+
+        $service = $this->newService(
+            $this->createMock(SettingsService::class),
+            connection: $connection,
+            roleRepository: $roleRepository
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('No se pudo preparar el rol de super administrador.');
+        $this->invokePrivate($service, 'ensureDefaultRoles');
+    }
+
+    public function testAssignFullMenuToRoleInsertsAllRelations(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchFirstColumn')->willReturn([10, 11, 12]);
+        $connection->expects(self::exactly(3))->method('executeStatement');
+
+        $service = $this->newService($this->createMock(SettingsService::class), connection: $connection);
+        $this->invokePrivate($service, 'assignFullMenuToRole', [3]);
+    }
+
+    public function testSeedReferenceDataSkipsPersistWhenAllRowsAlreadyExist(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::never())->method('persist');
+        $entityManager->expects(self::never())->method('flush');
+
+        $logisticRepo = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepo->method('findOneBy')->willReturn(new LogisticOperation());
+        $paymentRepo = $this->createMock(PaymentMethodRepository::class);
+        $paymentRepo->method('findOneBy')->willReturn(new PaymentMethod());
+        $cashRepo = $this->createMock(CashMovementCategoryRepository::class);
+        $cashRepo->method('findOneBy')->willReturn(new CashMovementCategory());
+        $voucherRepo = $this->createMock(VoucherTypeRepository::class);
+        $voucherRepo->method('find')->willReturn(new VoucherType());
+        $unitRepo = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepo->method('findOneBy')->willReturn(new UnitOfMeasure());
+        $categoryRepo = $this->createMock(CategoryRepository::class);
+        $categoryRepo->method('findOneBy')->willReturn(new Category());
+        $customerRepo = $this->createMock(CustomerRepository::class);
+        $customerRepo->method('findOneBy')->willReturn(new Customer());
+        $sunatRepo = $this->createMock(SunatCatalogRepository::class);
+        $sunatRepo->method('findOneBy')->willReturn(new SunatCatalog());
+
+        $service = $this->newService(
+            $this->createMock(SettingsService::class),
+            entityManager: $entityManager,
+            logisticOperationRepository: $logisticRepo,
+            paymentMethodRepository: $paymentRepo,
+            cashMovementCategoryRepository: $cashRepo,
+            voucherTypeRepository: $voucherRepo,
+            unitOfMeasureRepository: $unitRepo,
+            categoryRepository: $categoryRepo,
+            customerRepository: $customerRepo,
+            sunatCatalogRepository: $sunatRepo
+        );
+
+        $this->invokePrivate($service, 'seedReferenceData');
+    }
+
+    private function newService(
+        SettingsService $settings,
+        ?EntityManagerInterface $entityManager = null,
+        ?UserRepository $userRepository = null,
+        ?CompanyRepository $companyRepository = null,
+        ?BranchRepository $branchRepository = null,
+        ?RoleRepository $roleRepository = null,
+        ?LogisticOperationRepository $logisticOperationRepository = null,
+        ?PaymentMethodRepository $paymentMethodRepository = null,
+        ?CashMovementCategoryRepository $cashMovementCategoryRepository = null,
+        ?VoucherTypeRepository $voucherTypeRepository = null,
+        ?VoucherSeriesRepository $voucherSeriesRepository = null,
+        ?UnitOfMeasureRepository $unitOfMeasureRepository = null,
+        ?CategoryRepository $categoryRepository = null,
+        ?CustomerRepository $customerRepository = null,
+        ?SunatCatalogRepository $sunatCatalogRepository = null,
+        ?Connection $connection = null,
+        ?UbigeoImportService $ubigeoImportService = null,
+        ?TimeDimensionSeeder $timeDimensionSeeder = null,
+        ?MenuSeedService $menuSeedService = null,
+    ): InitialSetupService {
         return new InitialSetupService(
-            $this->createMock(EntityManagerInterface::class),
+            $entityManager ?? $this->createMock(EntityManagerInterface::class),
             $this->createMock(UserPasswordHasherInterface::class),
-            $this->createMock(UserRepository::class),
-            $this->createMock(CompanyRepository::class),
-            $this->createMock(BranchRepository::class),
-            $this->createMock(RoleRepository::class),
-            $this->createMock(LogisticOperationRepository::class),
-            $this->createMock(PaymentMethodRepository::class),
-            $this->createMock(CashMovementCategoryRepository::class),
-            $this->createMock(VoucherTypeRepository::class),
-            $this->createMock(VoucherSeriesRepository::class),
-            $this->createMock(UnitOfMeasureRepository::class),
-            $this->createMock(CategoryRepository::class),
-            $this->createMock(CustomerRepository::class),
-            $this->createMock(SunatCatalogRepository::class),
-            $this->createMock(Connection::class),
+            $userRepository ?? $this->createMock(UserRepository::class),
+            $companyRepository ?? $this->createMock(CompanyRepository::class),
+            $branchRepository ?? $this->createMock(BranchRepository::class),
+            $roleRepository ?? $this->createMock(RoleRepository::class),
+            $logisticOperationRepository ?? $this->createMock(LogisticOperationRepository::class),
+            $paymentMethodRepository ?? $this->createMock(PaymentMethodRepository::class),
+            $cashMovementCategoryRepository ?? $this->createMock(CashMovementCategoryRepository::class),
+            $voucherTypeRepository ?? $this->createMock(VoucherTypeRepository::class),
+            $voucherSeriesRepository ?? $this->createMock(VoucherSeriesRepository::class),
+            $unitOfMeasureRepository ?? $this->createMock(UnitOfMeasureRepository::class),
+            $categoryRepository ?? $this->createMock(CategoryRepository::class),
+            $customerRepository ?? $this->createMock(CustomerRepository::class),
+            $sunatCatalogRepository ?? $this->createMock(SunatCatalogRepository::class),
+            $connection ?? $this->createMock(Connection::class),
             $settings,
-            $this->createMock(UbigeoImportService::class),
-            $this->createMock(TimeDimensionSeeder::class),
-            $this->createMock(MenuSeedService::class),
+            $ubigeoImportService ?? $this->createMock(UbigeoImportService::class),
+            $timeDimensionSeeder ?? $this->createMock(TimeDimensionSeeder::class),
+            $menuSeedService ?? $this->createMock(MenuSeedService::class),
         );
     }
 
-    private function invokePrivate(object $service, string $methodName): void
+    /**
+     * @param list<mixed> $args
+     */
+    private function invokePrivate(object $service, string $methodName, array $args = []): mixed
     {
         $method = new \ReflectionMethod($service, $methodName);
-        $method->invoke($service);
+
+        return $method->invokeArgs($service, $args);
     }
 }
