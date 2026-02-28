@@ -89,6 +89,9 @@ SQL,
         if ($warehouse === null || $product === null) {
             return;
         }
+        if ($product->getType() !== 1) {
+            return;
+        }
 
         $movementType = $sale->getTipoId() === 1 ? 'PURCHASE_IN' : 'SALE_OUT';
         $qty = (float) $item->getCantidad();
