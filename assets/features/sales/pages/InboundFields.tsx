@@ -107,6 +107,8 @@ export const InboundFields = () => {
   return fields;
 };
 
+export const PurchasesFields = InboundFields;
+
 export const InboundDetailFields = () => {
   const fields: Field[] = [];
 
@@ -187,3 +189,5 @@ export const InboundDetailFields = () => {
 
   return fields;
 };
+
+export const PurchasesDetailFields = InboundDetailFields;

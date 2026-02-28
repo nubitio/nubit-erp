@@ -5,6 +5,7 @@ import {
   InvoicePage,
   KardexPage,
   OutboundPage,
+  PurchasesPage,
   SaleConsultPage,
   SalePage,
   TransferPage,
@@ -12,6 +13,8 @@ import {
 
 export const salesRoutes: AppRouteDefinition[] = [
   { path: '/credit-note', element: CreditNotePage },
+  { path: '/purchases', element: PurchasesPage },
+  // Deprecated alias kept for backward compatibility.
   { path: '/inbound', element: InboundPage },
   { path: '/invoice', element: InvoicePage },
   { path: '/kardex', element: KardexPage },

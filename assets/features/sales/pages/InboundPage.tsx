@@ -3,17 +3,17 @@ import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm, DxFormEvents } from '@platform/form/DxForm';
 import { Constants } from '@platform/common/Constants';
-import { InboundDetailFields, InboundFields } from './InboundFields';
+import { PurchasesDetailFields, PurchasesFields } from './InboundFields';
 import { useRef } from 'react';
 import { useEvents } from '@platform/event/EventHook';
-import { inboundEvents, useInboundFormObservers } from '@features/inbound';
+import { purchasesEvents, usePurchasesFormObservers } from '@features/purchases/model';
 
-export const InboundPage = () => {
+export const PurchasesPage = () => {
   const [on] = useEvents();
   const formRef = useRef<DxFormEvents>(null);
   const container = 'wrapper';
-  const fields = InboundFields();
-  const detailFields = InboundDetailFields();
+  const fields = PurchasesFields();
+  const detailFields = PurchasesDetailFields();
 
   const API_URL = Constants.API_BASE_URL + 'movements';
 
@@ -27,10 +27,10 @@ export const InboundPage = () => {
     formRef.current?.setFieldValue('total', Number(total));
   };
 
-  useInboundFormObservers({
+  usePurchasesFormObservers({
     on,
     apiUrl: API_URL,
-    editEventName: inboundEvents.EDIT,
+    editEventName: purchasesEvents.EDIT,
     formRef,
     onDetailRowsChanged: setTotal,
   });
@@ -38,8 +38,8 @@ export const InboundPage = () => {
   return (
     <div id={container}>
       <DxDataGrid
-        id={'inbound'}
-        title={'Ingresos'}
+        id={'purchases'}
+        title={'Compras'}
         url={API_URL + '?type=inbound'}
         detailUrl={API_URL + '/{id}/items'}
         allowAdd={true}
@@ -47,18 +47,21 @@ export const InboundPage = () => {
         allowDelete={true}
         fields={fields}
         detailFields={detailFields}
-        events={inboundEvents}
+        events={purchasesEvents}
         sort={[{ selector: 'date_created', desc: true }]}
       />
-      <DxDialog width={900} height={600} events={inboundEvents}>
+      <DxDialog width={900} height={600} events={purchasesEvents}>
         <DxForm
           ref={formRef}
           url={API_URL}
           fields={fields}
           detailFields={detailFields}
-          events={inboundEvents}
+          events={purchasesEvents}
         />
       </DxDialog>
     </div>
   );
 };
+
+// Backward-compatible alias while routes/menu migrate from /inbound to /purchases.
+export const InboundPage = PurchasesPage;

@@ -112,9 +112,9 @@ class MenuSeedService
         [
             'id' => 104,
             'order_index' => 4,
-            'key_name' => 'Ingresos',
+            'key_name' => 'Compras',
             'type' => 'route',
-            'route' => 'inbound',
+            'route' => 'purchases',
             'icon' => '',
             'parent_id' => 100,
         ],
