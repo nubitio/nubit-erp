@@ -111,6 +111,18 @@
     - `purchase_product_daily_summary` (top productos comprados por dia/sucursal/almacen).
   - Rebuild incremental por tenant con ventana de fechas y cron horario.
 
+### Fase 4C (Dashboard compras read-path)
+
+- Implementada en aplicacion:
+  - `src/Repository/DashboardRepository.php`
+  - `src/Controller/DashboardController.php`
+  - `assets/features/admin/pages/*`
+- Soporte funcional:
+  - Dashboard usa read-model de compras para:
+    - resumen de compras (hoy/semana/mes, crecimiento mensual, conteo de ingresos).
+    - top productos comprados.
+  - Fallback seguro por segmento (`safeQuery`) si tablas de resumen no existen en un tenant.
+
 ### Fase 5
 
 - Implementada en esquema:

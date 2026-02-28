@@ -137,6 +137,56 @@ readonly class DashboardRepository
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);
+        $purchaseSummary = $this->safeQuery('purchaseSummary', fn () => $this->connection->fetchAssociative("
+            SELECT
+                SUM(CASE WHEN td.date = :today THEN pds.grand_total ELSE 0 END) AS purchases_today,
+                SUM(CASE WHEN td.date >= :last7days THEN pds.grand_total ELSE 0 END) AS purchases_week,
+                SUM(
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN pds.grand_total ELSE 0 END
+                ) AS purchases_month,
+                SUM(
+                    CASE WHEN td.year = :previousYear AND td.month = :previousMonth THEN pds.grand_total ELSE 0 END
+                ) AS purchases_previous_month,
+                SUM(CASE WHEN td.date = :today THEN pds.receipts_count ELSE 0 END) AS receipts_today,
+                SUM(
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN pds.receipts_count ELSE 0 END
+                ) AS receipts_month
+            FROM purchases_daily_summary pds
+            INNER JOIN time_dimension td ON td.date = pds.summary_date
+            WHERE pds.branch_id = :branchId
+        ", $params) ?: [], [], $failedSegments);
+        $purchasesByDay = $this->safeQuery('purchasesByDay', fn () => $this->connection->fetchAllAssociative("
+            SELECT
+                td.day AS day,
+                td.day_name AS day_name,
+                COALESCE(SUM(pds.grand_total), 0) AS total
+            FROM time_dimension td
+            LEFT JOIN purchases_daily_summary pds
+                ON td.date = pds.summary_date
+                AND pds.branch_id = :branchId
+            WHERE td.year = :currentYear
+              AND td.month = :currentMonth
+            GROUP BY td.id, td.day
+            ORDER BY td.day
+        ", $params), [], $failedSegments);
+        $topPurchasedProducts = $this->safeQuery(
+            'topPurchasedProducts',
+            fn () => $this->connection->fetchAllAssociative("
+            SELECT
+                COALESCE(p.descripcion, 'Sin producto') AS product,
+                SUM(ppds.qty_received) AS quantity,
+                SUM(ppds.total_amount) AS total
+            FROM purchase_product_daily_summary ppds
+            LEFT JOIN producto p ON ppds.product_id = p.producto_id
+            WHERE ppds.branch_id = :branchId
+              AND ppds.summary_date >= :last30days
+            GROUP BY ppds.product_id, p.descripcion
+            ORDER BY total DESC
+            LIMIT 5
+        ", $params),
+            [],
+            $failedSegments
+        );
 
         $topCustomers = $this->safeQuery('topCustomers', fn () => $this->connection->fetchAllAssociative("
             SELECT
@@ -232,6 +282,19 @@ readonly class DashboardRepository
         $summaryData['netSalesToday'] = max($summaryData['salesToday'] - $summaryData['refundsToday'], 0);
         $summaryData['netSalesThisMonth'] = max($summaryData['salesThisMonth'] - $summaryData['refundsThisMonth'], 0);
         $payload['summary'] = $summaryData;
+        $purchaseSummaryData = [
+            'purchasesToday' => (float) ($purchaseSummary['purchases_today'] ?? 0),
+            'purchasesWeek' => (float) ($purchaseSummary['purchases_week'] ?? 0),
+            'purchasesThisMonth' => (float) ($purchaseSummary['purchases_month'] ?? 0),
+            'purchasesLastMonth' => (float) ($purchaseSummary['purchases_previous_month'] ?? 0),
+            'receiptsToday' => (int) ($purchaseSummary['receipts_today'] ?? 0),
+            'receiptsThisMonth' => (int) ($purchaseSummary['receipts_month'] ?? 0),
+        ];
+        $purchaseSummaryData['monthGrowth'] = $purchaseSummaryData['purchasesLastMonth'] > 0
+            ? (($purchaseSummaryData['purchasesThisMonth'] - $purchaseSummaryData['purchasesLastMonth'])
+                / $purchaseSummaryData['purchasesLastMonth']) * 100
+            : null;
+        $payload['purchasesSummary'] = $purchaseSummaryData;
 
         $paymentTrendPivot = [];
         $methods = [];
@@ -270,6 +333,16 @@ readonly class DashboardRepository
                 'quantity' => (float) $row['quantity'],
                 'total' => (float) $row['total'],
             ], $topProducts);
+        $payload['purchasesByDay'] = array_map(static fn (array $row): array => [
+            'day' => (int) $row['day'],
+            'label' => $row['day_name'],
+            'total' => (float) $row['total'],
+        ], $purchasesByDay);
+        $payload['topPurchasedProducts'] = array_map(static fn (array $row): array => [
+            'product' => $row['product'],
+            'quantity' => (float) $row['quantity'],
+            'total' => (float) $row['total'],
+        ], $topPurchasedProducts);
         $payload['topCustomers'] = array_map(static fn (array $row): array => [
                 'customer' => $row['customer'],
                 'invoices' => (int) $row['invoices'],
@@ -460,6 +533,17 @@ readonly class DashboardRepository
                 'points' => [],
             ],
             'topProducts' => [],
+            'purchasesSummary' => [
+                'purchasesToday' => 0.0,
+                'purchasesWeek' => 0.0,
+                'purchasesThisMonth' => 0.0,
+                'purchasesLastMonth' => 0.0,
+                'receiptsToday' => 0,
+                'receiptsThisMonth' => 0,
+                'monthGrowth' => null,
+            ],
+            'purchasesByDay' => [],
+            'topPurchasedProducts' => [],
             'topCustomers' => [],
             'voucherTypes' => [],
             'lowStockProducts' => [],
