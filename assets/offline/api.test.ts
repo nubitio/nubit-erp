@@ -148,4 +148,20 @@ describe('sendApiRequest', () => {
     expect(result.recoverable).toBe(true);
     expect(result.errorMessage).toBe('Network down');
   });
+
+  it('marks login as required when refresh request throws', async () => {
+    fetchMock
+      .mockResolvedValueOnce(asResponse(401, { message: 'expired' }))
+      .mockRejectedValueOnce(new Error('refresh offline'));
+
+    const result = await sendApiRequest({
+      method: 'GET',
+      url: '/api/orders',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.status).toBe(401);
+    expect(result.requiresLogin).toBe(true);
+    expect(result.recoverable).toBe(false);
+  });
 });

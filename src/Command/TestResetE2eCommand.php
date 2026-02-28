@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\E2eTestSeedService;
+use App\Service\E2eTestSeedServiceInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class TestResetE2eCommand extends Command
 {
     public function __construct(
-        private readonly E2eTestSeedService $seedService,
+        private readonly E2eTestSeedServiceInterface $seedService,
     ) {
         parent::__construct();
     }
