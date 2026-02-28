@@ -6,6 +6,8 @@ namespace App\Command;
 
 use Override;
 use App\Core\Application\Command\TenantAwareCommand;
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Entity\Product;
 use App\Entity\Warehouse;
 use App\Service\ProductStockService;
@@ -14,12 +16,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(name: 'app:update-stock', description: 'Update stock for all products', help: <<<'TXT'
-This command allows you to update stock for all products
+#[AsCommand(name: 'app:update-stock', description: '[DEPRECATED] Legacy stock rebuild from movimiento', help: <<<'TXT'
+This command rebuilds stock from legacy movimiento tables.
+Deprecated after POS V2 cutover; use only for controlled legacy recovery.
 TXT)]
 #[AsCronTask(expression: '0 0 * * *')]
 class UpdateStockCommand extends TenantAwareCommand
@@ -27,6 +31,7 @@ class UpdateStockCommand extends TenantAwareCommand
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly ProductStockService $productStockService,
+        private readonly SettingsService $settings,
     ) {
         parent::__construct();
     }
@@ -35,6 +40,12 @@ class UpdateStockCommand extends TenantAwareCommand
     protected function configure(): void
     {
         parent::configure();
+        $this->addOption(
+            'force-legacy',
+            null,
+            InputOption::VALUE_NONE,
+            'Allow legacy stock rebuild from movimiento tables (deprecated path).'
+        );
     }
 
     #[Override]
@@ -43,6 +54,12 @@ class UpdateStockCommand extends TenantAwareCommand
         OutputInterface $output,
     ): int {
         $io = new SymfonyStyle($input, $output);
+
+        if (!$this->isLegacyExecutionAllowed($input)) {
+            $io->warning('Skipping deprecated legacy stock rebuild. Use --force-legacy to run intentionally.');
+            return Command::SUCCESS;
+        }
+
         $batchSize = 100;
         $processed = 0;
 
@@ -139,6 +156,22 @@ class UpdateStockCommand extends TenantAwareCommand
         $this->entityManager->flush();
 
         return Command::SUCCESS;
+    }
+
+    private function isLegacyExecutionAllowed(InputInterface $input): bool
+    {
+        if ((bool) $input->getOption('force-legacy')) {
+            return true;
+        }
+
+        $isAuthoritative = strtolower(trim((string) $this->settings->get(Constants::SALES_V2_MODE, 'dual_write')))
+            === 'v2_authoritative';
+        $legacyProjectionDisabled = filter_var(
+            $this->settings->get('sales_v2_disable_legacy_stock_projection', 'false'),
+            FILTER_VALIDATE_BOOL
+        );
+
+        return !$isAuthoritative && !$legacyProjectionDisabled;
     }
 
     /**
