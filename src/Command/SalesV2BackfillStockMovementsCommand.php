@@ -107,13 +107,13 @@ SELECT
     'SYNCED' AS sync_status,
     COALESCE(s.created_at, NOW()) AS created_at
 FROM sale_items si
-INNER JOIN sales s ON s.id = si.sale_id
+INNER JOIN sales s ON BINARY s.id = BINARY si.sale_id
 WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
   AND NOT EXISTS (
       SELECT 1
       FROM stock_movements sm
       WHERE sm.source_type = 'SALE_ITEM'
-        AND sm.source_id = CAST(si.id AS CHAR(64))
+        AND BINARY sm.source_id = BINARY CAST(si.id AS CHAR(64))
         AND sm.movement_type = 'SALE_OUT'
   )
 SQL
@@ -153,7 +153,7 @@ SELECT
     'SYNCED' AS sync_status,
     COALESCE(m.date_created, NOW()) AS created_at
 FROM movimiento_detalle md
-INNER JOIN movimiento m ON m.movimiento_id = md.movimiento_id
+INNER JOIN movimiento m ON BINARY m.movimiento_id = BINARY md.movimiento_id
 WHERE m.tipo_id = 1
   AND m.estado = 1
   AND m.almacen_id IS NOT NULL
@@ -162,7 +162,7 @@ WHERE m.tipo_id = 1
       SELECT 1
       FROM stock_movements sm
       WHERE sm.source_type = 'LEGACY_PURCHASE_DETAIL'
-        AND sm.source_id = CAST(md.id AS CHAR(64))
+        AND BINARY sm.source_id = BINARY CAST(md.id AS CHAR(64))
         AND sm.movement_type = 'PURCHASE_IN'
   )
 SQL
