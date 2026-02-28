@@ -20,7 +20,7 @@ final class InventoryLedgerServiceCoreTransitionTest extends TestCase
     {
         $settings = $this->createMock(SettingsService::class);
         $settings->method('get')->willReturnCallback(
-            static fn (string $key, ?string $default = null): bool|string|null => match ($key) {
+            static fn (string $key, ?string $default = null): string|null => match ($key) {
                 Constants::INVENTORY_CORE_READ_FROM_STOCK_ITEMS => 'true',
                 default => $default,
             }
@@ -46,7 +46,7 @@ final class InventoryLedgerServiceCoreTransitionTest extends TestCase
     {
         $settings = $this->createMock(SettingsService::class);
         $settings->method('get')->willReturnCallback(
-            static fn (string $key, ?string $default = null): bool|string|null => match ($key) {
+            static fn (string $key, ?string $default = null): string|null => match ($key) {
                 Constants::INVENTORY_CORE_DUAL_WRITE => 'true',
                 Constants::INVENTORY_CORE_MODE => 'dual_write',
                 default => $default,
@@ -61,7 +61,7 @@ final class InventoryLedgerServiceCoreTransitionTest extends TestCase
         $connection->method('fetchAssociative')->willReturn(false);
 
         $connection->method('fetchOne')->willReturnCallback(
-            static function (string $sql, array $params = []): string|int|false {
+            static function (string $sql, array $params = []): int|false {
                 if (str_contains($sql, 'information_schema.columns')) {
                     if (($params['table'] ?? '') === 'stock_movements' && in_array(($params['column'] ?? ''), ['qty_delta_base', 'qty_original', 'unit_id'], true)) {
                         return 1;

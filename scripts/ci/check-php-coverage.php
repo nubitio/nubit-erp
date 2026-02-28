@@ -3,6 +3,10 @@
 
 declare(strict_types=1);
 
+$argc = isset($_SERVER['argc']) ? (int) $_SERVER['argc'] : 0;
+/** @var array<int, string> $argv */
+$argv = isset($_SERVER['argv']) && is_array($_SERVER['argv']) ? $_SERVER['argv'] : [];
+
 if ($argc < 3) {
     fwrite(STDERR, "Usage: check-php-coverage.php <clover.xml> <min-percent>\n");
     exit(1);

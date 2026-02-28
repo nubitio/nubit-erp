@@ -109,8 +109,20 @@ jobs:
           docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
           docker compose exec -T vite yarn install --immutable
 
+      - name: Seed E2E data on-the-fly
+        run: |
+          E2E_SEED_JSON=$(docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:seed-e2e | tail -n 1)
+          echo "E2E_SEED_JSON=$E2E_SEED_JSON"
+          echo "E2E_USERNAME=$(echo "$E2E_SEED_JSON" | jq -r '.username')" >> "$GITHUB_ENV"
+          echo "E2E_PASSWORD=$(echo "$E2E_SEED_JSON" | jq -r '.password')" >> "$GITHUB_ENV"
+          echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
+
       - name: Run Playwright e2e tests
         run: docker compose exec -T vite yarn test:e2e
+
+      - name: Cleanup E2E seeded data
+        if: always()
+        run: docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e || true
 
       - name: Stop full stack
         if: always()
