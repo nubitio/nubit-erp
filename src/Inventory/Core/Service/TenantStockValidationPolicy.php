@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Service;
 
+use App\Core\Context\TenantContext;
 use App\Entity\Product;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
@@ -14,6 +15,7 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
 {
     public function __construct(
         private Connection $connection,
+        private ?TenantContext $tenantContext = null,
     ) {
     }
 
@@ -44,11 +46,23 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
 
     private function resolvePolicy(): StockPolicy
     {
+        $tenantId = (string) ($this->tenantContext?->getTenantId() ?? 'default');
         $raw = $this->connection->fetchOne(
-            'SELECT policy FROM tenant_inventory_policy ORDER BY id DESC LIMIT 1'
+            'SELECT policy FROM tenant_inventory_policy WHERE tenant_id = :tenant_id LIMIT 1',
+            ['tenant_id' => $tenantId]
         );
 
         if ($raw === false) {
+            if ($tenantId !== 'default') {
+                $fallback = $this->connection->fetchOne(
+                    'SELECT policy FROM tenant_inventory_policy WHERE tenant_id = :tenant_id LIMIT 1',
+                    ['tenant_id' => 'default']
+                );
+                if ($fallback !== false) {
+                    return StockPolicy::from((string) $fallback);
+                }
+            }
+
             return StockPolicy::STRICT;
         }
 

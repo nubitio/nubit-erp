@@ -58,6 +58,18 @@ final class TenantStockValidationPolicyTest extends TestCase
         self::assertTrue($result->allowed);
     }
 
+    public function testFallsBackToStrictWhenPolicyIsMissing(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(false);
+
+        $policy = new TenantStockValidationPolicy($connection);
+        $result = $policy->validateSale($this->stockableProduct(), 'wh-1', '3.000000', '1.000000');
+
+        self::assertFalse($result->allowed);
+        self::assertSame('Insufficient stock for STRICT policy', $result->reason);
+    }
+
     private function stockableProduct(): Product
     {
         $product = new Product();
