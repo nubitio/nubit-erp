@@ -56,7 +56,6 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::TAX, 'int', '18');
             $this->settingsService->set(Constants::CONSUMPTION_TAX, 'int', '0');
             $this->settingsService->set(Constants::AUTO_INVOICE, 'bool', 'true');
-            $this->settingsService->set(Constants::CHECK_STOCK, 'bool', 'false');
             $this->settingsService->set(Constants::PRINT_LOGO, 'bool', 'true');
             $this->settingsService->set(Constants::REQUIRE_CASH_REGISTER, 'bool', 'true');
             $this->settingsService->set(Constants::SUNAT_SEND_ENABLED, 'bool', 'true');
@@ -65,16 +64,14 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, 'int', '8');
             $this->settingsService->set(Constants::SUNAT_SEND_RETRY_BASE_SECONDS, 'int', '60');
             $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_SECONDS, 'int', '1800');
+            // Post-cutover default: new tenants start directly in V2 authoritative mode.
             $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
-            $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_STRICT, 'bool', 'false');
-            $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'dual_write');
-            $this->settingsService->set(Constants::SALES_V2_CUTOVER_DATE, 'string', '');
-            $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'dual_write');
+            $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
+            $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'v2_authoritative');
+            $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'v2_authoritative');
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
-            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'false');
+            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
             $this->settingsService->set('inventory_negative_stock_policy', 'string', 'BLOCK');
-            $this->settingsService->set('sales_v2_disable_legacy_cash_movement', 'bool', 'false');
-            $this->settingsService->set('sales_v2_disable_legacy_stock_projection', 'bool', 'false');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to keep seeding idempotent.
         }

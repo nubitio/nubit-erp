@@ -32,15 +32,7 @@ final class SalesV2SunsetLegacyCommand extends TenantAwareCommand
     {
         parent::configure();
 
-        $this
-            ->addOption(
-                'cutover-date',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Optional cutover date (Y-m-d) for authoritative mode guard',
-                ''
-            )
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only print intended config changes');
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only print intended config changes');
     }
 
     #[Override]
@@ -48,23 +40,10 @@ final class SalesV2SunsetLegacyCommand extends TenantAwareCommand
     {
         $io = new SymfonyStyle($input, $output);
 
-        $cutoverDateRaw = trim((string) $input->getOption('cutover-date'));
-        if ($cutoverDateRaw !== '') {
-            $date = \DateTimeImmutable::createFromFormat('Y-m-d', $cutoverDateRaw);
-            if (!$date instanceof \DateTimeImmutable || $date->format('Y-m-d') !== $cutoverDateRaw) {
-                $io->error(sprintf('Invalid --cutover-date "%s". Expected Y-m-d.', $cutoverDateRaw));
-
-                return Command::FAILURE;
-            }
-        }
-
         $changes = [
             [Constants::SALES_V2_MODE, 'v2_authoritative', 'string'],
             [Constants::SALES_V2_DUAL_WRITE_ENABLED, 'true', 'bool'],
             [Constants::SALES_V2_DUAL_WRITE_STRICT, 'true', 'bool'],
-            ['sales_v2_disable_legacy_cash_movement', 'true', 'bool'],
-            ['sales_v2_disable_legacy_stock_projection', 'true', 'bool'],
-            [Constants::SALES_V2_CUTOVER_DATE, $cutoverDateRaw, 'string'],
         ];
 
         $io->table(['Config key', 'Value', 'Type'], $changes);
