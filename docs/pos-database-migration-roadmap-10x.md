@@ -123,6 +123,23 @@
     - top productos comprados.
   - Fallback seguro por segmento (`safeQuery`) si tablas de resumen no existen en un tenant.
 
+### Fase 4D (Homogeneizacion esquema legacy `unidad`)
+
+- Implementada en esquema:
+  - `migrations/Version20260228235000_normalize_unidad_code.php`
+- Implementada en aplicacion:
+  - `src/Command/UnidadSchemaAuditCommand.php`
+  - `src/Command/PurchasesV2BackfillGoodsReceiptsCommand.php` (usa columna canonica `unidad.code`)
+- Soporte funcional:
+  - Auditoria multi-tenant de drift en `unidad`:
+    - comando `app:schema:audit:unidad`.
+  - Normalizacion segura:
+    - crea `unidad.code` cuando falta.
+    - backfill desde `unidad.codigo`/`unidad.name`.
+  - Eliminacion de heuristicas runtime en backfill de compras.
+  - Auditoria estructural completa multi-tenant:
+    - comando `app:schema:audit:tenants` compara tablas, columnas, indices y constraints entre tenants.
+
 ### Fase 5
 
 - Implementada en esquema:
