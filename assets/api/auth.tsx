@@ -12,7 +12,7 @@ export async function signIn(email: string, password: string) {
     role: 0,
     roles: ['admin'],
     warehouseId: 1,
-    avatarUrl: 'https://js.devexpress.com/Demos/WidgetsGallery/JSDemos/images/employees/01.png',
+    avatarUrl: '',
   };
   try {
     // Send request
