@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Core\Service\SettingsService;
 use App\Core\Exception\ServiceException;
+use App\Core\Util\Constants;
 use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
@@ -25,6 +27,7 @@ final readonly class InventoryLedgerService
 {
     public function __construct(
         private Connection $connection,
+        private ?SettingsService $settingsService = null,
     ) {
     }
 
@@ -35,6 +38,26 @@ final readonly class InventoryLedgerService
     {
         $warehouseId = (string) $warehouse->getId();
         $productId = (string) $product->getId();
+
+        if ($this->shouldReadFromStockItems()) {
+            $fromStockItems = $this->connection->fetchOne(
+                <<<'SQL'
+SELECT qty_on_hand
+FROM stock_items
+WHERE warehouse_id = :warehouse_id
+  AND product_id = :product_id
+LIMIT 1
+SQL,
+                [
+                    'warehouse_id' => $warehouseId,
+                    'product_id' => $productId,
+                ]
+            );
+
+            if ($fromStockItems !== false) {
+                return (float) $fromStockItems;
+            }
+        }
 
         $fromBalances = $this->connection->fetchOne(
             <<<'SQL'
@@ -154,6 +177,86 @@ SQL,
         $productId = (string) $item->getProducto()?->getId();
         $occurredAt = ($sale->getFecha() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s');
         $totalCost = $unitCost !== null ? round(abs($delta) * $unitCost, 2) : null;
+        $params = [
+            'warehouse_id' => $warehouseId,
+            'product_id' => $productId,
+            'occurred_at' => $occurredAt,
+            'movement_type' => $movementType,
+            'quantity_delta' => number_format($delta, 3, '.', ''),
+            'unit_cost' => $unitCost !== null ? number_format($unitCost, 4, '.', '') : null,
+            'total_cost' => $totalCost !== null ? number_format($totalCost, 2, '.', '') : null,
+            'source_type' => $sourceType,
+            'source_id' => $sourceId,
+            'reference_code' => (string) ($sale->getId() ?? ''),
+            'note' => 'Applied by InventoryLedgerService',
+            'idempotency_key' => $idempotencyKey,
+        ];
+
+        $supportsBaseQtyColumns = $this->hasColumn('stock_movements', 'qty_delta_base')
+            && $this->hasColumn('stock_movements', 'qty_original');
+
+        if ($supportsBaseQtyColumns) {
+            $params['qty_delta_base'] = number_format($delta, 6, '.', '');
+            $params['qty_original'] = number_format(abs($delta), 6, '.', '');
+            $params['unit_id'] = $this->hasColumn('stock_movements', 'unit_id')
+                ? $this->resolveMovementUnitId($productId)
+                : null;
+
+            $this->connection->executeStatement(
+                <<<'SQL'
+INSERT INTO stock_movements (
+    warehouse_id,
+    product_id,
+    variant_id,
+    occurred_at,
+    movement_type,
+    quantity_delta,
+    qty_delta_base,
+    unit_id,
+    qty_original,
+    unit_cost,
+    total_cost,
+    source_type,
+    source_id,
+    reference_code,
+    note,
+    idempotency_key,
+    sync_status,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at,
+    created_at
+) VALUES (
+    :warehouse_id,
+    :product_id,
+    NULL,
+    :occurred_at,
+    :movement_type,
+    :quantity_delta,
+    :qty_delta_base,
+    :unit_id,
+    :qty_original,
+    :unit_cost,
+    :total_cost,
+    :source_type,
+    :source_id,
+    :reference_code,
+    :note,
+    :idempotency_key,
+    'SYNCED',
+    NOW(),
+    NULL,
+    1,
+    NOW(),
+    NOW()
+)
+SQL,
+                $params
+            );
+
+            return;
+        }
 
         $this->connection->executeStatement(
             <<<'SQL'
@@ -199,20 +302,7 @@ INSERT INTO stock_movements (
     NOW()
 )
 SQL,
-            [
-                'warehouse_id' => $warehouseId,
-                'product_id' => $productId,
-                'occurred_at' => $occurredAt,
-                'movement_type' => $movementType,
-                'quantity_delta' => number_format($delta, 3, '.', ''),
-                'unit_cost' => $unitCost !== null ? number_format($unitCost, 4, '.', '') : null,
-                'total_cost' => $totalCost !== null ? number_format($totalCost, 2, '.', '') : null,
-                'source_type' => $sourceType,
-                'source_id' => $sourceId,
-                'reference_code' => (string) ($sale->getId() ?? ''),
-                'note' => 'Applied by InventoryLedgerService',
-                'idempotency_key' => $idempotencyKey,
-            ]
+            $params
         );
     }
 
@@ -310,6 +400,8 @@ SQL,
                 ]
             );
 
+            $this->syncStockItem($warehouseId, $productId, $newOnHand, $currentReserved);
+
             return;
         }
 
@@ -337,6 +429,8 @@ SQL,
                 'product_id' => $productId,
             ]
         );
+
+        $this->syncStockItem($warehouseId, $productId, $newOnHand, $currentReserved);
     }
 
     private function resolveUnitCost(Sale $sale, SaleItem $item): ?float
@@ -361,6 +455,118 @@ SQL,
             substr($hex, 12, 4),
             substr($hex, 16, 4),
             substr($hex, 20, 12),
+        );
+    }
+
+    private function shouldReadFromStockItems(): bool
+    {
+        if ($this->settingsService === null) {
+            return false;
+        }
+
+        return $this->readBooleanSetting(Constants::INVENTORY_CORE_READ_FROM_STOCK_ITEMS, false);
+    }
+
+    private function shouldDualWriteStockItems(): bool
+    {
+        if ($this->settingsService === null) {
+            return false;
+        }
+
+        $dualWrite = $this->readBooleanSetting(Constants::INVENTORY_CORE_DUAL_WRITE, false);
+        if ($dualWrite) {
+            return true;
+        }
+
+        $mode = strtolower(trim((string) $this->settingsService->get(Constants::INVENTORY_CORE_MODE, 'legacy')));
+
+        return in_array($mode, ['dual_write', 'v2_authoritative'], true);
+    }
+
+    private function readBooleanSetting(string $key, bool $default): bool
+    {
+        $raw = $this->settingsService?->get($key, $default ? 'true' : 'false');
+        if (is_bool($raw)) {
+            return $raw;
+        }
+
+        return filter_var((string) $raw, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function hasColumn(string $table, string $column): bool
+    {
+        return (int) $this->connection->fetchOne(
+            <<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.columns
+WHERE table_schema = DATABASE()
+  AND table_name = :table
+  AND column_name = :column
+SQL,
+            ['table' => $table, 'column' => $column]
+        ) > 0;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function resolveMovementUnitId(string $productId): ?int
+    {
+        $unitId = $this->connection->fetchOne(
+            <<<'SQL'
+SELECT base_unit_id
+FROM producto
+WHERE producto_id = :product_id
+LIMIT 1
+SQL,
+            ['product_id' => $productId]
+        );
+
+        return $unitId !== false ? (int) $unitId : null;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function syncStockItem(string $warehouseId, string $productId, float $onHand, float $reserved): void
+    {
+        if (!$this->shouldDualWriteStockItems()) {
+            return;
+        }
+
+        if (!$this->hasColumn('stock_items', 'qty_on_hand')) {
+            return;
+        }
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+INSERT INTO stock_items (
+    warehouse_id,
+    product_id,
+    qty_on_hand,
+    qty_reserved,
+    updated_at
+) VALUES (
+    :warehouse_id,
+    :product_id,
+    :qty_on_hand,
+    :qty_reserved,
+    NOW()
+)
+ON DUPLICATE KEY UPDATE
+    qty_on_hand = VALUES(qty_on_hand),
+    qty_reserved = VALUES(qty_reserved),
+    updated_at = VALUES(updated_at)
+SQL,
+            [
+                'warehouse_id' => $warehouseId,
+                'product_id' => $productId,
+                'qty_on_hand' => number_format($onHand, 6, '.', ''),
+                'qty_reserved' => number_format($reserved, 6, '.', ''),
+            ]
         );
     }
 }

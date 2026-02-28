@@ -56,4 +56,12 @@ abstract class Constants
     public const string PURCHASES_V2_DUAL_WRITE_ENABLED = 'app_option_purchases_v2_dual_write_enabled';
 
     public const string PURCHASES_V2_DUAL_WRITE_STRICT = 'app_option_purchases_v2_dual_write_strict';
+
+    public const string INVENTORY_NEGATIVE_STOCK_POLICY = 'inventory_negative_stock_policy';
+
+    public const string INVENTORY_CORE_MODE = 'inventory_core_mode';
+
+    public const string INVENTORY_CORE_DUAL_WRITE = 'inventory_core_dual_write_enabled';
+
+    public const string INVENTORY_CORE_READ_FROM_STOCK_ITEMS = 'inventory_core_read_stock_items_enabled';
 }
