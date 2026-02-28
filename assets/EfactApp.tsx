@@ -21,17 +21,13 @@ import { OutboxSyncProvider } from '@offline/sync/OutboxSyncContext';
 
 function RootApp() {
   const { user, loading } = useAuth();
-  const isLoginForm = ['login', 'reset-password', 'create-account'].includes(
-    useLocation().pathname.substring(1),
-  );
-
   const isFullScreen = ['pos'].includes(useLocation().pathname.substring(1));
 
   if (loading) {
     return <LoadPanel visible />;
   }
 
-  if (user && !isLoginForm) {
+  if (user) {
     if (isFullScreen) {
       return <FullScreenContent />;
     }
