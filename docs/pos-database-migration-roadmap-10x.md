@@ -46,6 +46,20 @@
 - Cobertura unitaria agregada:
   - `tests/Service/SalePaymentPlanServiceTest.php`
 
+### Fase 4
+
+- Implementada en aplicacion:
+  - `src/Repository/DashboardRepository.php`
+- Soporte funcional:
+  - Dashboard principal migra agregaciones de ventas a read-models:
+    - `branch_daily_summary` (totales diarios/mensuales, facturas, refunds).
+    - `payment_method_daily_summary` (participacion y tendencia por metodo de pago).
+    - `product_daily_summary` (top productos por monto/cantidad).
+  - Se mantienen consultas OLTP solo para drill-down puntual:
+    - top clientes.
+    - ventas por hora.
+    - ultimas ventas del dia.
+
 ---
 
 ## 1. Resumen Ejecutivo
