@@ -1,14 +1,14 @@
 # Arquitectura de Base de Datos POS 10x (Database-per-Tenant)
 
-**Estado:** Arquitectura objetivo cerrada (V2 authoritative en operacion)  
-**Fecha:** 2026-02-28  
+**Estado:** Propuesta de arquitectura objetivo  
+**Fecha:** 2026-02-27  
 **Contexto:** POS SaaS multi-sucursal, multi-caja, multi-almacen, offline-first, escalable.
 
-## Implementacion y Operacion
+## Implementacion y Migracion
 
-Para operacion vigente (controles diarios, gate Go/No-Go y runbook), ver:
+Para la ejecucion detallada (fases, controles SQL, criterios Go/No-Go, rollback y operacion multi-tenant), ver:
 
-- `docs/pos-database-operations-steady-state.md`
+- `docs/pos-database-migration-roadmap-10x.md`
 
 ## 1. Principios de Arquitectura
 
@@ -328,10 +328,6 @@ Con database-per-tenant:
 
 ## 9. Roadmap de Implementacion (sin downtime)
 
-Resumen historico de fases. Estado vigente: cierre operacional completado. Evidencias y controles:
-- Operacion activa: `docs/pos-database-operations-steady-state.md`
-- Archivo historico: `docs/archive/pos-v2-cutover/pos-database-migration-roadmap-10x.md`
-
 ### Fase 0 - Preparacion
 - Crear tablas nuevas en paralelo (sin tocar flujo actual).
 - Agregar idempotencia server-side y audit minima.
@@ -339,7 +335,7 @@ Resumen historico de fases. Estado vigente: cierre operacional completado. Evide
 ### Fase 1 - Ventas V2
 - Introducir `sale_payments`, `sale_discounts`, `sale_taxes`.
 - Dual-write desde flujo actual a nuevo esquema.
-- Ejecucion historica detallada: `docs/archive/pos-v2-cutover/pos-database-migration-roadmap-10x.md`.
+- Documento detallado: `docs/pos-phase-1-sales-v2.md`.
 
 ### Fase 2 - Caja V2
 - Introducir `cash_sessions`, `cash_counts` detallado, constraints de sesion activa.

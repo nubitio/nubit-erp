@@ -23,7 +23,7 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
     private ?string $baselineTenant = null;
     private bool $normalizeFkActions = true;
 
-    /** @var array<string, array<int, string>>|null */
+    /** @var array<string, array<string, array<int, string>>>|null */
     private ?array $baselineSnapshot = null;
 
     /** @var array<string, array<string, array<int, string>>> */
@@ -91,6 +91,12 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
 
         $code = parent::execute($input, $output);
 
+        $requestedBaseline = trim((string) ($input->getOption('baseline-tenant') ?? ''));
+        if ($requestedBaseline !== '' && $this->baselineTenant === null) {
+            $io->error(sprintf('Baseline tenant "%s" was not found in processing scope.', $requestedBaseline));
+            return Command::FAILURE;
+        }
+
         $outputPath = trim((string) ($input->getOption('output') ?? ''));
         if ($outputPath !== '') {
             $dir = dirname($outputPath);
@@ -127,11 +133,7 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
         if ($this->baselineSnapshot === null) {
             if ($requestedBaseline !== '' && $tenantName !== $requestedBaseline) {
                 $this->deferredSnapshots[$tenantName] = $snapshot;
-                $io->note(sprintf(
-                    'Deferred comparison for %s (waiting baseline tenant %s).',
-                    $tenantName,
-                    $requestedBaseline
-                ));
+                $io->note(sprintf('Deferred comparison for %s (waiting baseline tenant %s).', $tenantName, $requestedBaseline));
                 return Command::SUCCESS;
             }
 
@@ -167,11 +169,7 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
                 ['Tables', (string) count($drift['tables_missing']), (string) count($drift['tables_extra'])],
                 ['Columns', (string) count($drift['columns_missing']), (string) count($drift['columns_extra'])],
                 ['Indexes', (string) count($drift['indexes_missing']), (string) count($drift['indexes_extra'])],
-                [
-                    'Constraints',
-                    (string) count($drift['constraints_missing']),
-                    (string) count($drift['constraints_extra']),
-                ],
+                ['Constraints', (string) count($drift['constraints_missing']), (string) count($drift['constraints_extra'])],
             ]
         );
         $io->note(sprintf(
