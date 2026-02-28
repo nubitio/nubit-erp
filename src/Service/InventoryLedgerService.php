@@ -169,6 +169,10 @@ INSERT INTO stock_movements (
     note,
     idempotency_key,
     sync_status,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at,
     created_at
 ) VALUES (
     :warehouse_id,
@@ -185,6 +189,10 @@ INSERT INTO stock_movements (
     :note,
     :idempotency_key,
     'SYNCED',
+    NOW(),
+    NULL,
+    1,
+    NOW(),
     NOW()
 )
 SQL,

@@ -69,6 +69,7 @@ readonly class SalesV2DualWriteService
             : BigDecimal::zero();
         $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
+        $saleOffline = $this->buildOfflineMeta('sale:' . $saleId, $issuedAt, 1);
 
         $this->connection->beginTransaction();
         try {
@@ -96,7 +97,13 @@ INSERT INTO sales (
     issued_at,
     created_at,
     updated_at,
-    sync_status
+    sync_status,
+    local_uuid,
+    idempotency_key,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at
 ) VALUES (
     :id,
     :legacy_movimiento_id,
@@ -119,7 +126,13 @@ INSERT INTO sales (
     :issued_at,
     :created_at,
     :updated_at,
-    :sync_status
+    :sync_status,
+    :local_uuid,
+    :idempotency_key,
+    :synced_at,
+    :device_id,
+    :version_no,
+    :last_modified_at
 )
 ON DUPLICATE KEY UPDATE
     branch_id = VALUES(branch_id),
@@ -140,7 +153,11 @@ ON DUPLICATE KEY UPDATE
     balance_due = VALUES(balance_due),
     issued_at = VALUES(issued_at),
     updated_at = VALUES(updated_at),
-    sync_status = VALUES(sync_status)
+    sync_status = VALUES(sync_status),
+    synced_at = VALUES(synced_at),
+    device_id = COALESCE(VALUES(device_id), device_id),
+    version_no = version_no + 1,
+    last_modified_at = VALUES(last_modified_at)
 SQL,
                 [
                     'id' => $saleId,
@@ -165,6 +182,12 @@ SQL,
                     'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                     'updated_at' => $updatedAt?->format('Y-m-d H:i:s'),
                     'sync_status' => 'SYNCED',
+                    'local_uuid' => $saleOffline['local_uuid'],
+                    'idempotency_key' => $saleOffline['idempotency_key'],
+                    'synced_at' => $saleOffline['synced_at'],
+                    'device_id' => $saleOffline['device_id'],
+                    'version_no' => $saleOffline['version_no'],
+                    'last_modified_at' => $saleOffline['last_modified_at'],
                 ]
             );
 
@@ -217,7 +240,14 @@ INSERT INTO sale_items (
     unit_cost_snapshot,
     margin_amount,
     created_at,
-    updated_at
+    updated_at,
+    local_uuid,
+    idempotency_key,
+    sync_status,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at
 ) VALUES (
     :sale_id,
     :legacy_movimiento_detalle_id,
@@ -236,7 +266,14 @@ INSERT INTO sale_items (
     :unit_cost_snapshot,
     :margin_amount,
     :created_at,
-    :updated_at
+    :updated_at,
+    :local_uuid,
+    :idempotency_key,
+    :sync_status,
+    :synced_at,
+    :device_id,
+    :version_no,
+    :last_modified_at
 )
 SQL,
                     [
@@ -258,11 +295,20 @@ SQL,
                         'margin_amount' => null,
                         'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                         'updated_at' => $updatedAt?->format('Y-m-d H:i:s'),
+                        'local_uuid' => $this->deterministicUuid('sale-item-local:' . $saleId . ':' . ($lineNo - 1)),
+                        'idempotency_key' => $this->deterministicUuid('sale-item:' . $saleId . ':' . ($lineNo - 1)),
+                        'sync_status' => 'SYNCED',
+                        'synced_at' => $issuedAt->format('Y-m-d H:i:s'),
+                        'device_id' => null,
+                        'version_no' => 1,
+                        'last_modified_at' => $issuedAt->format('Y-m-d H:i:s'),
                     ]
                 );
             }
 
+            $paymentIdx = 0;
             foreach ($paymentLines as $paymentLine) {
+                ++$paymentIdx;
                 $this->connection->executeStatement(
                     <<<'SQL'
 INSERT INTO sale_payments (
@@ -273,7 +319,14 @@ INSERT INTO sale_payments (
     tendered_amount,
     change_amount,
     paid_at,
-    created_at
+    created_at,
+    local_uuid,
+    idempotency_key,
+    sync_status,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at
 ) VALUES (
     :sale_id,
     :payment_method_id,
@@ -282,7 +335,14 @@ INSERT INTO sale_payments (
     :tendered_amount,
     :change_amount,
     :paid_at,
-    :created_at
+    :created_at,
+    :local_uuid,
+    :idempotency_key,
+    :sync_status,
+    :synced_at,
+    :device_id,
+    :version_no,
+    :last_modified_at
 )
 SQL,
                     [
@@ -294,6 +354,13 @@ SQL,
                         'change_amount' => $paymentLine['change_amount'],
                         'paid_at' => $issuedAt->format('Y-m-d H:i:s'),
                         'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
+                        'local_uuid' => $this->deterministicUuid('sale-payment-local:' . $saleId . ':' . $paymentIdx),
+                        'idempotency_key' => $this->deterministicUuid('sale-payment:' . $saleId . ':' . $paymentIdx),
+                        'sync_status' => 'SYNCED',
+                        'synced_at' => $issuedAt->format('Y-m-d H:i:s'),
+                        'device_id' => null,
+                        'version_no' => 1,
+                        'last_modified_at' => $issuedAt->format('Y-m-d H:i:s'),
                     ]
                 );
             }
@@ -391,7 +458,10 @@ UPDATE sales
 SET
     status = 'VOIDED',
     updated_at = :updated_at,
-    sync_status = 'SYNCED'
+    sync_status = 'SYNCED',
+    synced_at = :updated_at,
+    version_no = version_no + 1,
+    last_modified_at = :updated_at
 WHERE id = :id
    OR legacy_movimiento_id = :id
 SQL,
@@ -438,6 +508,34 @@ SQL,
                 'reason_text' => $voidReason,
                 'created_at' => $updatedAt->format('Y-m-d H:i:s'),
             ]
+        );
+    }
+
+    private function buildOfflineMeta(string $seed, \DateTimeImmutable $now, int $version): array
+    {
+        $timestamp = $now->format('Y-m-d H:i:s');
+
+        return [
+            'local_uuid' => $this->deterministicUuid('local:' . $seed),
+            'idempotency_key' => $this->deterministicUuid('idem:' . $seed),
+            'synced_at' => $timestamp,
+            'device_id' => null,
+            'version_no' => $version,
+            'last_modified_at' => $timestamp,
+        ];
+    }
+
+    private function deterministicUuid(string $value): string
+    {
+        $hex = md5($value);
+
+        return sprintf(
+            '%s-%s-%s-%s-%s',
+            substr($hex, 0, 8),
+            substr($hex, 8, 4),
+            substr($hex, 12, 4),
+            substr($hex, 16, 4),
+            substr($hex, 20, 12),
         );
     }
 }

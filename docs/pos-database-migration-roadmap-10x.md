@@ -60,6 +60,26 @@
     - ventas por hora.
     - ultimas ventas del dia.
 
+### Fase 5
+
+- Implementada en esquema:
+  - `migrations/Version20260228170000_phase5_offline_hardening.php`
+- Implementada en aplicacion:
+  - `src/State/Sale/SalesWriteGateway.php`
+  - `src/Service/SalesV2DualWriteService.php`
+  - `src/Service/InventoryLedgerService.php`
+- Soporte funcional:
+  - Estandar offline en tablas write-heavy:
+    - `sales`, `sale_items`, `sale_payments`, `returns`, `stock_movements`, `cash_movements`.
+  - Campos uniformes agregados/normalizados:
+    - `local_uuid`, `idempotency_key`, `sync_status`, `synced_at`, `device_id`, `version_no`, `last_modified_at`.
+  - Indices de idempotencia:
+    - `UNIQUE (idempotency_key)` en lineas de venta/pago y movimientos de caja.
+    - `UNIQUE (device_id, local_uuid)` en entidades sincronizables.
+  - Write-path endurecido:
+    - Ventas/items/pagos escriben metadatos offline e idempotencia deterministica.
+    - `version_no` se incrementa en upsert/void para control de concurrencia offline.
+
 ---
 
 ## 1. Resumen Ejecutivo
