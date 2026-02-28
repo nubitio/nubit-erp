@@ -29,6 +29,14 @@ export const normalizeProduct = (raw: any): PosItem => ({
   id: String(raw?.id ?? ''),
   name: String(raw?.name ?? 'Producto'),
   salePrice: toNumber(raw?.salePrice ?? raw?.precio_unitario ?? raw?.price, 0),
+  productType: String(raw?.productType ?? raw?.product_type ?? (raw?.type === 1 ? 'STOCKABLE' : 'SERVICE')).toUpperCase() as PosItem['productType'],
+  trackInventory: Boolean(
+    raw?.trackInventory
+      ?? raw?.track_inventory
+      ?? raw?.trackInventoryFlag
+      ?? (raw?.type === 1)
+  ),
+  saleUnitCode: raw?.saleUnitCode ? String(raw.saleUnitCode) : undefined,
   stock: toOptionalNumber(raw?.stock),
   sku: raw?.sku ? String(raw.sku) : undefined,
   barcode: raw?.barcode ? String(raw.barcode) : undefined,

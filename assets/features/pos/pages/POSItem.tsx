@@ -37,8 +37,9 @@ export function POSItem({
 }: POSItemProps) {
   const stockSource = stockOverride ?? item.stock;
   const stockValue = typeof stockSource === 'number' ? stockSource : null;
-  const isOutOfStock = enforceStockCheck && stockValue !== null && stockValue <= 0;
-  const isLowStock = !isOutOfStock&&stockValue!==null&&stockValue<=3;
+  const tracksInventory = item.trackInventory !== false;
+  const isOutOfStock = tracksInventory && enforceStockCheck && stockValue !== null && stockValue <= 0;
+  const isLowStock = tracksInventory && !isOutOfStock && stockValue !== null && stockValue <= 3;
   const unitPrice =
     typeof item.salePrice === 'number'
       ? item.salePrice
@@ -107,7 +108,7 @@ export function POSItem({
         </div>
         <div className="pos-product-card__footer">
           <div className="pos-product-card__price">S/{unitPrice.toFixed(2)}</div>
-          {!isOutOfStock&&(
+          {!isOutOfStock && (
             <button
               type="button"
               className="pos-product-card__add"

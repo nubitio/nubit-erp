@@ -85,10 +85,11 @@ export const usePosCheckout = ({
   );
 
   const addToCart = async (item: PosItem) => {
+    const tracksInventory = item.trackInventory !== false;
     const warehouseStock = selectedWarehouseId ? await fetchWarehouseStock(item.id, selectedWarehouseId) : undefined;
     const effectiveStock = warehouseStock ?? item.stock;
 
-    if (enforceStockCheck && typeof effectiveStock === 'number' && effectiveStock <= 0) {
+    if (tracksInventory && enforceStockCheck && typeof effectiveStock === 'number' && effectiveStock <= 0) {
       toast(`"${item.name}" sin stock disponible`, 'warning');
       return;
     }
@@ -97,6 +98,7 @@ export const usePosCheckout = ({
       const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
       if (existingItem) {
         if (
+          tracksInventory &&
           enforceStockCheck &&
           typeof effectiveStock === 'number' &&
           existingItem.quantity >= effectiveStock
@@ -135,6 +137,7 @@ export const usePosCheckout = ({
 
     const warehouseStock = selectedWarehouseId ? await fetchWarehouseStock(id, selectedWarehouseId) : undefined;
     const effectiveStock = warehouseStock ?? currentItem.stock;
+    const tracksInventory = currentItem.trackInventory !== false;
 
     setCart((prevCart) =>
       prevCart.map((item) => {
@@ -142,7 +145,7 @@ export const usePosCheckout = ({
           return item;
         }
 
-        if (enforceStockCheck && typeof effectiveStock === 'number') {
+        if (tracksInventory && enforceStockCheck && typeof effectiveStock === 'number') {
           const quantity = Math.min(nextQuantity, effectiveStock);
           if (quantity < nextQuantity) {
             toast(`Stock máximo alcanzado para "${item.name}"`, 'warning');
