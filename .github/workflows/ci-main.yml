@@ -100,6 +100,8 @@ jobs:
 
     env:
       E2E_BASE_URL: http://web
+      DATABASE_URL: mysql://efact:Admin.3000@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
+      CONTROL_PLANE_DATABASE_URL: mysql://efact:Admin.3000@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
       - uses: actions/checkout@v4
@@ -112,9 +114,14 @@ jobs:
           docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
           docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
 
+      - name: Run database migrations for e2e
+        run: |
+          docker compose exec -T -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:control-plane:migrate --no-interaction
+          docker compose exec -T -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console doctrine:migrations:migrate --no-interaction
+
       - name: Seed E2E data on-the-fly
         run: |
-          E2E_SEED_JSON=$(docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:seed-e2e | tail -n 1)
+          E2E_SEED_JSON=$(docker compose exec -T -e E2E_SEED_ENABLED=1 -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:test:seed-e2e | tail -n 1)
           echo "E2E_SEED_JSON=$E2E_SEED_JSON"
           echo "E2E_USERNAME=$(echo "$E2E_SEED_JSON" | jq -r '.username')" >> "$GITHUB_ENV"
           echo "E2E_PASSWORD=$(echo "$E2E_SEED_JSON" | jq -r '.password')" >> "$GITHUB_ENV"
@@ -125,7 +132,7 @@ jobs:
 
       - name: Cleanup E2E seeded data
         if: always()
-        run: docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e || true
+        run: docker compose exec -T -e E2E_SEED_ENABLED=1 -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:test:reset-e2e || true
 
       - name: Stop full stack
         if: always()
