@@ -107,6 +107,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $cashShiftForMovement = null;
         $isOperationalSale = $data->getTipoId() === 2;
         $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
+        $resolvedCashSessionId = null;
 
         if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
@@ -315,6 +316,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         $data,
                         $cashShiftForMovement?->getId()
                     );
+                    $resolvedCashSessionId = $cashSessionId;
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
                     $this->logger->error('Sales V2 dual-write failed', [
@@ -333,13 +335,46 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if ($isNew && $cashShiftForMovement instanceof CashShift) {
+        if ($isNew) {
             $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
                 $data,
                 $data->getTotal() ?? '0.00'
             );
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
-                $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
+                if ($resolvedCashSessionId !== null) {
+                    try {
+                        $cashSaleCategory = $this->cashMovementCategoryRepository->findOneBy([
+                            'code' => CashMovementCategory::CASH_SALE,
+                        ]);
+                        $this->salesWriteGateway->writeCashSaleMovement(
+                            saleId: (string) $data->getId(),
+                            cashSessionId: $resolvedCashSessionId,
+                            createdBy: $user->userId,
+                            amount: $cashCollected,
+                            categoryId: $cashSaleCategory?->getId(),
+                            paymentMethodId: \App\Entity\PaymentMethod::CASH,
+                            createdAt: $data->getFecha() ?? new DateTimeImmutable()
+                        );
+                    } catch (\Throwable $exception) {
+                        $this->logger->error('Sales V2 cash movement write failed', [
+                            'sale_id' => $data->getId(),
+                            'error' => $exception->getMessage(),
+                        ]);
+
+                        if ($salesWritePolicy instanceof SalesWritePolicy && $salesWritePolicy->strict) {
+                            throw new ServiceException(
+                                'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.'
+                            );
+                        }
+                    }
+                }
+
+                if (
+                    $cashShiftForMovement instanceof CashShift
+                    && !$this->isLegacyCashMovementDisabled($salesWritePolicy)
+                ) {
+                    $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
+                }
             }
         }
 
@@ -506,5 +541,17 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $this->entityManager->persist($movement);
         $this->entityManager->flush();
+    }
+
+    private function isLegacyCashMovementDisabled(?SalesWritePolicy $policy): bool
+    {
+        if ($policy instanceof SalesWritePolicy && $policy->mode === SalesWriteMode::AUTHORITATIVE) {
+            return true;
+        }
+
+        return filter_var(
+            $this->settings->get('sales_v2_disable_legacy_cash_movement', 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
     }
 }

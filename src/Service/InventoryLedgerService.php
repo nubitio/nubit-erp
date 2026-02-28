@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Core\Exception\ServiceException;
+use App\Core\Service\SettingsService;
 use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
@@ -25,6 +26,7 @@ final readonly class InventoryLedgerService
 {
     public function __construct(
         private Connection $connection,
+        private SettingsService $settings,
     ) {
     }
 
@@ -122,10 +124,12 @@ SQL,
                 occurredAt: $sale->getFecha() ?? new \DateTimeImmutable()
             );
 
-            $this->syncLegacyProjection(
-                warehouseId: (string) $warehouse->getId(),
-                product: $product
-            );
+            if (!$this->isLegacyStockProjectionDisabled()) {
+                $this->syncLegacyProjection(
+                    warehouseId: (string) $warehouse->getId(),
+                    product: $product
+                );
+            }
 
             $this->connection->commit();
         } catch (\Throwable $exception) {
@@ -457,6 +461,14 @@ SQL,
             substr($hex, 12, 4),
             substr($hex, 16, 4),
             substr($hex, 20, 12),
+        );
+    }
+
+    private function isLegacyStockProjectionDisabled(): bool
+    {
+        return filter_var(
+            $this->settings->get('sales_v2_disable_legacy_stock_projection', 'false'),
+            FILTER_VALIDATE_BOOLEAN
         );
     }
 }

@@ -524,6 +524,87 @@ SQL,
         );
     }
 
+    /**
+     * @throws Exception
+     */
+    public function writeCashSaleMovement(
+        string $saleId,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        ?int $categoryId = null,
+        ?int $paymentMethodId = null,
+        ?\DateTimeImmutable $createdAt = null,
+    ): void {
+        $at = $createdAt ?? new \DateTimeImmutable();
+        $seed = sprintf('cash-sale:%s:%d', $saleId, $cashSessionId);
+        $offline = $this->buildOfflineMeta($seed, $at, 1);
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+INSERT INTO cash_movements (
+    cash_session_id,
+    movement_type,
+    category_id,
+    sale_id,
+    return_id,
+    payment_method_id,
+    amount,
+    description,
+    created_by,
+    created_at,
+    local_uuid,
+    idempotency_key,
+    sync_status,
+    synced_at,
+    device_id,
+    version_no,
+    last_modified_at
+) VALUES (
+    :cash_session_id,
+    'SALE_IN',
+    :category_id,
+    :sale_id,
+    NULL,
+    :payment_method_id,
+    :amount,
+    :description,
+    :created_by,
+    :created_at,
+    :local_uuid,
+    :idempotency_key,
+    'SYNCED',
+    :synced_at,
+    :device_id,
+    :version_no,
+    :last_modified_at
+)
+ON DUPLICATE KEY UPDATE
+    amount = VALUES(amount),
+    description = VALUES(description),
+    synced_at = VALUES(synced_at),
+    version_no = version_no + 1,
+    last_modified_at = VALUES(last_modified_at)
+SQL,
+            [
+                'cash_session_id' => $cashSessionId,
+                'category_id' => $categoryId,
+                'sale_id' => $saleId,
+                'payment_method_id' => $paymentMethodId,
+                'amount' => Money::toString(Money::money($amount)),
+                'description' => 'Cash collected from sale ' . $saleId,
+                'created_by' => $createdBy,
+                'created_at' => $at->format('Y-m-d H:i:s'),
+                'local_uuid' => $offline['local_uuid'],
+                'idempotency_key' => $offline['idempotency_key'],
+                'synced_at' => $offline['synced_at'],
+                'device_id' => $offline['device_id'],
+                'version_no' => $offline['version_no'],
+                'last_modified_at' => $offline['last_modified_at'],
+            ]
+        );
+    }
+
     private function buildOfflineMeta(string $seed, \DateTimeImmutable $now, int $version): array
     {
         $timestamp = $now->format('Y-m-d H:i:s');
