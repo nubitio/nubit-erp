@@ -140,6 +140,9 @@
     - crea `unidad.code` cuando falta.
     - backfill desde `unidad.codigo`/`unidad.name`.
     - normaliza `menu.id` a `AUTO_INCREMENT` cuando el tenant quedo sin incremento.
+    - perfil de tipos legacy:
+      - `--normalize-legacy-types` (numericos/datetime/nullability/defaults en tablas legacy).
+      - `--include-id-types` para homogeneizar IDs `char/varchar` (ejecutar solo en ventana controlada).
   - Eliminacion de heuristicas runtime en backfill de compras.
 
 ### Fase 5
