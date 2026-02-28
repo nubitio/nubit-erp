@@ -83,7 +83,7 @@ final class TenantSchemaNormalizeCommand extends TenantAwareCommand
         }
 
         $row = $this->connection->fetchAssociative(<<<'SQL'
-SELECT data_type, is_nullable, extra
+SELECT data_type, is_nullable, extra, column_key
 FROM information_schema.columns
 WHERE table_schema = DATABASE()
   AND table_name = 'menu'
@@ -97,18 +97,49 @@ SQL);
         $dataType = strtolower((string) ($row['data_type'] ?? ''));
         $isNullable = strtoupper((string) ($row['is_nullable'] ?? 'YES')) === 'YES';
         $extra = strtolower((string) ($row['extra'] ?? ''));
+        $columnKey = strtoupper((string) ($row['column_key'] ?? ''));
 
         if (!in_array($dataType, ['int', 'integer', 'bigint'], true)) {
             return [];
         }
 
-        if (str_contains($extra, 'auto_increment') && !$isNullable) {
+        if (str_contains($extra, 'auto_increment') && !$isNullable && $columnKey !== '') {
             return [];
         }
 
         $typeSql = in_array($dataType, ['bigint'], true) ? 'BIGINT' : 'INT';
+        $statements = [];
 
-        return [sprintf('ALTER TABLE menu MODIFY id %s NOT NULL AUTO_INCREMENT', $typeSql)];
+        if ($columnKey === '') {
+            $hasPrimaryKey = (int) $this->connection->fetchOne(<<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.table_constraints
+WHERE table_schema = DATABASE()
+  AND table_name = 'menu'
+  AND constraint_type = 'PRIMARY KEY'
+SQL) > 0;
+
+            if (!$hasPrimaryKey) {
+                $statements[] = 'ALTER TABLE menu ADD PRIMARY KEY (id)';
+            } else {
+                $hasUniqueOnId = (int) $this->connection->fetchOne(<<<'SQL'
+SELECT COUNT(*)
+FROM information_schema.statistics
+WHERE table_schema = DATABASE()
+  AND table_name = 'menu'
+  AND column_name = 'id'
+  AND non_unique = 0
+SQL) > 0;
+
+                if (!$hasUniqueOnId) {
+                    $statements[] = 'ALTER TABLE menu ADD UNIQUE INDEX uq_menu_id_normalize (id)';
+                }
+            }
+        }
+
+        $statements[] = sprintf('ALTER TABLE menu MODIFY id %s NOT NULL AUTO_INCREMENT', $typeSql);
+
+        return $statements;
     }
 
     /**
