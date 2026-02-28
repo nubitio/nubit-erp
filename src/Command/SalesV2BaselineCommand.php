@@ -56,20 +56,6 @@ final class SalesV2BaselineCommand extends TenantAwareCommand
                 'Fail sale when Sales V2 write fails (dual_write mode)',
                 '1'
             )
-            ->addOption(
-                'disable-legacy-cash-movement',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Disable writes to legacy cash_movement in sale flow (recommended for authoritative mode)',
-                '0'
-            )
-            ->addOption(
-                'disable-legacy-stock-projection',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Disable writes to product_stock/producto.stock projection (recommended for authoritative mode)',
-                '0'
-            )
             ->addOption('cutover-date', null, InputOption::VALUE_OPTIONAL, 'Cutover date (Y-m-d), empty to clear', '')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only print intended config changes');
     }
@@ -88,10 +74,6 @@ final class SalesV2BaselineCommand extends TenantAwareCommand
 
         $writeNewSchema = $this->toBoolString((string) $input->getOption('write-new-schema'));
         $strict = $this->toBoolString((string) $input->getOption('strict'));
-        $disableLegacyCashMovement = $this->toBoolString((string) $input->getOption('disable-legacy-cash-movement'));
-        $disableLegacyStockProjection = $this->toBoolString(
-            (string) $input->getOption('disable-legacy-stock-projection')
-        );
         $cutoverDateRaw = trim((string) $input->getOption('cutover-date'));
 
         if ($cutoverDateRaw !== '') {
@@ -107,8 +89,6 @@ final class SalesV2BaselineCommand extends TenantAwareCommand
             [Constants::SALES_V2_MODE, $mode, 'string'],
             [Constants::SALES_V2_DUAL_WRITE_ENABLED, $writeNewSchema, 'bool'],
             [Constants::SALES_V2_DUAL_WRITE_STRICT, $strict, 'bool'],
-            ['sales_v2_disable_legacy_cash_movement', $disableLegacyCashMovement, 'bool'],
-            ['sales_v2_disable_legacy_stock_projection', $disableLegacyStockProjection, 'bool'],
             [Constants::SALES_V2_CUTOVER_DATE, $cutoverDateRaw, 'string'],
         ];
 

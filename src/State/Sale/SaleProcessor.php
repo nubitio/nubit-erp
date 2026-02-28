@@ -13,8 +13,6 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
-use App\Entity\CashMovement;
-use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\Customer;
 use App\Entity\Product;
@@ -23,7 +21,6 @@ use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
-use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\EInvoicing\Service\InvoiceCreationService;
 use App\Service\InventoryLedgerService;
@@ -67,7 +64,6 @@ readonly class SaleProcessor implements ProcessorInterface
         private SettingsService $settings,
         private InvoiceCreationService $invoiceCreationService,
         private LoggerInterface $logger,
-        private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private SunatCatalogRepository $sunatCatalogRepository,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
@@ -407,12 +403,6 @@ readonly class SaleProcessor implements ProcessorInterface
                     }
                 }
 
-                if (
-                    $cashShiftForMovement instanceof CashShift
-                    && !$this->isLegacyCashMovementDisabled($salesWritePolicy)
-                ) {
-                    $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
-                }
             }
         }
 
@@ -556,41 +546,6 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         return self::MIN_DETRACTION_TOTAL;
-    }
-
-    private function createCashMovementForSale(Sale $sale, CashShift $cashShift, string $cashAmount): void
-    {
-        $category = $this->cashMovementCategoryRepository->findOneBy([
-            'code' => CashMovementCategory::CASH_SALE,
-        ]);
-
-        if (!$category instanceof CashMovementCategory) {
-            throw new ServiceException('No se encontró la categoría de venta en efectivo.');
-        }
-
-        $movement = new CashMovement();
-        $movement->setCashShift($cashShift);
-        $movement->setCategory($category);
-        $movement->setType($category->getType());
-        $movement->setAmount($cashAmount);
-        $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
-        $movement->setCreatedAt(new DateTimeImmutable());
-        $movement->setBranch($sale->getBranch());
-
-        $this->entityManager->persist($movement);
-        $this->entityManager->flush();
-    }
-
-    private function isLegacyCashMovementDisabled(?SalesWritePolicy $policy): bool
-    {
-        if ($policy instanceof SalesWritePolicy && $policy->mode === SalesWriteMode::AUTHORITATIVE) {
-            return true;
-        }
-
-        return filter_var(
-            $this->settings->get('sales_v2_disable_legacy_cash_movement', 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
     }
 
     private function resolveNegativeStockPolicy(): string

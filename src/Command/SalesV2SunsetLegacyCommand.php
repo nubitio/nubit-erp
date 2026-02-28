@@ -62,8 +62,6 @@ final class SalesV2SunsetLegacyCommand extends TenantAwareCommand
             [Constants::SALES_V2_MODE, 'v2_authoritative', 'string'],
             [Constants::SALES_V2_DUAL_WRITE_ENABLED, 'true', 'bool'],
             [Constants::SALES_V2_DUAL_WRITE_STRICT, 'true', 'bool'],
-            ['sales_v2_disable_legacy_cash_movement', 'true', 'bool'],
-            ['sales_v2_disable_legacy_stock_projection', 'true', 'bool'],
             [Constants::SALES_V2_CUTOVER_DATE, $cutoverDateRaw, 'string'],
         ];
 
