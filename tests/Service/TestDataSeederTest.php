@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
+use App\Entity\Category;
+use App\Entity\Customer;
 use App\Entity\LogisticOperation;
+use App\Entity\PaymentMethod;
+use App\Entity\Product;
+use App\Entity\Supplier;
+use App\Entity\UnitOfMeasure;
 use App\Entity\Warehouse;
 use App\Repository\CategoryRepository;
 use App\Repository\CustomerRepository;
@@ -106,6 +112,105 @@ final class TestDataSeederTest extends TestCase
         self::assertSame(3, $customers);
     }
 
+    public function testSeedProductsCreatesProductsAndStocksUsingReloadedEntities(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::exactly(4))->method('persist');
+        $entityManager->expects(self::exactly(3))->method('flush');
+        $entityManager->expects(self::exactly(3))->method('clear');
+
+        $category = (new Category())->setName('General');
+        $unit = (new UnitOfMeasure())->setName('Unidad')->setCode('NIU')->setType(1)->setRatio('1.00');
+        $warehouse = (new Warehouse())->setName('Main');
+        $this->setEntityId($category, 'id', 'cat-1');
+        $this->setEntityId($unit, 'id', 1);
+        $this->setEntityId($warehouse, 'id', 'wh-1');
+
+        $productRepository = $this->createMock(ProductRepository::class);
+        $productRepository->method('findOneBy')->willReturn(null);
+
+        $categoryRepository = $this->createMock(CategoryRepository::class);
+        $categoryRepository->method('find')->willReturn($category);
+        $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
+        $unitRepository->method('find')->willReturn($unit);
+        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository->method('find')->willReturn($warehouse);
+        $warehouseRepository->method('findOneBy')->willReturn($warehouse);
+
+        $seeder = $this->newSeeder(
+            entityManager: $entityManager,
+            warehouseRepository: $warehouseRepository,
+            unitOfMeasureRepository: $unitRepository,
+            categoryRepository: $categoryRepository,
+            productRepository: $productRepository,
+        );
+
+        $created = $this->invokePrivate($seeder, 'seedProducts', [2, [$category], [$unit], $warehouse, 1]);
+        self::assertSame(2, $created);
+    }
+
+    public function testSeedSalesCreatesSaleAndTaxDocument(): void
+    {
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::atLeast(3))->method('persist');
+        $entityManager->expects(self::exactly(2))->method('flush');
+        $entityManager->expects(self::exactly(2))->method('clear');
+
+        $customer = (new Customer())->setRuc('20100000001')->setBusinessName('Cliente');
+        $supplier = (new Supplier())->setRuc('20400000001')->setBusinessName('Proveedor');
+        $paymentMethod = (new PaymentMethod())->setName('Efectivo');
+        $product = (new Product())
+            ->setCode('P-1')
+            ->setType(1)
+            ->setName('Producto')
+            ->setCategory((new Category())->setName('General'))
+            ->setUnitOfMeasure((new UnitOfMeasure())->setName('Unidad')->setCode('NIU')->setType(1)->setRatio('1.00'))
+            ->setSalePrice('10.00');
+        $warehouse = (new Warehouse())->setName('Main');
+        $operation = (new LogisticOperation())->setName('Venta')->setType(2);
+
+        $this->setEntityId($customer, 'id', 1);
+        $this->setEntityId($supplier, 'id', 'sup-1');
+        $this->setEntityId($paymentMethod, 'id', 1);
+        $this->setEntityId($product, 'id', 'prod-1');
+        $this->setEntityId($warehouse, 'id', 'wh-1');
+        $this->setEntityId($operation, 'id', 'op-1');
+
+        $saleRepository = $this->createMock(SaleRepository::class);
+        $saleRepository->method('findOneBy')->willReturn(null);
+        $customerRepository = $this->createMock(CustomerRepository::class);
+        $customerRepository->method('find')->willReturn($customer);
+        $supplierRepository = $this->createMock(SupplierRepository::class);
+        $supplierRepository->method('find')->willReturn($supplier);
+        $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
+        $paymentMethodRepository->method('find')->willReturn($paymentMethod);
+        $productRepository = $this->createMock(ProductRepository::class);
+        $productRepository->method('find')->willReturn($product);
+        $warehouseRepository = $this->createMock(WarehouseRepository::class);
+        $warehouseRepository->method('find')->willReturn($warehouse);
+        $warehouseRepository->method('findOneBy')->willReturn($warehouse);
+        $logisticRepository = $this->createMock(LogisticOperationRepository::class);
+        $logisticRepository->method('find')->willReturn($operation);
+
+        $seeder = $this->newSeeder(
+            entityManager: $entityManager,
+            warehouseRepository: $warehouseRepository,
+            paymentMethodRepository: $paymentMethodRepository,
+            logisticOperationRepository: $logisticRepository,
+            supplierRepository: $supplierRepository,
+            customerRepository: $customerRepository,
+            productRepository: $productRepository,
+            saleRepository: $saleRepository,
+        );
+
+        $created = $this->invokePrivate(
+            $seeder,
+            'seedSales',
+            [1, [$customer], [$product], [$supplier], $warehouse, [$paymentMethod], $operation, 1]
+        );
+        self::assertSame(1, $created);
+    }
+
     /**
      * @param list<mixed> $args
      */
@@ -143,5 +248,12 @@ final class TestDataSeederTest extends TestCase
             $productRepository ?? $this->createMock(ProductRepository::class),
             $saleRepository ?? $this->createMock(SaleRepository::class),
         );
+    }
+
+    private function setEntityId(object $entity, string $property, mixed $value): void
+    {
+        $reflection = new \ReflectionObject($entity);
+        $prop = $reflection->getProperty($property);
+        $prop->setValue($entity, $value);
     }
 }
