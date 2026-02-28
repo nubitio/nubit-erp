@@ -22,7 +22,7 @@ CREATE TABLE goods_receipts (
     legacy_movimiento_id VARCHAR(255) DEFAULT NULL,
     branch_id VARCHAR(255) NOT NULL,
     warehouse_id VARCHAR(255) NOT NULL,
-    supplier_id INT DEFAULT NULL,
+    supplier_id VARCHAR(255) DEFAULT NULL,
     buyer_user_id INT NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'POSTED',
     currency CHAR(3) NOT NULL DEFAULT 'PEN',
