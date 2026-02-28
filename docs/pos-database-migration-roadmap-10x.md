@@ -99,6 +99,18 @@
     - ventas por hora.
     - ultimas ventas del dia.
 
+### Fase 4B (Compras Read-Models)
+
+- Implementada en esquema:
+  - `migrations/Version20260228223000_purchases_v2_daily_summaries.php`
+- Implementada en aplicacion:
+  - `src/Command/PurchasesV2RebuildDailySummariesCommand.php`
+- Soporte funcional:
+  - Read-models diarios de compras para evitar joins sobre `goods_receipts` en dashboards:
+    - `purchases_daily_summary` (totales por dia/sucursal/almacen).
+    - `purchase_product_daily_summary` (top productos comprados por dia/sucursal/almacen).
+  - Rebuild incremental por tenant con ventana de fechas y cron horario.
+
 ### Fase 5
 
 - Implementada en esquema:
@@ -518,6 +530,57 @@ WHERE ABS(d.net_sales - r.net_sales) > 0.01;
 
 ### Rollback
 - Permitir fallback puntual por endpoint al query legacy mientras se corrige read-model.
+
+---
+
+## Fase 4B - Compras read-model first
+
+### Objetivo
+Reportes operativos de compras sobre tablas agregadas, sin cargar `goods_receipts`/`goods_receipt_items` en caliente.
+
+### Tareas
+1. Activar read-models de compras:
+- `purchases_daily_summary`
+- `purchase_product_daily_summary`
+
+2. Rebuild incremental por tenant:
+- comando: `php bin/console app:purchases:v2:rebuild-daily-summaries --days=30 --parallel=4`
+- modo rango: `--from=YYYY-MM-DD --to=YYYY-MM-DD`
+
+3. Integrar dashboards/reportes de compras al read-path nuevo:
+- compras por dia/sucursal/almacen.
+- top productos comprados por cantidad/costo.
+
+### SQL de control
+
+```sql
+-- Cobertura de resumen diario de compras vs goods_receipts reales
+SELECT
+  p.summary_date,
+  p.branch_id,
+  p.warehouse_id,
+  p.grand_total AS summary_total,
+  r.real_total,
+  (p.grand_total - r.real_total) AS diff
+FROM purchases_daily_summary p
+JOIN (
+  SELECT DATE(issued_at) AS summary_date, branch_id, warehouse_id, ROUND(SUM(grand_total), 2) AS real_total
+  FROM goods_receipts
+  WHERE status = 'POSTED' AND deleted_at IS NULL
+  GROUP BY DATE(issued_at), branch_id, warehouse_id
+) r
+  ON r.summary_date = p.summary_date
+ AND r.branch_id = p.branch_id
+ AND r.warehouse_id = p.warehouse_id
+WHERE ABS(p.grand_total - r.real_total) > 0.01;
+```
+
+### Criterio de salida
+- 95%+ de endpoints de reportes de compras leen desde `*_daily_summary`.
+- p95 de reportes de compras estable bajo carga.
+
+### Rollback
+- Fallback puntual a query OLTP legacy mientras se corrige el read-model.
 
 ---
 
