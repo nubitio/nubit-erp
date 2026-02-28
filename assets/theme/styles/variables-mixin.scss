@@ -62,6 +62,17 @@ $theme-mode: null !default;
     sans-serif;
   --font-family-mono: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono',
     'Courier New', monospace;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 20px;
+  --font-size-xl: 28px;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.65;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -74,9 +85,9 @@ $theme-mode: null !default;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 18px;
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.14);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 18px 45px rgba(0, 0, 0, 0.14);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 6px 14px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 42px rgba(0, 0, 0, 0.16);
   --focus-ring-color: color-mix(in srgb, var(--accent-color) 36%, transparent);
   --surface-0: var(--base-bg);
   --surface-1: var(--card-background);
@@ -88,5 +99,6 @@ $theme-mode: null !default;
     --card-background: var(--base-bg-darken-5);
     --surface-2: color-mix(in srgb, var(--card-background) 88%, white 12%);
     --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.28);
   }
 }

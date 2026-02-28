@@ -28,7 +28,7 @@
 }
 
 @mixin shadow() {
-  box-shadow: 0 1px 4px 0 #00000026;
+  box-shadow: var(--shadow-sm);
 }
 
 @mixin header {
@@ -156,12 +156,13 @@
 }
 
 @mixin card-shadow() {
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-md);
 }
 
 @mixin toolbar-panel() {
-  background-color: var(--base-bg);
-  padding: 5px var(--content-padding);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.04);
+  background-color: color-mix(in srgb, var(--surface-1) 92%, transparent);
+  padding: 6px var(--content-padding);
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--border-color) 88%, transparent);
+  box-shadow: var(--shadow-sm);
 }
