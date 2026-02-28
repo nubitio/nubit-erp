@@ -30,6 +30,19 @@
   - Ingresos/compras legacy (`movimiento.tipo_id=1`) se reflejan en `goods_receipts` + `goods_receipt_items`.
   - Flujo inbound actual se mantiene compatible mientras se prepara endpoint V2 nativo.
 
+### Fase 2B (Compras V2 Operacional)
+
+- Implementada en aplicacion:
+  - `src/Command/PurchasesV2BaselineCommand.php`
+  - `src/Command/PurchasesV2ReconcileCommand.php`
+  - `src/State/Sale/SaleProcessor.php` (dual-write configurable por tenant para inbound)
+- Soporte funcional:
+  - Flags por tenant para compras V2:
+    - `purchases_v2_mode` (`legacy|dual_write|v2_authoritative`).
+    - `app_option_purchases_v2_dual_write_enabled`.
+    - `app_option_purchases_v2_dual_write_strict`.
+  - Reconciliacion por dia (`legacy vs goods_receipts`) para criterio Go/No-Go.
+
 ### Fase 2
 
 - Implementada en aplicacion:

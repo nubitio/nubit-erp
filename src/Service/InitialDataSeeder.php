@@ -69,6 +69,9 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_STRICT, 'bool', 'false');
             $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'dual_write');
             $this->settingsService->set(Constants::SALES_V2_CUTOVER_DATE, 'string', '');
+            $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'dual_write');
+            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
+            $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'false');
             $this->settingsService->set('inventory_negative_stock_policy', 'string', 'BLOCK');
             $this->settingsService->set('sales_v2_disable_legacy_cash_movement', 'bool', 'false');
             $this->settingsService->set('sales_v2_disable_legacy_stock_projection', 'bool', 'false');

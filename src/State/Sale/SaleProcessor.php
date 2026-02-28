@@ -44,6 +44,7 @@ readonly class SaleProcessor implements ProcessorInterface
     private const string NEGATIVE_STOCK_BLOCK = 'BLOCK';
     private const string NEGATIVE_STOCK_ALLOW_WITH_ROLE = 'ALLOW_WITH_ROLE';
     private const string NEGATIVE_STOCK_ALLOW_ALL = 'ALLOW_ALL';
+    private const string PURCHASES_MODE_LEGACY = 'legacy';
 
     private const string DETRACTION_PAYMENT_METHOD = '001';
     private const float MIN_DETRACTION_TOTAL = 700.0;
@@ -318,7 +319,7 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($data->getTipoId() === 1) {
+        if ($data->getTipoId() === 1 && $this->isPurchasesV2WriteEnabled()) {
             try {
                 $this->goodsReceiptWriteGateway->write($data);
             } catch (\Throwable $exception) {
@@ -326,6 +327,12 @@ readonly class SaleProcessor implements ProcessorInterface
                     'movimiento_id' => $data->getId(),
                     'error' => $exception->getMessage(),
                 ]);
+
+                if ($this->isPurchasesV2StrictMode()) {
+                    throw new ServiceException(
+                        'No se pudo sincronizar la compra con Compras V2. Operación cancelada.'
+                    );
+                }
             }
         }
 
@@ -631,5 +638,26 @@ readonly class SaleProcessor implements ProcessorInterface
     {
         // Convention used in catalog: type=1 means stock-tracked tangible product.
         return $product->getType() === 1;
+    }
+
+    private function isPurchasesV2WriteEnabled(): bool
+    {
+        $mode = strtolower(trim((string) $this->settings->get(Constants::PURCHASES_V2_MODE, 'dual_write')));
+        if ($mode === self::PURCHASES_MODE_LEGACY) {
+            return false;
+        }
+
+        return filter_var(
+            $this->settings->get(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'true'),
+            FILTER_VALIDATE_BOOLEAN
+        );
+    }
+
+    private function isPurchasesV2StrictMode(): bool
+    {
+        return filter_var(
+            $this->settings->get(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
     }
 }
