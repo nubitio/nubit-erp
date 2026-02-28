@@ -40,7 +40,7 @@ export const PurchasesPage = () => {
       <DxDataGrid
         id={'purchases'}
         title={'Compras'}
-        url={API_URL + '?type=inbound'}
+        url={API_URL + '?type=purchases'}
         detailUrl={API_URL + '/{id}/items'}
         allowAdd={true}
         allowEdit={true}

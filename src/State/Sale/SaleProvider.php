@@ -29,7 +29,7 @@ readonly class SaleProvider implements ProviderInterface
         if ($operation instanceof CollectionOperationInterface) {
             $type = $context['filters']['type'] ?? null;
             match ($type) {
-                'inbound' => $context = $this->buildContextForInbound($context),
+                'inbound', 'purchases' => $context = $this->buildContextForInbound($context),
                 'outbound' => $context = $this->buildContextForOutbound($context),
                 default => $context = $this->buildContextForSale($context),
             };
