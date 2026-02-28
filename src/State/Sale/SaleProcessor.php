@@ -324,12 +324,18 @@ readonly class SaleProcessor implements ProcessorInterface
             } catch (\Throwable $exception) {
                 $this->logger->error('Goods receipts V2 dual-write failed', [
                     'movimiento_id' => $data->getId(),
-                    'error' => $exception->getMessage(),
+                    'mode' => (string) $this->settings->get(Constants::PURCHASES_V2_MODE, 'dual_write'),
+                    'strict' => $this->isPurchasesV2StrictMode(),
+                    'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
+                    'warehouse_id' => $data->getAlmacen()?->getId(),
+                    ...$this->buildThrowableContext($exception),
                 ]);
 
                 if ($this->isPurchasesV2StrictMode()) {
                     throw new ServiceException(
-                        'No se pudo sincronizar la compra con Compras V2. Operación cancelada.'
+                        'No se pudo sincronizar la compra con Compras V2. Operación cancelada.',
+                        0,
+                        $exception
                     );
                 }
             }
@@ -360,12 +366,22 @@ readonly class SaleProcessor implements ProcessorInterface
                         'sale_id' => $data->getId(),
                         'mode' => $salesWritePolicy->mode,
                         'strict' => $salesWritePolicy->strict,
-                        'error' => $exception->getMessage(),
+                        'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
+                        'warehouse_id' => $data->getAlmacen()?->getId(),
+                        'cash_register_id' => $data->getCajaId(),
+                        'legacy_cash_shift_id' => $cashShiftForMovement?->getId(),
+                        'resolved_cash_session_id' => $resolvedCashSessionId,
+                        'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
+                        'item_count' => count($data->getItems()),
+                        'total' => $data->getTotal(),
+                        ...$this->buildThrowableContext($exception),
                     ]);
 
                     if ($salesWritePolicy->strict) {
                         throw new ServiceException(
-                            'No se pudo sincronizar la venta con Sales V2. Operación cancelada.'
+                            'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
+                            0,
+                            $exception
                         );
                     }
                 }
@@ -392,12 +408,16 @@ readonly class SaleProcessor implements ProcessorInterface
                     } catch (\Throwable $exception) {
                         $this->logger->error('Sales V2 cash movement write failed', [
                             'sale_id' => $data->getId(),
-                            'error' => $exception->getMessage(),
+                            'cash_session_id' => $resolvedCashSessionId,
+                            'amount' => $cashCollected,
+                            ...$this->buildThrowableContext($exception),
                         ]);
 
                         if ($salesWritePolicy instanceof SalesWritePolicy && $salesWritePolicy->strict) {
                             throw new ServiceException(
-                                'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.'
+                                'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
+                                0,
+                                $exception
                             );
                         }
                     }
@@ -617,5 +637,42 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->settings->get(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'false'),
             FILTER_VALIDATE_BOOLEAN
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildThrowableContext(\Throwable $exception): array
+    {
+        $chain = [];
+        $cursor = $exception;
+        $depth = 0;
+        while ($cursor !== null && $depth < 5) {
+            $chain[] = [
+                'class' => get_class($cursor),
+                'code' => $cursor->getCode(),
+                'message' => $cursor->getMessage(),
+                'file' => $cursor->getFile(),
+                'line' => $cursor->getLine(),
+            ];
+            $cursor = $cursor->getPrevious();
+            ++$depth;
+        }
+
+        $rootCause = $chain[count($chain) - 1] ?? null;
+        $traceLines = array_slice(explode("\n", $exception->getTraceAsString()), 0, 8);
+
+        return [
+            'error' => $exception->getMessage(),
+            'exception_class' => get_class($exception),
+            'exception_code' => $exception->getCode(),
+            'exception_file' => $exception->getFile(),
+            'exception_line' => $exception->getLine(),
+            'exception_chain' => $chain,
+            'exception_trace_top' => $traceLines,
+            'root_cause_class' => is_array($rootCause) ? $rootCause['class'] : null,
+            'root_cause_message' => is_array($rootCause) ? $rootCause['message'] : null,
+            'root_cause_code' => is_array($rootCause) ? $rootCause['code'] : null,
+        ];
     }
 }
