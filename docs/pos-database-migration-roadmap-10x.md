@@ -80,6 +80,22 @@
     - Ventas/items/pagos escriben metadatos offline e idempotencia deterministica.
     - `version_no` se incrementa en upsert/void para control de concurrencia offline.
 
+### Fase 6
+
+- Implementada en aplicacion:
+  - `src/State/Sale/SaleProcessor.php`
+  - `src/State/Sale/SalesWriteGateway.php`
+  - `src/Service/InventoryLedgerService.php`
+  - `src/Command/SalesV2BaselineCommand.php`
+  - `src/Command/SalesV2SunsetLegacyCommand.php`
+  - `src/Core/Util/Constants.php`
+- Hardening de sunset controlado:
+  - Movimiento de caja de venta se escribe en `cash_movements` V2 con idempotencia.
+  - En modo `v2_authoritative` (o flag explicito), se desactiva escritura legacy de `cash_movement`.
+  - Proyeccion legacy de stock (`product_stock`, `producto.stock`) se puede desactivar por flag.
+  - Comando operativo para olas de cutover:
+    - `app:sales:v2:sunset-legacy` aplica modo autoritativo + flags de desactivacion legacy.
+
 ---
 
 ## 1. Resumen Ejecutivo

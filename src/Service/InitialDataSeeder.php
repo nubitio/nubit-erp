@@ -69,6 +69,8 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_STRICT, 'bool', 'false');
             $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'dual_write');
             $this->settingsService->set(Constants::SALES_V2_CUTOVER_DATE, 'string', '');
+            $this->settingsService->set('sales_v2_disable_legacy_cash_movement', 'bool', 'false');
+            $this->settingsService->set('sales_v2_disable_legacy_stock_projection', 'bool', 'false');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to keep seeding idempotent.
         }
