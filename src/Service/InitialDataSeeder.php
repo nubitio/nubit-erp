@@ -74,8 +74,6 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
             $this->settingsService->set('inventory_negative_stock_policy', 'string', 'BLOCK');
-            $this->settingsService->set('sales_v2_disable_legacy_cash_movement', 'bool', 'true');
-            $this->settingsService->set('sales_v2_disable_legacy_stock_projection', 'bool', 'true');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to keep seeding idempotent.
         }

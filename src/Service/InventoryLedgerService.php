@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Core\Exception\ServiceException;
-use App\Core\Service\SettingsService;
 use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
@@ -20,13 +19,12 @@ use Symfony\Component\Uid\Uuid;
  *
  * Source of truth: stock_movements
  * Read model: stock_balances
- * Compatibility projection: product_stock / producto.stock
+ * Legacy compatibility reads: product_stock fallback for old tenants
  */
 final readonly class InventoryLedgerService
 {
     public function __construct(
         private Connection $connection,
-        private SettingsService $settings,
     ) {
     }
 
@@ -131,13 +129,6 @@ SQL,
                 occurredAt: $sale->getFecha() ?? new \DateTimeImmutable(),
                 enforceNonNegativeStock: $enforceNonNegativeStock
             );
-
-            if (!$this->isLegacyStockProjectionDisabled()) {
-                $this->syncLegacyProjection(
-                    warehouseId: (string) $warehouse->getId(),
-                    product: $product
-                );
-            }
 
             $this->connection->commit();
         } catch (\Throwable $exception) {
@@ -348,106 +339,6 @@ SQL,
         );
     }
 
-    /**
-     * @throws Exception
-     */
-    private function syncLegacyProjection(string $warehouseId, Product $product): void
-    {
-        $productId = (string) $product->getId();
-        $stockByWarehouse = $this->connection->fetchOne(
-            <<<'SQL'
-SELECT on_hand_qty
-FROM stock_balances
-WHERE warehouse_id = :warehouse_id
-  AND product_id = :product_id
-  AND variant_id = ''
-LIMIT 1
-SQL,
-            [
-                'warehouse_id' => $warehouseId,
-                'product_id' => $productId,
-            ]
-        );
-        $warehouseStock = $stockByWarehouse !== false ? (float) $stockByWarehouse : 0.0;
-
-        $minStock = (float) ($product->getMinStock() ?? 0.0);
-        $exists = $this->connection->fetchOne(
-            <<<'SQL'
-SELECT 1
-FROM product_stock
-WHERE warehouse_id = :warehouse_id
-  AND product_id = :product_id
-LIMIT 1
-SQL,
-            [
-                'warehouse_id' => $warehouseId,
-                'product_id' => $productId,
-            ]
-        );
-
-        if ($exists === false) {
-            $this->connection->executeStatement(
-                <<<'SQL'
-INSERT INTO product_stock (
-    product_id,
-    warehouse_id,
-    stock,
-    min_stock,
-    created_at,
-    updated_at
-) VALUES (
-    :product_id,
-    :warehouse_id,
-    :stock,
-    :min_stock,
-    NOW(),
-    NOW()
-)
-SQL,
-                [
-                    'product_id' => $productId,
-                    'warehouse_id' => $warehouseId,
-                    'stock' => number_format($warehouseStock, 3, '.', ''),
-                    'min_stock' => number_format($minStock, 3, '.', ''),
-                ]
-            );
-        } else {
-            $this->connection->executeStatement(
-                <<<'SQL'
-UPDATE product_stock
-SET stock = :stock,
-    min_stock = :min_stock,
-    updated_at = NOW()
-WHERE warehouse_id = :warehouse_id
-  AND product_id = :product_id
-SQL,
-                [
-                    'stock' => number_format($warehouseStock, 3, '.', ''),
-                    'min_stock' => number_format($minStock, 3, '.', ''),
-                    'warehouse_id' => $warehouseId,
-                    'product_id' => $productId,
-                ]
-            );
-        }
-
-        $globalStock = $this->connection->fetchOne(
-            <<<'SQL'
-SELECT COALESCE(SUM(stock), 0)
-FROM product_stock
-WHERE product_id = :product_id
-SQL,
-            ['product_id' => $productId]
-        );
-
-        $this->connection->executeStatement(
-            'UPDATE producto SET stock = :stock WHERE producto_id = :product_id',
-            [
-                'stock' => number_format((float) ($globalStock !== false ? $globalStock : 0), 3, '.', ''),
-                'product_id' => $productId,
-            ]
-        );
-    }
-
     private function resolveUnitCost(Sale $sale, SaleItem $item): ?float
     {
         if ($sale->getTipoId() === 1) {
@@ -473,11 +364,4 @@ SQL,
         );
     }
 
-    private function isLegacyStockProjectionDisabled(): bool
-    {
-        return filter_var(
-            $this->settings->get('sales_v2_disable_legacy_stock_projection', 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
-    }
 }
