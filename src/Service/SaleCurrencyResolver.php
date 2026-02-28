@@ -30,13 +30,13 @@ readonly class SaleCurrencyResolver
 
         $currency = $this->normalizeCurrency(
             $sale->getCurrency()
-            ?? $snapshot['currency']
+            ?? ($snapshot['currency'] ?? null)
             ?? (string)$this->settings->get(Constants::SALES_DEFAULT_CURRENCY, self::PEN)
         );
 
         $exchangeRate = $this->normalizeExchangeRate(
             $currency,
-            $sale->getExchangeRate() ?? $snapshot['exchange_rate']
+            $sale->getExchangeRate() ?? ($snapshot['exchange_rate'] ?? null)
         );
 
         return [
