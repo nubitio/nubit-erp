@@ -26,7 +26,7 @@ use App\Repository\BranchRepository;
 use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\EInvoicing\Service\InvoiceCreationService;
-use App\Service\ProductStockService;
+use App\Service\InventoryLedgerService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
@@ -56,7 +56,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private Security $security,
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
-        private ProductStockService $productStockService,
+        private InventoryLedgerService $inventoryLedgerService,
         private SettingsService $settings,
         private InvoiceCreationService $invoiceCreationService,
         private LoggerInterface $logger,
@@ -95,6 +95,11 @@ readonly class SaleProcessor implements ProcessorInterface
             ]);
 
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
+        }
+
+        // Ensure deterministic movement source keys before inventory ledger writes.
+        if ($isNew && $data->getId() === null) {
+            $data->setId(Uuid::v7()->toRfc4122());
         }
 
         $user = $this->security->connectedUser();
@@ -195,7 +200,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         continue;
                     }
 
-                    $currentStock = $this->productStockService->getStockForProductInWarehouse(
+                    $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
                         $item->getProducto(),
                         $data->getAlmacen()
                     );
@@ -211,13 +216,15 @@ readonly class SaleProcessor implements ProcessorInterface
                 }
             }
 
+            $lineNo = 0;
             /** @var SaleItem $item */
             foreach ($data->getItems() as $item) {
+                ++$lineNo;
                 if ($item->getProducto()) {
                     $productId = $item->getProducto()->getId();
                     $warehouseId = $data->getAlmacen()->getId();
 
-                    $currentStock = $this->productStockService->getStockForProductInWarehouse(
+                    $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
                         $item->getProducto(),
                         $data->getAlmacen()
                     );
@@ -229,37 +236,23 @@ readonly class SaleProcessor implements ProcessorInterface
                     ]);
 
                     if ($data->getTipoId() === 1) {
-                        // Increase stock for purchases (tipo_id = 1)
-                        $newStock = $currentStock + $item->getCantidad();
                         $this->logger->info('Increasing stock for purchase', [
                             'product_id' => $productId,
                             'warehouse_id' => $warehouseId,
                             'current_stock' => $currentStock,
                             'quantity_added' => $item->getCantidad(),
-                            'new_stock' => $newStock,
                         ]);
 
-                        $this->productStockService->updateStockForProductInWarehouse(
-                            $item->getProducto(),
-                            $data->getAlmacen(),
-                            $newStock
-                        );
+                        $this->inventoryLedgerService->applyMovementFromSaleItem($data, $item, $lineNo);
                     } elseif ($data->getTipoId() === 2) {
-                        // Reduce stock for sales (tipo_id = 2)
-                        $newStock = $currentStock - $item->getCantidad();
                         $this->logger->info('Decreasing stock for sale', [
                             'product_id' => $productId,
                             'warehouse_id' => $warehouseId,
                             'current_stock' => $currentStock,
                             'quantity_removed' => $item->getCantidad(),
-                            'new_stock' => $newStock,
                         ]);
 
-                        $this->productStockService->updateStockForProductInWarehouse(
-                            $item->getProducto(),
-                            $data->getAlmacen(),
-                            $newStock
-                        );
+                        $this->inventoryLedgerService->applyMovementFromSaleItem($data, $item, $lineNo);
                     }
                 }
 
@@ -285,17 +278,6 @@ readonly class SaleProcessor implements ProcessorInterface
             ]);
             $data->setDateUpdated(new DateTimeImmutable());
             $data->setUpdatedBy($user->userId);
-        }
-
-        if ($isOperationalSale) {
-            if (
-                $isNew
-                && $salesWritePolicy?->mode === SalesWriteMode::AUTHORITATIVE
-                && $data->getId() === null
-            ) {
-                // Decouple new-schema identity from legacy movimiento id generation.
-                $data->setId(Uuid::v7()->toRfc4122());
-            }
         }
 
         $this->logger->info('Persisting sale data', [
