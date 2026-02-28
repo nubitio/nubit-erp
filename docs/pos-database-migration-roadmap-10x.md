@@ -17,6 +17,18 @@
 - Cobertura unitaria agregada:
   - `tests/State/Sale/CashSessionResolverTest.php`
 
+### Fase 2
+
+- Implementada en aplicacion:
+  - `src/Service/InventoryLedgerService.php`
+  - `src/State/Sale/SaleProcessor.php` (stock por ledger)
+- Comportamiento:
+  - Toda compra/venta registra `stock_movements`.
+  - `stock_balances` se actualiza de forma transaccional por movimiento.
+  - `product_stock` y `producto.stock` se sincronizan como proyeccion de compatibilidad.
+- Idempotencia:
+  - `idempotency_key` deterministico por venta+linea+tipo de movimiento.
+
 ---
 
 ## 1. Resumen Ejecutivo
