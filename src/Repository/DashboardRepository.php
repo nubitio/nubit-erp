@@ -28,34 +28,34 @@ readonly class DashboardRepository
 
         $summary = $this->safeQuery('summary', fn () => $this->connection->fetchAssociative("
             SELECT
-                SUM(CASE WHEN td.date = :today THEN m.total ELSE 0 END) AS sales_today,
-                SUM(CASE WHEN td.date = :yesterday THEN m.total ELSE 0 END) AS sales_yesterday,
-                SUM(CASE WHEN td.date >= :last7days THEN m.total ELSE 0 END) AS sales_week,
+                SUM(CASE WHEN td.date = :today THEN bds.net_sales ELSE 0 END) AS sales_today,
+                SUM(CASE WHEN td.date = :yesterday THEN bds.net_sales ELSE 0 END) AS sales_yesterday,
+                SUM(CASE WHEN td.date >= :last7days THEN bds.net_sales ELSE 0 END) AS sales_week,
                 SUM(
-                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN m.total ELSE 0 END
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN bds.net_sales ELSE 0 END
                 ) AS sales_month,
                 SUM(
-                    CASE WHEN td.year = :previousYear AND td.month = :previousMonth THEN m.total ELSE 0 END
+                    CASE WHEN td.year = :previousYear AND td.month = :previousMonth THEN bds.net_sales ELSE 0 END
                 ) AS sales_previous_month,
-                SUM(CASE WHEN td.date = :today THEN 1 ELSE 0 END) AS invoices_today,
-                SUM(CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN 1 ELSE 0 END) AS invoices_month,
+                SUM(CASE WHEN td.date = :today THEN bds.sales_count ELSE 0 END) AS invoices_today,
+                SUM(
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN bds.sales_count ELSE 0 END
+                ) AS invoices_month
+            FROM branch_daily_summary bds
+            INNER JOIN time_dimension td ON td.date = bds.summary_date
+            WHERE bds.branch_id = :branchId
+        ", $params) ?: [], [], $failedSegments);
+
+        $customers = $this->safeQuery('customers', fn () => $this->connection->fetchAssociative("
+            SELECT
                 COUNT(
-                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN m.cliente_id END
+                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN s.customer_id END
                 ) AS customers_month,
-                COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN m.cliente_id END) AS customers_week
-            FROM (
-                SELECT
-                    s.id,
-                    s.grand_total AS total,
-                    s.customer_id AS cliente_id,
-                    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) AS sale_date,
-                    s.legacy_movimiento_id
-                FROM sales s
-                WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-                  AND s.branch_id = :branchId
-            ) m
-                INNER JOIN time_dimension td ON td.date = m.sale_date
-            WHERE 1 = 1
+                COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN s.customer_id END) AS customers_week
+            FROM sales s
+            INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
+            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+              AND s.branch_id = :branchId
               {$summaryReceiptFilter}
         ", $params) ?: [], [], $failedSegments);
 
@@ -63,15 +63,13 @@ readonly class DashboardRepository
             SELECT
                 td.day AS day,
                 td.day_name AS day_name,
-                COALESCE(SUM(s.grand_total), 0) AS total
+                COALESCE(SUM(s.net_sales), 0) AS total
             FROM time_dimension td
-            LEFT JOIN sales s
-                ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-                AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+            LEFT JOIN branch_daily_summary s
+                ON td.date = s.summary_date
                 AND s.branch_id = :branchId
             WHERE td.year = :currentYear
               AND td.month = :currentMonth
-              {$receiptFilter}
             GROUP BY td.id, td.day
             ORDER BY td.day
         ", $params), [], $failedSegments);
@@ -81,15 +79,13 @@ readonly class DashboardRepository
                 CONCAT(LEFT(td.month_name, 3), ' ', td.year) AS label,
                 td.year,
                 td.month,
-                COALESCE(SUM(s.grand_total), 0) AS total
+                COALESCE(SUM(s.net_sales), 0) AS total
             FROM time_dimension td
-            LEFT JOIN sales s
-                ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-                AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
+            LEFT JOIN branch_daily_summary s
+                ON td.date = s.summary_date
                 AND s.branch_id = :branchId
             WHERE td.date >= :monthsBackDate
               AND td.date <= :today
-              {$receiptFilter}
             GROUP BY td.year, td.month
             ORDER BY td.year, td.month
         ", $params), [], $failedSegments);
@@ -97,15 +93,11 @@ readonly class DashboardRepository
         $paymentMethodShare = $this->safeQuery('paymentMethods', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
-                COALESCE(SUM(sp.amount), 0) AS total
-            FROM sales s
-                INNER JOIN sale_payments sp ON sp.sale_id = s.id
-                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-              AND s.branch_id = :branchId
-              AND td.date >= :last30days
-              {$receiptFilter}
+                COALESCE(SUM(pms.amount_total), 0) AS total
+            FROM payment_method_daily_summary pms
+                LEFT JOIN payment_method pm ON pms.payment_method_id = pm.id
+            WHERE pms.branch_id = :branchId
+              AND pms.summary_date >= :last30days
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
         ", $params), [], $failedSegments);
@@ -117,17 +109,14 @@ readonly class DashboardRepository
                     td.date AS date_value,
                     DATE_FORMAT(td.date, '%d %b') AS label,
                     COALESCE(pm.name, 'Sin método') AS method,
-                    COALESCE(SUM(sp.amount), 0) AS total
+                    COALESCE(SUM(pms.amount_total), 0) AS total
                 FROM time_dimension td
-                LEFT JOIN sales s
-                    ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-                    AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-                    AND s.branch_id = :branchId
-                LEFT JOIN sale_payments sp ON sp.sale_id = s.id
-                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
+                LEFT JOIN payment_method_daily_summary pms
+                    ON td.date = pms.summary_date
+                    AND pms.branch_id = :branchId
+                LEFT JOIN payment_method pm ON pms.payment_method_id = pm.id
                 WHERE td.date >= :last30days
                   AND td.date <= :today
-                  {$receiptFilter}
                 GROUP BY td.date, pm.id, pm.name
                 ORDER BY td.date
             ", $params),
@@ -138,17 +127,13 @@ readonly class DashboardRepository
         $topProducts = $this->safeQuery('topProducts', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(p.descripcion, 'Sin producto') AS product,
-                SUM(si.qty) AS quantity,
-                SUM(si.net_amount) AS total
-            FROM sale_items si
-                INNER JOIN sales s ON s.id = si.sale_id
-                    AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-                    AND s.branch_id = :branchId
-                LEFT JOIN producto p ON si.product_id = p.producto_id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-            WHERE td.date >= :last30days
-              {$receiptFilter}
-            GROUP BY si.product_id, p.descripcion
+                SUM(pds.qty_sold) AS quantity,
+                SUM(pds.net_sales) AS total
+            FROM product_daily_summary pds
+                LEFT JOIN producto p ON pds.product_id = p.producto_id
+            WHERE pds.branch_id = :branchId
+              AND pds.summary_date >= :last30days
+            GROUP BY pds.product_id, p.descripcion
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);
@@ -204,14 +189,13 @@ readonly class DashboardRepository
 
         $refunds = $this->safeQuery('refunds', fn () => $this->connection->fetchAssociative("
             SELECT
-                SUM(CASE WHEN td.date = :today THEN n.total ELSE 0 END) AS refunds_today,
+                SUM(CASE WHEN td.date = :today THEN bds.refunds_total ELSE 0 END) AS refunds_today,
                 SUM(
-                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN n.total ELSE 0 END
+                    CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN bds.refunds_total ELSE 0 END
                 ) AS refunds_month
-            FROM tax_document n
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.issue_date, 'UTC', 'America/Lima'))
-            WHERE n.document_type IN ('07', '08')
-              AND n.branch_id = :branchId
+            FROM branch_daily_summary bds
+                INNER JOIN time_dimension td ON td.date = bds.summary_date
+            WHERE bds.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
         $payload = $this->emptyOverviewPayload();
@@ -223,8 +207,8 @@ readonly class DashboardRepository
             'salesLastMonth' => (float) ($summary['sales_previous_month'] ?? 0),
             'invoicesToday' => (int) ($summary['invoices_today'] ?? 0),
             'invoicesThisMonth' => (int) ($summary['invoices_month'] ?? 0),
-            'customersThisMonth' => (int) ($summary['customers_month'] ?? 0),
-            'customersWeek' => (int) ($summary['customers_week'] ?? 0),
+            'customersThisMonth' => (int) ($customers['customers_month'] ?? 0),
+            'customersWeek' => (int) ($customers['customers_week'] ?? 0),
             'refundsToday' => (float) ($refunds['refunds_today'] ?? 0),
             'refundsThisMonth' => (float) ($refunds['refunds_month'] ?? 0),
         ];
@@ -321,50 +305,34 @@ readonly class DashboardRepository
         $ctx = $this->buildQueryContext($branchId);
         $params = $ctx['params'];
         $receiptFilter = $ctx['receiptFilterSales'];
-        $summaryReceiptFilter = $ctx['receiptFilterSummary'];
         $failedSegments = [];
         $payload = $this->emptyLitePayload();
 
         $summary = $this->safeQuery('summaryLite', fn () => $this->connection->fetchAssociative("
             SELECT
-                SUM(CASE WHEN td.date = :today THEN m.total ELSE 0 END) AS sales_today,
-                SUM(CASE WHEN td.date = :today THEN 1 ELSE 0 END) AS invoices_today
-            FROM (
-                SELECT
-                    s.id,
-                    s.grand_total AS total,
-                    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) AS sale_date,
-                    s.legacy_movimiento_id
-                FROM sales s
-                WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-                  AND s.branch_id = :branchId
-            ) m
-                INNER JOIN time_dimension td ON td.date = m.sale_date
-            WHERE 1 = 1
-              {$summaryReceiptFilter}
+                SUM(CASE WHEN td.date = :today THEN bds.net_sales ELSE 0 END) AS sales_today,
+                SUM(CASE WHEN td.date = :today THEN bds.sales_count ELSE 0 END) AS invoices_today
+            FROM branch_daily_summary bds
+                INNER JOIN time_dimension td ON td.date = bds.summary_date
+            WHERE bds.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
         $refunds = $this->safeQuery('refundsLite', fn () => $this->connection->fetchAssociative("
             SELECT
-                SUM(CASE WHEN td.date = :today THEN n.total ELSE 0 END) AS refunds_today
-            FROM tax_document n
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(n.issue_date, 'UTC', 'America/Lima'))
-            WHERE n.document_type IN ('07', '08')
-              AND n.branch_id = :branchId
+                SUM(CASE WHEN td.date = :today THEN bds.refunds_total ELSE 0 END) AS refunds_today
+            FROM branch_daily_summary bds
+                INNER JOIN time_dimension td ON td.date = bds.summary_date
+            WHERE bds.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
         $paymentMethodsToday = $this->safeQuery('paymentMethodsToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(pm.name, 'Sin método') AS method,
-                COALESCE(SUM(sp.amount), 0) AS total
-            FROM sales s
-                INNER JOIN sale_payments sp ON sp.sale_id = s.id
-                LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
-            WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
-              AND s.branch_id = :branchId
-              AND td.date = :today
-              {$receiptFilter}
+                COALESCE(SUM(pms.amount_total), 0) AS total
+            FROM payment_method_daily_summary pms
+                LEFT JOIN payment_method pm ON pms.payment_method_id = pm.id
+            WHERE pms.branch_id = :branchId
+              AND pms.summary_date = :today
             GROUP BY pm.id, pm.name
             ORDER BY total DESC
             LIMIT 5
