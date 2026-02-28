@@ -43,6 +43,19 @@
     - `app_option_purchases_v2_dual_write_strict`.
   - Reconciliacion por dia (`legacy vs goods_receipts`) para criterio Go/No-Go.
 
+### Fase 3B (Rename y Strangler Read Path)
+
+- Implementada en aplicacion:
+  - `assets/features/sales/routes.tsx`
+  - `assets/features/sales/pages/InboundPage.tsx`
+  - `src/State/Sale/SaleProvider.php`
+  - `src/Command/PurchasesMenuMigrateCommand.php`
+- Soporte funcional:
+  - Ruta canonica de frontend: `/purchases`.
+  - Alias legacy soportado: `/inbound`.
+  - Query de listado usa `type=purchases` (backend mantiene alias `inbound`).
+  - Comando para tenants existentes: migrar menu persistido `inbound -> purchases`.
+
 ### Fase 2
 
 - Implementada en aplicacion:
