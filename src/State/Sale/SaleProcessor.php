@@ -67,6 +67,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private MessageBusInterface $messageBus,
         private SalesWritePolicyResolver $salesWritePolicyResolver,
         private SalesWriteGateway $salesWriteGateway,
+        private CashSessionResolver $cashSessionResolver,
     ) {
     }
 
@@ -320,10 +321,9 @@ readonly class SaleProcessor implements ProcessorInterface
 
             if ($salesWritePolicy->writeNewSchema) {
                 try {
-                    $cashSessionId = $this->resolveCashSessionId(
-                        $cashShiftForMovement,
-                        $data->getCajaId(),
-                        $data->getId()
+                    $cashSessionId = $this->cashSessionResolver->resolveForSale(
+                        $data,
+                        $cashShiftForMovement?->getId()
                     );
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
@@ -380,43 +380,6 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $result;
-    }
-
-    private function resolveCashSessionId(?CashShift $cashShiftForMovement, ?int $cashRegisterId, ?string $saleId): int
-    {
-        $connection = $this->entityManager->getConnection();
-        $legacyCashShiftId = $cashShiftForMovement?->getId();
-
-        if ($legacyCashShiftId !== null) {
-            $cashSessionIdValue = $connection->fetchOne(
-                'SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ? LIMIT 1',
-                [$legacyCashShiftId]
-            );
-            if ($cashSessionIdValue !== false) {
-                return (int)$cashSessionIdValue;
-            }
-        }
-
-        if ($cashRegisterId !== null) {
-            $cashSessionIdValue = $connection->fetchOne(
-                "SELECT id
-                 FROM cash_sessions
-                 WHERE cash_register_id = ?
-                 ORDER BY
-                     CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-                     opened_at DESC
-                 LIMIT 1",
-                [$cashRegisterId]
-            );
-            if ($cashSessionIdValue !== false) {
-                return (int)$cashSessionIdValue;
-            }
-        }
-
-        throw new ServiceException(sprintf(
-            'No se pudo resolver cash_session_id para la venta %s.',
-            (string)$saleId
-        ));
     }
 
     private function applyDetractionFromItems(Sale $sale): void

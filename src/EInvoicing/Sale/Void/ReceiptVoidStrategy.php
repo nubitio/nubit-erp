@@ -35,6 +35,11 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
      */
     public function void(string $saleId, string $reason): SunatVoidResponse
     {
+        $this->logger->info('Solicitando anulación de boleta', [
+            'sale_id' => $saleId,
+            'reason' => $reason,
+        ]);
+
         $taxDocument = $this->taxDocumentRepository->findOneBy([
             'sale' => $saleId,
             'documentType' => DocType::BOLETA->value,

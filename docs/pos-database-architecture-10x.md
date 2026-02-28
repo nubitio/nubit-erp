@@ -4,6 +4,12 @@
 **Fecha:** 2026-02-27  
 **Contexto:** POS SaaS multi-sucursal, multi-caja, multi-almacen, offline-first, escalable.
 
+## Implementacion y Migracion
+
+Para la ejecucion detallada (fases, controles SQL, criterios Go/No-Go, rollback y operacion multi-tenant), ver:
+
+- `docs/pos-database-migration-roadmap-10x.md`
+
 ## 1. Principios de Arquitectura
 
 1. Aislamiento de tenant por infraestructura: **1 base de datos (o schema) por tenant**.
