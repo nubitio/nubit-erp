@@ -122,4 +122,24 @@ export default defineConfig({
       },
     },
   },
+  test: {
+    environment: 'node',
+    globals: true,
+    include: ['assets/**/*.test.ts', 'assets/**/*.test.tsx'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: './var/coverage/frontend',
+      include: [
+        'assets/features/pos/pages/posHelpers.ts',
+        'assets/offline/api.ts',
+      ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        statements: 80,
+        branches: 70,
+      },
+    },
+  },
 });
