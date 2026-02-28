@@ -121,7 +121,8 @@ SQL
             );
 
             $itemsInserted = $this->connection->executeStatement(
-                <<<'SQL'
+                sprintf(
+                    <<<'SQL'
 INSERT INTO goods_receipt_items (
     goods_receipt_id,
     legacy_movimiento_detalle_id,
@@ -151,7 +152,7 @@ SELECT
     NULL AS variant_id,
     p.codigo AS sku_snapshot,
     COALESCE(p.descripcion, 'Producto') AS name_snapshot,
-    um.codigo AS uom_snapshot,
+    %s AS uom_snapshot,
     COALESCE(md.cantidad, 0) AS qty,
     COALESCE(md.precio_unitario, 0) AS unit_cost,
     COALESCE(md.precio_total, 0) AS gross_amount,
@@ -175,7 +176,9 @@ WHERE m.tipo_id = 1
       FROM goods_receipt_items gri
       WHERE gri.legacy_movimiento_detalle_id = md.id
   )
-SQL
+SQL,
+                    $this->buildUnidadSnapshotExpression()
+                )
             );
 
             $this->connection->commit();
@@ -191,5 +194,36 @@ SQL
         ));
 
         return Command::SUCCESS;
+    }
+
+    private function buildUnidadSnapshotExpression(): string
+    {
+        $columns = $this->connection->fetchFirstColumn('SHOW COLUMNS FROM unidad');
+        $normalizedColumns = array_map(
+            static fn (mixed $col): string => strtolower((string) $col),
+            $columns
+        );
+        $columnSet = array_fill_keys($normalizedColumns, true);
+
+        $candidates = [];
+        if (isset($columnSet['codigo'])) {
+            $candidates[] = 'um.codigo';
+        }
+        if (isset($columnSet['code'])) {
+            $candidates[] = 'um.code';
+        }
+        if (isset($columnSet['name'])) {
+            $candidates[] = 'um.name';
+        }
+
+        if ($candidates === []) {
+            return 'NULL';
+        }
+
+        if (count($candidates) === 1) {
+            return $candidates[0];
+        }
+
+        return sprintf('COALESCE(%s)', implode(', ', $candidates));
     }
 }
