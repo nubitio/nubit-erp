@@ -28,7 +28,7 @@ export const ProductFields = () => {
       .url(Constants.API_BASE_URL + 'media')
       .accept('image/*')
       .formatter((e: ColumnCellTemplateData) => {
-        return SharedUtils.imageFormatter(e.value?.path, e.data?.descripcion);
+        return SharedUtils.imageFormatter(e.value?.path, e.data?.name ?? e.data?.descripcion);
       })
       .build(),
   );
