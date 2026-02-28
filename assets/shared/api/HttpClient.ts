@@ -66,15 +66,14 @@ class HttpClient {
         const isAuthRefresh = originalRequest.url?.endsWith('auth/refresh');
         const isAuthLogin = originalRequest.url?.includes('auth/login');
 
+        if (isAuthLogin) {
+          return Promise.reject(error);
+        }
+
         if (status === HttpCode.UNAUTHORIZED && isAuthRefresh) {
           this.failedQueue = [];
           this.processQueue(error);
           this.handleTokenRefreshError();
-          return Promise.reject(error);
-        }
-
-        if (status === HttpCode.UNAUTHORIZED && isAuthLogin) {
-          toast(message || HttpClient.DEFAULT_MESSAGES.unauthorized, 'error');
           return Promise.reject(error);
         }
 

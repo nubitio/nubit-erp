@@ -1,7 +1,7 @@
 import './BranchPicker.scss';
 import { Popup, PopupRef, ToolbarItem } from 'devextreme-react/popup';
 import { Button } from 'devextreme-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useScreenSize } from '../../../utils/media-query';
 import ArrayStore from 'devextreme/data/array_store';
 import { branchService } from '../../../features/branch';
@@ -9,28 +9,40 @@ import toast from '../../../shared/lib/SharedUtils';
 import List from 'devextreme-react/list';
 import { authService } from '../../../features/auth';
 
-export const BranchPicker = ({ visible, setVisible }) => {
+interface Branch {
+  id: string;
+  name: string;
+}
+
+interface BranchPickerProps {
+  visible: boolean;
+  setVisible: (value: boolean) => void;
+  initialBranches?: Branch[];
+}
+
+export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: BranchPickerProps) => {
   const ref = useRef<PopupRef>(null);
   const { isXSmall } = useScreenSize();
   const [dataSource, setDataSource] = useState<ArrayStore | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<any>(null);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [selecting, setSelecting] = useState(false);
+  const [loadingBranches, setLoadingBranches] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  const onItemClick = (e: any) => {
-    setSelectedBranch(e.itemData);
+  const onSelectionChanged = (e: any) => {
+    setSelectedBranch((e.addedItems?.[0] as Branch) ?? null);
   };
 
-  const close = () => {
+  const close = useCallback(() => {
     setVisible(false);
-  };
+  }, [setVisible]);
 
-  const onCancelClick = () => {
+  const onCancelClick = useCallback(() => {
     close();
-  };
+  }, [close]);
 
-  const onAcceptClick = () => {
-    if (selectedBranch == null) {
+  const onAcceptClick = useCallback(() => {
+    if (selectedBranch == null || selecting) {
       toast('Debe seleccionar un local', 'error');
       return;
     }
@@ -50,38 +62,63 @@ export const BranchPicker = ({ visible, setVisible }) => {
         setSelecting(false);
       },
     });
-  };
+  }, [selectedBranch, selecting, close]);
+
+  const loadBranchData = useCallback((data: Branch[]) => {
+    setDataSource(
+      new ArrayStore({
+        key: 'id',
+        data,
+      }),
+    );
+
+    const lastBranchId = branchService.getSelectedBranchId();
+    const rememberedBranch = data.find((item) => item.id === lastBranchId) ?? null;
+
+    if (rememberedBranch) {
+      setSelectedBranch(rememberedBranch);
+    }
+
+    setHasLoaded(true);
+    setLoadingBranches(false);
+  }, []);
+
+  useEffect(() => {
+    if (!visible || initialBranches.length === 0) {
+      return;
+    }
+
+    loadBranchData(initialBranches);
+  }, [visible, initialBranches, loadBranchData]);
 
   useEffect(() => {
     if (!visible || hasLoaded) {
       return;
     }
+    setLoadingBranches(true);
 
     const subscription = branchService.getAll().subscribe({
       next: (response) => {
-        const data = response?.data ?? [];
-        setDataSource(
-          new ArrayStore({
-            key: 'id',
-            data: data,
-          }),
-        );
-
-        if (Array.isArray(data) && data.length === 1) {
-          setSelectedBranch(data[0]);
-        }
-
-        setHasLoaded(true);
+        const data: Branch[] = response?.data ?? [];
+        loadBranchData(data);
       },
       error: () => {
         setHasLoaded(false);
+        setLoadingBranches(false);
       },
     });
 
     return () => {
       subscription?.unsubscribe?.();
     };
-  }, [visible, hasLoaded]);
+  }, [visible, hasLoaded, loadBranchData]);
+
+  useEffect(() => {
+    if (!visible) {
+      setSelectedBranch(null);
+      setHasLoaded(false);
+    }
+  }, [visible]);
 
   return (
     <Popup
@@ -92,6 +129,7 @@ export const BranchPicker = ({ visible, setVisible }) => {
       fullScreen={isXSmall}
       visible={visible}
       showCloseButton={false}
+      closeOnOutsideClick={!selecting}
       wrapperAttr={{ class: `picker-popup` }}
     >
       <ToolbarItem toolbar="bottom" location="after">
@@ -117,8 +155,8 @@ export const BranchPicker = ({ visible, setVisible }) => {
         selectionMode={'single'}
         displayExpr={'name'}
         selectByClick={true}
-        onItemClick={onItemClick}
-        // Reflect controlled selection so the single item appears selected when auto-set
+        noDataText={loadingBranches ? 'Cargando locales...' : 'No hay locales disponibles'}
+        onSelectionChanged={onSelectionChanged}
         selectedItemKeys={selectedBranch ? [selectedBranch.id] : []}
       />
     </Popup>
