@@ -50,4 +50,8 @@ abstract class Constants
     public const string SALES_V2_MODE = 'sales_v2_mode';
 
     public const string SALES_V2_CUTOVER_DATE = 'sales_v2_cutover_date';
+
+    public const string SALES_DEFAULT_CURRENCY = 'sales_default_currency';
+
+    public const string SALES_DEFAULT_USD_EXCHANGE_RATE = 'sales_default_usd_exchange_rate';
 }
