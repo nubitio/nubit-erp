@@ -13,6 +13,13 @@ use App\EInvoicing\Invoice\Domain\Voucher;
     shortName: 'Invoice',
     operations: [
         new Get(
+            uriTemplate: '/tax-documents/{tax_document_id}/voucher',
+            uriVariables: [
+                'tax_document_id' => 'tax_document_id',
+            ],
+            output: Voucher::class
+        ),
+        new Get(
             uriTemplate: '/invoices/{sale_id}/voucher',
             uriVariables: [
                 'sale_id' => 'sale_id',
@@ -26,4 +33,6 @@ class VoucherDto extends Voucher
 {
     #[ApiProperty(identifier: true)]
     public ?string $sale_id = null;
+
+    public ?string $tax_document_id = null;
 }
