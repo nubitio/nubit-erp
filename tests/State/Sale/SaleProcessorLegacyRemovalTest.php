@@ -30,4 +30,15 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
 
         self::assertNotContains('cashMovementCategoryRepository', $parameterNames);
     }
+
+    public function testNegativeStockPolicyNoLongerUsesLegacyCheckStockFlag(): void
+    {
+        $reflection = new \ReflectionClass(SaleProcessor::class);
+        $file = $reflection->getFileName();
+        self::assertIsString($file);
+
+        $source = file_get_contents($file);
+        self::assertIsString($source);
+        self::assertStringNotContainsString('Constants::CHECK_STOCK', $source);
+    }
 }

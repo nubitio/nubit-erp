@@ -561,13 +561,7 @@ readonly class SaleProcessor implements ProcessorInterface
             return $raw;
         }
 
-        // Backward-compat with deprecated app_option_check_stock.
-        $legacyCheckStockEnabled = filter_var(
-            $this->settings->get(Constants::CHECK_STOCK, 'true'),
-            FILTER_VALIDATE_BOOLEAN
-        );
-
-        return $legacyCheckStockEnabled ? self::NEGATIVE_STOCK_BLOCK : self::NEGATIVE_STOCK_ALLOW_ALL;
+        return self::NEGATIVE_STOCK_BLOCK;
     }
 
     private function canSellWithNegativeStock(string $policy, \App\Dto\Auth\AuthUserDto $user): bool

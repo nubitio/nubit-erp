@@ -19,8 +19,6 @@ abstract class Constants
 
     public const string AUTO_INVOICE = 'app_option_auto_invoice';
 
-    public const string CHECK_STOCK = 'app_option_check_stock';
-
     public const string CPE_CLIENT_ID = 'cpe_client_id';
 
     public const string CPE_CLIENT_SECRET = 'cpe_client_secret';
@@ -48,8 +46,6 @@ abstract class Constants
     public const string SALES_V2_DUAL_WRITE_STRICT = 'app_option_sales_v2_dual_write_strict';
 
     public const string SALES_V2_MODE = 'sales_v2_mode';
-
-    public const string SALES_V2_CUTOVER_DATE = 'sales_v2_cutover_date';
 
     public const string SALES_DEFAULT_CURRENCY = 'sales_default_currency';
 

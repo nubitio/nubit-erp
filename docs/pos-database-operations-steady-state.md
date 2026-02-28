@@ -10,26 +10,15 @@ Operar POS con `sales*`, `stock_movements`, `cash_sessions` y read-models como f
 
 ## Comandos Operativos
 
-### Gate diario Go/No-Go
-
-```bash
-# tenant puntual
-php bin/console app:sales:v2:go-no-go --tenant=mi_tenant --days=7 --json
-
-# cohortes/all tenants
-php bin/console app:sales:v2:go-no-go --parallel=4 --days=7
-```
-
 ### Reconciliaciones recomendadas
 
 ```bash
-php bin/console app:sales:v2:reconcile --tenant=mi_tenant --days=7 --tolerance=0.01
 php bin/console app:purchases:v2:reconcile --tenant=mi_tenant --days=30
 ```
 
 ## Criterios de Salud Minimos
 
-1. `GO` en `app:sales:v2:go-no-go`.
+1. Checks SQL de ventas V2 sin gaps fuera de tolerancia (ver roadmap historico).
 2. Sin mismatch de `cash_session`/`branch`.
 3. Sin violaciones de integridad de pagos.
 4. Gap de stock y monetario dentro de tolerancia.

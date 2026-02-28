@@ -815,17 +815,9 @@ Este modelo deja base para:
 - [x] No persisten sesiones invalidas o mismatch de sucursal.
 - [x] No persisten divergencias recurrentes legacy vs V2.
 
-### Comando operativo sugerido
+### Validacion operativa sugerida (vigente)
 
-Evaluacion automatizada del checklist (retorna exit code `0` en GO, `1` en NO-GO):
-
-```bash
-# tenant puntual
-php bin/console app:sales:v2:go-no-go --tenant=mi_tenant --days=7 --json
-
-# cohorte/all tenants con concurrencia controlada
-php bin/console app:sales:v2:go-no-go --parallel=4 --days=7
-```
+Ejecutar checks SQL del checklist por tenant en la ventana de 7 dias.
 
 ---
 
