@@ -36,6 +36,7 @@ export const DashboardPage = () => {
   const [cashRegisters, setCashRegisters] = useState<CashRegisterStatus[]>([]);
   const [cashboxLoading, setCashboxLoading] = useState(false);
   const summary = useMemo(() => data.summary, [data]);
+  const purchasesSummary = useMemo(() => data.purchasesSummary, [data]);
   const { currentUserName, currentBranchName } = userInformation();
 
   const loadCashRegisters = useCallback(() => {
@@ -74,6 +75,10 @@ export const DashboardPage = () => {
     summary.monthGrowth !== null &&
     summary.monthGrowth !== undefined &&
     summary.monthGrowth >= 0;
+  const purchasesMonthGrowthUp =
+    purchasesSummary.monthGrowth !== null &&
+    purchasesSummary.monthGrowth !== undefined &&
+    purchasesSummary.monthGrowth >= 0;
 
   return (
     <ScrollView className="view-wrapper-scroll">
@@ -269,6 +274,61 @@ export const DashboardPage = () => {
                 </li>
               ))}
               {data.topCustomers.length === 0 && (
+                <div className="empty">Sin datos disponibles</div>
+              )}
+            </ul>
+          </CardAnalytics>
+        </div>
+
+        <SectionHeader title="Compras e ingresos" subtitle="Últimos 30 días" />
+        <div className="dash-rankings-grid">
+          <CardAnalytics title="Resumen de compras" contentClass="list-card" menuVisible={false}>
+            <ul className="ranked-list">
+              <li>
+                <div className="ranked-list__title">Compras hoy</div>
+                <div className="ranked-list__meta">
+                  <span>{currencyFormatter(purchasesSummary.purchasesToday)}</span>
+                  <span>{decimalFormatter(purchasesSummary.receiptsToday)} ingresos</span>
+                </div>
+              </li>
+              <li>
+                <div className="ranked-list__title">Compras semana</div>
+                <div className="ranked-list__meta">
+                  <span>{currencyFormatter(purchasesSummary.purchasesWeek)}</span>
+                  <span>{decimalFormatter(purchasesSummary.receiptsThisMonth)} ingresos mes</span>
+                </div>
+              </li>
+              <li>
+                <div className="ranked-list__title">Compras mes</div>
+                <div className="ranked-list__meta">
+                  <span>{currencyFormatter(purchasesSummary.purchasesThisMonth)}</span>
+                  {purchasesSummary.monthGrowth !== null && purchasesSummary.monthGrowth !== undefined && (
+                    <span className={purchasesMonthGrowthUp ? 'cash-open' : 'cash-closed'}>
+                      {purchasesMonthGrowthUp ? '+' : ''}
+                      {purchasesSummary.monthGrowth.toFixed(1)}% vs mes anterior
+                    </span>
+                  )}
+                </div>
+              </li>
+            </ul>
+          </CardAnalytics>
+
+          <CardAnalytics
+            title="Top productos comprados"
+            contentClass="list-card"
+            menuVisible={false}
+          >
+            <ul className="ranked-list">
+              {data.topPurchasedProducts.map((item) => (
+                <li key={item.product}>
+                  <div className="ranked-list__title">{item.product}</div>
+                  <div className="ranked-list__meta">
+                    <span>{decimalFormatter(item.quantity)} u.</span>
+                    <span>{currencyFormatter(item.total)}</span>
+                  </div>
+                </li>
+              ))}
+              {data.topPurchasedProducts.length === 0 && (
                 <div className="empty">Sin datos disponibles</div>
               )}
             </ul>

@@ -30,13 +30,22 @@ final readonly class GoodsReceiptWriteGateway
         $buyerUserId = $movement->getCreatedBy() ?? $movement->getUpdatedBy();
 
         if ($branchId === null) {
-            throw new \RuntimeException(sprintf('Goods receipt write aborted: branch is null for movimiento %s.', $receiptId));
+            throw new \RuntimeException(sprintf(
+                'Goods receipt write aborted: branch is null for movimiento %s.',
+                $receiptId
+            ));
         }
         if ($warehouseId === null) {
-            throw new \RuntimeException(sprintf('Goods receipt write aborted: warehouse is null for movimiento %s.', $receiptId));
+            throw new \RuntimeException(sprintf(
+                'Goods receipt write aborted: warehouse is null for movimiento %s.',
+                $receiptId
+            ));
         }
         if ($buyerUserId === null) {
-            throw new \RuntimeException(sprintf('Goods receipt write aborted: buyer user is null for movimiento %s.', $receiptId));
+            throw new \RuntimeException(sprintf(
+                'Goods receipt write aborted: buyer user is null for movimiento %s.',
+                $receiptId
+            ));
         }
 
         $subtotal = Money::money($movement->getSubtotal());

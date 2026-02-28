@@ -23,6 +23,17 @@ export type SalesByMonth = { label: string; total: number };
 export type PaymentMethodShare = { method: string; total: number };
 export type PaymentMethodTrendPoint = Record<string, string | number>;
 export type TopProduct = { product: string; quantity: number; total: number };
+export type PurchasesSummaryStats = {
+  purchasesToday: number;
+  purchasesWeek: number;
+  purchasesThisMonth: number;
+  purchasesLastMonth: number;
+  receiptsToday: number;
+  receiptsThisMonth: number;
+  monthGrowth: number | null;
+};
+export type PurchaseByDay = { day: number; label: string; total: number };
+export type TopPurchasedProduct = { product: string; quantity: number; total: number };
 export type TopCustomer = { customer: string; invoices: number; total: number };
 export type VoucherTypeShare = { type: string; count: number; total: number };
 export type LowStockProduct = {
@@ -43,6 +54,9 @@ export type DashboardData = {
     points: PaymentMethodTrendPoint[];
   };
   topProducts: TopProduct[];
+  purchasesSummary: PurchasesSummaryStats;
+  purchasesByDay: PurchaseByDay[];
+  topPurchasedProducts: TopPurchasedProduct[];
   topCustomers: TopCustomer[];
   voucherTypes: VoucherTypeShare[];
   lowStockProducts: LowStockProduct[];
