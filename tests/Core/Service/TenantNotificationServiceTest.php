@@ -8,6 +8,7 @@ use App\Core\Service\TenantNotificationService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -128,6 +129,78 @@ final class TenantNotificationServiceTest extends TestCase
         self::assertSame(0, $sent);
     }
 
+    public function testDispatchTestTargetByTenantIdValidatesInputs(): void
+    {
+        $service = $this->serviceWithConnection($this->readyConnection());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported event key');
+        $service->dispatchTestTargetByTenantId(1, 'invalid-event', 'email', 'acme');
+    }
+
+    public function testDispatchTestTargetByTenantIdReturnsFalseWhenTargetMissingOrDisabled(): void
+    {
+        $connection = $this->readyConnection();
+        $connection->method('fetchAssociative')->willReturnOnConsecutiveCalls(
+            false,
+            ['is_enabled' => 0, 'recipients_json' => '[]', 'config_json' => '{}', 'severity' => 'info']
+        );
+        $connection->expects(self::never())->method('insert');
+
+        $service = $this->serviceWithConnection($connection);
+        self::assertFalse($service->dispatchTestTargetByTenantId(
+            2,
+            TenantNotificationService::EVENT_SUNAT_PAUSED,
+            'email',
+            'acme'
+        ));
+        self::assertFalse($service->dispatchTestTargetByTenantId(
+            2,
+            TenantNotificationService::EVENT_SUNAT_PAUSED,
+            'email',
+            'acme'
+        ));
+    }
+
+    public function testDispatchTestTargetByTenantIdSendsEmailWhenEnabled(): void
+    {
+        $connection = $this->readyConnection();
+        $mailer = $this->createMock(MailerInterface::class);
+        $mailer->expects(self::once())->method('send');
+
+        $connection->method('fetchAssociative')->willReturn(
+            [
+                'is_enabled' => 1,
+                'severity' => 'critical',
+                'recipients_json' => '["ops@example.com"]',
+                'config_json' => '{}',
+            ]
+        );
+        $connection->expects(self::once())->method('insert')->with(
+            'tenant_notification_deliveries',
+            self::callback(static fn (array $row): bool => ($row['status'] ?? '') === 'sent')
+        );
+
+        $service = $this->serviceWithConnection($connection, $mailer);
+        $sent = $service->dispatchTestTargetByTenantId(
+            4,
+            TenantNotificationService::EVENT_SUNAT_PAUSED,
+            'email',
+            'acme'
+        );
+
+        self::assertTrue($sent);
+    }
+
+    public function testGetTenantTargetsReturnsEmptyWhenControlPlaneNotReady(): void
+    {
+        $connection = $this->readyConnection(false);
+        $connection->expects(self::never())->method('fetchAllAssociative');
+
+        $service = $this->serviceWithConnection($connection);
+        self::assertSame([], $service->getTenantTargets(10));
+    }
+
     private function serviceWithConnection(
         Connection $connection,
         ?MailerInterface $mailer = null,
@@ -142,10 +215,13 @@ final class TenantNotificationServiceTest extends TestCase
         );
     }
 
-    private function readyConnection(): Connection
+    /**
+     * @return MockObject&Connection
+     */
+    private function readyConnection(bool $ready = true): Connection
     {
         $schemaManager = $this->createMock(AbstractSchemaManager::class);
-        $schemaManager->method('tablesExist')->willReturn(true);
+        $schemaManager->method('tablesExist')->willReturn($ready);
 
         $connection = $this->createMock(Connection::class);
         $connection->method('createSchemaManager')->willReturn($schemaManager);
