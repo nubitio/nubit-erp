@@ -1,7 +1,35 @@
 import React from 'react';
 import notify from 'devextreme/ui/notify';
 
+const LOCAL_AVATAR_COLORS = [
+  '#4a6fa5', '#3d8a74', '#7a6099', '#4a8ab5',
+  '#6a7f5e', '#a06050', '#526a7d', '#7d7040',
+];
+
 export class SharedUtils {
+  private static getAvatarColor(name: string): string {
+    let hash = 0;
+    for (let index = 0; index < name.length; index++) {
+      hash = (hash * 31 + name.charCodeAt(index)) & 0xfffffff;
+    }
+
+    return LOCAL_AVATAR_COLORS[hash % LOCAL_AVATAR_COLORS.length];
+  }
+
+  private static getAvatarInitials(name: string): string {
+    const normalizedName = name.trim();
+    if (!normalizedName) {
+      return 'NA';
+    }
+
+    const words = normalizedName.split(/\s+/);
+    if (words.length >= 2) {
+      return `${words[0][0]}${words[1][0]}`.toUpperCase();
+    }
+
+    return normalizedName.slice(0, 2).toUpperCase();
+  }
+
   static booleanFormatter(value: boolean) {
     if (value) {
       return <span className="badge badge-outlined rounded-pill text-bg-primary">SI</span>;
@@ -28,15 +56,32 @@ export class SharedUtils {
       );
     } else {
       const name = alt ? alt : 'No image';
-      const url = `https://ui-avatars.com/api/?name=${name}`;
+      const avatarColor = SharedUtils.getAvatarColor(name);
+      const avatarInitials = SharedUtils.getAvatarInitials(name);
+
       return (
         <div className="d-flex align-items-center justify-content-center">
-          <img
-            src={url}
-            className="object-cover"
-            style={{width: '30px', height: '30px'}}
-            alt={alt ?? 'No image'}
-          />
+          <div
+            style={{
+              width: '30px',
+              height: '30px',
+              borderRadius: '50%',
+              background: avatarColor,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'rgba(255, 255, 255, 0.92)',
+              fontSize: '12px',
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              userSelect: 'none',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.24)',
+            }}
+            aria-label={alt ?? 'No image'}
+            title={alt ?? 'No image'}
+          >
+            {avatarInitials}
+          </div>
         </div>
       );
     }
