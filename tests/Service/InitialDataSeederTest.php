@@ -46,13 +46,13 @@ final class InitialDataSeederTest extends TestCase
 
     public function testSeedSettingsIsSafeWhenSettingsStorageFails(): void
     {
+        $this->expectNotToPerformAssertions();
+
         $settings = $this->createMock(SettingsService::class);
         $settings->method('set')->willThrowException(new \RuntimeException('boom'));
 
         $service = $this->newService($settings);
         $this->invokePrivate($service, 'seedSettings');
-
-        self::assertTrue(true);
     }
 
     private function newService(SettingsService $settings): InitialDataSeeder
