@@ -7,6 +7,7 @@ import type { UserMenuSectionProps } from '../../../types';
 import { BranchPicker } from '../../utils/branch-picker/BranchPicker';
 import { useNavigate } from 'react-router-dom';
 import { branchService } from '@features/branch';
+import { UserAvatar } from '../user-avatar/UserAvatar';
 
 type MenuItem = {
   text: string;
@@ -79,12 +80,7 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
       <div className="user-info">
         {showAvatar && (
           <div className="image-container">
-            <div
-              style={{
-                backgroundImage: `url(https://robohash.org/${user?.username})`,
-              }}
-              className="user-image"
-            />
+            <UserAvatar owner={user?.username} size={28} />
           </div>
         )}
         <div className="user-name">{user?.username}</div>
