@@ -17,6 +17,7 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\Customer;
+use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
@@ -27,6 +28,7 @@ use App\Repository\SunatCatalogRepository;
 use App\EInvoicing\Service\InvoiceCreationService;
 use App\Service\InventoryLedgerService;
 use App\Service\SalePaymentPlanService;
+use App\State\Purchase\GoodsReceiptWriteGateway;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
@@ -39,6 +41,10 @@ use Symfony\Component\Uid\Uuid;
 
 readonly class SaleProcessor implements ProcessorInterface
 {
+    private const string NEGATIVE_STOCK_BLOCK = 'BLOCK';
+    private const string NEGATIVE_STOCK_ALLOW_WITH_ROLE = 'ALLOW_WITH_ROLE';
+    private const string NEGATIVE_STOCK_ALLOW_ALL = 'ALLOW_ALL';
+
     private const string DETRACTION_PAYMENT_METHOD = '001';
     private const float MIN_DETRACTION_TOTAL = 700.0;
     private const array DETRACTION_NO_MIN_CODES = [
@@ -67,6 +73,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private MessageBusInterface $messageBus,
         private SalesWritePolicyResolver $salesWritePolicyResolver,
         private SalesWriteGateway $salesWriteGateway,
+        private GoodsReceiptWriteGateway $goodsReceiptWriteGateway,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
     ) {
@@ -197,15 +204,14 @@ readonly class SaleProcessor implements ProcessorInterface
                 'warehouse_id' => $data->getAlmacen()->getId(),
                 'sale_type_id' => $data->getTipoId(),
             ]);
-            $checkStockEnabled = filter_var(
-                $this->settings->get(Constants::CHECK_STOCK, 'true'),
-                FILTER_VALIDATE_BOOLEAN
-            );
+            $negativeStockPolicy = $this->resolveNegativeStockPolicy();
+            $allowNegativeStock = $this->canSellWithNegativeStock($negativeStockPolicy, $user);
+            $enforceNonNegativeStock = $data->getTipoId() === 2 ? !$allowNegativeStock : true;
 
-            if ($data->getTipoId() === 2 && $checkStockEnabled) {
+            if ($data->getTipoId() === 2 && $enforceNonNegativeStock) {
                 /** @var SaleItem $item */
                 foreach ($data->getItems() as $item) {
-                    if (!$item->getProducto()) {
+                    if (!$item->getProducto() || !$this->isStockTrackedProduct($item->getProducto())) {
                         continue;
                     }
 
@@ -226,11 +232,14 @@ readonly class SaleProcessor implements ProcessorInterface
             }
 
             $lineNo = 0;
-            $enforceNonNegativeStock = !($data->getTipoId() === 2 && !$checkStockEnabled);
             /** @var SaleItem $item */
             foreach ($data->getItems() as $item) {
                 ++$lineNo;
                 if ($item->getProducto()) {
+                    if (!$this->isStockTrackedProduct($item->getProducto())) {
+                        continue;
+                    }
+
                     $productId = $item->getProducto()->getId();
                     $warehouseId = $data->getAlmacen()->getId();
 
@@ -309,6 +318,17 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
+        if ($data->getTipoId() === 1) {
+            try {
+                $this->goodsReceiptWriteGateway->write($data);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Goods receipts V2 dual-write failed', [
+                    'movimiento_id' => $data->getId(),
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
         if ($isOperationalSale) {
             if (!$salesWritePolicy instanceof SalesWritePolicy) {
                 throw new \LogicException('Sales write policy must be resolved for operational sale flow.');
@@ -346,7 +366,7 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if ($isNew) {
+        if ($isNew && $isOperationalSale) {
             $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
                 $data,
                 $data->getTotal() ?? '0.00'
@@ -564,5 +584,52 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->settings->get('sales_v2_disable_legacy_cash_movement', 'false'),
             FILTER_VALIDATE_BOOLEAN
         );
+    }
+
+    private function resolveNegativeStockPolicy(): string
+    {
+        $raw = strtoupper(trim((string) $this->settings->get('inventory_negative_stock_policy', '')));
+        if (
+            in_array(
+                $raw,
+                [
+                    self::NEGATIVE_STOCK_BLOCK,
+                    self::NEGATIVE_STOCK_ALLOW_WITH_ROLE,
+                    self::NEGATIVE_STOCK_ALLOW_ALL,
+                ],
+                true
+            )
+        ) {
+            return $raw;
+        }
+
+        // Backward-compat with deprecated app_option_check_stock.
+        $legacyCheckStockEnabled = filter_var(
+            $this->settings->get(Constants::CHECK_STOCK, 'true'),
+            FILTER_VALIDATE_BOOLEAN
+        );
+
+        return $legacyCheckStockEnabled ? self::NEGATIVE_STOCK_BLOCK : self::NEGATIVE_STOCK_ALLOW_ALL;
+    }
+
+    private function canSellWithNegativeStock(string $policy, \App\Dto\Auth\AuthUserDto $user): bool
+    {
+        if ($policy === self::NEGATIVE_STOCK_ALLOW_ALL) {
+            return true;
+        }
+
+        if ($policy !== self::NEGATIVE_STOCK_ALLOW_WITH_ROLE) {
+            return false;
+        }
+
+        $roles = $user->roles ?? [];
+
+        return in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true);
+    }
+
+    private function isStockTrackedProduct(Product $product): bool
+    {
+        // Convention used in catalog: type=1 means stock-tracked tangible product.
+        return $product->getType() === 1;
     }
 }

@@ -17,6 +17,19 @@
 - Cobertura unitaria agregada:
   - `tests/State/Sale/CashSessionResolverTest.php`
 
+### Fase 1B (Compras V2)
+
+- Implementada en esquema:
+  - `migrations/Version20260228200000_purchases_v2_phase1.php`
+- Implementada en aplicacion:
+  - `src/State/Purchase/GoodsReceiptWriteGateway.php`
+  - `src/State/Sale/SaleProcessor.php` (dual-write inbound tipo_id=1)
+- Migracion historica:
+  - `src/Command/PurchasesV2BackfillGoodsReceiptsCommand.php`
+- Soporte funcional:
+  - Ingresos/compras legacy (`movimiento.tipo_id=1`) se reflejan en `goods_receipts` + `goods_receipt_items`.
+  - Flujo inbound actual se mantiene compatible mientras se prepara endpoint V2 nativo.
+
 ### Fase 2
 
 - Implementada en aplicacion:
