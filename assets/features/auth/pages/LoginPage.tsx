@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { configureDevExtreme } from '@app/providers/devextreme';
 
 import '@assets/styles.scss';
@@ -7,6 +7,19 @@ import './LoginPage.scss';
 import { LoginForm } from './LoginForm';
 
 export const LoginPage = () => {
+  const [brandLogoFailed, setBrandLogoFailed] = useState(false);
+  const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
+
+  const brandLogoAvailable = useMemo(
+    () => Boolean(window.app_logo) && !brandLogoFailed,
+    [brandLogoFailed],
+  );
+
+  const mobileLogoAvailable = useMemo(
+    () => Boolean(window.app_logo) && !mobileLogoFailed,
+    [mobileLogoFailed],
+  );
+
   useEffect(() => {
     configureDevExtreme();
   }, []);
@@ -23,7 +36,16 @@ export const LoginPage = () => {
 
         <div className="brand-content">
           <div className="brand-logo-wrap">
-            <img src={window.app_logo} className="brand-logo" alt="Logo" />
+            {brandLogoAvailable ? (
+              <img
+                src={window.app_logo}
+                className="brand-logo"
+                alt="Logo"
+                onError={() => setBrandLogoFailed(true)}
+              />
+            ) : (
+              <span className="brand-logo-fallback">EFACT</span>
+            )}
           </div>
 
           <div className="brand-illustration">
@@ -45,7 +67,11 @@ export const LoginPage = () => {
       <main className="login-form-panel">
         {/* mobile-only logo */}
         <div className="mobile-logo">
-          <img src={window.app_logo} alt="Logo" />
+          {mobileLogoAvailable ? (
+            <img src={window.app_logo} alt="Logo" onError={() => setMobileLogoFailed(true)} />
+          ) : (
+            <span className="mobile-logo-fallback">EFACT</span>
+          )}
         </div>
 
         <div className="form-card">

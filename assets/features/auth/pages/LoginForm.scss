@@ -17,15 +17,16 @@
 
   // ── Text editor base ────────────────────────────────────────────────────
   .dx-texteditor {
+    min-height: 48px;
     border-radius: 10px !important;
-    border: 1.5px solid var(--border-color) !important;
-    background: var(--surface-2) !important;
+    border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent) !important;
+    background: color-mix(in srgb, var(--surface-2) 70%, var(--card-background)) !important;
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 
     &.dx-state-focused {
       border-color: var(--accent-color) !important;
       background: var(--card-background) !important;
-      box-shadow: var(--focus-ring-color) 0 0 0 3.5px !important;
+      box-shadow: var(--focus-ring-color) 0 0 0 3px !important;
     }
 
     &.dx-state-hover:not(.dx-state-focused) {
@@ -46,7 +47,7 @@
   }
 
   .dx-texteditor-input {
-    padding: 13px 14px !important;
+    padding: 14px 15px !important;
     font-size: 14px !important;
     color: var(--text-primary) !important;
     background: transparent !important;
@@ -66,6 +67,8 @@
   .dx-texteditor-buttons-container {
     .dx-button {
       margin: 0 4px !important;
+      min-width: 40px;
+      min-height: 40px;
       border-radius: 6px !important;
 
       &.dx-button-mode-text {
@@ -86,10 +89,10 @@
   .dx-button-submit-input + .dx-button,
   .dx-field-button-item .dx-button {
     border-radius: 10px !important;
-    height: 46px !important;
+    height: 48px !important;
     background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 80%, #000) 100%) !important;
     border: none !important;
-    box-shadow: 0 4px 14px var(--focus-ring-color) !important;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--focus-ring-color) 85%, transparent) !important;
     transition: opacity 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease !important;
 
     &:hover {
@@ -114,6 +117,17 @@
       font-weight: 600 !important;
       letter-spacing: 0.2px;
     }
+  }
+
+  .login-error {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--error-color);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--error-color) 8%, transparent);
+    color: var(--error-color);
+    font-size: 13px;
+    line-height: 1.4;
   }
 }
 

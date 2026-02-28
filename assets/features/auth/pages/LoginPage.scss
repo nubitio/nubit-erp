@@ -81,6 +81,13 @@ html, body {
   66%       { transform: translate(-15px, 20px) scale(0.97); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+    opacity: 0.16;
+  }
+}
+
 // content inside brand panel
 .brand-content {
   position: relative;
@@ -149,7 +156,9 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
-  background: var(--surface-0);
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent-color) 16%, transparent), transparent 46%),
+    var(--surface-0);
   overflow-y: auto;
 }
 
@@ -167,15 +176,23 @@ html, body {
   @media (max-width: 860px) { display: flex; justify-content: center; }
 }
 
+.mobile-logo-fallback {
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 // the card
 .form-card {
-  background: var(--card-background);
+  background: color-mix(in srgb, var(--card-background) 92%, var(--surface-0));
   border-radius: $radius-card;
   box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
-  padding: 48px 44px;
+  border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+  padding: 42px 40px;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
+  backdrop-filter: blur(2px);
 
   @media (max-width: 480px) {
     padding: 36px 24px;
@@ -196,9 +213,16 @@ html, body {
 
   p {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--text-secondary);
     line-height: 1.5;
   }
+}
+
+.brand-logo-fallback {
+  font-size: 21px;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
 }
 
