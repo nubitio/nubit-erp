@@ -226,6 +226,7 @@ readonly class SaleProcessor implements ProcessorInterface
             }
 
             $lineNo = 0;
+            $enforceNonNegativeStock = !($data->getTipoId() === 2 && !$checkStockEnabled);
             /** @var SaleItem $item */
             foreach ($data->getItems() as $item) {
                 ++$lineNo;
@@ -252,7 +253,12 @@ readonly class SaleProcessor implements ProcessorInterface
                             'quantity_added' => $item->getCantidad(),
                         ]);
 
-                        $this->inventoryLedgerService->applyMovementFromSaleItem($data, $item, $lineNo);
+                        $this->inventoryLedgerService->applyMovementFromSaleItem(
+                            $data,
+                            $item,
+                            $lineNo,
+                            $enforceNonNegativeStock
+                        );
                     } elseif ($data->getTipoId() === 2) {
                         $this->logger->info('Decreasing stock for sale', [
                             'product_id' => $productId,
@@ -261,7 +267,12 @@ readonly class SaleProcessor implements ProcessorInterface
                             'quantity_removed' => $item->getCantidad(),
                         ]);
 
-                        $this->inventoryLedgerService->applyMovementFromSaleItem($data, $item, $lineNo);
+                        $this->inventoryLedgerService->applyMovementFromSaleItem(
+                            $data,
+                            $item,
+                            $lineNo,
+                            $enforceNonNegativeStock
+                        );
                     }
                 }
 

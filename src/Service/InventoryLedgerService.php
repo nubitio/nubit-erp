@@ -78,8 +78,12 @@ SQL,
      * @throws Exception
      * @throws ServiceException
      */
-    public function applyMovementFromSaleItem(Sale $sale, SaleItem $item, int $lineNo): void
-    {
+    public function applyMovementFromSaleItem(
+        Sale $sale,
+        SaleItem $item,
+        int $lineNo,
+        bool $enforceNonNegativeStock = true,
+    ): void {
         $warehouse = $sale->getAlmacen();
         $product = $item->getProducto();
         if ($warehouse === null || $product === null) {
@@ -121,7 +125,8 @@ SQL,
                 productId: (string) $product->getId(),
                 delta: $delta,
                 unitCost: $unitCost,
-                occurredAt: $sale->getFecha() ?? new \DateTimeImmutable()
+                occurredAt: $sale->getFecha() ?? new \DateTimeImmutable(),
+                enforceNonNegativeStock: $enforceNonNegativeStock
             );
 
             if (!$this->isLegacyStockProjectionDisabled()) {
@@ -227,6 +232,7 @@ SQL,
         float $delta,
         ?float $unitCost,
         \DateTimeImmutable $occurredAt,
+        bool $enforceNonNegativeStock,
     ): void {
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
@@ -257,7 +263,7 @@ SQL,
 
         $newOnHand = round($currentOnHand + $delta, 3);
         $newAvailable = round($currentAvailable + $delta, 3);
-        if ($newOnHand < -0.0005) {
+        if ($enforceNonNegativeStock && $newOnHand < -0.0005) {
             throw new ServiceException(sprintf(
                 'Stock insuficiente para producto %s en almacén %s.',
                 $productId,
