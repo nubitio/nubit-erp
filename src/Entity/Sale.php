@@ -154,6 +154,20 @@ class Sale
     private ?bool $emit_invoice = null;
 
     #[Groups(['sale:read', 'sale:write'])]
+    private ?string $currency = null;
+
+    #[Groups(['sale:read', 'sale:write'])]
+    private ?string $exchange_rate = null;
+
+    /**
+     * Optional mixed payments payload for Sales V2 writes.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    #[Groups(['sale:read', 'sale:write'])]
+    private array $payments = [];
+
+    #[Groups(['sale:read', 'sale:write'])]
     #[ORM\Column(name: 'is_consume', type: 'boolean', options: ['default' => false])]
     private bool $is_consume = false;
 
@@ -519,6 +533,48 @@ class Sale
     public function setEmitInvoice(?bool $emit_invoice): static
     {
         $this->emit_invoice = $emit_invoice;
+
+        return $this;
+    }
+
+    public function getCurrency(): ?string
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(?string $currency): static
+    {
+        $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getExchangeRate(): ?string
+    {
+        return $this->exchange_rate;
+    }
+
+    public function setExchangeRate(?string $exchange_rate): static
+    {
+        $this->exchange_rate = $exchange_rate;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getPayments(): array
+    {
+        return $this->payments;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $payments
+     */
+    public function setPayments(array $payments): static
+    {
+        $this->payments = $payments;
 
         return $this;
     }

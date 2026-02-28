@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Core\Util\Money;
 use App\Entity\Sale;
+use App\Service\SalePaymentPlanService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
@@ -14,6 +15,8 @@ readonly class SalesV2DualWriteService
 {
     public function __construct(
         private Connection $connection,
+        private SaleCurrencyResolver $saleCurrencyResolver,
+        private SalePaymentPlanService $salePaymentPlanService,
     ) {
     }
 
@@ -45,8 +48,25 @@ readonly class SalesV2DualWriteService
         $discountPercent = Money::of($sale->getDescuento() ?? '0');
         $discountAmount = Money::mul($subtotal, Money::rate($discountPercent));
         $grandTotal = Money::money($sale->getTotal());
-        $paidTotal = $grandTotal;
-        $balanceDue = BigDecimal::zero();
+        $currencyData = $this->saleCurrencyResolver->resolveForWrite($sale);
+        $paymentLines = $this->salePaymentPlanService->resolveForWrite(
+            $sale,
+            $currencyData['currency'],
+            Money::toString($grandTotal),
+        );
+        $paidTotal = BigDecimal::zero();
+        $changeTotal = BigDecimal::zero();
+        foreach ($paymentLines as $paymentLine) {
+            $paidTotal = $paidTotal->plus(Money::of($paymentLine['amount']));
+            if ($paymentLine['change_amount'] !== null) {
+                $changeTotal = $changeTotal->plus(Money::of($paymentLine['change_amount']));
+            }
+        }
+        $paidTotal = Money::money($paidTotal);
+        $changeTotal = Money::money($changeTotal);
+        $balanceDue = $grandTotal->isGreaterThan($paidTotal)
+            ? Money::money($grandTotal->minus($paidTotal))
+            : BigDecimal::zero();
         $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
 
@@ -109,6 +129,8 @@ ON DUPLICATE KEY UPDATE
     customer_id = VALUES(customer_id),
     seller_user_id = VALUES(seller_user_id),
     status = VALUES(status),
+    currency = VALUES(currency),
+    exchange_rate = VALUES(exchange_rate),
     subtotal = VALUES(subtotal),
     discount_total = VALUES(discount_total),
     tax_total = VALUES(tax_total),
@@ -130,14 +152,14 @@ SQL,
                     'customer_id' => $sale->getCliente()?->getId(),
                     'seller_user_id' => $sellerUserId,
                     'status' => $sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED',
-                    'currency' => 'PEN',
-                    'exchange_rate' => '1.000000',
+                    'currency' => $currencyData['currency'],
+                    'exchange_rate' => $currencyData['exchange_rate'],
                     'subtotal' => Money::toString($subtotal),
                     'discount_total' => Money::toString($discountAmount),
                     'tax_total' => '0.00',
                     'grand_total' => Money::toString($grandTotal),
                     'paid_total' => Money::toString($paidTotal),
-                    'change_total' => '0.00',
+                    'change_total' => Money::toString($changeTotal),
                     'balance_due' => Money::toString($balanceDue),
                     'issued_at' => $issuedAt->format('Y-m-d H:i:s'),
                     'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
@@ -240,7 +262,7 @@ SQL,
                 );
             }
 
-            if ($sale->getTipoPago()->getId() !== null) {
+            foreach ($paymentLines as $paymentLine) {
                 $this->connection->executeStatement(
                     <<<'SQL'
 INSERT INTO sale_payments (
@@ -265,11 +287,11 @@ INSERT INTO sale_payments (
 SQL,
                     [
                         'sale_id' => $saleId,
-                        'payment_method_id' => $sale->getTipoPago()->getId(),
-                        'amount' => Money::toString($grandTotal),
-                        'currency' => 'PEN',
-                        'tendered_amount' => null,
-                        'change_amount' => null,
+                        'payment_method_id' => $paymentLine['payment_method_id'],
+                        'amount' => $paymentLine['amount'],
+                        'currency' => $paymentLine['currency'],
+                        'tendered_amount' => $paymentLine['tendered_amount'],
+                        'change_amount' => $paymentLine['change_amount'],
                         'paid_at' => $issuedAt->format('Y-m-d H:i:s'),
                         'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ]

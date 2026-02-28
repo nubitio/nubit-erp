@@ -17,7 +17,6 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\Customer;
-use App\Entity\PaymentMethod;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
@@ -27,6 +26,7 @@ use App\Repository\CashMovementCategoryRepository;
 use App\Repository\SunatCatalogRepository;
 use App\EInvoicing\Service\InvoiceCreationService;
 use App\Service\InventoryLedgerService;
+use App\Service\SalePaymentPlanService;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
@@ -68,6 +68,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SalesWritePolicyResolver $salesWritePolicyResolver,
         private SalesWriteGateway $salesWriteGateway,
         private CashSessionResolver $cashSessionResolver,
+        private SalePaymentPlanService $salePaymentPlanService,
     ) {
     }
 
@@ -169,6 +170,13 @@ readonly class SaleProcessor implements ProcessorInterface
         $data->setTotal(Money::toString($total));
         $data->setEstado(1);
         $this->applyDetractionFromItems($data);
+        if ($isOperationalSale) {
+            $this->salePaymentPlanService->resolveForWrite(
+                $data,
+                strtoupper(trim((string) ($data->getCurrency() ?? 'PEN')) ?: 'PEN'),
+                $data->getTotal() ?? '0.00'
+            );
+        }
 
         $this->logger->info('Sale totals calculated', [
             'item_count' => $itemCount,
@@ -325,11 +333,14 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if (
-            $isNew && $data->getTipoPago()?->getId() === PaymentMethod::CASH &&
-            $cashShiftForMovement instanceof CashShift
-        ) {
-            $this->createCashMovementForSale($data, $cashShiftForMovement);
+        if ($isNew && $cashShiftForMovement instanceof CashShift) {
+            $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
+                $data,
+                $data->getTotal() ?? '0.00'
+            );
+            if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
+                $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
+            }
         }
 
         $autoInvoiceEnabled = filter_var(
@@ -474,7 +485,7 @@ readonly class SaleProcessor implements ProcessorInterface
         return self::MIN_DETRACTION_TOTAL;
     }
 
-    private function createCashMovementForSale(Sale $sale, CashShift $cashShift): void
+    private function createCashMovementForSale(Sale $sale, CashShift $cashShift, string $cashAmount): void
     {
         $category = $this->cashMovementCategoryRepository->findOneBy([
             'code' => CashMovementCategory::CASH_SALE,
@@ -488,7 +499,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $movement->setCashShift($cashShift);
         $movement->setCategory($category);
         $movement->setType($category->getType());
-        $movement->setAmount($sale->getTotal() ?? 0);
+        $movement->setAmount($cashAmount);
         $movement->setDescription('Venta en efectivo N° ' . $sale->getserie() . '-' . $sale->getNumero());
         $movement->setCreatedAt(new DateTimeImmutable());
         $movement->setBranch($sale->getBranch());

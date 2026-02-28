@@ -29,6 +29,23 @@
 - Idempotencia:
   - `idempotency_key` deterministico por venta+linea+tipo de movimiento.
 
+### Fase 3
+
+- Implementada en aplicacion:
+  - `src/Service/SalePaymentPlanService.php`
+  - `src/State/Sale/SalesWriteGateway.php`
+  - `src/Service/SalesV2DualWriteService.php`
+  - `src/State/Sale/SaleProcessor.php`
+- Soporte funcional:
+  - Pagos mixtos reales en `sale_payments` (N pagos por venta).
+  - Validacion de integridad: suma de pagos debe coincidir con total de venta.
+  - `paid_total`, `change_total` y `balance_due` calculados desde plan de pagos.
+  - Caja registra ingreso en efectivo por monto cash realmente cobrado.
+- Frontend POS:
+  - Payload envia `payments` en checkout (`assets/features/pos/pages/usePosCheckout.ts`).
+- Cobertura unitaria agregada:
+  - `tests/Service/SalePaymentPlanServiceTest.php`
+
 ---
 
 ## 1. Resumen Ejecutivo
