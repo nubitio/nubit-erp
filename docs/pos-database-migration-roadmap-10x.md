@@ -128,17 +128,19 @@
 - Implementada en esquema:
   - `migrations/Version20260228235000_normalize_unidad_code.php`
 - Implementada en aplicacion:
-  - `src/Command/UnidadSchemaAuditCommand.php`
+  - `src/Command/TenantSchemaAuditCommand.php`
+  - `src/Command/TenantSchemaNormalizeCommand.php`
   - `src/Command/PurchasesV2BackfillGoodsReceiptsCommand.php` (usa columna canonica `unidad.code`)
 - Soporte funcional:
-  - Auditoria multi-tenant de drift en `unidad`:
-    - comando `app:schema:audit:unidad`.
+  - Auditoria multi-tenant estructural:
+    - comando `app:schema:audit:tenants`.
+    - opcion `--strict-fk-actions` para no colapsar equivalencias `NO ACTION`/`RESTRICT`.
   - Normalizacion segura:
+    - comando `app:schema:normalize:tenants` (`--dry-run` recomendado primero).
     - crea `unidad.code` cuando falta.
     - backfill desde `unidad.codigo`/`unidad.name`.
+    - normaliza `menu.id` a `AUTO_INCREMENT` cuando el tenant quedo sin incremento.
   - Eliminacion de heuristicas runtime en backfill de compras.
-  - Auditoria estructural completa multi-tenant:
-    - comando `app:schema:audit:tenants` compara tablas, columnas, indices y constraints entre tenants.
 
 ### Fase 5
 

@@ -21,6 +21,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class TenantSchemaAuditCommand extends TenantAwareCommand
 {
     private ?string $baselineTenant = null;
+    private bool $normalizeFkActions = true;
 
     /** @var array<string, array<string, array<int, string>>>|null */
     private ?array $baselineSnapshot = null;
@@ -30,6 +31,9 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
 
     /** @var array<string, array<string, array<int, string>>> */
     private array $driftByTenant = [];
+
+    /** @var array<string, array<string, int|string>> */
+    private array $driftSummaryByTenant = [];
 
     public function __construct(
         private readonly Connection $connection,
@@ -54,6 +58,12 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
             'Return failure when schema drift is detected.'
         );
         $this->addOption(
+            'strict-fk-actions',
+            null,
+            InputOption::VALUE_NONE,
+            'Do not normalize FK actions (treat NO ACTION and RESTRICT as different).'
+        );
+        $this->addOption(
             'output',
             null,
             InputOption::VALUE_OPTIONAL,
@@ -76,6 +86,8 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
         $this->baselineSnapshot = null;
         $this->deferredSnapshots = [];
         $this->driftByTenant = [];
+        $this->driftSummaryByTenant = [];
+        $this->normalizeFkActions = !(bool) $input->getOption('strict-fk-actions');
 
         $code = parent::execute($input, $output);
 
@@ -97,6 +109,8 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
                 json_encode([
                     'baseline_tenant' => $this->baselineTenant,
                     'drift' => $this->driftByTenant,
+                    'summary' => $this->driftSummaryByTenant,
+                    'normalize_fk_actions' => $this->normalizeFkActions,
                     'generated_at' => (new \DateTimeImmutable())->format(DATE_ATOM),
                 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
             );
@@ -131,6 +145,7 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
                 $drift = $this->diffSnapshot($this->baselineSnapshot, $deferredSnapshot);
                 if ($this->hasDrift($drift)) {
                     $this->driftByTenant[$deferredTenant] = $drift;
+                    $this->driftSummaryByTenant[$deferredTenant] = $this->buildDriftSummary($drift);
                 }
             }
             $this->deferredSnapshots = [];
@@ -145,6 +160,8 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
         }
 
         $this->driftByTenant[$tenantName] = $drift;
+        $summary = $this->buildDriftSummary($drift);
+        $this->driftSummaryByTenant[$tenantName] = $summary;
         $io->warning(sprintf('Schema drift detected against baseline tenant %s.', $this->baselineTenant));
         $io->table(
             ['Category', 'Missing', 'Extra'],
@@ -155,6 +172,14 @@ final class TenantSchemaAuditCommand extends TenantAwareCommand
                 ['Constraints', (string) count($drift['constraints_missing']), (string) count($drift['constraints_extra'])],
             ]
         );
+        $io->note(sprintf(
+            'Critical drift count: %d (columns=%d, constraints=%d, tables=%d, indexes=%d).',
+            $summary['critical_total'],
+            $summary['columns_total'],
+            $summary['constraints_total'],
+            $summary['tables_total'],
+            $summary['indexes_total']
+        ));
 
         return $strict ? Command::FAILURE : Command::SUCCESS;
     }
@@ -280,6 +305,11 @@ SQL);
             $check = preg_replace('/\s+/', ' ', strtolower(trim((string) ($constraint['check_clause'] ?? ''))));
 
             if ($type === 'FOREIGN KEY') {
+                if ($this->normalizeFkActions) {
+                    $updateRule = $this->normalizeFkRule($updateRule);
+                    $deleteRule = $this->normalizeFkRule($deleteRule);
+                }
+
                 $constraintSignatures[] = sprintf(
                     'FK|%s|%s|%s|%s|%s|%s',
                     $table,
@@ -332,6 +362,39 @@ SQL);
             'constraints_missing' => array_values(array_diff($baseline['constraints'], $current['constraints'])),
             'constraints_extra' => array_values(array_diff($current['constraints'], $baseline['constraints'])),
         ];
+    }
+
+    /**
+     * @param array<string, array<int, string>> $drift
+     *
+     * @return array<string, int|string>
+     */
+    private function buildDriftSummary(array $drift): array
+    {
+        $tablesTotal = count($drift['tables_missing']) + count($drift['tables_extra']);
+        $columnsTotal = count($drift['columns_missing']) + count($drift['columns_extra']);
+        $indexesTotal = count($drift['indexes_missing']) + count($drift['indexes_extra']);
+        $constraintsTotal = count($drift['constraints_missing']) + count($drift['constraints_extra']);
+
+        return [
+            'tables_total' => $tablesTotal,
+            'columns_total' => $columnsTotal,
+            'indexes_total' => $indexesTotal,
+            'constraints_total' => $constraintsTotal,
+            'critical_total' => $tablesTotal + $columnsTotal + $indexesTotal + $constraintsTotal,
+            'baseline_tenant' => $this->baselineTenant ?? '',
+        ];
+    }
+
+    private function normalizeFkRule(string $rule): string
+    {
+        $normalized = strtoupper(trim($rule));
+
+        if ($normalized === 'NO ACTION') {
+            return 'RESTRICT';
+        }
+
+        return $normalized;
     }
 
     /**
