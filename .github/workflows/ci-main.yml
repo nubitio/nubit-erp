@@ -65,27 +65,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start frontend stack
-        run: docker compose up -d vite
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.0'
+          cache: 'yarn'
+          cache-dependency-path: yarn.lock
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install frontend dependencies
-        run: docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
+        run: yarn install --immutable
 
       - name: Lint JavaScript and TypeScript
-        run: docker compose exec -T vite sh -lc "corepack enable && yarn lint"
+        run: yarn lint
 
       - name: Run frontend unit tests with coverage gates
-        run: docker compose exec -T vite sh -lc "corepack enable && yarn test"
+        run: yarn test
 
       - name: Upload frontend coverage artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
           path: var/coverage/frontend
-
-      - name: Stop frontend stack
-        if: always()
-        run: docker compose down -v
 
   e2e:
     name: End-to-End Workflows
