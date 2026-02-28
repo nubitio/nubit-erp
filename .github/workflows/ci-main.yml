@@ -14,100 +14,104 @@ permissions:
   contents: read
 
 env:
-  PHP_VERSION: '8.5'
-  NODE_VERSION: '20'
-  COMPOSER_CACHE_VERSION: v2
+  COVERAGE_MIN_PHP: '6.5'
 
 jobs:
   backend:
-    name: PHP Quality & Tests
+    name: Backend Quality & Coverage
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: test_db
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 3306:3306
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-        ports:
-          - 6379:6379
-
-    env:
-      APP_ENV: test
-      DATABASE_URL: mysql://root:root@127.0.0.1:3306/test_db?serverVersion=8.0
-      REDIS_URL: redis://127.0.0.1:6379
-      APP_SECRET: test-secret-key
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ env.PHP_VERSION }}
-          extensions: curl, intl, json, pdo_mysql, redis, zip, opcache, apcu, protobuf, opentelemetry
-          ini-values: memory_limit=512M
-
-      - name: Composer cache directory
-        id: composer-cache
-        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ env.COMPOSER_CACHE_VERSION }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-composer-${{ env.COMPOSER_CACHE_VERSION }}-
-
-      - name: Install Composer dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
-
-      - name: Run database migrations
+      - name: Start backend stack
         run: |
-          php bin/console doctrine:database:create --if-not-exists --env=test
-          php bin/console doctrine:migrations:migrate --no-interaction --env=test --allow-no-migration || true
+          docker compose up -d database redis web
+
+      - name: Install backend dependencies
+        run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run GrumPHP
-        run: ./vendor/bin/grumphp run --no-interaction
+        run: docker compose exec -T web ./vendor/bin/grumphp run --no-interaction
 
-      - name: Run PHPUnit
-        run: ./vendor/bin/phpunit
+      - name: Enable PCOV in web container
+        run: |
+          docker compose exec -T web sh -lc "php -m | grep -q '^pcov$' || (printf '\n' | pecl install pcov && echo extension=pcov.so > /usr/local/etc/php/conf.d/zz-pcov.ini)"
+
+      - name: Run PHPUnit with coverage
+        run: |
+          docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/phpunit -c phpunit.coverage.xml
+
+      - name: Enforce backend coverage threshold
+        run: |
+          docker compose exec -T web php scripts/ci/check-php-coverage.php var/coverage/php/clover.xml ${{ env.COVERAGE_MIN_PHP }}
+
+      - name: Upload backend coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: var/coverage/php
+
+      - name: Stop backend stack
+        if: always()
+        run: docker compose down -v
 
   frontend:
-    name: Frontend Lint
+    name: Frontend Lint, Tests & Coverage
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Start frontend stack
+        run: docker compose up -d vite
+
+      - name: Install frontend dependencies
+        run: docker compose exec -T vite yarn install --immutable
+
+      - name: Lint JavaScript and TypeScript
+        run: docker compose exec -T vite yarn lint
+
+      - name: Run frontend unit tests with coverage gates
+        run: docker compose exec -T vite yarn test
+
+      - name: Upload frontend coverage artifact
+        uses: actions/upload-artifact@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          name: frontend-coverage
+          path: var/coverage/frontend
 
-      - name: Enable Corepack
-        run: corepack enable
+      - name: Stop frontend stack
+        if: always()
+        run: docker compose down -v
 
-      - name: Install dependencies
-        run: yarn install --immutable
+  e2e:
+    name: End-to-End Workflows
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - backend
+      - frontend
 
-      - name: Lint JavaScript/TypeScript
-        run: yarn lint
+    env:
+      E2E_BASE_URL: http://web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start full stack
+        run: docker compose up -d database redis web vite
+
+      - name: Install dependencies for e2e
+        run: |
+          docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
+          docker compose exec -T vite yarn install --immutable
+
+      - name: Run Playwright e2e tests
+        run: docker compose exec -T vite yarn test:e2e
+
+      - name: Stop full stack
+        if: always()
+        run: docker compose down -v
