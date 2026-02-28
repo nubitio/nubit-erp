@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import DropDownButton from 'devextreme-react/drop-down-button';
 import { Template } from 'devextreme-react/core/template';
 import { UserMenuSection } from '../user-menu-section/UserMenuSection';
@@ -6,10 +6,12 @@ import type { UserPanelProps } from '../../../types';
 import { useAuth } from '../../../contexts/auth';
 import { ListRef } from 'devextreme-react/list';
 import './UserPanel.scss';
+import { createUserAvatarDataUri } from '../user-avatar/UserAvatar';
 
 export const UserPanel = ({ menuMode }: UserPanelProps) => {
   const { user } = useAuth();
   const listRef = useRef<ListRef>(null);
+  const avatarIcon = useMemo(() => createUserAvatarDataUri(user?.username ?? ''), [user?.username]);
 
   const dropDownButtonAttributes = {
     class: 'user-button',
@@ -30,7 +32,7 @@ export const UserPanel = ({ menuMode }: UserPanelProps) => {
       {menuMode === 'context' && (
         <DropDownButton
           stylingMode="text"
-          icon={`https://robohash.org/${user?.username}`}
+          icon={avatarIcon}
           showArrowIcon={false}
           elementAttr={dropDownButtonAttributes}
           dropDownOptions={buttonDropDownOptions}
