@@ -41,6 +41,9 @@ readonly class SaleProcessor implements ProcessorInterface
     private const string NEGATIVE_STOCK_BLOCK = 'BLOCK';
     private const string NEGATIVE_STOCK_ALLOW_WITH_ROLE = 'ALLOW_WITH_ROLE';
     private const string NEGATIVE_STOCK_ALLOW_ALL = 'ALLOW_ALL';
+    private const string NEGATIVE_STOCK_STRICT = 'STRICT';
+    private const string NEGATIVE_STOCK_WARNING_ONLY = 'WARNING_ONLY';
+    private const string NEGATIVE_STOCK_ALLOW_NEGATIVE = 'ALLOW_NEGATIVE';
     private const string PURCHASES_MODE_LEGACY = 'legacy';
 
     private const string DETRACTION_PAYMENT_METHOD = '001';
@@ -546,7 +549,17 @@ readonly class SaleProcessor implements ProcessorInterface
 
     private function resolveNegativeStockPolicy(): string
     {
-        $raw = strtoupper(trim((string) $this->settings->get('inventory_negative_stock_policy', '')));
+        $raw = strtoupper(trim((string) $this->settings->get(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')));
+        if ($raw === self::NEGATIVE_STOCK_STRICT) {
+            return self::NEGATIVE_STOCK_BLOCK;
+        }
+        if ($raw === self::NEGATIVE_STOCK_WARNING_ONLY) {
+            return self::NEGATIVE_STOCK_ALLOW_WITH_ROLE;
+        }
+        if ($raw === self::NEGATIVE_STOCK_ALLOW_NEGATIVE) {
+            return self::NEGATIVE_STOCK_ALLOW_ALL;
+        }
+
         if (
             in_array(
                 $raw,

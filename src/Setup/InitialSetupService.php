@@ -196,7 +196,10 @@ readonly class InitialSetupService
             $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'v2_authoritative');
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
-            $this->settingsService->set('inventory_negative_stock_policy', 'string', 'BLOCK');
+            $this->settingsService->set(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, 'string', 'BLOCK');
+            $this->settingsService->set(Constants::INVENTORY_CORE_MODE, 'string', 'legacy');
+            $this->settingsService->set(Constants::INVENTORY_CORE_DUAL_WRITE, 'bool', 'false');
+            $this->settingsService->set(Constants::INVENTORY_CORE_READ_FROM_STOCK_ITEMS, 'bool', 'false');
         } catch (Throwable) {
             // Settings table might not be ready yet; fail silently to avoid blocking setup.
         }
