@@ -24,6 +24,10 @@ readonly class VoucherProvider implements ProviderInterface
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
+        if (isset($uriVariables['tax_document_id'])) {
+            return $this->taxDocumentRepository->getVoucherByTaxDocumentId(strval($uriVariables['tax_document_id']));
+        }
+
         return $this->taxDocumentRepository->getVoucher(strval($uriVariables['sale_id']));
     }
 }

@@ -46,7 +46,7 @@ final readonly class InvoiceVoidStrategy implements VoidStrategyInterface
             throw SaleException::notIssued();
         }
 
-        $response = $this->voidedCreateUseCase->__invoke($saleId, $reason);
+        $response = $this->voidedCreateUseCase->__invoke((string) $taxDocument->getId(), $reason);
         $ticket = $response->sunatResponse->getTicket() ?? '';
         $success = $response->sunatResponse->isSuccess();
         $message = $success ? 'Solicitud de anulación aceptada' : ($response->sunatResponse->getError()?->getMessage());

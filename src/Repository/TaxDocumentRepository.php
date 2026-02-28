@@ -69,17 +69,21 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function hasCreditNoteForSale(string $saleId): bool
     {
-        $saleRef = $this->getEntityManager()->getReference(Sale::class, $saleId);
-        $count = $this->createQueryBuilder('td')
-            ->select('COUNT(td.id)')
-            ->where('td.sale = :sale')
-            ->andWhere('td.documentType = :docType')
-            ->setParameter('sale', $saleRef)
-            ->setParameter('docType', '07')
-            ->getQuery()
-            ->getSingleScalarResult();
+        $legacySaleId = $this->resolveLegacySaleIdForVoucher($saleId);
+        $count = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<'SQL'
+SELECT COUNT(*)
+FROM tax_document td
+WHERE td.movimiento_id = :sale_id
+  AND td.document_type = :doc_type
+SQL,
+            [
+                'sale_id' => $legacySaleId,
+                'doc_type' => '07',
+            ]
+        );
 
-        return (int)$count > 0;
+        return (int) ($count !== false ? $count : 0) > 0;
     }
 
     /**
@@ -116,22 +120,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
     public function getVoucher(string $saleId): Voucher
     {
         $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($saleId);
-
-        $sale = $this->getEntityManager()->getRepository(Sale::class)
-            ->createQueryBuilder('s')
-            ->leftJoin('s.cliente', 'c')->addSelect('c')
-            ->leftJoin('s.almacen', 'w')->addSelect('w')
-            ->leftJoin('w.branch', 'b')->addSelect('b')
-            ->leftJoin('b.company', 'co')->addSelect('co')
-            ->leftJoin('s.items', 'items')->addSelect('items')
-            ->leftJoin('items.producto', 'p')->addSelect('p')
-            ->leftJoin('p.unitOfMeasure', 'u')->addSelect('u')
-            ->leftJoin('s.taxDocument', 'td')->addSelect('td')
-            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
-            ->where('s.id = :saleId')
-            ->setParameter('saleId', $resolvedSaleId)
-            ->getQuery()
-            ->getOneOrNullResult();
+        $sale = $this->loadSaleGraph($resolvedSaleId);
 
         if (!$sale) {
             throw new ServiceException('La venta no existe');
@@ -173,6 +162,28 @@ class TaxDocumentRepository extends ServiceEntityRepository
         return $header->toVoucher($voucherItems);
     }
 
+    /**
+     * @throws MathException
+     */
+    public function getVoucherByTaxDocumentId(string $taxDocumentId): Voucher
+    {
+        $saleId = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<'SQL'
+SELECT movimiento_id
+FROM tax_document
+WHERE tax_document_id = :tax_document_id
+LIMIT 1
+SQL,
+            ['tax_document_id' => $taxDocumentId]
+        );
+
+        if (!is_string($saleId) || $saleId === '') {
+            throw new ServiceException('El comprobante no existe');
+        }
+
+        return $this->getVoucher($saleId);
+    }
+
     private function resolveLegacySaleIdForVoucher(string $saleId): string
     {
         $connection = $this->getEntityManager()->getConnection();
@@ -201,11 +212,6 @@ SQL,
     public function getNoteVoucher(string $taxDocumentId): Voucher
     {
         $creditNote = $this->createQueryBuilder('td')
-            ->leftJoin('td.sale', 's')->addSelect('s')
-            ->leftJoin('s.cliente', 'c')->addSelect('c')
-            ->leftJoin('s.almacen', 'w')->addSelect('w')
-            ->leftJoin('w.branch', 'b')->addSelect('b')
-            ->leftJoin('b.company', 'co')->addSelect('co')
             ->leftJoin('td.relatedTaxDocument', 'rtd')->addSelect('rtd')
             ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
             ->where('td.id = :taxDocumentId')
@@ -217,7 +223,12 @@ SQL,
             throw new ServiceException('La nota de crédito no existe');
         }
 
-        $sale = $creditNote->getSale();
+        $saleRef = $creditNote->getSale();
+        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($saleRef->getId());
+        $sale = $this->loadSaleGraph($resolvedSaleId);
+        if (!$sale) {
+            throw new ServiceException('La venta asociada no existe');
+        }
         $relatedTaxDocument = $creditNote->getRelatedTaxDocument();
         $header = $this->buildHeaderFromSale($sale, $creditNote, $relatedTaxDocument);
         $lines = $this->buildLinesForVoucher($sale, $creditNote);
@@ -239,6 +250,27 @@ SQL,
         );
 
         return $header->toVoucher($voucherItems);
+    }
+
+    private function loadSaleGraph(string $saleId): ?Sale
+    {
+        $result = $this->getEntityManager()->getRepository(Sale::class)
+            ->createQueryBuilder('s')
+            ->leftJoin('s.cliente', 'c')->addSelect('c')
+            ->leftJoin('s.almacen', 'w')->addSelect('w')
+            ->leftJoin('w.branch', 'b')->addSelect('b')
+            ->leftJoin('b.company', 'co')->addSelect('co')
+            ->leftJoin('s.items', 'items')->addSelect('items')
+            ->leftJoin('items.producto', 'p')->addSelect('p')
+            ->leftJoin('p.unitOfMeasure', 'u')->addSelect('u')
+            ->leftJoin('s.taxDocument', 'td')->addSelect('td')
+            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
+            ->where('s.id = :saleId')
+            ->setParameter('saleId', $saleId)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $result instanceof Sale ? $result : null;
     }
 
     private function buildHeaderFromSale(

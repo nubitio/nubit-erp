@@ -27,9 +27,9 @@ readonly class VoidedCreateUseCase
      * @throws Exception
      * @throws ExceptionInterface
      */
-    public function __invoke(string $saleId, string $reason): SummaryResponse
+    public function __invoke(string $taxDocumentId, string $reason): SummaryResponse
     {
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
 
         $voidedDetail = new VoidedDetail()
             ->setTipoDoc(strval($voucher->voucher_type))

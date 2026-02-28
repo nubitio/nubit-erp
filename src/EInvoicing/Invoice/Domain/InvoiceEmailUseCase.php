@@ -45,14 +45,7 @@ readonly class InvoiceEmailUseCase
      */
     public function __invoke(string $taxDocumentId): void
     {
-        $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
-
-        if ($taxDocument === null) {
-            return;
-        }
-
-        $saleId = $taxDocument->getSale()->getId();
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
 
         $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',
@@ -62,7 +55,7 @@ readonly class InvoiceEmailUseCase
 
         $payload = [
             'type' => $voucher->voucher_type,
-            'id' => $saleId,
+            'id' => $taxDocumentId,
         ];
 
         $payload = base64_encode(strval(json_encode($payload)));

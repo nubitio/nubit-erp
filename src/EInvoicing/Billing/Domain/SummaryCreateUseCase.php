@@ -26,9 +26,9 @@ readonly class SummaryCreateUseCase
      * @throws Exception
      * @throws ExceptionInterface
      */
-    public function __invoke(string $saleId): SummaryResponse
+    public function __invoke(string $taxDocumentId): SummaryResponse
     {
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
+        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
         $summaryDetail = new SummaryDetail()
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerieNro($voucher->voucher_series . '-' . $voucher->voucher_number)

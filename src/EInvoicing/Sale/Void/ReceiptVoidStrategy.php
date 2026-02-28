@@ -48,7 +48,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
             throw SaleException::notIssued();
         }
 
-        $response = $this->summaryCreateUseCase->__invoke($saleId);
+        $response = $this->summaryCreateUseCase->__invoke((string) $taxDocument->getId());
         $ticket = $response->sunatResponse->getTicket() ?? '';
 
         if ($response->sunatResponse->isSuccess()) {

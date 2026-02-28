@@ -50,7 +50,7 @@ readonly class ValidateInvoiceUseCase
             throw new ServiceException('Invoice not found');
         }
 
-        $voucher = $this->taxDocumentRepository->getVoucher($taxDocument->getSale()->getId());
+        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
         $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));

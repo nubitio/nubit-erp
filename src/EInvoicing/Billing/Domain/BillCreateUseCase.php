@@ -48,7 +48,7 @@ readonly class BillCreateUseCase
             throw new ServiceException('Invoice not found');
         }
 
-        $voucher = $this->taxDocumentRepository->getVoucher($taxDocument->getSale()->getId());
+        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
         $hydratedVoucher = $this->voucherHydrator->hydrate($voucher);
 
         $company = $this->companyRepository->findOneBy([]);
