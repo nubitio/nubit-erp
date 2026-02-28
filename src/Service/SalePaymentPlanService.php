@@ -48,10 +48,6 @@ final class SalePaymentPlanService
         $resolved = [];
         $sum = BigDecimal::zero();
         foreach ($payments as $index => $payment) {
-            if (!is_array($payment)) {
-                throw new ServiceException(sprintf('Formato de pago inválido en posición %d.', $index));
-            }
-
             $methodId = $this->resolvePaymentMethodId($payment);
             if ($methodId === null) {
                 throw new ServiceException(sprintf('payment_method_id inválido en posición %d.', $index));
