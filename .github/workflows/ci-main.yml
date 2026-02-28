@@ -69,13 +69,13 @@ jobs:
         run: docker compose up -d vite
 
       - name: Install frontend dependencies
-        run: docker compose exec -T vite yarn install --immutable
+        run: docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
 
       - name: Lint JavaScript and TypeScript
-        run: docker compose exec -T vite yarn lint
+        run: docker compose exec -T vite sh -lc "corepack enable && yarn lint"
 
       - name: Run frontend unit tests with coverage gates
-        run: docker compose exec -T vite yarn test
+        run: docker compose exec -T vite sh -lc "corepack enable && yarn test"
 
       - name: Upload frontend coverage artifact
         uses: actions/upload-artifact@v4
@@ -107,7 +107,7 @@ jobs:
       - name: Install dependencies for e2e
         run: |
           docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
-          docker compose exec -T vite yarn install --immutable
+          docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
 
       - name: Seed E2E data on-the-fly
         run: |
@@ -118,7 +118,7 @@ jobs:
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
       - name: Run Playwright e2e tests
-        run: docker compose exec -T vite yarn test:e2e
+        run: docker compose exec -T vite sh -lc "corepack enable && yarn test:e2e"
 
       - name: Cleanup E2E seeded data
         if: always()
