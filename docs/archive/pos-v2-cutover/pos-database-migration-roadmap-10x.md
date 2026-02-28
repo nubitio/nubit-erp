@@ -73,7 +73,6 @@
 - Implementada en aplicacion:
   - `src/Service/SalePaymentPlanService.php`
   - `src/State/Sale/SalesWriteGateway.php`
-  - `src/Service/SalesV2DualWriteService.php`
   - `src/State/Sale/SaleProcessor.php`
 - Soporte funcional:
   - Pagos mixtos reales en `sale_payments` (N pagos por venta).
@@ -151,7 +150,6 @@
   - `migrations/Version20260228170000_phase5_offline_hardening.php`
 - Implementada en aplicacion:
   - `src/State/Sale/SalesWriteGateway.php`
-  - `src/Service/SalesV2DualWriteService.php`
   - `src/Service/InventoryLedgerService.php`
 - Soporte funcional:
   - Estandar offline en tablas write-heavy:
