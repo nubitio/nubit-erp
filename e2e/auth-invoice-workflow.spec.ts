@@ -6,64 +6,60 @@ const username = process.env.E2E_USERNAME;
 const password = process.env.E2E_PASSWORD;
 const saleId = process.env.E2E_SALE_ID;
 
-const apiFetch = (path: string, init?: RequestInit) =>
-  fetch(`${baseUrl}${path}`, {
-    ...init,
-    headers: {
-      Host: hostHeader,
-      ...(init?.headers ?? {}),
-    },
-  });
-
 test.describe('E2E - Auth and Invoice Workflows', () => {
-  test('login endpoint rejects empty credentials', async () => {
-    const response = await apiFetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
+  test('login endpoint rejects empty credentials', async ({ request }) => {
+    const response = await request.post(`${baseUrl}/api/auth/login`, {
+      headers: { Host: hostHeader, 'Content-Type': 'application/json' },
+      data: {},
     });
 
-    expect([400, 401]).toContain(response.status);
+    expect([400, 401]).toContain(response.status());
   });
 
-  test('invoice endpoints reject unauthenticated requests', async () => {
-    const createResponse = await apiFetch('/api/sales/non-existing/invoice', { method: 'POST' });
-    const listResponse = await apiFetch('/api/invoices/non-existing/voucher');
-
-    expect([400, 401]).toContain(createResponse.status);
-    expect([400, 401]).toContain(listResponse.status);
-  });
-
-  test('authenticated invoice creation and listing workflow', async () => {
-    test.skip(!username || !password || !saleId, 'E2E credentials/sale id are not configured.');
-
-    const login = await apiFetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username,
-        password,
-      }),
+  test('invoice endpoints reject unauthenticated requests', async ({ request }) => {
+    const createResponse = await request.post(`${baseUrl}/api/sales/non-existing/invoice`, {
+      headers: { Host: hostHeader },
     });
-    expect(login.ok).toBeTruthy();
+    const listResponse = await request.get(`${baseUrl}/api/invoices/non-existing/voucher`, {
+      headers: { Host: hostHeader },
+    });
+
+    expect([400, 401]).toContain(createResponse.status());
+    expect([400, 401]).toContain(listResponse.status());
+  });
+
+  test('authenticated invoice creation and listing workflow', async ({ request }) => {
+    expect(username, 'E2E_USERNAME must be provided by CI seeding').toBeTruthy();
+    expect(password, 'E2E_PASSWORD must be provided by CI seeding').toBeTruthy();
+    expect(saleId, 'E2E_SALE_ID must be provided by CI seeding').toBeTruthy();
+
+    const login = await request.post(`${baseUrl}/api/auth/login`, {
+      headers: { Host: hostHeader, 'Content-Type': 'application/json', 'X-Client-Type': 'android' },
+      data: {
+        username: username as string,
+        password: password as string,
+      },
+    });
+    expect(login.ok()).toBeTruthy();
 
     const loginPayload = await login.json();
-    const accessToken = loginPayload?.accessToken;
+    const accessToken = loginPayload?.token;
     expect(accessToken).toBeTruthy();
 
     const authHeaders = {
-      Authorization: `Bearer ${accessToken}`,
+      Host: hostHeader,
+      Authorization: `Bearer ${accessToken as string}`,
     };
 
-    const createInvoice = await apiFetch(`/api/sales/${saleId}/invoice`, {
-      method: 'POST',
-      headers: authHeaders,
+    const createInvoice = await request.post(`${baseUrl}/api/sales/${saleId as string}/invoice`, {
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      data: {},
     });
-    expect([200, 400]).toContain(createInvoice.status);
+    expect([200, 400]).toContain(createInvoice.status());
 
-    const listInvoice = await apiFetch(`/api/invoices/${saleId}/voucher`, {
+    const listInvoice = await request.get(`${baseUrl}/api/invoices/${saleId as string}/voucher`, {
       headers: authHeaders,
     });
-    expect([200, 404]).toContain(listInvoice.status);
+    expect([200, 404]).toContain(listInvoice.status());
   });
 });
