@@ -3,6 +3,7 @@
   "name": "efact",
   "version": "1.0.0",
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/file-saver": "^2.0.7",
     "@types/jsdom": "^28",
     "@types/react": "^18.0.26",
@@ -34,6 +35,7 @@
     "postinstall": "yarn build:themes",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",

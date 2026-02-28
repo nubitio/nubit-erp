@@ -5,25 +5,22 @@ declare(strict_types=1);
 namespace App\Tests\Inventory;
 
 use App\Core\Context\TenantContext;
-use App\Kernel;
 use App\Entity\Product;
 use App\Inventory\Core\Service\TenantStockValidationPolicy;
 use Doctrine\DBAL\Connection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\TestCase;
 
 final class TenantStockValidationPolicyDbIntegrationTest extends TestCase
 {
-    private Kernel $kernel;
     private Connection $connection;
 
     protected function setUp(): void
     {
-        $this->kernel = new Kernel('dev', true);
-        $this->kernel->boot();
-        /** @var ManagerRegistry $doctrine */
-        $doctrine = $this->kernel->getContainer()->get('doctrine');
-        $this->connection = $doctrine->getConnection();
+        $this->connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ]);
 
         $this->connection->executeStatement(
             'CREATE TABLE IF NOT EXISTS tenant_inventory_policy (
@@ -41,7 +38,7 @@ final class TenantStockValidationPolicyDbIntegrationTest extends TestCase
         $this->connection->executeStatement(
             "DELETE FROM tenant_inventory_policy WHERE tenant_id IN ('default', '901')"
         );
-        $this->kernel->shutdown();
+        $this->connection->close();
 
         parent::tearDown();
     }
