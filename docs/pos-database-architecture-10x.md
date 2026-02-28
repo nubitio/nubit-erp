@@ -1,7 +1,7 @@
 # Arquitectura de Base de Datos POS 10x (Database-per-Tenant)
 
-**Estado:** Propuesta de arquitectura objetivo  
-**Fecha:** 2026-02-27  
+**Estado:** Arquitectura objetivo cerrada (V2 authoritative en operacion)  
+**Fecha:** 2026-02-28  
 **Contexto:** POS SaaS multi-sucursal, multi-caja, multi-almacen, offline-first, escalable.
 
 ## Implementacion y Migracion
@@ -328,6 +328,9 @@ Con database-per-tenant:
 
 ## 9. Roadmap de Implementacion (sin downtime)
 
+Resumen historico de fases. Estado vigente: cierre operacional completado. Evidencias y controles:
+- `docs/pos-database-migration-roadmap-10x.md`
+
 ### Fase 0 - Preparacion
 - Crear tablas nuevas en paralelo (sin tocar flujo actual).
 - Agregar idempotencia server-side y audit minima.
@@ -335,7 +338,7 @@ Con database-per-tenant:
 ### Fase 1 - Ventas V2
 - Introducir `sale_payments`, `sale_discounts`, `sale_taxes`.
 - Dual-write desde flujo actual a nuevo esquema.
-- Documento detallado: `docs/pos-phase-1-sales-v2.md`.
+- Ejecucion detallada vigente: `docs/pos-database-migration-roadmap-10x.md`.
 
 ### Fase 2 - Caja V2
 - Introducir `cash_sessions`, `cash_counts` detallado, constraints de sesion activa.

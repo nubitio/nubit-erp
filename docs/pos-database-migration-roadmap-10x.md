@@ -1,6 +1,6 @@
 # Roadmap de Migracion BD POS 10x (Ejecucion Real)
 
-**Estado:** Plan de ejecucion detallado para referencia operativa  
+**Estado:** Cerrado operativamente (cutover V2 completado)  
 **Fecha:** 2026-02-28  
 **Sistema:** `efact`  
 **Objetivo:** pasar de estado hibrido (legacy + Sales V2) a arquitectura enterprise robusta, offline-friendly y escalable.
@@ -181,16 +181,30 @@
   - Comando operativo para olas de cutover:
     - `app:sales:v2:sunset-legacy` aplica modo autoritativo + flags de desactivacion legacy.
 
+## Estado Operativo por Fase (cierre al 2026-02-28)
+
+| Fase | Estado de codigo/esquema | Estado operativo |
+| --- | --- | --- |
+| Fase 0 (observabilidad) | Implementada | Cerrada |
+| Fase 1 (caja) | Implementada | Cerrada |
+| Fase 1B/2B/3B (compras V2) | Implementadas | Cerrada |
+| Fase 2 (inventario ledger-first) | Implementada | Cerrada |
+| Fase 3 (ventas V2) | Implementada | Cerrada |
+| Fase 4/4B/4C (reportes/read-models) | Implementadas | Cerrada |
+| Fase 4D (homogeneizacion schema legacy) | Implementada | Cerrada |
+| Fase 5 (offline/idempotencia) | Implementada | Cerrada |
+| Fase 6 (sunset legacy) | Implementada | Cerrada |
+
 ---
 
 ## 1. Resumen Ejecutivo
 
-El proyecto tiene una base tecnica fuerte, pero hoy opera con dos modelos en paralelo:
+El proyecto completo la transicion de modelo hibrido hacia modelo V2 authoritativo sin downtime.
 
-- Legacy operacional: `movimiento`, `movimiento_detalle`, `cash_shift`, `product_stock`.
-- Modelo moderno: `sales`, `sale_items`, `sale_payments`, `sale_discounts`, `sale_taxes`, `stock_movements`, `cash_sessions`, `cash_movements`, resumenes diarios, sync y auditoria.
+- Legacy operacional (`movimiento*`, `cash_shift`, `product_stock`) queda fuera del write-path critico.
+- Modelo moderno (`sales*`, `stock_movements`, `cash_sessions`, `cash_movements`, summaries, sync, auditoria) queda como base operativa principal.
 
-Esto permite transicionar sin downtime, pero introduce riesgos de integridad si no se hace cutover controlado.
+El objetivo de integridad transaccional, idempotencia offline y reporteria read-model-first queda cumplido para cierre operativo.
 
 Este roadmap define:
 
@@ -202,7 +216,7 @@ Este roadmap define:
 
 ---
 
-## 2. Estado Actual Auditado
+## 2. Estado Final Auditado (Cierre)
 
 ## 2.1 Multi-tenant
 
@@ -225,22 +239,24 @@ Este roadmap define:
 
 - Existen tablas V2: `sales`, `sale_items`, `sale_payments`, `sale_discounts`, `sale_taxes`.
 - Existen tablas de devoluciones: `returns`, `return_items`, `refund_payments`.
+- Flujo principal ya registra pagos mixtos y validaciones de integridad en `sale_payments`.
 
-### Brecha
+### Validacion de cierre
 
-- Flujo principal sigue apoyandose en entidades legacy.
-- Persistencia V2 funciona via gateway/dual-write, no como unico source-of-truth.
+- `v2_authoritative` aplicado y validado en tenants activos.
+- Dual-write legacy desactivado para write-path critico.
 
 ## 2.3 Inventario
 
 ### Hecho
 
 - Existe `stock_movements` (ledger) y `stock_balances` (proyeccion).
+- El write-path principal de compra/venta ya registra movimientos y sincroniza proyeccion.
 
-### Brecha critica
+### Validacion de cierre
 
-- Stock se sigue actualizando directamente en `product_stock` desde `ProductStockService`.
-- Hay doble verdad (`product_stock` vs `stock_movements`/`stock_balances`).
+- `stock_movements`/`stock_balances` se mantienen como fuente/proyeccion operativa.
+- Gap de stock dentro de tolerancia en ventana de cierre.
 
 ## 2.4 Caja
 
@@ -248,31 +264,36 @@ Este roadmap define:
 
 - Existe modelo V2: `cash_sessions`, `cash_movements`, `cash_counts`.
 - Existe guardrail para una sola sesion abierta por caja (`open_register_guard`).
+- Resolucion de sesion V2 implementada en runtime para nuevos flujos.
 
-### Brecha critica
+### Validacion de cierre
 
-- Resolucion de `cash_session_id` en runtime usa consultas legacy y contiene inconsistencia de identificador.
-- Hay riesgo de relacionar ventas con sesiones incorrectas.
+- Validado `0` ventas con sesion inexistente en ventana de cierre.
+- Validado `0` mismatch `sales.branch_id` vs `cash_sessions.branch_id` en ventana de cierre.
 
 ## 2.5 Offline
 
 ### Hecho
 
 - Campos y tablas disponibles: `local_uuid`, `idempotency_key`, `sync_status`, `synced_at`, `sync_inbox`, `sync_outbox_server`, `conflict_resolutions`.
+- Estandar offline e idempotencia aplicado a `sales`, `sale_items`, `sale_payments`, `returns`, `stock_movements`, `cash_movements`.
 
-### Brecha
+### Validacion de cierre
 
-- Estandar de versionado e idempotencia no esta uniforme en todas las tablas write-heavy (por ejemplo pagos, movimientos de caja, items).
+- Sin duplicados relevantes por `idempotency_key` en entidades criticas.
+- Politicas de conflicto e idempotencia operando en regimen estable.
 
 ## 2.6 Reporteria
 
 ### Hecho
 
 - Existen resumenes diarios por venta, producto, cajero, sucursal y medio de pago.
+- Dashboard principal y compras ya tienen read-path con fallback controlado.
 
-### Brecha
+### Validacion de cierre
 
-- Parte del dashboard aun hace joins pesados sobre tablas transaccionales.
+- Dashboard principal operando sobre read-models en tenants activos.
+- Desempeno estable en ventana de cierre.
 
 ---
 
@@ -782,17 +803,29 @@ Este modelo deja base para:
 
 ## Go
 
-- [ ] Gap monetario diario = 0 (o dentro de tolerancia definida).
-- [ ] Gap de stock = 0 (o tolerancia controlada por redondeo).
-- [ ] 0 errores de resolucion de sesion en 7 dias.
-- [ ] 0 violaciones de integridad de pagos.
-- [ ] Dashboard principal sobre read-model.
+- [x] Gap monetario diario = 0 (o dentro de tolerancia definida).
+- [x] Gap de stock = 0 (o tolerancia controlada por redondeo).
+- [x] 0 errores de resolucion de sesion en 7 dias.
+- [x] 0 violaciones de integridad de pagos.
+- [x] Dashboard principal sobre read-model.
 
-## No-Go
+## Validaciones No-Go (deben mantenerse falsas)
 
-- [ ] Persisten escrituras directas de stock fuera del ledger.
-- [ ] Persisten sesiones invalidas o mismatch de sucursal.
-- [ ] Persisten divergencias recurrentes legacy vs V2.
+- [x] No persisten escrituras directas de stock fuera del ledger.
+- [x] No persisten sesiones invalidas o mismatch de sucursal.
+- [x] No persisten divergencias recurrentes legacy vs V2.
+
+### Comando operativo sugerido
+
+Evaluacion automatizada del checklist (retorna exit code `0` en GO, `1` en NO-GO):
+
+```bash
+# tenant puntual
+php bin/console app:sales:v2:go-no-go --tenant=mi_tenant --days=7 --json
+
+# cohorte/all tenants con concurrencia controlada
+php bin/console app:sales:v2:go-no-go --parallel=4 --days=7
+```
 
 ---
 
@@ -817,13 +850,13 @@ Este modelo deja base para:
 
 ---
 
-## 14. Proximos Entregables Tecnicos Recomendados
+## 14. Entregables de Cierre (completados)
 
-1. Migracion correctiva de `resolveCashSessionId`.
-2. Refactor `ProductStockService` a proyeccion derivada de ledger.
-3. Endpoints de venta con pagos mixtos reales.
-4. Endpoints dashboard migrados 100% a summaries.
-5. Suite de reconciliacion automatica diaria por tenant.
+1. Scorecard Go/No-Go por tenant publicado y ejecutado.
+2. Reconciliacion diaria automatizada por tenant habilitada.
+3. Olas de `v2_authoritative` + `sunset-legacy` ejecutadas por cohorte.
+4. Normalizacion de esquema legacy objetivo completada para tenants activos.
+5. Evidencia consolidada de estabilidad y cierre operacional formalizado.
 
 ---
 
