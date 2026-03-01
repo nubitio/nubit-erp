@@ -8,6 +8,7 @@ use App\Command\ControlPlaneUserCreateCommand;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ConnectionRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -83,6 +84,9 @@ final class ControlPlaneUserCreateCommandTest extends TestCase
         return $registry;
     }
 
+    /**
+     * @return Connection&MockObject
+     */
     private function connectionWithTable(bool $tableExists): Connection
     {
         $schema = $this->createMock(AbstractSchemaManager::class);

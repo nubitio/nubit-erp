@@ -14,10 +14,7 @@ final class InvoiceCreationServiceTest extends TestCase
 {
     public function testCreateForSaleFailsWhenSaleIdIsMissing(): void
     {
-        $service = new InvoiceCreationService(
-            $this->createMock(Connection::class),
-            $this->createMock(SaleCurrencyResolver::class)
-        );
+        $service = $this->newService();
 
         $result = $service->createForSale(new Sale());
 
@@ -32,10 +29,7 @@ final class InvoiceCreationServiceTest extends TestCase
             ->setHasInvoice(true)
             ->setInvoice('F001-20');
 
-        $service = new InvoiceCreationService(
-            $this->createMock(Connection::class),
-            $this->createMock(SaleCurrencyResolver::class)
-        );
+        $service = $this->newService();
 
         $result = $service->createForSale($sale);
 
@@ -49,10 +43,7 @@ final class InvoiceCreationServiceTest extends TestCase
             ->setId('sale-1')
             ->setFecha(new \DateTimeImmutable('-4 days'));
 
-        $service = new InvoiceCreationService(
-            $this->createMock(Connection::class),
-            $this->createMock(SaleCurrencyResolver::class)
-        );
+        $service = $this->newService();
 
         $result = $service->createForSale($sale);
 
@@ -69,10 +60,7 @@ final class InvoiceCreationServiceTest extends TestCase
         $connection->expects(self::exactly(2))
             ->method('executeStatement');
 
-        $service = new InvoiceCreationService(
-            $connection,
-            $this->createMock(SaleCurrencyResolver::class)
-        );
+        $service = $this->newService($connection);
 
         $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', 'F001-10', '100.00']);
     }
@@ -86,5 +74,20 @@ final class InvoiceCreationServiceTest extends TestCase
         $refMethod = $reflection->getMethod($method);
 
         return $refMethod->invokeArgs($object, $args);
+    }
+
+    private function newService(?Connection $connection = null): InvoiceCreationService
+    {
+        $connection ??= $this->createMock(Connection::class);
+        $resolver = $this->createMock(SaleCurrencyResolver::class);
+        $constructor = (new \ReflectionClass(InvoiceCreationService::class))->getConstructor();
+        $required = $constructor?->getNumberOfRequiredParameters() ?? 0;
+
+        if ($required <= 1) {
+            /** @phpstan-ignore-next-line Constructor signature varies across branches */
+            return new InvoiceCreationService($connection);
+        }
+
+        return new InvoiceCreationService($connection, $resolver);
     }
 }

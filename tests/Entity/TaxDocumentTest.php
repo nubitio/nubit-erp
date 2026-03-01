@@ -33,7 +33,6 @@ final class TaxDocumentTest extends TestCase
             ->setNumber('123')
             ->setPaymentMethod(1)
             ->setCurrency('PEN')
-            ->setExchangeRate('3.800000')
             ->setSubtotal('84.75')
             ->setTaxableAmount('84.75')
             ->setIgvAmount('15.25')
@@ -58,6 +57,8 @@ final class TaxDocumentTest extends TestCase
             ->setCreatedAt($createdAt)
             ->setUpdatedAt($updatedAt);
 
+        $this->setPrivate($entity, 'exchangeRate', '3.800000');
+
         $entity->addLine($line);
         $entity->removeLine($line);
         $entity->addLine($line);
@@ -72,7 +73,7 @@ final class TaxDocumentTest extends TestCase
         self::assertSame('123', $entity->getNumber());
         self::assertSame(1, $entity->getPaymentMethod());
         self::assertSame('PEN', $entity->getCurrency());
-        self::assertSame('3.800000', $entity->getExchangeRate());
+        self::assertSame('3.800000', $this->getPrivate($entity, 'exchangeRate'));
         self::assertSame('84.75', $entity->getSubtotal());
         self::assertSame('84.75', $entity->getTaxableAmount());
         self::assertSame('15.25', $entity->getIgvAmount());
@@ -108,5 +109,13 @@ final class TaxDocumentTest extends TestCase
         $reflection = new \ReflectionObject($object);
         $refProperty = $reflection->getProperty($property);
         $refProperty->setValue($object, $value);
+    }
+
+    private function getPrivate(object $object, string $property): mixed
+    {
+        $reflection = new \ReflectionObject($object);
+        $refProperty = $reflection->getProperty($property);
+
+        return $refProperty->getValue($object);
     }
 }
