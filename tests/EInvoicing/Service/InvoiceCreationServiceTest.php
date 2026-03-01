@@ -80,14 +80,17 @@ final class InvoiceCreationServiceTest extends TestCase
     {
         $connection ??= $this->createMock(Connection::class);
         $resolver = $this->createMock(SaleCurrencyResolver::class);
-        $constructor = (new \ReflectionClass(InvoiceCreationService::class))->getConstructor();
+        $reflection = new \ReflectionClass(InvoiceCreationService::class);
+        $constructor = $reflection->getConstructor();
         $required = $constructor?->getNumberOfRequiredParameters() ?? 0;
-
-        if ($required <= 1) {
-            /** @phpstan-ignore-next-line Constructor signature varies across branches */
-            return new InvoiceCreationService($connection);
+        $args = [$connection];
+        if ($required > 1) {
+            $args[] = $resolver;
         }
 
-        return new InvoiceCreationService($connection, $resolver);
+        /** @var InvoiceCreationService $service */
+        $service = $reflection->newInstanceArgs($args);
+
+        return $service;
     }
 }
