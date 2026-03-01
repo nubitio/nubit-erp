@@ -38,7 +38,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CHECKBOX)
-      .name('emit_invoice')
+      .name('emitInvoice')
       .label('Emitir comprobante')
       .valueType('boolean')
       .defaultValue(() => settings.getCached(Setting.AUTO_INVOICE)?.value === 'true')
@@ -49,7 +49,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.DATE)
-      .name('fecha')
+      .name('issuedAt')
       .label('Fecha')
       .defaultValue(new Date())
       .required(true)
@@ -60,7 +60,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('almacen')
+      .name('warehouse')
       .label('Almacen')
       .url(Constants.API_BASE_URL + 'warehouses')
       .filters([
@@ -83,7 +83,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('cliente')
+      .name('customer')
       .label('Cliente')
       .url(Constants.API_BASE_URL + 'customers')
       .mode('remote')
@@ -128,11 +128,13 @@ export const SaleFields = (form: DxFormEvents | null) => {
         ).then((response) => response.data);
         const detailData = form?.getDetailData() ?? [];
         detailData.forEach((item: any) => {
-          const actualPrice = item.precio_unitario;
-          const priceItem = priceList.find((p) => p.id === item.producto.producto_id);
+          const actualPrice = item.unitPrice;
+          const priceItem = priceList.find(
+            (p) => p.id === (item.product?.id ?? item.product?.producto_id),
+          );
           if (priceItem && priceItem.price !== actualPrice) {
-            item.precio_unitario = Number(priceItem.price);
-            item.precio_total = item.cantidad * priceItem.price;
+            item.unitPrice = Number(priceItem.price);
+            item.netAmount = item.qty * priceItem.price;
             form?.reloadDetailData();
           }
         });
@@ -142,7 +144,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('tipo_pago')
+      .name('paymentMethod')
       .label('Método de pago')
       .url(Constants.API_BASE_URL + 'payment-methods')
       .valueField('id')
@@ -170,7 +172,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
-      .name('exchange_rate')
+      .name('exchangeRate')
       .label('Tipo de cambio')
       .defaultValue(() => {
         const rate = settings.getCached(Setting.DEFAULT_USD_EXCHANGE_RATE)?.value;
@@ -184,7 +186,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('invoice')
+      .name('invoiceFullNumber')
       .label('Comprobante')
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value) {
@@ -201,20 +203,20 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder().type(FieldType.TEXTAREA).name('glosa').label('Nota').visible(false).build(),
+    new FieldBuilder().type(FieldType.TEXTAREA).name('note').label('Nota').visible(false).build(),
   );
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
       .col(6)
-      .name('descuento')
+      .name('discountPercent')
       .label('Descuento %')
       .align('right')
       .defaultValue(0)
       .readonly(true)
       .onClick((_e: any) => {
-        const total = form?.getFieldValue('total');
-        let discountPercent = form?.getFieldValue('descuento');
+        const total = form?.getFieldValue('grandTotal');
+        let discountPercent = form?.getFieldValue('discountPercent');
         discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
         dispatch(DiscountDialogEvent.OPEN, { total, discountPercent });
       })
@@ -228,7 +230,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
     new FieldBuilder()
       .type(FieldType.CURRENCY)
       .col(6)
-      .name('total')
+      .name('grandTotal')
       .label('Total')
       .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
@@ -239,7 +241,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('estado')
+      .name('status')
       .label('Estado')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => {
@@ -250,7 +252,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NUMBER)
-      .name('created_by')
+      .name('sellerUserId')
       .defaultValue(userInformation().currentUserId)
       .visible(false)
       .hidden(true)
@@ -276,7 +278,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('producto')
+      .name('product')
       .label('Producto')
       .minWidth(300)
       .url(Constants.API_BASE_URL + 'products')
@@ -292,10 +294,10 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
             price = priceItem.price;
           }
         }
-        row.producto = product;
-        row.cantidad = 1;
-        row.precio_unitario = price;
-        row.precio_total = price;
+        row.product = product;
+        row.qty = 1;
+        row.unitPrice = price;
+        row.netAmount = price;
         this.defaultSetCellValue(row, product, currentRow);
       })
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
@@ -306,7 +308,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NUMBER)
-      .name('cantidad')
+      .name('qty')
       .label('Cantidad')
       .align('center')
       .valueType('number')
@@ -316,13 +318,13 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
 
         const checkStock = await settings.get(Setting.CHECK_STOCK);
 
-        row.precio_total = currentRow.precio_unitario * value;
+        row.netAmount = currentRow.unitPrice * value;
         if (value > 0 && checkStock?.value == 'true') {
           if (!selectedWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
           }
-          const stockData = await GetStockUseCase(currentRow.producto.id, selectedWarehouseId);
+          const stockData = await GetStockUseCase(currentRow.product.id, selectedWarehouseId);
           notify(
             {
               message: 'Stock actual: ' + stockData.stock,
@@ -341,8 +343,8 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
               { position: 'top right' },
             );
             value = '';
-            row.cantidad = '';
-            row.precio_total = '';
+            row.qty = '';
+            row.netAmount = '';
           }
         }
         this.defaultSetCellValue(row, value, currentRow);
@@ -354,13 +356,13 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
-      .name('precio_unitario')
+      .name('unitPrice')
       .label('Precio')
       .align('right')
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
-        row.precio_total = currentRow.cantidad * value;
+        row.netAmount = currentRow.qty * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
@@ -372,7 +374,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
-      .name('precio_total')
+      .name('netAmount')
       .label('Total')
       .align('right')
       .defaultValue(0)
@@ -397,16 +399,16 @@ const getSubTotal = (form: DxFormEvents | null) => {
   const rows = form?.getDetailData() ?? [];
   let total = 0;
   rows.forEach((row) => {
-    total += Number(row.precio_total);
+    total += Number(row.netAmount);
   });
   return total;
 };
 
 export const setTotal = (form: DxFormEvents | null) => {
   const subTotal = getSubTotal(form);
-  const discountPercent = Number(form?.getFieldValue('descuento') ?? 0);
+  const discountPercent = Number(form?.getFieldValue('discountPercent') ?? 0);
   const discount = subTotal * (discountPercent / 100);
   const total = Number(subTotal - discount).toFixed(2);
 
-  form?.setFieldValue('total', Number(total));
+  form?.setFieldValue('grandTotal', Number(total));
 };

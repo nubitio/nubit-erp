@@ -4,7 +4,7 @@ import { Constants } from '@platform/common/Constants';
 
 export class SaleService {
   getOne(saleId: string) {
-    return httpClient.get<any>(`${Constants.API_BASE_URL}movements/${saleId}`);
+    return httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}`);
   }
 
   voidSale(saleId: string, reason: string) {

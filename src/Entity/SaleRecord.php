@@ -159,8 +159,8 @@ class SaleRecord
     #[Groups(['sale_record:read', 'sale_record:write'])]
     private ?PaymentMethod $paymentMethod = null;
 
-    /** Computed: discount_total / (subtotal + discount_total) * 100 */
-    #[Groups(['sale_record:read'])]
+    /** Computed on read: discount_total / (subtotal + discount_total) * 100; accepted on write. */
+    #[Groups(['sale_record:read', 'sale_record:write'])]
     private ?string $discountPercent = null;
 
     // ── Write-only transient fields ───────────────────────────────────────────

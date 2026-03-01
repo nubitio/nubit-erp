@@ -206,17 +206,17 @@ export class SharedUtils {
   }
 
   static saleStatusFormatter(sale: any) {
-    const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2;
+    const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2 || sale?.status === 'VOIDED';
     if (isVoided) {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">ANULADO</span>;
     }
 
-    const hasInvoice = !!sale?.invoice;
+    const hasInvoice = !!sale?.invoice || !!sale?.invoiceFullNumber;
     if (!hasInvoice) {
       return <span className="badge badge-outlined rounded-pill text-bg-success">ACEPTADO</span>;
     }
 
-    const rawStatus = sale?.invoiceSunatStatus;
+    const rawStatus = sale?.invoiceSunatStatus ?? sale?.sunatStatus;
     if (rawStatus === null || rawStatus === undefined || rawStatus === '') {
       return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
     }
