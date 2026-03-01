@@ -15,16 +15,12 @@ use App\Core\Util\Constants;
 use App\Core\Util\Money;
 use App\Entity\CashShift;
 use App\Entity\Customer;
-use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
-use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
-use App\Repository\SunatCatalogRepository;
 use App\EInvoicing\Service\InvoiceCreationService;
-use App\Service\InventoryLedgerService;
 use App\Service\SalePaymentPlanService;
 use App\State\Purchase\GoodsReceiptWriteGateway;
 use App\State\Purchase\PurchasesWritePolicyResolver;
@@ -40,22 +36,6 @@ use Symfony\Component\Uid\Uuid;
 
 readonly class SaleProcessor implements ProcessorInterface
 {
-    private const string NEGATIVE_STOCK_BLOCK = 'BLOCK';
-    private const string NEGATIVE_STOCK_ALLOW_WITH_ROLE = 'ALLOW_WITH_ROLE';
-    private const string NEGATIVE_STOCK_ALLOW_ALL = 'ALLOW_ALL';
-    private const string NEGATIVE_STOCK_STRICT = 'STRICT';
-    private const string NEGATIVE_STOCK_WARNING_ONLY = 'WARNING_ONLY';
-    private const string NEGATIVE_STOCK_ALLOW_NEGATIVE = 'ALLOW_NEGATIVE';
-
-    private const string DETRACTION_PAYMENT_METHOD = '001';
-    private const float MIN_DETRACTION_TOTAL = 700.0;
-    private const array DETRACTION_NO_MIN_CODES = [
-        '008',
-        '016',
-        '019',
-        '021',
-    ];
-
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
@@ -64,11 +44,9 @@ readonly class SaleProcessor implements ProcessorInterface
         private Security $security,
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
-        private InventoryLedgerService $inventoryLedgerService,
         private SettingsService $settings,
         private InvoiceCreationService $invoiceCreationService,
         private LoggerInterface $logger,
-        private SunatCatalogRepository $sunatCatalogRepository,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private MessageBusInterface $messageBus,
@@ -78,7 +56,8 @@ readonly class SaleProcessor implements ProcessorInterface
         private PurchasesWritePolicyResolver $purchasesWritePolicyResolver,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
-        private StockValidationPolicyInterface $stockValidationPolicy,
+        private DetractionCalculator $detractionCalculator,
+        private SaleInventoryOrchestrator $inventoryOrchestrator,
     ) {
     }
 
@@ -180,7 +159,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $total = Money::money($subtotal->minus($discountAmount));
         $data->setTotal(Money::toString($total));
         $data->setEstado(1);
-        $this->applyDetractionFromItems($data);
+        $this->detractionCalculator->applyFromItems($data);
         if ($isOperationalSale) {
             $this->salePaymentPlanService->resolveForWrite(
                 $data,
@@ -201,130 +180,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setHasInvoice(false);
         }
 
-        // Update warehouse-specific stock
-        if ($data->getAlmacen()) {
-            $this->logger->info('Updating warehouse stock', [
-                'warehouse_id' => $data->getAlmacen()->getId(),
-                'sale_type_id' => $data->getTipoId(),
-            ]);
-            $useCoreInventoryValidation = $this->shouldUseCoreInventoryValidation();
-            $negativeStockPolicy = $this->resolveNegativeStockPolicy();
-            $allowNegativeStock = $this->canSellWithNegativeStock($negativeStockPolicy, $user);
-            $enforceNonNegativeStock = $data->getTipoId() === 2 ? !$allowNegativeStock : true;
-
-            if ($data->getTipoId() === 2) {
-                /** @var SaleItem $item */
-                foreach ($data->getItems() as $item) {
-                    if (!$item->getProducto() || !$this->isStockTrackedProduct($item->getProducto())) {
-                        continue;
-                    }
-
-                    $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
-                        $item->getProducto(),
-                        $data->getAlmacen()
-                    );
-
-                    if ($useCoreInventoryValidation) {
-                        $validation = $this->stockValidationPolicy->validateSale(
-                            $item->getProducto(),
-                            (string) $data->getAlmacen()->getId(),
-                            number_format((float) $item->getCantidad(), 6, '.', ''),
-                            number_format($currentStock, 6, '.', ''),
-                        );
-
-                        if (!$validation->allowed) {
-                            throw new ServiceException(sprintf(
-                                'Stock insuficiente para "%s" en el almacén seleccionado (%s).'
-                                . ' Disponible: %s, solicitado: %s',
-                                $item->getProducto()->getName(),
-                                $validation->reason ?? 'STRICT',
-                                rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                                rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
-                            ));
-                        }
-
-                        if ($validation->warning !== null) {
-                            $this->logger->warning('Inventory policy warning on sale validation', [
-                                'sale_id' => $data->getId(),
-                                'product_id' => $item->getProducto()->getId(),
-                                'warehouse_id' => $data->getAlmacen()->getId(),
-                                'warning' => $validation->warning,
-                                'available_qty' => $currentStock,
-                                'requested_qty' => $item->getCantidad(),
-                            ]);
-                        }
-
-                        continue;
-                    }
-
-                    if ($enforceNonNegativeStock && $currentStock < $item->getCantidad()) {
-                        throw new ServiceException(sprintf(
-                            'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
-                            $item->getProducto()->getName(),
-                            rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
-                            rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
-                        ));
-                    }
-                }
-            }
-
-            $lineNo = 0;
-            /** @var SaleItem $item */
-            foreach ($data->getItems() as $item) {
-                ++$lineNo;
-                if ($item->getProducto()) {
-                    if (!$this->isStockTrackedProduct($item->getProducto())) {
-                        continue;
-                    }
-
-                    $productId = $item->getProducto()->getId();
-                    $warehouseId = $data->getAlmacen()->getId();
-
-                    $currentStock = $this->inventoryLedgerService->getStockForProductInWarehouse(
-                        $item->getProducto(),
-                        $data->getAlmacen()
-                    );
-
-                    $this->logger->debug('Current stock for product', [
-                        'product_id' => $productId,
-                        'warehouse_id' => $warehouseId,
-                        'current_stock' => $currentStock,
-                    ]);
-
-                    if ($data->getTipoId() === 1) {
-                        $this->logger->info('Increasing stock for purchase', [
-                            'product_id' => $productId,
-                            'warehouse_id' => $warehouseId,
-                            'current_stock' => $currentStock,
-                            'quantity_added' => $item->getCantidad(),
-                        ]);
-
-                        $this->inventoryLedgerService->applyMovementFromSaleItem(
-                            $data,
-                            $item,
-                            $lineNo,
-                            $enforceNonNegativeStock
-                        );
-                    } elseif ($data->getTipoId() === 2) {
-                        $this->logger->info('Decreasing stock for sale', [
-                            'product_id' => $productId,
-                            'warehouse_id' => $warehouseId,
-                            'current_stock' => $currentStock,
-                            'quantity_removed' => $item->getCantidad(),
-                        ]);
-
-                        $this->inventoryLedgerService->applyMovementFromSaleItem(
-                            $data,
-                            $item,
-                            $lineNo,
-                            $useCoreInventoryValidation ? false : $enforceNonNegativeStock
-                        );
-                    }
-                }
-
-                $item->setDescuento($item->getDescuento());
-            }
-        }
+        $this->inventoryOrchestrator->process($data, $user);
 
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
@@ -507,91 +363,6 @@ readonly class SaleProcessor implements ProcessorInterface
         return $result;
     }
 
-    private function applyDetractionFromItems(Sale $sale): void
-    {
-        $customerDoc = $sale->getCliente()?->getRuc() ?? '';
-        if (strlen($customerDoc) !== 11) {
-            $sale->setDetraccionCodigo(null);
-            $sale->setDetraccionPorcentaje(null);
-            $sale->setDetraccionMonto(null);
-            $sale->setDetraccionMedioPago(null);
-            $sale->setDetraccionValorReferencial(null);
-            if ($sale->getTipoOperacion() === '1001') {
-                $sale->setTipoOperacion(null);
-            }
-
-            return;
-        }
-
-        $detractionCatalog = null;
-
-        foreach ($sale->getItems() as $item) {
-            $catalog = $item->getProducto()?->getDetractionCatalog();
-            if (!$catalog) {
-                continue;
-            }
-
-            if ($detractionCatalog && $catalog->getId() !== $detractionCatalog->getId()) {
-                throw new ServiceException(
-                    'Los productos tienen diferentes códigos de detracción. Separe la venta en comprobantes distintos.'
-                );
-            }
-
-            $detractionCatalog = $catalog;
-        }
-
-        if (!$detractionCatalog) {
-            $sale->setDetraccionCodigo(null);
-            $sale->setDetraccionPorcentaje(null);
-            $sale->setDetraccionMonto(null);
-            $sale->setDetraccionMedioPago(null);
-            $sale->setDetraccionValorReferencial(null);
-            if ($sale->getTipoOperacion() === '1001') {
-                $sale->setTipoOperacion(null);
-            }
-
-            return;
-        }
-
-        $total = (float)($sale->getTotal() ?? 0);
-        $detractionCode = $detractionCatalog->getCode();
-        $threshold = $this->getDetractionThreshold($detractionCode);
-
-        if ($threshold > 0 && $total <= $threshold) {
-            $sale->setDetraccionCodigo(null);
-            $sale->setDetraccionPorcentaje(null);
-            $sale->setDetraccionMonto(null);
-            $sale->setDetraccionMedioPago(null);
-            $sale->setDetraccionValorReferencial(null);
-            if ($sale->getTipoOperacion() === '1001') {
-                $sale->setTipoOperacion(null);
-            }
-
-            return;
-        }
-
-        $sale->setDetraccionCodigo($detractionCatalog->getCode());
-        $sale->setDetraccionPorcentaje($detractionCatalog->getPercentage());
-        $amount = $sale->getDetraccionPorcentaje() !== null
-            ? round($sale->getTotal() * $sale->getDetraccionPorcentaje() / 100, 2)
-            : null;
-        $sale->setDetraccionMonto($amount);
-
-        $paymentMethod = $this->sunatCatalogRepository->findOneBy([
-            'catalog' => 59,
-            'code' => self::DETRACTION_PAYMENT_METHOD,
-            'active' => true,
-        ]);
-        if (!$paymentMethod) {
-            throw new ServiceException('No se encontró el medio de pago para detracción (catálogo 59).');
-        }
-        $sale->setDetraccionMedioPago(self::DETRACTION_PAYMENT_METHOD);
-
-        if ($sale->getTipoOperacion() === null) {
-            $sale->setTipoOperacion('1001');
-        }
-    }
-
     private function ensureSaleCustomer(Sale $sale): void
     {
         if ($sale->getTipoId() !== 2 || $sale->getCliente() instanceof Customer) {
@@ -606,78 +377,6 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $sale->setCliente($defaultCustomer);
-    }
-
-    private function getDetractionThreshold(string $code): float
-    {
-        if (in_array($code, self::DETRACTION_NO_MIN_CODES, true)) {
-            return 0.0;
-        }
-
-        return self::MIN_DETRACTION_TOTAL;
-    }
-
-    private function resolveNegativeStockPolicy(): string
-    {
-        $raw = strtoupper(trim((string) $this->settings->get(Constants::INVENTORY_NEGATIVE_STOCK_POLICY, '')));
-        if ($raw === self::NEGATIVE_STOCK_STRICT) {
-            return self::NEGATIVE_STOCK_BLOCK;
-        }
-        if ($raw === self::NEGATIVE_STOCK_WARNING_ONLY) {
-            return self::NEGATIVE_STOCK_ALLOW_WITH_ROLE;
-        }
-        if ($raw === self::NEGATIVE_STOCK_ALLOW_NEGATIVE) {
-            return self::NEGATIVE_STOCK_ALLOW_ALL;
-        }
-
-        if (
-            in_array(
-                $raw,
-                [
-                    self::NEGATIVE_STOCK_BLOCK,
-                    self::NEGATIVE_STOCK_ALLOW_WITH_ROLE,
-                    self::NEGATIVE_STOCK_ALLOW_ALL,
-                ],
-                true
-            )
-        ) {
-            return $raw;
-        }
-
-        return self::NEGATIVE_STOCK_BLOCK;
-    }
-
-    private function canSellWithNegativeStock(string $policy, \App\Dto\Auth\AuthUserDto $user): bool
-    {
-        if ($policy === self::NEGATIVE_STOCK_ALLOW_ALL) {
-            return true;
-        }
-
-        if ($policy !== self::NEGATIVE_STOCK_ALLOW_WITH_ROLE) {
-            return false;
-        }
-
-        $roles = $user->roles ?? [];
-
-        return in_array('ROLE_ADMIN', $roles, true) || in_array('ROLE_SUPER_ADMIN', $roles, true);
-    }
-
-    private function isStockTrackedProduct(Product $product): bool
-    {
-        return $product->getTrackInventory();
-    }
-
-    private function shouldUseCoreInventoryValidation(): bool
-    {
-        $mode = strtolower(trim((string) $this->settings->get(Constants::INVENTORY_CORE_MODE, 'legacy')));
-        if (in_array($mode, ['dual_write', 'v2_authoritative'], true)) {
-            return true;
-        }
-
-        return filter_var(
-            $this->settings->get(Constants::INVENTORY_CORE_DUAL_WRITE, 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
     }
 
     /**
