@@ -36,28 +36,23 @@ export const CashRegisterDashboard = () => {
         events={EVENTS}
         paging={false}
         onContentReady={() => setGridError(null)}
-        beforeToolbar={() => (
-          <Item location="before" locateInMenu="never">
-            <div className="cash-register-dashboard-toolbar-state">
-              {gridError ? (
-                <AsyncState
-                  compact
-                  variant="error"
-                  title="Error de carga"
-                  description={gridError}
-                  onRetry={() => gridRef.current?.refresh()}
-                />
-              ) : (
-                <AsyncState
-                  compact
-                  variant="info"
-                  title="Estado operativo"
-                  description="Visualiza cajas abiertas/cerradas y accede a apertura, cierre y movimientos."
-                />
-              )}
-            </div>
-          </Item>
-        )}
+        beforeToolbar={
+          gridError
+            ? () => (
+                <Item location="before" locateInMenu="never">
+                  <div className="cash-register-dashboard-toolbar-state">
+                    <AsyncState
+                      compact
+                      variant="error"
+                      title="Error de carga"
+                      description={gridError}
+                      onRetry={() => gridRef.current?.refresh()}
+                    />
+                  </div>
+                </Item>
+              )
+            : undefined
+        }
       />
     </div>
   );
