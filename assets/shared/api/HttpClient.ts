@@ -85,6 +85,8 @@ class HttpClient {
           const violations = errorResponse?.data?.violations;
           if (violations) {
             dispatch(FORM_ERRORS_EVENT, violations);
+          } else {
+            this.handleError(status, message);
           }
           return Promise.reject(error);
         }
