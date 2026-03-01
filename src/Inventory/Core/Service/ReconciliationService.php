@@ -6,6 +6,7 @@ namespace App\Inventory\Core\Service;
 
 use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Reconciles the ledger (stock_movements) against the materialized read model (stock_items).
@@ -33,8 +34,12 @@ final readonly class ReconciliationService
      *
      * @throws \Doctrine\DBAL\Exception
      */
+    /**
+     * @return array{ok: int, drift: int, error: int}
+     */
     public function run(?string $warehouseId = null, ?string $productId = null): array
     {
+        /** @var array{ok: int, drift: int, error: int} $results */
         $results = ['ok' => 0, 'drift' => 0, 'error' => 0];
 
         $rows = $this->fetchStockItemPairs($warehouseId, $productId);
@@ -57,6 +62,7 @@ final readonly class ReconciliationService
             }
         }
 
+        /** @var array{ok: int, drift: int, error: int} */
         return $results;
     }
 
@@ -78,7 +84,9 @@ final readonly class ReconciliationService
         );
 
         $ledgerSum = (string) ($ledgerSum ?: '0');
-        $diff = bcsub($ledgerSum, $stockItemsQty, 6);
+        $safeStockQty = is_numeric($stockItemsQty) ? $stockItemsQty : '0';
+        $numericLedger = is_numeric($ledgerSum) ? $ledgerSum : '0';
+        $diff = bcsub($numericLedger, $safeStockQty, 6); // phpcs:ignore
         $absDiff = ltrim($diff, '-');
 
         $status = bccomp($absDiff, self::TOLERANCE, 6) > 0 ? 'DRIFT' : 'OK';
@@ -86,17 +94,19 @@ final readonly class ReconciliationService
         $this->connection->executeStatement(
             <<<'SQL'
             INSERT INTO inventory_reconciliation_runs
-                (warehouse_id, product_id, ledger_sum, stock_items_qty, diff, status)
+                (id, warehouse_id, product_id, ledger_sum, stock_items_qty, diff, status, run_at)
             VALUES
-                (:w, :p, :ledger_sum, :stock_items_qty, :diff, :status)
+                (:id, :w, :p, :ledger_sum, :stock_items_qty, :diff, :status, :run_at)
             SQL,
             [
+                'id'             => Uuid::v7()->toRfc4122(),
                 'w'              => $warehouseId,
                 'p'              => $productId,
                 'ledger_sum'     => $ledgerSum,
                 'stock_items_qty' => $stockItemsQty,
                 'diff'           => $diff,
                 'status'         => $status,
+                'run_at'         => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
             ]
         );
 
@@ -114,7 +124,7 @@ final readonly class ReconciliationService
     }
 
     /**
-     * @return array<array{warehouse_id: string, product_id: string, qty_on_hand: string}>
+     * @return list<array{warehouse_id: string, product_id: string, qty_on_hand: string}>
      *
      * @throws \Doctrine\DBAL\Exception
      */
@@ -131,6 +141,7 @@ final readonly class ReconciliationService
             $qb->andWhere('product_id = :p')->setParameter('p', $productId);
         }
 
+        /** @var list<array{warehouse_id: string, product_id: string, qty_on_hand: string}> */
         return $qb->executeQuery()->fetchAllAssociative();
     }
 }

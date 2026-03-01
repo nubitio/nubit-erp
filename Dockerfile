@@ -45,7 +45,8 @@ RUN install-php-extensions \
     imagick \
     opcache \
     protobuf \
-    opentelemetry
+    opentelemetry \
+    bcmath
 
 # Install WeasyPrint
 RUN pip3 install --break-system-packages WeasyPrint \
