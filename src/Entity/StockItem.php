@@ -31,6 +31,14 @@ class StockItem
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private \DateTimeInterface $updatedAt;
 
+    /** References the last stock_movements.id that was applied to this read model. */
+    #[ORM\Column(name: 'last_movement_id', type: Types::GUID, nullable: true)]
+    private ?string $lastMovementId = null;
+
+    /** Optimistic concurrency version counter. Incremented on every write. */
+    #[ORM\Column(name: 'version', type: Types::INTEGER, options: ['default' => 0, 'unsigned' => true])]
+    private int $version = 0;
+
     public function __construct()
     {
         $this->updatedAt = new \DateTimeImmutable();
@@ -92,6 +100,30 @@ class StockItem
     public function setUpdatedAt(\DateTimeInterface $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getLastMovementId(): ?string
+    {
+        return $this->lastMovementId;
+    }
+
+    public function setLastMovementId(?string $lastMovementId): static
+    {
+        $this->lastMovementId = $lastMovementId;
+
+        return $this;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
+    }
+
+    public function incrementVersion(): static
+    {
+        ++$this->version;
 
         return $this;
     }
