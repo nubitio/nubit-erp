@@ -15,7 +15,8 @@ use App\Core\Util\Constants;
 use App\Core\Util\Money;
 use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;use App\Entity\Customer;
+use App\Entity\CashShift;
+use App\Entity\Customer;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
@@ -32,6 +33,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -98,6 +100,8 @@ readonly class SaleProcessor implements ProcessorInterface
         $isOperationalSale = $data->getTipoId() === 2;
         $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
         $resolvedCashSessionId = null;
+        $request = $context['request'] ?? null;
+        $isOfflineSale = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
 
         if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
@@ -181,7 +185,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setHasInvoice(false);
         }
 
-        $this->inventoryOrchestrator->process($data, $user);
+        $this->inventoryOrchestrator->process($data, $user, $isOfflineSale);
 
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');

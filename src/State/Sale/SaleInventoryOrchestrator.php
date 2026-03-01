@@ -28,10 +28,14 @@ final readonly class SaleInventoryOrchestrator
     /**
      * Validates stock availability and records inventory ledger movements for all sale items.
      *
+     * When $isOfflineSale is true (sale originated from an offline POS terminal),
+     * stock validation is skipped and negative stock is allowed — the physical
+     * transaction already occurred and cannot be undone.
+     *
      * @throws ServiceException
      * @throws \Doctrine\DBAL\Exception
      */
-    public function process(Sale $sale, AuthUserDto $user): void
+    public function process(Sale $sale, AuthUserDto $user, bool $isOfflineSale = false): void
     {
         if (!$sale->getAlmacen()) {
             return;
@@ -40,9 +44,18 @@ final readonly class SaleInventoryOrchestrator
         $this->logger->info('Updating warehouse stock', [
             'warehouse_id' => $sale->getAlmacen()->getId(),
             'sale_type_id' => $sale->getTipoId(),
+            'is_offline_sale' => $isOfflineSale,
         ]);
 
         $useCoreValidation = $this->policyResolver->shouldUseCoreValidation();
+
+        // Offline sales bypass stock validation — the transaction is a physical fait accompli.
+        if ($isOfflineSale) {
+            $this->applyLedgerMovements($sale, $useCoreValidation, false);
+
+            return;
+        }
+
         $policy = $this->policyResolver->resolvePolicy();
         $allowNegative = $this->policyResolver->canSell($policy, $user);
         $enforceNonNegative = $sale->getTipoId() === 2 ? !$allowNegative : true;
