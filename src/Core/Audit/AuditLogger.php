@@ -11,7 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
-final readonly class AuditLogger
+readonly class AuditLogger
 {
     public function __construct(
         private TenantContext $tenantContext,

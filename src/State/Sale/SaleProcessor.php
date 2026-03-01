@@ -19,6 +19,7 @@ use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
+use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\Repository\SunatCatalogRepository;
@@ -77,6 +78,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private PurchasesWritePolicyResolver $purchasesWritePolicyResolver,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
+        private StockValidationPolicyInterface $stockValidationPolicy,
     ) {
     }
 
@@ -205,11 +207,12 @@ readonly class SaleProcessor implements ProcessorInterface
                 'warehouse_id' => $data->getAlmacen()->getId(),
                 'sale_type_id' => $data->getTipoId(),
             ]);
+            $useCoreInventoryValidation = $this->shouldUseCoreInventoryValidation();
             $negativeStockPolicy = $this->resolveNegativeStockPolicy();
             $allowNegativeStock = $this->canSellWithNegativeStock($negativeStockPolicy, $user);
             $enforceNonNegativeStock = $data->getTipoId() === 2 ? !$allowNegativeStock : true;
 
-            if ($data->getTipoId() === 2 && $enforceNonNegativeStock) {
+            if ($data->getTipoId() === 2) {
                 /** @var SaleItem $item */
                 foreach ($data->getItems() as $item) {
                     if (!$item->getProducto() || !$this->isStockTrackedProduct($item->getProducto())) {
@@ -221,7 +224,40 @@ readonly class SaleProcessor implements ProcessorInterface
                         $data->getAlmacen()
                     );
 
-                    if ($currentStock < $item->getCantidad()) {
+                    if ($useCoreInventoryValidation) {
+                        $validation = $this->stockValidationPolicy->validateSale(
+                            $item->getProducto(),
+                            (string) $data->getAlmacen()->getId(),
+                            number_format((float) $item->getCantidad(), 6, '.', ''),
+                            number_format($currentStock, 6, '.', ''),
+                        );
+
+                        if (!$validation->allowed) {
+                            throw new ServiceException(sprintf(
+                                'Stock insuficiente para "%s" en el almacén seleccionado (%s).'
+                                . ' Disponible: %s, solicitado: %s',
+                                $item->getProducto()->getName(),
+                                $validation->reason ?? 'STRICT',
+                                rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
+                                rtrim(rtrim(number_format((float) $item->getCantidad(), 3, '.', ''), '0'), '.')
+                            ));
+                        }
+
+                        if ($validation->warning !== null) {
+                            $this->logger->warning('Inventory policy warning on sale validation', [
+                                'sale_id' => $data->getId(),
+                                'product_id' => $item->getProducto()->getId(),
+                                'warehouse_id' => $data->getAlmacen()->getId(),
+                                'warning' => $validation->warning,
+                                'available_qty' => $currentStock,
+                                'requested_qty' => $item->getCantidad(),
+                            ]);
+                        }
+
+                        continue;
+                    }
+
+                    if ($enforceNonNegativeStock && $currentStock < $item->getCantidad()) {
                         throw new ServiceException(sprintf(
                             'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
                             $item->getProducto()->getName(),
@@ -281,7 +317,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             $data,
                             $item,
                             $lineNo,
-                            $enforceNonNegativeStock
+                            $useCoreInventoryValidation ? false : $enforceNonNegativeStock
                         );
                     }
                 }
@@ -312,7 +348,9 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $purchasesPolicy = $this->purchasesWritePolicyResolver->resolve();
         $skipLegacyPersist = ($data->getTipoId() === 1 && $purchasesPolicy->skipLegacyPersist)
-            || ($isOperationalSale && $salesWritePolicy instanceof SalesWritePolicy && $salesWritePolicy->skipLegacyPersist);
+            || ($isOperationalSale
+                && $salesWritePolicy instanceof SalesWritePolicy
+                && $salesWritePolicy->skipLegacyPersist);
 
         if ($skipLegacyPersist) {
             $this->logger->info('Skipping legacy movimiento persist (v2_authoritative)', [
@@ -626,8 +664,20 @@ readonly class SaleProcessor implements ProcessorInterface
 
     private function isStockTrackedProduct(Product $product): bool
     {
-        // Convention used in catalog: type=1 means stock-tracked tangible product.
-        return $product->getType() === 1;
+        return $product->getTrackInventory();
+    }
+
+    private function shouldUseCoreInventoryValidation(): bool
+    {
+        $mode = strtolower(trim((string) $this->settings->get(Constants::INVENTORY_CORE_MODE, 'legacy')));
+        if (in_array($mode, ['dual_write', 'v2_authoritative'], true)) {
+            return true;
+        }
+
+        return filter_var(
+            $this->settings->get(Constants::INVENTORY_CORE_DUAL_WRITE, 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
     }
 
     /**

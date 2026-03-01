@@ -19,7 +19,7 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * This is transitional infrastructure for the v2_authoritative migration path.
  */
-final readonly class SaleV2Loader
+readonly class SaleV2Loader
 {
     public function __construct(
         private Connection $connection,

@@ -16,7 +16,7 @@ use Doctrine\DBAL\Exception;
 /**
  * Gateway for writes on the new sales schema.
  */
-final readonly class SalesWriteGateway
+readonly class SalesWriteGateway
 {
     public function __construct(
         private Connection $connection,

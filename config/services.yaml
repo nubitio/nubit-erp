@@ -77,6 +77,9 @@ services:
 
     App\Core\Audit\AuditLogRepository: ~
 
+    App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
+    App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
+
     App\Core\Messenger\TenantStampMiddleware:
         tags:
             - { name: messenger.middleware, bus: messenger.bus.default }

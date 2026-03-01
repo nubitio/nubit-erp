@@ -25,8 +25,7 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
         string $requestedQtyBase,
         string $onHandQtyBase,
     ): StockValidationResult {
-        $productType = $this->resolveProductType($product);
-        if (!in_array($productType, ['STOCKABLE', 'CONSUMABLE', 'COMPOSITE'], true)) {
+        if (!$this->tracksInventory($product)) {
             return StockValidationResult::allowed();
         }
 
@@ -69,12 +68,8 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
         return StockPolicy::from((string) $raw);
     }
 
-    private function resolveProductType(Product $product): string
+    private function tracksInventory(Product $product): bool
     {
-        if (method_exists($product, 'getProductType')) {
-            return strtoupper((string) ($product->getProductType() ?? 'STOCKABLE'));
-        }
-
-        return $product->getType() === 1 ? 'STOCKABLE' : 'SERVICE';
+        return $product->getTrackInventory();
     }
 }
