@@ -50,6 +50,10 @@ interface POSCheckoutPanelProps {
   setSelectedPaymentMethodId: (id: number) => void;
   emitInvoice: boolean;
   setEmitInvoice: (checked: boolean) => void;
+  currency: 'PEN' | 'USD';
+  setCurrency: (value: 'PEN' | 'USD') => void;
+  exchangeRate: string;
+  setExchangeRate: (value: string) => void;
   discountPercent: number;
   setDiscountPercent: (value: number) => void;
   isCashPaymentSelected: boolean;
@@ -115,6 +119,10 @@ export function POSCheckoutPanel({
   setSelectedPaymentMethodId,
   emitInvoice,
   setEmitInvoice,
+  currency,
+  setCurrency,
+  exchangeRate,
+  setExchangeRate,
   discountPercent,
   setDiscountPercent,
   isCashPaymentSelected,
@@ -517,7 +525,7 @@ export function POSCheckoutPanel({
             )}
           </div>
 
-          {/* [5] Invoice toggle + discount */}
+          {/* [5] Invoice toggle + currency + discount */}
           <div className="pos-payment__options">
             <label className="pos-toggle-row">
               <span>Emitir comprobante</span>
@@ -530,6 +538,39 @@ export function POSCheckoutPanel({
                 <span className="pos-toggle__track" />
               </span>
             </label>
+
+            <div className="pos-currency-row">
+              <span className="pos-discount-label">Moneda</span>
+              <div className="pos-currency-toggle" role="group" aria-label="Seleccionar moneda">
+                {(['PEN', 'USD'] as const).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={`pos-currency-btn${currency === c ? ' is-active' : ''}`}
+                    onClick={() => setCurrency(c)}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {currency === 'USD' && (
+              <div className="pos-discount-row">
+                <label className="pos-discount-label" htmlFor="pos-exchange-rate">
+                  T.C. USD/PEN
+                </label>
+                <input
+                  id="pos-exchange-rate"
+                  type="number"
+                  min={0.01}
+                  step="0.01"
+                  value={exchangeRate}
+                  onChange={(e) => setExchangeRate(e.target.value)}
+                  style={{ width: '90px' }}
+                />
+              </div>
+            )}
 
             <div className="pos-discount-row">
               <label className="pos-discount-label" htmlFor="pos-discount">

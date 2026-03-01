@@ -4,6 +4,10 @@ export const DashboardPage = lazyNamed(
   () => import('@features/admin/pages/DashboardPage'),
   'DashboardPage',
 );
+export const ExchangeRatePage = lazyNamed(
+  () => import('@features/admin/pages/ExchangeRatePage'),
+  'ExchangeRatePage',
+);
 export const BranchPage = lazyNamed(() => import('@features/admin/pages/BranchPage'), 'BranchPage');
 export const CompanyPage = lazyNamed(
   () => import('@features/admin/pages/CompanyPage'),

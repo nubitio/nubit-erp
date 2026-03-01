@@ -10,7 +10,7 @@ export default class NumberUtils {
     return value.toFixed(decimal);
   }
 
-  static formatCurrency(value: number): string {
-    return Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN' }).format(value);
+  static formatCurrency(value: number, currency: string = 'PEN'): string {
+    return Intl.NumberFormat('es-PE', { style: 'currency', currency }).format(value);
   }
 }

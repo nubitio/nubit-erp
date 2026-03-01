@@ -155,6 +155,34 @@ export const SaleFields = (form: DxFormEvents | null) => {
   );
   fields.push(
     new FieldBuilder()
+      .type(FieldType.SELECT)
+      .name('currency')
+      .label('Moneda')
+      .data([
+        { value: 'PEN', text: 'PEN - Soles' },
+        { value: 'USD', text: 'USD - Dólares' },
+      ])
+      .defaultValue(() => settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN')
+      .visible(false)
+      .col(6)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('exchange_rate')
+      .label('Tipo de cambio')
+      .defaultValue(() => {
+        const rate = settings.getCached(Setting.DEFAULT_USD_EXCHANGE_RATE)?.value;
+        return rate && Number(rate) > 0 ? Number(rate) : 3.8;
+      })
+      .visible(false)
+      .col(6)
+      .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
       .type(FieldType.NONE)
       .name('invoice')
       .label('Comprobante')

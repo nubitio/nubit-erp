@@ -51,6 +51,8 @@ abstract class Constants
 
     public const string SALES_DEFAULT_USD_EXCHANGE_RATE = 'sales_default_usd_exchange_rate';
 
+    public const string EXCHANGE_RATE_UPDATED_AT = 'sales_usd_exchange_rate_updated_at';
+
     public const string PURCHASES_V2_MODE = 'purchases_v2_mode';
 
     public const string PURCHASES_V2_DUAL_WRITE_ENABLED = 'app_option_purchases_v2_dual_write_enabled';
