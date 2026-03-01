@@ -132,7 +132,12 @@ jobs:
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
       - name: Run Playwright e2e tests
-        run: docker compose exec -T vite sh -lc "corepack enable && yarn test:e2e"
+        run: |
+          docker compose exec -T \
+            -e E2E_USERNAME \
+            -e E2E_PASSWORD \
+            -e E2E_SALE_ID \
+            vite sh -lc "corepack enable && yarn test:e2e"
 
       - name: Cleanup E2E seeded data
         if: always()
