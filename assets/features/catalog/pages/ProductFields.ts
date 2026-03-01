@@ -35,17 +35,72 @@ export const ProductFields = () => {
   fields.push(new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').build());
   fields.push(
     new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('sku')
+      .label('SKU')
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('barcode')
+      .label('Código de barras')
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.ENUM)
+      .name('productKind')
+      .label('Tipo de producto')
+      .data([
+        { value: 'GOOD', text: 'Bien físico' },
+        { value: 'SERVICE', text: 'Servicio' },
+        { value: 'DIGITAL', text: 'Digital' },
+      ])
+      .required(true)
+      .formatter((cell: ColumnCellTemplateData) => {
+        const map: Record<string, string> = { GOOD: 'Bien físico', SERVICE: 'Servicio', DIGITAL: 'Digital' };
+        return map[cell.value] ?? cell.value;
+      })
+      .defaultValue('GOOD')
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.ENUM)
+      .name('inventoryBehavior')
+      .label('Control de stock')
+      .data([
+        { value: 'TRACKED', text: 'Con stock (trazable)' },
+        { value: 'NOT_TRACKED', text: 'Sin stock' },
+        { value: 'COMPOSITE', text: 'Compuesto (BOM)' },
+      ])
+      .required(true)
+      .formatter((cell: ColumnCellTemplateData) => {
+        const map: Record<string, string> = {
+          TRACKED: 'Con stock',
+          NOT_TRACKED: 'Sin stock',
+          COMPOSITE: 'Compuesto',
+        };
+        return map[cell.value] ?? cell.value;
+      })
+      .defaultValue('TRACKED')
+      .visibleOnGrid(false)
+      .build(),
+  );
+  // Keep legacy type field hidden but still sent for backward compat
+  fields.push(
+    new FieldBuilder()
       .type(FieldType.ENUM)
       .name('type')
-      .label('Tipo')
+      .label('Tipo (legacy)')
       .data([
         { value: 1, text: 'Fisico' },
         { value: 2, text: 'Servicio' },
       ])
       .required(true)
-      .formatter((cell: ColumnCellTemplateData) => {
-        return cell.value === 1 ? 'Fisico' : 'Servicio';
-      })
+      .hidden(true)
+      .visible(false)
       .defaultValue(1)
       .build(),
   );

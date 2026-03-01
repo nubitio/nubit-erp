@@ -8,7 +8,9 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
+use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
@@ -25,6 +27,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'producto')]
 #[ApiResource(
     normalizationContext: ['groups' => ['product:read']],
+    denormalizationContext: ['groups' => ['product:write']],
     filters: [DevExtremeFilter::class],
 )]
 #[ApiResource(
@@ -52,19 +55,38 @@ class Product
     private ?string $code = null;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\Column(name: 'tipo_id')]
     private int $type;
 
+    /** @deprecated Use $productKind + $inventoryBehavior instead. Kept for backward compatibility. */
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'product_type', length: 20, options: ['default' => ProductType::STOCKABLE->value])]
     private string $productType = ProductType::STOCKABLE->value;
 
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
+    #[ORM\Column(name: 'product_kind', length: 10, options: ['default' => 'GOOD'])]
+    private string $productKind = ProductKind::GOOD->value;
+
+    #[Groups(['product:read', 'product:write'])]
+    #[ORM\Column(name: 'inventory_behavior', length: 12, options: ['default' => 'TRACKED'])]
+    private string $inventoryBehavior = InventoryBehavior::TRACKED->value;
+
+    #[Groups(['product:read', 'product:write'])]
+    #[Assert\Length(max: 64)]
+    #[ORM\Column(name: 'sku', length: 64, nullable: true, unique: true)]
+    private ?string $sku = null;
+
+    #[Groups(['product:read', 'product:write'])]
+    #[Assert\Length(max: 64)]
+    #[ORM\Column(name: 'barcode', length: 64, nullable: true)]
+    private ?string $barcode = null;
+
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\Column(name: 'track_inventory', options: ['default' => true])]
     private bool $trackInventory = true;
 
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\Column(name: 'lot_tracking_strategy', length: 10, options: ['default' => 'NONE'])]
     private string $lotTrackingStrategy = LotTrackingStrategy::NONE->value;
 
@@ -159,9 +181,13 @@ class Product
         $this->type = $type;
         if ($type === 1) {
             $this->productType = ProductType::STOCKABLE->value;
+            $this->productKind = ProductKind::GOOD->value;
+            $this->inventoryBehavior = InventoryBehavior::TRACKED->value;
             $this->trackInventory = true;
         } else {
             $this->productType = ProductType::SERVICE->value;
+            $this->productKind = ProductKind::SERVICE->value;
+            $this->inventoryBehavior = InventoryBehavior::NOT_TRACKED->value;
             $this->trackInventory = false;
         }
 
@@ -173,11 +199,76 @@ class Product
         return $this->productType;
     }
 
+    /** @deprecated Use setProductKind + setInventoryBehavior instead. */
     public function setProductType(string $productType): static
     {
         $normalized = strtoupper(trim($productType));
         $resolved = ProductType::tryFrom($normalized) ?? ProductType::STOCKABLE;
         $this->productType = $resolved->value;
+
+        // Derive new fields from legacy value for backward compat.
+        $this->productKind = ProductKind::fromProductType($resolved->value)->value;
+        $this->inventoryBehavior = InventoryBehavior::fromProductType($resolved->value)->value;
+        $this->trackInventory = InventoryBehavior::fromProductType($resolved->value)->tracksInventory();
+
+        return $this;
+    }
+
+    public function getProductKind(): string
+    {
+        return $this->productKind;
+    }
+
+    public function getProductKindEnum(): ProductKind
+    {
+        return ProductKind::from($this->productKind);
+    }
+
+    public function setProductKind(ProductKind $kind): static
+    {
+        $this->productKind = $kind->value;
+
+        return $this;
+    }
+
+    public function getInventoryBehavior(): string
+    {
+        return $this->inventoryBehavior;
+    }
+
+    public function getInventoryBehaviorEnum(): InventoryBehavior
+    {
+        return InventoryBehavior::from($this->inventoryBehavior);
+    }
+
+    public function setInventoryBehavior(InventoryBehavior $behavior): static
+    {
+        $this->inventoryBehavior = $behavior->value;
+        $this->trackInventory = $behavior->tracksInventory();
+
+        return $this;
+    }
+
+    public function getSku(): ?string
+    {
+        return $this->sku;
+    }
+
+    public function setSku(?string $sku): static
+    {
+        $this->sku = $sku !== null ? trim($sku) : null;
+
+        return $this;
+    }
+
+    public function getBarcode(): ?string
+    {
+        return $this->barcode;
+    }
+
+    public function setBarcode(?string $barcode): static
+    {
+        $this->barcode = $barcode !== null ? trim($barcode) : null;
 
         return $this;
     }

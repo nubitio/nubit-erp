@@ -35,7 +35,12 @@ readonly class SaleV2Processor implements ProcessorInterface
     }
 
     #[Override]
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): SaleRecord
+    public function process(
+        mixed $data,
+        Operation $operation,
+        array $uriVariables = [],
+        array $context = [],
+    ): SaleRecord
     {
         if (!$data instanceof SaleRecord) {
             throw new \InvalidArgumentException('SaleV2Processor expects a SaleRecord instance.');
@@ -44,7 +49,7 @@ readonly class SaleV2Processor implements ProcessorInterface
         $sale = $this->mapToSaleEntity($data);
 
         // Adapt the operation to target Sale (SaleProcessor expects Sale class context)
-        $saleOperation = $this->buildSaleOperation($operation, $sale);
+        $saleOperation = $this->buildSaleOperation($operation);
 
         $this->saleProcessor->process($sale, $saleOperation, $uriVariables, $context);
 
@@ -177,7 +182,7 @@ readonly class SaleV2Processor implements ProcessorInterface
     /**
      * Build a Sale-compatible operation for SaleProcessor delegation.
      */
-    private function buildSaleOperation(Operation $operation, Sale $sale): Operation
+    private function buildSaleOperation(Operation $operation): Operation
     {
         // SaleProcessor checks instanceof Post/Patch/Delete; create matching type.
         $operationClass = $operation::class;
