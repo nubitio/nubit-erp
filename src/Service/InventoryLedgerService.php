@@ -16,6 +16,8 @@ use App\Inventory\Core\Service\LotDeductionService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -31,6 +33,7 @@ final readonly class InventoryLedgerService
         private Connection $connection,
         private ?SettingsService $settingsService = null,
         private ?LotDeductionService $lotDeductionService = null,
+        private LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -426,6 +429,16 @@ SQL,
                 $productId,
                 $warehouseId
             ));
+        }
+
+        if ($newOnHand < -0.0005) {
+            $this->logger->warning('ALERTA: stock negativo tras venta offline', [
+                'product_id' => $productId,
+                'warehouse_id' => $warehouseId,
+                'previous_qty' => $currentOnHand,
+                'delta' => $delta,
+                'new_qty' => $newOnHand,
+            ]);
         }
 
         $newAvgCost = $currentAvgCost;

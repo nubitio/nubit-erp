@@ -58,6 +58,7 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
       headers: {
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
+        'X-Offline-Sale': 'true',
       },
     },
     status: 'pending',
