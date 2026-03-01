@@ -311,10 +311,13 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $purchasesPolicy = $this->purchasesWritePolicyResolver->resolve();
+        $skipLegacyPersist = ($data->getTipoId() === 1 && $purchasesPolicy->skipLegacyPersist)
+            || ($isOperationalSale && $salesWritePolicy instanceof SalesWritePolicy && $salesWritePolicy->skipLegacyPersist);
 
-        if ($data->getTipoId() === 1 && $purchasesPolicy->skipLegacyPersist) {
-            $this->logger->info('Skipping legacy movimiento persist for purchase (v2_authoritative)', [
+        if ($skipLegacyPersist) {
+            $this->logger->info('Skipping legacy movimiento persist (v2_authoritative)', [
                 'movimiento_id' => $data->getId(),
+                'tipo_id' => $data->getTipoId(),
             ]);
             $result = $data;
         } else {
