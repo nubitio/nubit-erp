@@ -603,7 +603,17 @@ SQL,
             ['product_id' => $productId]
         );
 
-        return $unitId !== false ? (int) $unitId : null;
+        if ($unitId === false || $unitId === null || $unitId === '' || $unitId === '0' || $unitId === 0) {
+            // Fallback: use product's own unit (unidad_id)
+            $unitId = $this->connection->fetchOne(
+                'SELECT unidad_id FROM producto WHERE producto_id = :product_id LIMIT 1',
+                ['product_id' => $productId]
+            );
+        }
+
+        return ($unitId !== false && $unitId !== null && $unitId !== '' && (int) $unitId > 0)
+            ? (int) $unitId
+            : null;
     }
 
     /**
