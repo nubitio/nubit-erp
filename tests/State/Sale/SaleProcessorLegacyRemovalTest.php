@@ -41,4 +41,26 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
         self::assertIsString($source);
         self::assertStringNotContainsString('Constants::CHECK_STOCK', $source);
     }
+
+    public function testInlinePurchasesHelpersAreRemoved(): void
+    {
+        $reflection = new \ReflectionClass(SaleProcessor::class);
+
+        self::assertFalse($reflection->hasMethod('isPurchasesV2WriteEnabled'));
+        self::assertFalse($reflection->hasMethod('isPurchasesV2StrictMode'));
+    }
+
+    public function testConstructorDependsOnPurchasesWritePolicyResolver(): void
+    {
+        $reflection = new \ReflectionClass(SaleProcessor::class);
+        $constructor = $reflection->getConstructor();
+        self::assertNotNull($constructor);
+
+        $parameterNames = array_map(
+            static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+            $constructor->getParameters()
+        );
+
+        self::assertContains('purchasesWritePolicyResolver', $parameterNames);
+    }
 }
