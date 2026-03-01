@@ -100,18 +100,18 @@ class Product
     private bool $isActive = true;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read', 'sale_item:read'])]
+    #[Groups(['product:read', 'product:write', 'sale_item:read'])]
     #[ORM\Column(name: 'descripcion', length: 255)]
     private string $name;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'categoria_id', referencedColumnName: 'categoria_id', nullable: false)]
     private Category $category;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'unidad_id', referencedColumnName: 'unidad_id', nullable: false)]
     private UnitOfMeasure $unitOfMeasure;
@@ -121,7 +121,7 @@ class Product
     private ?string $purchasePrice = null;
 
     #[Assert\NotBlank]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\Column(name: 'precio', type: Types::DECIMAL, precision: 10, scale: 2)]
     private string $salePrice = '0.00';
 
@@ -143,13 +143,13 @@ class Product
     ], orphanRemoval: true)]
     private Collection $stocks;
 
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'imagen', referencedColumnName: 'id')]
     private ?Media $photo = null;
 
     #[ApiProperty(readableLink: true)]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'product:write'])]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'detraccion_catalog_id', referencedColumnName: 'id', nullable: true)]
     private ?SunatCatalog $detractionCatalog = null;
