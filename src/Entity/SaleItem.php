@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'movimiento_detalle')]
 class SaleItem
 {
-    #[Groups(['sale_item:read'])]
+    #[Groups(['sale_item:read', 'sale:read', 'inbound:read', 'outbound:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id', type: 'integer')]
@@ -38,24 +38,24 @@ class SaleItem
     #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
     private ?Sale $movimiento = null;
 
-    #[Groups(['sale_item:read', 'sale:write'])]
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'producto_id', referencedColumnName: 'producto_id')]
     private ?Product $producto = null;
 
-    #[Groups(['sale_item:read', 'sale:write'])]
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'cantidad')]
     private float $cantidad;
 
-    #[Groups(['sale_item:read', 'sale:write'])]
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'precio_unitario', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $precio_unitario = null;
 
-    #[Groups(['sale_item:read', 'sale:write'])]
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'descuento', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $descuento = null;
 
-    #[Groups(['sale_item:read', 'sale:write'])]
+    #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\Column(name: 'precio_total', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $precio_total = null;
 
