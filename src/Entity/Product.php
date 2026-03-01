@@ -224,8 +224,11 @@ class Product
         return ProductKind::from($this->productKind);
     }
 
-    public function setProductKind(ProductKind $kind): static
+    public function setProductKind(ProductKind|string $kind): static
     {
+        if (is_string($kind)) {
+            $kind = ProductKind::from($kind);
+        }
         $this->productKind = $kind->value;
 
         return $this;
@@ -241,8 +244,11 @@ class Product
         return InventoryBehavior::from($this->inventoryBehavior);
     }
 
-    public function setInventoryBehavior(InventoryBehavior $behavior): static
+    public function setInventoryBehavior(InventoryBehavior|string $behavior): static
     {
+        if (is_string($behavior)) {
+            $behavior = InventoryBehavior::from($behavior);
+        }
         $this->inventoryBehavior = $behavior->value;
         $this->trackInventory = $behavior->tracksInventory();
 
