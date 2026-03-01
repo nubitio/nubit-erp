@@ -460,15 +460,7 @@ SQL,
 
     private function shouldTrackInventory(Product $product): bool
     {
-        if (method_exists($product, 'getTrackInventory')) {
-            /** @var mixed $trackInventory */
-            $trackInventory = $product->getTrackInventory();
-            if (is_bool($trackInventory)) {
-                return $trackInventory;
-            }
-        }
-
-        return $product->getType() === 1;
+        return $product->getTrackInventory();
     }
 
     private function shouldReadFromStockItems(): bool

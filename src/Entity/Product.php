@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Inventory\Core\Enum\ProductType;
 use App\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
 use App\Validator as AppAssert;
@@ -53,6 +54,23 @@ class Product
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'tipo_id')]
     private int $type;
+
+    #[Groups(['product:read'])]
+    #[ORM\Column(name: 'product_type', length: 20, options: ['default' => ProductType::STOCKABLE->value])]
+    private string $productType = ProductType::STOCKABLE->value;
+
+    #[Groups(['product:read'])]
+    #[ORM\Column(name: 'track_inventory', options: ['default' => true])]
+    private bool $trackInventory = true;
+
+    #[Groups(['product:read'])]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'base_unit_id', referencedColumnName: 'unidad_id', nullable: true)]
+    private ?UnitOfMeasure $baseUnit = null;
+
+    #[Groups(['product:read'])]
+    #[ORM\Column(name: 'is_active', options: ['default' => true])]
+    private bool $isActive = true;
 
     #[Assert\NotBlank]
     #[Groups(['product:read', 'sale_item:read'])]
@@ -134,6 +152,63 @@ class Product
     public function setType(int $type): static
     {
         $this->type = $type;
+        if ($type === 1) {
+            $this->productType = ProductType::STOCKABLE->value;
+            $this->trackInventory = true;
+        } else {
+            $this->productType = ProductType::SERVICE->value;
+            $this->trackInventory = false;
+        }
+
+        return $this;
+    }
+
+    public function getProductType(): string
+    {
+        return $this->productType;
+    }
+
+    public function setProductType(string $productType): static
+    {
+        $normalized = strtoupper(trim($productType));
+        $resolved = ProductType::tryFrom($normalized) ?? ProductType::STOCKABLE;
+        $this->productType = $resolved->value;
+
+        return $this;
+    }
+
+    public function getTrackInventory(): bool
+    {
+        return $this->trackInventory;
+    }
+
+    public function setTrackInventory(bool $trackInventory): static
+    {
+        $this->trackInventory = $trackInventory;
+
+        return $this;
+    }
+
+    public function getBaseUnit(): ?UnitOfMeasure
+    {
+        return $this->baseUnit;
+    }
+
+    public function setBaseUnit(?UnitOfMeasure $baseUnit): static
+    {
+        $this->baseUnit = $baseUnit;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }
