@@ -317,6 +317,15 @@ class MenuSeedService
             'parent_id' => 1000,
         ],
         [
+            'id' => 1008,
+            'order_index' => 8,
+            'key_name' => 'Tipo de cambio',
+            'type' => 'route',
+            'route' => 'exchange-rate',
+            'icon' => 'ph ph-currency-dollar',
+            'parent_id' => 1000,
+        ],
+        [
             'id' => 2001,
             'order_index' => 1,
             'key_name' => 'Configuración',

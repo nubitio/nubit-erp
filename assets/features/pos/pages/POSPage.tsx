@@ -87,6 +87,10 @@ const POSPage = () => {
     lastSaleCode,
     emitInvoice,
     setEmitInvoice,
+    currency,
+    setCurrency,
+    exchangeRate,
+    setExchangeRate,
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -122,7 +126,7 @@ const POSPage = () => {
   });
 
   const formatMoney = (value: number) =>
-    NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)));
+    NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)), currency);
 
   // ── Caja session timestamp ────────────────────────────────────────────────────────────────
   const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(
@@ -345,6 +349,10 @@ const POSPage = () => {
         setSelectedPaymentMethodId={(id) => setSelectedPaymentMethodId(id)}
         emitInvoice={emitInvoice}
         setEmitInvoice={setEmitInvoice}
+        currency={currency}
+        setCurrency={setCurrency}
+        exchangeRate={exchangeRate}
+        setExchangeRate={setExchangeRate}
         discountPercent={discountPercent}
         setDiscountPercent={setDiscountPercent}
         isCashPaymentSelected={isCashPaymentSelected}

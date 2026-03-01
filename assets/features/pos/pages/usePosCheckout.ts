@@ -7,6 +7,7 @@ import { IGV_RATE, toLocalIsoString, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
+import { useCurrencySettings } from '@assets/hooks/useCurrencySettings';
 
 type UsePosCheckoutParams = {
   tenantId: string;
@@ -59,6 +60,7 @@ export const usePosCheckout = ({
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(false);
+  const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
 
   // Persist cart draft on every change (strip photo to keep storage lean)
   useEffect(() => {
@@ -229,6 +231,8 @@ export const usePosCheckout = ({
         glosa: note.trim() || null,
         descuento: discountPercent.toFixed(2),
         emit_invoice: emitInvoice,
+        currency,
+        exchange_rate: currency === 'USD' ? exchangeRate : '1.000000',
         items: cart.map((item) => ({
           producto: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
           cantidad: Number(item.quantity),
@@ -304,6 +308,10 @@ export const usePosCheckout = ({
     lastSaleCode,
     emitInvoice,
     setEmitInvoice,
+    currency,
+    setCurrency,
+    exchangeRate,
+    setExchangeRate,
     addToCart,
     removeFromCart,
     updateQuantity,
