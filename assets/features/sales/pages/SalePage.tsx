@@ -41,7 +41,7 @@ export const SalePage = () => {
   const fields = SaleFields(formRef.current);
   const detailFields = SaleDetailFields(formRef.current);
 
-  const API_URL = Constants.API_BASE_URL + 'movements';
+  const API_URL = Constants.API_BASE_URL + 'sales';
 
   const setupPrinter = () => {
     qzInvoicePrinterRef.current.initialize().catch((err: any) => {
@@ -59,13 +59,13 @@ export const SalePage = () => {
     setCloneEnabled,
     onDiscountApply: (discountPercent) => {
       const discount = Number(discountPercent * 100).toFixed(2);
-      formRef.current?.setFieldValue('descuento', Number(discount));
+      formRef.current?.setFieldValue('discountPercent', Number(discount));
     },
     onDetailRowsChanged: () => {
       setTotal(formRef.current);
     },
     onCustomerCreated: (payload) => {
-      formRef.current?.setFieldValue('cliente', payload.data);
+      formRef.current?.setFieldValue('customer', payload.data);
     },
     onSaleAdd: async () => {
       await applySaleAutoInvoiceOnAdd(formRef);
@@ -132,7 +132,7 @@ export const SalePage = () => {
         detailUrl={API_URL + '/{id}/items'}
         detailFields={detailFields}
         events={saleEvents}
-        sort={[{ selector: 'date_created', desc: true }]}
+        sort={[{ selector: 'createdAt', desc: true }]}
       />
       <DxDialog width={1000} height={760} events={saleEvents}>
         <DxForm
@@ -140,6 +140,7 @@ export const SalePage = () => {
           url={API_URL}
           fields={fields}
           detailFields={detailFields}
+          detailPropertyName="writeItems"
           events={saleEvents}
           useIRI={true}
         />

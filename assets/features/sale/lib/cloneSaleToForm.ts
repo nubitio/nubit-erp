@@ -20,17 +20,17 @@ export const cloneSaleToForm = ({
   emit(loadingEventName, true);
 
   httpClient
-    .get<any>(`${Constants.API_BASE_URL}movements/${saleId}`)
+    .get<any>(`${Constants.API_BASE_URL}sales/${saleId}`)
     .pipe(
       switchMap((saleResponse) =>
         forkJoin({
           sale: of(saleResponse),
-          items: httpClient.get<any>(`${Constants.API_BASE_URL}movements/${saleId}/items`),
+          items: httpClient.get<any>(`${Constants.API_BASE_URL}sales/${saleId}/items`),
         }),
       ),
       map(({ sale, items }) => ({
         ...sale.data,
-        items: items.data,
+        writeItems: items.data,
       })),
     )
     .subscribe({
