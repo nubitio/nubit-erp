@@ -25,6 +25,7 @@ final readonly class SalesWritePolicyResolver
             return new SalesWritePolicy(
                 mode: $mode,
                 writeNewSchema: false,
+                skipLegacyPersist: false,
                 strict: false,
             );
         }
@@ -33,16 +34,19 @@ final readonly class SalesWritePolicyResolver
             return new SalesWritePolicy(
                 mode: $mode,
                 writeNewSchema: true,
+                skipLegacyPersist: true,
                 strict: true,
             );
         }
 
+        // dual_write: always writes legacy; V2 write controlled by individual flags
         return new SalesWritePolicy(
             mode: $mode,
             writeNewSchema: filter_var(
                 $this->settings->get(Constants::SALES_V2_DUAL_WRITE_ENABLED, 'true'),
                 FILTER_VALIDATE_BOOLEAN
             ),
+            skipLegacyPersist: false,
             strict: filter_var(
                 $this->settings->get(Constants::SALES_V2_DUAL_WRITE_STRICT, 'false'),
                 FILTER_VALIDATE_BOOLEAN

@@ -9,6 +9,7 @@ final readonly class SalesWritePolicy
     public function __construct(
         public string $mode,
         public bool $writeNewSchema,
+        public bool $skipLegacyPersist,
         public bool $strict,
     ) {
     }
