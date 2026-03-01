@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
@@ -260,6 +261,7 @@ class Sale
     /**
      * @var Collection<int, SaleItem>&iterable<SaleItem> $items
      */
+    #[ApiProperty(genId: false)]
     #[Groups([
         'sale:read',
         'sale:write',

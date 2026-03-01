@@ -214,12 +214,12 @@ export const usePosCheckout = ({
 
     try {
       const salePayload = {
-        fecha: toLocalIsoString(new Date()),
-        almacen: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
-        cliente: selectedCustomerId
+        issuedAt: toLocalIsoString(new Date()),
+        warehouse: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
+        customer: selectedCustomerId
           ? getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId))
           : null,
-        tipo_pago: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
+        paymentMethod: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
         payments: [
           {
             payment_method_id: Number(selectedPaymentMethodId),
@@ -228,17 +228,18 @@ export const usePosCheckout = ({
             change_amount: isCashPaymentSelected ? changeAmount : 0,
           },
         ],
-        glosa: note.trim() || null,
-        descuento: discountPercent.toFixed(2),
-        emit_invoice: emitInvoice,
+        note: note.trim() || null,
+        discountPercent: discountPercent.toFixed(2),
+        emitInvoice,
         currency,
-        exchange_rate: currency === 'USD' ? exchangeRate : '1.000000',
-        items: cart.map((item) => ({
-          producto: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
-          cantidad: Number(item.quantity),
-          precio_unitario: toNumber(item.salePrice).toFixed(2),
-          descuento: '0.00',
-          precio_total: (toNumber(item.salePrice) * item.quantity).toFixed(2),
+        exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
+        grandTotal: total.toFixed(2),
+        writeItems: cart.map((item) => ({
+          product: getIRI(`${Constants.API_BASE_URL}products`, String(item.id)),
+          qty: Number(item.quantity),
+          unitPrice: toNumber(item.salePrice).toFixed(2),
+          discountAmount: '0.00',
+          netAmount: (toNumber(item.salePrice) * item.quantity).toFixed(2),
         })),
       };
 
@@ -246,7 +247,7 @@ export const usePosCheckout = ({
         tenantId,
         storeId,
         warehouseId: selectedWarehouseId,
-        endpointUrl: `${Constants.API_BASE_URL}movements`,
+        endpointUrl: `${Constants.API_BASE_URL}sales`,
         requestBody: salePayload,
         items: cart.map((item) => ({
           productId: item.id,
