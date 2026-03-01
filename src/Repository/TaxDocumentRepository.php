@@ -297,6 +297,7 @@ SQL,
         $detractionPaymentMethod = $taxDocument?->getDetractionPaymentMethod() ?? $sale->getDetraccionMedioPago();
         $detractionDescription = $this->findSunatCatalogDescription(54, $detractionCode);
         $detractionPaymentDescription = $this->findSunatCatalogDescription(59, $detractionPaymentMethod);
+        $salesCurrencyData = $this->findSaleCurrencyData($sale->getId());
 
         return new VoucherHeaderDto(
             saleId: $sale->getId(),
@@ -317,7 +318,8 @@ SQL,
             voucherNumber: $voucherNumber,
             voucherPaymentMethod: $taxDocument?->getPaymentMethod() ?? $sale->getFormaPago(),
             voucherDate: ($taxDocument?->getIssueDate() ?? $sale->getFecha())?->format('Y-m-d H:i:s'),
-            voucherCurrency: $taxDocument?->getCurrency() ?? 'PEN',
+            voucherCurrency: $taxDocument?->getCurrency() ?? $salesCurrencyData['currency'] ?? 'PEN',
+            voucherExchangeRate: $taxDocument?->getExchangeRate() ?? $salesCurrencyData['exchange_rate'],
             voucherDiscountAmount: $taxDocument?->getDiscountAmount(),
             voucherDiscountPercentage: (string)($taxDocument?->getDiscountPercent() ?? $sale->getDescuento() ?? 0),
             voucherConsumptionSurchargeAmount: $taxDocument?->getRcAmount(),
@@ -351,6 +353,14 @@ SQL,
             voucherQrData: null,
             voucherStatus: $sale->getEstado(),
         );
+    }
+
+    /**
+     * @return array{currency: ?string, exchange_rate: ?string}
+     */
+    public function getSalesCurrencyForSaleId(?string $saleId): array
+    {
+        return $this->findSaleCurrencyData($saleId);
     }
 
     /**
@@ -393,6 +403,36 @@ SQL,
             ),
             $sale->getItems()->toArray()
         );
+    }
+
+    /**
+     * @return array{currency: ?string, exchange_rate: ?string}
+     */
+    private function findSaleCurrencyData(?string $saleId): array
+    {
+        if ($saleId === null || trim($saleId) === '') {
+            return ['currency' => null, 'exchange_rate' => null];
+        }
+
+        $row = $this->getEntityManager()->getConnection()->fetchAssociative(
+            <<<'SQL'
+SELECT s.currency, s.exchange_rate
+FROM sales s
+WHERE s.id = :id OR s.legacy_movimiento_id = :id
+ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
+LIMIT 1
+SQL,
+            ['id' => $saleId]
+        );
+
+        if (!is_array($row)) {
+            return ['currency' => null, 'exchange_rate' => null];
+        }
+
+        return [
+            'currency' => isset($row['currency']) ? (string)$row['currency'] : null,
+            'exchange_rate' => isset($row['exchange_rate']) ? (string)$row['exchange_rate'] : null,
+        ];
     }
 
     /**

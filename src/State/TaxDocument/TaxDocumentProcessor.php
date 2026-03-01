@@ -201,7 +201,14 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         $data->setTotal($amounts->getTotal());
-        $data->setCurrency('PEN');
+        $saleCurrencyData = $this->taxDocumentRepository->getSalesCurrencyForSaleId($sale->getId());
+        $currency = $related->getCurrency() ?? $saleCurrencyData['currency'] ?? 'PEN';
+        $exchangeRate = $related->getExchangeRate() ?? $saleCurrencyData['exchange_rate'];
+        if ($currency === 'PEN') {
+            $exchangeRate = '1.000000';
+        }
+        $data->setCurrency($currency);
+        $data->setExchangeRate($exchangeRate);
         $data->setPaymentMethod($sale->getFormaPago());
         $data->setSubtotal($amounts->getSubtotal());
         $data->setTaxableAmount($amounts->getTaxedAmount());
