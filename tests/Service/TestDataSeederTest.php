@@ -23,6 +23,7 @@ use App\Repository\UnitOfMeasureRepository;
 use App\Repository\WarehouseRepository;
 use App\Service\TestDataSeeder;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 final class TestDataSeederTest extends TestCase
@@ -233,7 +234,8 @@ final class TestDataSeederTest extends TestCase
         ?ProductRepository $productRepository = null,
         ?SaleRepository $saleRepository = null,
     ): TestDataSeeder {
-        $warehouseRepository ??= $this->createMock(WarehouseRepository::class);
+        /** @var WarehouseRepository&MockObject $warehouseRepository */
+        $warehouseRepository = $warehouseRepository ?? $this->createMock(WarehouseRepository::class);
         $warehouseRepository->method('findOneBy')->willReturn(new Warehouse());
 
         return new TestDataSeeder(
