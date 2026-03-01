@@ -120,6 +120,9 @@ class TaxDocument
     #[ORM\Column(name: 'currency', type: Types::STRING, length: 3, nullable: true)]
     private ?string $currency = null;
 
+    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 14, scale: 6, nullable: true)]
+    private ?string $exchangeRate = null;
+
     #[ORM\Column(name: 'subtotal', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $subtotal = null;
 
@@ -361,6 +364,18 @@ class TaxDocument
     public function setCurrency(?string $currency): self
     {
         $this->currency = $currency;
+
+        return $this;
+    }
+
+    public function getExchangeRate(): ?string
+    {
+        return $this->exchangeRate;
+    }
+
+    public function setExchangeRate(?string $exchangeRate): self
+    {
+        $this->exchangeRate = $exchangeRate;
 
         return $this;
     }

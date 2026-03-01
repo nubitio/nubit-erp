@@ -7,6 +7,7 @@ namespace App\EInvoicing\Service;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\Sale;
 use App\Sale\Domain\DocType;
+use App\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -18,6 +19,7 @@ final readonly class InvoiceCreationService
 {
     public function __construct(
         private Connection $connection,
+        private SaleCurrencyResolver $saleCurrencyResolver,
     ) {
     }
 
@@ -85,6 +87,14 @@ final readonly class InvoiceCreationService
             $sale->getTotal() !== null ? (string)$sale->getTotal() : null,
         );
         $invoiceAmounts = $invoiceCalculator->calculate();
+        $saleId = $sale->getId();
+        if ($saleId === null) {
+            return [
+                'success' => false,
+                'message' => 'La venta no tiene identificador para emitir comprobante.',
+            ];
+        }
+        $currencyData = $this->saleCurrencyResolver->resolveForSaleId($saleId);
 
         $connection->beginTransaction();
         try {
@@ -156,7 +166,8 @@ final readonly class InvoiceCreationService
                 'series' => $series,
                 'number' => strval($nextNumber),
                 'customer_id' => $sale->getCliente()?->getId(),
-                'currency' => 'PEN',
+                'currency' => $currencyData['currency'],
+                'exchange_rate' => $currencyData['exchange_rate'],
                 'payment_method' => $sale->getFormaPago(),
                 'subtotal' => $invoiceAmounts->getSubtotal(),
                 'taxable_amount' => $invoiceAmounts->getTaxedAmount(),

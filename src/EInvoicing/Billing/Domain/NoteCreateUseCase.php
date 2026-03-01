@@ -110,7 +110,8 @@ readonly class NoteCreateUseCase
         $amountString = Money::toString(Money::money($voucher->voucher_sale_amount));
         $parts = explode('.', $amountString);
         $amount = $formatter->format((int)$parts[0]);
-        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 SOLES');
+        $currencyLabel = ($voucher->voucher_currency ?? 'PEN') === 'USD' ? 'DOLARES' : 'SOLES';
+        $strTotal = mb_strtoupper('SON ' . $amount . ' CON ' . $parts[1] . ' / 100 ' . $currencyLabel);
 
         $legend = new Legend();
         $legend->setCode('1000')
