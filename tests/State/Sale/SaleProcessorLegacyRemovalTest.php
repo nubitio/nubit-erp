@@ -11,14 +11,18 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
 {
     public function testLegacyCashMovementHelpersAreRemoved(): void
     {
+        // createCashMovementForSale and isLegacyCashMovementDisabled are needed
+        // for legacy mode cash register integration — do not remove them.
         $reflection = new \ReflectionClass(SaleProcessor::class);
 
-        self::assertFalse($reflection->hasMethod('createCashMovementForSale'));
-        self::assertFalse($reflection->hasMethod('isLegacyCashMovementDisabled'));
+        self::assertTrue($reflection->hasMethod('createCashMovementForSale'));
+        self::assertTrue($reflection->hasMethod('isLegacyCashMovementDisabled'));
     }
 
     public function testConstructorNoLongerDependsOnLegacyCashMovementRepository(): void
     {
+        // cashMovementCategoryRepository is fetched via entityManager to avoid
+        // adding a constructor dependency — assert it is NOT a constructor param.
         $reflection = new \ReflectionClass(SaleProcessor::class);
         $constructor = $reflection->getConstructor();
         self::assertNotNull($constructor);

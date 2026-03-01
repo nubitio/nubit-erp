@@ -72,6 +72,9 @@ class Product
     #[ORM\Column(name: 'inventory_behavior', length: 12, options: ['default' => 'TRACKED'])]
     private string $inventoryBehavior = InventoryBehavior::TRACKED->value;
 
+    /** Transient flag: true when inventoryBehavior was explicitly set via v2 API — prevents setType() from overriding it. */
+    private bool $inventoryBehaviorExplicitlySet = false;
+
     #[Groups(['product:read', 'product:write'])]
     #[Assert\Length(max: 64)]
     #[ORM\Column(name: 'sku', length: 64, nullable: true, unique: true)]
@@ -182,13 +185,17 @@ class Product
         if ($type === 1) {
             $this->productType = ProductType::STOCKABLE->value;
             $this->productKind = ProductKind::GOOD->value;
-            $this->inventoryBehavior = InventoryBehavior::TRACKED->value;
-            $this->trackInventory = true;
+            if (!$this->inventoryBehaviorExplicitlySet) {
+                $this->inventoryBehavior = InventoryBehavior::TRACKED->value;
+                $this->trackInventory = true;
+            }
         } else {
             $this->productType = ProductType::SERVICE->value;
             $this->productKind = ProductKind::SERVICE->value;
-            $this->inventoryBehavior = InventoryBehavior::NOT_TRACKED->value;
-            $this->trackInventory = false;
+            if (!$this->inventoryBehaviorExplicitlySet) {
+                $this->inventoryBehavior = InventoryBehavior::NOT_TRACKED->value;
+                $this->trackInventory = false;
+            }
         }
 
         return $this;
@@ -251,6 +258,7 @@ class Product
         }
         $this->inventoryBehavior = $behavior->value;
         $this->trackInventory = $behavior->tracksInventory();
+        $this->inventoryBehaviorExplicitlySet = true;
 
         return $this;
     }

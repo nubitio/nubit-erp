@@ -13,8 +13,9 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
-use App\Entity\CashShift;
-use App\Entity\Customer;
+use App\Entity\CashMovement;
+use App\Entity\CashMovementCategory;
+use App\Entity\CashShift;use App\Entity\Customer;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
@@ -328,6 +329,13 @@ readonly class SaleProcessor implements ProcessorInterface
                         }
                     }
                 }
+
+                if (
+                    $cashShiftForMovement instanceof CashShift
+                    && !$this->isLegacyCashMovementDisabled($salesWritePolicy)
+                ) {
+                    $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
+                }
             }
         }
 
@@ -414,5 +422,45 @@ readonly class SaleProcessor implements ProcessorInterface
             'root_cause_message' => is_array($rootCause) ? $rootCause['message'] : null,
             'root_cause_code' => is_array($rootCause) ? $rootCause['code'] : null,
         ];
+    }
+
+    private function createCashMovementForSale(Sale $sale, CashShift $cashShift, string $cashAmount): void
+    {
+        /** @var CashMovementCategory|null $category */
+        $category = $this->entityManager->getRepository(CashMovementCategory::class)->findOneBy([
+            'code' => CashMovementCategory::CASH_SALE,
+        ]);
+
+        if (!$category instanceof CashMovementCategory) {
+            $this->logger->warning('Cash sale category not found — skipping legacy cash movement', [
+                'sale_id' => $sale->getId(),
+            ]);
+
+            return;
+        }
+
+        $movement = new CashMovement();
+        $movement->setCashShift($cashShift);
+        $movement->setCategory($category);
+        $movement->setType($category->getType());
+        $movement->setAmount($cashAmount);
+        $movement->setDescription('Venta en efectivo N° ' . $sale->getSerie() . '-' . $sale->getNumero());
+        $movement->setCreatedAt(new DateTimeImmutable());
+        $movement->setBranch($sale->getBranch());
+
+        $this->entityManager->persist($movement);
+        $this->entityManager->flush();
+    }
+
+    private function isLegacyCashMovementDisabled(?SalesWritePolicy $policy): bool
+    {
+        if ($policy instanceof SalesWritePolicy && $policy->mode === SalesWriteMode::AUTHORITATIVE) {
+            return true;
+        }
+
+        return filter_var(
+            $this->settings->get('sales_v2_disable_legacy_cash_movement', 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
     }
 }
