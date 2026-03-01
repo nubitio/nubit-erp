@@ -11,6 +11,8 @@ use App\Entity\Product;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
+use App\Inventory\Core\Enum\LotTrackingStrategy;
+use App\Inventory\Core\Service\LotDeductionService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -28,6 +30,7 @@ final readonly class InventoryLedgerService
     public function __construct(
         private Connection $connection,
         private ?SettingsService $settingsService = null,
+        private ?LotDeductionService $lotDeductionService = null,
     ) {
     }
 
@@ -124,19 +127,38 @@ SQL,
         $sourceId = sprintf('%s:%s:%d', $saleId, $movementType, $lineNo);
         $idempotencyKey = $this->deterministicUuid($sourceType . ':' . $sourceId);
 
+        $lotDeductions = $this->resolveLotDeductions($product, $warehouse, $movementType, $qty);
+
         $this->connection->beginTransaction();
         try {
             try {
-                $this->insertStockMovement(
-                    sale: $sale,
-                    item: $item,
-                    movementType: $movementType,
-                    delta: $delta,
-                    unitCost: $unitCost,
-                    sourceType: $sourceType,
-                    sourceId: $sourceId,
-                    idempotencyKey: $idempotencyKey
-                );
+                if ($lotDeductions !== []) {
+                    foreach ($lotDeductions as $i => ['lot' => $lot, 'qty' => $lotQty]) {
+                        $lotDelta = $delta < 0 ? -$lotQty : $lotQty;
+                        $this->insertStockMovement(
+                            sale: $sale,
+                            item: $item,
+                            movementType: $movementType,
+                            delta: $lotDelta,
+                            unitCost: $unitCost,
+                            sourceType: $sourceType,
+                            sourceId: $sourceId . ':lot' . $i,
+                            idempotencyKey: $this->deterministicUuid($idempotencyKey . ':lot' . $i),
+                            lotId: (string) $lot->getId(),
+                        );
+                    }
+                } else {
+                    $this->insertStockMovement(
+                        sale: $sale,
+                        item: $item,
+                        movementType: $movementType,
+                        delta: $delta,
+                        unitCost: $unitCost,
+                        sourceType: $sourceType,
+                        sourceId: $sourceId,
+                        idempotencyKey: $idempotencyKey,
+                    );
+                }
             } catch (UniqueConstraintViolationException) {
                 // Idempotent replay: movement already applied.
                 $this->connection->rollBack();
@@ -161,6 +183,43 @@ SQL,
     }
 
     /**
+     * Resolve lot deductions for FIFO/FEFO strategies.
+     * Returns empty array when lot tracking is disabled or column doesn't exist.
+     *
+     * @return array<array{lot: \App\Entity\StockLot, qty: float}>
+     */
+    private function resolveLotDeductions(
+        Product $product,
+        \App\Entity\Warehouse $warehouse,
+        string $movementType,
+        float $qty,
+    ): array {
+        if ($movementType !== 'SALE_OUT') {
+            return [];
+        }
+
+        $strategy = $product->getLotTrackingStrategyEnum();
+        if ($strategy === LotTrackingStrategy::NONE) {
+            return [];
+        }
+
+        if ($this->lotDeductionService === null) {
+            return [];
+        }
+
+        if (!$this->hasColumn('stock_movements', 'lot_id')) {
+            return [];
+        }
+
+        return $this->lotDeductionService->deduct(
+            productId: (string) $product->getId(),
+            warehouseId: (string) $warehouse->getId(),
+            qty: $qty,
+            strategy: $strategy,
+        );
+    }
+
+    /**
      * @throws Exception
      */
     private function insertStockMovement(
@@ -172,11 +231,13 @@ SQL,
         string $sourceType,
         string $sourceId,
         string $idempotencyKey,
+        ?string $lotId = null,
     ): void {
         $warehouseId = (string) $sale->getAlmacen()?->getId();
         $productId = (string) $item->getProducto()?->getId();
         $occurredAt = ($sale->getFecha() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s');
         $totalCost = $unitCost !== null ? round(abs($delta) * $unitCost, 2) : null;
+        $supportsLotId = $lotId !== null && $this->hasColumn('stock_movements', 'lot_id');
         $params = [
             'warehouse_id' => $warehouseId,
             'product_id' => $productId,
@@ -202,12 +263,18 @@ SQL,
                 ? $this->resolveMovementUnitId($productId)
                 : null;
 
+            $lotColumn = $supportsLotId ? "\n    lot_id," : '';
+            $lotValue = $supportsLotId ? "\n    :lot_id," : '';
+            if ($supportsLotId) {
+                $params['lot_id'] = $lotId;
+            }
+
             $this->connection->executeStatement(
-                <<<'SQL'
+                <<<SQL
 INSERT INTO stock_movements (
     warehouse_id,
     product_id,
-    variant_id,
+    variant_id,{$lotColumn}
     occurred_at,
     movement_type,
     quantity_delta,
@@ -230,7 +297,7 @@ INSERT INTO stock_movements (
 ) VALUES (
     :warehouse_id,
     :product_id,
-    NULL,
+    NULL,{$lotValue}
     :occurred_at,
     :movement_type,
     :quantity_delta,
@@ -258,12 +325,18 @@ SQL,
             return;
         }
 
+        $lotColumn = $supportsLotId ? "\n    lot_id," : '';
+        $lotValue = $supportsLotId ? "\n    :lot_id," : '';
+        if ($supportsLotId) {
+            $params['lot_id'] = $lotId;
+        }
+
         $this->connection->executeStatement(
-            <<<'SQL'
+            <<<SQL
 INSERT INTO stock_movements (
     warehouse_id,
     product_id,
-    variant_id,
+    variant_id,{$lotColumn}
     occurred_at,
     movement_type,
     quantity_delta,
@@ -283,7 +356,7 @@ INSERT INTO stock_movements (
 ) VALUES (
     :warehouse_id,
     :product_id,
-    NULL,
+    NULL,{$lotValue}
     :occurred_at,
     :movement_type,
     :quantity_delta,

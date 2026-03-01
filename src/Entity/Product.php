@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
+use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductType;
 use App\Repository\ProductRepository;
 use App\State\Product\ProductStockController;
@@ -62,6 +63,10 @@ class Product
     #[Groups(['product:read'])]
     #[ORM\Column(name: 'track_inventory', options: ['default' => true])]
     private bool $trackInventory = true;
+
+    #[Groups(['product:read'])]
+    #[ORM\Column(name: 'lot_tracking_strategy', length: 10, options: ['default' => 'NONE'])]
+    private string $lotTrackingStrategy = LotTrackingStrategy::NONE->value;
 
     #[Groups(['product:read'])]
     #[ORM\ManyToOne]
@@ -187,6 +192,23 @@ class Product
         $this->trackInventory = $trackInventory;
 
         return $this;
+    }
+
+    public function getLotTrackingStrategy(): string
+    {
+        return $this->lotTrackingStrategy;
+    }
+
+    public function setLotTrackingStrategy(LotTrackingStrategy $strategy): static
+    {
+        $this->lotTrackingStrategy = $strategy->value;
+
+        return $this;
+    }
+
+    public function getLotTrackingStrategyEnum(): LotTrackingStrategy
+    {
+        return LotTrackingStrategy::from($this->lotTrackingStrategy);
     }
 
     public function getBaseUnit(): ?UnitOfMeasure
