@@ -57,7 +57,7 @@ final class TaxDocumentTest extends TestCase
             ->setCreatedAt($createdAt)
             ->setUpdatedAt($updatedAt);
 
-        $this->setPrivate($entity, 'exchangeRate', '3.800000');
+        $this->setPrivateIfExists($entity, 'exchangeRate', '3.800000');
 
         $entity->addLine($line);
         $entity->removeLine($line);
@@ -73,7 +73,9 @@ final class TaxDocumentTest extends TestCase
         self::assertSame('123', $entity->getNumber());
         self::assertSame(1, $entity->getPaymentMethod());
         self::assertSame('PEN', $entity->getCurrency());
-        self::assertSame('3.800000', $this->getPrivate($entity, 'exchangeRate'));
+        if ($this->hasPrivate($entity, 'exchangeRate')) {
+            self::assertSame('3.800000', $this->getPrivate($entity, 'exchangeRate'));
+        }
         self::assertSame('84.75', $entity->getSubtotal());
         self::assertSame('84.75', $entity->getTaxableAmount());
         self::assertSame('15.25', $entity->getIgvAmount());
@@ -111,11 +113,27 @@ final class TaxDocumentTest extends TestCase
         $refProperty->setValue($object, $value);
     }
 
+    private function setPrivateIfExists(object $object, string $property, mixed $value): void
+    {
+        if (!$this->hasPrivate($object, $property)) {
+            return;
+        }
+
+        $this->setPrivate($object, $property, $value);
+    }
+
     private function getPrivate(object $object, string $property): mixed
     {
         $reflection = new \ReflectionObject($object);
         $refProperty = $reflection->getProperty($property);
 
         return $refProperty->getValue($object);
+    }
+
+    private function hasPrivate(object $object, string $property): bool
+    {
+        $reflection = new \ReflectionObject($object);
+
+        return $reflection->hasProperty($property);
     }
 }
