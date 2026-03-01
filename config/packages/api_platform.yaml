@@ -27,3 +27,5 @@ api_platform:
         pagination_client_enabled: true
         pagination_client_items_per_page: true
     use_symfony_listeners: true
+    exception_to_status:
+        App\Core\Exception\ServiceException: 422

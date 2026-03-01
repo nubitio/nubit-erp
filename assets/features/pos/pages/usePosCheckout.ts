@@ -290,6 +290,8 @@ export const usePosCheckout = ({
         printSaleInvoice(syncedSale.serverSaleId).catch(() => {
           toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
         });
+      } else if (syncedSale?.status === 'error') {
+        toast(syncedSale.errorMessage ?? 'La venta fue rechazada por el servidor.', 'error');
       }
     } finally {
       setIsProcessingSale(false);
