@@ -184,6 +184,47 @@ SQL,
         return $this->getVoucher($saleId);
     }
 
+    /**
+     * Returns the document_type (e.g. '01', '03', 'NV') for any active invoice
+     * linked to the given sale, searching by both movimiento_id and sale_id.
+     * Returns null when no tax_document exists for the sale.
+     */
+    public function findDocumentTypeBySaleId(string $saleId): ?string
+    {
+        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
+        $type = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<'SQL'
+SELECT document_type
+FROM tax_document
+WHERE (movimiento_id = :sale_id OR sale_id = :sale_id)
+  AND document_type NOT IN ('07', '08')
+ORDER BY created_at DESC
+LIMIT 1
+SQL,
+            ['sale_id' => $resolvedId]
+        );
+
+        if (!is_string($type) || $type === '') {
+            // Also try the original (V2) id in case resolveLegacySaleIdForVoucher
+            // returned the legacy id and the tax_document only has the V2 id.
+            if ($resolvedId !== $saleId) {
+                $type = $this->getEntityManager()->getConnection()->fetchOne(
+                    <<<'SQL'
+SELECT document_type
+FROM tax_document
+WHERE (movimiento_id = :sale_id OR sale_id = :sale_id)
+  AND document_type NOT IN ('07', '08')
+ORDER BY created_at DESC
+LIMIT 1
+SQL,
+                    ['sale_id' => $saleId]
+                );
+            }
+        }
+
+        return is_string($type) && $type !== '' ? $type : null;
+    }
+
     private function resolveLegacySaleIdForVoucher(string $saleId): string
     {
         $connection = $this->getEntityManager()->getConnection();

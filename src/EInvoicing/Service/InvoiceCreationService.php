@@ -158,9 +158,16 @@ final readonly class InvoiceCreationService
 
             $taxDocumentId = (string) $this->connection->fetchOne('SELECT UUID()');
 
+            // Resolve the V2 sale_id (sales.id) for the FK to the sales table.
+            $v2SaleId = $connection->fetchOne(
+                'SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1',
+                ['id' => $saleId]
+            );
+
             $connection->insert('tax_document', [
                 'tax_document_id' => $taxDocumentId,
                 'movimiento_id' => $saleId,
+                'sale_id' => is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null,
                 'issue_date' => $saleDateUtc->format('Y-m-d H:i:s'),
                 'document_type' => $voucherType,
                 'series' => $series,

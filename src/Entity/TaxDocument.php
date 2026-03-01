@@ -79,10 +79,21 @@ class TaxDocument
     #[Groups(['invoice:read', 'creditnote:read'])]
     private ?string $id = null;
 
+    /**
+     * Legacy relation to the movimiento table (preserved for dual-write compatibility).
+     * In v2_authoritative mode this may be null; use $saleRecord instead.
+     */
     #[ORM\OneToOne(targetEntity: Sale::class, inversedBy: 'taxDocument')]
-    #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id', nullable: false)]
+    #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id', nullable: true)]
     #[Groups(['creditnote:read'])]
-    private Sale $sale;
+    private ?Sale $sale = null;
+
+    /**
+     * V2 relation to the sales table. Populated when sale_id column is set.
+     */
+    #[ORM\ManyToOne(targetEntity: SaleRecord::class)]
+    #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id', nullable: true)]
+    private ?SaleRecord $saleRecord = null;
 
     #[ORM\ManyToOne(targetEntity: self::class)]
     #[ORM\JoinColumn(name: 'related_tax_document_id', referencedColumnName: 'tax_document_id', nullable: true)]
@@ -223,16 +234,37 @@ class TaxDocument
         return $this->id;
     }
 
-    public function getSale(): Sale
+    public function getSale(): ?Sale
     {
         return $this->sale;
     }
 
-    public function setSale(Sale $sale): self
+    public function setSale(?Sale $sale): self
     {
         $this->sale = $sale;
 
         return $this;
+    }
+
+    public function getSaleRecord(): ?SaleRecord
+    {
+        return $this->saleRecord;
+    }
+
+    public function setSaleRecord(?SaleRecord $saleRecord): self
+    {
+        $this->saleRecord = $saleRecord;
+
+        return $this;
+    }
+
+    /**
+     * Returns the canonical sale ID regardless of which table the sale lives in.
+     * Prefers V2 (sales.id); falls back to legacy movimiento_id.
+     */
+    public function getCanonicalSaleId(): ?string
+    {
+        return $this->saleRecord?->getId() ?? $this->sale?->getId();
     }
 
     public function getRelatedTaxDocument(): ?self

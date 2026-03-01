@@ -10,6 +10,7 @@ use App\Core\Http\ApiResponse;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\EInvoicing\Sale\Void\SunatVoidService;
 use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;
+use App\EInvoicing\Service\SaleV2Loader;
 use App\Sale\Domain\SaleStatus;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\Sale;
@@ -34,6 +35,7 @@ readonly class SaleVoidUseCase
         private CashRefundRegistrar $cashRefundRegistrar,
         private AuditLogger $auditLogger,
         private SalesWriteGateway $salesWriteGateway,
+        private SaleV2Loader $saleV2Loader,
     ) {
     }
 
@@ -50,8 +52,9 @@ readonly class SaleVoidUseCase
         string $reason,
         int $userId,
     ): ApiResponse {
-        $voucher = $this->taxDocumentRepository->getVoucher($saleId);
-        $sale = $this->entityManager->find(Sale::class, $saleId);
+        // Load sale — try ORM (V1/dual-write) first, fall back to V2 tables.
+        $ormSale = $this->entityManager->find(Sale::class, $saleId);
+        $sale = $ormSale ?? $this->saleV2Loader->loadAsSale($saleId);
         if (!$sale instanceof Sale) {
             throw new ServiceException(ErrorMessages::SALE_NOT_EXISTS);
         }
@@ -73,13 +76,19 @@ readonly class SaleVoidUseCase
             throw SaleException::hasCreditNote();
         }
 
-        $documentType = (string)$voucher->voucher_type;
+        // Resolve document type without loading the full voucher DTO,
+        // so this works in v2_authoritative mode where no movimiento row exists.
+        $documentType = $this->taxDocumentRepository->findDocumentTypeBySaleId($saleId)
+            ?? DocType::NOTA_VENTA->value;
+
         if ($documentType === DocType::NOTA_VENTA->value) {
             $sale->setGlosa($reason);
             $sale->setEstado(SaleStatus::VOIDED->value);
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
-            $this->entityManager->persist($sale);
+            if ($ormSale !== null) {
+                $this->entityManager->persist($sale);
+            }
             $this->cashRefundRegistrar->register($sale, $userId);
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);
@@ -110,8 +119,12 @@ readonly class SaleVoidUseCase
         try {
             $sunatResponse = $this->sunatVoidService->void($documentType, $saleId, $reason);
 
+            // Search tax_document by movimiento_id (V1/dual-write) or by sale_id (V2).
             $taxDocument = $this->taxDocumentRepository->findOneBy([
                 'sale' => $saleId,
+                'documentType' => $documentType,
+            ]) ?? $this->taxDocumentRepository->findOneBy([
+                'saleRecord' => $saleId,
                 'documentType' => $documentType,
             ]);
             if ($taxDocument === null) {
@@ -125,7 +138,9 @@ readonly class SaleVoidUseCase
             $sale->setEstado(SaleStatus::VOIDED->value);
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
-            $this->entityManager->persist($sale);
+            if ($ormSale !== null) {
+                $this->entityManager->persist($sale);
+            }
 
             $this->cashRefundRegistrar->register($sale, $userId);
 
