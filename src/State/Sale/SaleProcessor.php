@@ -26,6 +26,7 @@ use App\EInvoicing\Service\InvoiceCreationService;
 use App\Service\InventoryLedgerService;
 use App\Service\SalePaymentPlanService;
 use App\State\Purchase\GoodsReceiptWriteGateway;
+use App\State\Purchase\PurchasesWritePolicyResolver;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
@@ -44,7 +45,6 @@ readonly class SaleProcessor implements ProcessorInterface
     private const string NEGATIVE_STOCK_STRICT = 'STRICT';
     private const string NEGATIVE_STOCK_WARNING_ONLY = 'WARNING_ONLY';
     private const string NEGATIVE_STOCK_ALLOW_NEGATIVE = 'ALLOW_NEGATIVE';
-    private const string PURCHASES_MODE_LEGACY = 'legacy';
 
     private const string DETRACTION_PAYMENT_METHOD = '001';
     private const float MIN_DETRACTION_TOTAL = 700.0;
@@ -74,6 +74,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SalesWritePolicyResolver $salesWritePolicyResolver,
         private SalesWriteGateway $salesWriteGateway,
         private GoodsReceiptWriteGateway $goodsReceiptWriteGateway,
+        private PurchasesWritePolicyResolver $purchasesWritePolicyResolver,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
     ) {
@@ -309,29 +310,37 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setUpdatedBy($user->userId);
         }
 
-        $this->logger->info('Persisting sale data', [
-            'sale_id' => $data->getId(),
-            'customer_id' => $data->getCliente()?->getId(),
-            'total' => $data->getTotal(),
-            'item_count' => count($data->getItems()),
-        ]);
+        $purchasesPolicy = $this->purchasesWritePolicyResolver->resolve();
 
-        $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        if ($data->getTipoId() === 1 && $purchasesPolicy->skipLegacyPersist) {
+            $this->logger->info('Skipping legacy movimiento persist for purchase (v2_authoritative)', [
+                'movimiento_id' => $data->getId(),
+            ]);
+            $result = $data;
+        } else {
+            $this->logger->info('Persisting sale data', [
+                'sale_id' => $data->getId(),
+                'customer_id' => $data->getCliente()?->getId(),
+                'total' => $data->getTotal(),
+                'item_count' => count($data->getItems()),
+            ]);
+            $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+        }
 
-        if ($data->getTipoId() === 1 && $this->isPurchasesV2WriteEnabled()) {
+        if ($data->getTipoId() === 1 && $purchasesPolicy->writeNewSchema) {
             try {
                 $this->goodsReceiptWriteGateway->write($data);
             } catch (\Throwable $exception) {
-                $this->logger->error('Goods receipts V2 dual-write failed', [
+                $this->logger->error('Goods receipts V2 write failed', [
                     'movimiento_id' => $data->getId(),
-                    'mode' => (string) $this->settings->get(Constants::PURCHASES_V2_MODE, 'dual_write'),
-                    'strict' => $this->isPurchasesV2StrictMode(),
+                    'mode' => $purchasesPolicy->mode,
+                    'strict' => $purchasesPolicy->strict,
                     'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
                     'warehouse_id' => $data->getAlmacen()?->getId(),
                     ...$this->buildThrowableContext($exception),
                 ]);
 
-                if ($this->isPurchasesV2StrictMode()) {
+                if ($purchasesPolicy->strict) {
                     throw new ServiceException(
                         'No se pudo sincronizar la compra con Compras V2. Operación cancelada.',
                         0,
@@ -616,27 +625,6 @@ readonly class SaleProcessor implements ProcessorInterface
     {
         // Convention used in catalog: type=1 means stock-tracked tangible product.
         return $product->getType() === 1;
-    }
-
-    private function isPurchasesV2WriteEnabled(): bool
-    {
-        $mode = strtolower(trim((string) $this->settings->get(Constants::PURCHASES_V2_MODE, 'dual_write')));
-        if ($mode === self::PURCHASES_MODE_LEGACY) {
-            return false;
-        }
-
-        return filter_var(
-            $this->settings->get(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'true'),
-            FILTER_VALIDATE_BOOLEAN
-        );
-    }
-
-    private function isPurchasesV2StrictMode(): bool
-    {
-        return filter_var(
-            $this->settings->get(Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
     }
 
     /**
