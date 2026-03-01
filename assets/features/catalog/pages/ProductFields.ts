@@ -85,7 +85,7 @@ export const ProductFields = () => {
         return map[cell.value] ?? cell.value;
       })
       .defaultValue('TRACKED')
-      .visibleOnGrid(false)
+      .visibleOnForm(true)
       .build(),
   );
   // Keep legacy type field hidden but still sent for backward compat
