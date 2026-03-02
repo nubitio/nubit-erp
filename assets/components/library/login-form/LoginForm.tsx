@@ -12,14 +12,9 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const formData = useRef({ username: '', password: '' });
   const [showLocalPicker, setShowLocalPicker] = useState(false);
-  const [user, setUser] = useState('');
-  const [password, setPassword] = useState('');
-
   const onSubmit = useCallback(async (e) => {
     e.preventDefault();
     const { username, password } = formData.current;
-    setUser(username);
-    setPassword(password);
     setLoading(true);
 
     authService.login(username, password).subscribe({
@@ -77,10 +72,7 @@ export const LoginForm = () => {
           </ButtonOptions>
         </ButtonItem>
       </Form>
-      <BranchPicker
-        visible={showLocalPicker}
-        setVisible={setShowLocalPicker}
-      />
+      <BranchPicker visible={showLocalPicker} setVisible={setShowLocalPicker} />
     </form>
   );
 };

@@ -64,7 +64,13 @@ class SaleItemRecord
     private string $grossAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]
-    #[ORM\Column(name: 'discount_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
+    #[ORM\Column(
+        name: 'discount_amount',
+        type: Types::DECIMAL,
+        precision: 12,
+        scale: 2,
+        options: ['default' => '0.00'],
+    )]
     private string $discountAmount = '0.00';
 
     #[Groups(['sale_item_record:read'])]

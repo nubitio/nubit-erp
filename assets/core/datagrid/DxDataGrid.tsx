@@ -199,9 +199,10 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const renderDetail = useCallback(
     (e: any) => {
       const detailUrl = options.detailUrl?.replace('{id}', e.key);
-      const fields = typeof options.detailFields === 'function'
-        ? options.detailFields(e.data)
-        : options.detailFields;
+      const fields =
+        typeof options.detailFields === 'function'
+          ? options.detailFields(e.data)
+          : options.detailFields;
 
       return (
         <DxDetailDataGrid
@@ -212,7 +213,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         />
       );
     },
-    [options.detailUrl, options.detailFields],
+    [options],
   );
 
   const showLoading = (message: string = 'Cargando...') => {
