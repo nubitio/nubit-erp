@@ -52,7 +52,7 @@ readonly class InvoiceCalculator
             $unitValue = Money::div($unitPrice, $divisor, 6);
 
             // Keep full precision through intermediate steps so that the final
-            // HALF_UP round is applied only once — preventing the 1-cent loss
+            // HALF_UP round is applied only once -- preventing the 1-cent loss
             // that occurs when each intermediate is rounded before use.
             $baseUnrounded = $unitValue->multipliedBy($qty);
             $discountUnrounded = $baseUnrounded->multipliedBy($discountRate);
