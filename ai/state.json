@@ -17,9 +17,9 @@
     {
       "id": "SLICE-003",
       "title": "Corregir SendInvoiceMessage falla con Invoice not found (race condition Redis/MySQL)",
-      "status": "in_progress",
+      "status": "done",
       "created_at": "2026-03-02T17:30:00.000Z",
-      "updated_at": "2026-03-02T17:30:00.000Z"
+      "updated_at": "2026-03-02T18:45:00.000Z"
     }
   ],
   "tasks": [
@@ -76,7 +76,34 @@
       "status": "done",
       "created_at": "2026-03-02T16:42:40.924Z",
       "updated_at": "2026-03-02T16:49:23.910Z"
+    },
+    {
+      "id": "TASK-007",
+      "slice": "SLICE-003",
+      "title": "Config: DispatchAfterCurrentBusMiddleware + retry delay + DispatchAfterCurrentBusStamp in SaleProcessor",
+      "agent": "agt-backend",
+      "status": "done",
+      "created_at": "2026-03-02T17:30:00.000Z",
+      "updated_at": "2026-03-02T17:45:00.000Z"
+    },
+    {
+      "id": "TASK-008",
+      "slice": "SLICE-003",
+      "title": "Unit tests: dispatch not called on failure; stamp present in envelope",
+      "agent": "agt-backend",
+      "status": "done",
+      "created_at": "2026-03-02T17:30:00.000Z",
+      "updated_at": "2026-03-02T17:45:00.000Z"
+    },
+    {
+      "id": "TASK-009",
+      "slice": "SLICE-003",
+      "title": "Gate: make check green + no regressions in SaleProcessor tests",
+      "agent": "agt-qa",
+      "status": "done",
+      "created_at": "2026-03-02T17:30:00.000Z",
+      "updated_at": "2026-03-02T18:45:00.000Z"
     }
   ],
-  "updated_at": "2026-03-02T16:49:40.628Z"
+  "updated_at": "2026-03-02T18:45:00.000Z"
 }
