@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0fd3d51f7491c7989f24a236a97e7d75",
+    "content-hash": "f11e1e5536f881e73f15a8d60e84cec6",
     "packages": [
         {
             "name": "api-platform/core",
@@ -2165,16 +2165,16 @@
         },
         {
             "name": "greenter/core",
-            "version": "v5.1.1",
+            "version": "v5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thegreenter/core.git",
-                "reference": "5a13c1c7627f95c93c909531f5ed9f0b6b64a459"
+                "reference": "ed92def3820688a2bbf37f3009a09a04736af9d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thegreenter/core/zipball/5a13c1c7627f95c93c909531f5ed9f0b6b64a459",
-                "reference": "5a13c1c7627f95c93c909531f5ed9f0b6b64a459",
+                "url": "https://api.github.com/repos/thegreenter/core/zipball/ed92def3820688a2bbf37f3009a09a04736af9d0",
+                "reference": "ed92def3820688a2bbf37f3009a09a04736af9d0",
                 "shasum": ""
             },
             "require": {
@@ -2210,9 +2210,9 @@
             ],
             "support": {
                 "forum": "https://community.greenter.dev/",
-                "source": "https://github.com/thegreenter/core/tree/v5.1.1"
+                "source": "https://github.com/thegreenter/core/tree/v5.2.0"
             },
-            "time": "2023-01-11T17:16:15+00:00"
+            "time": "2026-02-25T19:22:04+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
