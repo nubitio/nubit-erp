@@ -25,11 +25,21 @@ class ProductBomItem
     private ?int $id = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'parent_product_id', referencedColumnName: 'producto_id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(
+        name: 'parent_product_id',
+        referencedColumnName: 'producto_id',
+        nullable: false,
+        onDelete: 'CASCADE',
+    )]
     private Product $parentProduct;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'component_product_id', referencedColumnName: 'producto_id', nullable: false, onDelete: 'RESTRICT')]
+    #[ORM\JoinColumn(
+        name: 'component_product_id',
+        referencedColumnName: 'producto_id',
+        nullable: false,
+        onDelete: 'RESTRICT',
+    )]
     private Product $componentProduct;
 
     /** Quantity of component consumed per 1 unit of the parent, expressed in the component's base unit. */
@@ -40,7 +50,13 @@ class ProductBomItem
      * Wastage multiplier. 1.0 = no wastage. 1.05 = consume 5% extra.
      * Applied as: effective_qty = component_qty_base * wastage_factor.
      */
-    #[ORM\Column(name: 'wastage_factor', type: Types::DECIMAL, precision: 7, scale: 4, options: ['default' => '1.0000'])]
+    #[ORM\Column(
+        name: 'wastage_factor',
+        type: Types::DECIMAL,
+        precision: 7,
+        scale: 4,
+        options: ['default' => '1.0000'],
+    )]
     private string $wastageFactor = '1.0000';
 
     /** When true, this component can be omitted (substitutable ingredient). */
