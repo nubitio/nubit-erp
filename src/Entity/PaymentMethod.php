@@ -18,6 +18,7 @@ class PaymentMethod
     #[Groups([
         'cash_movement:read',
         'sale:read',
+        'sale_record:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -27,6 +28,7 @@ class PaymentMethod
     #[Groups([
         'cash_movement:read',
         'sale:read',
+        'sale_record:read',
     ])]
     #[ORM\Column(length: 255)]
     private string $name;

@@ -233,9 +233,27 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .name('grandTotal')
       .label('Total')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'))
       .disabled(true)
       .sendAsString(true)
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NONE)
+      .name('sunatStatus')
+      .label('SUNAT')
+      .align('center')
+      .visibleOnForm(false)
+      .formatter((cell: ColumnCellTemplateData) => {
+        const map: Record<string, string> = {
+          '0': 'Pendiente',
+          '1': 'Aceptado',
+          '2': 'Rechazado',
+          '3': 'Error',
+        };
+        return cell.value != null ? (map[String(cell.value)] ?? cell.value) : '';
+      })
       .build(),
   );
   fields.push(
