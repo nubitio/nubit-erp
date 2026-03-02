@@ -8,6 +8,7 @@ use App\Entity\CashMovement;
 use App\Core\Service\PdfExporter;
 use App\Entity\CashShift;
 use App\Repository\CashMovementRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,7 @@ class CashRegisterReportController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly CashMovementRepository $cashMovementRepository,
         private readonly Environment $twig,
+        private readonly Connection $connection,
     ) {
     }
 
@@ -49,7 +51,17 @@ class CashRegisterReportController extends AbstractController
             }
         }
 
-        $openingBalance = $cashShift->getOpeningBalance();
+        // Include V2 cash sale movements (written to cash_movements via cash_sessions)
+        $v2SalesIncome = (float) $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(cm2.amount), 0)
+             FROM cash_movements cm2
+             JOIN cash_sessions cs ON cs.id = cm2.cash_session_id
+             WHERE cs.legacy_cash_shift_id = ? AND cm2.movement_type = 'SALE_IN'",
+            [$id]
+        );
+        $income += $v2SalesIncome;
+
+        $openingBalance = (float) $cashShift->getOpeningBalance();
         $expectedAmount = $cashShift->getExpectedAmount() ?? ($openingBalance + $income - $expense);
         $countedAmount = $cashShift->getCountedAmount() ?? $expectedAmount;
         $difference = $cashShift->getDifference() ?? ($countedAmount - $expectedAmount);
