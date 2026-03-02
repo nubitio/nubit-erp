@@ -40,6 +40,7 @@ export const SalePage = () => {
   const container = 'wrapper';
   const fields = SaleFields(formRef.current);
   const detailFields = SaleDetailFields(formRef.current);
+  const gridDetailFields = (parentRow: any) => SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
 
   const API_URL = Constants.API_BASE_URL + 'sales';
 
@@ -130,7 +131,7 @@ export const SalePage = () => {
         allowAdd={true}
         toolbar={toolbar}
         detailUrl={API_URL + '/{id}/items'}
-        detailFields={detailFields}
+        detailFields={gridDetailFields}
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}
       />

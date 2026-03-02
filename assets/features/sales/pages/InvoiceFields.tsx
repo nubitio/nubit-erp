@@ -1,10 +1,10 @@
-import { Constants } from '@platform/common/Constants';
-import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {Constants} from '@platform/common/Constants';
+import {Field} from '@platform/field/Field';
+import {FieldBuilder} from '@platform/field/FieldBuilder';
+import {FieldType} from '@platform/field/FieldType';
 import NumberUtils from '@shared/lib/NumberUtils';
-import { SharedUtils } from '@shared/lib/SharedUtils';
-import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
+import {SharedUtils} from '@shared/lib/SharedUtils';
+import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -55,8 +55,8 @@ export const InvoiceFields = () => {
       .name('documentType')
       .label('Tipo')
       .data([
-        { value: '01', text: 'Factura' },
-        { value: '03', text: 'Boleta' },
+        {value: '01', text: 'Factura'},
+        {value: '03', text: 'Boleta'},
       ])
       .formatter((cell: ColumnCellTemplateData) =>
         cell.data.documentType === '01' ? 'Factura' : 'Boleta',
@@ -72,7 +72,12 @@ export const InvoiceFields = () => {
       .label('Total')
       .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'))
-
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.NONE)
+      .name('voidCorrelation')
       .label('Nota C.')
       .align('center')
       .build(),

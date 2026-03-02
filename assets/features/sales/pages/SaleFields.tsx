@@ -262,7 +262,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
   return fields;
 };
 
-export const SaleDetailFields = (form: DxFormEvents | null) => {
+export const SaleDetailFields = (form: DxFormEvents | null, currency: string = 'PEN') => {
   const fields: Field[] = [];
 
   fields.push(
@@ -365,7 +365,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         row.netAmount = currentRow.qty * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
       .sortable(false)
       .sendAsString(true)
@@ -383,7 +383,7 @@ export const SaleDetailFields = (form: DxFormEvents | null) => {
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);
       })
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
       .filterable(false)
       .disabled(true)
