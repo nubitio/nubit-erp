@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
 use App\Entity\Customer;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
@@ -24,6 +26,7 @@ readonly class SaleV2Loader
     public function __construct(
         private Connection $connection,
         private EntityManagerInterface $entityManager,
+        private SettingsService $settings,
     ) {
     }
 
@@ -48,6 +51,7 @@ SELECT
     s.currency,
     s.exchange_rate,
     s.subtotal,
+    s.tax_total,
     s.discount_total,
     s.grand_total,
     s.issued_at,
@@ -82,6 +86,10 @@ SQL,
         $sale->setSubtotal($row['subtotal']);
         $sale->setTotal($row['grand_total']);
         $sale->setEstado($row['status'] === 'VOIDED' ? SaleStatus::VOIDED->value : SaleStatus::ACTIVE->value);
+
+        // Derive IGV rate from stored tax_total; fall back to configured rate.
+        $taxRate = $this->resolveIgvRate($row['tax_total'], $row['subtotal']);
+        $sale->setIgv($taxRate);
 
         if ($row['customer_id']) {
             $customer = $this->entityManager->getReference(Customer::class, (int) $row['customer_id']);
@@ -138,5 +146,22 @@ SQL,
         $item->setDescuento((string) ($row['discount_amount'] ?? '0'));
 
         return $item;
+    }
+
+    /**
+     * Derive IGV rate from stored amounts; fall back to configured rate.
+     * If tax_total > 0 and subtotal > 0, derive: round(tax_total/subtotal*100).
+     * Otherwise return the configured `app_option_igv` value.
+     */
+    private function resolveIgvRate(mixed $taxTotal, mixed $subtotal): string
+    {
+        $tax = (float) ($taxTotal ?? 0);
+        $sub = (float) ($subtotal ?? 0);
+
+        if ($tax > 0 && $sub > 0) {
+            return (string) (int) round($tax / $sub * 100);
+        }
+
+        return (string) ($this->settings->get(Constants::TAX) ?? '18');
     }
 }
