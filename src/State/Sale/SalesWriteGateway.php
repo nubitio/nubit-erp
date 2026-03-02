@@ -28,7 +28,7 @@ readonly class SalesWriteGateway
     /**
      * @throws Exception
      */
-    public function write(Sale $sale, int $cashSessionId): void
+    public function write(Sale $sale, ?int $cashSessionId): void
     {
         $saleId = $sale->getId();
         $warehouseId = $sale->getAlmacen()?->getId();

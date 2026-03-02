@@ -100,6 +100,7 @@ readonly class SaleProcessor implements ProcessorInterface
         $isOperationalSale = $data->getTipoId() === 2;
         $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
         $resolvedCashSessionId = null;
+        $requireCashShift = false;
         $request = $context['request'] ?? null;
         $isOfflineSale = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
 
@@ -266,10 +267,15 @@ readonly class SaleProcessor implements ProcessorInterface
 
             if ($salesWritePolicy->writeNewSchema) {
                 try {
-                    $cashSessionId = $this->cashSessionResolver->resolveForSale(
-                        $data,
-                        $cashShiftForMovement?->getId()
-                    );
+                    $cashSessionId = $requireCashShift
+                        ? $this->cashSessionResolver->resolveForSale(
+                            $data,
+                            $cashShiftForMovement?->getId()
+                        )
+                        : $this->cashSessionResolver->tryResolveForSale(
+                            $data,
+                            $cashShiftForMovement?->getId()
+                        );
                     $resolvedCashSessionId = $cashSessionId;
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
