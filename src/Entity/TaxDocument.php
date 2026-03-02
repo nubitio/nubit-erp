@@ -128,6 +128,7 @@ class TaxDocument
     #[ORM\Column(name: 'payment_method', type: Types::INTEGER, nullable: true)]
     private ?int $paymentMethod = null;
 
+    #[Groups(['invoice:read', 'creditnote:read'])]
     #[ORM\Column(name: 'currency', type: Types::STRING, length: 3, nullable: true)]
     private ?string $currency = null;
 

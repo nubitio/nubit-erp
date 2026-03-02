@@ -50,7 +50,7 @@ export interface DxDataGridOptions {
   url: string;
   detailUrl?: string;
   fields: Field[];
-  detailFields?: any;
+  detailFields?: any[] | ((parentRow: any) => any[]);
   columns?: any[];
   toolbar?: any[];
   events?: any;
@@ -199,12 +199,15 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const renderDetail = useCallback(
     (e: any) => {
       const detailUrl = options.detailUrl?.replace('{id}', e.key);
+      const fields = typeof options.detailFields === 'function'
+        ? options.detailFields(e.data)
+        : options.detailFields;
 
       return (
         <DxDetailDataGrid
           options={{
             url: detailUrl,
-            fields: options.detailFields,
+            fields,
           }}
         />
       );
@@ -398,7 +401,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
           />
           {buildColumns(options.fields)}
           <Summary>{buildSummary(options.summaryFields)}</Summary>
-          <MasterDetail enabled={options.detailFields?.length > 0} render={renderDetail} />
+          <MasterDetail enabled={!!options.detailFields} render={renderDetail} />
           <Paging defaultPageSize={20} />
           <Pager
             visible={options.paging ?? true}

@@ -241,24 +241,6 @@ export const SaleFields = (form: DxFormEvents | null) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.NONE)
-      .name('sunatStatus')
-      .label('SUNAT')
-      .align('center')
-      .visibleOnForm(false)
-      .formatter((cell: ColumnCellTemplateData) => {
-        const map: Record<string, string> = {
-          '0': 'Pendiente',
-          '1': 'Aceptado',
-          '2': 'Rechazado',
-          '3': 'Error',
-        };
-        return cell.value != null ? (map[String(cell.value)] ?? cell.value) : '';
-      })
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
       .name('status')
       .label('Estado')
       .align('center')
