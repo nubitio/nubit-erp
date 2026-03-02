@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Entity\SaleRecord;
+use App\Repository\PaymentMethodRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
@@ -108,6 +109,7 @@ SQL,
             $record->setHasInvoice(true);
             $record->setInvoiceFullNumber(sprintf('%s-%s', $taxRow['series'], $taxRow['number']));
             $record->setSunatStatus($taxRow['sunat_status'] !== null ? (string) $taxRow['sunat_status'] : null);
+            $record->setDocumentType((string) $taxRow['document_type']);
             $record->setPublicReceiptUrl(
                 \App\Core\Util\ReceiptPayload::publicUrl(
                     (string) $taxRow['document_type'],
@@ -123,7 +125,7 @@ SQL,
      *
      * @param SaleRecord[] $records
      */
-    public function enrichWithPaymentMethods(array $records, \App\Repository\PaymentMethodRepository $pmRepository): void
+    public function enrichWithPaymentMethods(array $records, PaymentMethodRepository $pmRepository): void
     {
         if ($records === []) {
             return;

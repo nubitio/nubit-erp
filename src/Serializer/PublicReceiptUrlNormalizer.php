@@ -6,6 +6,7 @@ namespace App\Serializer;
 
 use App\Core\Util\ReceiptPayload;
 use App\Entity\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\TaxDocument;
 use Override;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -34,7 +35,7 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             return false;
         }
 
-        return $data instanceof TaxDocument || $data instanceof Sale;
+        return $data instanceof TaxDocument || $data instanceof Sale || $data instanceof SaleRecord;
     }
 
     /**
@@ -75,11 +76,17 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             return ReceiptPayload::encode($invoice->getDocumentType(), $invoice->getId());
         }
 
-        if ($object->getId() === null) {
-            return null;
+        if ($object instanceof SaleRecord) {
+            $taxDocumentId = $object->getTaxDocumentId();
+            $documentType  = $object->getDocumentType();
+            if ($taxDocumentId === null || $documentType === null) {
+                return null;
+            }
+
+            return ReceiptPayload::encode($documentType, $taxDocumentId);
         }
 
-        return ReceiptPayload::encode($object->getTipoId(), $object->getId());
+        return null;
     }
 
     /**
@@ -87,6 +94,6 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
      */
     public function getSupportedTypes(?string $format): array
     {
-        return [TaxDocument::class => false, Sale::class => false];
+        return [TaxDocument::class => false, Sale::class => false, SaleRecord::class => false];
     }
 }
