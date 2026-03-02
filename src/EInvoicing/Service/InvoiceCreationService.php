@@ -15,7 +15,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Throwable;
 
-final readonly class InvoiceCreationService
+final readonly class InvoiceCreationService implements InvoiceCreationServiceInterface
 {
     public function __construct(
         private Connection $connection,
