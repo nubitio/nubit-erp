@@ -36,7 +36,7 @@ directamente al setter durante la deserialización del PATCH → type mismatch �
 
 | Gate | Command      | After            | Required result | Actual result |
 |------|--------------|------------------|-----------------|---------------|
-| G1   | `make check` | Wave 1 complete  | All green       | pending       |
+| G1   | `make check` | Wave 1 complete  | All green       | ✅ PASS — 4/4 AC passed, phpstan/phpcs/phpmd/phpcsfixer clean, 5 new tests green |
 
 ---
 
@@ -45,5 +45,5 @@ directamente al setter durante la deserialización del PATCH → type mismatch �
 | Artifact ID             | Type        | File                        | Status    |
 |-------------------------|-------------|-----------------------------|-----------|
 | ART-S004-001-product    | code change | `src/Entity/Product.php`    | delivered |
-| ART-S004-002-unit-test  | test        | `tests/Entity/ProductLotTrackingStrategyTest.php` | pending |
-| ART-S004-003-gate-report| report      | —                           | pending   |
+| ART-S004-002-unit-test  | test        | `tests/Entity/ProductLotTrackingStrategyTest.php` | delivered |
+| ART-S004-003-gate-report| report      | QA sign-off: 4/4 AC passed  | delivered |
