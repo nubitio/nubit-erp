@@ -22,7 +22,7 @@ use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
-use App\EInvoicing\Service\InvoiceCreationService;
+use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Service\SalePaymentPlanService;
 use App\State\Purchase\GoodsReceiptWriteGateway;
 use App\State\Purchase\PurchasesWritePolicyResolver;
@@ -35,6 +35,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 use Symfony\Component\Uid\Uuid;
 
 readonly class SaleProcessor implements ProcessorInterface
@@ -48,7 +49,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private SaleUtils $saleUtils,
         private SettingsService $settings,
-        private InvoiceCreationService $invoiceCreationService,
+        private InvoiceCreationServiceInterface $invoiceCreationService,
         private LoggerInterface $logger,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
@@ -368,7 +369,10 @@ readonly class SaleProcessor implements ProcessorInterface
                         'message' => $invoiceResult['message'],
                     ]);
                 } else {
-                    $this->messageBus->dispatch(new SendInvoiceMessage($invoiceResult['invoiceId']));
+                    $this->messageBus->dispatch(
+                        new SendInvoiceMessage($invoiceResult['invoiceId']),
+                        [new DispatchAfterCurrentBusStamp()]
+                    );
                 }
             } catch (\Throwable $throwable) {
                 $this->logger->error('Auto invoice failed', [
