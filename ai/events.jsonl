@@ -31,3 +31,6 @@
 {"type":"SliceStarted","timestamp":"2026-03-02T19:00:00.000Z","payload":{"slice":"SLICE-004","title":"Corregir NotNormalizableValueException en PATCH /api/products para lotTrackingStrategy"}}
 {"type":"TaskHandedOff","task":"TASK-010","from_agent":"agt-orchestrate","to_agent":"agt-backend","artifact_id":"ART-S004-001-product","timestamp":"2026-03-02T19:00:01.000Z"}
 {"type":"TaskHandedOff","task":"TASK-011","from_agent":"agt-orchestrate","to_agent":"agt-qa","artifact_id":"ART-S004-003-gate-report","timestamp":"2026-03-02T19:00:02.000Z"}
+{"type":"QASignOff","slice":"SLICE-004","passed_criteria":4,"total_criteria":4,"timestamp":"2026-03-02T19:30:00.000Z"}
+{"type":"TaskCompleted","timestamp":"2026-03-02T19:30:00.000Z","payload":{"task":"TASK-011","slice":"SLICE-004","agent":"agt-qa"}}
+{"type":"SliceCompleted","timestamp":"2026-03-02T19:30:00.000Z","payload":{"slice":"SLICE-004","title":"Corregir NotNormalizableValueException en PATCH /api/products para lotTrackingStrategy"}}
