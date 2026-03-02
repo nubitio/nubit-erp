@@ -29,6 +29,7 @@ readonly class SummaryCreateUseCase
     public function __invoke(string $taxDocumentId): SummaryResponse
     {
         $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
+        $igvPercent = floatval($voucher->voucher_tax_percentage ?? 18);
         $summaryDetail = new SummaryDetail()
             ->setTipoDoc(strval($voucher->voucher_type))
             ->setSerieNro($voucher->voucher_series . '-' . $voucher->voucher_number)
@@ -40,6 +41,7 @@ readonly class SummaryCreateUseCase
             ->setMtoOperInafectas(0)
             ->setMtoOperExoneradas(0)
             ->setMtoOtrosCargos(0)
+            ->setPorcentajeIgv($igvPercent)
             ->setMtoIgv(Money::toFloat(Money::money($voucher->voucher_tax_amount)));
 
         $lastCorrelative = $this->summaryRepository->getLastCorrelativeByDate(strval($voucher->voucher_date));
