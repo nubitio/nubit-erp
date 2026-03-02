@@ -32,11 +32,17 @@ readonly class CashShiftClosureSummaryProvider implements ProviderInterface
             "
             SELECT
                 COALESCE(SUM(IF(cm.type = 'income', cm.amount, 0)), 0) -
-                COALESCE(SUM(IF(cm.type = 'expense', cm.amount, 0)), 0)
+                COALESCE(SUM(IF(cm.type = 'expense', cm.amount, 0)), 0) +
+                COALESCE((
+                    SELECT SUM(cm2.amount)
+                    FROM cash_movements cm2
+                    JOIN cash_sessions cs ON cs.id = cm2.cash_session_id
+                    WHERE cs.legacy_cash_shift_id = ? AND cm2.movement_type = 'SALE_IN'
+                ), 0)
             FROM cash_movement cm
             WHERE cm.cash_shift_id = ?
             ",
-            [$cashShiftId]
+            [$cashShiftId, $cashShiftId]
         );
 
         $paymentMethodName = $this->connection->fetchOne(
