@@ -15,6 +15,7 @@ use App\EInvoicing\Service\InvoiceAmounts;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineAmounts;
 use App\EInvoicing\Service\InvoiceLineInput;
+use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Branch;
 use App\Entity\Sale;
 use App\Entity\SunatCatalog;
@@ -32,8 +33,10 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class TaxDocumentRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly SaleV2Loader $saleV2Loader,
+    ) {
         parent::__construct($registry, TaxDocument::class);
     }
 
@@ -126,7 +129,11 @@ SQL,
             throw new ServiceException('La venta no existe');
         }
 
-        $taxDocument = $sale->getTaxDocument();
+        // For V2 sales loaded via SaleV2Loader the ORM relation is not populated;
+        // load the tax document explicitly by sale id.
+        $taxDocument = $sale->getTaxDocument()
+            ?? $this->findActiveTaxDocumentBySaleId($resolvedSaleId)
+            ?? $this->findActiveTaxDocumentBySaleId($saleId);
         $header = $this->buildHeaderFromSale($sale, $taxDocument, null);
         $lines = $this->buildLinesForVoucher($sale, $taxDocument);
 
@@ -225,6 +232,32 @@ SQL,
         return is_string($type) && $type !== '' ? $type : null;
     }
 
+    private function findActiveTaxDocumentBySaleId(string $saleId): ?TaxDocument
+    {
+        $taxDocId = $this->getEntityManager()->getConnection()->fetchOne(
+            <<<'SQL'
+SELECT tax_document_id
+FROM tax_document
+WHERE (movimiento_id = :id OR sale_id = :id)
+  AND reason_code IS NULL
+ORDER BY created_at DESC
+LIMIT 1
+SQL,
+            ['id' => $saleId]
+        );
+
+        if (!is_string($taxDocId) || $taxDocId === '') {
+            return null;
+        }
+
+        return $this->createQueryBuilder('td')
+            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
+            ->where('td.id = :id')
+            ->setParameter('id', $taxDocId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     private function resolveLegacySaleIdForVoucher(string $saleId): string
     {
         $connection = $this->getEntityManager()->getConnection();
@@ -311,7 +344,12 @@ SQL,
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof Sale ? $result : null;
+        if ($result instanceof Sale) {
+            return $result;
+        }
+
+        // Fallback: V2 sale stored only in `sales` table (no movimiento row)
+        return $this->saleV2Loader->loadAsSale($saleId);
     }
 
     private function buildHeaderFromSale(
