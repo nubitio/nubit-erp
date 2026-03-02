@@ -36,7 +36,7 @@ final readonly class CashSessionResolver
         $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
 
-        $candidate = null;
+        $candidate = false;
         if ($legacyCashShiftId !== null) {
             $candidate = $this->findByLegacyCashShift($legacyCashShiftId, $branchId);
         }
@@ -58,6 +58,53 @@ final readonly class CashSessionResolver
                 'No se pudo resolver cash_session_id para la venta %s.',
                 $saleId
             ));
+        }
+
+        $this->validateCandidate($candidate, $branchId, $cashRegisterId, $issuedAt, $saleId);
+
+        return (int) $candidate['id'];
+    }
+
+    /**
+     * Like resolveForSale() but returns null instead of throwing when no cash session is found.
+     * Use this when the cash register is not required (REQUIRE_CASH_REGISTER=false).
+     *
+     * @throws ServiceException when the branch cannot be determined (infrastructure error)
+     */
+    public function tryResolveForSale(Sale $sale, ?int $legacyCashShiftId = null): ?int
+    {
+        $saleId = (string) ($sale->getId() ?? 'NEW');
+        $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
+        if ($branchId === null) {
+            throw new ServiceException(sprintf(
+                'No se pudo resolver cash_session_id para la venta %s: sucursal no definida.',
+                $saleId
+            ));
+        }
+
+        $cashRegisterId = $sale->getCajaId();
+        $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
+
+        $candidate = false;
+        if ($legacyCashShiftId !== null) {
+            $candidate = $this->findByLegacyCashShift($legacyCashShiftId, $branchId);
+        }
+
+        if ($candidate === false && $cashRegisterId !== null) {
+            $candidate = $this->findByRegisterAndIssuedAt($cashRegisterId, $branchId, $issuedAtSql);
+        }
+
+        if ($candidate === false) {
+            $candidate = $this->findByBranchAndIssuedAt($branchId, $issuedAtSql);
+        }
+
+        if ($candidate === false) {
+            $candidate = $this->findLatestByBranch($branchId);
+        }
+
+        if ($candidate === false) {
+            return null;
         }
 
         $this->validateCandidate($candidate, $branchId, $cashRegisterId, $issuedAt, $saleId);
