@@ -80,8 +80,6 @@ export const LoginForm = () => {
       <BranchPicker
         visible={showLocalPicker}
         setVisible={setShowLocalPicker}
-        username={user}
-        password={password}
       />
     </form>
   );

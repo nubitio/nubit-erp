@@ -59,6 +59,7 @@ export class BaseFieldBuilder {
       maxLength: undefined,
       multiple: false,
       autoSelectIfSingle: false,
+      sendAsString: false,
       editorOptions: undefined,
     };
   }

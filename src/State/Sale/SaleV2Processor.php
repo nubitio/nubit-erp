@@ -40,8 +40,7 @@ readonly class SaleV2Processor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
-    ): SaleRecord
-    {
+    ): SaleRecord {
         if (!$data instanceof SaleRecord) {
             throw new \InvalidArgumentException('SaleV2Processor expects a SaleRecord instance.');
         }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Observable } from 'rxjs';
-import ApiResponse from '../http/ApiResponse';
+import ApiResponse from '../../shared/api/ApiResponse';
 
 export function useService<T>(
   subscription: Observable<ApiResponse<any>>,

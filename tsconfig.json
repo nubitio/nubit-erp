@@ -20,6 +20,7 @@
       "@platform/*": ["assets/core/*"],
       "@features/*": ["assets/features/*"],
       "@pages/*": ["assets/pages/*"],
+      "@widgets": ["assets/components"],
       "@widgets/*": ["assets/components/*"],
       "@layouts/*": ["assets/layouts/*"],
       "@contexts/*": ["assets/contexts/*"],
