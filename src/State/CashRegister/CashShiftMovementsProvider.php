@@ -35,7 +35,7 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
         );
 
         $v2Rows = $this->connection->fetchAllAssociative(
-            "SELECT cm2.amount, cm2.description, cm2.created_at, cm2.movement_type
+            "SELECT cm2.id, cm2.amount, cm2.description, cm2.created_at, cm2.movement_type
              FROM cash_movements cm2
              JOIN cash_sessions cs ON cs.id = cm2.cash_session_id
              WHERE cs.legacy_cash_shift_id = ?
@@ -43,6 +43,7 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
             [$cashShiftId]
         );
 
+        $idProp = new \ReflectionProperty(CashMovement::class, 'id');
         foreach ($v2Rows as $row) {
             $movement = new CashMovement();
             $type = $row['movement_type'] === 'SALE_IN' ? CashMovementType::INCOME : CashMovementType::EXPENSE;
@@ -50,6 +51,7 @@ readonly class CashShiftMovementsProvider implements ProviderInterface
             $movement->setAmount((string) $row['amount']);
             $movement->setDescription($row['description'] ?? 'Venta en efectivo');
             $movement->setCreatedAt(new DateTimeImmutable($row['created_at']));
+            $idProp->setValue($movement, -(int) $row['id']); // negative to avoid collision with legacy IDs
             $movements[] = $movement;
         }
 

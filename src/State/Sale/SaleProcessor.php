@@ -307,6 +307,9 @@ readonly class SaleProcessor implements ProcessorInterface
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
                 if ($resolvedCashSessionId !== null) {
                     try {
+                        $serie  = $data->getSerie() ?? '';
+                        $numero = $data->getNumero() ?? '';
+                        $saleRef = $serie !== '' && $numero !== '' ? "{$serie}-{$numero}" : null;
                         $this->salesWriteGateway->writeCashSaleMovement(
                             saleId: (string) $data->getId(),
                             cashSessionId: $resolvedCashSessionId,
@@ -314,7 +317,8 @@ readonly class SaleProcessor implements ProcessorInterface
                             amount: $cashCollected,
                             categoryId: null,
                             paymentMethodId: \App\Entity\PaymentMethod::CASH,
-                            createdAt: $data->getFecha() ?? new DateTimeImmutable()
+                            createdAt: $data->getFecha() ?? new DateTimeImmutable(),
+                            description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
                         );
                     } catch (\Throwable $exception) {
                         $this->logger->error('Sales V2 cash movement write failed', [

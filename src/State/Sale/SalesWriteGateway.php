@@ -535,6 +535,7 @@ SQL,
         ?int $categoryId = null,
         ?int $paymentMethodId = null,
         ?\DateTimeImmutable $createdAt = null,
+        ?string $description = null,
     ): void {
         $at = $createdAt ?? new \DateTimeImmutable();
         $seed = sprintf('cash-sale:%s:%d', $saleId, $cashSessionId);
@@ -592,7 +593,7 @@ SQL,
                 'sale_id' => $saleId,
                 'payment_method_id' => $paymentMethodId,
                 'amount' => Money::toString(Money::money($amount)),
-                'description' => 'Cash collected from sale ' . $saleId,
+                'description' => $description ?? 'Venta en efectivo',
                 'created_by' => $createdBy,
                 'created_at' => $at->format('Y-m-d H:i:s'),
                 'local_uuid' => $offline['local_uuid'],
