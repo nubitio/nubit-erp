@@ -84,7 +84,13 @@ class SaleRecord
     private string $currency = 'PEN';
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
-    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 14, scale: 6, options: ['default' => '1.000000'])]
+    #[ORM\Column(
+        name: 'exchange_rate',
+        type: Types::DECIMAL,
+        precision: 14,
+        scale: 6,
+        options: ['default' => '1.000000'],
+    )]
     private string $exchangeRate = '1.000000';
 
     #[Groups(['sale_record:read'])]
@@ -120,7 +126,12 @@ class SaleRecord
     private ?DateTimeInterface $issuedAt = null;
 
     #[Groups(['sale_record:read'])]
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true, options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(
+        name: 'created_at',
+        type: Types::DATETIME_MUTABLE,
+        nullable: true,
+        options: ['default' => 'CURRENT_TIMESTAMP'],
+    )]
     private ?DateTimeInterface $createdAt = null;
 
     #[Groups(['sale_record:read'])]
@@ -154,6 +165,9 @@ class SaleRecord
 
     #[Groups(['sale_record:read'])]
     private ?string $publicReceiptUrl = null;
+
+    #[Groups(['sale_record:read'])]
+    private ?string $documentType = null;
 
     /** Resolved from sale_payments by provider */
     #[Groups(['sale_record:read', 'sale_record:write'])]
@@ -521,6 +535,18 @@ class SaleRecord
     public function setPublicReceiptUrl(?string $publicReceiptUrl): static
     {
         $this->publicReceiptUrl = $publicReceiptUrl;
+
+        return $this;
+    }
+
+    public function getDocumentType(): ?string
+    {
+        return $this->documentType;
+    }
+
+    public function setDocumentType(?string $documentType): static
+    {
+        $this->documentType = $documentType;
 
         return $this;
     }
