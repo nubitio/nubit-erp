@@ -3,9 +3,9 @@
 | Field        | Value                                      |
 |--------------|--------------------------------------------|
 | id           | SLICE-003                                  |
-| status       | approved                                   |
+| status       | done                                       |
 | created_at   | 2026-03-02                                 |
-| updated_at   | 2026-03-02                                 |
+| updated_at   | 2026-03-02 (done)                          |
 | author       | agt-architect                              |
 
 ---

@@ -235,8 +235,8 @@ Return a gate report with PASS/FAIL per check.
 
 | Gate | Command      | After            | Required result | Actual result |
 |------|--------------|------------------|-----------------|---------------|
-| G1   | `make check` | Wave 1 complete  | All green       | pending       |
-| G2   | `make check` | Wave 2 complete  | All green       | pending       |
+| G1   | `make check` | Wave 1 complete  | All green       | ✅ PASS — 7/7 AC passed, phpstan/phpcs/phpmd/phpcsfixer clean, 22 tests green |
+| G2   | `make check` | Wave 2 complete  | All green       | ✅ PASS — QA sign-off `9eaf4df9` |
 
 ---
 
@@ -247,8 +247,8 @@ Return a gate report with PASS/FAIL per check.
 | ART-S003-001-messenger-config      | existing config | `config/packages/messenger.yaml`               | stable    |
 | ART-S003-002-services-config       | existing config | `config/services.yaml`                         | stable    |
 | ART-S003-003-sale-processor        | existing code   | `src/State/Sale/SaleProcessor.php`             | stable    |
-| ART-S003-004-messenger-config-updated | config change | `config/packages/messenger.yaml`              | pending   |
-| ART-S003-005-services-config-updated | config change | `config/services.yaml`                         | pending   |
-| ART-S003-006-sale-processor-updated | code change   | `src/State/Sale/SaleProcessor.php`             | pending   |
-| ART-S003-007-unit-tests            | test            | `tests/State/Sale/SaleProcessorInvoiceDispatchTest.php` | pending |
-| ART-S003-008-gate-report           | report          | —                                              | pending   |
+| ART-S003-004-messenger-config-updated | config change | `config/packages/messenger.yaml`              | delivered |
+| ART-S003-005-services-config-updated | config change | `config/services.yaml`                         | delivered |
+| ART-S003-006-sale-processor-updated | code change   | `src/State/Sale/SaleProcessor.php`             | delivered |
+| ART-S003-007-unit-tests            | test            | `tests/State/Sale/SaleProcessorInvoiceDispatchTest.php` | delivered |
+| ART-S003-008-gate-report           | report          | QA sign-off: 7/7 AC passed                    | delivered |
