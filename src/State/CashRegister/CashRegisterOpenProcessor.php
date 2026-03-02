@@ -84,6 +84,19 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
 
         $this->entityManager->flush();
 
+        // Create V2 cash_session linked to this legacy shift
+        if ($branchId !== null) {
+            $this->entityManager->getConnection()->insert('cash_sessions', [
+                'legacy_cash_shift_id' => $cashShift->getId(),
+                'cash_register_id'     => $data->id,
+                'branch_id'            => $branchId,
+                'opened_by'            => $user->userId,
+                'status'               => 'OPEN',
+                'opening_amount'       => number_format($data->openingBalance, 2, '.', ''),
+                'opened_at'            => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
+            ]);
+        }
+
         return $cashShift;
     }
 }

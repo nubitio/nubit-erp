@@ -86,6 +86,17 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             $this->entityManager->persist($cashShift);
 
             $this->entityManager->flush();
+
+            // Close V2 cash_session linked to this legacy shift
+            $userId = $this->security->connectedUser()->userId;
+            $this->entityManager->getConnection()->executeStatement(
+                "UPDATE cash_sessions
+                 SET status = 'CLOSED', closed_at = NOW(), closed_by = ?,
+                     expected_amount = ?, counted_amount = ?, difference_amount = ?
+                 WHERE legacy_cash_shift_id = ?",
+                [$userId, $expectedTotal, $countedTotal, $differenceTotal, $uriVariables['id']]
+            );
+
             $this->entityManager->getConnection()->commit();
         } catch (ORMException $ormException) {
             $this->entityManager->getConnection()->rollBack();
