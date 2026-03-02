@@ -13,7 +13,7 @@ import Form, {
 } from 'devextreme-react/form';
 
 import './InitialSetupPage.scss';
-import { SetupPayload, setupService } from '@features/setup';
+import { SetupPayload, SetupStatus, setupService } from '@features/setup';
 import { useScreenSizeClass } from '@utils/media-query';
 
 const steps = [
@@ -48,6 +48,7 @@ export const InitialSetupPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [, setStatus] = useState<SetupStatus | null>(null);
 
   useEffect(() => {
     const subscription = setupService.getStatus().subscribe({

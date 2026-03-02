@@ -48,7 +48,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
 
   useEffect(() => {
     const roleId = userInformation().currentUserRoleId;
-    const subscription = menuService.getMenuByRoleId(roleId).subscribe({
+    const subscription = menuService.getMenuByRoleId(roleId ?? 0).subscribe({
       next: (response) => {
         const items = normalizePath(response.data);
         setItems(items);

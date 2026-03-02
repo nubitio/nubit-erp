@@ -5,7 +5,7 @@ import { DxForm, DxFormEvents } from '../../form/DxForm';
 import classNames from 'classnames';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useEvents } from '../../event/EventHook';
-import { httpClient } from '../../http/HttpClient';
+import { httpClient } from '../../../shared/api/HttpClient';
 import LoadPanel from 'devextreme-react/load-panel';
 import { Field } from '../../field/Field';
 

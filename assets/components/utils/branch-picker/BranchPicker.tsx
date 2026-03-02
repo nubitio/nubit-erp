@@ -129,7 +129,7 @@ export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: Bran
       fullScreen={isXSmall}
       visible={visible}
       showCloseButton={false}
-      closeOnOutsideClick={!selecting}
+      hideOnOutsideClick={!selecting}
       wrapperAttr={{ class: `picker-popup` }}
     >
       <ToolbarItem toolbar="bottom" location="after">
