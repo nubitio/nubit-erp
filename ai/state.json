@@ -38,9 +38,9 @@
     {
       "id": "SLICE-006",
       "title": "Fix rounding loss in ESC/POS receipt line totals",
-      "status": "in_progress",
+      "status": "done",
       "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
+      "updated_at": "2026-03-02T21:05:00.000Z"
     }
   ],
   "tasks": [
@@ -166,19 +166,19 @@
       "slice": "SLICE-006",
       "title": "Fix InvoiceCalculator line-total computation + unit tests",
       "agent": "agt-backend",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
+      "updated_at": "2026-03-02T21:05:00.000Z"
     },
     {
       "id": "TASK-015",
       "slice": "SLICE-006",
       "title": "Gate: make check green + ESC/POS receipt regression test",
       "agent": "agt-qa",
-      "status": "pending",
+      "status": "done",
       "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
+      "updated_at": "2026-03-02T21:05:00.000Z"
     }
   ],
-  "updated_at": "2026-03-02T20:10:00.000Z"
+  "updated_at": "2026-03-02T21:05:00.000Z"
 }
