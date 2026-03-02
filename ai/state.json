@@ -27,20 +27,6 @@
       "status": "done",
       "created_at": "2026-03-02T19:00:00.000Z",
       "updated_at": "2026-03-02T19:30:00.000Z"
-    },
-    {
-      "id": "SLICE-005",
-      "title": "Restore and enhance SalesV2ReconcileCommand",
-      "status": "done",
-      "created_at": "2026-03-02T20:05:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
-    },
-    {
-      "id": "SLICE-006",
-      "title": "Fix rounding loss in ESC/POS receipt line totals",
-      "status": "done",
-      "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T21:05:00.000Z"
     }
   ],
   "tasks": [
@@ -142,43 +128,7 @@
       "status": "done",
       "created_at": "2026-03-02T19:00:00.000Z",
       "updated_at": "2026-03-02T19:30:00.000Z"
-    },
-    {
-      "id": "TASK-012",
-      "slice": "SLICE-005",
-      "title": "Restore SalesV2ReconcileCommand with per-sale rounding pass + unit tests",
-      "agent": "agt-backend",
-      "status": "done",
-      "created_at": "2026-03-02T20:05:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
-    },
-    {
-      "id": "TASK-013",
-      "slice": "SLICE-005",
-      "title": "Gate: make check green",
-      "agent": "agt-qa",
-      "status": "done",
-      "created_at": "2026-03-02T20:05:00.000Z",
-      "updated_at": "2026-03-02T20:10:00.000Z"
-    },
-    {
-      "id": "TASK-014",
-      "slice": "SLICE-006",
-      "title": "Fix InvoiceCalculator line-total computation + unit tests",
-      "agent": "agt-backend",
-      "status": "done",
-      "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T21:05:00.000Z"
-    },
-    {
-      "id": "TASK-015",
-      "slice": "SLICE-006",
-      "title": "Gate: make check green + ESC/POS receipt regression test",
-      "agent": "agt-qa",
-      "status": "done",
-      "created_at": "2026-03-02T20:10:00.000Z",
-      "updated_at": "2026-03-02T21:05:00.000Z"
     }
   ],
-  "updated_at": "2026-03-02T21:05:00.000Z"
+  "updated_at": "2026-03-02T19:30:00.000Z"
 }

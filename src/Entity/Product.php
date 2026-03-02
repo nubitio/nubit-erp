@@ -304,9 +304,11 @@ class Product
         return $this->lotTrackingStrategy;
     }
 
-    public function setLotTrackingStrategy(LotTrackingStrategy $strategy): static
+    public function setLotTrackingStrategy(string|LotTrackingStrategy $strategy): static
     {
-        $this->lotTrackingStrategy = $strategy->value;
+        $this->lotTrackingStrategy = $strategy instanceof LotTrackingStrategy
+            ? $strategy->value
+            : LotTrackingStrategy::from($strategy)->value;
 
         return $this;
     }
