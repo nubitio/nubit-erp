@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Service;
 
+use App\Core\Service\SettingsService;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Sale;
 use App\Sale\Domain\SaleStatus;
@@ -13,6 +14,14 @@ use PHPUnit\Framework\TestCase;
 
 final class SaleV2LoaderTest extends TestCase
 {
+    private function makeLoader(Connection $connection, EntityManagerInterface $em): SaleV2Loader
+    {
+        $settings = $this->createMock(SettingsService::class);
+        $settings->method('get')->willReturn('18');
+
+        return new SaleV2Loader($connection, $em, $settings);
+    }
+
     public function testReturnsNullWhenSaleNotFound(): void
     {
         $connection = $this->createMock(Connection::class);
@@ -20,7 +29,7 @@ final class SaleV2LoaderTest extends TestCase
 
         $em = $this->createMock(EntityManagerInterface::class);
 
-        $loader = new SaleV2Loader($connection, $em);
+        $loader = $this->makeLoader($connection, $em);
 
         self::assertNull($loader->loadAsSale('non-existent-id'));
     }
@@ -40,6 +49,7 @@ final class SaleV2LoaderTest extends TestCase
             'subtotal' => '100.00',
             'discount_total' => '0.00',
             'grand_total' => '100.00',
+            'tax_total' => '0.00',
             'issued_at' => '2025-01-15 10:00:00',
             'created_at' => '2025-01-15 09:00:00',
         ];
@@ -51,7 +61,7 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(\Doctrine\ORM\EntityRepository::class));
 
-        $loader = new SaleV2Loader($connection, $em);
+        $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('abc-123');
 
         self::assertInstanceOf(Sale::class, $sale);
@@ -76,6 +86,7 @@ final class SaleV2LoaderTest extends TestCase
             'subtotal' => '50.00',
             'discount_total' => '0.00',
             'grand_total' => '50.00',
+            'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
         ];
@@ -87,7 +98,7 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(\Doctrine\ORM\EntityRepository::class));
 
-        $loader = new SaleV2Loader($connection, $em);
+        $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('void-sale');
 
         self::assertInstanceOf(Sale::class, $sale);
@@ -109,6 +120,7 @@ final class SaleV2LoaderTest extends TestCase
             'subtotal' => '200.00',
             'discount_total' => '0.00',
             'grand_total' => '200.00',
+            'tax_total' => '0.00',
             'issued_at' => null,
             'created_at' => null,
         ];
@@ -120,7 +132,7 @@ final class SaleV2LoaderTest extends TestCase
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('getRepository')->willReturn($this->createMock(\Doctrine\ORM\EntityRepository::class));
 
-        $loader = new SaleV2Loader($connection, $em);
+        $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('active-sale');
 
         self::assertInstanceOf(Sale::class, $sale);

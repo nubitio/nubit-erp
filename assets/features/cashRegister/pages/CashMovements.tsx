@@ -90,28 +90,23 @@ export const CashMovements = () => {
         ]}
         onContentReady={onContentReady}
         paging={false}
-        beforeToolbar={() => (
-          <Item location="before" locateInMenu="never">
-            <div className="page-toolbar-state">
-              {gridError ? (
-                <AsyncState
-                  compact
-                  variant="error"
-                  title="Error de carga"
-                  description={gridError}
-                  onRetry={() => gridRef.current?.refresh()}
-                />
-              ) : (
-                <AsyncState
-                  compact
-                  variant="info"
-                  title="Turno en caja"
-                  description="Registra ingresos/salidas y revisa el balance acumulado del turno."
-                />
-              )}
-            </div>
-          </Item>
-        )}
+        beforeToolbar={
+          gridError
+            ? () => (
+                <Item location="before" locateInMenu="never">
+                  <div className="page-toolbar-state">
+                    <AsyncState
+                      compact
+                      variant="error"
+                      title="Error de carga"
+                      description={gridError}
+                      onRetry={() => gridRef.current?.refresh()}
+                    />
+                  </div>
+                </Item>
+              )
+            : undefined
+        }
       />
       <DxDialog title="Movimiento de caja" width={720} maxHeight={700} events={EVENTS}>
         <DxForm

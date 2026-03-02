@@ -19,7 +19,7 @@ import toast from '@shared/lib/SharedUtils';
 export const InvoicePage = () => {
   const container = 'wrapper';
   const fields = InvoiceFields();
-  const detailFields = InvoiceDetailFields();
+  const detailFields = (parentRow: any) => InvoiceDetailFields(parentRow?.currency ?? 'PEN');
   const gridRef = useRef<DxDataGridEvents>(null);
 
   const API_URL = Constants.API_BASE_URL + 'tax-documents';

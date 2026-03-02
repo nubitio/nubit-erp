@@ -71,13 +71,8 @@ export const InvoiceFields = () => {
       .name('total')
       .label('Total')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
-      .name('voidCorrelation')
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'))
+
       .label('Nota C.')
       .align('center')
       .build(),
@@ -117,7 +112,7 @@ export const InvoiceFields = () => {
   return fields;
 };
 
-export const InvoiceDetailFields = () => {
+export const InvoiceDetailFields = (currency: string = 'PEN') => {
   const fields: Field[] = [];
 
   fields.push(
@@ -171,7 +166,7 @@ export const InvoiceDetailFields = () => {
       .name('unitPrice')
       .label('Precio')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .sendAsString(true)
       .build(),
   );
@@ -181,7 +176,7 @@ export const InvoiceDetailFields = () => {
       .name('taxAmount')
       .label('IGV')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .sendAsString(true)
       .build(),
   );
@@ -191,7 +186,7 @@ export const InvoiceDetailFields = () => {
       .name('total')
       .label('Total')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
+      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .sendAsString(true)
       .build(),
   );
