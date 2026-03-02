@@ -79,12 +79,14 @@ final class InvoiceCalculatorTest extends TestCase
                 'charges' => '10',
                 'expectedTotal' => null,
                 'expected' => [
+                    // High-precision fix: (taxable + charges) × divisor computed before
+                    // rounding, so lineTotal = 1.084745… × 1.10 × 1.18 → 1.41
                     'subtotal' => '1.08',
                     'discount' => '0.00',
                     'taxable' => '1.08',
-                    'tax' => '0.19',
+                    'tax' => '0.22',
                     'charges' => '0.11',
-                    'total' => '1.38',
+                    'total' => '1.41',
                 ],
             ],
             'quantity_decimals' => [
@@ -130,10 +132,12 @@ final class InvoiceCalculatorTest extends TestCase
                 'charges' => '0',
                 'expectedTotal' => null,
                 'expected' => [
+                    // High-precision fix: taxableUnrounded = 2.5 × 1.0 × 0.95 = 2.375
+                    // → rounded taxable = 2.38, lineTotal = 2.375 × 1.18 → 2.80
                     'subtotal' => '2.50',
                     'discount' => '0.13',
-                    'taxable' => '2.37',
-                    'tax' => '0.43',
+                    'taxable' => '2.38',
+                    'tax' => '0.42',
                     'charges' => '0.00',
                     'total' => '2.80',
                 ],

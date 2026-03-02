@@ -51,12 +51,22 @@ readonly class InvoiceCalculator
             $unitPrice = Money::money($line->unitPrice);
             $unitValue = Money::div($unitPrice, $divisor, 6);
 
-            $baseAmount = Money::money($unitValue->multipliedBy($qty));
-            $discountAmount = Money::money($baseAmount->multipliedBy($discountRate));
-            $taxableAmount = Money::money($baseAmount->minus($discountAmount));
-            $chargesAmount = Money::money($taxableAmount->multipliedBy($chargesRate));
-            $taxAmount = Money::money($taxableAmount->multipliedBy($taxRate));
-            $lineTotal = Money::money($taxableAmount->plus($chargesAmount)->plus($taxAmount));
+            // Keep full precision through intermediate steps so that the final
+            // HALF_UP round is applied only once — preventing the 1-cent loss
+            // that occurs when each intermediate is rounded before use.
+            $baseUnrounded = $unitValue->multipliedBy($qty);
+            $discountUnrounded = $baseUnrounded->multipliedBy($discountRate);
+            $taxableUnrounded = $baseUnrounded->minus($discountUnrounded);
+            $chargesUnrounded = $taxableUnrounded->multipliedBy($chargesRate);
+            $lineTotal = Money::money($taxableUnrounded->plus($chargesUnrounded)->multipliedBy($divisor));
+
+            // Round display values after lineTotal is established; derive
+            // taxAmount as the residual so the line balances exactly.
+            $baseAmount = Money::money($baseUnrounded);
+            $discountAmount = Money::money($discountUnrounded);
+            $taxableAmount = Money::money($taxableUnrounded);
+            $chargesAmount = Money::money($chargesUnrounded);
+            $taxAmount = Money::money($lineTotal->minus($taxableAmount)->minus($chargesAmount));
 
             $lines[] = new InvoiceLineAmounts(
                 Money::toString($qty, 6),
