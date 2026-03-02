@@ -1,0 +1,8 @@
+{"type":"SliceStarted","timestamp":"2026-03-02T15:19:03.602Z","payload":{"slice":"SLICE-001","title":"publicReceiptUrl debe retornar URL absoluta en /api/sales"}}
+{"type":"TaskHandedOff","task":"TASK-001","from_agent":"agt-orchestrate","to_agent":"agt-backend","artifact_id":"ART-004-normalizer-extended","timestamp":"2026-03-02T00:01:00Z"}
+{"type":"TaskHandedOff","task":"TASK-002","from_agent":"agt-orchestrate","to_agent":"agt-backend","artifact_id":"ART-007-unit-test","timestamp":"2026-03-02T00:01:01Z"}
+{"type":"TaskHandedOff","task":"TASK-003","from_agent":"agt-orchestrate","to_agent":"agt-qa","artifact_id":"ART-008-functional-test","timestamp":"2026-03-02T00:02:00Z"}
+{"type":"TaskCompleted","timestamp":"2026-03-02T15:23:27.905Z","payload":{"task":"TASK-001","slice":"SLICE-001","agent":"agt-backend"}}
+{"type":"TaskCompleted","timestamp":"2026-03-02T15:23:27.980Z","payload":{"task":"TASK-002","slice":"SLICE-001","agent":"agt-backend"}}
+{"type":"TaskCompleted","timestamp":"2026-03-02T15:23:39.961Z","payload":{"task":"TASK-003","slice":"SLICE-001","agent":"agt-qa"}}
+{"type":"SliceCompleted","timestamp":"2026-03-02T15:23:55.657Z","payload":{"slice":"SLICE-001","title":"publicReceiptUrl debe retornar URL absoluta en /api/sales"}}
