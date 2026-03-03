@@ -52,7 +52,7 @@ const customerDni = `1${ts.toString().slice(-7)}`;
 const customerName = `Cliente Test ${ts}`;
 
 // ── Persisted state between steps ─────────────────────────────────────────────
-let openedCashShiftId: string | null = null;   // capturado al abrir caja
+let openedCashShiftId: string | null = null; // capturado al abrir caja
 let createdMovementRowText: string | null = null; // descripción del movimiento
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -94,15 +94,19 @@ async function fillDxInput(page: Page, ariaLabel: string, value: string) {
 async function selectDxOption(page: Page, ariaLabel: string, optionText: string) {
   // El wrapper del SelectBox tiene role="combobox" con aria-label establecido por DX
   const combobox = page
-    .locator(`[role="combobox"][aria-label="${ariaLabel}"], .dx-selectbox input[aria-label="${ariaLabel}"]`)
+    .locator(
+      `[role="combobox"][aria-label="${ariaLabel}"], .dx-selectbox input[aria-label="${ariaLabel}"]`,
+    )
     .first();
   await combobox.click();
   // Overlay con las opciones del dropdown
   const overlay = page.locator('.dx-overlay-content .dx-list-item');
   await overlay.first().waitFor({ state: 'visible', timeout: 8000 });
-  await page.getByRole('option', { name: optionText }).or(
-    page.locator('.dx-list-item').filter({ hasText: optionText })
-  ).first().click();
+  await page
+    .getByRole('option', { name: optionText })
+    .or(page.locator('.dx-list-item').filter({ hasText: optionText }))
+    .first()
+    .click();
 }
 
 /**
@@ -111,10 +115,7 @@ async function selectDxOption(page: Page, ariaLabel: string, optionText: string)
 async function clickGridToolbarButton(page: Page, buttonText: string) {
   // DxDataGrid toolbar renderiza botones DX con .dx-toolbar .dx-button
   // El texto puede estar como aria-label o como texto visible del span
-  const btn = page
-    .locator('.dx-toolbar .dx-button')
-    .filter({ hasText: buttonText })
-    .first();
+  const btn = page.locator('.dx-toolbar .dx-button').filter({ hasText: buttonText }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }
@@ -146,7 +147,6 @@ async function waitForHashUrl(page: Page, hashPath: string, timeout = 15000) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 test.describe('Happy Path — flujo completo de venta', () => {
-
   // Compartimos una sola page entre todos los steps (es un flujo secuencial)
   let page: Page;
 
@@ -166,7 +166,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 1 — Login
   // ───────────────────────────────────────────────────────────────────────────
   test('01 - Login y redirección al dashboard', async () => {
-
     await test.step('Navegar a /login', async () => {
       await page.goto(`${BASE_URL}/login`);
       // El título de la página o el formulario de login debe ser visible
@@ -198,11 +197,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
       try {
         await branchPopup.waitFor({ state: 'visible', timeout: 5000 });
         // Seleccionar la primera opción disponible en la lista
-        const firstBranchOption = page.locator('.dx-list-item').first();
+        const firstBranchOption = page.locator('[data-testid="branch-picker-option"]').first();
         await firstBranchOption.waitFor({ state: 'visible', timeout: 5000 });
         await firstBranchOption.click();
         // Si hay botón de confirmar, clickearlo
-        const confirmBtn = page.locator('.dx-overlay-content .dx-button').filter({ hasText: /confirmar|aceptar|seleccionar/i });
+        const confirmBtn = page
+          .locator('.dx-overlay-content .dx-button')
+          .filter({ hasText: /confirmar|aceptar|seleccionar/i });
         if (await confirmBtn.isVisible({ timeout: 2000 })) {
           await confirmBtn.click();
         }
@@ -224,7 +225,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 2 — Crear producto
   // ───────────────────────────────────────────────────────────────────────────
   test('02 - Crear producto nuevo', async () => {
-
     await test.step('Navegar a /#/product', async () => {
       await page.goto(`${BASE_URL}/#/product`);
       await waitForDxLoadPanel(page);
@@ -261,24 +261,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Igual que arriba, el default es aceptable
 
       // ── Campo: Categoría (DxLookup ENTITY, required) ──
-      // ⚠ FRAGILE: DxLookup/DxSelectBox — necesita una categoría existente en BD
-      // Usamos el primer ítem del dropdown
+      // Usa el aria-label generado automáticamente por FormUtils para el campo 'Categoría'
       await test.step('Seleccionar categoría', async () => {
-        const categoryInput = page
-          .locator('input[aria-label="Categoría"], .dx-field-item input')
-          .first();
-        // Para DxLookup hacemos click en el widget (no en el input directamente)
-        const categoryWidget = page.locator('.dx-field-item')
-          .filter({ has: page.locator('text=Categoría') })
-          .locator('.dx-selectbox, .dx-lookup')
-          .first();
-
-        // Fallback: buscar el input y hacer click en el wrapper
-        try {
-          await categoryWidget.click({ timeout: 5000 });
-        } catch {
-          await categoryInput.click({ timeout: 5000 });
-        }
+        const categoryWidget = page.locator('[aria-label="Categoría"]').first();
+        await categoryWidget.waitFor({ state: 'visible', timeout: 5000 });
+        await categoryWidget.click();
 
         const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
         await firstOption.waitFor({ state: 'visible', timeout: 8000 });
@@ -287,7 +274,19 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // ── Campo: Unidad (DxLookup ENTITY, required) ──
       await test.step('Seleccionar unidad de medida', async () => {
-        const unitWidget = page.locator('.dx-field-item')
+        const unitWidget = page.locator('[aria-label="Unidad"]').first();
+        await unitWidget.waitFor({ state: 'visible', timeout: 5000 });
+        await unitWidget.click();
+
+        const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
+        await firstOption.waitFor({ state: 'visible', timeout: 8000 });
+        await firstOption.click();
+      });
+
+      // ── Campo: Unidad (DxLookup ENTITY, required) ──
+      await test.step('Seleccionar unidad de medida', async () => {
+        const unitWidget = page
+          .locator('.dx-field-item')
           .filter({ has: page.locator('text=Unidad') })
           .locator('.dx-selectbox, .dx-lookup')
           .first();
@@ -320,9 +319,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Verificar que el producto aparece en la grilla
       // El DataGrid de DX renderiza filas en .dx-data-row
-      await expect(
-        page.locator('.dx-data-row').filter({ hasText: productName }),
-      ).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('.dx-data-row').filter({ hasText: productName })).toBeVisible({
+        timeout: 15000,
+      });
     });
   });
 
@@ -330,7 +329,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 3 — Editar producto
   // ───────────────────────────────────────────────────────────────────────────
   test('03 - Editar precio del producto', async () => {
-
     await test.step('Seleccionar el producto recién creado en el grid', async () => {
       // DxDataGrid con FilterRow visible — buscar por nombre en la fila de filtros
       // La fila de filtro tiene inputs .dx-editor-cell input (uno por columna)
@@ -373,7 +371,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 4 — Abrir sesión de caja
   // ───────────────────────────────────────────────────────────────────────────
   test('04 - Abrir sesión de caja', async () => {
-
     await test.step('Navegar al dashboard de cajas', async () => {
       await page.goto(`${BASE_URL}/#/cashbox`);
       await waitForDxLoadPanel(page);
@@ -442,7 +439,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 5 — Registrar cliente nuevo
   // ───────────────────────────────────────────────────────────────────────────
   test('05 - Crear cliente nuevo', async () => {
-
     await test.step('Navegar a /#/customer', async () => {
       await page.goto(`${BASE_URL}/#/customer`);
       await waitForDxLoadPanel(page);
@@ -462,7 +458,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // CustomerFields: name('businessName').label('Cliente') — DxTextArea
       // DxTextArea renderiza <textarea aria-label="Cliente"> o con role="textbox"
       // ⚠ FRAGILE: DxTextArea puede no propagar aria-label al textarea nativo
-      const clienteInput = page.locator('textarea[aria-label="Cliente"], [aria-label="Cliente"]').first();
+      const clienteInput = page
+        .locator('textarea[aria-label="Cliente"], [aria-label="Cliente"]')
+        .first();
       await clienteInput.waitFor({ state: 'visible', timeout: 6000 });
       await clienteInput.click({ clickCount: 3 });
       await clienteInput.fill(customerName);
@@ -478,9 +476,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForDxLoadPanel(page);
 
       // Verificar que el cliente aparece en el grid
-      await expect(
-        page.locator('.dx-data-row').filter({ hasText: customerName }),
-      ).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('.dx-data-row').filter({ hasText: customerName })).toBeVisible({
+        timeout: 15000,
+      });
     });
   });
 
@@ -488,7 +486,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 6 — Registrar venta en POS
   // ───────────────────────────────────────────────────────────────────────────
   test('06 - Venta en POS', async () => {
-
     await test.step('Navegar a /#/pos', async () => {
       await page.goto(`${BASE_URL}/#/pos`);
       // La shell del POS tiene class="pos-shell"
@@ -534,15 +531,19 @@ test.describe('Happy Path — flujo completo de venta', () => {
       }
 
       // Verificar que el producto aparece en la orden (panel de checkout)
-      await expect(page.locator('.pos-line__name').filter({ hasText: productName })).toBeVisible({ timeout: 8000 });
+      await expect(page.locator('.pos-line__name').filter({ hasText: productName })).toBeVisible({
+        timeout: 8000,
+      });
     });
 
     await test.step('Seleccionar el cliente creado', async () => {
       // POSCheckoutPanel — sección "Cliente (opcional)"
       // Hacer click en el toggle para abrir la sección
-      const customerToggle = page.locator('button.pos-section-toggle__btn').filter({ has: page.locator('[data-lucide="user-2"], .lucide-user-2') }).or(
-        page.locator('button.pos-section-toggle__btn').filter({ hasText: /cliente/i })
-      ).first();
+      const customerToggle = page
+        .locator('button.pos-section-toggle__btn')
+        .filter({ has: page.locator('[data-lucide="user-2"], .lucide-user-2') })
+        .or(page.locator('button.pos-section-toggle__btn').filter({ hasText: /cliente/i }))
+        .first();
 
       await customerToggle.waitFor({ state: 'visible', timeout: 8000 });
       await customerToggle.click();
@@ -566,7 +567,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Verificar que el cliente quedó seleccionado (el toggle muestra el nombre)
       await expect(
-        page.locator('button.pos-section-toggle__btn').filter({ hasText: customerName })
+        page.locator('button.pos-section-toggle__btn').filter({ hasText: customerName }),
       ).toBeVisible({ timeout: 6000 });
     });
 
@@ -602,7 +603,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive"
       // Contiene <h2 class="pos-postsale__title">¡Venta completada!</h2>
       await expect(
-        page.locator('.pos-postsale__title').filter({ hasText: '¡Venta completada!' })
+        page.locator('.pos-postsale__title').filter({ hasText: '¡Venta completada!' }),
       ).toBeVisible({ timeout: 20000 });
 
       // Cerrar el overlay (botón "Nueva venta")
@@ -614,7 +615,6 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 7 — Registrar movimiento de caja
   // ───────────────────────────────────────────────────────────────────────────
   test('07 - Registrar movimiento de caja', async () => {
-
     await test.step('Navegar a los movimientos del turno abierto', async () => {
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-shift/${openedCashShiftId}/movements`);
@@ -633,7 +633,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // cashMovementsFields: name('category').label('Categoría') — DxSelectBox ENTITY required
       // ⚠ FRAGILE: requiere categorías de movimiento en BD
       await test.step('Seleccionar categoría de movimiento', async () => {
-        const categoryWidget = page.locator('.dx-popup-content .dx-field-item')
+        const categoryWidget = page
+          .locator('.dx-popup-content .dx-field-item')
           .filter({ has: page.locator('text=Categoría') })
           .locator('.dx-selectbox, .dx-lookup')
           .first();
@@ -641,7 +642,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         try {
           await categoryWidget.click({ timeout: 5000 });
         } catch {
-          await page.locator('.dx-popup-content input[aria-label="Categoría"]').click({ timeout: 5000 });
+          await page
+            .locator('.dx-popup-content input[aria-label="Categoría"]')
+            .click({ timeout: 5000 });
         }
 
         const firstOption = page.locator('.dx-overlay-content .dx-list-item').first();
@@ -658,8 +661,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const movementDescription = `Movimiento test ${ts}`;
       createdMovementRowText = movementDescription; // guardamos para el paso 8
 
-      // ⚠ FRAGILE: DxTextArea aria-label
-      const descInput = page.locator('.dx-popup-content textarea[aria-label="Descripcion"], .dx-popup-content [aria-label="Descripcion"]').first();
+      // aria-label generado automáticamente por FormUtils (label sin acento tal como está en código)
+      const descInput = page.locator('.dx-popup-content [aria-label="Descripcion"]').first();
       await descInput.waitFor({ state: 'visible', timeout: 6000 });
       await descInput.fill(movementDescription);
       await page.keyboard.press('Tab');
@@ -687,11 +690,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 8 — Editar movimiento de caja
   // ───────────────────────────────────────────────────────────────────────────
   test('08 - Editar movimiento de caja', async () => {
-
     await test.step('Seleccionar el movimiento en el grid', async () => {
-      const movementRow = page
-        .locator('.dx-data-row')
-        .filter({ hasText: createdMovementRowText! });
+      const movementRow = page.locator('.dx-data-row').filter({ hasText: createdMovementRowText! });
       await movementRow.waitFor({ state: 'visible', timeout: 10000 });
       await movementRow.click();
     });
@@ -717,9 +717,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Verificar que el monto actualizado aparece en el grid', async () => {
-      const movementRow = page
-        .locator('.dx-data-row')
-        .filter({ hasText: createdMovementRowText! });
+      const movementRow = page.locator('.dx-data-row').filter({ hasText: createdMovementRowText! });
       await expect(movementRow).toBeVisible({ timeout: 10000 });
       // El formatter de amount muestra en formato moneda; "75" debe aparecer en la fila
       await expect(movementRow).toContainText('75');
@@ -730,14 +728,15 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 9 — Cerrar sesión de caja
   // ───────────────────────────────────────────────────────────────────────────
   test('09 - Cerrar sesión de caja', async () => {
-
     await test.step('Navegar al cierre de caja', async () => {
       expect(openedCashShiftId, 'cashShiftId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-register/${openedCashShiftId}/close`);
       // CashRegisterClose renderiza un DataGrid con clase .grid.theme-dependent
       await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 20000 });
       // La toolbar del grid tiene el título "Cierre de caja"
-      await expect(page.locator('.grid-header').filter({ hasText: 'Cierre de caja' })).toBeVisible({ timeout: 10000 });
+      await expect(page.locator('.grid-header').filter({ hasText: 'Cierre de caja' })).toBeVisible({
+        timeout: 10000,
+      });
     });
 
     await test.step('Ingresar montos contados en el grid editable', async () => {
@@ -748,21 +747,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Esperamos a que se carguen los datos del summary
       await waitForDxLoadPanel(page);
 
-      // Hacemos click en la primera celda editable de la columna "Monto contado"
-      // La columna tiene caption="Monto contado" con dataField="countedAmount"
-      // ⚠ FRAGILE: dependemos del índice de columna o del caption como aria-label
-      const countedAmountCells = page.locator('.dx-data-row .dx-command-edit, .dx-data-row td').filter({
-        // buscamos celdas que sean editables por índice de columna (columna 2 = monto contado)
-      });
-
-      // Estrategia: click en la primera celda de la 2ª columna de datos (monto contado)
       // Columnas: [expectedAmount, countedAmount, difference, note, updated(hidden)]
-      // La celda de countedAmount es la 2ª columna visible → index 1 (0-based)
       const firstDataRow = page.locator('.dx-data-row').first();
       await firstDataRow.waitFor({ state: 'visible', timeout: 15000 });
 
-      // Click en la 2ª td de la primera fila (countedAmount es columna 2)
-      const countedAmountCell = firstDataRow.locator('td').nth(1);
+      // Click en la celda de countedAmount usando la cssClass añadida al Column
+      const countedAmountCell = firstDataRow.locator('td.col-counted-amount');
       await countedAmountCell.click();
 
       // Una vez en modo edición de celda, DX renderiza un input dentro de la celda
@@ -774,27 +764,20 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Hacer click en "Cerrar caja"', async () => {
       // CashRegisterClose tiene un Button text="Cerrar caja" en la Toolbar del DataGrid
-      const closeCajaBtn = page.locator('.dx-toolbar .dx-button').filter({ hasText: 'Cerrar caja' });
+      const closeCajaBtn = page
+        .locator('.dx-toolbar .dx-button')
+        .filter({ hasText: 'Cerrar caja' });
       await closeCajaBtn.waitFor({ state: 'visible', timeout: 8000 });
       await closeCajaBtn.click();
     });
 
     await test.step('Confirmar el diálogo de cierre', async () => {
-      // CashRegisterClose usa devextreme/ui/dialog confirm() → renderiza un DxPopup nativo
-      // El confirm de DX tiene dos botones: "Sí" y "No" (o "Yes"/"No" según locale)
-      // El título del confirm es "Cerrar Caja"
-      const confirmDialog = page.locator('.dx-dialog, .dx-overlay-content').filter({
-        has: page.locator('text=seguro').or(page.locator('text=Cerrar Caja')),
-      }).first();
-
+      // CashRegisterClose ahora usa un <div> React propio con data-testid en lugar de confirm() de DX
+      const confirmDialog = page.locator('[data-testid="close-cash-confirm-dialog"]');
       await confirmDialog.waitFor({ state: 'visible', timeout: 8000 });
 
-      // Botón de confirmación positiva (Sí / Yes / OK)
-      const yesBtn = page
-        .locator('.dx-dialog-button, .dx-overlay-content .dx-button')
-        .filter({ hasText: /^(Sí|Si|Yes|OK|Aceptar)$/i })
-        .first();
-      await yesBtn.click();
+      // Botón de confirmación positiva
+      await page.locator('[data-testid="close-cash-confirm-yes"]').click();
     });
 
     await test.step('Verificar redirección al dashboard de cajas', async () => {
@@ -807,61 +790,47 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForDxLoadPanel(page);
       // Verificación laxa: que exista al menos una fila con badge "Cerrada"
       await expect(
-        page.locator('.dx-data-row .badge').filter({ hasText: 'Cerrada' }).first()
+        page.locator('.dx-data-row .badge').filter({ hasText: 'Cerrada' }).first(),
       ).toBeVisible({ timeout: 15000 });
     });
   });
-
 }); // end describe
 
 // =============================================================================
-// NOTAS DE SELECTORES INCIERTOS
+// NOTAS DE SELECTORES — ESTADO POST HARDENING
 // =============================================================================
 //
-// Los siguientes elementos carecen de data-testid o aria-label robustos.
-// Se recomienda añadirlos para eliminar la fragilidad indicada con ⚠ FRAGILE:
+// Los cambios de hardening (a2/agt-frontend) aplicados al código resuelven
+// los siguientes puntos que antes eran frágiles:
 //
-// 1. FORMULARIO DE PRODUCTO — campos sin aria-label garantizado:
-//    - Campos generados por DxForm + FieldBuilder: DX usa el label del field como
-//      aria-label del input, pero SÓLO si labelMode != 'hidden'.
-//      ProductPage usa labelMode="hidden" (por herencia de LoginForm, aunque DxForm
-//      no lo establece explícitamente) → verificar en runtime.
-//    RECOMENDACIÓN: añadir `inputAttr: { 'aria-label': fieldLabel }` en cada
-//    FieldBuilder que no tenga buttons ni editorOptions explícitos.
+// ✅ 1. FORMULARIO DE PRODUCTO — aria-label automático:
+//    FormUtils.tsx ahora inyecta automáticamente `inputAttr: { 'aria-label': field.label }`
+//    como base en todos los campos. Los editorOptions explícitos del field hacen override.
+//    Esto garantiza aria-label en TODOS los campos sin tocar cada FieldBuilder.
 //
-// 2. DXSELECTBOX / DXLOOKUP de Categoría y Unidad en ProductFields:
-//    Estos campos no tienen inputAttr, por lo que DevExtreme puede o no generar
-//    aria-label. El selector usado (buscar .dx-field-item que tenga el texto del label
-//    + buscar .dx-selectbox/.dx-lookup) es frágil si el markup cambia.
-//    RECOMENDACIÓN: añadir `inputAttr: { 'data-testid': 'field-category' }` en
-//    el FieldBuilder correspondiente.
+// ✅ 2. DXSELECTBOX / DXLOOKUP de Categoría y Unidad:
+//    Ahora heredan aria-label de FormUtils. El test usa `[aria-label="Categoría"]`
+//    y `[aria-label="Unidad"]` directamente, sin dependencia del orden DOM.
 //
-// 3. CAMPO "TIPO" en cashMovementsFields:
-//    Tiene `.visibleOnForm(false)` pero el campo 'type' es required. Si la lógica
-//    de DxForm no envía un valor por defecto, el POST falla con error 422.
-//    RECOMENDACIÓN: añadir `.defaultValue('income')` en el FieldBuilder del campo
-//    type para garantizar que se envíe aunque no sea visible.
+// ✅ 3. CAMPO "TIPO" en cashMovementsFields:
+//    Se añadió `.defaultValue('income')` al FieldBuilder. El campo se envía
+//    aunque no sea visible en el formulario.
 //
-// 4. SELECTOR DE SUCURSAL (BranchPicker):
-//    El componente BranchPicker no tiene data-testid en su popup ni en las opciones.
-//    Si la empresa tiene múltiples sucursales, el flujo de login se detiene aquí.
-//    RECOMENDACIÓN: añadir `data-testid="branch-picker-option"` a cada ítem de la lista.
+// ✅ 4. SELECTOR DE SUCURSAL (BranchPicker):
+//    BranchPicker ahora usa `itemRender` con `data-testid="branch-picker-option"`.
+//    El test usa este testid en lugar del frágil `.dx-list-item`.
 //
-// 5. CONFIRMACIÓN DE CIERRE DE CAJA (devextreme/ui/dialog confirm):
-//    El confirm() de DX usa locale del browser — el botón puede llamarse "Sí", "Yes"
-//    o "OK" según la configuración del idioma en el bundle DX.
-//    RECOMENDACIÓN: configurar DX globalmente con `config({ defaultCurrency: 'PEN' })`
-//    y establecer el locale español para garantizar texto "Sí".
-//    Alternativa: migrar el confirm a un DxDialog custom con data-testid en los botones.
+// ✅ 5. CONFIRMACIÓN DE CIERRE DE CAJA:
+//    CashRegisterClose reemplazó `confirm()` de DX por un <div> React propio
+//    con `data-testid="close-cash-confirm-dialog"` / "close-cash-confirm-yes" / "no".
+//    Eliminada la dependencia del locale del browser.
 //
-// 6. CELDAS DEL GRID EN CashRegisterClose:
-//    El DataGrid de cierre no tiene IDs ni data-testid en las columnas. El selector
-//    `.dx-data-row td.nth(1)` depende del orden de columnas renderizadas.
-//    RECOMENDACIÓN: añadir `cssClass` o `name` en los Column de CashRegisterClose
-//    para poder identificarlos con `.dx-col-countedAmount`.
+// ✅ 6. CELDAS DEL GRID EN CashRegisterClose:
+//    La columna countedAmount tiene `cssClass="col-counted-amount"`.
+//    El test usa `td.col-counted-amount` en lugar de `td.nth(1)`.
 //
-// 7. CAMPO Descripcion en cashMovementsFields:
-//    El label usa "Descripcion" (sin acento) — si DX normaliza el aria-label esto
-//    puede variar. El selector usa el valor exacto del label tal como está en el código.
+// ✅ 7. CAMPO Descripcion en cashMovementsFields:
+//    Con aria-label automático de FormUtils el selector `.dx-popup-content [aria-label="Descripcion"]`
+//    es ahora fiable. El label sigue sin acento (tal como está en el código fuente).
 //
 // =============================================================================
