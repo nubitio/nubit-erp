@@ -1,14 +1,99 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
+
+/**
+ * Playwright E2E configuration
+ *
+ * ── Running modes ──────────────────────────────────────────────────────────
+ *
+ *  1. Headless inside Docker (CI / docker compose --profile e2e run --rm e2e):
+ *       docker compose --profile e2e run --rm e2e
+ *       docker compose --profile e2e run --rm e2e yarn test:e2e e2e/happy-path.spec.ts
+ *
+ *  2. Headed on host machine (see the app run in a real browser):
+ *       E2E_BASE_URL=http://localhost:8080 yarn test:e2e --headed
+ *
+ *  3. Interactive UI mode on host (full visual debugger in the browser):
+ *       E2E_BASE_URL=http://localhost:8080 yarn test:e2e --ui
+ *
+ *  4. View traces / videos after any run:
+ *       npx playwright show-report          (opens http://localhost:9323)
+ *       # or inside Docker:
+ *       docker compose --profile e2e run --rm -p 9323:9323 e2e \
+ *         yarn playwright show-report --host 0.0.0.0
+ *
+ * ── Environment variables ──────────────────────────────────────────────────
+ *   E2E_BASE_URL    default: http://efact-web  (Docker) | http://localhost:8080 (host)
+ *   E2E_USERNAME    default: admin@test.com
+ *   E2E_PASSWORD    default: password
+ *
+ * ── Note on Host header ────────────────────────────────────────────────────
+ * We do NOT set extraHTTPHeaders.Host here. Chromium rejects page.goto() when
+ * the Host header doesn't match the URL hostname (ERR_INVALID_ARGUMENT). The
+ * app's Caddy server listens on :80 (any hostname), so no Host override is needed.
+ */
+
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './e2e',
+
+  // Run tests sequentially — the happy-path is a stateful flow
   fullyParallel: false,
-  retries: 0,
-  reporter: 'list',
+
+  // Retry once on CI to catch flaky selectors; no retries locally
+  retries: isCI ? 1 : 0,
+
+  // Show every test result line in the terminal
+  reporter: [
+    ['list'],
+    // Always write an HTML report so you can open it after the run
+    ['html', { outputFolder: 'playwright-report', open: 'never' }], // mapped to var/playwright-report via Docker bind mount
+  ],
+
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? 'http://web',
-    extraHTTPHeaders: {
-      Host: process.env.E2E_HOST_HEADER ?? 'localhost',
-    },
+    baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
+
+    // ── Trace (step-by-step screenshots + network) ──────────────────────
+    // 'on-first-retry' → only captured when a test fails and is retried.
+    // Change to 'on' while debugging to always get a trace.
+    trace: 'on-first-retry',
+
+    // ── Video recording ─────────────────────────────────────────────────
+    // 'retain-on-failure' → video is kept only when the best fails.
+    // Change to 'on' while debugging to always record.
+    video: 'on',
+
+    // ── Screenshots ──────────────────────────────────────────────────────
+    screenshot: 'only-on-failure',
+
+    // Give each action a generous timeout for slow CI environments
+    actionTimeout: 15_000,
+
+    // Navigation timeout (waitForURL, goto, etc.)
+    navigationTimeout: 30_000,
   },
+
+  // Global timeout per test
+  timeout: 120_000,
+
+  // Output folder for traces, videos, screenshots
+  outputDir: 'test-results',
+
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Launch args needed when running as root inside Docker
+        launchOptions: {
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            // Disable Chrome autofill — prevents autofill from overriding Playwright fill()
+            '--disable-features=AutofillServerCommunication,PasswordManagerUI',
+          ],
+        },
+      },
+    },
+  ],
 });
