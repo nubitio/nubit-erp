@@ -51,7 +51,9 @@ final readonly class CspNonceListener
                 "style-src 'self' 'unsafe-inline'",
                 "img-src 'self' data:",
                 "font-src 'self' data:",
-                "connect-src 'self'",
+                // 'self' for API calls; localhost ws/wss for QZ Tray desktop print agent
+                // (connects on ws://localhost:8182+ or wss://localhost:8181+)
+                "connect-src 'self' ws://localhost:* wss://localhost:*",
                 "worker-src 'self' blob:",
             ])
         );
