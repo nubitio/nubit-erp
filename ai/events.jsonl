@@ -25,3 +25,8 @@
 {"type":"TaskCompleted","timestamp":"2026-03-02T21:05:00.000Z","payload":{"task":"TASK-010","slice":"SLICE-004","agent":"agt-backend"}}
 {"type":"TaskCompleted","timestamp":"2026-03-02T21:05:00.000Z","payload":{"task":"TASK-011","slice":"SLICE-004","agent":"agt-backend"}}
 {"type":"GatePassed","timestamp":"2026-03-02T21:05:30.000Z","payload":{"gate":"Gate-1","slice":"SLICE-004","tools":"phpstan+phpcs+phpunit","result":"pass"}}
+{"type":"TaskHandedOff","task":"TASK-012","from_agent":"agt-orchestrate","to_agent":"agt-qa","artifact_id":"ART-014","timestamp":"2026-03-02T21:06:00.000Z"}
+{"type":"TaskCompleted","timestamp":"2026-03-02T21:10:00.000Z","payload":{"task":"TASK-012","slice":"SLICE-004","agent":"agt-qa"}}
+{"type":"GatePassed","timestamp":"2026-03-02T21:10:00.000Z","payload":{"gate":"Gate-2","slice":"SLICE-004","tools":"phpstan+phpcs+phpunit+AC-checklist","result":"pass"}}
+{"type":"QASignOff","slice":"SLICE-004","passed_criteria":6,"total_criteria":6,"timestamp":"2026-03-02T21:10:00.000Z"}
+{"type":"SliceCompleted","timestamp":"2026-03-02T21:10:00.000Z","payload":{"slice":"SLICE-004","title":"Corregir Unknown column 'm.turno_id' en SalesV2BackfillCommand"}}
