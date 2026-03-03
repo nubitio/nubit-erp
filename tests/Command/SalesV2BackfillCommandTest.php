@@ -23,8 +23,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  * They verify:
  *   1. The command resolves cash_session_id via cash_register_id + time-window
  *      without throwing SQLSTATE[42S22] (turno_id regression guard).
- *   2. A movimiento row with caja_id = NULL causes cash_session_id = NULL
- *      without exception.
+ *   2. A movimiento row with caja_id = NULL is backfilled with cash_session_id = NULL
+ *      (no longer skipped; cash_session_id is nullable).
  *   3. The command skips gracefully when required tables are absent
  *      (TableNotFoundException path).
  */
@@ -102,28 +102,21 @@ final class SalesV2BackfillCommandTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // Scenario A — NULL caja_id rows are skipped and a warning is printed
+    // Scenario A — NULL caja_id rows are now backfilled (cash_session_id = NULL)
+    //              No skip-warning should be emitted.
     // -------------------------------------------------------------------------
 
-    public function testNullCajaIdRowIsSkippedWithWarning(): void
+    public function testNullCajaIdRowIsBackfilledWithNullCashSessionId(): void
     {
-        // fetchOne call sequence (after TASK-019 changes):
-        //   Call 1: SELECT 1 FROM sales LIMIT 1          → 1 (table exists)
-        //   Call 2: SELECT 1 FROM sale_items LIMIT 1     → 1 (table exists)
-        //   Call 3: SELECT 1 FROM movimiento LIMIT 1     → 1 (table exists)
-        //   Call 4: SELECT 1 FROM movimiento_detalle LIMIT 1 → 1 (table exists)
-        //   Call 5: SELECT COUNT(*) … caja_id IS NULL …  → 3 (3 rows to skip)
-        $callCount = 0;
+        // fetchOne call sequence: only 4 table-existence checks (no $skipped COUNT query).
+        //   Call 1: SELECT 1 FROM sales LIMIT 1
+        //   Call 2: SELECT 1 FROM sale_items LIMIT 1
+        //   Call 3: SELECT 1 FROM movimiento LIMIT 1
+        //   Call 4: SELECT 1 FROM movimiento_detalle LIMIT 1
         /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
 
-        $connection->method('fetchOne')
-            ->willReturnCallback(static function () use (&$callCount): int {
-                ++$callCount;
-
-                return $callCount === 5 ? 3 : 1;
-            });
-
+        $connection->method('fetchOne')->willReturn(1);
         $connection->method('beginTransaction');
         $connection->method('commit');
 
@@ -141,26 +134,27 @@ final class SalesV2BackfillCommandTest extends TestCase
         $exitCode = $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertStringContainsString(
-            'Skipped 3 movimiento row(s) with NULL caja_id',
+        // No skip warning expected — NULL caja_id rows are backfilled now
+        self::assertStringNotContainsString(
+            'Skipped',
             $tester->getDisplay(),
-            'Warning must include the exact skipped-row count'
+            'No skip warning should be emitted; NULL caja_id rows are now included'
         );
         self::assertStringContainsString('headers=7', $tester->getDisplay());
     }
 
     // -------------------------------------------------------------------------
-    // Scenario B — caja_id IS NOT NULL but no cash_session → row inserted with
-    //              cash_session_id = NULL (requires migration T20 applied)
+    // Scenario B — any caja_id (NULL or not) but no matching cash_session →
+    //              row inserted with cash_session_id = NULL.
     // -------------------------------------------------------------------------
 
     public function testNullCajaIdNotNullButNoSessionInsertsWithNullCashSessionId(): void
     {
-        // The command does NOT filter rows with a valid caja_id but no matching
-        // cash_session. Those rows land in sales with cash_session_id = NULL.
-        // We verify: (a) command succeeds; (b) INSERT SQL contains the caja_id
-        // NOT NULL filter (Fix A) but NOT a cash_session_id IS NOT NULL filter
-        // (i.e. rows without a session are NOT excluded).
+        // The command does NOT filter rows by caja_id any more.
+        // Whether caja_id is NULL or set but has no matching cash_session, those
+        // rows land in sales with cash_session_id = NULL.
+        // We verify: (a) command succeeds; (b) INSERT SQL does NOT contain any
+        // caja_id IS NOT NULL filter; (c) cash_session_id IS NOT NULL is also absent.
         $capturedSql = '';
 
         /** @var Connection&MockObject $connection */
@@ -191,15 +185,14 @@ final class SalesV2BackfillCommandTest extends TestCase
 
         self::assertSame(Command::SUCCESS, $exitCode);
 
-        // Fix A filter MUST be present — rows without a cash_register are excluded
-        self::assertStringContainsString(
+        // caja_id IS NOT NULL filter must NOT exist — NULL caja_id rows are now included
+        self::assertStringNotContainsString(
             'caja_id IS NOT NULL',
             $capturedSql,
-            'INSERT WHERE clause must contain AND m.caja_id IS NOT NULL (Fix A)'
+            'INSERT WHERE clause must NOT contain AND m.caja_id IS NOT NULL'
         );
 
-        // Rows with a valid caja_id but no matching session are NOT excluded —
-        // they are inserted with cash_session_id = NULL (Fix B / schema change).
+        // cash_session_id IS NOT NULL must also be absent — NULL sessions are allowed
         self::assertStringNotContainsString(
             'cash_session_id IS NOT NULL',
             $capturedSql,
@@ -289,8 +282,9 @@ final class SalesV2BackfillCommandTest extends TestCase
     }
 
     /**
-     * Create a Connection mock that passes the table-existence checks and
-     * returns the given row counts from executeStatement.
+     * Create a Connection mock that passes the four table-existence checks
+     * (sales, sale_items, movimiento, movimiento_detalle) and returns the
+     * given row counts from executeStatement.
      */
     private function mockConnectionForSuccessfulInsert(
         int $headersInserted,
