@@ -75,14 +75,8 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
 
         // Collect all eligible movimiento_ids ordered so we can cursor through them in chunks.
         /** @var list<string> $ids */
-        $skipped = (int) $this->connection->fetchOne(
-            'SELECT COUNT(*) FROM movimiento WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL AND caja_id IS NULL'
-        );
-
-        // Collect all eligible movimiento_ids ordered so we can cursor through them in chunks.
-        /** @var list<string> $ids */
         $ids = $this->connection->fetchFirstColumn(
-            'SELECT movimiento_id FROM movimiento WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL AND caja_id IS NOT NULL ORDER BY movimiento_id'
+            'SELECT movimiento_id FROM movimiento WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL ORDER BY movimiento_id'
         );
 
         $total = count($ids);
@@ -210,7 +204,6 @@ LEFT JOIN sales s_existing ON s_existing.legacy_movimiento_id = m.movimiento_id
 WHERE m.movimiento_id >= :firstId
   AND m.movimiento_id <= :lastId
   AND m.tipo_id = 2
-  AND m.caja_id IS NOT NULL
   AND s_existing.id IS NULL
 SQL,
                     ['firstId' => $firstId, 'lastId' => $lastId]
@@ -274,7 +267,6 @@ LEFT  JOIN sale_items si_existing ON si_existing.legacy_movimiento_detalle_id = 
 WHERE m.movimiento_id >= :firstId
   AND m.movimiento_id <= :lastId
   AND m.tipo_id = 2
-  AND m.caja_id IS NOT NULL
   AND si_existing.id IS NULL
 SQL,
                     ['firstId' => $firstId, 'lastId' => $lastId]
@@ -302,13 +294,6 @@ SQL,
             $headersInserted,
             $itemsInserted,
         ));
-
-        if ($skipped > 0) {
-            $io->warning(sprintf(
-                'Skipped %d movimiento row(s) with NULL caja_id (no cash_register assigned).',
-                $skipped,
-            ));
-        }
 
         return Command::SUCCESS;
     }

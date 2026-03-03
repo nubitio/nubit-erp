@@ -48,17 +48,11 @@ final class SalesV2BackfillCommandTest extends TestCase
         self::assertStringContainsString('Skipping tenant', $tester->getDisplay());
     }
 
-    public function testNullCajaIdRowIsBackfilledWithNullCashSessionId(): void
+    public function testNullCajaIdRowIsBackfilledWithNullCashRegisterAndCashSessionId(): void
     {
+        // Rows with caja_id IS NULL are now included; cash_register_id will be NULL in the INSERT.
         $connection = $this->createMock(Connection::class);
-        // fetchOne calls: 4 table checks + 1 skipped-count (returns 0 = no nulls skipped)
-        $fetchOneCall = 0;
-        $connection->method('fetchOne')->willReturnCallback(
-            static function () use (&$fetchOneCall): int {
-                ++$fetchOneCall;
-                return $fetchOneCall === 5 ? 0 : 1;
-            }
-        );
+        $connection->method('fetchOne')->willReturn(1);
         $connection->method('fetchFirstColumn')->willReturn(['m001', 'm002', 'm003']);
         $connection->method('beginTransaction');
         $connection->method('commit');
@@ -71,12 +65,13 @@ final class SalesV2BackfillCommandTest extends TestCase
         $tester = new CommandTester($this->buildCommand($connection));
         $exitCode = $tester->execute([]);
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertStringNotContainsString('Skipped', $tester->getDisplay());
         self::assertStringContainsString('headers=7', $tester->getDisplay());
     }
 
-    public function testInsertSqlContainsCajaIdFilterAndNoCashSessionIdFilter(): void
+    public function testInsertSqlDoesNotFilterByCajaIdAndDoesNotFilterByCashSessionId(): void
     {
+        // cash_register_id is now nullable — the INSERT must NOT filter out NULL caja_id rows.
+        // cash_session_id is also nullable and must never appear as a NOT NULL guard.
         $capturedSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
@@ -97,7 +92,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $tester = new CommandTester($this->buildCommand($connection));
         $exitCode = $tester->execute([]);
         self::assertSame(Command::SUCCESS, $exitCode);
-        self::assertStringContainsString('caja_id IS NOT NULL', $capturedSql);
+        self::assertStringNotContainsString('caja_id IS NOT NULL', $capturedSql);
         self::assertStringNotContainsString('cash_session_id IS NOT NULL', $capturedSql);
     }
 
