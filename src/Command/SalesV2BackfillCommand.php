@@ -10,6 +10,7 @@ use Doctrine\DBAL\Exception\TableNotFoundException;
 use Override;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,6 +22,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 final class SalesV2BackfillCommand extends TenantAwareCommand
 {
+    private const int CHUNK_SIZE = 1000;
+
     public function __construct(
         private readonly Connection $connection,
     ) {
@@ -37,13 +40,21 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
             InputOption::VALUE_NONE,
             'Delete existing sale_items/sales rows before rebuilding.',
         );
+        $this->addOption(
+            'chunk-size',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Number of movimiento rows processed per batch.',
+            self::CHUNK_SIZE,
+        );
     }
 
     #[Override]
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $reset = (bool) $input->getOption('reset');
+        $reset     = (bool) $input->getOption('reset');
+        $chunkSize = max(1, (int) $input->getOption('chunk-size'));
 
         try {
             $this->connection->fetchOne('SELECT 1 FROM sales LIMIT 1');
@@ -56,18 +67,46 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
-        $this->connection->beginTransaction();
-        try {
-            if ($reset) {
-                $this->connection->executeStatement('DELETE FROM sale_items');
-                $this->connection->executeStatement('DELETE FROM sales');
-            }
+        if ($reset) {
+            $io->comment('Resetting existing sale_items and sales rows…');
+            $this->connection->executeStatement('DELETE FROM sale_items');
+            $this->connection->executeStatement('DELETE FROM sales');
+        }
 
-            // Headers INSERT: LEFT JOIN anti-join pattern used instead of NOT EXISTS so the
-            // optimiser can use an index-range scan + hash/merge anti-join instead of a
-            // correlated subquery (DEPENDENT SUBQUERY) executed per row.
-            $headersInserted = $this->connection->executeStatement(
-                <<<'SQL'
+        // Collect all eligible movimiento_ids ordered so we can cursor through them in chunks.
+        /** @var list<string> $ids */
+        $ids = $this->connection->fetchFirstColumn(
+            'SELECT movimiento_id FROM movimiento WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL ORDER BY movimiento_id'
+        );
+
+        $total = count($ids);
+
+        if ($total === 0) {
+            $io->success('Nothing to backfill.');
+
+            return Command::SUCCESS;
+        }
+
+        $io->comment(sprintf('Backfilling %d movimiento rows in chunks of %d…', $total, $chunkSize));
+
+        $progressBar = new ProgressBar($output, $total);
+        $progressBar->setFormat(' %current%/%max% [%bar%] %percent:3s%% — headers: %headers% / items: %items%');
+        $progressBar->setMessage('0', 'headers');
+        $progressBar->setMessage('0', 'items');
+        $progressBar->start();
+
+        $headersInserted = 0;
+        $itemsInserted   = 0;
+        $chunks          = array_chunk($ids, $chunkSize);
+
+        foreach ($chunks as $chunk) {
+            $firstId = reset($chunk);
+            $lastId  = end($chunk);
+
+            $this->connection->beginTransaction();
+            try {
+                $h = (int) $this->connection->executeStatement(
+                    <<<'SQL'
 INSERT INTO sales (
     id,
     legacy_movimiento_id,
@@ -103,7 +142,6 @@ SELECT
     m.branch_id,
     m.almacen_id                                          AS warehouse_id,
     m.caja_id                                             AS cash_register_id,
-    -- resolve cash_session_id via cash_register_id + time-window; NULL when no matching session exists
     (
         SELECT cs.id
         FROM cash_sessions cs
@@ -141,7 +179,6 @@ SELECT
     m.date_updated                                        AS updated_at,
     'SYNCED'                                              AS sync_status,
     NOW()                                                 AS synced_at,
-    -- deterministic local_uuid derived from movimiento_id (mirrors SalesWriteGateway)
     LOWER(
         CONCAT(
             SUBSTR(MD5(CONCAT('local:sale:', m.movimiento_id)), 1, 8), '-',
@@ -164,18 +201,15 @@ SELECT
     NOW()                                                 AS last_modified_at
 FROM movimiento m
 LEFT JOIN sales s_existing ON s_existing.legacy_movimiento_id = m.movimiento_id
-WHERE m.tipo_id = 2
-  AND m.almacen_id IS NOT NULL
-  AND m.branch_id IS NOT NULL
+WHERE m.movimiento_id >= :firstId
+  AND m.movimiento_id <= :lastId
   AND s_existing.id IS NULL
-SQL
-            );
+SQL,
+                    ['firstId' => $firstId, 'lastId' => $lastId]
+                );
 
-            // Items INSERT: plain equality joins (no BINARY cast) — columns are utf8mb4_unicode_ci
-            // on both sides so the cast was silently preventing index usage.
-            // LEFT JOIN anti-join pattern used instead of NOT EXISTS for the same reason as headers.
-            $itemsInserted = $this->connection->executeStatement(
-                <<<'SQL'
+                $i = (int) $this->connection->executeStatement(
+                    <<<'SQL'
 INSERT INTO sale_items (
     sale_id,
     legacy_movimiento_detalle_id,
@@ -224,22 +258,34 @@ SELECT
     1                                                     AS version_no,
     NOW()                                                 AS last_modified_at
 FROM movimiento_detalle md
-INNER JOIN movimiento m    ON m.movimiento_id     = md.movimiento_id
-INNER JOIN sales s         ON s.legacy_movimiento_id = m.movimiento_id
-LEFT  JOIN producto p      ON p.producto_id       = md.producto_id
-LEFT  JOIN unidad um       ON um.unidad_id        = p.unidad_id
+INNER JOIN movimiento m       ON m.movimiento_id          = md.movimiento_id
+INNER JOIN sales s            ON s.legacy_movimiento_id   = m.movimiento_id
+LEFT  JOIN producto p         ON p.producto_id            = md.producto_id
+LEFT  JOIN unidad um          ON um.unidad_id             = p.unidad_id
 LEFT  JOIN sale_items si_existing ON si_existing.legacy_movimiento_detalle_id = md.id
-WHERE m.tipo_id = 2
-  AND md.producto_id IS NOT NULL
+WHERE m.movimiento_id >= :firstId
+  AND m.movimiento_id <= :lastId
   AND si_existing.id IS NULL
-SQL
-            );
+SQL,
+                    ['firstId' => $firstId, 'lastId' => $lastId]
+                );
 
-            $this->connection->commit();
-        } catch (\Throwable $exception) {
-            $this->connection->rollBack();
-            throw $exception;
+                $this->connection->commit();
+            } catch (\Throwable $exception) {
+                $this->connection->rollBack();
+                throw $exception;
+            }
+
+            $headersInserted += $h;
+            $itemsInserted   += $i;
+
+            $progressBar->setMessage((string) $headersInserted, 'headers');
+            $progressBar->setMessage((string) $itemsInserted, 'items');
+            $progressBar->advance(count($chunk));
         }
+
+        $progressBar->finish();
+        $output->writeln('');
 
         $io->success(sprintf(
             'Sales V2 backfill completed (headers=%d, items=%d).',

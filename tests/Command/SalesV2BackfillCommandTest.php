@@ -52,6 +52,7 @@ final class SalesV2BackfillCommandTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001', 'm002', 'm003']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $execCall = 0;
@@ -72,6 +73,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $capturedSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $execCall = 0;
@@ -97,6 +99,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $capturedSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $connection->method('executeStatement')
@@ -116,6 +119,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $capturedSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $connection->method('executeStatement')
@@ -127,7 +131,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         self::assertStringNotContainsString(
             'BINARY',
             $capturedSql,
-            'BINARY casts must be removed - they prevent index usage and cause full-table scans'
+            'BINARY casts must be removed — they prevent index usage and cause full-table scans'
         );
     }
 
@@ -136,6 +140,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $capturedHeadersSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $execCall = 0;
@@ -168,6 +173,7 @@ final class SalesV2BackfillCommandTest extends TestCase
         $capturedItemsSql = '';
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $execCall = 0;
@@ -213,6 +219,7 @@ final class SalesV2BackfillCommandTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturn(1);
+        $connection->method('fetchFirstColumn')->willReturn(['m001', 'm002', 'm003']);
         $connection->method('beginTransaction');
         $connection->method('commit');
         $callCount = 0;
