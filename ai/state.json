@@ -116,18 +116,18 @@
       "slice": "SLICE-004",
       "title": "Fix subquery in SalesV2BackfillCommand: replace m.turno_id with m.caja_id + time-window join",
       "agent": "agt-backend",
-      "status": "in_progress",
+      "status": "done",
       "created_at": "2026-03-02T20:57:00.000Z",
-      "updated_at": "2026-03-02T20:57:00.000Z"
+      "updated_at": "2026-03-02T21:05:00.000Z"
     },
     {
       "id": "TASK-011",
       "slice": "SLICE-004",
       "title": "Add smoke/functional test for cash_session_id resolution in SalesV2BackfillCommand",
       "agent": "agt-backend",
-      "status": "in_progress",
+      "status": "done",
       "created_at": "2026-03-02T20:57:00.000Z",
-      "updated_at": "2026-03-02T20:57:00.000Z"
+      "updated_at": "2026-03-02T21:05:00.000Z"
     },
     {
       "id": "TASK-012",
