@@ -98,7 +98,7 @@ export const ProductFields = () => {
         { value: 1, text: 'Fisico' },
         { value: 2, text: 'Servicio' },
       ])
-      .required(true)
+      .required(false)
       .hidden(true)
       .visible(false)
       .defaultValue(1)
