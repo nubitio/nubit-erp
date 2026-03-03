@@ -30,3 +30,4 @@
 {"type":"GatePassed","timestamp":"2026-03-02T21:10:00.000Z","payload":{"gate":"Gate-2","slice":"SLICE-004","tools":"phpstan+phpcs+phpunit+AC-checklist","result":"pass"}}
 {"type":"QASignOff","slice":"SLICE-004","passed_criteria":6,"total_criteria":6,"timestamp":"2026-03-02T21:10:00.000Z"}
 {"type":"SliceCompleted","timestamp":"2026-03-02T21:10:00.000Z","payload":{"slice":"SLICE-004","title":"Corregir Unknown column 'm.turno_id' en SalesV2BackfillCommand"}}
+{"type":"ProjectInitialized","timestamp":"2026-03-03T03:42:53.609Z","payload":{"project_id":"proj_24b47f0f","project_name":"efact","created_dirs":[".aiteam",".aiteam/config.json"],"aiteam_version":"0.1.0"}}
