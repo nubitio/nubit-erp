@@ -22,7 +22,7 @@
 {% block javascripts %}
     {{ vite_entry_script_tags('app', { dependency: "react" }) }}
 {% endblock %}
-<script>
+<script nonce="{{ csp_nonce() }}">
     window.app_version = '{{ setting('version') }}';
     const worker = setInterval(hideUnwantedElements, 100);
 

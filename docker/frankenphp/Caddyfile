@@ -31,9 +31,11 @@ route {
     root * /app/public
 
     # Security headers — SLICE-005 SEC-3
+    # Note: Content-Security-Policy is intentionally omitted here.
+    # PHP (CspNonceListener) emits a per-request CSP with a nonce for HTML
+    # responses so that inline <script nonce="…"> tags are allowed.
     header {
         Strict-Transport-Security  "max-age=31536000; includeSubDomains"
-        Content-Security-Policy    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
         X-Frame-Options            "DENY"
         X-Content-Type-Options     "nosniff"
         Referrer-Policy            "strict-origin-when-cross-origin"
