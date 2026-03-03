@@ -29,6 +29,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ReceiptController extends BaseController
 {
+    private const array CURRENCY_SYMBOLS = [
+        'PEN' => 'S/',
+        'USD' => '$',
+        'EUR' => '€',
+    ];
+
     /**
      * @throws ServiceException
      */
@@ -44,6 +50,7 @@ class ReceiptController extends BaseController
             'number' => $receipt->number,
             'date' => date('d/m/Y', intval(strtotime($receipt->date))),
             'total' => $receipt->total,
+            'currency_symbol' => self::CURRENCY_SYMBOLS[$receipt->currency] ?? $receipt->currency,
             'pdf' => $this->generateUrl('receipt_pdf', ['payload' => $payload]),
             'xml' => $this->generateUrl('receipt_xml', ['payload' => $payload]),
             'cdr' => $this->generateUrl('receipt_cdr', ['payload' => $payload]),

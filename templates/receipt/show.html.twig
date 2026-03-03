@@ -27,7 +27,7 @@
         <div class="card-body">
             <h3 class="card-title">{{ type }} ELECTRONÍCA {{ series }}-{{ number }}</h3>
             <h6 class="card-subtitle mt-4 text-muted">Fecha de emisión: {{ date }}</h6>
-            <p class="card-text mt-4">S/ {{ total|number_format(2, '.', '') }}</p>
+            <p class="card-text mt-4">{{ currency_symbol }} {{ total|number_format(2, '.', '') }}</p>
             <a href="{{ pdf }}" class="card-link" target="_blank">PDF</a>
             <a href="{{ xml }}" class="card-link" target="_blank">XML</a>
             <a href="{{ cdr }}" class="card-link" target="_blank">CDR</a>

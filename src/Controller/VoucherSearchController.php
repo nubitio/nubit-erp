@@ -21,6 +21,12 @@ class VoucherSearchController extends AbstractController
         '08' => 'Nota de Débito',
     ];
 
+    private const array CURRENCY_SYMBOLS = [
+        'PEN' => 'S/',
+        'USD' => '$',
+        'EUR' => '€',
+    ];
+
     /**
      * @throws \DateMalformedStringException
      * @throws Exception
@@ -64,6 +70,9 @@ class VoucherSearchController extends AbstractController
                     $legacySaleStatus = (int) ($document['sale_status'] ?? 1);
                     $isVoided = $saleStatusV2 === 'VOIDED' || in_array($legacySaleStatus, [0, 2], true);
 
+                    $currency = strtoupper(trim((string) ($document['currency'] ?? 'PEN')));
+                    $currencySymbol = self::CURRENCY_SYMBOLS[$currency] ?? $currency;
+
                     $result = [
                         'type' => self::VOUCHER_TYPES[strval($document['document_type'])] ?? 'Comprobante',
                         'series' => $document['series'],
@@ -72,6 +81,7 @@ class VoucherSearchController extends AbstractController
                         'total' => $document['total'],
                         'hash' => $document['digest'],
                         'status' => $isVoided ? 'ANULADO' : 'ACEPTADO',
+                        'currency_symbol' => $currencySymbol,
                         'pdf_url' => ReceiptPayload::publicUrl(
                             strval($document['document_type']),
                             strval($document['movimiento_id'])
