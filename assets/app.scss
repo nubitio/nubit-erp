@@ -1,3 +1,9 @@
+// Self-hosted Inter — replaces Google Fonts link in base.html.twig (CSP compliance)
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/inter/latin-600.css";
+@import "@fontsource/inter/latin-700.css";
+
 body {
   margin: 0;
   font-family: var(--font-family-sans, 'Ubuntu', 'Roboto', sans-serif);
