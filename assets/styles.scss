@@ -481,8 +481,6 @@ samp {
 
     .dx-datagrid-rowsview .dx-row > td {
       border-top-color: color-mix(in srgb, var(--border-color) 65%, transparent);
-      padding-top: 11px;
-      padding-bottom: 11px;
     }
 
     .dx-datagrid-rowsview .dx-row.dx-data-row:nth-child(even) > td {
