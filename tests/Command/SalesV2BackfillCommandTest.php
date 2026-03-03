@@ -51,7 +51,14 @@ final class SalesV2BackfillCommandTest extends TestCase
     public function testNullCajaIdRowIsBackfilledWithNullCashSessionId(): void
     {
         $connection = $this->createMock(Connection::class);
-        $connection->method('fetchOne')->willReturn(1);
+        // fetchOne calls: 4 table checks + 1 skipped-count (returns 0 = no nulls skipped)
+        $fetchOneCall = 0;
+        $connection->method('fetchOne')->willReturnCallback(
+            static function () use (&$fetchOneCall): int {
+                ++$fetchOneCall;
+                return $fetchOneCall === 5 ? 0 : 1;
+            }
+        );
         $connection->method('fetchFirstColumn')->willReturn(['m001', 'm002', 'm003']);
         $connection->method('beginTransaction');
         $connection->method('commit');
