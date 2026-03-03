@@ -69,12 +69,12 @@ final readonly class CspNonceListener
             implode('; ', [
                 "default-src 'self'",
                 "script-src 'self' 'nonce-{$nonce}'",
-                "style-src 'self' 'unsafe-inline'",
+                "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
                 $imgSrc,
                 "font-src 'self' data:",
                 // 'self' for API calls; localhost ws/wss for QZ Tray desktop print agent
                 // (connects on ws://localhost:8182+ or wss://localhost:8181+)
-                "connect-src 'self' ws://localhost:* wss://localhost:*",
+                "connect-src 'self' ws://localhost:* wss://localhost:* ws://localhost.qz.io:* wss://localhost.qz.io:*",
                 "worker-src 'self' blob:",
             ])
         );

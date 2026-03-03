@@ -209,6 +209,8 @@ FROM movimiento m
 LEFT JOIN sales s_existing ON s_existing.legacy_movimiento_id = m.movimiento_id
 WHERE m.movimiento_id >= :firstId
   AND m.movimiento_id <= :lastId
+  AND m.tipo_id = 2
+  AND m.caja_id IS NOT NULL
   AND s_existing.id IS NULL
 SQL,
                     ['firstId' => $firstId, 'lastId' => $lastId]
@@ -271,6 +273,8 @@ LEFT  JOIN unidad um          ON um.unidad_id             = p.unidad_id
 LEFT  JOIN sale_items si_existing ON si_existing.legacy_movimiento_detalle_id = md.id
 WHERE m.movimiento_id >= :firstId
   AND m.movimiento_id <= :lastId
+  AND m.tipo_id = 2
+  AND m.caja_id IS NOT NULL
   AND si_existing.id IS NULL
 SQL,
                     ['firstId' => $firstId, 'lastId' => $lastId]
