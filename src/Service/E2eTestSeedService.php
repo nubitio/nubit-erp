@@ -12,6 +12,7 @@ use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Role;
+use App\Entity\CashRegister;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Entity\UnitOfMeasure;
@@ -20,6 +21,7 @@ use App\Entity\VoucherSeries;
 use App\Entity\VoucherType;
 use App\Entity\Warehouse;
 use App\Repository\BranchRepository;
+use App\Repository\CashRegisterRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
@@ -67,6 +69,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly VoucherSeriesRepository $voucherSeriesRepository,
         private readonly LogisticOperationRepository $logisticOperationRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
+        private readonly CashRegisterRepository $cashRegisterRepository,
     ) {
     }
 
@@ -82,6 +85,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         $branch = $this->upsertBranch();
         $warehouse = $this->upsertWarehouse($branch);
+        $this->upsertCashRegister($branch);
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
@@ -445,6 +449,24 @@ SQL,
         }
 
         return $paymentMethod;
+    }
+
+    private function upsertCashRegister(Branch $branch): CashRegister
+    {
+        $cashRegister = $this->cashRegisterRepository->findOneBy(['branch' => $branch]);
+        if ($cashRegister instanceof CashRegister) {
+            return $cashRegister;
+        }
+
+        $cashRegister = new CashRegister();
+        $cashRegister
+            ->setName('Caja CI E2E')
+            ->setBranch($branch);
+
+        $this->entityManager->persist($cashRegister);
+        $this->entityManager->flush();
+
+        return $cashRegister;
     }
 
     private function generatePassword(): string

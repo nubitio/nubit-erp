@@ -35,6 +35,9 @@ services:
       OTEL_TRACES_SAMPLER: "always_on"
       OTEL_LOG_LEVEL: "debug"
       OTEL_PHP_LOG_DESTINATION: "stderr"
+      E2E_SEED_ENABLED: "1"
+      APP_COOKIE_SECURE: "false"
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.145.0
     user: "0:0"
@@ -60,6 +63,7 @@ services:
       - '3306:3306'
     volumes:
       - db-data:/var/lib/mysql
+
   vite:
     image: node:20.19.0
     #command: npm run watch
@@ -69,10 +73,35 @@ services:
     stdin_open: true
     ports:
       - '5173:5173'
+
   redis:
     image: redis:6.2.6
     ports:
       - '6379:6379'
+
+  e2e:
+    image: mcr.microsoft.com/playwright:v1.58.2-noble
+    working_dir: /home/node/app
+    # Bootstrap Corepack (Yarn 4) before every command, then run tests
+    entrypoint: ["sh", "/home/node/app/docker/e2e-entrypoint.sh"]
+    command: ["yarn", "test:e2e"]
+    volumes:
+      - '.:/home/node/app'
+      - ./var/playwright-report:/home/node/app/playwright-report
+      - ./var/test-results:/home/node/app/test-results
+    environment:
+      # Suppress Corepack download confirmation prompt
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+      # E2E_BASE_URL is resolved at runtime by docker/e2e-entrypoint.sh
+      # Override here if you need a specific URL, e.g. E2E_BASE_URL=http://my-host
+      E2E_BASE_URL: "${E2E_BASE_URL:-}"
+      # Playwright needs this to run Chromium in a container (no sandbox)
+      PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+    depends_on:
+      - web
+      - database
+    profiles:
+      - e2e
 
 volumes:
   db-data:
