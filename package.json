@@ -42,6 +42,8 @@
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/ubuntu": "^5.2.8",
     "@phosphor-icons/web": "^2.1.1",
     "@tailwindcss/postcss": "^4.0.1",
     "@testing-library/dom": "^10.4.0",

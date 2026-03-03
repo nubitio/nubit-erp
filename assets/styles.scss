@@ -1,5 +1,13 @@
 @use 'variables' as *;
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+// Self-hosted Ubuntu — replaces Google Fonts import (CSP compliance)
+@import '@fontsource/ubuntu/latin-300.css';
+@import '@fontsource/ubuntu/latin-300-italic.css';
+@import '@fontsource/ubuntu/latin-400.css';
+@import '@fontsource/ubuntu/latin-400-italic.css';
+@import '@fontsource/ubuntu/latin-500.css';
+@import '@fontsource/ubuntu/latin-500-italic.css';
+@import '@fontsource/ubuntu/latin-700.css';
+@import '@fontsource/ubuntu/latin-700-italic.css';
 
 // Design tokens that are theme-independent and must be available before the
 // dynamic theme stylesheet is injected (fixes Firefox "property not set" warnings).

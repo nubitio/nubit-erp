@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\EventListener;
 
 use App\Core\Security\CspNonceService;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -14,17 +15,30 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * for HTML responses only (API/JSON responses are left untouched).
  *
  * The nonce value is shared with the Twig csp_nonce() function so that
- * inline <script nonce="…"> tags in templates are allowed by the policy.
+ * inline <script nonce="..."> tags in templates are allowed by the policy.
  *
  * Caddy serves a static CSP for non-PHP assets; PHP-rendered HTML pages
  * get their own stricter policy here.
+ *
+ * Asset images are served from S3 (or a CDN proxy when S3_PUBLIC_URL is set).
+ * The img-src directive is derived from the public base URL so it only needs
+ * updating in .env, not in code.
  */
 #[AsEventListener(event: KernelEvents::RESPONSE, priority: -10)]
 final readonly class CspNonceListener
 {
+    private string $assetHost;
+
     public function __construct(
         private CspNonceService $nonceService,
+        #[Autowire(env: 'S3_PUBLIC_URL')] string $s3PublicUrl,
+        #[Autowire(env: 'S3_ENDPOINT')] string $s3Endpoint,
     ) {
+        // Derive the hostname to allow in img-src from whichever URL is active.
+        $base = $s3PublicUrl !== '' ? $s3PublicUrl : $s3Endpoint;
+        $host = parse_url($base, PHP_URL_HOST) ?? '';
+        $scheme = parse_url($base, PHP_URL_SCHEME) ?? 'https';
+        $this->assetHost = $host !== '' ? $scheme . '://' . $host : '';
     }
 
     public function __invoke(ResponseEvent $event): void
@@ -43,13 +57,20 @@ final readonly class CspNonceListener
 
         $nonce = $this->nonceService->getNonce();
 
+        // img-src: allow self, data URIs, and the S3/CDN asset host.
+        // Switch to https://assets.efact.app by setting S3_PUBLIC_URL in .env.
+        $imgSrc = "img-src 'self' data:";
+        if ($this->assetHost !== '') {
+            $imgSrc .= ' ' . $this->assetHost;
+        }
+
         $response->headers->set(
             'Content-Security-Policy',
             implode('; ', [
                 "default-src 'self'",
                 "script-src 'self' 'nonce-{$nonce}'",
                 "style-src 'self' 'unsafe-inline'",
-                "img-src 'self' data:",
+                $imgSrc,
                 "font-src 'self' data:",
                 // 'self' for API calls; localhost ws/wss for QZ Tray desktop print agent
                 // (connects on ws://localhost:8182+ or wss://localhost:8181+)
