@@ -63,6 +63,9 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
                 $this->connection->executeStatement('DELETE FROM sales');
             }
 
+            // Headers INSERT: LEFT JOIN anti-join pattern used instead of NOT EXISTS so the
+            // optimiser can use an index-range scan + hash/merge anti-join instead of a
+            // correlated subquery (DEPENDENT SUBQUERY) executed per row.
             $headersInserted = $this->connection->executeStatement(
                 <<<'SQL'
 INSERT INTO sales (
@@ -160,17 +163,17 @@ SELECT
     1                                                     AS version_no,
     NOW()                                                 AS last_modified_at
 FROM movimiento m
+LEFT JOIN sales s_existing ON s_existing.legacy_movimiento_id = m.movimiento_id
 WHERE m.tipo_id = 2
   AND m.almacen_id IS NOT NULL
   AND m.branch_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sales s
-      WHERE BINARY s.legacy_movimiento_id = BINARY m.movimiento_id
-  )
+  AND s_existing.id IS NULL
 SQL
             );
 
+            // Items INSERT: plain equality joins (no BINARY cast) — columns are utf8mb4_unicode_ci
+            // on both sides so the cast was silently preventing index usage.
+            // LEFT JOIN anti-join pattern used instead of NOT EXISTS for the same reason as headers.
             $itemsInserted = $this->connection->executeStatement(
                 <<<'SQL'
 INSERT INTO sale_items (
@@ -221,17 +224,14 @@ SELECT
     1                                                     AS version_no,
     NOW()                                                 AS last_modified_at
 FROM movimiento_detalle md
-INNER JOIN movimiento m    ON BINARY m.movimiento_id = BINARY md.movimiento_id
-INNER JOIN sales s         ON BINARY s.legacy_movimiento_id = BINARY m.movimiento_id
-LEFT  JOIN producto p      ON BINARY p.producto_id = BINARY md.producto_id
-LEFT  JOIN unidad um       ON um.unidad_id = p.unidad_id
+INNER JOIN movimiento m    ON m.movimiento_id     = md.movimiento_id
+INNER JOIN sales s         ON s.legacy_movimiento_id = m.movimiento_id
+LEFT  JOIN producto p      ON p.producto_id       = md.producto_id
+LEFT  JOIN unidad um       ON um.unidad_id        = p.unidad_id
+LEFT  JOIN sale_items si_existing ON si_existing.legacy_movimiento_detalle_id = md.id
 WHERE m.tipo_id = 2
   AND md.producto_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sale_items si
-      WHERE si.legacy_movimiento_detalle_id = md.id
-  )
+  AND si_existing.id IS NULL
 SQL
             );
 
