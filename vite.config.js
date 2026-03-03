@@ -25,7 +25,8 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['.localhost'],
+    allowedHosts: 'all',
+    cors: true,
   },
   plugins: [
     react(),
