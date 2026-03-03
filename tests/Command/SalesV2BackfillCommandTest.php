@@ -16,155 +16,64 @@ use Psr\Log\NullLogger;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
-/**
- * Smoke / functional tests for SalesV2BackfillCommand.
- *
- * These tests use a mocked DBAL Connection (no live DB required).
- * They verify:
- *   1. The command resolves cash_session_id via cash_register_id + time-window
- *      without throwing SQLSTATE[42S22] (turno_id regression guard).
- *   2. A movimiento row with caja_id = NULL is backfilled with cash_session_id = NULL
- *      (no longer skipped; cash_session_id is nullable).
- *   3. The command skips gracefully when required tables are absent
- *      (TableNotFoundException path).
- */
 final class SalesV2BackfillCommandTest extends TestCase
 {
-    // -------------------------------------------------------------------------
-    // Scenario 1 — happy path: movimiento with valid caja_id, matching session
-    // -------------------------------------------------------------------------
-
     public function testCommandSucceedsAndDoesNotThrow42S22WhenCajaIdMatchesCashSession(): void
     {
-        $connection = $this->mockConnectionForSuccessfulInsert(
-            headersInserted: 5,
-            itemsInserted: 12,
-        );
-
+        $connection = $this->mockConnectionForSuccessfulInsert(headersInserted: 5, itemsInserted: 12);
         $command = $this->buildCommand($connection);
         $tester = new CommandTester($command);
-
         $exitCode = $tester->execute([]);
-
         self::assertSame(Command::SUCCESS, $exitCode);
         self::assertStringContainsString('backfill completed', $tester->getDisplay());
         self::assertStringContainsString('headers=5', $tester->getDisplay());
         self::assertStringContainsString('items=12', $tester->getDisplay());
     }
 
-    // -------------------------------------------------------------------------
-    // Scenario 2 — caja_id = NULL → cash_session_id = NULL, no exception
-    // -------------------------------------------------------------------------
-
     public function testCommandSucceedsWhenCajaIdIsNullProducingNullCashSessionId(): void
     {
-        // The SQL subquery returns NULL when m.caja_id IS NULL — the INSERT
-        // still completes (sales.cash_session_id is nullable).
-        $connection = $this->mockConnectionForSuccessfulInsert(
-            headersInserted: 1,
-            itemsInserted: 2,
-        );
-
-        $command = $this->buildCommand($connection);
-        $tester = new CommandTester($command);
-
-        $exitCode = $tester->execute([]);
-
+        $connection = $this->mockConnectionForSuccessfulInsert(headersInserted: 1, itemsInserted: 2);
+        $exitCode = (new CommandTester($this->buildCommand($connection)))->execute([]);
         self::assertSame(Command::SUCCESS, $exitCode);
-        // No exception means the NULL path is handled silently.
     }
-
-    // -------------------------------------------------------------------------
-    // Scenario 3 — required table absent → graceful skip (no crash)
-    // -------------------------------------------------------------------------
 
     public function testCommandSkipsGracefullyWhenRequiredTableIsMissing(): void
     {
-        /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
-
-        // fetchOne always throws TableNotFoundException (tables not migrated)
-        $connection->method('fetchOne')
-            ->willThrowException(
-                $this->createTableNotFoundException()
-            );
-
-        // executeStatement must NOT be called at all in this path
+        $connection->method('fetchOne')->willThrowException($this->createTableNotFoundException());
         $connection->expects(self::never())->method('executeStatement');
-
-        $command = $this->buildCommand($connection);
-        $tester = new CommandTester($command);
-
+        $tester = new CommandTester($this->buildCommand($connection));
         $exitCode = $tester->execute([]);
-
         self::assertSame(Command::SUCCESS, $exitCode);
         self::assertStringContainsString('Skipping tenant', $tester->getDisplay());
     }
 
-    // -------------------------------------------------------------------------
-    // Scenario A — NULL caja_id rows are now backfilled (cash_session_id = NULL)
-    //              No skip-warning should be emitted.
-    // -------------------------------------------------------------------------
-
     public function testNullCajaIdRowIsBackfilledWithNullCashSessionId(): void
     {
-        // fetchOne call sequence: only 4 table-existence checks (no $skipped COUNT query).
-        //   Call 1: SELECT 1 FROM sales LIMIT 1
-        //   Call 2: SELECT 1 FROM sale_items LIMIT 1
-        //   Call 3: SELECT 1 FROM movimiento LIMIT 1
-        //   Call 4: SELECT 1 FROM movimiento_detalle LIMIT 1
-        /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
-
         $connection->method('fetchOne')->willReturn(1);
         $connection->method('beginTransaction');
         $connection->method('commit');
-
         $execCall = 0;
         $connection->method('executeStatement')
             ->willReturnCallback(static function () use (&$execCall): int {
                 ++$execCall;
-
                 return $execCall === 1 ? 7 : 14;
             });
-
-        $command = $this->buildCommand($connection);
-        $tester = new CommandTester($command);
-
+        $tester = new CommandTester($this->buildCommand($connection));
         $exitCode = $tester->execute([]);
-
         self::assertSame(Command::SUCCESS, $exitCode);
-        // No skip warning expected — NULL caja_id rows are backfilled now
-        self::assertStringNotContainsString(
-            'Skipped',
-            $tester->getDisplay(),
-            'No skip warning should be emitted; NULL caja_id rows are now included'
-        );
+        self::assertStringNotContainsString('Skipped', $tester->getDisplay());
         self::assertStringContainsString('headers=7', $tester->getDisplay());
     }
 
-    // -------------------------------------------------------------------------
-    // Scenario B — any caja_id (NULL or not) but no matching cash_session →
-    //              row inserted with cash_session_id = NULL.
-    // -------------------------------------------------------------------------
-
     public function testNullCajaIdNotNullButNoSessionInsertsWithNullCashSessionId(): void
     {
-        // The command does NOT filter rows by caja_id any more.
-        // Whether caja_id is NULL or set but has no matching cash_session, those
-        // rows land in sales with cash_session_id = NULL.
-        // We verify: (a) command succeeds; (b) INSERT SQL does NOT contain any
-        // caja_id IS NOT NULL filter; (c) cash_session_id IS NOT NULL is also absent.
         $capturedSql = '';
-
-        /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
-
-        // All fetchOne calls return 1 (tables exist; skipped count = 1 → warning OK)
         $connection->method('fetchOne')->willReturn(1);
         $connection->method('beginTransaction');
         $connection->method('commit');
-
         $execCall = 0;
         $connection->method('executeStatement')
             ->willReturnCallback(
@@ -173,157 +82,153 @@ final class SalesV2BackfillCommandTest extends TestCase
                     if ($execCall === 1) {
                         $capturedSql = $sql;
                     }
-
                     return $execCall === 1 ? 1 : 2;
                 }
             );
-
-        $command = $this->buildCommand($connection);
-        $tester = new CommandTester($command);
-
+        $tester = new CommandTester($this->buildCommand($connection));
         $exitCode = $tester->execute([]);
-
         self::assertSame(Command::SUCCESS, $exitCode);
-
-        // caja_id IS NOT NULL filter must NOT exist — NULL caja_id rows are now included
-        self::assertStringNotContainsString(
-            'caja_id IS NOT NULL',
-            $capturedSql,
-            'INSERT WHERE clause must NOT contain AND m.caja_id IS NOT NULL'
-        );
-
-        // cash_session_id IS NOT NULL must also be absent — NULL sessions are allowed
-        self::assertStringNotContainsString(
-            'cash_session_id IS NOT NULL',
-            $capturedSql,
-            'INSERT must NOT filter out rows with NULL cash_session_id (they are allowed)'
-        );
+        self::assertStringNotContainsString('caja_id IS NOT NULL', $capturedSql);
+        self::assertStringNotContainsString('cash_session_id IS NOT NULL', $capturedSql);
     }
-
-    // -------------------------------------------------------------------------
-    // Regression guard — turno_id must NOT appear in the SQL sent to the DB
-    // -------------------------------------------------------------------------
 
     public function testSqlSentToConnectionDoesNotContainTurnoId(): void
     {
         $capturedSql = '';
-
-        /** @var Connection&MockObject $connection */
         $connection = $this->createMock(Connection::class);
-
-        // Allow table existence checks
         $connection->method('fetchOne')->willReturn(1);
-
         $connection->method('beginTransaction');
         $connection->method('commit');
-
         $connection->method('executeStatement')
             ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
                 $capturedSql .= $sql;
-
                 return 0;
             });
+        (new CommandTester($this->buildCommand($connection)))->execute([]);
+        self::assertStringNotContainsString('turno_id', $capturedSql);
+        self::assertStringContainsString('cash_register_id', $capturedSql);
+        self::assertStringContainsString('opened_at', $capturedSql);
+        self::assertStringContainsString('closed_at', $capturedSql);
+    }
 
-        $command = $this->buildCommand($connection);
-        $tester = new CommandTester($command);
-        $tester->execute([]);
-
+    public function testSqlDoesNotContainBinaryCasts(): void
+    {
+        $capturedSql = '';
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(1);
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
+                $capturedSql .= $sql;
+                return 0;
+            });
+        (new CommandTester($this->buildCommand($connection)))->execute([]);
         self::assertStringNotContainsString(
-            'turno_id',
+            'BINARY',
             $capturedSql,
-            'The SQL must not reference the non-existent column m.turno_id'
-        );
-
-        self::assertStringContainsString(
-            'cash_register_id',
-            $capturedSql,
-            'The SQL must join via cs.cash_register_id = m.caja_id'
-        );
-
-        self::assertStringContainsString(
-            'opened_at',
-            $capturedSql,
-            'The SQL must include the time-window filter cs.opened_at'
-        );
-
-        self::assertStringContainsString(
-            'closed_at',
-            $capturedSql,
-            'The SQL must include the time-window filter cs.closed_at'
+            'BINARY casts must be removed - they prevent index usage and cause full-table scans'
         );
     }
 
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
+    public function testHeadersInsertUsesLeftJoinAntiJoinNotNotExists(): void
+    {
+        $capturedHeadersSql = '';
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(1);
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+        $execCall = 0;
+        $connection->method('executeStatement')
+            ->willReturnCallback(
+                static function (string $sql) use (&$capturedHeadersSql, &$execCall): int {
+                    ++$execCall;
+                    if ($execCall === 1) {
+                        $capturedHeadersSql = $sql;
+                    }
+                    return 0;
+                }
+            );
+        (new CommandTester($this->buildCommand($connection)))->execute([]);
+        self::assertStringContainsString(
+            'LEFT JOIN sales',
+            $capturedHeadersSql,
+            'Headers INSERT must use LEFT JOIN anti-join pattern instead of NOT EXISTS'
+        );
+        self::assertStringContainsString('IS NULL', $capturedHeadersSql);
+        self::assertStringNotContainsString(
+            'NOT EXISTS',
+            $capturedHeadersSql,
+            'Headers INSERT must not use correlated NOT EXISTS subquery'
+        );
+    }
 
-    /**
-     * Build a fully-wired SalesV2BackfillCommand with a mocked DBAL connection.
-     *
-     * TenantContext is final and cannot be mocked; we use a real instance.
-     * TenantManager returns an empty tenant list so the command uses the
-     * default connection path (no switchToTenant loop).
-     */
+    public function testItemsInsertUsesLeftJoinAntiJoinNotNotExists(): void
+    {
+        $capturedItemsSql = '';
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturn(1);
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+        $execCall = 0;
+        $connection->method('executeStatement')
+            ->willReturnCallback(
+                static function (string $sql) use (&$capturedItemsSql, &$execCall): int {
+                    ++$execCall;
+                    if ($execCall === 2) {
+                        $capturedItemsSql = $sql;
+                    }
+                    return 0;
+                }
+            );
+        (new CommandTester($this->buildCommand($connection)))->execute([]);
+        self::assertStringContainsString(
+            'LEFT  JOIN sale_items',
+            $capturedItemsSql,
+            'Items INSERT must use LEFT JOIN anti-join pattern instead of NOT EXISTS'
+        );
+        self::assertStringContainsString('IS NULL', $capturedItemsSql);
+        self::assertStringNotContainsString(
+            'NOT EXISTS',
+            $capturedItemsSql,
+            'Items INSERT must not use correlated NOT EXISTS subquery'
+        );
+    }
+
     private function buildCommand(Connection $connection): SalesV2BackfillCommand
     {
         $command = new SalesV2BackfillCommand($connection);
-
         $tenantManager = $this->createMock(TenantManager::class);
         $tenantManager->method('getTenants')->willReturn([]);
-
         $command->initDependencies(
             $tenantManager,
             $this->createMock(TenantConnectionSwitcher::class),
             new TenantContext(),
             new NullLogger(),
         );
-
         return $command;
     }
 
-    /**
-     * Create a Connection mock that passes the four table-existence checks
-     * (sales, sale_items, movimiento, movimiento_detalle) and returns the
-     * given row counts from executeStatement.
-     */
-    private function mockConnectionForSuccessfulInsert(
-        int $headersInserted,
-        int $itemsInserted,
-    ): Connection {
-        /** @var Connection&MockObject $connection */
+    private function mockConnectionForSuccessfulInsert(int $headersInserted, int $itemsInserted): Connection
+    {
         $connection = $this->createMock(Connection::class);
-
-        // Pass table-existence preflight checks (fetchOne SELECT 1 … LIMIT 1)
         $connection->method('fetchOne')->willReturn(1);
-
         $connection->method('beginTransaction');
         $connection->method('commit');
-
         $callCount = 0;
         $connection->method('executeStatement')
             ->willReturnCallback(
                 static function () use (&$callCount, $headersInserted, $itemsInserted): int {
                     ++$callCount;
-
                     return $callCount === 1 ? $headersInserted : $itemsInserted;
                 }
             );
-
         return $connection;
     }
 
-    /**
-     * Build a TableNotFoundException without needing a live DBAL driver.
-     *
-     * Doctrine\DBAL\Driver\Exception is an interface (extends Throwable) so we
-     * create an anonymous implementation.
-     */
     private function createTableNotFoundException(): TableNotFoundException
     {
-        return new TableNotFoundException(
-            new StubDriverException('Table not found', 0),
-            null,
-        );
+        return new TableNotFoundException(new StubDriverException('Table not found', 0), null);
     }
 }
 
