@@ -47,9 +47,9 @@ security:
         - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
-        - { path: ^/api/settings, roles: PUBLIC_ACCESS }
+        - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }
-        - { path: ^/api/sales/report, roles: PUBLIC_ACCESS }
+        - { path: ^/api/sales/report, roles: ROLE_USER }
         - { path: ^/receipt/[-\w ]+$, roles: PUBLIC_ACCESS }
         - { path: ^/receipt/[-\w ]+/(ticket|pdf|xml|cdr), roles: PUBLIC_ACCESS }
         - { path: ^/sale/consult, roles: PUBLIC_ACCESS }
