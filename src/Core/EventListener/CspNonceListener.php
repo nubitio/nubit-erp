@@ -33,6 +33,7 @@ final readonly class CspNonceListener
         private CspNonceService $nonceService,
         #[Autowire(env: 'S3_PUBLIC_URL')] string $s3PublicUrl,
         #[Autowire(env: 'S3_ENDPOINT')] string $s3Endpoint,
+        #[Autowire(param: 'kernel.environment')] private string $environment,
     ) {
         // Derive the hostname to allow in img-src from whichever URL is active.
         $base = $s3PublicUrl !== '' ? $s3PublicUrl : $s3Endpoint;
@@ -44,6 +45,11 @@ final readonly class CspNonceListener
     public function __invoke(ResponseEvent $event): void
     {
         if (!$event->isMainRequest()) {
+            return;
+        }
+
+        // Skip CSP in dev — Vite HMR and browser tooling need unrestricted script/connect access.
+        if ($this->environment === 'dev') {
             return;
         }
 
