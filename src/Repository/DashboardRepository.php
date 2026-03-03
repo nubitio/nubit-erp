@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Core\Cache\CacheManager;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use DateTimeImmutable;
@@ -12,18 +13,67 @@ use Doctrine\DBAL\Connection;
 
 readonly class DashboardRepository
 {
+    /** Full overview cached for 2 minutes — short enough to feel live. */
+    private const int CACHE_TTL_FULL = 120;
+
+    /** Lite overview (mobile) cached for 60 seconds. */
+    private const int CACHE_TTL_LITE = 60;
+
     public function __construct(
         private Connection $connection,
         private SettingsService $settings,
+        private CacheManager $cache,
     ) {
     }
 
     public function getOverview(string $branchId): array
     {
+        $cacheKey = "dashboard:overview:{$branchId}";
+
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $result = $this->buildOverview($branchId);
+        $this->cache->set($cacheKey, $result, self::CACHE_TTL_FULL);
+
+        return $result;
+    }
+
+    public function getLiteOverview(string $branchId): array
+    {
+        $cacheKey = "dashboard:lite:{$branchId}";
+
+        $cached = $this->cache->get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $result = $this->buildLiteOverview($branchId);
+        $this->cache->set($cacheKey, $result, self::CACHE_TTL_LITE);
+
+        return $result;
+    }
+
+    /**
+     * Invalidate the dashboard cache for a branch (call after a sale is posted).
+     */
+    public function invalidate(string $branchId): void
+    {
+        $this->cache->forget("dashboard:overview:{$branchId}");
+        $this->cache->forget("dashboard:lite:{$branchId}");
+    }
+
+    // -------------------------------------------------------------------------
+    // Internal builders (no caching — called by the public getters above)
+    // -------------------------------------------------------------------------
+
+    private function buildOverview(string $branchId): array
+    {
         $ctx = $this->buildQueryContext($branchId);
         $params = $ctx['params'];
         $receiptFilter = $ctx['receiptFilterSales'];
-        $summaryReceiptFilter = $ctx['receiptFilterSummary'];
         $failedSegments = [];
 
         $summary = $this->safeQuery('summary', fn () => $this->connection->fetchAssociative("
@@ -46,17 +96,27 @@ readonly class DashboardRepository
             WHERE bds.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
 
+        // Replaced non-sargable CONVERT_TZ JOIN on time_dimension with a direct
+        // UTC range filter on issued_at — lets the idx_sales_branch_issued index
+        // cover the full WHERE clause without a function call on every row.
         $customers = $this->safeQuery('customers', fn () => $this->connection->fetchAssociative("
             SELECT
                 COUNT(
-                    DISTINCT CASE WHEN td.year = :currentYear AND td.month = :currentMonth THEN s.customer_id END
+                    DISTINCT CASE
+                        WHEN s.issued_at >= :monthStartUtc AND s.issued_at < :monthEndUtc
+                        THEN s.customer_id
+                    END
                 ) AS customers_month,
-                COUNT(DISTINCT CASE WHEN td.date >= :last7days THEN s.customer_id END) AS customers_week
+                COUNT(
+                    DISTINCT CASE
+                        WHEN s.issued_at >= :weekStartUtc
+                        THEN s.customer_id
+                    END
+                ) AS customers_week
             FROM sales s
-            INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
             WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
               AND s.branch_id = :branchId
-              {$summaryReceiptFilter}
+              AND s.issued_at >= :monthStartUtc
         ", $params) ?: [], [], $failedSegments);
 
         $salesByDay = $this->safeQuery('salesByDay', fn () => $this->connection->fetchAllAssociative("
@@ -137,6 +197,7 @@ readonly class DashboardRepository
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);
+
         $purchaseSummary = $this->safeQuery('purchaseSummary', fn () => $this->connection->fetchAssociative("
             SELECT
                 SUM(CASE WHEN td.date = :today THEN pds.grand_total ELSE 0 END) AS purchases_today,
@@ -155,6 +216,7 @@ readonly class DashboardRepository
             INNER JOIN time_dimension td ON td.date = pds.summary_date
             WHERE pds.branch_id = :branchId
         ", $params) ?: [], [], $failedSegments);
+
         $purchasesByDay = $this->safeQuery('purchasesByDay', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 td.day AS day,
@@ -169,6 +231,7 @@ readonly class DashboardRepository
             GROUP BY td.id, td.day
             ORDER BY td.day
         ", $params), [], $failedSegments);
+
         $topPurchasedProducts = $this->safeQuery(
             'topPurchasedProducts',
             fn () => $this->connection->fetchAllAssociative("
@@ -188,6 +251,8 @@ readonly class DashboardRepository
             $failedSegments
         );
 
+        // Replaced INNER JOIN time_dimension with CONVERT_TZ by a direct UTC
+        // range on issued_at — fully covered by idx_sales_branch_issued.
         $topCustomers = $this->safeQuery('topCustomers', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(c.razon_social, 'Cliente') AS customer,
@@ -195,16 +260,17 @@ readonly class DashboardRepository
                 SUM(s.grand_total) AS total
             FROM sales s
                 LEFT JOIN cliente c ON s.customer_id = c.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
             WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
               AND s.branch_id = :branchId
-              AND td.date >= :last30days
+              AND s.issued_at >= :last30daysUtc
               {$receiptFilter}
             GROUP BY c.id, c.razon_social
             ORDER BY total DESC
             LIMIT 5
         ", $params), [], $failedSegments);
 
+        // Replaced INNER JOIN time_dimension + CONVERT_TZ on issue_date with a
+        // direct UTC range — lets the existing index on tax_document be used.
         $voucherTypeStats = $this->safeQuery('voucherTypes', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 COALESCE(vt.descripcion, 'Sin tipo') AS voucher_type,
@@ -215,8 +281,8 @@ readonly class DashboardRepository
                     AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
                     AND s.branch_id = :branchId
                 LEFT JOIN tipo_comprobante vt ON i.document_type = vt.codigo
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(i.issue_date, 'UTC', 'America/Lima'))
-            WHERE td.year = :currentYear AND td.month = :currentMonth
+            WHERE i.issue_date >= :monthStartUtc
+              AND i.issue_date < :monthEndUtc
               AND i.document_type IN ('01', '03')
             GROUP BY vt.codigo, vt.descripcion
             ORDER BY total DESC
@@ -373,7 +439,7 @@ readonly class DashboardRepository
         return $payload;
     }
 
-    public function getLiteOverview(string $branchId): array
+    private function buildLiteOverview(string $branchId): array
     {
         $ctx = $this->buildQueryContext($branchId);
         $params = $ctx['params'];
@@ -411,20 +477,23 @@ readonly class DashboardRepository
             LIMIT 5
         ", $params), [], $failedSegments);
 
+        // Replaced INNER JOIN time_dimension + CONVERT_TZ with a direct UTC
+        // range on issued_at — fully covered by idx_sales_branch_issued.
         $hourlySalesToday = $this->safeQuery('hourlySalesToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 DATE_FORMAT(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'), '%H:00') AS hour_label,
                 COALESCE(SUM(s.grand_total), 0) AS total
             FROM sales s
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
             WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
               AND s.branch_id = :branchId
-              AND td.date = :today
+              AND s.issued_at >= :todayStartUtc
+              AND s.issued_at < :todayEndUtc
               {$receiptFilter}
             GROUP BY hour_label
             ORDER BY hour_label
         ", $params), [], $failedSegments);
 
+        // Same fix for recentSalesToday.
         $recentSalesToday = $this->safeQuery('recentSalesToday', fn () => $this->connection->fetchAllAssociative("
             SELECT
                 s.id AS id,
@@ -434,10 +503,10 @@ readonly class DashboardRepository
             FROM sales s
                 LEFT JOIN sale_payments sp ON sp.sale_id = s.id
                 LEFT JOIN payment_method pm ON sp.payment_method_id = pm.id
-                INNER JOIN time_dimension td ON td.date = DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima'))
             WHERE s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
               AND s.branch_id = :branchId
-              AND td.date = :today
+              AND s.issued_at >= :todayStartUtc
+              AND s.issued_at < :todayEndUtc
               {$receiptFilter}
             GROUP BY s.id, issued_at, payment_method, total
             ORDER BY s.issued_at DESC
@@ -474,9 +543,14 @@ readonly class DashboardRepository
         return $payload;
     }
 
+    // -------------------------------------------------------------------------
+    // Query context
+    // -------------------------------------------------------------------------
+
     private function buildQueryContext(string $branchId): array
     {
-        $today = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
+        $tz = new DateTimeZone('America/Lima');
+        $today = new DateTimeImmutable('now', $tz);
         $currentYear = (int) $today->format('Y');
         $currentMonth = (int) $today->format('n');
         $previousMonthDate = $today->modify('first day of last month');
@@ -484,6 +558,13 @@ readonly class DashboardRepository
         $previousMonth = (int) $previousMonthDate->format('n');
         $yesterday = $today->modify('-1 day');
         $lastWeekStart = $today->modify('-7 days');
+
+        // UTC boundaries for queries that filter directly on issued_at / issue_date.
+        $utc = new DateTimeZone('UTC');
+        $monthStart = new DateTimeImmutable($today->format('Y-m-01 00:00:00'), $tz);
+        $monthEnd = $monthStart->modify('+1 month');
+        $todayStart = new DateTimeImmutable($today->format('Y-m-d 00:00:00'), $tz);
+        $todayEnd = $todayStart->modify('+1 day');
 
         return [
             'params' => [
@@ -497,11 +578,21 @@ readonly class DashboardRepository
                 'last30days' => $today->modify('-30 days')->format('Y-m-d'),
                 'last7days' => $lastWeekStart->format('Y-m-d'),
                 'monthsBackDate' => $today->modify('-11 months')->format('Y-m-d'),
+                // UTC equivalents for sargable range filters on issued_at/issue_date
+                'monthStartUtc' => $monthStart->setTimezone($utc)->format('Y-m-d H:i:s'),
+                'monthEndUtc' => $monthEnd->setTimezone($utc)->format('Y-m-d H:i:s'),
+                'last30daysUtc' => $today->modify('-30 days')->setTimezone($utc)->format('Y-m-d H:i:s'),
+                'weekStartUtc' => $lastWeekStart->setTimezone($utc)->format('Y-m-d H:i:s'),
+                'todayStartUtc' => $todayStart->setTimezone($utc)->format('Y-m-d H:i:s'),
+                'todayEndUtc' => $todayEnd->setTimezone($utc)->format('Y-m-d H:i:s'),
             ],
             'receiptFilterSales' => $this->receiptFilter('s'),
-            'receiptFilterSummary' => $this->receiptFilter('m'),
         ];
     }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
 
     private function emptyOverviewPayload(): array
     {
