@@ -102,6 +102,112 @@ final class SalesV2BackfillCommandTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // Scenario A — NULL caja_id rows are skipped and a warning is printed
+    // -------------------------------------------------------------------------
+
+    public function testNullCajaIdRowIsSkippedWithWarning(): void
+    {
+        // fetchOne call sequence (after TASK-019 changes):
+        //   Call 1: SELECT 1 FROM sales LIMIT 1          → 1 (table exists)
+        //   Call 2: SELECT 1 FROM sale_items LIMIT 1     → 1 (table exists)
+        //   Call 3: SELECT 1 FROM movimiento LIMIT 1     → 1 (table exists)
+        //   Call 4: SELECT 1 FROM movimiento_detalle LIMIT 1 → 1 (table exists)
+        //   Call 5: SELECT COUNT(*) … caja_id IS NULL …  → 3 (3 rows to skip)
+        $callCount = 0;
+        /** @var Connection&MockObject $connection */
+        $connection = $this->createMock(Connection::class);
+
+        $connection->method('fetchOne')
+            ->willReturnCallback(static function () use (&$callCount): int {
+                ++$callCount;
+
+                return $callCount === 5 ? 3 : 1;
+            });
+
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+
+        $execCall = 0;
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function () use (&$execCall): int {
+                ++$execCall;
+
+                return $execCall === 1 ? 7 : 14;
+            });
+
+        $command = $this->buildCommand($connection);
+        $tester = new CommandTester($command);
+
+        $exitCode = $tester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $exitCode);
+        self::assertStringContainsString(
+            'Skipped 3 movimiento row(s) with NULL caja_id',
+            $tester->getDisplay(),
+            'Warning must include the exact skipped-row count'
+        );
+        self::assertStringContainsString('headers=7', $tester->getDisplay());
+    }
+
+    // -------------------------------------------------------------------------
+    // Scenario B — caja_id IS NOT NULL but no cash_session → row inserted with
+    //              cash_session_id = NULL (requires migration T20 applied)
+    // -------------------------------------------------------------------------
+
+    public function testNullCajaIdNotNullButNoSessionInsertsWithNullCashSessionId(): void
+    {
+        // The command does NOT filter rows with a valid caja_id but no matching
+        // cash_session. Those rows land in sales with cash_session_id = NULL.
+        // We verify: (a) command succeeds; (b) INSERT SQL contains the caja_id
+        // NOT NULL filter (Fix A) but NOT a cash_session_id IS NOT NULL filter
+        // (i.e. rows without a session are NOT excluded).
+        $capturedSql = '';
+
+        /** @var Connection&MockObject $connection */
+        $connection = $this->createMock(Connection::class);
+
+        // All fetchOne calls return 1 (tables exist; skipped count = 1 → warning OK)
+        $connection->method('fetchOne')->willReturn(1);
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+
+        $execCall = 0;
+        $connection->method('executeStatement')
+            ->willReturnCallback(
+                static function (string $sql) use (&$capturedSql, &$execCall): int {
+                    ++$execCall;
+                    if ($execCall === 1) {
+                        $capturedSql = $sql;
+                    }
+
+                    return $execCall === 1 ? 1 : 2;
+                }
+            );
+
+        $command = $this->buildCommand($connection);
+        $tester = new CommandTester($command);
+
+        $exitCode = $tester->execute([]);
+
+        self::assertSame(Command::SUCCESS, $exitCode);
+
+        // Fix A filter MUST be present — rows without a cash_register are excluded
+        self::assertStringContainsString(
+            'caja_id IS NOT NULL',
+            $capturedSql,
+            'INSERT WHERE clause must contain AND m.caja_id IS NOT NULL (Fix A)'
+        );
+
+        // Rows with a valid caja_id but no matching session are NOT excluded —
+        // they are inserted with cash_session_id = NULL (Fix B / schema change).
+        self::assertStringNotContainsString(
+            'cash_session_id IS NOT NULL',
+            $capturedSql,
+            'INSERT must NOT filter out rows with NULL cash_session_id (they are allowed)'
+        );
+    }
+
+    // -------------------------------------------------------------------------
     // Regression guard — turno_id must NOT appear in the SQL sent to the DB
     // -------------------------------------------------------------------------
 
