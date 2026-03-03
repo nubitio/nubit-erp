@@ -63,6 +63,7 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       })
       .visibleOnForm(false)
       .required(true)
+      .defaultValue('income')
       .build(),
   );
   fields.push(

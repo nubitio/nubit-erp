@@ -9,7 +9,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import toast from '../../../shared/lib/SharedUtils';
 import cashRegisterService from '../services/cashRegisterService';
 import './CashRegisterClose.scss';
-import { confirm } from 'devextreme/ui/dialog';
 
 type CashClosureParams = {
   id: string;
@@ -24,6 +23,7 @@ export const CashRegisterClose = () => {
   const { id } = useParams<CashClosureParams>();
   const gridRef = useRef<DataGridRef | null>(null);
   const [differenceData, setDifferenceData] = useState<CashDifference[] | undefined>(undefined);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const navigate = useNavigate();
   const data = useRef<DataSource>(
     new DataSource({
@@ -35,11 +35,7 @@ export const CashRegisterClose = () => {
   );
 
   const onClose = () => {
-    confirm('¿Está seguro que desea cerrar la caja?', 'Cerrar Caja').then((result) => {
-      if (result) {
-        closeCashRegister();
-      }
-    });
+    setShowCloseConfirm(true);
   };
 
   const closeCashRegister = () => {
@@ -125,6 +121,7 @@ export const CashRegisterClose = () => {
             alignment="right"
             dataType="number"
             format={{ type: 'currency', precision: 2 }}
+            cssClass="col-counted-amount"
           />
           <Column
             dataField="difference"
@@ -163,6 +160,51 @@ export const CashRegisterClose = () => {
           </Toolbar>
         </DataGrid>
       </div>
+      {showCloseConfirm && (
+        <div
+          data-testid="close-cash-confirm-dialog"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              borderRadius: 8,
+              padding: '24px 32px',
+              minWidth: 320,
+              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+            }}
+          >
+            <p style={{ marginBottom: 20, fontSize: 16 }}>¿Está seguro que desea cerrar la caja?</p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button
+                data-testid="close-cash-confirm-no"
+                onClick={() => setShowCloseConfirm(false)}
+                style={{ padding: '6px 18px', cursor: 'pointer' }}
+              >
+                No
+              </button>
+              <button
+                data-testid="close-cash-confirm-yes"
+                onClick={() => {
+                  setShowCloseConfirm(false);
+                  closeCashRegister();
+                }}
+                style={{ padding: '6px 18px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Sí
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

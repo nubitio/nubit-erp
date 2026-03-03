@@ -1,5 +1,5 @@
-import {Field} from '../field/Field';
-import {FieldType} from '../field/FieldType';
+import { Field } from '../field/Field';
+import { FieldType } from '../field/FieldType';
 import { dxUtils } from '../../shared/data/DxUtils';
 import {
   CompareRule,
@@ -12,19 +12,19 @@ import {
   SimpleItem,
   StringLengthRule,
 } from 'devextreme-react/form';
-import {MutableRefObject} from 'react';
-import {dispatch} from '../event/EventHook';
-import {FORM_EVENTS, UploadedFile} from './DxForm';
-import {ValidationRule} from '../field/ValidationRule';
-import {getIRI} from '../utils/SharedUtils';
-import {Template} from 'devextreme-react/core/template';
+import { MutableRefObject } from 'react';
+import { dispatch } from '../event/EventHook';
+import { FORM_EVENTS, UploadedFile } from './DxForm';
+import { ValidationRule } from '../field/ValidationRule';
+import { getIRI } from '../utils/SharedUtils';
+import { Template } from 'devextreme-react/core/template';
 
 export const buildField = (
   field: Field,
   key: any,
   isEditable: boolean = true,
-  uploadedFiles: MutableRefObject<UploadedFile[]> = {current: []},
-  formRef: MutableRefObject<FormRef | null> = {current: null},
+  uploadedFiles: MutableRefObject<UploadedFile[]> = { current: [] },
+  formRef: MutableRefObject<FormRef | null> = { current: null },
 ) => {
   if (field.type === FieldType.NONE) return null;
   let editorOptions: any = {};
@@ -69,7 +69,7 @@ export const buildField = (
           // The CustomStore.load may return either an array or an object with .data
           // We deliberately request a small page: skip=0, take=2
           (store as any)
-            .load({skip: 0, take: 2})
+            .load({ skip: 0, take: 2 })
             .then((result: any) => {
               const items = result?.data ?? result;
               if (Array.isArray(items) && items.length === 1) {
@@ -204,10 +204,21 @@ export const buildField = (
   if (!isEditable) {
     editorOptions = {
       ...editorOptions,
-      elementAttr: {class: 'form-editor'},
-      inputAttr: {class: 'form-editor-input'},
+      elementAttr: { class: 'form-editor' },
+      // inputAttr for read-only mode is merged below together with aria-label
     };
   }
+  // Build a merged inputAttr: aria-label from field.label as base,
+  // read-only class (when !isEditable) applied next,
+  // then explicit field.editorOptions.inputAttr values take priority (override).
+  const mergedInputAttr = {
+    'aria-label': field.label,
+    ...(!isEditable ? { class: 'form-editor-input' } : {}),
+    ...(field.editorOptions?.inputAttr ?? {}),
+  };
+  // Spread field.editorOptions but extract inputAttr to avoid it overwriting
+  // the merged value computed above.
+  const { inputAttr: _discardedInputAttr, ...restEditorOptions } = field.editorOptions ?? {};
   editorOptions = {
     ...editorOptions,
     maxLength: field.maxLength,
@@ -215,7 +226,7 @@ export const buildField = (
     disabled: field.disabled,
     onFocusIn: field.onClick,
     onValueChanged: (e: any) => {
-      dispatch(FORM_EVENTS.FIELD_CHANGED, {field: field.name, value: e.value});
+      dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
       field.onChange?.(e.value);
     },
     onKeyPress: field.onKeyPress,
@@ -223,11 +234,13 @@ export const buildField = (
     itemRender: field.itemFormatter,
     itemTemplate: field.itemFormatter ? field.name : 'item',
     stylingMode: 'outlined',
-    ...field.editorOptions,
+    ...restEditorOptions,
+    inputAttr: mergedInputAttr,
   };
 
   const shouldHideLabel = [FieldType.CHECKBOX, FieldType.SWITCH].includes(field.type);
-  const useFloatingEditorLabel = !shouldHideLabel && field.type !== FieldType.FILE && field.type !== FieldType.HTML;
+  const useFloatingEditorLabel =
+    !shouldHideLabel && field.type !== FieldType.FILE && field.type !== FieldType.HTML;
 
   if (useFloatingEditorLabel) {
     editorOptions = {
@@ -248,7 +261,7 @@ export const buildField = (
       key={key}
       dataField={field.name}
       editorType={getEditorType(field)}
-      label={{text: field.label, visible: !useFloatingEditorLabel && !shouldHideLabel}}
+      label={{ text: field.label, visible: !useFloatingEditorLabel && !shouldHideLabel }}
       isRequired={field.required}
       editorOptions={editorOptions}
       helpText={field.helpText}
@@ -265,7 +278,7 @@ export const buildField = (
 
 const buildTemplate = (field: Field) => {
   if (field.itemFormatter) {
-    return <Template name={field.name} render={field.itemFormatter}/>;
+    return <Template name={field.name} render={field.itemFormatter} />;
   }
 };
 
@@ -283,13 +296,13 @@ const buildValidationRules = (field: Field) => {
   return validationRules.map((rule, index) => {
     switch (rule.type) {
       case 'required':
-        return <RequiredRule key={index}/>;
+        return <RequiredRule key={index} />;
       case 'pattern':
         return (
-          <PatternRule key={index} pattern={rule.options.pattern} message={rule.options.message}/>
+          <PatternRule key={index} pattern={rule.options.pattern} message={rule.options.message} />
         );
       case 'email':
-        return <EmailRule key={index} message={rule.options.message}/>;
+        return <EmailRule key={index} message={rule.options.message} />;
       case 'compare':
         return (
           <CompareRule
