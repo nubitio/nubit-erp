@@ -19,3 +19,6 @@
 {"type":"GatePassed","timestamp":"2026-03-02T16:55:30Z","payload":{"gate":"Gate 4 (full)","slice":"SLICE-002","tools":"phpstan+phpcs+phpmd","result":"pass"}}
 {"type":"SliceCompleted","timestamp":"2026-03-02T16:56:00Z","payload":{"slice":"SLICE-002","title":"Corregir TypeError en CashSessionResolver cuando REQUIRE_CASH_REGISTER=false"}}
 {"type":"SliceCompleted","timestamp":"2026-03-02T16:49:40.629Z","payload":{"slice":"SLICE-002","title":"Corregir TypeError en CashSessionResolver cuando REQUIRE_CASH_REGISTER=false"}}
+{"type":"SliceStarted","timestamp":"2026-03-02T20:57:00.000Z","payload":{"slice":"SLICE-004","title":"Corregir Unknown column 'm.turno_id' en SalesV2BackfillCommand"}}
+{"type":"TaskHandedOff","task":"TASK-010","from_agent":"agt-orchestrate","to_agent":"agt-backend","artifact_id":"ART-012","timestamp":"2026-03-02T20:57:10.000Z"}
+{"type":"TaskHandedOff","task":"TASK-011","from_agent":"agt-orchestrate","to_agent":"agt-backend","artifact_id":"ART-013","timestamp":"2026-03-02T20:57:11.000Z"}
