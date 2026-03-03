@@ -49,6 +49,7 @@ security:
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }
+        - { path: ^/api/test/e2e, roles: PUBLIC_ACCESS } # gated by E2E_SEED_ENABLED=1 in controller
         - { path: ^/api/sales/report, roles: ROLE_USER }
         - { path: ^/receipt/[-\w ]+$, roles: PUBLIC_ACCESS }
         - { path: ^/receipt/[-\w ]+/(ticket|pdf|xml|cdr), roles: PUBLIC_ACCESS }

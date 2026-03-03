@@ -8,6 +8,11 @@ use Symfony\Component\HttpFoundation\Cookie;
 
 final readonly class CookieFactoryService
 {
+    public function __construct(
+        private bool $cookieSecure = true,
+    ) {
+    }
+
     public function createSecureCookie(
         string $name,
         string $value,
@@ -22,7 +27,7 @@ final readonly class CookieFactoryService
             $expiresAt,
             $path,
             $domain,
-            true,  // secure
+            $this->cookieSecure,
             true,  // httpOnly
             false, // raw
             $sameSite
@@ -40,7 +45,7 @@ final readonly class CookieFactoryService
             time() - 3600,
             $path,
             $domain,
-            true,  // secure
+            $this->cookieSecure,
             true,  // httpOnly
             false, // raw
             Cookie::SAMESITE_STRICT
