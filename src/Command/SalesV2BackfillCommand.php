@@ -100,12 +100,18 @@ SELECT
     m.branch_id,
     m.almacen_id                                          AS warehouse_id,
     m.caja_id                                             AS cash_register_id,
-    -- resolve cash_session_id from legacy_cash_shift_id; NULL when no matching session exists
+    -- resolve cash_session_id via cash_register_id + time-window; NULL when no matching session exists
     (
         SELECT cs.id
         FROM cash_sessions cs
-        WHERE cs.legacy_cash_shift_id = m.turno_id
-          AND cs.branch_id = m.branch_id
+        WHERE cs.cash_register_id = m.caja_id
+          AND cs.branch_id        = m.branch_id
+          AND cs.opened_at        <= COALESCE(m.fecha, m.date_created, NOW())
+          AND (
+              cs.closed_at IS NULL
+              OR cs.closed_at >= COALESCE(m.fecha, m.date_created, NOW())
+          )
+        ORDER BY cs.opened_at DESC
         LIMIT 1
     )                                                     AS cash_session_id,
     m.cliente_id                                          AS customer_id,
