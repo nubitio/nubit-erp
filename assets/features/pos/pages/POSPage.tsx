@@ -73,7 +73,8 @@ const POSPage = () => {
     paymentMethods.find((method) => method.id === selectedPaymentMethodId) ?? null;
   const isCashPaymentSelected = isCashPaymentMethod(selectedPaymentMethod);
   const { isOnline } = useConnectivity();
-  const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } = useOutboxSync();
+  const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } =
+    useOutboxSync();
 
   const {
     cart,
@@ -129,8 +130,8 @@ const POSPage = () => {
     NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)), currency);
 
   // ── Caja session timestamp ────────────────────────────────────────────────────────────────
-  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(
-    () => localStorage.getItem('pos_caja_opened_at'),
+  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(() =>
+    localStorage.getItem('pos_caja_opened_at'),
   );
 
   // ── Persist caja state ─────────────────────────────────────────────────────────────────────
@@ -153,10 +154,13 @@ const POSPage = () => {
   useEffect(() => {
     if (!draftNotifiedRef.current && cart.length > 0) {
       draftNotifiedRef.current = true;
-      toast(`Orden anterior restaurada (${cart.length} ${cart.length === 1 ? 'producto' : 'productos'})`, 'info');
+      toast(
+        `Orden anterior restaurada (${cart.length} ${cart.length === 1 ? 'producto' : 'productos'})`,
+        'info',
+      );
     }
-  // Only on mount — intentional empty-ish deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only on mount — intentional empty-ish deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Load settings ─────────────────────────────────────────────────────────────────────────
@@ -287,9 +291,7 @@ const POSPage = () => {
         >
           <ShoppingCart size={16} />
           <span>Carrito</span>
-          {cartItemsCount > 0 && (
-            <span className="pos-mobile-tabs__badge">{cartItemsCount}</span>
-          )}
+          {cartItemsCount > 0 && <span className="pos-mobile-tabs__badge">{cartItemsCount}</span>}
         </button>
       </div>
 
@@ -379,3 +381,4 @@ const POSPage = () => {
 };
 
 export default POSPage;
+export { POSPage };
