@@ -690,6 +690,7 @@ SQL,
                 'sunat_status' => $row->getSunatStatus(),
                 'sale_status' => $sale->getEstado(),
                 'sale_status_v2' => $saleStatusV2,
+                'currency' => $row->getCurrency() ?? 'PEN',
             ];
         }
 

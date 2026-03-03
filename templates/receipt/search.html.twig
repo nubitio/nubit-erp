@@ -79,7 +79,7 @@
                     <div class="mb-3">
                         <label for="total" class="form-label">Monto Total</label>
                         <div class="input-group">
-                            <span class="input-group-text">S/</span>
+                            <span class="input-group-text">{{ result ? result.currency_symbol : 'S/' }}</span>
                             <input type="text" class="form-control" id="total" name="total"
                                    value="{{ form_data.total }}"
                                    pattern="[0-9]+(\.[0-9]{1,2})?" required
@@ -114,7 +114,7 @@
                         </tr>
                         <tr>
                             <th>Monto total:</th>
-                            <td>S/ {{ result.total|number_format(2, '.', ',') }}</td>
+                            <td>{{ result.currency_symbol }} {{ result.total|number_format(2, '.', ',') }}</td>
                         </tr>
                         <tr>
                             <th>Estado:</th>

@@ -13,6 +13,7 @@ class Receipt
         public string $number,
         public string $date,
         public float $total,
+        public string $currency = 'PEN',
     ) {
     }
 }

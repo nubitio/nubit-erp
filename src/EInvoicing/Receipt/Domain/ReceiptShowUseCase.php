@@ -38,7 +38,8 @@ readonly class ReceiptShowUseCase
             series: strval($invoice->getSeries()),
             number: strval($invoice->getNumber()),
             date: strval($invoice->getIssueDate()->format('Y-m-d')),
-            total: floatval($invoice->gettotal())
+            total: floatval($invoice->gettotal()),
+            currency: strval($invoice->getCurrency() ?? 'PEN'),
         );
     }
 
@@ -53,7 +54,8 @@ readonly class ReceiptShowUseCase
             series: strval($note->getSeries()),
             number: strval($note->getNumber()),
             date: strval($note->getIssueDate()->format('Y-m-d')),
-            total: floatval($note->getTotal())
+            total: floatval($note->getTotal()),
+            currency: strval($note->getCurrency() ?? 'PEN'),
         );
     }
 }
