@@ -56,6 +56,21 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
+        $skipped = (int) $this->connection->fetchOne(
+            <<<'SQL'
+            SELECT COUNT(*)
+            FROM movimiento m
+            WHERE m.tipo_id = 2
+              AND m.almacen_id IS NOT NULL
+              AND m.branch_id IS NOT NULL
+              AND m.caja_id IS NULL
+              AND NOT EXISTS (
+                  SELECT 1 FROM sales s
+                  WHERE BINARY s.legacy_movimiento_id = BINARY m.movimiento_id
+              )
+            SQL
+        );
+
         $this->connection->beginTransaction();
         try {
             if ($reset) {
@@ -163,6 +178,7 @@ FROM movimiento m
 WHERE m.tipo_id = 2
   AND m.almacen_id IS NOT NULL
   AND m.branch_id IS NOT NULL
+  AND m.caja_id IS NOT NULL
   AND NOT EXISTS (
       SELECT 1
       FROM sales s
@@ -246,6 +262,13 @@ SQL
             $headersInserted,
             $itemsInserted,
         ));
+
+        if ($skipped > 0) {
+            $io->warning(sprintf(
+                'Skipped %d movimiento row(s) with NULL caja_id (no cash_register assigned).',
+                $skipped,
+            ));
+        }
 
         return Command::SUCCESS;
     }
