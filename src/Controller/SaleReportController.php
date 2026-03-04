@@ -266,7 +266,7 @@ from tax_document i
     left join cliente c on c.id = i.customer_id
     left join tipo_comprobante vt on vt.codigo = i.document_type
 where
-    and i.document_type in ('01', '03')
+    i.document_type in ('01', '03')
     and i.issue_date between :date_from and :date_to
     and i.branch_id = :local_id
 order by i.issue_date desc

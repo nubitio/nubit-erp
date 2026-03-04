@@ -33,10 +33,18 @@ final readonly class CspNonceListener
         private CspNonceService $nonceService,
         #[Autowire(env: 'S3_PUBLIC_URL')] string $s3PublicUrl,
         #[Autowire(env: 'S3_ENDPOINT')] string $s3Endpoint,
+        #[Autowire(env: 'S3_BUCKET_NAME')] string $s3BucketName,
         #[Autowire(param: 'kernel.environment')] private string $environment,
     ) {
-        // Derive the hostname to allow in img-src from whichever URL is active.
-        $base = $s3PublicUrl !== '' ? $s3PublicUrl : $s3Endpoint;
+        $s3PublicUrl = trim($s3PublicUrl);
+        $base = $s3PublicUrl;
+
+        if ($base === '') {
+            $base = str_contains($s3BucketName, '.') && !str_contains($s3BucketName, '/')
+                ? 'https://' . $s3BucketName
+                : $s3Endpoint;
+        }
+
         $host = parse_url($base, PHP_URL_HOST) ?? '';
         $scheme = parse_url($base, PHP_URL_SCHEME) ?? 'https';
         $this->assetHost = $host !== '' ? $scheme . '://' . $host : '';

@@ -100,6 +100,21 @@ final class S3UrlResolverTest extends TestCase
         );
     }
 
+
+    public function testDomainBucketFallbackBuildsVanityUrlWhenPublicUrlIsMissing(): void
+    {
+        $resolver = new S3UrlResolver(
+            endpoint: 'https://s3.us-central-1.wasabisys.com',
+            bucket: 's3.efact.app',
+            publicUrl: '',
+        );
+
+        $this->assertSame(
+            'https://s3.efact.app/altofilete/images/logo-altofilete-69a75c4d474e5.png',
+            $resolver->resolve('altofilete/images/logo-altofilete-69a75c4d474e5.png'),
+        );
+    }
+
     public function testCdnModeStripsLeadingSlashFromPath(): void
     {
         $resolver = new S3UrlResolver(
