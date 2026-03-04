@@ -76,3 +76,7 @@ phpstan.neon
 /public/themes/*.css
 /public/themes/*.css.map
 ###< compiled themes ###
+
+# aiteam
+.aiteam/
+ai/
