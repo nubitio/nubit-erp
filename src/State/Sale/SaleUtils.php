@@ -57,17 +57,25 @@ readonly class SaleUtils
      */
     public function getSaleNumber(string $series): string
     {
-        /** @var false|string $number */
-        $number = $this->connection->fetchOne(
-            '
-            select
-                ifnull(max(cast(numero as int)), 0) + 1 as numero
-            from movimiento
-            where serie = ?',
-            [$series]
-        );
+        $this->connection->beginTransaction();
+        try {
+            $this->connection->executeStatement(
+                'INSERT INTO sale_sequences (serie, last_number) VALUES (:serie, 1)
+                 ON DUPLICATE KEY UPDATE last_number = last_number + 1',
+                ['serie' => $series]
+            );
+            /** @var false|string $number */
+            $number = $this->connection->fetchOne(
+                'SELECT last_number FROM sale_sequences WHERE serie = :serie',
+                ['serie' => $series]
+            );
+            $this->connection->commit();
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
+            throw new ServiceException('No se pudo generar el número de comprobante.', 0, $e);
+        }
 
-        if (!$number) {
+        if ($number === false) {
             throw new ServiceException('No se encontró el número de comprobante.');
         }
 
