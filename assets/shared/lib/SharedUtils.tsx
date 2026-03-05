@@ -2,8 +2,14 @@ import React from 'react';
 import notify from 'devextreme/ui/notify';
 
 const LOCAL_AVATAR_COLORS = [
-  '#4a6fa5', '#3d8a74', '#7a6099', '#4a8ab5',
-  '#6a7f5e', '#a06050', '#526a7d', '#7d7040',
+  '#4a6fa5',
+  '#3d8a74',
+  '#7a6099',
+  '#4a8ab5',
+  '#6a7f5e',
+  '#a06050',
+  '#526a7d',
+  '#7d7040',
 ];
 
 export class SharedUtils {
@@ -48,7 +54,7 @@ export class SharedUtils {
             <img
               src={imageUrl}
               className="object-cover"
-              style={{width: '30px', height: '30px'}}
+              style={{ width: '30px', height: '30px' }}
               alt={alt}
             />
           </a>
@@ -90,7 +96,7 @@ export class SharedUtils {
   static dateFormatter(value: Date | string | null | undefined) {
     if (value === null || value === undefined || value === '') return '';
     if (value instanceof Date) {
-      return value.toLocaleDateString('es-PE', {timeZone: 'UTC'});
+      return value.toLocaleDateString('es-PE', { timeZone: 'America/Lima' });
     }
     const dateStr = value.trim();
     if (/^\d{4}-\d{2}-\d{2}T/.test(dateStr)) {
@@ -110,7 +116,7 @@ export class SharedUtils {
 
   static timeFormatter(value: string) {
     const time = new Date(value);
-    return time.toLocaleTimeString('es-PE', {timeZone: 'UTC'});
+    return time.toLocaleTimeString('es-PE', { timeZone: 'America/Lima' });
   }
 
   static dateTimeFormatter(value: string) {
@@ -124,6 +130,7 @@ export class SharedUtils {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'America/Lima',
     };
     return new Intl.DateTimeFormat('es-PE', config).format(dateTime);
   }
@@ -173,8 +180,8 @@ export class SharedUtils {
   static htmlFormatter(value: any) {
     if (value) {
       return (
-        <div className="text-truncate" style={{maxWidth: '200px'}}>
-          <span dangerouslySetInnerHTML={{__html: value}}/>
+        <div className="text-truncate" style={{ maxWidth: '200px' }}>
+          <span dangerouslySetInnerHTML={{ __html: value }} />
         </div>
       );
     } else {
@@ -189,17 +196,13 @@ export class SharedUtils {
       value = Number(value);
     }
     if (value === -1) {
-      return (
-        <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>
-      );
+      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
     } else if (value === 0) {
       return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>;
     } else if (value < 2000) {
       return <span className="badge badge-outlined rounded-pill text-bg-warning">ERRONEO</span>;
     } else if (value >= 2000 && value < 4000) {
-      return (
-        <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>
-      );
+      return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
     } else if (value >= 4000) {
       return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
     }
@@ -254,7 +257,7 @@ export default function toast(
       type: type,
       displayTime: time,
     },
-    {position: position},
+    { position: position },
   );
 }
 

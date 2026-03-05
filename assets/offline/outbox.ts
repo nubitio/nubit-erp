@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { offlineDb } from './db';
 import { nextRetryDelayMs } from './backoff';
 import { logSyncEvent } from './telemetry';
@@ -10,12 +11,16 @@ let activeSyncPromise: Promise<void> | null = null;
 const asIso = (date: Date) => date.toISOString();
 
 const buildTemporalCorrelative = async () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const dayPrefix = `${year}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  // Use Lima time so the daily counter rolls over at Lima midnight (00:00 Lima = 05:00 UTC),
+  // not at UTC midnight (19:00 Lima). Without this, sales made between 19:00–23:59 Lima time
+  // would be counted against the next calendar day, producing duplicate correlatives.
+  const now = DateTime.now().setZone('America/Lima');
+  const year = now.year;
+  const dayStart = now.startOf('day'); // 00:00:00 Lima
+  const dayEnd = now.endOf('day'); // 23:59:59.999 Lima
   const count = await offlineDb.sales
     .where('createdAt')
-    .between(`${dayPrefix}T00:00:00.000Z`, `${dayPrefix}T23:59:59.999Z`, true, true)
+    .between(dayStart.toUTC().toISO()!, dayEnd.toUTC().toISO()!, true, true)
     .count();
   return `${OFFLINE_CORRELATIVE_PREFIX}-${year}-${String(count + 1).padStart(6, '0')}`;
 };
