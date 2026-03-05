@@ -47,6 +47,9 @@ const initialData: DashboardData = {
   topCustomers: [],
   voucherTypes: [],
   lowStockProducts: [],
+  paymentMethodsToday: [],
+  hourlySalesToday: [],
+  recentSalesToday: [],
   meta: {
     mode: 'full',
     partial: false,
@@ -67,6 +70,9 @@ const normalize = (payload: any): DashboardData => ({
   topCustomers: payload?.topCustomers ?? [],
   voucherTypes: payload?.voucherTypes ?? [],
   lowStockProducts: payload?.lowStockProducts ?? [],
+  paymentMethodsToday: payload?.paymentMethodsToday ?? [],
+  hourlySalesToday: payload?.hourlySalesToday ?? [],
+  recentSalesToday: payload?.recentSalesToday ?? [],
   meta: payload?.meta ?? initialData.meta,
 });
 

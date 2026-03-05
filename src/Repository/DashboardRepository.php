@@ -450,6 +450,8 @@ readonly class DashboardRepository
         $summary = $this->safeQuery('summaryLite', fn () => $this->connection->fetchAssociative("
             SELECT
                 SUM(CASE WHEN td.date = :today THEN bds.net_sales ELSE 0 END) AS sales_today,
+                SUM(CASE WHEN td.date = :yesterday THEN bds.net_sales ELSE 0 END) AS sales_yesterday,
+                SUM(CASE WHEN td.date >= :last7days THEN bds.net_sales ELSE 0 END) AS sales_week,
                 SUM(CASE WHEN td.date = :today THEN bds.sales_count ELSE 0 END) AS invoices_today
             FROM branch_daily_summary bds
                 INNER JOIN time_dimension td ON td.date = bds.summary_date
@@ -514,11 +516,19 @@ readonly class DashboardRepository
         ", $params), [], $failedSegments);
 
         $salesToday = (float) ($summary['sales_today'] ?? 0);
+        $salesYesterday = (float) ($summary['sales_yesterday'] ?? 0);
+        $salesWeek = (float) ($summary['sales_week'] ?? 0);
         $invoicesToday = (int) ($summary['invoices_today'] ?? 0);
         $refundsToday = (float) ($refunds['refunds_today'] ?? 0);
+        $dailyGrowth = $salesYesterday > 0
+            ? (($salesToday - $salesYesterday) / $salesYesterday) * 100
+            : null;
 
         $payload['summary'] = [
             'salesToday' => $salesToday,
+            'salesYesterday' => $salesYesterday,
+            'salesWeek' => $salesWeek,
+            'dailyGrowth' => $dailyGrowth,
             'invoicesToday' => $invoicesToday,
             'avgTicketToday' => $invoicesToday > 0 ? $salesToday / $invoicesToday : 0.0,
             'refundsToday' => $refundsToday,
@@ -647,6 +657,9 @@ readonly class DashboardRepository
         return [
             'summary' => [
                 'salesToday' => 0.0,
+                'salesYesterday' => 0.0,
+                'salesWeek' => 0.0,
+                'dailyGrowth' => null,
                 'invoicesToday' => 0,
                 'avgTicketToday' => 0.0,
                 'refundsToday' => 0.0,

@@ -21,6 +21,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@platform/common/Constants';
 import toast from '@platform/utils/SharedUtils';
 import { userInformation } from '@platform/common/UserInformation';
+import { useScreenSize } from '@utils/media-query';
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
@@ -32,7 +33,9 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }
 }
 
 export const DashboardPage = () => {
-  const { data, loading, error, refetch } = useDashboardOverview();
+  const screen = useScreenSize();
+  const isMobileDashboard = screen.isXSmall || screen.isSmall;
+  const { data, loading, error, refetch } = useDashboardOverview({ lite: isMobileDashboard });
   const [cashRegisters, setCashRegisters] = useState<CashRegisterStatus[]>([]);
   const [cashboxLoading, setCashboxLoading] = useState(false);
   const summary = useMemo(() => data.summary, [data]);
@@ -79,6 +82,119 @@ export const DashboardPage = () => {
     purchasesSummary.monthGrowth !== null &&
     purchasesSummary.monthGrowth !== undefined &&
     purchasesSummary.monthGrowth >= 0;
+
+  const totalPaymentsToday = data.paymentMethodsToday.reduce((acc, item) => acc + item.total, 0);
+  const bestHour = data.hourlySalesToday.reduce<{ hour: string; total: number } | null>((best, current) => {
+    if (!best || current.total > best.total) {
+      return current;
+    }
+
+    return best;
+  }, null);
+  const topPaymentMethod = data.paymentMethodsToday[0] ?? null;
+
+  if (isMobileDashboard) {
+    return (
+      <ScrollView className="view-wrapper-scroll">
+        <AppToolbar title="Dashboard" onRefresh={refetch}>
+          {error && <div className="dashboard-error">{error}</div>}
+          {data.meta?.partial && !error && (
+            <div className="dashboard-error">Se cargó información parcial del dashboard.</div>
+          )}
+
+          <div className="dash-mobile-hero">
+            <span className="dash-mobile-hero__branch">
+              <i className="ph ph-map-pin" /> {currentBranchName}
+            </span>
+            <span className="dash-mobile-hero__title">Hola, {currentUserName}</span>
+            <span className="dash-mobile-hero__amount">{currencyFormatter(summary.netSalesToday)}</span>
+            <span className="dash-mobile-hero__label">Venta neta de hoy</span>
+            <div className="dash-mobile-hero__meta">
+              <span>{decimalFormatter(summary.invoicesToday)} comprobantes</span>
+              {summary.dailyGrowth !== null && summary.dailyGrowth !== undefined && (
+                <span className={summary.dailyGrowth >= 0 ? 'up' : 'down'}>
+                  {summary.dailyGrowth >= 0 ? '+' : ''}
+                  {summary.dailyGrowth.toFixed(1)}% vs ayer
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="dash-mobile-kpis">
+            <div className="dash-mobile-kpi">
+              <span className="dash-mobile-kpi__label">Ventas hoy</span>
+              <strong>{currencyFormatter(summary.salesToday)}</strong>
+            </div>
+            <div className="dash-mobile-kpi">
+              <span className="dash-mobile-kpi__label">Ticket promedio</span>
+              <strong>{currencyFormatter(summary.avgTicketToday)}</strong>
+            </div>
+            <div className="dash-mobile-kpi">
+              <span className="dash-mobile-kpi__label">Ventas 7 dias</span>
+              <strong>{currencyFormatter(summary.salesWeek)}</strong>
+            </div>
+            <div className="dash-mobile-kpi">
+              <span className="dash-mobile-kpi__label">Reembolsos hoy</span>
+              <strong>{currencyFormatter(summary.refundsToday)}</strong>
+            </div>
+          </div>
+
+          <SectionHeader title="Ritmo de caja" subtitle="Hoy" />
+          <div className="dash-mobile-surface">
+            <div className="dash-mobile-surface__row">
+              <span>Pico de venta</span>
+              <strong>
+                {bestHour ? `${bestHour.hour} · ${currencyFormatter(bestHour.total)}` : 'Sin ventas'}
+              </strong>
+            </div>
+            <div className="dash-mobile-surface__row">
+              <span>Metodo principal</span>
+              <strong>
+                {topPaymentMethod ? `${topPaymentMethod.method} · ${currencyFormatter(topPaymentMethod.total)}` : 'Sin datos'}
+              </strong>
+            </div>
+            <div className="dash-mobile-surface__row">
+              <span>Cajas abiertas</span>
+              <strong>{cashboxLoading ? 'Cargando...' : String(openCashCount)}</strong>
+            </div>
+          </div>
+
+          <SectionHeader title="Metodos de pago" subtitle="Distribucion de hoy" />
+          <ul className="ranked-list dash-mobile-list">
+            {data.paymentMethodsToday.map((item) => {
+              const percentage = totalPaymentsToday > 0 ? (item.total / totalPaymentsToday) * 100 : 0;
+
+              return (
+                <li key={item.method}>
+                  <div className="ranked-list__title">{item.method}</div>
+                  <div className="ranked-list__meta">
+                    <span>{percentage.toFixed(1)}%</span>
+                    <span>{currencyFormatter(item.total)}</span>
+                  </div>
+                </li>
+              );
+            })}
+            {data.paymentMethodsToday.length === 0 && <div className="empty">Sin datos disponibles</div>}
+          </ul>
+
+          <SectionHeader title="Ultimas ventas" subtitle="Movimientos recientes" />
+          <ul className="ranked-list dash-mobile-list">
+            {data.recentSalesToday.map((item) => (
+              <li key={item.id}>
+                <div className="ranked-list__title">{item.issuedAt} · {item.paymentMethod}</div>
+                <div className="ranked-list__meta">
+                  <span>Venta #{item.id}</span>
+                  <span>{currencyFormatter(item.total)}</span>
+                </div>
+              </li>
+            ))}
+            {data.recentSalesToday.length === 0 && <div className="empty">Sin ventas registradas hoy</div>}
+          </ul>
+        </AppToolbar>
+        <LoadPanel container=".content" visible={loading || cashboxLoading} position={{ of: '.layout-body' }} />
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView className="view-wrapper-scroll">
