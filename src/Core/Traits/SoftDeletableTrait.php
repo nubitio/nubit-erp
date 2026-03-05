@@ -6,6 +6,7 @@ namespace App\Core\Traits;
 
 use DateTimeInterface;
 use DateTime;
+use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 
 /** @phpstan-ignore-next-line trait.unused */
@@ -33,7 +34,7 @@ trait SoftDeletableTrait
 
     public function softDelete(): static
     {
-        $this->deletedAt = new DateTime();
+        $this->deletedAt = new DateTime('now', new DateTimeZone('UTC'));
 
         return $this;
     }

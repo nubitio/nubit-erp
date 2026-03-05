@@ -4,20 +4,47 @@ declare(strict_types=1);
 
 namespace App\Core\Util;
 
+use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
-use DateTime;
+use DateTimeZone;
 
 final class DateHelper
 {
+    private const TZ_UTC = 'UTC';
+    private const TZ_LIMA = 'America/Lima';
+
+    /**
+     * Current instant in UTC. Safe regardless of php.ini date.timezone setting.
+     */
     public static function now(): DateTimeImmutable
     {
-        return new DateTimeImmutable();
+        return new DateTimeImmutable('now', new DateTimeZone(self::TZ_UTC));
     }
 
+    /**
+     * Current instant in Lima (America/Lima, UTC-5). For display / logging only.
+     */
+    public static function nowLima(): DateTimeImmutable
+    {
+        return new DateTimeImmutable('now', new DateTimeZone(self::TZ_LIMA));
+    }
+
+    /**
+     * Midnight of today in UTC. Suitable for DB range queries against UTC columns.
+     */
     public static function today(): DateTimeImmutable
     {
-        return new DateTimeImmutable()->setTime(0, 0);
+        return new DateTimeImmutable('today', new DateTimeZone(self::TZ_UTC));
+    }
+
+    /**
+     * Midnight of today as seen on the Lima (Peru) wall-clock calendar.
+     * Use this when a feature must respect the date a Lima user perceives as "today".
+     */
+    public static function todayLima(): DateTimeImmutable
+    {
+        return new DateTimeImmutable('today', new DateTimeZone(self::TZ_LIMA));
     }
 
     public static function tomorrow(): DateTimeImmutable
