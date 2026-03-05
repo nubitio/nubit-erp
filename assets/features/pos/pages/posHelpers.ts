@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { Constants } from '@platform/common/Constants';
 import type { PaymentMethodOption, PosItem } from './types';
 
@@ -29,12 +30,11 @@ export const normalizeProduct = (raw: any): PosItem => ({
   id: String(raw?.id ?? ''),
   name: String(raw?.name ?? 'Producto'),
   salePrice: toNumber(raw?.salePrice ?? raw?.precio_unitario ?? raw?.price, 0),
-  productType: String(raw?.productType ?? raw?.product_type ?? (raw?.type === 1 ? 'STOCKABLE' : 'SERVICE')).toUpperCase() as PosItem['productType'],
+  productType: String(
+    raw?.productType ?? raw?.product_type ?? (raw?.type === 1 ? 'STOCKABLE' : 'SERVICE'),
+  ).toUpperCase() as PosItem['productType'],
   trackInventory: Boolean(
-    raw?.trackInventory
-      ?? raw?.track_inventory
-      ?? raw?.trackInventoryFlag
-      ?? (raw?.type === 1)
+    raw?.trackInventory ?? raw?.track_inventory ?? raw?.trackInventoryFlag ?? raw?.type === 1,
   ),
   saleUnitCode: raw?.saleUnitCode ? String(raw.saleUnitCode) : undefined,
   stock: toOptionalNumber(raw?.stock),
@@ -54,7 +54,7 @@ export const normalizeProduct = (raw: any): PosItem => ({
         },
 });
 
-export const extractCollection = <T,>(raw: any): T[] => {
+export const extractCollection = <T>(raw: any): T[] => {
   if (Array.isArray(raw)) {
     return raw;
   }
@@ -70,12 +70,22 @@ export const extractCollection = <T,>(raw: any): T[] => {
   return [];
 };
 
-export const toLocalIsoString = (date: Date) => {
-  const copy = new Date(date);
-  const timeOffset = copy.getTimezoneOffset() * 60000;
-  copy.setTime(copy.getTime() - timeOffset);
-  return copy.toISOString();
-};
+/**
+ * Returns the current moment as a UTC ISO-8601 string (with Z suffix).
+ * Always call this when you need to capture "now" for API submission.
+ * The result is timezone-agnostic and correct regardless of the browser's local timezone.
+ */
+export function nowUtcIso(): string {
+  return DateTime.now().toUTC().toISO() as string;
+}
+
+/**
+ * Converts a JS Date to a UTC ISO-8601 string (with Z suffix),
+ * interpreting the Date as representing a moment in America/Lima.
+ */
+export function toUtcIso(date: Date): string {
+  return DateTime.fromJSDate(date, { zone: 'America/Lima' }).toUTC().toISO() as string;
+}
 
 export const isCashPaymentMethod = (method: PaymentMethodOption | null | undefined) => {
   if (!method) {

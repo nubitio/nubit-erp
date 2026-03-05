@@ -3,6 +3,7 @@ import Form, { FormRef, GroupItem, Item } from 'devextreme-react/form';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { DateTime } from 'luxon';
 import { FORM_ERRORS_EVENT, httpClient } from '../../shared/api/HttpClient';
 import { confirm } from 'devextreme/ui/dialog';
 import DataGrid, {
@@ -331,9 +332,11 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
             return;
           }
           const date = new Date(formData[field.name]);
-          const timeOffset = date.getTimezoneOffset() * 60000;
-          date.setTime(date.getTime() - timeOffset);
-          formData[field.name] = date.toISOString();
+          // Interpret the picked date as Lima local time, then convert to UTC ISO-8601 with Z suffix.
+          // This is correct regardless of the browser's own timezone setting.
+          formData[field.name] = DateTime.fromJSDate(date, { zone: 'America/Lima' })
+            .toUTC()
+            .toISO();
         }
         if (field.type === FieldType.TEXT && field.valueType === 'number') {
           formData[field.name] = Number(formData[field.name]);
