@@ -69,20 +69,22 @@ class SendDailySummaryCommand extends TenantAwareCommand
 
             // Get invoices sent to SUNAT count for today
             $invoicesSentCount = (int)$this->connection->fetchOne(
-                "SELECT COUNT(*) FROM tax_document WHERE document_type IN ('01', '03') AND DATE(issue_date) = ?",
+                "SELECT COUNT(*) FROM tax_document
+                 WHERE document_type IN ('01', '03')
+                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?",
                 [$today]
             );
             $invoicesAcceptedCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(issue_date) = ?
+                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
                    AND sunat_status = '0'",
                 [$today]
             );
             $invoicesRejectedCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(issue_date) = ?
+                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
                    AND sunat_status REGEXP '^[0-9]+$'
                    AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999",
                 [$today]
@@ -90,14 +92,14 @@ class SendDailySummaryCommand extends TenantAwareCommand
             $invoicesPendingCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(issue_date) = ?
+                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
                    AND (sunat_status IS NULL OR sunat_status = '' OR sunat_status = 'pendiente')",
                 [$today]
             );
             $invoicesTechnicalErrorCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document
                  WHERE document_type IN ('01', '03')
-                   AND DATE(issue_date) = ?
+                   AND DATE(CONVERT_TZ(issue_date, 'UTC', 'America/Lima')) = ?
                    AND sunat_status IS NOT NULL
                    AND sunat_status <> ''
                    AND sunat_status <> 'pendiente'
