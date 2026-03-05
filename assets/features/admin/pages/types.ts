@@ -44,6 +44,15 @@ export type LowStockProduct = {
   stockPercentage: number;
 };
 
+export type PaymentMethodToday = { method: string; total: number };
+export type HourlySalesToday = { hour: string; total: number };
+export type RecentSaleToday = {
+  id: string;
+  issuedAt: string;
+  paymentMethod: string;
+  total: number;
+};
+
 export type DashboardData = {
   summary: SummaryStats;
   salesByDay: SalesByDay[];
@@ -60,6 +69,9 @@ export type DashboardData = {
   topCustomers: TopCustomer[];
   voucherTypes: VoucherTypeShare[];
   lowStockProducts: LowStockProduct[];
+  paymentMethodsToday: PaymentMethodToday[];
+  hourlySalesToday: HourlySalesToday[];
+  recentSalesToday: RecentSaleToday[];
   meta?: {
     mode?: string;
     partial?: boolean;

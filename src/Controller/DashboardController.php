@@ -44,6 +44,9 @@ class DashboardController extends AbstractController
                 return $this->json([
                     'summary' => [
                         'salesToday' => 0.0,
+                        'salesYesterday' => 0.0,
+                        'salesWeek' => 0.0,
+                        'dailyGrowth' => null,
                         'invoicesToday' => 0,
                         'avgTicketToday' => 0.0,
                         'refundsToday' => 0.0,
