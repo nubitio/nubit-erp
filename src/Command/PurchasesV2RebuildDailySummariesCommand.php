@@ -65,7 +65,7 @@ final class PurchasesV2RebuildDailySummariesCommand extends TenantAwareCommand
             $fromRaw = (string) ($input->getOption('from') ?? '');
             $days = max(1, (int) ($input->getOption('days') ?? 30));
 
-            $toDate = $this->parseDate($toRaw, new \DateTimeImmutable('today'));
+            $toDate = $this->parseDate($toRaw, new \DateTimeImmutable('today', new \DateTimeZone('America/Lima')));
             $fromDefault = $toDate->modify(sprintf('-%d days', $days - 1));
             $fromDate = $this->parseDate($fromRaw, $fromDefault);
         } catch (\InvalidArgumentException $exception) {
@@ -138,7 +138,7 @@ INSERT INTO purchases_daily_summary (
     subtotal, tax_total, grand_total
 )
 SELECT
-    DATE(gr.issued_at) AS summary_date,
+    DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')) AS summary_date,
     gr.branch_id,
     gr.warehouse_id,
     COUNT(*) AS receipts_count,
@@ -149,10 +149,10 @@ SELECT
     ROUND(COALESCE(SUM(gr.grand_total), 0), 2) AS grand_total
 FROM goods_receipts gr
 LEFT JOIN goods_receipt_items gri ON gri.goods_receipt_id = gr.id
-WHERE DATE(gr.issued_at) BETWEEN ? AND ?
+WHERE DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')) BETWEEN ? AND ?
   AND gr.status = 'POSTED'
   AND gr.deleted_at IS NULL
-GROUP BY DATE(gr.issued_at), gr.branch_id, gr.warehouse_id
+GROUP BY DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')), gr.branch_id, gr.warehouse_id
 SQL;
     }
 
@@ -164,7 +164,7 @@ INSERT INTO purchase_product_daily_summary (
     receipts_count, qty_received, subtotal, tax_total, total_amount
 )
 SELECT
-    DATE(gr.issued_at) AS summary_date,
+    DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')) AS summary_date,
     gr.branch_id,
     gr.warehouse_id,
     gri.product_id,
@@ -175,10 +175,10 @@ SELECT
     ROUND(COALESCE(SUM(gri.total_amount), 0), 2) AS total_amount
 FROM goods_receipts gr
 INNER JOIN goods_receipt_items gri ON gri.goods_receipt_id = gr.id
-WHERE DATE(gr.issued_at) BETWEEN ? AND ?
+WHERE DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')) BETWEEN ? AND ?
   AND gr.status = 'POSTED'
   AND gr.deleted_at IS NULL
-GROUP BY DATE(gr.issued_at), gr.branch_id, gr.warehouse_id, gri.product_id
+GROUP BY DATE(CONVERT_TZ(gr.issued_at, 'UTC', 'America/Lima')), gr.branch_id, gr.warehouse_id, gri.product_id
 SQL;
     }
 }

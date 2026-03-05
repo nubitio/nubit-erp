@@ -7,6 +7,7 @@ namespace App\Entity;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Repository\StockLotRepository;
 use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -65,8 +66,8 @@ class StockLot
     public function __construct()
     {
         $this->id = Uuid::v7()->toRfc4122();
-        $this->receivedAt = new DateTimeImmutable();
-        $this->createdAt = new DateTimeImmutable();
+        $this->receivedAt = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+        $this->createdAt = new DateTimeImmutable('now', new DateTimeZone('UTC'));
     }
 
     public function getId(): string
@@ -186,6 +187,6 @@ class StockLot
             return false;
         }
 
-        return $this->expirationDate < new DateTimeImmutable('today');
+        return $this->expirationDate < new DateTimeImmutable('today', new DateTimeZone('America/Lima'));
     }
 }

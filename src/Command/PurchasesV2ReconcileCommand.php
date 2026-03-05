@@ -55,7 +55,7 @@ final class PurchasesV2ReconcileCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
-        $from = (new \DateTimeImmutable('today'))->modify(sprintf('-%d days', $days - 1))->format('Y-m-d');
+        $from = (new \DateTimeImmutable('today', new \DateTimeZone('America/Lima')))->modify(sprintf('-%d days', $days - 1))->format('Y-m-d');
 
         $legacyRows = $this->connection->fetchAllAssociative(
             <<<'SQL'
@@ -75,13 +75,13 @@ SQL,
         $v2Rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
 SELECT
-    DATE(issued_at) AS day,
+    DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) AS day,
     COUNT(*) AS cnt,
     ROUND(COALESCE(SUM(grand_total), 0), 2) AS total_amount
 FROM goods_receipts
-WHERE DATE(issued_at) >= :from
-GROUP BY DATE(issued_at)
-ORDER BY DATE(issued_at)
+WHERE DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima')) >= :from
+GROUP BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
+ORDER BY DATE(CONVERT_TZ(issued_at, 'UTC', 'America/Lima'))
 SQL,
             ['from' => $from]
         );
