@@ -154,6 +154,12 @@ docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./ve
 docker compose exec -T vite yarn test
 ```
 
+Umbrales de cobertura (archivos objetivo: `posHelpers.ts`, `offline/api.ts`):
+- **85%** líneas / funciones / sentencias
+- **80%** ramas
+
+El type-check TypeScript (`tsc --noEmit`) se ejecuta en CI como paso previo a Vitest.
+
 ### E2E (Playwright)
 
 ```bash
@@ -166,6 +172,13 @@ docker compose exec -T vite yarn test:e2e
 # Cleanup
 docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e
 ```
+
+Hay **dos** archivos de spec E2E:
+
+| Archivo | Descripción |
+|---|---|
+| `e2e/happy-path.spec.ts` | Flujo POS completo en 9 pasos: login → producto → precio → caja → cliente → venta → movimiento → edición → cierre. Graba video a `test-results/happy-path-full-run.webm`. |
+| `e2e/auth-invoice-workflow.spec.ts` | Tests a nivel API: rechazo con credenciales vacías, endpoints de factura sin autenticación, workflow autenticado de creación y listado de facturas (usa `E2E_SALE_ID` sembrado). |
 
 ## Calidad de código
 
@@ -206,6 +219,21 @@ Deploy manual por compose prod:
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
+
+## Stack IA / MCP
+
+El sistema integra un asistente IA y herramientas MCP sobre la misma base Symfony:
+
+| Componente | Detalle |
+|---|---|
+| `symfony/ai-bundle` (dev-main) | Agente IA, invocado en `POST /api/assistant` |
+| Modelo LLM | OpenAI `gpt-4o-mini` (requiere `OPENAI_API_KEY`) |
+| RAG | Pipeline TF-IDF (`KnowledgeIndex` + `KnowledgeRetriever`) — búsqueda por similitud de coseno |
+| `symfony/mcp-bundle` (dev-main) | Expone herramientas MCP: `SaleTools`, `ProductTools`, `CashRegisterTools`, `DocumentationTools` |
+| Frontend AI | `openai ^5.12.0` + pipeline de renderizado Markdown (`marked` + `remark`/`rehype`) |
+
+Las herramientas MCP se registran mediante atributos `#[AsTool]` en `src/AI/Tool/*.php`.
+**Nota:** No existe `config/packages/mcp.yaml`; el bundle usa configuración por defecto.
 
 ## Arquitectura técnica detallada
 

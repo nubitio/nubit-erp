@@ -275,14 +275,16 @@ Estado actual:
 
 - Backend: PHPUnit amplio (`tests/*`) + cobertura (`phpunit.coverage.xml`).
 - Frontend unit: Vitest (`assets/**/*.test.ts(x)`), cobertura mínima 85/80 en targets definidos.
-- E2E: Playwright (`e2e/auth-invoice-workflow.spec.ts`) con seed/reset dedicado.
+- E2E: Playwright con seed/reset dedicado. Specs activos:
+  - `e2e/happy-path.spec.ts` — flujo POS completo de 9 pasos (login → producto → precio → caja → cliente → venta → movimiento → editar movimiento → cierre caja).
+  - `e2e/auth-invoice-workflow.spec.ts` — pruebas API-level de autenticación y comprobantes electrónicos.
 - Calidad: GrumPHP (`php-cs-fixer`, `phpcs`, `phpmd`, `phpstan`, `phpunit`).
 - CI/CD: GitHub Actions (`ci-main.yml`, build image, deploy por entorno).
 
 Brechas:
 
-- No se ejecuta typecheck TS estricto en CI (`tsc --noEmit` ausente).
-- E2E coverage funcional todavía limitada a pocos flujos.
+- ✅ Resuelto: `tsc --noEmit` ya se ejecuta en CI (`ci-main.yml`, job "Frontend Lint, Tests & Coverage"). Esta deuda técnica ha sido resuelta.
+- E2E coverage funcional: se cuentan dos specs activos — `e2e/happy-path.spec.ts` (flujo POS completo de 9 pasos) y `e2e/auth-invoice-workflow.spec.ts` (API auth + comprobantes). Cobertura aún parcial respecto a todos los flujos críticos del sistema.
 
 Estrategia mínima enterprise-ready sugerida:
 
@@ -290,6 +292,79 @@ Estrategia mínima enterprise-ready sugerida:
 2. Definir smoke E2E por dominio crítico: login, apertura caja, venta, emisión SUNAT, backup restore dry-run.
 3. Publicar reporte de cobertura consolidada (backend+frontend) y trend en CI.
 4. Contratos API críticos con pruebas de regresión por OpenAPI snapshot.
+
+## Módulo AI y MCP
+
+### Asistente AI (Backend)
+
+- **Bundle:** `symfony/ai-bundle dev-main`, modelo OpenAI `gpt-4o-mini`.
+- **System prompt:** `prompts/assistant.md` (cargado por configuración del agente `ai.agent.default`).
+- **Endpoint:** `POST /api/assistant` — `AssistantResource` → `AssistantController` invoca el agente IA.
+- **Configuración:** `config/packages/ai.yaml` con agent default y toolbox habilitado.
+
+### Pipeline RAG (Retrieval-Augmented Generation)
+
+- `KnowledgeIndex.php` (`src/AI/Knowledge/`) — carga índice TF-IDF desde disco (serializado).
+- `KnowledgeRetriever.php` — búsqueda por similitud coseno; devuelve top-K fragmentos relevantes con atribución de fuente.
+- `DocumentationTools.php` — expone la búsqueda RAG como herramienta disponible para el agente.
+- **Construcción del índice:** comando `BuildKnowledgeIndexCommand` (ejecutar manualmente para regenerar).
+
+### MCP Tools (Backend)
+
+Los cuatro tools del agente se registran con el atributo `#[AsTool]` de `symfony/ai-bundle`:
+
+| Clase | Namespace | Descripción |
+|---|---|---|
+| `SaleTools` | `src/AI/Tool/` | Resumen de ventas por rango de fechas y últimas N ventas |
+| `ProductTools` | `src/AI/Tool/` | Búsqueda y consulta de productos |
+| `CashRegisterTools` | `src/AI/Tool/` | Estado de la caja registradora activa |
+| `DocumentationTools` | `src/AI/Tool/` | Búsqueda en la base de conocimiento RAG |
+
+### MCP Bundle
+
+- **Paquete:** `symfony/mcp-bundle dev-main`, registrado en `config/bundles.php` como `McpBundle::class`.
+- **Configuración:** No existe `config/packages/mcp.yaml`. El bundle opera sin configuración YAML explícita.
+- **Registro de tools:** puramente vía atributo `#[AsTool]` en las clases del directorio `src/AI/Tool/`.
+- **Brecha conocida:** La ausencia de `config/packages/mcp.yaml` implica configuración implícita; el comportamiento exacto del bundle sin este archivo no está documentado internamente.
+
+### Frontend AI
+
+- **SDK:** `openai ^5.12.0` — cliente OpenAI directo desde el frontend.
+- **UI:** `assets/features/assistant/` — chat UI del asistente IA.
+- **Renderizado Markdown:** pipeline completo con `marked ^16.1.2` + `remark-parse` + `remark-rehype` + `rehype-stringify` para formatear respuestas del asistente.
+
+### Diagrama de flujo AI
+
+```mermaid
+flowchart LR
+  subgraph FE["Frontend"]
+    F1["assets/features/assistant/"]
+    F2["openai SDK + markdown pipeline"]
+  end
+
+  subgraph API["Backend API"]
+    B1["POST /api/assistant (AssistantResource)"]
+    B2["AssistantController"]
+    B3["symfony/ai-bundle Agent (gpt-4o-mini)"]
+  end
+
+  subgraph TOOLS["AI Tools (MCP)"]
+    T1["SaleTools (#[AsTool])"]
+    T2["ProductTools (#[AsTool])"]
+    T3["CashRegisterTools (#[AsTool])"]
+    T4["DocumentationTools (#[AsTool])"]
+  end
+
+  subgraph RAG["Knowledge Base (RAG)"]
+    R1["KnowledgeIndex (TF-IDF, en disco)"]
+    R2["KnowledgeRetriever (cosine similarity)"]
+  end
+
+  FE --> B1
+  B1 --> B2 --> B3
+  B3 --> TOOLS
+  T4 --> R2 --> R1
+```
 
 ## Deployment Flow
 
@@ -314,7 +389,6 @@ Estrategia mínima enterprise-ready sugerida:
    - `config/services.yaml` referencia `config/tenant_plans.php` inexistente.
    - README previo menciona estructuras/módulos no existentes (`src/Billing`, `assets/admin` raíz).
    - `assets/api/auth.tsx` contiene mock legacy coexistiendo con login real por `features/auth/services`.
-   - `assets/features/setup/pages/InitialSetupPage.tsx` usa `setStatus(...)` no definido.
 5. Caddy/TLS multi-tenant:
    - no hay plantilla explícita por tenant en repo (depende de `SERVER_NAME`/entorno externo).
 
