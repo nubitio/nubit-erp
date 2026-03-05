@@ -376,43 +376,6 @@ SQL, ['table' => $table, 'column' => $column]);
             $this->rule('cash_shift', 'counted_amount', 'decimal(10,2)', true, null),
             $this->rule('cash_shift', 'difference', 'decimal(10,2)', true, null),
             $this->rule(
-                'comprobante',
-                'created_at',
-                'datetime',
-                false,
-                'CURRENT_TIMESTAMP',
-                'CURRENT_TIMESTAMP'
-            ),
-            $this->rule(
-                'comprobante',
-                'discount_amount',
-                'decimal(10,2)',
-                false,
-                '0.00',
-                '0.00'
-            ),
-            $this->rule(
-                'comprobante',
-                'discount_percent',
-                'int(11)',
-                false,
-                self::NO_DEFAULT,
-                '0'
-            ),
-            $this->rule('comprobante', 'gravada', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule('comprobante', 'igv', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule('comprobante', 'rc', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule('comprobante', 'subtotal', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule('comprobante', 'total', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule(
-                'comprobante',
-                'voided',
-                'int(11)',
-                false,
-                self::NO_DEFAULT,
-                '0'
-            ),
-            $this->rule(
                 'movimiento',
                 'created_by',
                 'int(11)',
@@ -456,15 +419,6 @@ SQL, ['table' => $table, 'column' => $column]);
                 false,
                 '0.00',
                 '0.00'
-            ),
-            $this->rule('nota', 'total', 'decimal(10,2)', false, self::NO_DEFAULT, '0.00'),
-            $this->rule(
-                'nota',
-                'updated_at',
-                'datetime',
-                false,
-                self::NO_DEFAULT,
-                'CURRENT_TIMESTAMP'
             ),
             $this->rule('producto', 'precio_compra', 'decimal(10,2)', true, null),
             $this->rule('producto', 'precio', 'decimal(10,2)', false, '0.00', '0.00'),
@@ -661,7 +615,6 @@ SQL, ['table' => $table, 'column' => $column]);
             $this->idRule('local', 'local_id', 'varchar(255)'),
             $this->idRule('media', 'id', 'varchar(255)'),
             $this->idRule('movimiento', 'movimiento_id', 'varchar(255)'),
-            $this->idRule('nota', 'movimiento_id', 'varchar(255)'),
             $this->idRule('operacion', 'operacion_id', 'varchar(255)'),
             $this->idRule('producto', 'producto_id', 'varchar(255)'),
             $this->idRule('proveedor', 'proveedor_id', 'varchar(255)'),

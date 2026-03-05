@@ -52,24 +52,6 @@ class PopulateBranchIdCommand extends TenantAwareCommand
                 ',
             ],
             [
-                'name' => 'Invoices (comprobante)',
-                'query' => '
-                    UPDATE comprobante c
-                    INNER JOIN movimiento m ON m.movimiento_id = c.movimiento_id
-                    SET c.branch_id = m.branch_id
-                    WHERE c.branch_id IS NULL AND m.branch_id IS NOT NULL
-                ',
-            ],
-            [
-                'name' => 'Credit Notes (nota)',
-                'query' => '
-                    UPDATE nota n
-                    INNER JOIN movimiento m ON m.movimiento_id = n.movimiento_id
-                    SET n.branch_id = m.branch_id
-                    WHERE n.branch_id IS NULL AND m.branch_id IS NOT NULL
-                ',
-            ],
-            [
                 'name' => 'Cash Shifts (cash_shift)',
                 'query' => '
                     UPDATE cash_shift cs
