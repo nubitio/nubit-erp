@@ -6,8 +6,10 @@ namespace App\Core\Traits;
 
 use DateTime;
 use DateTimeInterface;
+use DateTimeZone;
 use Doctrine\ORM\Mapping as ORM;
 
+/** @phpstan-ignore-next-line trait.unused */
 trait TimestampableTrait
 {
     #[ORM\Column(name: 'created_at', type: 'datetime')]
@@ -43,12 +45,12 @@ trait TimestampableTrait
     #[ORM\PrePersist]
     public function updateTimestampsOnPersist(): void
     {
-        $this->createdAt = new DateTime();
+        $this->createdAt = new DateTime('now', new DateTimeZone('UTC'));
     }
 
     #[ORM\PreUpdate]
     public function updateTimestampsOnUpdate(): void
     {
-        $this->updatedAt = new DateTime();
+        $this->updatedAt = new DateTime('now', new DateTimeZone('UTC'));
     }
 }
