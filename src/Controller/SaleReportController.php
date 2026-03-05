@@ -8,6 +8,9 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Service\XlsExporter;
 use App\Core\Util\Constants;
+use App\Core\Util\DateHelper;
+use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\DBAL\Connection;
 use PhpOffice\PhpSpreadsheet\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -141,18 +144,59 @@ class SaleReportController extends AbstractController
     }
 
     /**
+     * Build query parameters with date boundaries converted from Lima (America/Lima, UTC-5) to UTC.
+     *
+     * The user supplies plain Y-m-d strings that represent Lima calendar dates.
+     * We parse them as Lima midnight / end-of-day and convert to UTC so that
+     * BETWEEN :date_from AND :date_to correctly covers the full Lima calendar day
+     * stored in UTC DATETIME columns.
+     *
+     * Example: user passes "2026-01-15"
+     *   Lima 2026-01-15 00:00:00 → UTC 2026-01-15 05:00:00  (date_from)
+     *   Lima 2026-01-15 23:59:59 → UTC 2026-01-16 04:59:59  (date_to)
+     *
      * @return array<string, string>
      */
     private function buildDateRangeParams(string $localId, string $dateFrom, string $dateTo): array
     {
-        $from = new \DateTimeImmutable($dateFrom ?: 'today');
-        $to = new \DateTimeImmutable($dateTo ?: 'today');
+        $utcTz = new DateTimeZone('UTC');
+
+        $from = $this->parseLimaDateBoundary($dateFrom ?: null, 0, 0, 0)
+            ->setTimezone($utcTz);
+
+        $to = $this->parseLimaDateBoundary($dateTo ?: null, 23, 59, 59)
+            ->setTimezone($utcTz);
 
         return [
             'local_id' => $localId,
-            'date_from' => $from->setTime(0, 0, 0)->format('Y-m-d H:i:s'),
-            'date_to' => $to->setTime(23, 59, 59)->format('Y-m-d H:i:s'),
+            'date_from' => $from->format('Y-m-d H:i:s'),
+            'date_to' => $to->format('Y-m-d H:i:s'),
         ];
+    }
+
+    /**
+     * Parse a Y-m-d date string in the Lima timezone and set the given time boundary.
+     * If $dateStr is null, defaults to today as seen on the Lima wall-clock calendar.
+     *
+     * @throws BadRequestHttpException when the string is not a valid Y-m-d date.
+     */
+    private function parseLimaDateBoundary(?string $dateStr, int $hour, int $minute, int $second): DateTimeImmutable
+    {
+        $limaTz = new DateTimeZone('America/Lima');
+
+        if ($dateStr === null) {
+            // Use Lima's current calendar day as the default.
+            return DateHelper::todayLima()->setTime($hour, $minute, $second);
+        }
+
+        $date = DateTimeImmutable::createFromFormat('Y-m-d', $dateStr, $limaTz);
+        if ($date === false) {
+            throw new BadRequestHttpException(
+                sprintf('Fecha inválida "%s". El formato esperado es YYYY-MM-DD.', $dateStr)
+            );
+        }
+
+        return $date->setTime($hour, $minute, $second);
     }
 
     private function receiptFilter(string $salesAlias = 's'): string
