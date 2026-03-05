@@ -3,7 +3,7 @@ import toast from '@shared/lib/SharedUtils';
 import { getIRI } from '@shared/lib/SharedUtils';
 import { Constants } from '@platform/common/Constants';
 import type { CartItem, PosItem } from './types';
-import { IGV_RATE, toLocalIsoString, toNumber } from './posHelpers';
+import { IGV_RATE, nowUtcIso, toNumber } from './posHelpers';
 import { useWarehouseStock } from './useWarehouseStock';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import { offlineDb } from '@offline/db';
@@ -88,10 +88,17 @@ export const usePosCheckout = ({
 
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
-    const warehouseStock = selectedWarehouseId ? await fetchWarehouseStock(item.id, selectedWarehouseId) : undefined;
+    const warehouseStock = selectedWarehouseId
+      ? await fetchWarehouseStock(item.id, selectedWarehouseId)
+      : undefined;
     const effectiveStock = warehouseStock ?? item.stock;
 
-    if (tracksInventory && enforceStockCheck && typeof effectiveStock === 'number' && effectiveStock <= 0) {
+    if (
+      tracksInventory &&
+      enforceStockCheck &&
+      typeof effectiveStock === 'number' &&
+      effectiveStock <= 0
+    ) {
       toast(`"${item.name}" sin stock disponible`, 'warning');
       return;
     }
@@ -121,7 +128,9 @@ export const usePosCheckout = ({
   const removeFromCart = (id: string) => {
     setCart((prevCart) =>
       prevCart
-        .map((cartItem) => (cartItem.id === id ? { ...cartItem, quantity: cartItem.quantity - 1 } : cartItem))
+        .map((cartItem) =>
+          cartItem.id === id ? { ...cartItem, quantity: cartItem.quantity - 1 } : cartItem,
+        )
         .filter((cartItem) => cartItem.quantity > 0),
     );
   };
@@ -137,7 +146,9 @@ export const usePosCheckout = ({
       return;
     }
 
-    const warehouseStock = selectedWarehouseId ? await fetchWarehouseStock(id, selectedWarehouseId) : undefined;
+    const warehouseStock = selectedWarehouseId
+      ? await fetchWarehouseStock(id, selectedWarehouseId)
+      : undefined;
     const effectiveStock = warehouseStock ?? currentItem.stock;
     const tracksInventory = currentItem.trackInventory !== false;
 
@@ -173,7 +184,9 @@ export const usePosCheckout = ({
   const discountAmount = subtotal * (discountPercent / 100);
   const total = Math.max(0, subtotal - discountAmount);
   const includedTax = total * (IGV_RATE / (1 + IGV_RATE));
-  const amountReceivedNumber = isCashPaymentSelected ? Number.parseFloat(amountReceived || '0') || 0 : total;
+  const amountReceivedNumber = isCashPaymentSelected
+    ? Number.parseFloat(amountReceived || '0') || 0
+    : total;
   const changeAmount = isCashPaymentSelected ? Math.max(0, amountReceivedNumber - total) : 0;
   const amountMissing = isCashPaymentSelected ? Math.max(0, total - amountReceivedNumber) : 0;
   const quickCashActions = [
@@ -214,12 +227,15 @@ export const usePosCheckout = ({
 
     try {
       const salePayload = {
-        issuedAt: toLocalIsoString(new Date()),
+        issuedAt: nowUtcIso(),
         warehouse: getIRI(`${Constants.API_BASE_URL}warehouses`, selectedWarehouseId),
         customer: selectedCustomerId
           ? getIRI(`${Constants.API_BASE_URL}customers`, String(selectedCustomerId))
           : null,
-        paymentMethod: getIRI(`${Constants.API_BASE_URL}payment-methods`, String(selectedPaymentMethodId)),
+        paymentMethod: getIRI(
+          `${Constants.API_BASE_URL}payment-methods`,
+          String(selectedPaymentMethodId),
+        ),
         payments: [
           {
             payment_method_id: Number(selectedPaymentMethodId),

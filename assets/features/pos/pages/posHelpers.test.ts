@@ -3,7 +3,8 @@ import {
   buildCustomersUrl,
   extractCollection,
   isCashPaymentMethod,
-  toLocalIsoString,
+  nowUtcIso,
+  toUtcIso,
   normalizeProduct,
   parseBooleanSetting,
   toNumber,
@@ -71,8 +72,14 @@ describe('posHelpers', () => {
     expect(parseBooleanSetting('unknown', true)).toBe(true);
   });
 
-  it('builds local iso string and keeps time-like format', () => {
-    const value = toLocalIsoString(new Date('2024-01-01T10:00:00.000Z'));
+  it('nowUtcIso returns a UTC ISO-8601 string with Z suffix', () => {
+    const value = nowUtcIso();
+    expect(value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/);
+  });
+
+  it('toUtcIso converts a Lima-zone Date to a UTC ISO string with Z suffix', () => {
+    const value = toUtcIso(new Date('2024-01-01T10:00:00.000Z'));
     expect(value).toContain('T');
+    expect(value).toMatch(/Z$/);
   });
 });
