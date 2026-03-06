@@ -8,12 +8,17 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Core\Security\Auth\BranchContextService;
 use App\Dto\CashRegister\CashRegisterDashboardDto;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use DateMalformedStringException;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;
 
+/**
+ * @implements ProviderInterface<CashRegisterDashboardDto>
+ */
 readonly class CashRegisterDashboardProvider implements ProviderInterface
 {
     public function __construct(
@@ -43,7 +48,14 @@ SELECT
     COALESCE(SUM(IF(cm.type = 'income', cm.amount, 0)), 0) -
     COALESCE(SUM(IF(cm.type = 'expense', cm.amount, 0)), 0)
     AS balance,
-    IF(cs.id IS NOT NULL AND cs.closed_at IS NULL, 'open', 'closed') AS status
+    IF(cs.id IS NOT NULL AND cs.closed_at IS NULL, 'open', 'closed') AS status,
+    COALESCE((
+        SELECT SUM(v2cm.amount)
+        FROM cash_movements v2cm
+        JOIN cash_sessions v2cs ON v2cs.id = v2cm.cash_session_id
+        WHERE v2cs.legacy_cash_shift_id = cs.id
+          AND v2cm.movement_type = 'SALE_IN'
+    ), 0) AS today_sales
 FROM cash_register c
 LEFT JOIN cash_shift cs ON cs.cash_register_id = c.id AND cs.closed_at IS NULL
 LEFT JOIN cash_movement cm ON cm.cash_shift_id = cs.id
@@ -64,6 +76,8 @@ SQL;
             cashier: $row['cashier'],
             balance: (float)$row['balance'],
             status: $row['status'],
+            todaySales: BigDecimal::of((string)($row['today_sales'] ?? '0'))
+                ->toScale(2, RoundingMode::HALF_UP)->__toString(),
         ), $data);
     }
 }
