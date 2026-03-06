@@ -35,13 +35,13 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
   const normalizePath = useCallback(
     (items: SideNavigationItem[]) =>
       items.map((item) => ({
-      ...item,
-      expanded: isLarge,
-      path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path,
-      items: item.items?.map((subItem) => ({
-        ...subItem,
-        path: subItem.path && !/^\//.test(subItem.path) ? `/${subItem.path}` : subItem.path,
-      })),
+        ...item,
+        expanded: isLarge,
+        path: item.path && !/^\//.test(item.path) ? `/${item.path}` : item.path,
+        items: item.items?.map((subItem) => ({
+          ...subItem,
+          path: subItem.path && !/^\//.test(subItem.path) ? `/${subItem.path}` : subItem.path,
+        })),
       })),
     [isLarge],
   );
@@ -60,6 +60,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
   }, [normalizePath]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- derived state sync from isLarge; setState in effect is intentional here
     setItems((prev) =>
       prev.map((item) => ({
         ...item,

@@ -13,6 +13,7 @@ export const DxDetailDataGrid = ({ options }: DxDetailDataGridProps) => {
   const [data, setData] = useState<CustomStore | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- updating DataStore when URL/fields change is intentional data-source sync
     setData(dxUtils.getDataStore(options.url, getIdField(options.fields)));
   }, [options.fields, options.url]);
 

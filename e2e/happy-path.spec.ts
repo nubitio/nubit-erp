@@ -147,9 +147,7 @@ async function filterGridByName(page: Page, name: string) {
   // Strategy: use the filter row textbox that is in the same column as "Columna Nombre"
   // DX filter row textboxes are in .dx-datagrid-filter-row td inputs
   // We use a relative approach: find the column index of "Nombre"
-  const nameFilterInput = page
-    .locator('.dx-datagrid-filter-row .dx-editor-cell input')
-    .nth(6); // 7th column (0-based): Imagen, Código, SKU, Barcode, Tipo, Stock, Nombre
+  const nameFilterInput = page.locator('.dx-datagrid-filter-row .dx-editor-cell input').nth(6); // 7th column (0-based): Imagen, Código, SKU, Barcode, Tipo, Stock, Nombre
   try {
     await nameFilterInput.waitFor({ state: 'visible', timeout: 3000 });
     await nameFilterInput.click({ clickCount: 3 });
@@ -187,7 +185,9 @@ async function ensureLoggedIn(page: Page) {
   // Wait for the page to settle (React SPA may still be loading/redirecting)
   try {
     await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
   // Check the URL — if we are on /#/login, we definitely need to log in
   const currentUrl = page.url();
@@ -195,7 +195,8 @@ async function ensureLoggedIn(page: Page) {
 
   // Also wait for the login form — give more time for SPA to initialize and redirect
   const loginForm = page.locator('form.login-form');
-  const isLoginPage = isLoginUrl || await loginForm.isVisible({ timeout: 8000 }).catch(() => false);
+  const isLoginPage =
+    isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
   if (!isLoginPage) {
     return; // already authenticated
   }
@@ -216,9 +217,8 @@ async function ensureLoggedIn(page: Page) {
     const e2eBranchOption = page
       .locator('[data-testid="branch-picker-option"]')
       .filter({ hasText: 'CI E2E Branch' });
-    const targetOption = (await e2eBranchOption.count()) > 0
-      ? e2eBranchOption.first()
-      : firstBranchOption;
+    const targetOption =
+      (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
     await targetOption.click();
     const acceptBtn = page
       .locator('.dx-overlay-content .dx-button')
@@ -380,9 +380,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
         const e2eBranchOption = page
           .locator('[data-testid="branch-picker-option"]')
           .filter({ hasText: 'CI E2E Branch' });
-        const targetOption = (await e2eBranchOption.count()) > 0
-          ? e2eBranchOption.first()
-          : firstBranchOption;
+        const targetOption =
+          (await e2eBranchOption.count()) > 0 ? e2eBranchOption.first() : firstBranchOption;
         await targetOption.click();
         // Hacer click en "Aceptar" para confirmar la selección
         const acceptBtn = page
@@ -453,20 +452,28 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await page.waitForTimeout(200);
 
         // Find the Categoría field wrapper (has a button Seleccionar) and click the dropdown button
-        const categoryField = page.locator('.dx-field-item').filter({
-          has: page.locator('[aria-label="Categoría"]'),
-        }).first();
+        const categoryField = page
+          .locator('.dx-field-item')
+          .filter({
+            has: page.locator('[aria-label="Categoría"]'),
+          })
+          .first();
         // Click the combobox input (not the Seleccionar button)
         const categoryInput = categoryField.locator('[aria-label="Categoría"]').first();
         await categoryInput.waitFor({ state: 'visible', timeout: 5000 });
         await categoryInput.click();
 
         // Now wait for the combobox to be marked as expanded (aria-expanded=true)
-        await page.waitForFunction(() => {
-          const combobox = document.querySelector('[aria-label="Categoría"]');
-          return combobox?.getAttribute('aria-expanded') === 'true' ||
-                 combobox?.getAttribute('aria-owns') !== null;
-        }, { timeout: 8000 });
+        await page.waitForFunction(
+          () => {
+            const combobox = document.querySelector('[aria-label="Categoría"]');
+            return (
+              combobox?.getAttribute('aria-expanded') === 'true' ||
+              combobox?.getAttribute('aria-owns') !== null
+            );
+          },
+          { timeout: 8000 },
+        );
         await page.waitForTimeout(500); // wait for remote data to load
 
         // The dropdown popup renders as .dx-popup-wrapper inside the body;
@@ -493,11 +500,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await unitWidget.click();
 
         // Wait for the Unidad combobox to be expanded
-        await page.waitForFunction(() => {
-          const combobox = document.querySelector('[aria-label="Unidad"]');
-          return combobox?.getAttribute('aria-expanded') === 'true' ||
-                 combobox?.getAttribute('aria-owns') !== null;
-        }, { timeout: 8000 });
+        await page.waitForFunction(
+          () => {
+            const combobox = document.querySelector('[aria-label="Unidad"]');
+            return (
+              combobox?.getAttribute('aria-expanded') === 'true' ||
+              combobox?.getAttribute('aria-owns') !== null
+            );
+          },
+          { timeout: 8000 },
+        );
         await page.waitForTimeout(500);
 
         const firstUnitOption = page.getByRole('option').first();
@@ -588,7 +600,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await page.goto(`${BASE_URL}/#/cashbox`);
     await waitForDxLoadPanel(page);
     // .cash-register-dashboard-page has display:contents — check toolbar instead
-    await expect(page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+      timeout: 15000,
+    });
 
     // Wait for at least one data row to appear before checking button state
     // (the grid may finish loading AFTER the load panel disappears)
@@ -633,7 +647,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
     expect(openedCashShiftId).not.toBeNull();
 
     // Verify we are on the movements page
-    await expect(page.locator('.dx-toolbar').filter({ hasText: 'Movimientos de caja' }).first()).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.locator('.dx-toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
+    ).toBeVisible({ timeout: 10000 });
   });
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -645,7 +661,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForDxLoadPanel(page);
       // .grid.theme-dependent is display:contents in DxDataGrid.scss — check toolbar instead
       await expect(
-        page.locator('.dx-toolbar').filter({ hasText: /cliente/i }).first(),
+        page
+          .locator('.dx-toolbar')
+          .filter({ hasText: /cliente/i })
+          .first(),
       ).toBeVisible({ timeout: 15000 });
     });
 
@@ -724,9 +743,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // .pos-shell is a real <div> with no display:contents — wait for a stable child element
       // that proves the POS app is loaded: the product search input
-      await expect(
-        page.locator('input[type="search"][placeholder*="Buscar"]'),
-      ).toBeVisible({ timeout: 25000 });
+      await expect(page.locator('input[type="search"][placeholder*="Buscar"]')).toBeVisible({
+        timeout: 25000,
+      });
     });
 
     await test.step('Esperar carga del catálogo', async () => {
@@ -899,7 +918,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await staleDialog.first().waitFor({ state: 'visible', timeout: 1500 });
         await page.keyboard.press('Escape');
         await page.waitForTimeout(300);
-      } catch { /* no stale dialog */ }
+      } catch {
+        /* no stale dialog */
+      }
 
       await clickGridToolbarButton(page, 'Nuevo');
       // DxDialog opens in ADD mode with title 'Nuevo' (DxDialog.tsx line 65: payload?.title ?? 'Nuevo')
@@ -976,17 +997,23 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // Wait for DX to mark the row as focused/selected before clicking toolbar button.
       // DX focusedRowChanged is async — the toolbar EDIT handler may not have the focused row
       // ID yet if we click "Editar" immediately after the row click.
-      await movementRow.locator('..').locator('.dx-selection').waitFor({ state: 'attached', timeout: 5000 }).catch(async () => {
-        // Fallback: wait for the row itself to get the dx-selection class via page.waitForFunction
-        await page.waitForFunction(
-          (text) => {
-            const rows = document.querySelectorAll('.dx-data-row.dx-selection');
-            return Array.from(rows).some(r => r.textContent?.includes(text));
-          },
-          createdMovementRowText,
-          { timeout: 5000 },
-        ).catch(() => {}); // give best effort — proceed regardless
-      });
+      await movementRow
+        .locator('..')
+        .locator('.dx-selection')
+        .waitFor({ state: 'attached', timeout: 5000 })
+        .catch(async () => {
+          // Fallback: wait for the row itself to get the dx-selection class via page.waitForFunction
+          await page
+            .waitForFunction(
+              (text) => {
+                const rows = document.querySelectorAll('.dx-data-row.dx-selection');
+                return Array.from(rows).some((r) => r.textContent?.includes(text));
+              },
+              createdMovementRowText!,
+              { timeout: 5000 },
+            )
+            .catch(() => {}); // give best effort — proceed regardless
+        });
     });
 
     await test.step('Abrir formulario de edición', async () => {
@@ -1006,16 +1033,20 @@ test.describe('Happy Path — flujo completo de venta', () => {
           // Dismiss any stale overlay, re-select the row, then retry.
           await page.keyboard.press('Escape');
           await page.waitForTimeout(300);
-          const movementRow = page.locator('.dx-data-row').filter({ hasText: createdMovementRowText! });
+          const movementRow = page
+            .locator('.dx-data-row')
+            .filter({ hasText: createdMovementRowText! });
           await movementRow.click();
-          await page.waitForFunction(
-            (text) => {
-              const rows = document.querySelectorAll('.dx-data-row.dx-selection');
-              return Array.from(rows).some(r => r.textContent?.includes(text));
-            },
-            createdMovementRowText,
-            { timeout: 3000 },
-          ).catch(() => {});
+          await page
+            .waitForFunction(
+              (text) => {
+                const rows = document.querySelectorAll('.dx-data-row.dx-selection');
+                return Array.from(rows).some((r) => r.textContent?.includes(text));
+              },
+              createdMovementRowText!,
+              { timeout: 3000 },
+            )
+            .catch(() => {});
           await page.waitForTimeout(300);
         }
       }
@@ -1114,15 +1145,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // BUT the route '/cash-register-dashboard' does NOT exist in the router — it hits the
       // wildcard catch-all which redirects role-3 users to '/pos' and others to '/dashboard'.
       // So we wait for any post-close destination, then manually navigate to /cashbox to verify.
-      await page.waitForURL(/\/#\/(cash-register-dashboard|cashbox|pos|dashboard)/, { timeout: 15000 });
+      await page.waitForURL(/\/#\/(cash-register-dashboard|cashbox|pos|dashboard)/, {
+        timeout: 15000,
+      });
 
       // Navigate to cashbox to verify the closed shift appears
       await page.goto(`${BASE_URL}/#/cashbox`);
       await waitForDxLoadPanel(page);
       // .cash-register-dashboard-page check toolbar instead (display:contents)
-      await expect(
-        page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first(),
-      ).toBeVisible({ timeout: 15000 });
+      await expect(page.locator('.dx-toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+        timeout: 15000,
+      });
 
       // Verificar que la caja que cerramos aparece como "Cerrada" en el dashboard
       // El formatter muestra badge con texto "Cerrada"

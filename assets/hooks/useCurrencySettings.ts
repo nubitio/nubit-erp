@@ -12,6 +12,7 @@ export function useCurrencySettings() {
     const rateSetting = settings.getCached(Setting.DEFAULT_USD_EXCHANGE_RATE);
 
     const resolved = (currencySetting?.value === 'USD' ? 'USD' : 'PEN') as Currency;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initialising derived state from cached settings on mount; no reactive trigger available
     setCurrency(resolved);
 
     if (rateSetting?.value && Number(rateSetting.value) > 0) {

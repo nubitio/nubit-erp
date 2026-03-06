@@ -88,6 +88,7 @@ export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: Bran
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadBranchData calls setState; this is data loading on visibility change
     loadBranchData(initialBranches);
   }, [visible, initialBranches, loadBranchData]);
 
@@ -95,6 +96,7 @@ export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: Bran
     if (!visible || hasLoaded) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setting loading flag before async operation; standard data-fetch pattern
     setLoadingBranches(true);
 
     const subscription = branchService.getAll().subscribe({
@@ -115,6 +117,7 @@ export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: Bran
 
   useEffect(() => {
     if (!visible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting selection state on hide; intentional cleanup pattern
       setSelectedBranch(null);
       setHasLoaded(false);
     }

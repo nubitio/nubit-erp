@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Form, { ButtonItem, ButtonOptions, FormRef, Item, RequiredRule } from 'devextreme-react/form';
+import Form, {
+  ButtonItem,
+  ButtonOptions,
+  FormRef,
+  Item,
+  RequiredRule,
+} from 'devextreme-react/form';
 import LoadIndicator from 'devextreme-react/load-indicator';
 
 import './LoginForm.scss';
@@ -51,82 +57,86 @@ export const LoginForm = () => {
     });
   }, []);
 
-  const onSubmit = useCallback(async (e) => {
-    e.preventDefault();
-    if (loading) {
-      return;
-    }
+  const onSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (loading) {
+        return;
+      }
 
-    const validationResult = formRef.current?.instance().validate();
-    if (validationResult && !validationResult.isValid) {
-      setSubmitError('Completa los campos requeridos para continuar.');
-      return;
-    }
+      const validationResult = formRef.current?.instance().validate();
+      if (validationResult && !validationResult.isValid) {
+        setSubmitError('Completa los campos requeridos para continuar.');
+        return;
+      }
 
-    const { username, password } = formData.current;
-    setSubmitError(null);
-    setBranchOptions([]);
-    setLoading(true);
+      const { username, password } = formData.current;
+      setSubmitError(null);
+      setBranchOptions([]);
+      setLoading(true);
 
-    authService.login(username.trim(), password).subscribe({
-      next: (response) => {
-        if (response.data.user) {
-          StorageUtils.setItem('user', response.data.user);
-        }
+      authService.login(username.trim(), password).subscribe({
+        next: (response) => {
+          if (response.data.user) {
+            StorageUtils.setItem('user', response.data.user);
+          }
 
-        const selectedBranch = response.data.branch;
-        if (selectedBranch?.id) {
-          applyBranchAndRedirect({
-            id: selectedBranch.id,
-            name: selectedBranch.name ?? 'Local',
-          });
-          return;
-        }
+          const selectedBranch = response.data.branch;
+          if (selectedBranch?.id) {
+            applyBranchAndRedirect({
+              id: selectedBranch.id,
+              name: selectedBranch.name ?? 'Local',
+            });
+            return;
+          }
 
-        branchService.getAll().subscribe({
-          next: (branchesResponse) => {
-            const branches: BranchOption[] = branchesResponse?.data ?? [];
+          branchService.getAll().subscribe({
+            next: (branchesResponse) => {
+              const branches: BranchOption[] = branchesResponse?.data ?? [];
 
-            if (branches.length === 0) {
-              setSubmitError('No hay locales disponibles para este usuario.');
+              if (branches.length === 0) {
+                setSubmitError('No hay locales disponibles para este usuario.');
+                setLoading(false);
+                return;
+              }
+
+              if (branches.length === 1) {
+                applyBranchAndRedirect(branches[0]);
+                return;
+              }
+
+              setBranchOptions(branches);
+              setShowLocalPicker(true);
               setLoading(false);
-              return;
-            }
-
-            if (branches.length === 1) {
-              applyBranchAndRedirect(branches[0]);
-              return;
-            }
-
-            setBranchOptions(branches);
-            setShowLocalPicker(true);
-            setLoading(false);
-          },
-          error: (err) => {
-            const message =
-              err?.response?.data?.detail ||
-              err?.response?.data?.message ||
-              'No se pudo cargar la lista de locales.';
-            setSubmitError(message);
-            setLoading(false);
-          },
-        });
-      },
-      error: (err) => {
-        const message =
-          err?.response?.data?.detail ||
-          err?.response?.data?.message ||
-          'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.';
-        setSubmitError(message);
-        setLoading(false);
-      },
-    });
-  }, [loading, applyBranchAndRedirect]);
+            },
+            error: (err) => {
+              const message =
+                err?.response?.data?.detail ||
+                err?.response?.data?.message ||
+                'No se pudo cargar la lista de locales.';
+              setSubmitError(message);
+              setLoading(false);
+            },
+          });
+        },
+        error: (err) => {
+          const message =
+            err?.response?.data?.detail ||
+            err?.response?.data?.message ||
+            'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.';
+          setSubmitError(message);
+          setLoading(false);
+        },
+      });
+    },
+    [loading, applyBranchAndRedirect],
+  );
 
   return (
     <form className="login-form" onSubmit={onSubmit} autoComplete="off">
       <Form
         ref={formRef}
+        // eslint-disable-next-line react-hooks/refs -- formData ref holds mutable form state intentionally accessed during render for DevExtreme binding
         formData={formData.current}
         onFieldDataChanged={onFieldDataChanged}
         disabled={loading}

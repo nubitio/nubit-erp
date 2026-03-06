@@ -6,11 +6,16 @@ import { toOptionalNumber } from './posHelpers';
 
 type WarehouseStockMap = Record<string, number | undefined>;
 
-export const useWarehouseStock = (selectedWarehouseId: string, cart: CartItem[], visibleProducts: PosItem[]) => {
+export const useWarehouseStock = (
+  selectedWarehouseId: string,
+  cart: CartItem[],
+  visibleProducts: PosItem[],
+) => {
   const [warehouseStockByProductId, setWarehouseStockByProductId] = useState<WarehouseStockMap>({});
   const stockRequestsRef = useRef<Map<string, Promise<number | undefined>>>(new Map());
 
-  const getWarehouseStockCacheKey = (warehouseId: string, productId: string) => `${warehouseId}:${productId}`;
+  const getWarehouseStockCacheKey = (warehouseId: string, productId: string) =>
+    `${warehouseId}:${productId}`;
 
   const fetchWarehouseStock = useCallback(
     (productId: string, warehouseId: string): Promise<number | undefined> => {
@@ -52,6 +57,7 @@ export const useWarehouseStock = (selectedWarehouseId: string, cart: CartItem[],
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting warehouse stock map when warehouse selection changes; intentional state reset
     setWarehouseStockByProductId({});
   }, [selectedWarehouseId]);
 

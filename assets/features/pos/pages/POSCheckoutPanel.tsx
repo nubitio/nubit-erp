@@ -217,13 +217,13 @@ export function POSCheckoutPanel({
     selectedCustomerId !== null ? customerOptions.find((c) => c.id === selectedCustomerId) : null;
 
   const hasMorePayments = paymentMethods.length > MAX_VISIBLE_PAYMENT_METHODS;
-  const visiblePaymentMethods = hasMorePayments && !showMorePayments
-    ? paymentMethods.slice(0, MAX_VISIBLE_PAYMENT_METHODS)
-    : paymentMethods;
+  const visiblePaymentMethods =
+    hasMorePayments && !showMorePayments
+      ? paymentMethods.slice(0, MAX_VISIBLE_PAYMENT_METHODS)
+      : paymentMethods;
 
   return (
     <aside className="pos-cart-panel">
-
       {/* ── Panel header ── */}
       <div className="pos-panel__header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -255,14 +255,15 @@ export function POSCheckoutPanel({
 
       {/* ── Single scrollable body ── */}
       <div className="pos-cart-body">
-
         {/* [1] Cart line items */}
         <div className="pos-cart-lines">
           {cart.length === 0 ? (
             <div className="pos-empty-cart">
               <ShoppingCart size={30} strokeWidth={1.5} />
               <p>Orden vacía</p>
-              <span>Presiona <kbd>F2</kbd> para buscar productos</span>
+              <span>
+                Presiona <kbd>F2</kbd> para buscar productos
+              </span>
             </div>
           ) : (
             cart.map((item) => (
@@ -372,7 +373,9 @@ export function POSCheckoutPanel({
         {/* [3] Customer — collapsible, hidden in quickMode */}
         {!quickMode && (
           <div className="pos-customer-section">
-            <div className={`pos-section-toggle ${customerOpen || selectedCustomer ? 'is-open' : ''}`}>
+            <div
+              className={`pos-section-toggle ${customerOpen || selectedCustomer ? 'is-open' : ''}`}
+            >
               <button
                 type="button"
                 className="pos-section-toggle__btn"
@@ -381,11 +384,11 @@ export function POSCheckoutPanel({
               >
                 <User2 size={13} />
                 <span>
-                  {selectedCustomer
-                    ? selectedCustomer.businessName
-                    : 'Cliente (opcional)'}
+                  {selectedCustomer ? selectedCustomer.businessName : 'Cliente (opcional)'}
                 </span>
-                {!selectedCustomer && <ChevronDown size={12} className="pos-note-toggle__chevron" />}
+                {!selectedCustomer && (
+                  <ChevronDown size={12} className="pos-note-toggle__chevron" />
+                )}
               </button>
               {selectedCustomer && (
                 <button
@@ -415,15 +418,15 @@ export function POSCheckoutPanel({
                         setShowCustomerSuggestions(true);
                       }}
                       onFocus={() => setShowCustomerSuggestions(true)}
-                      onBlur={() =>
-                        setTimeout(() => setShowCustomerSuggestions(false), 120)
-                      }
+                      onBlur={() => setTimeout(() => setShowCustomerSuggestions(false), 120)}
                       aria-label="Cliente"
                       autoComplete="off"
                       className="pos-config-input"
                       autoFocus
                       ref={(el) => {
-                        (customerInputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+                        (
+                          customerInputRef as React.MutableRefObject<HTMLInputElement | null>
+                        ).current = el;
                         // Consume pending focus from F3 shortcut
                         if (el && pendingCustomerFocusRef.current) {
                           pendingCustomerFocusRef.current = false;
@@ -431,9 +434,11 @@ export function POSCheckoutPanel({
                         }
                       }}
                     />
-                    {customerSearch.length > 0 && !customersLoading && customerOptions.length === 0 && (
-                      <p className="pos-customer-no-results">Sin resultados</p>
-                    )}
+                    {customerSearch.length > 0 &&
+                      !customersLoading &&
+                      customerOptions.length === 0 && (
+                        <p className="pos-customer-no-results">Sin resultados</p>
+                      )}
                     {showCustomerSuggestions && customerOptions.length > 0 && (
                       <div
                         className="pos-customer-suggestions"
@@ -463,11 +468,7 @@ export function POSCheckoutPanel({
                             type="button"
                             className="pos-load-more-customers"
                             onClick={() =>
-                              loadCustomers(
-                                deferredCustomerSearch,
-                                customersPage + 1,
-                                true,
-                              )
+                              loadCustomers(deferredCustomerSearch, customersPage + 1, true)
                             }
                             disabled={customersLoading || !customersHasMore}
                           >
@@ -485,7 +486,6 @@ export function POSCheckoutPanel({
 
         {/* ── Payment block ── */}
         <div className="pos-payment">
-
           {/* [4] Payment methods */}
           <div className="pos-payment__section-label">Método de pago</div>
           <div className="pos-payment__methods" role="radiogroup" aria-label="Método de pago">
@@ -587,13 +587,7 @@ export function POSCheckoutPanel({
                   value={discountPercent}
                   onChange={(e) =>
                     setDiscountPercent(
-                      Math.max(
-                        0,
-                        Math.min(
-                          100,
-                          Number.parseFloat(e.target.value || '0') || 0,
-                        ),
-                      ),
+                      Math.max(0, Math.min(100, Number.parseFloat(e.target.value || '0') || 0)),
                     )
                   }
                 />
@@ -646,7 +640,7 @@ export function POSCheckoutPanel({
                     }`}
                     onClick={() =>
                       setAmountReceived(
-                        amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2)
+                        amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2),
                       )
                     }
                     disabled={total <= 0}
@@ -667,9 +661,7 @@ export function POSCheckoutPanel({
             {discountAmount > 0 && (
               <div className="pos-summary__row">
                 <span>Descuento</span>
-                <strong className="pos-summary__discount">
-                  − {formatMoney(discountAmount)}
-                </strong>
+                <strong className="pos-summary__discount">− {formatMoney(discountAmount)}</strong>
               </div>
             )}
             <div className="pos-summary__row">
@@ -677,27 +669,19 @@ export function POSCheckoutPanel({
               <strong>{formatMoney(includedTax)}</strong>
             </div>
           </div>
-
-
         </div>
       </div>
 
       {/* ── Always-visible footer: change + total + cobrar ── */}
       <div className="pos-checkout-footer">
         {isCashPaymentSelected && amountReceivedNumber > 0 && (
-          <div
-            className={`pos-change-row ${
-              amountMissing > 0 ? 'is-missing' : 'is-change'
-            }`}
-          >
+          <div className={`pos-change-row ${amountMissing > 0 ? 'is-missing' : 'is-change'}`}>
             <span>{amountMissing > 0 ? 'Falta' : 'Vuelto'}</span>
-            <strong>
-              {formatMoney(amountMissing > 0 ? amountMissing : changeAmount)}
-            </strong>
+            <strong>{formatMoney(amountMissing > 0 ? amountMissing : changeAmount)}</strong>
           </div>
         )}
 
-          <div className={`pos-total-hero${totalUpdated ? ' is-updated' : ''}`}>
+        <div className={`pos-total-hero${totalUpdated ? ' is-updated' : ''}`}>
           <span>TOTAL</span>
           <strong>{formatMoney(total)}</strong>
         </div>
@@ -727,12 +711,16 @@ export function POSCheckoutPanel({
           <div className="pos-postsale__card">
             <div className="pos-postsale__check">✓</div>
             <h2 className="pos-postsale__title">¡Venta completada!</h2>
+            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successCodeRef.current && (
+              // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
               <p className="pos-postsale__code">{successCodeRef.current}</p>
             )}
+            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successWasCashRef.current && successChangeRef.current > 0 && (
               <div className="pos-postsale__change">
                 <span>Vuelto</span>
+                {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
                 <strong>{formatMoney(successChangeRef.current)}</strong>
               </div>
             )}
@@ -761,7 +749,6 @@ export function POSCheckoutPanel({
           </div>
         </div>
       )}
-
     </aside>
   );
 }

@@ -34,7 +34,9 @@ const pingBackend = async () => {
 export const ConnectivityProvider = ({ children }: { children: React.ReactNode }) => {
   const [browserOnline, setBrowserOnline] = useState<boolean>(navigator.onLine);
   const [apiReachable, setApiReachable] = useState<boolean>(navigator.onLine);
-  const [status, setStatus] = useState<ConnectivityStatus>(navigator.onLine ? 'checking' : 'offline');
+  const [status, setStatus] = useState<ConnectivityStatus>(
+    navigator.onLine ? 'checking' : 'offline',
+  );
   const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
 
   const pingNow = useCallback(async () => {
@@ -62,6 +64,7 @@ export const ConnectivityProvider = ({ children }: { children: React.ReactNode }
     window.addEventListener('offline', handleOffline);
 
     if (navigator.onLine) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- pingNow calls setState; initial connectivity check on mount is intentional
       void pingNow();
     } else {
       handleOffline();

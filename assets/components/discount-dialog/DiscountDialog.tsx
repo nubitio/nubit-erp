@@ -17,8 +17,10 @@ export const DiscountDialog = () => {
   const [discountAmount, setDiscountAmount] = useState(0.0);
 
   const emitRef = useRef(emit);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   emitRef.current = emit;
   const onRef = useRef(on);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   onRef.current = on;
 
   const onApply = useCallback((discountPercent: number) => {
