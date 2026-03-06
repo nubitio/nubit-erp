@@ -8,6 +8,8 @@ use App\Entity\CashMovement;
 use App\Core\Service\PdfExporter;
 use App\Entity\CashShift;
 use App\Repository\CashMovementRepository;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,30 +43,61 @@ class CashRegisterReportController extends AbstractController
             ['createdAt' => 'ASC', 'id' => 'ASC']
         );
 
-        $income = 0.0;
-        $expense = 0.0;
+        $income = BigDecimal::zero();
+        $expense = BigDecimal::zero();
         foreach ($movements as $movement) {
             if ($movement->getType()->value === 'income') {
-                $income += $movement->getAmount() ?? 0;
+                $income = $income->plus(BigDecimal::of((string) ($movement->getAmount() ?? '0')));
             } else {
-                $expense += $movement->getAmount() ?? 0;
+                $expense = $expense->plus(BigDecimal::of((string) ($movement->getAmount() ?? '0')));
             }
         }
 
         // Include V2 cash sale movements (written to cash_movements via cash_sessions)
-        $v2SalesIncome = (float) $this->connection->fetchOne(
+        $v2SalesIncomeRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(cm2.amount), 0)
              FROM cash_movements cm2
              JOIN cash_sessions cs ON cs.id = cm2.cash_session_id
              WHERE cs.legacy_cash_shift_id = ? AND cm2.movement_type = 'SALE_IN'",
             [$id]
         );
-        $income += $v2SalesIncome;
+        $income = $income->plus(BigDecimal::of((string) ($v2SalesIncomeRaw ?: '0')));
 
-        $openingBalance = (float) $cashShift->getOpeningBalance();
-        $expectedAmount = $cashShift->getExpectedAmount() ?? ($openingBalance + $income - $expense);
-        $countedAmount = $cashShift->getCountedAmount() ?? $expectedAmount;
-        $difference = $cashShift->getDifference() ?? ($countedAmount - $expectedAmount);
+        // V2 sales grouped by payment method for report breakdown
+        $salesByPaymentMethodRows = $this->connection->fetchAllAssociative(
+            "SELECT pm.name AS paymentMethod, SUM(cm.amount) AS total
+             FROM cash_movements cm
+             JOIN cash_sessions cs ON cs.id = cm.cash_session_id
+             JOIN payment_method pm ON pm.id = cm.payment_method_id
+             WHERE cs.legacy_cash_shift_id = ? AND cm.movement_type = 'SALE_IN'
+             GROUP BY cm.payment_method_id, pm.name",
+            [$id]
+        );
+        $salesByPaymentMethod = array_map(
+            static fn (array $row): array => [
+                'paymentMethod' => (string) $row['paymentMethod'],
+                'total' => number_format((float) $row['total'], 2, '.', ''),
+            ],
+            $salesByPaymentMethodRows
+        );
+
+        $openingBalance = BigDecimal::of($cashShift->getOpeningBalance());
+        $expectedAmount = $cashShift->getExpectedAmount() !== null
+            ? BigDecimal::of($cashShift->getExpectedAmount())
+            : $openingBalance->plus($income)->minus($expense);
+        $countedAmount = $cashShift->getCountedAmount() !== null
+            ? BigDecimal::of($cashShift->getCountedAmount())
+            : $expectedAmount;
+        $difference = $cashShift->getDifference() !== null
+            ? BigDecimal::of($cashShift->getDifference())
+            : $countedAmount->minus($expectedAmount);
+
+        $openingBalanceStr = $openingBalance->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $incomeStr = $income->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $expenseStr = $expense->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $expectedAmountStr = $expectedAmount->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $countedAmountStr = $countedAmount->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $differenceStr = $difference->toScale(2, RoundingMode::HALF_UP)->__toString();
 
         $content = $this->twig->render('cash_register/closure_report.html.twig', [
             'cashRegister' => [
@@ -77,13 +110,14 @@ class CashRegisterReportController extends AbstractController
                 'closedAt' => $cashShift->getClosedAt(),
                 'openedBy' => $cashShift->getOpenedBy()->getUsername(),
             ],
-            'openingBalance' => $openingBalance,
-            'income' => $income,
-            'expense' => $expense,
-            'expectedAmount' => $expectedAmount,
-            'countedAmount' => $countedAmount,
-            'difference' => $difference,
+            'openingBalance' => $openingBalanceStr,
+            'income' => $incomeStr,
+            'expense' => $expenseStr,
+            'expectedAmount' => $expectedAmountStr,
+            'countedAmount' => $countedAmountStr,
+            'difference' => $differenceStr,
             'note' => $cashShift->getNote(),
+            'salesByPaymentMethod' => $salesByPaymentMethod,
             'movements' => array_map(static fn (CashMovement $movement): array => [
                 'createdAt' => $movement->getCreatedAt(),
                 'category' => $movement->getCategory()?->getName(),

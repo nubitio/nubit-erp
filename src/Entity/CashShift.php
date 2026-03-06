@@ -6,13 +6,16 @@ namespace App\Entity;
 
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashShiftRepository;
+use App\Dto\CashRegister\CashShiftXReportDto;
 use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use App\State\CashRegister\CashShiftMovementsProvider;
+use App\State\CashRegister\CashShiftXReportProvider;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -46,6 +49,16 @@ use Symfony\Component\Serializer\Attribute\Groups;
         ),
     ],
     paginationEnabled: false
+)]
+#[ApiResource(
+    operations: [
+        new Get(
+            uriTemplate: '/cash-shifts/{id}/x-report',
+            provider: CashShiftXReportProvider::class,
+            output: CashShiftXReportDto::class,
+        ),
+    ],
+    paginationEnabled: false,
 )]
 class CashShift
 {

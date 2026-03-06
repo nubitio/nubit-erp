@@ -6,13 +6,14 @@ namespace App\Dto\CashRegister;
 
 class CashRegisterCloseDto
 {
-    public ?float $expectedAmount = null;
+    public ?string $expectedAmount = null;
 
-    public ?float $countedAmount = null;
+    public ?string $countedAmount = null;
 
-    public ?float $difference = null;
+    public ?string $difference = null;
 
     public ?string $note = null;
 
+    /** @var array<array<string, string>> $closureItems */
     public array $closureItems = [];
 }

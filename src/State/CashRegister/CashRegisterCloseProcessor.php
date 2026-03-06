@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\State\CashRegister;
 
 use Override;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
@@ -17,7 +19,12 @@ use App\Enum\CashShiftStatus;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
+/**
+ * @implements ProcessorInterface<CashRegisterCloseDto, ApiResponse>
+ */
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
     public function __construct(
@@ -41,28 +48,34 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $context = [],
     ): ApiResponse {
         $closureItems = $data->closureItems ?? [];
-        $expectedTotal = 0.0;
-        $countedTotal = 0.0;
-        $differenceTotal = 0.0;
         $notes = [];
 
         if (!empty($closureItems)) {
+            $expectedTotal = BigDecimal::zero();
+            $countedTotal = BigDecimal::zero();
             foreach ($closureItems as $item) {
-                $expectedTotal += (float) ($item['expectedAmount'] ?? 0);
-                $countedTotal += (float) ($item['countedAmount'] ?? 0);
-                $differenceTotal += (float) ($item['difference'] ?? 0);
+                $expectedTotal = $expectedTotal->plus(BigDecimal::of($item['expectedAmount'] ?? '0'));
+                $countedTotal = $countedTotal->plus(BigDecimal::of($item['countedAmount'] ?? '0'));
                 if (!empty($item['note'])) {
                     $notes[] = trim((string) $item['note']);
                 }
             }
+
+            $differenceTotal = $countedTotal->minus($expectedTotal);
         } else {
-            $expectedTotal = (float) ($data->expectedAmount ?? 0);
-            $countedTotal = (float) ($data->countedAmount ?? 0);
-            $differenceTotal = (float) (($data->difference ?? ($countedTotal - $expectedTotal)));
+            $expectedTotal = BigDecimal::of($data->expectedAmount ?? '0');
+            $countedTotal = BigDecimal::of($data->countedAmount ?? '0');
+            $differenceTotal = isset($data->difference)
+                ? BigDecimal::of($data->difference)
+                : $countedTotal->minus($expectedTotal);
             if (!empty($data->note)) {
                 $notes[] = trim((string) $data->note);
             }
         }
+
+        $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
@@ -70,31 +83,40 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 CashShift::class,
                 $uriVariables['id']
             );
-            $cashShift->setClosingBalance(number_format($countedTotal, 2, '.', ''));
-            $cashShift->setExpectedAmount(number_format($expectedTotal, 2, '.', ''));
-            $cashShift->setCountedAmount(number_format($countedTotal, 2, '.', ''));
-            $cashShift->setDifference(number_format($differenceTotal, 2, '.', ''));
+            if (!$cashShift instanceof CashShift) {
+                throw new NotFoundHttpException('Turno de caja no encontrado.');
+            }
+
+            $authUser = $this->security->connectedUser();
+            if ($authUser === null) {
+                throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
+            }
+
+            $cashShift->setClosingBalance($countedStr);
+            $cashShift->setExpectedAmount($expectedStr);
+            $cashShift->setCountedAmount($countedStr);
+            $cashShift->setDifference($differenceStr);
             $cashShift->setNote($notes !== [] ? implode('; ', $notes) : null);
             $cashShift->setStatus(CashShiftStatus::CLOSED);
-            $cashShift->setClosedBy(
-                $this->entityManager->getReference(
-                    User::class,
-                    $this->security->connectedUser()->userId
-                )
-            );
+
+            $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
+            if ($userRef instanceof User) {
+                $cashShift->setClosedBy($userRef);
+            }
+
             $cashShift->setClosedAt(new DateTimeImmutable());
             $this->entityManager->persist($cashShift);
 
             $this->entityManager->flush();
 
             // Close V2 cash_session linked to this legacy shift
-            $userId = $this->security->connectedUser()->userId;
+            $userId = $authUser->userId;
             $this->entityManager->getConnection()->executeStatement(
                 "UPDATE cash_sessions
                  SET status = 'CLOSED', closed_at = NOW(), closed_by = ?,
                      expected_amount = ?, counted_amount = ?, difference_amount = ?
                  WHERE legacy_cash_shift_id = ?",
-                [$userId, $expectedTotal, $countedTotal, $differenceTotal, $uriVariables['id']]
+                [$userId, $expectedStr, $countedStr, $differenceStr, $uriVariables['id']]
             );
 
             $this->entityManager->getConnection()->commit();

@@ -17,6 +17,8 @@ class CashRegisterDashboardDto
         public ?string $cashier,
         public ?float $balance,
         public ?string $status,
+        /** @var string Total sales (all payment methods) for the open shift today, as decimal string */
+        public string $todaySales = '0.00',
     ) {
     }
 }
