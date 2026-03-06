@@ -230,11 +230,13 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             throw $throwable;
         }
 
+        $originalTotal = (string) $sale->getTotal();
+
         $sale->setHasInvoice(true);
         $sale->setInvoice($series . '-' . $nextNumber);
         $sale->setTotal($invoiceAmounts->getTotal());
 
-        $this->syncInvoicedSaleState($saleId, (string) $sale->getInvoice(), (string) $sale->getTotal());
+        $this->syncInvoicedSaleState($saleId, (string) $sale->getInvoice(), $originalTotal);
 
         return [
             'success' => true,
