@@ -47,6 +47,7 @@ export const useSalePageObservers = ({
     discountApplyEvent,
   });
 
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest props
   callbacksRef.current = {
     saleEvents,
     customerSuccessEvent,

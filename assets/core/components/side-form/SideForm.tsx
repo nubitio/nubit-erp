@@ -62,8 +62,10 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
   useImperativeHandle(ref, () => formRef.current!);
 
   const loadDataRef = useRef(loadData);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   loadDataRef.current = loadData;
   const setupObserversRef = useRef(setupObservers);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
 
   useEffect(() => {

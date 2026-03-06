@@ -60,6 +60,7 @@ export const DashboardPage = () => {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadCashRegisters calls setState; this is data loading on mount
     loadCashRegisters();
   }, [loadCashRegisters]);
 
@@ -71,26 +72,25 @@ export const DashboardPage = () => {
   ).length;
   const totalStockAlerts = criticalStockCount + warnStockCount;
   const growthUp =
-    summary.dailyGrowth !== null &&
-    summary.dailyGrowth !== undefined &&
-    summary.dailyGrowth >= 0;
+    summary.dailyGrowth !== null && summary.dailyGrowth !== undefined && summary.dailyGrowth >= 0;
   const monthGrowthUp =
-    summary.monthGrowth !== null &&
-    summary.monthGrowth !== undefined &&
-    summary.monthGrowth >= 0;
+    summary.monthGrowth !== null && summary.monthGrowth !== undefined && summary.monthGrowth >= 0;
   const purchasesMonthGrowthUp =
     purchasesSummary.monthGrowth !== null &&
     purchasesSummary.monthGrowth !== undefined &&
     purchasesSummary.monthGrowth >= 0;
 
   const totalPaymentsToday = data.paymentMethodsToday.reduce((acc, item) => acc + item.total, 0);
-  const bestHour = data.hourlySalesToday.reduce<{ hour: string; total: number } | null>((best, current) => {
-    if (!best || current.total > best.total) {
-      return current;
-    }
+  const bestHour = data.hourlySalesToday.reduce<{ hour: string; total: number } | null>(
+    (best, current) => {
+      if (!best || current.total > best.total) {
+        return current;
+      }
 
-    return best;
-  }, null);
+      return best;
+    },
+    null,
+  );
   const topPaymentMethod = data.paymentMethodsToday[0] ?? null;
 
   if (isMobileDashboard) {
@@ -107,7 +107,9 @@ export const DashboardPage = () => {
               <i className="ph ph-map-pin" /> {currentBranchName}
             </span>
             <span className="dash-mobile-hero__title">Hola, {currentUserName}</span>
-            <span className="dash-mobile-hero__amount">{currencyFormatter(summary.netSalesToday)}</span>
+            <span className="dash-mobile-hero__amount">
+              {currencyFormatter(summary.netSalesToday)}
+            </span>
             <span className="dash-mobile-hero__label">Venta neta de hoy</span>
             <div className="dash-mobile-hero__meta">
               <span>{decimalFormatter(summary.invoicesToday)} comprobantes</span>
@@ -144,13 +146,17 @@ export const DashboardPage = () => {
             <div className="dash-mobile-surface__row">
               <span>Pico de venta</span>
               <strong>
-                {bestHour ? `${bestHour.hour} · ${currencyFormatter(bestHour.total)}` : 'Sin ventas'}
+                {bestHour
+                  ? `${bestHour.hour} · ${currencyFormatter(bestHour.total)}`
+                  : 'Sin ventas'}
               </strong>
             </div>
             <div className="dash-mobile-surface__row">
               <span>Metodo principal</span>
               <strong>
-                {topPaymentMethod ? `${topPaymentMethod.method} · ${currencyFormatter(topPaymentMethod.total)}` : 'Sin datos'}
+                {topPaymentMethod
+                  ? `${topPaymentMethod.method} · ${currencyFormatter(topPaymentMethod.total)}`
+                  : 'Sin datos'}
               </strong>
             </div>
             <div className="dash-mobile-surface__row">
@@ -162,7 +168,8 @@ export const DashboardPage = () => {
           <SectionHeader title="Metodos de pago" subtitle="Distribucion de hoy" />
           <ul className="ranked-list dash-mobile-list">
             {data.paymentMethodsToday.map((item) => {
-              const percentage = totalPaymentsToday > 0 ? (item.total / totalPaymentsToday) * 100 : 0;
+              const percentage =
+                totalPaymentsToday > 0 ? (item.total / totalPaymentsToday) * 100 : 0;
 
               return (
                 <li key={item.method}>
@@ -174,24 +181,34 @@ export const DashboardPage = () => {
                 </li>
               );
             })}
-            {data.paymentMethodsToday.length === 0 && <div className="empty">Sin datos disponibles</div>}
+            {data.paymentMethodsToday.length === 0 && (
+              <div className="empty">Sin datos disponibles</div>
+            )}
           </ul>
 
           <SectionHeader title="Ultimas ventas" subtitle="Movimientos recientes" />
           <ul className="ranked-list dash-mobile-list">
             {data.recentSalesToday.map((item) => (
               <li key={item.id}>
-                <div className="ranked-list__title">{item.issuedAt} · {item.paymentMethod}</div>
+                <div className="ranked-list__title">
+                  {item.issuedAt} · {item.paymentMethod}
+                </div>
                 <div className="ranked-list__meta">
                   <span>Venta #{item.id}</span>
                   <span>{currencyFormatter(item.total)}</span>
                 </div>
               </li>
             ))}
-            {data.recentSalesToday.length === 0 && <div className="empty">Sin ventas registradas hoy</div>}
+            {data.recentSalesToday.length === 0 && (
+              <div className="empty">Sin ventas registradas hoy</div>
+            )}
           </ul>
         </AppToolbar>
-        <LoadPanel container=".content" visible={loading || cashboxLoading} position={{ of: '.layout-body' }} />
+        <LoadPanel
+          container=".content"
+          visible={loading || cashboxLoading}
+          position={{ of: '.layout-body' }}
+        />
       </ScrollView>
     );
   }
@@ -199,7 +216,6 @@ export const DashboardPage = () => {
   return (
     <ScrollView className="view-wrapper-scroll">
       <AppToolbar title="Dashboard" onRefresh={refetch}>
-
         {error && <div className="dashboard-error">{error}</div>}
         {data.meta?.partial && !error && (
           <div className="dashboard-error">Se cargó información parcial del dashboard.</div>
@@ -372,9 +388,7 @@ export const DashboardPage = () => {
                   </div>
                 </li>
               ))}
-              {data.topProducts.length === 0 && (
-                <div className="empty">Sin datos disponibles</div>
-              )}
+              {data.topProducts.length === 0 && <div className="empty">Sin datos disponibles</div>}
             </ul>
           </CardAnalytics>
 
@@ -389,9 +403,7 @@ export const DashboardPage = () => {
                   </div>
                 </li>
               ))}
-              {data.topCustomers.length === 0 && (
-                <div className="empty">Sin datos disponibles</div>
-              )}
+              {data.topCustomers.length === 0 && <div className="empty">Sin datos disponibles</div>}
             </ul>
           </CardAnalytics>
         </div>
@@ -418,12 +430,13 @@ export const DashboardPage = () => {
                 <div className="ranked-list__title">Compras mes</div>
                 <div className="ranked-list__meta">
                   <span>{currencyFormatter(purchasesSummary.purchasesThisMonth)}</span>
-                  {purchasesSummary.monthGrowth !== null && purchasesSummary.monthGrowth !== undefined && (
-                    <span className={purchasesMonthGrowthUp ? 'cash-open' : 'cash-closed'}>
-                      {purchasesMonthGrowthUp ? '+' : ''}
-                      {purchasesSummary.monthGrowth.toFixed(1)}% vs mes anterior
-                    </span>
-                  )}
+                  {purchasesSummary.monthGrowth !== null &&
+                    purchasesSummary.monthGrowth !== undefined && (
+                      <span className={purchasesMonthGrowthUp ? 'cash-open' : 'cash-closed'}>
+                        {purchasesMonthGrowthUp ? '+' : ''}
+                        {purchasesSummary.monthGrowth.toFixed(1)}% vs mes anterior
+                      </span>
+                    )}
                 </div>
               </li>
             </ul>
@@ -504,7 +517,6 @@ export const DashboardPage = () => {
             </Chart>
           </CardAnalytics>
         </div>
-
       </AppToolbar>
       <LoadPanel container=".content" visible={loading} position={{ of: '.layout-body' }} />
     </ScrollView>

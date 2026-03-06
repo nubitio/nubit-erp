@@ -30,6 +30,7 @@ use App\Repository\UnitOfMeasureRepository;
 use App\Repository\UserRepository;
 use App\Repository\VoucherSeriesRepository;
 use App\Repository\VoucherTypeRepository;
+use App\Repository\CashRegisterRepository;
 use App\Repository\WarehouseRepository;
 use App\Service\E2eTestSeedService;
 use App\Setup\InitialSetupService;
@@ -59,6 +60,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
         $logisticOperationRepository = $this->createMock(LogisticOperationRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
+        $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 
         $initialSetupService->method('status')->willReturn(new SetupStatusDto(true, 1, 1, 1));
 
@@ -135,6 +137,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $voucherSeriesRepository,
             $logisticOperationRepository,
             $paymentMethodRepository,
+            $cashRegisterRepository,
         );
 
         $seed = $service->seed();
@@ -163,6 +166,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
         $logisticOperationRepository = $this->createMock(LogisticOperationRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
+        $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 
         $user = (new User())->setUsername('ci_e2e_user');
         $this->setEntityId($user, 'id', 9);
@@ -198,6 +202,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $voucherSeriesRepository,
             $logisticOperationRepository,
             $paymentMethodRepository,
+            $cashRegisterRepository,
         );
 
         $service->reset();

@@ -54,11 +54,11 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
 
   const onCancelClick = () => {
     close();
-    options.events?.CANCEL && emit(options.events.CANCEL);
+    if (options.events?.CANCEL) emit(options.events.CANCEL);
   };
 
   const onSaveClick = () => {
-    options.events?.SAVE && emit(options.events.SAVE);
+    if (options.events?.SAVE) emit(options.events.SAVE);
   };
 
   const setupObservers = () => {
@@ -72,6 +72,7 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
   };
 
   const setupObserversRef = useRef(setupObservers);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
 
   useEffect(() => {

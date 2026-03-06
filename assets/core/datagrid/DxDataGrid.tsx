@@ -149,13 +149,13 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const onAddClick = () => {
-    options.events?.ADD && emit(options.events?.ADD);
+    if (options.events?.ADD) emit(options.events?.ADD);
   };
 
   const onEditClick = () => {
     const selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
     if (selectedRowsData && selectedRowsData.length > 0) {
-      options.events?.EDIT && emit(options.events?.EDIT, { row: selectedRowsData[0] });
+      if (options.events?.EDIT) emit(options.events?.EDIT, { row: selectedRowsData[0] });
     } else {
       toast('Debe seleccionar un registro', 'warning', 2000);
     }
@@ -164,7 +164,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   const onDeleteClick = () => {
     const selectedRowsData = gridRef.current?.instance().getSelectedRowsData();
     if (selectedRowsData && selectedRowsData.length > 0) {
-      options.events?.DELETE && emit(options.events?.DELETE, { row: selectedRowsData[0] });
+      if (options.events?.DELETE) emit(options.events?.DELETE, { row: selectedRowsData[0] });
     } else {
       toast('Debe seleccionar un registro', 'warning', 2000);
     }
@@ -177,6 +177,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
   };
 
   const setupObserversRef = useRef(setupObservers);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
   const initialOptionsRef = useRef(options);
 

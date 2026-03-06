@@ -92,23 +92,26 @@ export const useDashboardOverview = (options?: DashboardOverviewOptions) => {
     const query = options?.lite ? '?lite=1&view=mobile' : '';
 
     lastSubscription.current?.unsubscribe?.();
-    const subscription = httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview' + query).subscribe({
-      next: (response) => {
-        setData(normalize(response.data));
-        setLoading(false);
-      },
-      error: (err) => {
-        toast('No se pudo cargar el dashboard', 'error');
-        console.error(err);
-        setError('No se pudo cargar el dashboard');
-        setLoading(false);
-      },
-    });
+    const subscription = httpClient
+      .get<any>(Constants.API_BASE_URL + 'bi/overview' + query)
+      .subscribe({
+        next: (response) => {
+          setData(normalize(response.data));
+          setLoading(false);
+        },
+        error: (err) => {
+          toast('No se pudo cargar el dashboard', 'error');
+          console.error(err);
+          setError('No se pudo cargar el dashboard');
+          setLoading(false);
+        },
+      });
 
     lastSubscription.current = subscription;
   }, [options?.lite]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadDashboard calls setState; initial fetch + periodic refresh pattern
     loadDashboard();
     const refresh = setInterval(loadDashboard, 5 * 60 * 1000);
     return () => {

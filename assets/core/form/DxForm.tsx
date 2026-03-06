@@ -425,6 +425,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   };
 
   const setupObserversRef = useRef(setupObservers);
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest closure
   setupObserversRef.current = setupObservers;
 
   useEffect(() => {
@@ -598,6 +599,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     }
   };
 
+  // eslint-disable-next-line react-hooks/refs -- renderForm accesses data.current (DevExtreme ArrayStore) used as DataGrid dataSource; intentional mutable ref
   return <React.Fragment>{renderForm()}</React.Fragment>;
 });
 
