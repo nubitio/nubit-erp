@@ -167,7 +167,7 @@ HELP
         $this->truncateIfExists($connection, 'tax_document_event');
         $this->truncateIfExists($connection, 'tax_document_line');
         $this->truncateIfExists($connection, 'tax_document');
-        $connection->executeStatement('TRUNCATE TABLE comprobante');
+        $this->truncateIfExists($connection, 'comprobante');
         $connection->executeStatement('TRUNCATE TABLE movimiento_detalle');
         $connection->executeStatement('TRUNCATE TABLE movimiento');
         $io->progressAdvance();
