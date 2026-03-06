@@ -81,18 +81,17 @@ final class SaleProcessorScenarioCTest extends TestCase
     {
         $connection = $this->createMock(Connection::class);
         $connection
-            ->expects($this->exactly(3))
+            ->expects($this->exactly(2))
             ->method('fetchAssociative')
             ->willReturnOnConsecutiveCalls(
                 false, // register+issuedAt → no match
-                [     // branch+issuedAt → found
+                [     // branch+issuedAt → found (resolver short-circuits here, latest not called)
                     'id' => 42,
                     'cash_register_id' => 1,
                     'branch_id' => 'branch-abc',
                     'opened_at' => '2026-03-01 08:00:00',
                     'closed_at' => null,
-                ],
-                false // latest (not reached — but mocked for safety)
+                ]
             );
 
         $resolver = new CashSessionResolver($connection);

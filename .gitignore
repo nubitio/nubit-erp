@@ -80,3 +80,7 @@ phpstan.neon
 # aiteam
 .aiteam/
 ai/
+
+# spex state
+.spex/state.db
+.spex/*.db

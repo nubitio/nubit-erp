@@ -236,7 +236,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         $sale->setInvoice($series . '-' . $nextNumber);
         $sale->setTotal($invoiceAmounts->getTotal());
 
-        $this->syncInvoicedSaleState($saleId, (string) $sale->getInvoice(), $originalTotal);
+        $this->syncInvoicedSaleState($saleId, $originalTotal);
 
         return [
             'success' => true,
@@ -245,7 +245,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         ];
     }
 
-    private function syncInvoicedSaleState(string $saleId, string $invoiceCode, string $total): void
+    private function syncInvoicedSaleState(string $saleId, string $total): void
     {
         // V2 first: keep new sales table in sync when available.
         if ($this->tableExists('sales')) {
@@ -263,14 +263,6 @@ SQL,
                     'total' => $total,
                     'sale_id' => $saleId,
                 ]
-            );
-        }
-
-        // Transitional compatibility with legacy movimiento fields.
-        if ($this->tableExists('movimiento')) {
-            $this->connection->executeStatement(
-                'UPDATE movimiento SET has_invoice = 1, invoice = ?, total = ? WHERE movimiento_id = ?',
-                [$invoiceCode, $total, $saleId]
             );
         }
     }
