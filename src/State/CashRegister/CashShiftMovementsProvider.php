@@ -13,6 +13,9 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProviderInterface<CashMovement>
+ */
 readonly class CashShiftMovementsProvider implements ProviderInterface
 {
     public function __construct(

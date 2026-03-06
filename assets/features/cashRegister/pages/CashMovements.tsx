@@ -38,6 +38,14 @@ export const CashMovements = () => {
 
   const toolbar = [
     {
+      text: 'Corte X',
+      type: 'normal',
+      icon: 'ph ph-printer',
+      onClick: () => {
+        window.open(`/api/cash-shifts/${id}/x-report`, '_blank');
+      },
+    },
+    {
       text: 'Cerrar Caja',
       type: 'info',
       onClick: () => {
