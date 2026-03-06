@@ -51,18 +51,50 @@ final class InvoiceCreationServiceTest extends TestCase
         self::assertSame('La fecha de la venta excede el límite permitido para emisión (3 días).', $result['message']);
     }
 
-    public function testSyncInvoicedSaleStateUpdatesV2AndLegacyTablesWhenPresent(): void
+    public function testSyncInvoicedSaleStateUpdatesOnlyV2SalesTable(): void
     {
         $connection = $this->createMock(Connection::class);
         $connection->method('fetchOne')->willReturnCallback(
             static fn (string $sql, array $params): int => (($params['table_name'] ?? '') !== '') ? 1 : 0
         );
-        $connection->expects(self::exactly(2))
+        // Only ONE executeStatement call: the sales-table UPDATE.
+        // The legacy movimiento write-back has been removed.
+        $connection->expects(self::exactly(1))
             ->method('executeStatement');
 
         $service = $this->newService($connection);
 
-        $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', 'F001-10', '100.00']);
+        $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', '100.00']);
+    }
+
+    public function testNoMovimientoUpdateIsExecutedDuringInvoiceCreation(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturnCallback(
+            static fn (string $sql, array $params): int => (($params['table_name'] ?? '') !== '') ? 1 : 0
+        );
+
+        // Assert that no SQL containing "UPDATE movimiento" or "INSERT INTO movimiento"
+        // is ever sent to the database.
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql): int {
+                self::assertStringNotContainsStringIgnoringCase(
+                    'UPDATE movimiento',
+                    $sql,
+                    'Legacy movimiento write-back must be removed: found UPDATE movimiento SQL.'
+                );
+                self::assertStringNotContainsStringIgnoringCase(
+                    'INSERT INTO movimiento',
+                    $sql,
+                    'Legacy movimiento write-back must be removed: found INSERT INTO movimiento SQL.'
+                );
+
+                return 1;
+            });
+
+        $service = $this->newService($connection);
+
+        $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', '100.00']);
     }
 
     /**

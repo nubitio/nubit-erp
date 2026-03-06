@@ -1,16 +1,14 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "aiteam-state": {
-      "type": "local",
+    "spex-state": {
       "command": [
-        "aiteam",
+        "spex",
         "mcp",
-        "serve",
-        "--dir",
-        "/home/johan/Projects/efact"
+        "serve"
       ],
-      "enabled": true
+      "enabled": true,
+      "type": "local"
     }
   }
 }
