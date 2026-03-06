@@ -244,7 +244,7 @@ SQL;
 select
     date(s.issued_at) as sale_date,
     time(s.issued_at) as sale_time,
-    concat(coalesce(i.series, '-'), '-', coalesce(i.number, '-')) as document,
+    concat(coalesce(i.series, s.serie, '-'), '-', coalesce(i.number, s.numero, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
     coalesce(c.ruc, '-') as customer_ruc,
@@ -259,7 +259,7 @@ select
     end as status
 from sales s
     left join tax_document i on i.movimiento_id = s.legacy_movimiento_id and i.document_type in ('01', '03')
-    left join tipo_comprobante vt on vt.codigo = i.document_type
+    left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
     left join cliente c on c.id = s.customer_id
     left join sale_payments sp on sp.sale_id = s.id
     left join payment_method pm on pm.id = sp.payment_method_id
@@ -324,7 +324,7 @@ SQL;
         return <<<SQL
 select
     date(s.issued_at) as sale_date,
-    concat(coalesce(i.series, '-'), '-', coalesce(i.number, '-')) as document,
+    concat(coalesce(i.series, s.serie, '-'), '-', coalesce(i.number, s.numero, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
     coalesce(c.ruc, '-') as customer_ruc,
@@ -336,7 +336,7 @@ select
 from sales s
     left join tax_document i on i.movimiento_id = s.legacy_movimiento_id and i.document_type in ('01', '03')
     left join cliente c on c.id = s.customer_id
-    left join tipo_comprobante vt on vt.codigo = i.document_type
+    left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
 where
     s.status = 'VOIDED'
     and s.issued_at between :date_from and :date_to

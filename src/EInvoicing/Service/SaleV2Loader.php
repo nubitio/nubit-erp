@@ -55,7 +55,9 @@ SELECT
     s.discount_total,
     s.grand_total,
     s.issued_at,
-    s.created_at
+    s.created_at,
+    s.serie,
+    s.numero
 FROM sales s
 WHERE s.id = :id
    OR s.legacy_movimiento_id = :id
@@ -86,6 +88,14 @@ SQL,
         $sale->setSubtotal($row['subtotal']);
         $sale->setTotal($row['grand_total']);
         $sale->setEstado($row['status'] === 'VOIDED' ? SaleStatus::VOIDED->value : SaleStatus::ACTIVE->value);
+
+        if (!empty($row['serie'])) {
+            $sale->setSerie((string) $row['serie']);
+        }
+
+        if (!empty($row['numero'])) {
+            $sale->setNumero((string) $row['numero']);
+        }
 
         // Derive IGV rate from stored tax_total; fall back to configured rate.
         $taxRate = $this->resolveIgvRate($row['tax_total'], $row['subtotal']);
