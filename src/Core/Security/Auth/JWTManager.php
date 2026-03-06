@@ -23,6 +23,17 @@ final readonly class JWTManager
         }
     }
 
+    /**
+     * No-op warm-up call used by AppSecretBootListener to force eager instantiation
+     * when JWTManager is behind a Symfony lazy-service proxy.
+     * The real side-effect is the LogicException thrown in __construct() when
+     * APP_SECRET is empty — this method itself does nothing.
+     */
+    public function ping(): void
+    {
+        // Intentional no-op.
+    }
+
     public function encode(array $payload, ?int $expiresIn = null): string
     {
         if ($expiresIn !== null) {
