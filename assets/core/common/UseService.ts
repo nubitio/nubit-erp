@@ -17,6 +17,7 @@ export function useService<T>(
   }, [subscription]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setting loading flag before subscription is standard async pattern
     setLoading(true);
     const subscription$ = subscriptionRef.current.subscribe({
       next: (response: ApiResponse<any>) => {

@@ -37,15 +37,14 @@ final class AppSecretBootListener
             return;
         }
 
-        // Calling verify() with an empty string is a zero-cost no-op that reads
-        // $this->jwtManager and ensures the container cannot defer JWTManager
-        // construction beyond the first main request.
+        // ping() is a dedicated no-op warm-up call that forces eager instantiation
+        // of JWTManager without triggering any business logic or error logging.
         //
         // The real side-effect is in JWTManager::__construct(), which throws
         // LogicException immediately when APP_SECRET is empty — surfacing the
         // misconfiguration at deploy / smoke-test time rather than at the first
         // login attempt.
-        $this->jwtManager->verify('');
+        $this->jwtManager->ping();
         $this->checked = true;
     }
 }

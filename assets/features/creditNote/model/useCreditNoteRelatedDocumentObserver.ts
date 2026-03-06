@@ -16,6 +16,7 @@ export const useCreditNoteRelatedDocumentObserver = ({
   formRef,
 }: UseCreditNoteRelatedDocumentObserverParams) => {
   const callbacksRef = useRef({ apiUrl, formRef });
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest props
   callbacksRef.current = { apiUrl, formRef };
 
   useEffect(() => {

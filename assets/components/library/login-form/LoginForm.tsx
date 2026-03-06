@@ -31,6 +31,7 @@ export const LoginForm = () => {
   return (
     <form className="login-form" onSubmit={onSubmit}>
       <Form
+        // eslint-disable-next-line react-hooks/refs -- formData ref holds mutable form state intentionally accessed during render for DevExtreme binding
         formData={formData.current}
         disabled={loading}
         showColonAfterLabel

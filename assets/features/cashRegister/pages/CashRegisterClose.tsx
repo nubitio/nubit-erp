@@ -96,6 +96,7 @@ export const CashRegisterClose = () => {
         <DataGrid
           ref={gridRef}
           className="grid theme-dependent"
+          // eslint-disable-next-line react-hooks/refs -- data ref holds DevExtreme ArrayStore used as DataGrid dataSource; intentional mutable ref
           dataSource={data.current}
           height={'100%'}
           showBorders={true}
@@ -107,6 +108,13 @@ export const CashRegisterClose = () => {
         >
           <Editing mode="cell" allowUpdating={true} />
           <Scrolling mode="virtual" />
+          <Column
+            dataField="paymentMethod"
+            caption="Forma de pago"
+            alignment="left"
+            dataType="string"
+            allowEditing={false}
+          />
           <Column
             dataField="expectedAmount"
             caption="Monto esperado"
@@ -122,6 +130,22 @@ export const CashRegisterClose = () => {
             dataType="number"
             format={{ type: 'currency', precision: 2 }}
             cssClass="col-counted-amount"
+            editCellRender={(cell: any) => (
+              <div>
+                <input
+                  type="number"
+                  step="0.01"
+                  defaultValue={cell.value}
+                  onBlur={(e) => cell.setValue(parseFloat(e.target.value))}
+                  style={{ width: '100%', textAlign: 'right' }}
+                />
+                {cell.data.paymentMethodId !== 1 && (
+                  <small style={{ color: 'var(--texteditor-label-color, #888)', fontSize: '11px' }}>
+                    Ingresa el total de tu terminal o app
+                  </small>
+                )}
+              </div>
+            )}
           />
           <Column
             dataField="difference"

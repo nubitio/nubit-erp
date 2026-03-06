@@ -108,6 +108,7 @@ export const SideNavOuterToolbar = ({
   ) as (e: TreeViewTypes.ItemClickEvent) => void;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing menu status to screen size change; intentional derived state update
     changeMenuStatus(() => menuStatus);
   }, [isLarge, changeMenuStatus, menuStatus]);
 

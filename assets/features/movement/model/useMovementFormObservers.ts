@@ -26,6 +26,7 @@ export const useMovementFormObservers = ({
     onDetailRowsChanged,
   });
 
+  // eslint-disable-next-line react-hooks/refs -- intentional stale-closure fix: keep ref current with latest props
   callbacksRef.current = {
     apiUrl,
     editEventName,

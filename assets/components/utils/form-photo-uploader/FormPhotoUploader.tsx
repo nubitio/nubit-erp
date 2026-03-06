@@ -34,7 +34,9 @@ export const FormPhotoUploader = () => {
         <span>Drag and drop a photo here or click the area to select it from a folder</span>
       </div>
       <FileUploader
+        // eslint-disable-next-line react-hooks/refs -- DevExtreme FileUploader requires DOM ref passed as prop; no alternative API
         dialogTrigger={uploaderZone.current}
+        // eslint-disable-next-line react-hooks/refs -- DevExtreme FileUploader requires DOM ref passed as prop; no alternative API
         dropZone={uploaderZone.current}
         multiple={false}
         accept="image/*"
