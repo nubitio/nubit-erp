@@ -8,7 +8,7 @@ class CashRegisterOpenDto
 {
     public function __construct(
         public int $id,
-        public float $openingBalance,
+        public string $openingBalance,
     ) {
     }
 }

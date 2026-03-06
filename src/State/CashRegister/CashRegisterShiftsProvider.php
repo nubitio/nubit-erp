@@ -12,6 +12,9 @@ use App\Entity\CashShift;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 
+/**
+ * @implements ProviderInterface<CashShift>
+ */
 readonly class CashRegisterShiftsProvider implements ProviderInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)

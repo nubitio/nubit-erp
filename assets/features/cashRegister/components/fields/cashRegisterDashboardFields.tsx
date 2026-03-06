@@ -40,6 +40,17 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
+      .name('todaySales')
+      .label('Ventas hoy')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) =>
+        cell.value != null ? NumberUtils.formatCurrency(Number(cell.value)) : '—',
+      )
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
       .name('balance')
       .label('Saldo actual')
       .align('right')
