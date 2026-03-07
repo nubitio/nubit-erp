@@ -11,7 +11,10 @@ class CashRegisterDashboardDto
     public function __construct(
         public int $id,
         public string $name,
+        /** @deprecated use $cashSessionId — kept for backward-compat during frontend migration */
         public ?int $cashShiftId,
+        /** @var int|null The cash_sessions.id for the open session; use for v2 routing */
+        public ?int $cashSessionId,
         public ?DateTimeImmutable $openedAt,
         public ?DateTimeImmutable $closedAt,
         public ?string $cashier,

@@ -13,12 +13,8 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
 use App\Dto\CashRegister\CashRegisterCloseDto;
-use App\Entity\CashShift;
-use App\Entity\User;
-use App\Enum\CashShiftStatus;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
@@ -28,7 +24,7 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
+        private Connection $connection,
         private Security $security,
     ) {
     }
@@ -47,6 +43,13 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): ApiResponse {
+        $authUser = $this->security->connectedUser();
+        if ($authUser === null) {
+            throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
+        }
+
+        $cashSessionId = (int) $uriVariables['id'];
+
         $closureItems = $data->closureItems ?? [];
         $notes = [];
 
@@ -73,60 +76,85 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             }
         }
 
-        $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-        $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-        $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
+        $expectedStr = $expectedTotal->toScale(4, RoundingMode::HALF_UP)->__toString();
+        $countedStr = $countedTotal->toScale(4, RoundingMode::HALF_UP)->__toString();
+        $differenceStr = $differenceTotal->toScale(4, RoundingMode::HALF_UP)->__toString();
 
-        $this->entityManager->getConnection()->beginTransaction();
+        $this->connection->beginTransaction();
         try {
-            $cashShift = $this->entityManager->find(
-                CashShift::class,
-                $uriVariables['id']
+            // Verify the session exists and is open
+            $session = $this->connection->fetchAssociative(
+                'SELECT id, opening_amount FROM cash_sessions WHERE id = ? AND status = ?',
+                [$cashSessionId, 'OPEN']
             );
-            if (!$cashShift instanceof CashShift) {
-                throw new NotFoundHttpException('Turno de caja no encontrado.');
+            if ($session === false) {
+                $this->connection->rollBack();
+                throw new NotFoundHttpException('Turno de caja no encontrado o ya cerrado.');
             }
 
-            $authUser = $this->security->connectedUser();
-            if ($authUser === null) {
-                throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
-            }
+            // Calculate closing_balance dynamically:
+            // opening_amount + SUM(CASH_IN) - SUM(CASH_OUT) + SUM(SALE_IN cash)
+            $openingAmount = BigDecimal::of((string) $session['opening_amount']);
 
-            $cashShift->setClosingBalance($countedStr);
-            $cashShift->setExpectedAmount($expectedStr);
-            $cashShift->setCountedAmount($countedStr);
-            $cashShift->setDifference($differenceStr);
-            $cashShift->setNote($notes !== [] ? implode('; ', $notes) : null);
-            $cashShift->setStatus(CashShiftStatus::CLOSED);
+            $cashIn = BigDecimal::of((string) ($this->connection->fetchOne(
+                "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+                 WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
+                [$cashSessionId]
+            ) ?: '0'));
 
-            $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
-            if ($userRef instanceof User) {
-                $cashShift->setClosedBy($userRef);
-            }
+            $cashOut = BigDecimal::of((string) ($this->connection->fetchOne(
+                "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+                 WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
+                [$cashSessionId]
+            ) ?: '0'));
 
-            $cashShift->setClosedAt(new DateTimeImmutable());
-            $this->entityManager->persist($cashShift);
+            $saleIn = BigDecimal::of((string) ($this->connection->fetchOne(
+                "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+                 WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
+                [$cashSessionId]
+            ) ?: '0'));
 
-            $this->entityManager->flush();
+            $closingBalance = $openingAmount
+                ->plus($cashIn)
+                ->minus($cashOut)
+                ->plus($saleIn)
+                ->toScale(4, RoundingMode::HALF_UP)
+                ->__toString();
 
-            // Close V2 cash_session linked to this legacy shift
-            $userId = $authUser->userId;
-            $this->entityManager->getConnection()->executeStatement(
+            $note = $notes !== [] ? implode('; ', $notes) : null;
+
+            $this->connection->executeStatement(
                 "UPDATE cash_sessions
-                 SET status = 'CLOSED', closed_at = NOW(), closed_by = ?,
-                     expected_amount = ?, counted_amount = ?, difference_amount = ?
-                 WHERE legacy_cash_shift_id = ?",
-                [$userId, $expectedStr, $countedStr, $differenceStr, $uriVariables['id']]
+                 SET status = 'CLOSED',
+                     closed_at = NOW(),
+                     closed_by = ?,
+                     closing_amount = ?,
+                     expected_amount = ?,
+                     counted_amount = ?,
+                     difference_amount = ?,
+                     note = ?
+                 WHERE id = ?",
+                [
+                    $authUser->userId,
+                    $closingBalance,
+                    $expectedStr,
+                    $countedStr,
+                    $differenceStr,
+                    $note,
+                    $cashSessionId,
+                ]
             );
 
-            $this->entityManager->getConnection()->commit();
-        } catch (ORMException $ormException) {
-            $this->entityManager->getConnection()->rollBack();
+            $this->connection->commit();
+        } catch (NotFoundHttpException $nfe) {
+            throw $nfe;
+        } catch (\Throwable $e) {
+            $this->connection->rollBack();
 
             return new ApiResponse(
                 success: false,
                 message: 'Error al cerrar la caja',
-                data: $ormException->getMessage(),
+                data: $e->getMessage(),
             );
         }
 

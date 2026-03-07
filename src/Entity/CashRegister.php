@@ -12,6 +12,7 @@ use App\Core\Http\ApiResponse;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Dto\CashRegister\CashRegisterCloseDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
+use App\Dto\CashRegister\CashRegisterOpenResponseDto;
 use App\Repository\CashRegisterRepository;
 use App\State\CashRegister\CashRegisterCloseProcessor;
 use App\State\CashRegister\CashRegisterDashboardProvider;
@@ -35,7 +36,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(
             uriTemplate: '/cash-registers/{id}/open',
             input: CashRegisterOpenDto::class,
-            output: CashShift::class,
+            output: CashRegisterOpenResponseDto::class,
             processor: CashRegisterOpenProcessor::class,
         ),
     ],
