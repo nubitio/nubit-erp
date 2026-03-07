@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Sale;
 
-use App\Entity\Branch;
-use App\Entity\PaymentMethod;
-use App\Entity\Product;
-use App\Entity\Sale;
-use App\Entity\SaleItem;
-use App\Entity\Warehouse;
 use App\State\Sale\SalesWriteGateway;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -23,6 +17,7 @@ use ReflectionClass;
  * - TC-3: upsertDailySummaries() is not called when estado=0 (VOIDED)
  * - TC-4: upsert error is caught and logged without re-throwing
  * - TC-5: $isNew=true with valid status triggers upsert SQL statements
+ * - TC-6: SaleProcessor passes $isNew as third argument to SalesWriteGateway::write()
  */
 final class SalesWriteGatewayDailySummaryTest extends TestCase
 {

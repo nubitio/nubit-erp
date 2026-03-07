@@ -545,7 +545,11 @@ SQL,
                 $qty = Money::of($item->getCantidad())->toScale(3, RoundingMode::HALF_UP);
                 $netAmount = Money::money($item->getPrecioTotal());
                 $costPerUnit = Money::of($product->getPurchasePrice() ?? '0');
-                $costTotal = Money::mul(Money::money($qty), Money::money($costPerUnit));
+                $costTotal = Money::money(
+                    $qty
+                        ->multipliedBy($costPerUnit)
+                        ->toScale(2, RoundingMode::HALF_UP)
+                );
                 $marginAmount = $netAmount->minus($costTotal);
 
                 $this->connection->executeStatement(

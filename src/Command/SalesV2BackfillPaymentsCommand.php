@@ -63,15 +63,15 @@ final class SalesV2BackfillPaymentsCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
+        if ($fixLegacy) {
+            return $this->runFixLegacy($io, $dryRun);
+        }
+
         $cashPaymentMethodId = $this->resolveCashPaymentMethodId();
         if ($cashPaymentMethodId === null) {
             $io->error('Cash payment method not found. Seed payment methods first.');
 
             return Command::FAILURE;
-        }
-
-        if ($fixLegacy) {
-            return $this->runFixLegacy($io, $dryRun, $cashPaymentMethodId);
         }
 
         return $this->runBackfill($io, $dryRun, $cashPaymentMethodId);
@@ -185,7 +185,7 @@ SQL,
         }
 
         $io->success(sprintf(
-            'Created %d sale_payments for sales (legacy rows use real payment method; pure V2 rows fall back to cash id=%d).',
+            'Created %d sale_payments (legacy rows use real payment method; pure V2 rows fall back to cash id=%d).',
             $inserted,
             $cashPaymentMethodId,
         ));
@@ -193,7 +193,7 @@ SQL,
         return Command::SUCCESS;
     }
 
-    private function runFixLegacy(SymfonyStyle $io, bool $dryRun, int $cashPaymentMethodId): int
+    private function runFixLegacy(SymfonyStyle $io, bool $dryRun): int
     {
         if ($dryRun) {
             $affectedRows = (int) $this->connection->fetchOne(

@@ -17,7 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
 #[AsCommand(
-    name: 'app:sales-v2:rebuild-daily-summaries',
+    name: 'app:sales:v2:rebuild-daily-summaries',
     description: 'Rebuild Sales V2 daily summary tables for a date range.',
 )]
 #[AsCronTask('*/30 * * * *', arguments: '--days=2')]
@@ -115,9 +115,13 @@ final class SalesV2RebuildDailySummariesCommand extends TenantAwareCommand
             return $default;
         }
 
-        $date = \DateTimeImmutable::createFromFormat('Y-m-d', $value);
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
         if (!$date instanceof \DateTimeImmutable) {
             throw new \InvalidArgumentException(sprintf('Invalid date format: %s (expected Y-m-d).', $value));
+        }
+        $errors = \DateTimeImmutable::getLastErrors();
+        if ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0)) {
+            throw new \InvalidArgumentException(sprintf('Invalid date value: %s (expected valid Y-m-d date).', $value));
         }
 
         return $date;
@@ -193,7 +197,7 @@ SELECT
     ROUND(COALESCE(SUM(si.qty), 0), 3),
     ROUND(COALESCE(SUM(si.net_amount), 0), 2),
     ROUND(COALESCE(SUM(si.unit_cost_snapshot * si.qty), 0), 2),
-    ROUND(COALESCE(SUM(si.margin_amount), 0), 2),
+    ROUND(COALESCE(SUM(si.net_amount - (si.unit_cost_snapshot * si.qty)), 0), 2),
     0
 FROM sales s
 INNER JOIN sale_items si ON si.sale_id = s.id
