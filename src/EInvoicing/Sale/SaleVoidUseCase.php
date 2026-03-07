@@ -63,12 +63,10 @@ readonly class SaleVoidUseCase
             throw SaleException::alreadyVoided();
         }
 
-        if (
-            $sale->getFecha()?->format('Y-m-d') < date(
-                'Y-m-d',
-                strtotime('-7 days')
-            )
-        ) {
+        $lima = new \DateTimeZone('America/Lima');
+        $saleDateLima = $sale->getFecha()?->setTimezone($lima)->format('Y-m-d');
+        $limitDateLima = (new \DateTimeImmutable('now', $lima))->modify('-7 days')->format('Y-m-d');
+        if ($saleDateLima < $limitDateLima) {
             throw SaleException::tooOld();
         }
 

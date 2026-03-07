@@ -37,7 +37,8 @@ readonly class ReceiptShowUseCase
             type: ($invoice->getDocumentType()) === '01' ? 'FACTURA' : 'BOLETA',
             series: strval($invoice->getSeries()),
             number: strval($invoice->getNumber()),
-            date: strval($invoice->getIssueDate()->format('Y-m-d')),
+            date: strval(\DateTimeImmutable::createFromInterface($invoice->getIssueDate())
+                ->setTimezone(new \DateTimeZone('America/Lima'))->format('Y-m-d')),
             total: floatval($invoice->gettotal()),
             currency: strval($invoice->getCurrency() ?? 'PEN'),
         );
@@ -53,7 +54,8 @@ readonly class ReceiptShowUseCase
             type: ($note->getDocumentType()) === '07' ? 'NOTA DE CRÉDITO' : 'NOTA DE DÉBITO',
             series: strval($note->getSeries()),
             number: strval($note->getNumber()),
-            date: strval($note->getIssueDate()->format('Y-m-d')),
+            date: strval(\DateTimeImmutable::createFromInterface($note->getIssueDate())
+                ->setTimezone(new \DateTimeZone('America/Lima'))->format('Y-m-d')),
             total: floatval($note->getTotal()),
             currency: strval($note->getCurrency() ?? 'PEN'),
         );

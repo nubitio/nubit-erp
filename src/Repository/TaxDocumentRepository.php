@@ -396,7 +396,14 @@ SQL,
             voucherSeries: $voucherSeries,
             voucherNumber: $voucherNumber,
             voucherPaymentMethod: $taxDocument?->getPaymentMethod() ?? $sale->getFormaPago(),
-            voucherDate: ($taxDocument?->getIssueDate() ?? $sale->getFecha())?->format('Y-m-d H:i:s'),
+            voucherDate: (static function (?\DateTimeInterface $dt): ?string {
+                if ($dt === null) {
+                    return null;
+                }
+                $limaZone = new \DateTimeZone('America/Lima');
+                $limaDate = \DateTimeImmutable::createFromInterface($dt)->setTimezone($limaZone);
+                return $limaDate->format('Y-m-d H:i:s');
+            })($taxDocument?->getIssueDate() ?? $sale->getFecha()),
             voucherCurrency: $taxDocument?->getCurrency() ?? $salesCurrencyData['currency'] ?? 'PEN',
             voucherExchangeRate: $taxDocument?->getExchangeRate() ?? $salesCurrencyData['exchange_rate'],
             voucherDiscountAmount: $taxDocument?->getDiscountAmount(),
