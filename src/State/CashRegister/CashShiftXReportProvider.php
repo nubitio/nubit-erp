@@ -30,67 +30,56 @@ readonly class CashShiftXReportProvider implements ProviderInterface
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): CashShiftXReportDto
     {
-        $cashShiftId = $uriVariables['id'];
+        $sessionId = (int) $uriVariables['id'];
 
-        // Opening balance: prefer V2 cash_sessions, fallback to legacy cash_shift
-        $session = $this->connection->fetchAssociative(
-            'SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?',
-            [$cashShiftId]
+        // Opening balance from cash_sessions v2
+        $openingAmountRaw = $this->connection->fetchOne(
+            'SELECT opening_amount FROM cash_sessions WHERE id = ?',
+            [$sessionId]
+        );
+        $openingBalance = BigDecimal::of((string) ($openingAmountRaw ?: '0'));
+
+        // Total SALE_IN from cash_movements v2
+        $totalSalesRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+             WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
+            [$sessionId]
+        );
+        $totalSales = BigDecimal::of((string) ($totalSalesRaw ?: '0'));
+
+        // Total CASH_IN from cash_movements v2
+        $cashInRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+             WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
+            [$sessionId]
+        );
+        $cashIn = BigDecimal::of((string) ($cashInRaw ?: '0'));
+
+        // Total CASH_OUT from cash_movements v2
+        $cashOutRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+             WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
+            [$sessionId]
+        );
+        $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));
+
+        // Sales by payment method from cash_movements v2
+        $salesRows = $this->connection->fetchAllAssociative(
+            "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount
+             FROM cash_movements cm
+             JOIN payment_method pm ON pm.id = cm.payment_method_id
+             WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
+             GROUP BY cm.payment_method_id, pm.name",
+            [$sessionId]
         );
 
-        if ($session !== false) {
-            $openingBalance = BigDecimal::of((string) $session['opening_amount']);
-            $sessionId = (int) $session['id'];
-
-            // Total SALE_IN from V2
-            $totalSalesRaw = $this->connection->fetchOne(
-                "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
-                 WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
-                [$sessionId]
-            );
-            $totalSales = BigDecimal::of((string) ($totalSalesRaw ?: '0'));
-
-            // Sales by payment method from V2
-            $salesRows = $this->connection->fetchAllAssociative(
-                "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount
-                 FROM cash_movements cm
-                 JOIN payment_method pm ON pm.id = cm.payment_method_id
-                 WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
-                 GROUP BY cm.payment_method_id, pm.name",
-                [$sessionId]
-            );
-        } else {
-            // Fallback: use legacy cash_shift opening_balance
-            $legacyOpeningRaw = $this->connection->fetchOne(
-                'SELECT opening_balance FROM cash_shift WHERE id = ?',
-                [$cashShiftId]
-            );
-            $openingBalance = BigDecimal::of((string) ($legacyOpeningRaw ?: '0'));
-            $totalSales = BigDecimal::zero();
-            $salesRows = [];
-        }
-
-        // Legacy income
-        $legacyIncomeRaw = $this->connection->fetchOne(
-            "SELECT COALESCE(SUM(amount), 0) FROM cash_movement WHERE cash_shift_id = ? AND type = 'income'",
-            [$cashShiftId]
-        );
-        $cashIn = BigDecimal::of((string) ($legacyIncomeRaw ?: '0'));
-
-        // Legacy expense
-        $legacyExpenseRaw = $this->connection->fetchOne(
-            "SELECT COALESCE(SUM(amount), 0) FROM cash_movement WHERE cash_shift_id = ? AND type = 'expense'",
-            [$cashShiftId]
-        );
-        $cashOut = BigDecimal::of((string) ($legacyExpenseRaw ?: '0'));
-
-        // Current balance
+        // Current balance = opening + SALE_IN + CASH_IN - CASH_OUT
         $currentBalance = $openingBalance->plus($totalSales)->plus($cashIn)->minus($cashOut);
 
-        // Shift duration in minutes
+        // Shift duration in minutes from cash_sessions.opened_at
         $shiftDurationMinutes = (int) ($this->connection->fetchOne(
-            'SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_shift WHERE id = ?',
-            [$cashShiftId]
+            'SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_sessions WHERE id = ?',
+            [$sessionId]
         ) ?: 0);
 
         // Build sales by payment method array

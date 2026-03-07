@@ -8,9 +8,11 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Dto\CashRegister\CashShiftClosureSummaryDto;
 use App\State\CashRegister\CashShiftClosureSummaryProvider;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 final class CashShiftClosureSummaryProviderTest extends TestCase
 {
     /** @var Connection&MockObject */
@@ -25,36 +27,31 @@ final class CashShiftClosureSummaryProviderTest extends TestCase
     }
 
     /**
-     * TC-5: returns cash + non-cash rows when V2 session exists with multiple payment methods.
+     * TC-5: returns cash + non-cash rows from v2 cash_movements exclusively.
      *
      * opening_amount = 100.00
-     * legacy income = 50.00, expense = 10.00
-     * V2 SALE_IN cash (id=1) = 200.00, card (id=2) = 150.00
+     * CASH_IN = 50.00, CASH_OUT = 10.00
+     * SALE_IN cash (id=1) = 200.00, card (id=2) = 150.00
      *
      * cash expected  = 100 + 50 - 10 + 200 = 340.00
      * card expected  = 150.00
      */
     public function test_returns_cash_and_card_rows(): void
     {
-        $cashShiftId = 1;
         $sessionId = 42;
 
         $this->connection
             ->method('fetchAssociative')
-            ->willReturnCallback(
-                static function (string $sql, array $params) use ($sessionId): array {
-                    return ['id' => $sessionId, 'opening_amount' => '100.00'];
-                }
-            );
+            ->willReturn(['id' => $sessionId, 'opening_amount' => '100.00']);
 
         $this->connection
             ->method('fetchOne')
             ->willReturnCallback(
                 static function (string $sql, array $params): string {
-                    if (str_contains($sql, "type = 'income'")) {
+                    if (str_contains($sql, "movement_type = 'CASH_IN'")) {
                         return '50.00';
                     }
-                    if (str_contains($sql, "type = 'expense'")) {
+                    if (str_contains($sql, "movement_type = 'CASH_OUT'")) {
                         return '10.00';
                     }
                     if (str_contains($sql, 'payment_method') && $params[0] === 1) {
@@ -77,7 +74,7 @@ final class CashShiftClosureSummaryProviderTest extends TestCase
 
         $result = $this->provider->provide(
             new GetCollection(uriTemplate: '/cash-shifts/{id}/summary'),
-            ['id' => $cashShiftId],
+            ['id' => $sessionId],
         );
 
         $this->assertCount(2, $result);
@@ -98,38 +95,55 @@ final class CashShiftClosureSummaryProviderTest extends TestCase
     }
 
     /**
-     * TC-6: when no V2 cash_session exists (legacy data only), returns a single cash row
-     * with amount derived from legacy movements only.
-     *
-     * legacy income = 80.00, expense = 0.00
-     * cash expected = 80.00
+     * TC-6: when no cash_session exists with the given id, returns empty array.
      */
-    public function test_fallback_when_no_cash_session(): void
+    public function test_returns_empty_when_session_not_found(): void
     {
-        $cashShiftId = 99;
-
         $this->connection
             ->method('fetchAssociative')
             ->willReturn(false); // no session found
+
+        $result = $this->provider->provide(
+            new GetCollection(uriTemplate: '/cash-shifts/{id}/summary'),
+            ['id' => 999],
+        );
+
+        $this->assertSame([], $result);
+    }
+
+    /**
+     * TC-6b: when session exists but has no movements, cash expected = opening amount.
+     *
+     * opening = 80.00, CASH_IN = 0, CASH_OUT = 0, SALE_IN = 0
+     * cash expected = 80.00
+     */
+    public function test_cash_expected_equals_opening_when_no_movements(): void
+    {
+        $sessionId = 10;
+
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['id' => $sessionId, 'opening_amount' => '80.00']);
 
         $this->connection
             ->method('fetchOne')
             ->willReturnCallback(
                 static function (string $sql, array $params): string {
-                    if (str_contains($sql, "type = 'income'")) {
-                        return '80.00';
-                    }
-                    if (str_contains($sql, "type = 'expense'")) {
-                        return '0.00';
+                    if (str_contains($sql, 'payment_method')) {
+                        return 'Efectivo';
                     }
 
-                    return 'Efectivo';
+                    return '0';
                 }
             );
 
+        $this->connection
+            ->method('fetchAllAssociative')
+            ->willReturn([]); // no SALE_IN movements
+
         $result = $this->provider->provide(
             new GetCollection(uriTemplate: '/cash-shifts/{id}/summary'),
-            ['id' => $cashShiftId],
+            ['id' => $sessionId],
         );
 
         $this->assertCount(1, $result);
