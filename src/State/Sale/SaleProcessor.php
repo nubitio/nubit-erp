@@ -22,6 +22,7 @@ use App\Entity\SaleItem;
 use App\Enum\CashShiftStatus;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
+use App\Repository\DashboardRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Service\SalePaymentPlanService;
 use App\State\Purchase\GoodsReceiptWriteGateway;
@@ -62,6 +63,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SalePaymentPlanService $salePaymentPlanService,
         private DetractionCalculator $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
+        private DashboardRepository $dashboardRepository,
     ) {
     }
 
@@ -278,7 +280,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             $cashShiftForMovement?->getId()
                         );
                     $resolvedCashSessionId = $cashSessionId;
-                    $this->salesWriteGateway->write($data, $cashSessionId);
+                    $this->salesWriteGateway->write($data, $cashSessionId, $isNew);
                 } catch (\Throwable $exception) {
                     $this->logger->error('Sales V2 dual-write failed', [
                         'sale_id' => $data->getId(),
@@ -385,6 +387,14 @@ readonly class SaleProcessor implements ProcessorInterface
         $this->logger->info('Sale processing completed successfully', [
             'sale_id' => $data->getId(),
         ]);
+
+        if ($isNew && $isOperationalSale) {
+            $branchId = $data->getBranch()?->getId()
+                ?? $this->branchContextService->getCurrentBranchId();
+            if ($branchId !== null) {
+                $this->dashboardRepository->invalidate($branchId);
+            }
+        }
 
         return $result;
     }

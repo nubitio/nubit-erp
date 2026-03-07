@@ -12,6 +12,7 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Psr\Log\LoggerInterface;
 
 /**
  * Gateway for writes on the new sales schema.
@@ -22,13 +23,14 @@ readonly class SalesWriteGateway
         private Connection $connection,
         private SaleCurrencyResolver $saleCurrencyResolver,
         private SalePaymentPlanService $salePaymentPlanService,
+        private LoggerInterface $logger,
     ) {
     }
 
     /**
      * @throws Exception
      */
-    public function write(Sale $sale, ?int $cashSessionId): void
+    public function write(Sale $sale, ?int $cashSessionId, bool $isNew = false): void
     {
         $saleId = $sale->getId();
         $warehouseId = $sale->getAlmacen()?->getId();
@@ -454,6 +456,134 @@ SQL,
         } catch (\Throwable $exception) {
             $this->connection->rollBack();
             throw $exception;
+        }
+
+        if ($isNew && $sale->getEstado() !== 0) {
+            $this->upsertDailySummaries($sale);
+        }
+    }
+
+    private function upsertDailySummaries(Sale $sale): void
+    {
+        try {
+            $issuedAt = ($sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable())
+                ->format('Y-m-d H:i:s');
+            $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
+            $subtotal = Money::toString(Money::money($sale->getSubtotal()));
+            $discountPercent = Money::of($sale->getDescuento() ?? '0');
+            $discountAmount = Money::toString(
+                Money::mul(Money::money($sale->getSubtotal()), Money::rate($discountPercent))
+            );
+            $grandTotal = Money::toString(Money::money($sale->getTotal()));
+
+            $this->connection->executeStatement(
+                <<<'SQL'
+INSERT INTO branch_daily_summary (
+    summary_date, branch_id, sales_count, gross_sales,
+    discount_total, tax_total, net_sales, refunds_total, cash_difference_total
+) VALUES (
+    DATE(CONVERT_TZ(:issued_at,'UTC','America/Lima')),
+    :branch_id, 1, :subtotal, :discount_total, :tax_total, :grand_total, :refund_total, 0
+)
+ON DUPLICATE KEY UPDATE
+  sales_count=sales_count+1,
+  gross_sales=gross_sales+VALUES(gross_sales),
+  discount_total=discount_total+VALUES(discount_total),
+  tax_total=tax_total+VALUES(tax_total),
+  net_sales=net_sales+VALUES(net_sales),
+  refunds_total=refunds_total+VALUES(refunds_total),
+  updated_at=NOW()
+SQL,
+                [
+                    'issued_at' => $issuedAt,
+                    'branch_id' => $branchId,
+                    'subtotal' => $subtotal,
+                    'discount_total' => $discountAmount,
+                    'tax_total' => '0.00',
+                    'grand_total' => $grandTotal,
+                    'refund_total' => '0',
+                ]
+            );
+
+            $currencyData = $this->saleCurrencyResolver->resolveForWrite($sale);
+            $paymentLines = $this->salePaymentPlanService->resolveForWrite(
+                $sale,
+                $currencyData['currency'],
+                Money::toString(Money::money($sale->getTotal())),
+            );
+            foreach ($paymentLines as $paymentLine) {
+                $this->connection->executeStatement(
+                    <<<'SQL'
+INSERT INTO payment_method_daily_summary (
+    summary_date, branch_id, payment_method_id,
+    payment_count, amount_total, refund_amount_total
+) VALUES (
+    DATE(CONVERT_TZ(:issued_at,'UTC','America/Lima')),
+    :branch_id, :payment_method_id, 1, :amount, 0
+)
+ON DUPLICATE KEY UPDATE
+  payment_count=payment_count+1,
+  amount_total=amount_total+VALUES(amount_total),
+  updated_at=NOW()
+SQL,
+                    [
+                        'issued_at' => $issuedAt,
+                        'branch_id' => $branchId,
+                        'payment_method_id' => $paymentLine['payment_method_id'],
+                        'amount' => $paymentLine['amount'],
+                    ]
+                );
+            }
+
+            $warehouseId = $sale->getAlmacen()?->getId();
+            foreach ($sale->getItems() as $item) {
+                $product = $item->getProducto();
+                if ($product === null || $warehouseId === null) {
+                    continue;
+                }
+
+                $qty = Money::of($item->getCantidad())->toScale(3, RoundingMode::HALF_UP);
+                $netAmount = Money::money($item->getPrecioTotal());
+                $costPerUnit = Money::of($product->getPurchasePrice() ?? '0');
+                $costTotal = Money::mul(Money::money($qty), Money::money($costPerUnit));
+                $marginAmount = $netAmount->minus($costTotal);
+
+                $this->connection->executeStatement(
+                    <<<'SQL'
+INSERT INTO product_daily_summary (
+    summary_date, branch_id, warehouse_id, product_id,
+    qty_sold, net_sales, cost_total, margin_total, returns_qty
+) VALUES (
+    DATE(CONVERT_TZ(:issued_at,'UTC','America/Lima')),
+    :branch_id, :warehouse_id, :product_id, :qty, :net_amount, :cost_total, :margin_amount, 0
+)
+ON DUPLICATE KEY UPDATE
+  qty_sold=qty_sold+VALUES(qty_sold),
+  net_sales=net_sales+VALUES(net_sales),
+  cost_total=cost_total+VALUES(cost_total),
+  margin_total=margin_total+VALUES(margin_total),
+  updated_at=NOW()
+SQL,
+                    [
+                        'issued_at' => $issuedAt,
+                        'branch_id' => $branchId,
+                        'warehouse_id' => $warehouseId,
+                        'product_id' => $product->getId(),
+                        'qty' => $qty->__toString(),
+                        'net_amount' => Money::toString($netAmount),
+                        'cost_total' => Money::toString($costTotal),
+                        'margin_amount' => Money::toString($marginAmount),
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            $this->logger->error('Daily summary upsert failed — sale data may be stale', [
+                'sale_id' => $sale->getId(),
+                'error' => $e->getMessage(),
+                'exception_class' => $e::class,
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine(),
+            ]);
         }
     }
 

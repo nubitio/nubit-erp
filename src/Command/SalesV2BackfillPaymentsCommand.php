@@ -38,6 +38,12 @@ final class SalesV2BackfillPaymentsCommand extends TenantAwareCommand
             InputOption::VALUE_NONE,
             'Show how many rows would be created without inserting.',
         );
+        $this->addOption(
+            'fix-legacy',
+            null,
+            InputOption::VALUE_NONE,
+            'Update existing sale_payments rows that were backfilled with the wrong (cash) payment method.',
+        );
     }
 
     #[Override]
@@ -45,6 +51,7 @@ final class SalesV2BackfillPaymentsCommand extends TenantAwareCommand
     {
         $io = new SymfonyStyle($input, $output);
         $dryRun = (bool) $input->getOption('dry-run');
+        $fixLegacy = (bool) $input->getOption('fix-legacy');
 
         try {
             $this->connection->fetchOne('SELECT 1 FROM sales LIMIT 1');
@@ -63,24 +70,31 @@ final class SalesV2BackfillPaymentsCommand extends TenantAwareCommand
             return Command::FAILURE;
         }
 
+        if ($fixLegacy) {
+            return $this->runFixLegacy($io, $dryRun, $cashPaymentMethodId);
+        }
+
+        return $this->runBackfill($io, $dryRun, $cashPaymentMethodId);
+    }
+
+    private function runBackfill(SymfonyStyle $io, bool $dryRun, int $cashPaymentMethodId): int
+    {
         if ($dryRun) {
             $missingPayments = (int) $this->connection->fetchOne(
                 <<<'SQL'
 SELECT COUNT(*)
 FROM sales s
-WHERE s.legacy_movimiento_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sale_payments sp
-      WHERE sp.sale_id = s.id
-  )
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM sale_payments sp
+    WHERE sp.sale_id = s.id
+)
 SQL
             );
 
             $io->note(sprintf(
-                'Dry run: %d sale_payments would be created with payment_method_id=%d (cash).',
+                'Dry run: %d sale_payments would be created (real payment method used for legacy rows).',
                 $missingPayments,
-                $cashPaymentMethodId,
             ));
 
             return Command::SUCCESS;
@@ -110,7 +124,7 @@ INSERT INTO sale_payments (
 )
 SELECT
     s.id AS sale_id,
-    :cash_payment_method_id AS payment_method_id,
+    COALESCE(m.tipo_pago, :cash_payment_method_id) AS payment_method_id,
     COALESCE(s.grand_total, 0.00) AS amount,
     COALESCE(NULLIF(s.currency, ''), 'PEN') AS currency,
     COALESCE(s.grand_total, 0.00) AS tendered_amount,
@@ -141,12 +155,12 @@ SELECT
     1 AS version_no,
     NOW() AS last_modified_at
 FROM sales s
-WHERE s.legacy_movimiento_id IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1
-      FROM sale_payments sp
-      WHERE sp.sale_id = s.id
-  )
+LEFT JOIN movimiento m ON m.movimiento_id = s.legacy_movimiento_id
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM sale_payments sp
+    WHERE sp.sale_id = s.id
+)
 SQL,
                 ['cash_payment_method_id' => $cashPaymentMethodId]
             );
@@ -165,15 +179,81 @@ SQL,
         }
 
         if ($inserted === 0) {
-            $io->success('No legacy sales without payment were found.');
+            $io->success('No sales without payment were found.');
 
             return Command::SUCCESS;
         }
 
         $io->success(sprintf(
-            'Created %d sale_payments for legacy sales using payment_method_id=%d (cash).',
+            'Created %d sale_payments for sales (legacy rows use real payment method; pure V2 rows fall back to cash id=%d).',
             $inserted,
             $cashPaymentMethodId,
+        ));
+
+        return Command::SUCCESS;
+    }
+
+    private function runFixLegacy(SymfonyStyle $io, bool $dryRun, int $cashPaymentMethodId): int
+    {
+        if ($dryRun) {
+            $affectedRows = (int) $this->connection->fetchOne(
+                <<<'SQL'
+SELECT COUNT(*)
+FROM sale_payments sp
+INNER JOIN sales s ON s.id = sp.sale_id
+INNER JOIN movimiento m ON m.movimiento_id = s.legacy_movimiento_id
+WHERE s.legacy_movimiento_id IS NOT NULL
+  AND m.tipo_pago IS NOT NULL
+  AND m.tipo_pago != sp.payment_method_id
+SQL
+            );
+
+            $io->note(sprintf(
+                'Dry run (--fix-legacy): %d sale_payments rows would be updated to their real payment method.',
+                $affectedRows,
+            ));
+
+            return Command::SUCCESS;
+        }
+
+        $this->connection->beginTransaction();
+
+        try {
+            $updated = (int) $this->connection->executeStatement(
+                <<<'SQL'
+UPDATE sale_payments sp
+INNER JOIN sales s ON s.id = sp.sale_id
+INNER JOIN movimiento m ON m.movimiento_id = s.legacy_movimiento_id
+SET
+  sp.payment_method_id = m.tipo_pago,
+  sp.last_modified_at = NOW()
+WHERE s.legacy_movimiento_id IS NOT NULL
+  AND m.tipo_pago IS NOT NULL
+  AND m.tipo_pago != sp.payment_method_id
+SQL
+            );
+
+            $this->connection->commit();
+        } catch (\Throwable $exception) {
+            $this->connection->rollBack();
+            $this->logger->error('Failed to fix legacy sale payments', [
+                'tenant' => $this->currentTenantName,
+                'exception' => $exception,
+            ]);
+            $io->error('Failed to fix legacy sale payments: ' . $exception->getMessage());
+
+            return Command::FAILURE;
+        }
+
+        if ($updated === 0) {
+            $io->success('No legacy sale_payments rows needed correction.');
+
+            return Command::SUCCESS;
+        }
+
+        $io->success(sprintf(
+            'Updated %d sale_payments rows to their real payment method from movimiento.tipo_pago.',
+            $updated,
         ));
 
         return Command::SUCCESS;
