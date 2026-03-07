@@ -38,8 +38,8 @@ export const CashRegisterOpen = () => {
       .openCashRegister(id, formData.openingBalance)
       .subscribe((response) => {
         toast('Caja abierta', 'success');
-        const cashShiftId = response.data.id;
-        navigate('/cash-shift/' + cashShiftId + '/movements');
+        const cashSessionId = response.data.cashSessionId ?? response.data.id;
+        navigate('/cash-session/' + cashSessionId + '/movements');
       })
       .add(() => {
         setIsProcessing(false);

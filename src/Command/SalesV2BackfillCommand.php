@@ -76,7 +76,9 @@ final class SalesV2BackfillCommand extends TenantAwareCommand
         // Collect all eligible movimiento_ids ordered so we can cursor through them in chunks.
         /** @var list<string> $ids */
         $ids = $this->connection->fetchFirstColumn(
-            'SELECT movimiento_id FROM movimiento WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL ORDER BY movimiento_id'
+            'SELECT movimiento_id FROM movimiento'
+            . ' WHERE tipo_id = 2 AND almacen_id IS NOT NULL AND branch_id IS NOT NULL'
+            . ' ORDER BY movimiento_id',
         );
 
         $total = count($ids);

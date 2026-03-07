@@ -55,7 +55,9 @@ final class PurchasesV2ReconcileCommand extends TenantAwareCommand
             return Command::SUCCESS;
         }
 
-        $from = (new \DateTimeImmutable('today', new \DateTimeZone('America/Lima')))->modify(sprintf('-%d days', $days - 1))->format('Y-m-d');
+        $from = (new \DateTimeImmutable('today', new \DateTimeZone('America/Lima')))
+            ->modify(sprintf('-%d days', $days - 1))
+            ->format('Y-m-d');
 
         $legacyRows = $this->connection->fetchAllAssociative(
             <<<'SQL'

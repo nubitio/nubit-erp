@@ -18,9 +18,10 @@ type CashMovementsParams = {
 
 export const CashMovements = () => {
   const { id } = useParams<CashMovementsParams>();
-  const API_URL = Constants.API_BASE_URL + 'cash-movements';
+  const cashSessionId = id;
+  const API_URL = Constants.API_BASE_URL + `cash-sessions/${cashSessionId}/movements`;
   const gridRef = useRef<DxDataGridEvents>(null);
-  const fields = cashMovementsFields(id);
+  const fields = cashMovementsFields(cashSessionId);
   const [balance, setBalance] = useState<number | undefined>(undefined);
   const [gridError, setGridError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -42,14 +43,14 @@ export const CashMovements = () => {
       type: 'normal',
       icon: 'ph ph-printer',
       onClick: () => {
-        window.open(`/api/cash-shifts/${id}/x-report`, '_blank');
+        window.open(`/api/cash-sessions/${cashSessionId}/x-report`, '_blank');
       },
     },
     {
       text: 'Cerrar Caja',
       type: 'info',
       onClick: () => {
-        navigate(`/cash-register/${id}/close`);
+        navigate(`/cash-register/${cashSessionId}/close`);
       },
     },
   ];
@@ -81,7 +82,7 @@ export const CashMovements = () => {
         id="cash-movements"
         title="Movimientos de caja"
         toolbar={toolbar}
-        url={Constants.API_BASE_URL + 'cash-shifts/' + id + '/movements'}
+        url={API_URL}
         allowAdd={true}
         allowEdit={true}
         allowDelete={true}
@@ -122,7 +123,7 @@ export const CashMovements = () => {
           url={API_URL}
           fields={fields}
           events={EVENTS}
-          useIRI={true}
+          useIRI={false}
         />
       </DxDialog>
     </div>

@@ -10,6 +10,13 @@ use PHPUnit\Framework\TestCase;
 
 final class TimeDimensionSeederTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        if (!class_exists(\IntlDateFormatter::class)) {
+            self::markTestSkipped('ext-intl is not available in this environment');
+        }
+    }
+
     public function testSeedInsertsRowsInBatchesAndInvokesProgressCallback(): void
     {
         $connection = $this->createMock(Connection::class);

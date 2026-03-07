@@ -5,8 +5,10 @@ import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { Constants } from '../../../../core/common/Constants';
 
-const cashMovementsFields = (cashShiftId: string | undefined) => {
+const cashMovementsFields = (cashSessionId: string | undefined) => {
   const fields: Field[] = [];
+
+  void cashSessionId; // cashSessionId is encoded in the endpoint URL; not needed as a form field
 
   fields.push(
     new FieldBuilder()
@@ -20,29 +22,13 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('cashShift')
-      .label('Turno')
-      .url(Constants.API_BASE_URL + 'cash-shifts')
-      .valueField('id')
-      .textField('id')
-      .valueType('number')
-      .defaultValue(Number(cashShiftId))
-      .required(true)
-      .visible(false)
-      .hidden(true)
-      .readonly(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
       .name('category')
       .label('Categoría')
       .url(Constants.API_BASE_URL + 'cash-movement-categories')
       .valueField('id')
       .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
-      .required(true)
+      .required(false)
       .build(),
   );
   fields.push(

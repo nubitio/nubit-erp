@@ -46,7 +46,7 @@ export const CashRegisterClose = () => {
     }
     const data = closureData.map((item: any) => {
       return {
-        cashShift: Constants.API_BASE_URL + 'cash-shifts/' + id,
+        cashShift: Constants.API_BASE_URL + 'cash-sessions/' + id,
         paymentMethod: Constants.API_BASE_URL + 'payment-methods/' + item.paymentMethodId,
         expectedAmount: Number(item.expectedAmount),
         countedAmount: item.countedAmount,
@@ -76,7 +76,7 @@ export const CashRegisterClose = () => {
 
   useEffect(() => {
     httpClient
-      .get<any>(Constants.API_BASE_URL + 'cash-shifts/' + id + '/summary')
+      .get<any>(Constants.API_BASE_URL + 'cash-sessions/' + id + '/summary')
       .subscribe((response) => {
         gridRef.current?.instance().beginCustomLoading('Cargando datos...');
         gridRef.current?.instance().option('dataSource', response.data);

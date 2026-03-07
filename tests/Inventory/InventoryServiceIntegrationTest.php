@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  */
 final class InventoryServiceIntegrationTest extends TestCase
 {
-    private Connection $conn;
+    private ?Connection $conn = null;
 
     /** @var EventDispatcherInterface&MockObject */
     private MockObject $dispatcher;
@@ -38,6 +38,10 @@ final class InventoryServiceIntegrationTest extends TestCase
 
     protected function setUp(): void
     {
+        if (!extension_loaded('bcmath')) {
+            self::markTestSkipped('ext-bcmath is not available in this environment');
+        }
+
         $this->conn = DriverManager::getConnection([
             'driver' => 'pdo_sqlite',
             'memory' => true,
@@ -51,7 +55,9 @@ final class InventoryServiceIntegrationTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->conn->close();
+        if ($this->conn !== null) {
+            $this->conn->close();
+        }
     }
 
     // ────────────────────────────────────────────────────────────────────────────

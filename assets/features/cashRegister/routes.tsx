@@ -14,7 +14,7 @@ export const cashRegisterRoutes: AppRouteDefinition[] = [
   { path: '/cash-register', element: CashRegisterPage },
   { path: '/cash-register/:id/open', element: CashRegisterOpen },
   { path: '/cash-register/:id/close', element: CashRegisterClose },
-  { path: '/cash-shift/:id/movements', element: CashMovements },
+  { path: '/cash-session/:id/movements', element: CashMovements },
   { path: '/cash-register/:id/shifts', element: CashRegisterShiftsPage },
   { path: '/cash-movement-category', element: CashMovementCategoryPage },
 ];
