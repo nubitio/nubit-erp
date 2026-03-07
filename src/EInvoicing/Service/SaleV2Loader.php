@@ -76,7 +76,7 @@ SQL,
         $sale->setTipoId(2); // sales table only stores operational sales
 
         if ($row['issued_at']) {
-            $sale->setFecha(new \DateTimeImmutable($row['issued_at']));
+            $sale->setFecha(new \DateTimeImmutable($row['issued_at'], new \DateTimeZone('UTC')));
         }
 
         if ($row['created_at']) {

@@ -242,8 +242,8 @@ SQL;
 
         return <<<SQL
 select
-    date(s.issued_at) as sale_date,
-    time(s.issued_at) as sale_time,
+    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
+    TIME(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_time,
     concat(coalesce(i.series, s.serie, '-'), '-', coalesce(i.number, s.numero, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
@@ -323,7 +323,7 @@ SQL;
 
         return <<<SQL
 select
-    date(s.issued_at) as sale_date,
+    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
     concat(coalesce(i.series, s.serie, '-'), '-', coalesce(i.number, s.numero, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,
@@ -375,7 +375,7 @@ SQL;
 
         return <<<SQL
 select
-    date(s.issued_at) as sale_date,
+    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
     coalesce(pm.name, 'Sin método') as payment_method,
     count(distinct s.id) as transactions,
     sum(sp.amount) as total
@@ -398,7 +398,7 @@ SQL;
 
         return <<<SQL
 select
-    date(s.issued_at) as sale_date,
+    DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
     count(*) as sales,
     sum(s.subtotal) as subtotal,
     sum(s.tax_total) as tax,
