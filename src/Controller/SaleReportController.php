@@ -243,7 +243,7 @@ SQL;
         return <<<SQL
 select
     DATE(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_date,
-    time(s.issued_at) as sale_time,
+    TIME(CONVERT_TZ(s.issued_at, 'UTC', 'America/Lima')) as sale_time,
     concat(coalesce(i.series, s.serie, '-'), '-', coalesce(i.number, s.numero, '-')) as document,
     coalesce(vt.descripcion, 'N/A') as voucher_type,
     coalesce(c.razon_social, 'Sin cliente') as customer_name,

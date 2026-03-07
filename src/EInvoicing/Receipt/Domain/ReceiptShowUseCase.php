@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Receipt\Domain;
 
+use App\Core\Exception\NotFoundException;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\CompanyContext;
 use App\Repository\TaxDocumentRepository;
@@ -30,6 +31,9 @@ readonly class ReceiptShowUseCase
     private function makeReceiptForInvoice(string $id): Receipt
     {
         $invoice = $this->taxDocumentRepository->find($id);
+        if ($invoice === null) {
+            throw NotFoundException::forResource('Invoice', $id);
+        }
         $companyName = $this->companyContext->getName();
 
         return new Receipt(
@@ -47,6 +51,9 @@ readonly class ReceiptShowUseCase
     private function makeReceiptForNote(string $id): Receipt
     {
         $note = $this->taxDocumentRepository->find($id);
+        if ($note === null) {
+            throw NotFoundException::forResource('Note', $id);
+        }
         $companyName = $this->companyContext->getName();
 
         return new Receipt(

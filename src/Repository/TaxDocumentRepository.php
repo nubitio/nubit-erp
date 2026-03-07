@@ -400,9 +400,9 @@ SQL,
                 if ($dt === null) {
                     return null;
                 }
-                $limaZone = new \DateTimeZone('America/Lima');
-                $limaDate = \DateTimeImmutable::createFromInterface($dt)->setTimezone($limaZone);
-                return $limaDate->format('Y-m-d H:i:s');
+                $utcZone = new \DateTimeZone('UTC');
+                $utcDate = \DateTimeImmutable::createFromInterface($dt)->setTimezone($utcZone);
+                return $utcDate->format('Y-m-d H:i:s');
             })($taxDocument?->getIssueDate() ?? $sale->getFecha()),
             voucherCurrency: $taxDocument?->getCurrency() ?? $salesCurrencyData['currency'] ?? 'PEN',
             voucherExchangeRate: $taxDocument?->getExchangeRate() ?? $salesCurrencyData['exchange_rate'],
