@@ -13,6 +13,9 @@ use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
+/**
+ * @implements UserProviderInterface<ControlPlaneUser>
+ */
 final readonly class ControlPlaneUserProvider implements UserProviderInterface
 {
     public function __construct(

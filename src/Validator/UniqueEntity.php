@@ -14,6 +14,7 @@ final class UniqueEntity extends Constraint
     public string $message = 'This value is already used.';
 
     public function __construct(
+        /** @var array<int, string> */
         public array $fields,
         ?string $message = null,
         ?array $groups = null,

@@ -218,6 +218,9 @@ final readonly class TestDataSeeder
     ) {
     }
 
+    /**
+     * @return array<string, int>
+     */
     public function seed(
         int $customerCount = 300,
         int $productCount = 500,
@@ -331,6 +334,9 @@ final readonly class TestDataSeeder
         return $count;
     }
 
+    /**
+     * @return array<int, Category>
+     */
     private function getAllChildCategories(): array
     {
         return array_values(
@@ -341,11 +347,17 @@ final readonly class TestDataSeeder
         );
     }
 
+    /**
+     * @return array<int, UnitOfMeasure>
+     */
     private function getAllUnits(): array
     {
         return $this->unitOfMeasureRepository->findAll();
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     private function getPaymentMethods(): array
     {
         return $this->paymentMethodRepository->findAll();
@@ -445,6 +457,10 @@ final readonly class TestDataSeeder
         return $created;
     }
 
+    /**
+     * @param array<int, Category> $categories
+     * @param array<int, UnitOfMeasure> $units
+     */
     private function seedProducts(
         int $count,
         array $categories,
@@ -512,6 +528,12 @@ final readonly class TestDataSeeder
         return $created;
     }
 
+    /**
+     * @param array<int, mixed> $customers
+     * @param array<int, mixed> $products
+     * @param array<int, mixed> $suppliers
+     * @param array<int, mixed> $paymentMethods
+     */
     private function seedSales(
         int $count,
         array $customers,

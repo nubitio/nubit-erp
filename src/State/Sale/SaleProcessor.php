@@ -38,8 +38,15 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * @implements ProcessorInterface<mixed, mixed>
+ */
 readonly class SaleProcessor implements ProcessorInterface
 {
+    /**
+     * @param ProcessorInterface<mixed, mixed> $persistProcessor
+     * @param ProcessorInterface<mixed, mixed> $removeProcessor
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,

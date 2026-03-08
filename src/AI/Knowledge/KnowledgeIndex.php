@@ -11,6 +11,7 @@ use Symfony\Component\Uid\Uuid;
 
 final class KnowledgeIndex
 {
+    /** @var array<string, mixed>|null */
     private ?array $cache = null;
 
     public function __construct(
@@ -19,6 +20,9 @@ final class KnowledgeIndex
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function build(): array
     {
         $docs = $this->collectDocuments($this->projectDir . '/docs');
@@ -52,6 +56,9 @@ final class KnowledgeIndex
         return $index;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function load(): array
     {
         if (null !== $this->cache) {
@@ -89,6 +96,9 @@ final class KnowledgeIndex
         return $this->projectDir . '/var/knowledge_index.json';
     }
 
+    /**
+     * @param array<string, mixed> $index
+     */
     private function persist(array $index): void
     {
         $encoded = json_encode($index, JSON_PRETTY_PRINT);

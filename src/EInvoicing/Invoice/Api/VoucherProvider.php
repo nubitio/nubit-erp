@@ -10,6 +10,9 @@ use App\Repository\TaxDocumentRepository;
 use Doctrine\DBAL\Exception;
 use Override;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class VoucherProvider implements ProviderInterface
 {
     public function __construct(

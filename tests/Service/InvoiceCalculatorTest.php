@@ -156,6 +156,10 @@ final class InvoiceCalculatorTest extends TestCase
         ];
     }
 
+    /**
+     * @param array<int, InvoiceLineInput> $lines
+     * @param array<string, string> $expected
+     */
     #[DataProvider('calculationProvider')]
     public function testCalculations(
         array $lines,

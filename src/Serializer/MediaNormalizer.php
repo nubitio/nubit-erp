@@ -31,6 +31,8 @@ final readonly class MediaNormalizer implements NormalizerInterface
      *
      * @param Media $data
      *
+     * @return array<string, mixed>|ArrayObject<string, mixed>|bool|float|int|string|null
+     *
      * @throws ExceptionInterface
      */
     #[Override]

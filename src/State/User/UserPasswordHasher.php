@@ -11,8 +11,14 @@ use App\Entity\User;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/**
+ * @implements ProcessorInterface<mixed, mixed>
+ */
 final readonly class UserPasswordHasher implements ProcessorInterface
 {
+    /**
+     * @param ProcessorInterface<mixed, mixed> $processor
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $processor,

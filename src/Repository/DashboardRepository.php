@@ -26,6 +26,9 @@ readonly class DashboardRepository
     ) {
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getOverview(string $branchId): array
     {
         $cacheKey = "dashboard:overview:{$branchId}";
@@ -41,6 +44,9 @@ readonly class DashboardRepository
         return $result;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getLiteOverview(string $branchId): array
     {
         $cacheKey = "dashboard:lite:{$branchId}";
@@ -69,6 +75,9 @@ readonly class DashboardRepository
     // Internal builders (no caching — called by the public getters above)
     // -------------------------------------------------------------------------
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildOverview(string $branchId): array
     {
         $ctx = $this->buildQueryContext($branchId);
@@ -439,6 +448,9 @@ readonly class DashboardRepository
         return $payload;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildLiteOverview(string $branchId): array
     {
         $ctx = $this->buildQueryContext($branchId);
@@ -557,6 +569,9 @@ readonly class DashboardRepository
     // Query context
     // -------------------------------------------------------------------------
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildQueryContext(string $branchId): array
     {
         $tz = new DateTimeZone('America/Lima');
@@ -604,6 +619,9 @@ readonly class DashboardRepository
     // Helpers
     // -------------------------------------------------------------------------
 
+    /**
+     * @return array<string, mixed>
+     */
     private function emptyOverviewPayload(): array
     {
         return [
@@ -652,6 +670,9 @@ readonly class DashboardRepository
         ];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function emptyLitePayload(): array
     {
         return [
@@ -672,6 +693,10 @@ readonly class DashboardRepository
         ];
     }
 
+    /**
+     * @param array<int, string> $failedSegments
+     * @return array<string, mixed>
+     */
     private function buildMeta(string $mode, array $failedSegments): array
     {
         return [
@@ -682,6 +707,9 @@ readonly class DashboardRepository
         ];
     }
 
+    /**
+     * @param array<int, string> $failedSegments
+     */
     private function safeQuery(string $segment, callable $resolver, mixed $fallback, array &$failedSegments): mixed
     {
         try {

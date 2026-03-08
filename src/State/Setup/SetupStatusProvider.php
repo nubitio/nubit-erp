@@ -10,6 +10,9 @@ use ApiPlatform\State\ProviderInterface;
 use App\Dto\Setup\SetupStatusDto;
 use App\Setup\InitialSetupService;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class SetupStatusProvider implements ProviderInterface
 {
     public function __construct(private InitialSetupService $service)

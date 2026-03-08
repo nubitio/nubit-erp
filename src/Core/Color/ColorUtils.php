@@ -119,6 +119,9 @@ final class ColorUtils
         return self::lightenColor($hexColor, -$percent);
     }
 
+    /**
+     * @return array<int, int>
+     */
     public static function hexToRgb(string $hexColor): array
     {
         $hexColor = str_replace('#', '', $hexColor);

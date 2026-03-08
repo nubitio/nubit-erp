@@ -266,6 +266,9 @@ final class TenantUsageServiceTest extends TestCase
             /** @var array<string, mixed> */
             private array $store = [];
 
+            /**
+             * @param array<string, mixed>|null $metadata
+             */
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
                 if (!array_key_exists($key, $this->store)) {
@@ -305,6 +308,9 @@ final class TenantUsageServiceTest extends TestCase
                             return $this;
                         }
 
+                        /**
+                         * @return array<string, mixed>
+                         */
                         public function getMetadata(): array
                         {
                             return [];

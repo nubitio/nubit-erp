@@ -12,6 +12,9 @@ use App\Core\Http\ApiResponse;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProcessorInterface<mixed, mixed>
+ */
 readonly class RoleMenuProcessor implements ProcessorInterface
 {
     public function __construct(

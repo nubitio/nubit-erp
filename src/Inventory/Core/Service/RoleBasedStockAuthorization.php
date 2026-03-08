@@ -16,6 +16,9 @@ final class RoleBasedStockAuthorization implements StockAuthorizationPolicyInter
 {
     private const OVERRIDE_ROLE = 'ROLE_INVENTORY_OVERRIDE';
 
+    /**
+     * @param array<int, string> $roles
+     */
     public function canOverrideStrictPolicy(
         Product $product,
         string $actorId,

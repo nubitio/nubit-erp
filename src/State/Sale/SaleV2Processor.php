@@ -22,6 +22,8 @@ use Psr\Log\LoggerInterface;
  * Maps a SaleRecord (English field names) to the legacy Sale entity,
  * delegates all business logic to SaleProcessor, then returns a
  * refreshed SaleRecord from the repository.
+ *
+ * @implements ProcessorInterface<mixed, mixed>
  */
 readonly class SaleV2Processor implements ProcessorInterface
 {
@@ -153,6 +155,8 @@ readonly class SaleV2Processor implements ProcessorInterface
      * - Object with @id: {"@id": "/api/products/uuid", ...}
      * - Object with id: {"id": "uuid", ...}
      * - Plain scalar: "uuid"
+     *
+     * @param array<string, mixed> $itemData
      */
     private function extractProductId(array $itemData): ?string
     {

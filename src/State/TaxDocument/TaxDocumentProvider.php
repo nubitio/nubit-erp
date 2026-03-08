@@ -10,8 +10,15 @@ use ApiPlatform\State\ProviderInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class TaxDocumentProvider implements ProviderInterface
 {
+    /**
+     * @param ProviderInterface<object> $collectionProvider
+     * @param ProviderInterface<object> $itemProvider
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
         private ProviderInterface $collectionProvider,
@@ -34,6 +41,10 @@ readonly class TaxDocumentProvider implements ProviderInterface
         return $this->itemProvider->provide($operation, $uriVariables, $context);
     }
 
+    /**
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
     private function addSort(array $context, string $selector, string $direction = 'asc'): array
     {
         if (!isset($context['filters']['sort'])) {
@@ -48,6 +59,10 @@ readonly class TaxDocumentProvider implements ProviderInterface
         return $context;
     }
 
+    /**
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
     private function addTypeFilterByOperation(?string $type, array $context): array
     {
         $typeFilter = match ($type) {

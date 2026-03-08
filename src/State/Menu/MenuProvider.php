@@ -12,6 +12,9 @@ use App\Dto\Menu\SubMenuDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class MenuProvider implements ProviderInterface
 {
     public function __construct(

@@ -12,6 +12,9 @@ use App\Dto\RoleMenu\RoleMenuItemDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class RoleMenuProvider implements ProviderInterface
 {
     public function __construct(

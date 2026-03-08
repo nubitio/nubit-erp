@@ -522,6 +522,7 @@ SQL,
     }
 
     /**
+     * @param array<int, VoucherLineDto> $lines
      * @throws MathException
      */
     private function calculateAmounts(

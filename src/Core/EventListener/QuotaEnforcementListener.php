@@ -36,6 +36,9 @@ final readonly class QuotaEnforcementListener
     ) {
     }
 
+    /**
+     * @param LifecycleEventArgs<\Doctrine\Persistence\ObjectManager> $args
+     */
     public function prePersist(LifecycleEventArgs $args): void
     {
         if ($this->tenantContext->getTenantName() === null) {

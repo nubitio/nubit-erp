@@ -15,6 +15,9 @@ final readonly class AuthUserDto
     ) {
     }
 
+    /**
+     * @param array<string, mixed> $jwtPayload
+     */
     public static function createFromJWTPayload(array $jwtPayload): AuthUserDto
     {
         return new self(

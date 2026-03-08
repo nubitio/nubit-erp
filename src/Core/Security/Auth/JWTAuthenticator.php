@@ -58,6 +58,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return (($isBearerHeaderPresent || $isAuthCookiePresent) && !$isLoginRoute) || ($isPostMethod && $isLoginRoute);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getCredentials(Request $request): array
     {
         $username = '';
@@ -170,6 +173,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return $token === '' ? null : $token;
     }
 
+    /**
+     * @param array<string, mixed> $credentials
+     */
     private function authenticateWithCredentials(array $credentials): Passport
     {
         $username = $credentials['username'];
@@ -287,6 +293,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return $this->createWebResponse($token, $responseData);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildResponseData(User $user): array
     {
         return [
@@ -299,6 +308,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         ];
     }
 
+    /**
+     * @param array<string, mixed> $responseData
+     */
     private function createMobileResponse(JWTAuthenticationToken $token, array $responseData): JsonResponse
     {
         $refreshToken = $this->getTokenAttributeSafely($token, 'refreshToken');
@@ -313,6 +325,9 @@ class JWTAuthenticator extends AbstractAuthenticator implements AuthenticationEn
         return new JsonResponse($responseData);
     }
 
+    /**
+     * @param array<string, mixed> $responseData
+     */
     private function createWebResponse(JWTAuthenticationToken $token, array $responseData): JsonResponse
     {
         $response = new JsonResponse($responseData);
