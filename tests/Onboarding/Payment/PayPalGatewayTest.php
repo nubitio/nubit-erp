@@ -8,6 +8,8 @@ use App\Onboarding\Payment\BillingCycle;
 use App\Onboarding\Payment\PayPalGateway;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 final class PayPalGatewayTest extends TestCase
@@ -18,9 +20,11 @@ final class PayPalGatewayTest extends TestCase
         string $webhookId = 'test-webhook-id',
         string $mode = 'sandbox',
         string $planMapJson = '{}',
+        MockHttpClient|null $httpClient = null,
     ): PayPalGateway {
         return new PayPalGateway(
             logger: $this->createMock(LoggerInterface::class),
+            httpClient: $httpClient ?? new MockHttpClient(),
             clientId: $clientId,
             clientSecret: $clientSecret,
             webhookId: $webhookId,
@@ -98,17 +102,69 @@ final class PayPalGatewayTest extends TestCase
         self::assertSame('my-webhook-id', $webhookIdProp->getValue($gateway));
     }
 
-    public function testHandleWebhookReturnsNullWhenVerifyApiUnreachable(): void
+    /**
+     * Happy-path webhook verification: mocked OAuth token + mocked verify-webhook-signature → SUCCESS.
+     * Expects a fully-populated PaymentEvent — zero real HTTP calls.
+     */
+    public function testHandleWebhookHappyPath(): void
     {
-        // When the PayPal Verify API is unreachable (OAuth token request fails via curl
-        // because there is no real network / PayPal server in the test environment),
-        // verifyWebhookSignature() must return null — not false — and handleWebhook()
-        // must propagate that as a null PaymentEvent (graceful failure, no exception).
+        $tokenResponse = '{"access_token":"tok-abc","token_type":"Bearer","expires_in":32400}';
+        $httpClient = new MockHttpClient([
+            // First call: OAuth token
+            new MockResponse($tokenResponse, ['http_code' => 200]),
+            // Second call: webhook signature verification
+            new MockResponse('{"verification_status":"SUCCESS"}', ['http_code' => 200]),
+        ]);
+
         $gateway = $this->buildGateway(
             clientId: 'ci',
             clientSecret: 'cs',
             webhookId: 'wh-id',
             mode: 'sandbox',
+            httpClient: $httpClient,
+        );
+
+        $request = Request::create('/webhook', 'POST', server: [
+            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
+            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-123',
+            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-abc',
+            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+        ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
+
+        $event = $gateway->handleWebhook($request);
+
+        self::assertNotNull($event);
+        self::assertSame('paypal', $event->gateway);
+        self::assertSame('BILLING.SUBSCRIPTION.ACTIVATED', $event->eventType);
+        self::assertSame('evt-1', $event->gatewayEventId);
+        self::assertSame('sub-1', $event->gatewaySubscriptionId);
+    }
+
+    /**
+     * Network failure: MockHttpClient configured to throw a transport error on OAuth call.
+     * verifyWebhookSignature must return null → handleWebhook returns null + logs error.
+     */
+    public function testHandleWebhookReturnsNullWhenVerifyApiUnreachable(): void
+    {
+        // Simulate network failure: HTTP 500 on the OAuth token request
+        $httpClient = new MockHttpClient(
+            new MockResponse('{"error":"server_error"}', ['http_code' => 500]),
+        );
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('error')
+            ->with(self::stringContains('Verify API unreachable'));
+
+        $gateway = new PayPalGateway(
+            logger: $logger,
+            httpClient: $httpClient,
+            clientId: 'ci',
+            clientSecret: 'cs',
+            webhookId: 'wh-id',
+            mode: 'sandbox',
+            planMapJson: '{}',
         );
 
         $request = Request::create('/webhook', 'POST', server: [
@@ -119,11 +175,102 @@ final class PayPalGatewayTest extends TestCase
             'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
         ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
 
-        // The curl call to the sandbox OAuth endpoint will fail in unit-test context;
-        // the gateway must return null (not false, not throw).
         $result = $gateway->handleWebhook($request);
 
         self::assertNull($result);
+    }
+
+    /**
+     * Verify-signature API returns FAILURE status → handleWebhook returns null (invalid webhook).
+     */
+    public function testHandleWebhookReturnsNullWhenVerificationFails(): void
+    {
+        $tokenResponse = '{"access_token":"tok-abc","token_type":"Bearer","expires_in":32400}';
+        $httpClient = new MockHttpClient([
+            // OAuth token
+            new MockResponse($tokenResponse, ['http_code' => 200]),
+            // Verify webhook: FAILURE
+            new MockResponse('{"verification_status":"FAILURE"}', ['http_code' => 200]),
+        ]);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('warning')
+            ->with('PayPal webhook signature verification failed');
+
+        $gateway = new PayPalGateway(
+            logger: $logger,
+            httpClient: $httpClient,
+            clientId: 'ci',
+            clientSecret: 'cs',
+            webhookId: 'wh-id',
+            mode: 'sandbox',
+            planMapJson: '{}',
+        );
+
+        $request = Request::create('/webhook', 'POST', server: [
+            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
+            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-123',
+            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-abc',
+            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+        ], content: '{"id":"evt-1","event_type":"BILLING.SUBSCRIPTION.ACTIVATED","resource":{"id":"sub-1"}}');
+
+        $result = $gateway->handleWebhook($request);
+
+        self::assertNull($result);
+    }
+
+    /**
+     * Invalid/missing order ID in resource → subscriptionId is empty string, but event is still returned
+     * (business logic: subscription ID from resource.id, falls back to resource.billing_agreement_id, then empty).
+     */
+    public function testHandleWebhookHandlesMissingSubscriptionId(): void
+    {
+        $tokenResponse = '{"access_token":"tok-abc","token_type":"Bearer","expires_in":32400}';
+        $httpClient = new MockHttpClient([
+            new MockResponse($tokenResponse, ['http_code' => 200]),
+            new MockResponse('{"verification_status":"SUCCESS"}', ['http_code' => 200]),
+        ]);
+
+        $gateway = $this->buildGateway(
+            webhookId: 'wh-id',
+            mode: 'sandbox',
+            httpClient: $httpClient,
+        );
+
+        // Payload with no resource.id and no resource.billing_agreement_id
+        $request = Request::create('/webhook', 'POST', server: [
+            'HTTP_PAYPAL_AUTH_ALGO'         => 'SHA256withRSA',
+            'HTTP_PAYPAL_CERT_URL'          => 'https://api.sandbox.paypal.com/v1/notifications/certs/cert-id',
+            'HTTP_PAYPAL_TRANSMISSION_ID'   => 'tx-id-456',
+            'HTTP_PAYPAL_TRANSMISSION_SIG'  => 'sig-def',
+            'HTTP_PAYPAL_TRANSMISSION_TIME' => '2024-01-01T00:00:00Z',
+        ], content: '{"id":"evt-2","event_type":"PAYMENT.SALE.COMPLETED","resource":{}}');
+
+        $event = $gateway->handleWebhook($request);
+
+        self::assertNotNull($event);
+        self::assertSame('evt-2', $event->gatewayEventId);
+        self::assertSame('', $event->gatewaySubscriptionId);
+    }
+
+    /**
+     * getSubscriptionStatus: mocked OAuth + status API returning ACTIVE.
+     */
+    public function testGetSubscriptionStatusReturnsActiveForActiveSub(): void
+    {
+        $tokenResponse = '{"access_token":"tok-abc","token_type":"Bearer","expires_in":32400}';
+        $httpClient = new MockHttpClient([
+            new MockResponse($tokenResponse, ['http_code' => 200]),
+            new MockResponse('{"id":"I-123","status":"ACTIVE"}', ['http_code' => 200]),
+        ]);
+
+        $gateway = $this->buildGateway(httpClient: $httpClient);
+
+        $status = $gateway->getSubscriptionStatus('I-123');
+
+        self::assertSame(\App\Onboarding\Payment\SubscriptionStatus::Active, $status);
     }
 
     /**

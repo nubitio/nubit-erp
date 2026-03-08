@@ -8,6 +8,8 @@ use App\Onboarding\Payment\BillingCycle;
 use App\Onboarding\Payment\MercadoPagoGateway;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Request;
 
 final class MercadoPagoGatewayTest extends TestCase
@@ -16,9 +18,11 @@ final class MercadoPagoGatewayTest extends TestCase
         string $accessToken = 'test-access-token',
         string $webhookSecret = 'test-webhook-secret',
         string $planMapJson = '{}',
+        MockHttpClient|null $httpClient = null,
     ): MercadoPagoGateway {
         return new MercadoPagoGateway(
             logger: $this->createMock(LoggerInterface::class),
+            httpClient: $httpClient ?? new MockHttpClient(),
             accessToken: $accessToken,
             webhookSecret: $webhookSecret,
             planMapJson: $planMapJson,
@@ -34,8 +38,10 @@ final class MercadoPagoGatewayTest extends TestCase
 
     public function testResolvePlanConfigResolvesKnownKey(): void
     {
+        $planMap = '{"basic_monthly":{"amount":29.9,"currency":"PEN"},'
+            . '"pro_annual":{"amount":799,"currency":"PEN"}}';
         $gateway = $this->buildGateway(
-            planMapJson: '{"basic_monthly":{"amount":29.9,"currency":"PEN"},"pro_annual":{"amount":799,"currency":"PEN"}}',
+            planMapJson: $planMap,
         );
 
         $config = $this->invokePrivate($gateway, 'resolvePlanConfig', ['basic', BillingCycle::Monthly]);
@@ -70,6 +76,10 @@ final class MercadoPagoGatewayTest extends TestCase
         self::assertNull($gateway->handleWebhook($request));
     }
 
+    /**
+     * Happy-path: valid timestamp within window + correct HMAC signature.
+     * Expects a fully-populated PaymentEvent returned — zero real HTTP calls.
+     */
     public function testHandleWebhookReturnsPaymentEventWhenSignatureValid(): void
     {
         $secret = 'secret';
@@ -96,6 +106,10 @@ final class MercadoPagoGatewayTest extends TestCase
         self::assertSame('sub-1', $event->gatewaySubscriptionId);
     }
 
+    /**
+     * Replay guard: timestamp older than 300 s → verifyWebhookSignature returns null → handleWebhook returns null.
+     * Logger must emit two warnings: one from the replay guard and one from handleWebhook. No HTTP calls made.
+     */
     public function testVerifyWebhookSignatureRejectsStaleTimestamp(): void
     {
         $secret = 'secret';
@@ -106,17 +120,35 @@ final class MercadoPagoGatewayTest extends TestCase
         $manifest = "id:$dataId;request-id:$requestId;ts:$staleTs;";
         $hash = hash_hmac('sha256', $manifest, $secret);
 
-        $gateway = $this->buildGateway(webhookSecret: $secret);
+        $logger = $this->createMock(LoggerInterface::class);
+        // verifyWebhookSignature logs 'timestamp out of window';
+        // handleWebhook then logs 'signature verification failed'
+        $logger->expects(self::exactly(2))
+            ->method('warning');
+
+        $gateway = new MercadoPagoGateway(
+            logger: $logger,
+            httpClient: new MockHttpClient(),
+            accessToken: 'tok',
+            webhookSecret: $secret,
+            planMapJson: '{}',
+        );
+
+        $content = '{"id":"evt-stale","type":"subscription_preapproval",'
+            . '"action":"authorized","data":{"id":"sub-stale"}}';
         $request = Request::create('/webhook', 'POST', server: [
             'HTTP_X_SIGNATURE' => "ts=$staleTs,v1=$hash",
             'HTTP_X_REQUEST_ID' => $requestId,
-        ], content: '{"id":"evt-stale","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-stale"}}');
+        ], content: $content);
         $request->query->set('data.id', $dataId);
 
         // handleWebhook returns null when verifyWebhookSignature returns null (replay-guard rejection)
         self::assertNull($gateway->handleWebhook($request));
     }
 
+    /**
+     * Replay guard: timestamp more than 60 s in the future → outside acceptance window → null.
+     */
     public function testVerifyWebhookSignatureRejectsFutureTimestamp(): void
     {
         $secret = 'secret';
@@ -128,13 +160,46 @@ final class MercadoPagoGatewayTest extends TestCase
         $hash = hash_hmac('sha256', $manifest, $secret);
 
         $gateway = $this->buildGateway(webhookSecret: $secret);
+        $content = '{"id":"evt-future","type":"subscription_preapproval",'
+            . '"action":"authorized","data":{"id":"sub-future"}}';
         $request = Request::create('/webhook', 'POST', server: [
             'HTTP_X_SIGNATURE' => "ts=$futureTs,v1=$hash",
             'HTTP_X_REQUEST_ID' => $requestId,
-        ], content: '{"id":"evt-future","type":"subscription_preapproval","action":"authorized","data":{"id":"sub-future"}}');
+        ], content: $content);
         $request->query->set('data.id', $dataId);
 
         self::assertNull($gateway->handleWebhook($request));
+    }
+
+    /**
+     * HTTP 4xx from MercadoPago API → RuntimeException thrown + error logged.
+     * Uses MockHttpClient — zero real network calls.
+     */
+    public function testApiRequestThrowsOnHttpErrorResponse(): void
+    {
+        $mockResponse = new MockResponse(
+            '{"message":"Unauthorized","error":"unauthorized"}',
+            ['http_code' => 401],
+        );
+        $httpClient = new MockHttpClient($mockResponse);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())
+            ->method('error')
+            ->with('MercadoPago API error', self::arrayHasKey('http_code'));
+
+        $gateway = new MercadoPagoGateway(
+            logger: $logger,
+            httpClient: $httpClient,
+            accessToken: 'bad-token',
+            webhookSecret: 'secret',
+            planMapJson: '{"basic_monthly":{"amount":29.9,"currency":"PEN"}}',
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('MercadoPago API error: Unauthorized');
+
+        $gateway->getSubscriptionStatus('sub-123');
     }
 
     public function testCredentialsAreStoredViaConstructorInjection(): void

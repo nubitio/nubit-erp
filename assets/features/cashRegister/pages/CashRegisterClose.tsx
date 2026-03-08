@@ -179,7 +179,13 @@ export const CashRegisterClose = () => {
               <div className="grid-header">Cierre de caja</div>
             </Item>
             <Item location="after" locateInMenu="auto">
-              <Button text="Cerrar caja" type="default" stylingMode="outlined" onClick={onClose} />
+              <Button
+                text="Cerrar caja"
+                type="default"
+                stylingMode="outlined"
+                onClick={onClose}
+                elementAttr={{ 'data-testid': 'cash-close-btn' }}
+              />
             </Item>
           </Toolbar>
         </DataGrid>

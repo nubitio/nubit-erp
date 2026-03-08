@@ -7,6 +7,8 @@ namespace App\Onboarding\Payment;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * MercadoPago Preapproval (subscriptions) API integration.
@@ -21,6 +23,7 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly HttpClientInterface $httpClient,
         #[Autowire(env: 'MERCADOPAGO_ACCESS_TOKEN')]
         private readonly string $accessToken,
         #[Autowire(env: 'MERCADOPAGO_WEBHOOK_SECRET')]
@@ -145,42 +148,29 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
      */
     private function apiRequest(string $method, string $path, ?array $body = null): array
     {
-        $ch = curl_init(self::API_BASE . $path);
-        if ($ch === false) {
-            throw new \RuntimeException('Failed to initialize cURL for MercadoPago API.');
-        }
-
-        $headers = [
-            'Authorization: Bearer ' . $this->accessToken,
-            'Content-Type: application/json',
-            'Accept: application/json',
+        $options = [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $this->accessToken,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+            'timeout' => 30,
         ];
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
         if ($body !== null) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body, JSON_THROW_ON_ERROR));
+            $options['json'] = $body;
         }
 
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $response = $this->httpClient->request($method, self::API_BASE . $path, $options);
 
-        if (!\is_string($result)) {
-            throw new \RuntimeException('MercadoPago API request failed.');
-        }
+        $httpCode = $response->getStatusCode();
 
         if ($httpCode === 204) {
             return [];
         }
 
-        $decoded = json_decode($result, true);
-        if (!\is_array($decoded)) {
-            throw new \RuntimeException('MercadoPago API returned invalid JSON. HTTP ' . $httpCode);
-        }
+        /** @var array<string, mixed> $decoded */
+        $decoded = $response->toArray(false);
 
         if ($httpCode >= 400) {
             $this->logger->error('MercadoPago API error', [

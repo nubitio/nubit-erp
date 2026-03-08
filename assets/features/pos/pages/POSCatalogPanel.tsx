@@ -40,14 +40,10 @@ export function POSCatalogPanel({
   usingOfflineCatalog,
   lastCatalogSyncAt,
 }: POSCatalogPanelProps) {
-
   // F2 or '/' to focus search; Escape to clear
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (
-        (e.key === 'F2' || e.key === '/') &&
-        document.activeElement !== searchInputRef.current
-      ) {
+      if ((e.key === 'F2' || e.key === '/') && document.activeElement !== searchInputRef.current) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
@@ -80,6 +76,7 @@ export function POSCatalogPanel({
             }}
             autoComplete="off"
             autoFocus
+            data-testid="pos-product-search"
           />
           {searchQuery && (
             <button
@@ -103,7 +100,9 @@ export function POSCatalogPanel({
       {usingOfflineCatalog && (
         <div className="pos-offline-banner" role="status">
           Mostrando catálogo offline
-          {lastCatalogSyncAt ? ` (última actualización: ${new Date(lastCatalogSyncAt).toLocaleString('es-PE')})` : ''}
+          {lastCatalogSyncAt
+            ? ` (última actualización: ${new Date(lastCatalogSyncAt).toLocaleString('es-PE')})`
+            : ''}
         </div>
       )}
 
@@ -173,9 +172,7 @@ export function POSCatalogPanel({
               const effectiveStock = getEffectiveStock(item);
               const inCart = getItemQuantity(item.id);
               const displayStock =
-                effectiveStock !== undefined
-                  ? Math.max(0, effectiveStock - inCart)
-                  : undefined;
+                effectiveStock !== undefined ? Math.max(0, effectiveStock - inCart) : undefined;
               return (
                 <POSItem
                   key={item.id}

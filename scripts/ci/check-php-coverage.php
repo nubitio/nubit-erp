@@ -51,4 +51,52 @@ if ($coverage + 0.00001 < $minimum) {
     exit(1);
 }
 
+// SLICE-TEST-001: raised to 70% for EInvoicing + Sale
+/** @var array<string, float> $directoryThresholds */
+$directoryThresholds = [
+    'src/EInvoicing/' => 70.0,
+    'src/State/Sale/' => 70.0,
+];
+
+$directoryFailed = false;
+
+foreach ($directoryThresholds as $dirPrefix => $dirMinimum) {
+    $dirStatements = 0;
+    $dirCovered = 0;
+
+    foreach ($xml->xpath('//file') ?: [] as $fileNode) {
+        $filePath = (string) ($fileNode['name'] ?? '');
+        // Match if the path contains the expected directory segment
+        if (str_contains($filePath, str_replace('/', DIRECTORY_SEPARATOR, $dirPrefix))
+            || str_contains($filePath, $dirPrefix)
+        ) {
+            $fileMetrics = $fileNode->metrics;
+            if ($fileMetrics instanceof \SimpleXMLElement) {
+                $dirStatements += (int) ($fileMetrics['statements'] ?? 0);
+                $dirCovered   += (int) ($fileMetrics['coveredstatements'] ?? 0);
+            }
+        }
+    }
+
+    if ($dirStatements <= 0) {
+        fwrite(STDOUT, "  [{$dirPrefix}] No statements found — skipping directory gate.\n");
+        continue;
+    }
+
+    $dirCoverage = ($dirCovered / $dirStatements) * 100;
+    $formattedDirCoverage = number_format($dirCoverage, 2);
+    $formattedDirMinimum  = number_format($dirMinimum, 2);
+
+    fwrite(STDOUT, "  [{$dirPrefix}] coverage: {$formattedDirCoverage}% (minimum {$formattedDirMinimum}%)\n");
+
+    if ($dirCoverage + 0.00001 < $dirMinimum) {
+        fwrite(STDERR, "  Coverage gate failed for directory: {$dirPrefix}\n");
+        $directoryFailed = true;
+    }
+}
+
+if ($directoryFailed) {
+    exit(1);
+}
+
 exit(0);

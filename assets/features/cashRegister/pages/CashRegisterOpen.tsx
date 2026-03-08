@@ -53,7 +53,12 @@ export const CashRegisterOpen = () => {
           {buildField(openingBalanceField, openingBalanceField.name)}
 
           <SimpleItem>
-            <Button width="100%" onClick={openCashRegister} type="success">
+            <Button
+              width="100%"
+              onClick={openCashRegister}
+              type="success"
+              elementAttr={{ 'data-testid': 'cash-open-submit-btn' }}
+            >
               <LoadIndicator className="button-indicator" visible={isProcessing} />
               <span className="dx-button-text">
                 {isProcessing ? 'Procesando...' : 'Abrir caja'}

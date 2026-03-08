@@ -4,8 +4,14 @@ import './POSPage.scss';
 
 // Muted, desaturated palette — professional look for B2B POS
 const AVATAR_COLORS = [
-  '#4a6fa5', '#3d8a74', '#7a6099', '#4a8ab5',
-  '#6a7f5e', '#a06050', '#526a7d', '#7d7040',
+  '#4a6fa5',
+  '#3d8a74',
+  '#7a6099',
+  '#4a8ab5',
+  '#6a7f5e',
+  '#a06050',
+  '#526a7d',
+  '#7d7040',
 ];
 
 function nameToColor(name: string): string {
@@ -38,7 +44,8 @@ export function POSItem({
   const stockSource = stockOverride ?? item.stock;
   const stockValue = typeof stockSource === 'number' ? stockSource : null;
   const tracksInventory = item.trackInventory !== false;
-  const isOutOfStock = tracksInventory && enforceStockCheck && stockValue !== null && stockValue <= 0;
+  const isOutOfStock =
+    tracksInventory && enforceStockCheck && stockValue !== null && stockValue <= 0;
   const isLowStock = tracksInventory && !isOutOfStock && stockValue !== null && stockValue <= 3;
   const unitPrice =
     typeof item.salePrice === 'number'
@@ -73,6 +80,8 @@ export function POSItem({
       }}
       aria-label={`${item.name} — S/${unitPrice.toFixed(2)}${quantity > 0 ? ` (${quantity} en carrito)` : ''}`}
       aria-pressed={quantity > 0}
+      data-testid="pos-product-card"
+      data-product-id={item.id}
     >
       {/* Image with status badges */}
       <div className="pos-product-card__media">
@@ -118,6 +127,7 @@ export function POSItem({
               }}
               tabIndex={-1}
               aria-label={`Agregar ${item.name}`}
+              data-testid="pos-product-card-add"
             >
               +
             </button>
