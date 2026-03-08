@@ -299,6 +299,9 @@ class TenantProvisionCommand extends Command
         }
     }
 
+    /**
+     * @param array<string, mixed>|false $controlPlaneExistingTenant
+     */
     private function rollback(
         SymfonyStyle $io,
         Connection $provisioningConnection,

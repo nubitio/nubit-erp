@@ -56,6 +56,9 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    /**
+     * @return array<int, RefreshToken>
+     */
     public function findExpiredTokens(): array
     {
         return $this->createQueryBuilder('rt')
@@ -65,6 +68,9 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return array<int, RefreshToken>
+     */
     public function findRevokedTokensOlderThan(\DateTimeImmutable $date): array
     {
         return $this->createQueryBuilder('rt')

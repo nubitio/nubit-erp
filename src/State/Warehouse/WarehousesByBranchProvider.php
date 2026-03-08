@@ -9,6 +9,9 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\Warehouse;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class WarehousesByBranchProvider implements ProviderInterface
 {
     public function __construct(

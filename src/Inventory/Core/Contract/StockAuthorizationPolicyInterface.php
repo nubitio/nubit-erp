@@ -15,6 +15,9 @@ use App\Inventory\Core\Dto\StockAuthorizationResult;
  */
 interface StockAuthorizationPolicyInterface
 {
+    /**
+     * @param array<int, string> $roles
+     */
     public function canOverrideStrictPolicy(
         Product $product,
         string $actorId,

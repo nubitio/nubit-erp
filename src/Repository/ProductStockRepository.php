@@ -14,9 +14,9 @@ use Doctrine\Persistence\ManagerRegistry;
  * @extends ServiceEntityRepository<ProductStock>
  *
  * @method ProductStock|null find($id, $lockMode = null, $lockVersion = null)
- * @method ProductStock|null findOneBy(array $criteria, array $orderBy = null)
+ * @method ProductStock|null findOneBy(array<string, mixed> $criteria, array<string, mixed>|null $orderBy = null)
  * @method ProductStock[]    findAll()
- * @method ProductStock[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method ProductStock[]    findBy(array<string, mixed> $criteria, array<string, mixed>|null $orderBy = null, $limit = null, $offset = null)
  */
 class ProductStockRepository extends ServiceEntityRepository
 {

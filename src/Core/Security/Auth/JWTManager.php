@@ -34,6 +34,9 @@ final readonly class JWTManager
         // Intentional no-op.
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     public function encode(array $payload, ?int $expiresIn = null): string
     {
         if ($expiresIn !== null) {
@@ -43,6 +46,9 @@ final readonly class JWTManager
         return JWT::encode($payload, $this->secret, self::JWT_ALGORITHM);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function decode(string $token): array
     {
         return (array) JWT::decode($token, new Key($this->secret, self::JWT_ALGORITHM));

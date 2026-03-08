@@ -26,6 +26,9 @@ class ApiResponse extends JsonResponse
         return new self(false, $message, $data);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

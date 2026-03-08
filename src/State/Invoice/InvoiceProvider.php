@@ -10,8 +10,15 @@ use ApiPlatform\State\ProviderInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class InvoiceProvider implements ProviderInterface
 {
+    /**
+     * @param ProviderInterface<object> $collectionProvider
+     * @param ProviderInterface<object> $itemProvider
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
         private ProviderInterface $collectionProvider,
@@ -37,6 +44,9 @@ readonly class InvoiceProvider implements ProviderInterface
 
     /**
      * Add sort to context in DevExtreme format
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function addSort(array $context, string $selector, string $direction = 'asc'): array
     {

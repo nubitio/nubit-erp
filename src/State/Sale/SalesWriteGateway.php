@@ -614,6 +614,9 @@ SQL,
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildOfflineMeta(string $seed, \DateTimeImmutable $now, int $version): array
     {
         $timestamp = $now->format('Y-m-d H:i:s');

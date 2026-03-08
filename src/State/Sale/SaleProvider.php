@@ -10,8 +10,15 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class SaleProvider implements ProviderInterface
 {
+    /**
+     * @param ProviderInterface<object> $collectionProvider
+     * @param ProviderInterface<object> $itemProvider
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
         private ProviderInterface $collectionProvider,
@@ -42,6 +49,9 @@ readonly class SaleProvider implements ProviderInterface
 
     /**
      * Build context for inbound sales (tipo_id = 1, no invoice number)
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function buildContextForInbound(array $context): array
     {
@@ -58,6 +68,9 @@ readonly class SaleProvider implements ProviderInterface
 
     /**
      * Build context for outbound sales (tipo_id = 2, no invoice number)
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function buildContextForOutbound(array $context): array
     {
@@ -74,6 +87,9 @@ readonly class SaleProvider implements ProviderInterface
 
     /**
      * Build context for regular sales (tipo_id = 2, with invoice number)
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function buildContextForSale(array $context): array
     {
@@ -90,6 +106,9 @@ readonly class SaleProvider implements ProviderInterface
 
     /**
      * Add sort to context in DevExtreme format
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function addSort(array $context, string $selector, string $direction = 'asc'): array
     {
@@ -107,6 +126,10 @@ readonly class SaleProvider implements ProviderInterface
 
     /**
      * Add filters to context in DevExtreme format
+     *
+     * @param array<string, mixed> $context
+     * @param array<int, mixed> $newFilters
+     * @return array<string, mixed>
      */
     private function addFilters(array $context, array $newFilters): array
     {

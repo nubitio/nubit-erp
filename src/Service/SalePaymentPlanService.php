@@ -102,6 +102,9 @@ final class SalePaymentPlanService
         return Money::toString(Money::money($cash));
     }
 
+    /**
+     * @param array<string, mixed> $payment
+     */
     private function resolvePaymentMethodId(array $payment): ?int
     {
         $raw = $payment['payment_method_id']

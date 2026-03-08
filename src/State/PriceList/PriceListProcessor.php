@@ -12,6 +12,9 @@ use App\Dto\PriceList\PricesDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProcessorInterface<mixed, mixed>
+ */
 readonly class PriceListProcessor implements ProcessorInterface
 {
     public function __construct(

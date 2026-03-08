@@ -11,6 +11,9 @@ use App\Dto\PriceList\PriceListDto;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProviderInterface<object>
+ */
 readonly class PriceListProvider implements ProviderInterface
 {
     public function __construct(

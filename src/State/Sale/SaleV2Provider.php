@@ -19,9 +19,15 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
  * Wraps the standard ORM provider and enriches each SaleRecord with
  * tax_document data (invoice number, SUNAT status, receipt URL) and
  * primary payment method — all via batched DBAL queries to avoid N+1.
+ *
+ * @implements ProviderInterface<object>
  */
 readonly class SaleV2Provider implements ProviderInterface
 {
+    /**
+     * @param ProviderInterface<object> $collectionProvider
+     * @param ProviderInterface<object> $itemProvider
+     */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
         private ProviderInterface $collectionProvider,
@@ -62,6 +68,9 @@ readonly class SaleV2Provider implements ProviderInterface
 
     /**
      * Apply default sort (newest first) for the collection.
+     *
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
      */
     private function buildCollectionContext(array $context): array
     {

@@ -29,6 +29,7 @@ abstract class TenantAwareCommand extends Command
     private TenantContext $tenantContext;
     protected LoggerInterface $logger;
 
+    /** @var array<int, array<string, mixed>> */
     protected array $tenants = [];
     protected ?string $currentTenantName = null;
 

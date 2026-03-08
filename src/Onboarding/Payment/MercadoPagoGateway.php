@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Onboarding\Payment;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -20,6 +21,12 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        #[Autowire(env: 'MERCADOPAGO_ACCESS_TOKEN')]
+        private readonly string $accessToken,
+        #[Autowire(env: 'MERCADOPAGO_WEBHOOK_SECRET')]
+        private readonly string $webhookSecret,
+        #[Autowire(env: 'MERCADOPAGO_PLAN_MAP')]
+        private readonly string $planMapJson,
     ) {
     }
 
@@ -138,15 +145,13 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
      */
     private function apiRequest(string $method, string $path, ?array $body = null): array
     {
-        $token = $this->getEnv('MERCADOPAGO_ACCESS_TOKEN');
-
         $ch = curl_init(self::API_BASE . $path);
         if ($ch === false) {
             throw new \RuntimeException('Failed to initialize cURL for MercadoPago API.');
         }
 
         $headers = [
-            'Authorization: Bearer ' . $token,
+            'Authorization: Bearer ' . $this->accessToken,
             'Content-Type: application/json',
             'Accept: application/json',
         ];
@@ -190,10 +195,8 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
         return $decoded;
     }
 
-    private function verifyWebhookSignature(Request $request): bool
+    private function verifyWebhookSignature(Request $request): ?bool
     {
-        $secret = $this->getEnv('MERCADOPAGO_WEBHOOK_SECRET');
-
         $xSignature = $request->headers->get('x-signature', '');
         $xRequestId = $request->headers->get('x-request-id', '');
 
@@ -216,9 +219,22 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
             return false;
         }
 
+        // Replay-protection: reject webhooks older than 300 seconds or more than 60 seconds in the future
+        $now = time();
+        $ts = (int) $ts;
+        if ($ts < ($now - 300) || $ts > ($now + 60)) {
+            $this->logger->warning('MercadoPago webhook rejected: timestamp out of window', [
+                'ts' => $ts,
+                'now' => $now,
+                'drift_seconds' => $now - $ts,
+            ]);
+
+            return null;
+        }
+
         $dataId = (string) $request->query->get('data.id', '');
         $manifest = 'id:' . $dataId . ';request-id:' . $xRequestId . ';ts:' . $ts . ';';
-        $computed = hash_hmac('sha256', $manifest, $secret);
+        $computed = hash_hmac('sha256', $manifest, $this->webhookSecret);
 
         return hash_equals($computed, $hash);
     }
@@ -239,7 +255,7 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
     }
 
     /**
-     * Resolves MercadoPago pricing from env config.
+     * Resolves MercadoPago pricing from injected plan map config.
      *
      * MERCADOPAGO_PLAN_MAP format:
      * {"basic_monthly":{"amount":29.90,"currency":"PEN"},"basic_annual":{"amount":299,"currency":"PEN"},
@@ -249,17 +265,10 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
      */
     private function resolvePlanConfig(string $plan, BillingCycle $billingCycle): array
     {
-        $mapJson = (string) (
-            $_ENV['MERCADOPAGO_PLAN_MAP']
-            ?? $_SERVER['MERCADOPAGO_PLAN_MAP']
-            ?? getenv('MERCADOPAGO_PLAN_MAP')
-            ?: '{}'
-        );
-
         $key = $plan . '_' . $billingCycle->value;
 
         /** @var array<string, array{amount:float,currency:string}> $map */
-        $map = json_decode($mapJson, true) ?: [];
+        $map = json_decode($this->planMapJson, true) ?: [];
         $config = $map[$key] ?? null;
 
         if ($config === null) {
@@ -267,21 +276,5 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
         }
 
         return $config;
-    }
-
-    private function getEnv(string $name): string
-    {
-        $value = trim((string) (
-            $_ENV[$name]
-            ?? $_SERVER[$name]
-            ?? getenv($name)
-            ?: ''
-        ));
-
-        if ($value === '') {
-            throw new \RuntimeException('Missing environment variable: ' . $name);
-        }
-
-        return $value;
     }
 }

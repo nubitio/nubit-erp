@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
  */
 final class CspNonceService
 {
-    /** @var array<string, string> nonce keyed by request object-id */
+    /** @var array<int|string, string> nonce keyed by request object-id */
     private array $nonces = [];
 
     public function __construct(

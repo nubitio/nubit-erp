@@ -10,6 +10,7 @@ use Exception;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class ValidateInvoice extends AbstractController
 {
@@ -18,7 +19,7 @@ class ValidateInvoice extends AbstractController
     ) {
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): Response
     {
         $id = $request->get('id');
         try {

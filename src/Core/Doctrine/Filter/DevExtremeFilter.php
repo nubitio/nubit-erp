@@ -46,7 +46,7 @@ class DevExtremeFilter extends AbstractFilter
     #[Override]
     protected function filterProperty(
         string $property,
-        $value,
+        mixed $value,
         QueryBuilder $queryBuilder,
         QueryNameGeneratorInterface $queryNameGenerator,
         string $resourceClass,
@@ -85,6 +85,9 @@ class DevExtremeFilter extends AbstractFilter
         }
     }
 
+    /**
+     * @param array<int, mixed> $sort
+     */
     private function applySort(QueryBuilder $queryBuilder, array $sort): void
     {
         foreach ($sort as $sortParam) {
@@ -98,6 +101,9 @@ class DevExtremeFilter extends AbstractFilter
         }
     }
 
+    /**
+     * @param array<int, mixed> $filter
+     */
     private function applyFilter(
         QueryBuilder $queryBuilder,
         array $filter,

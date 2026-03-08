@@ -12,6 +12,9 @@ use App\Dto\Setup\SetupStatusDto;
 use App\Setup\InitialSetupService;
 use Doctrine\DBAL\Exception;
 
+/**
+ * @implements ProcessorInterface<mixed, mixed>
+ */
 readonly class SetupProcessor implements ProcessorInterface
 {
     public function __construct(private InitialSetupService $service)

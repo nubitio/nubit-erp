@@ -21,6 +21,7 @@ class TenantConnection extends Connection
     protected bool $autoCommit = true;
 
     public function __construct(
+        /** @var array<string, mixed> */
         protected array $tenantParams,
         Driver $driver,
         ?Configuration $config = null,
@@ -82,6 +83,9 @@ class TenantConnection extends Connection
         return $this->_conn;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     #[Override]
     public function getParams(): array
     {

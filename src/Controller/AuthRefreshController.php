@@ -135,6 +135,9 @@ class AuthRefreshController extends AbstractController
         return $response;
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
     private function validateRefreshToken(array $payload): ?JsonResponse
     {
         if (($payload['type'] ?? null) !== 'refresh') {

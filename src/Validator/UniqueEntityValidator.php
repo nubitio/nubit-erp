@@ -44,6 +44,7 @@ final class UniqueEntityValidator extends ConstraintValidator
         }
 
         // Exclude the current entity if it already has an ID (edit case)
+        /** @var class-string $entityClass */
         $metadata = $this->entityManager->getClassMetadata($entityClass);
         $identifierValues = $metadata->getIdentifierValues($value);
 

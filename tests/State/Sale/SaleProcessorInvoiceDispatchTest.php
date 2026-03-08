@@ -50,7 +50,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     private InvoiceCreationServiceInterface $invoiceCreationService;
     /** @var Security&MockObject */
     private Security $security;
-    /** @var ProcessorInterface&MockObject */
+    /** @var ProcessorInterface<mixed, mixed>&MockObject */
     private ProcessorInterface $persistProcessor;
     /** @var EntityManagerInterface&MockObject */
     private EntityManagerInterface $entityManager;

@@ -40,6 +40,8 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
 
     /**
      * @inheritdoc
+     *
+     * @return array<string, mixed>
      */
     #[Override]
     public function normalize(mixed $data, ?string $format = null, array $context = []): array

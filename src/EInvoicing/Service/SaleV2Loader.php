@@ -136,6 +136,9 @@ SQL,
         return $sale;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     */
     private function buildSaleItem(array $row): ?SaleItem
     {
         $productId = $row['product_id'] ?? null;

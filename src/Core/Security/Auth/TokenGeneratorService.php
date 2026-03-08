@@ -64,6 +64,9 @@ final readonly class TokenGeneratorService
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildPayload(User $user, int $timestamp, ?Branch $branch = null): array
     {
         return [

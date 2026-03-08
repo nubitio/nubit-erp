@@ -14,6 +14,10 @@ final readonly class Validator
     ) {
     }
 
+    /**
+     * @param array<int, mixed> $constraints
+     * @param array<int, string> $groups
+     */
     public function validate(mixed $value, array $constraints = [], array $groups = []): void
     {
         $violations = $this->validator->validate($value, $constraints, $groups);
@@ -28,6 +32,10 @@ final readonly class Validator
         }
     }
 
+    /**
+     * @param array<int, mixed> $constraints
+     * @param array<int, string> $groups
+     */
     public function isValid(mixed $value, array $constraints = [], array $groups = []): bool
     {
         $violations = $this->validator->validate($value, $constraints, $groups);
@@ -35,6 +43,11 @@ final readonly class Validator
         return count($violations) === 0;
     }
 
+    /**
+     * @param array<int, mixed> $constraints
+     * @param array<int, string> $groups
+     * @return array<string, array<string>>
+     */
     public function getViolations(mixed $value, array $constraints = [], array $groups = []): array
     {
         $violations = $this->validator->validate($value, $constraints, $groups);

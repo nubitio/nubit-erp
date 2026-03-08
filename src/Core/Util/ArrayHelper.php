@@ -6,6 +6,9 @@ namespace App\Core\Util;
 
 final class ArrayHelper
 {
+    /**
+     * @param array<string, mixed> $array
+     */
     public static function get(array $array, string $key, mixed $default = null): mixed
     {
         if (array_key_exists($key, $array)) {
@@ -30,6 +33,9 @@ final class ArrayHelper
         return $current;
     }
 
+    /**
+     * @param array<string, mixed> $array
+     */
     public static function set(array &$array, string $key, mixed $value): void
     {
         if (!str_contains($key, '.')) {
@@ -53,16 +59,30 @@ final class ArrayHelper
         }
     }
 
+    /**
+     * @param array<string, mixed> $array
+     * @param array<int, string> $keys
+     * @return array<string, mixed>
+     */
     public static function only(array $array, array $keys): array
     {
         return array_intersect_key($array, array_flip($keys));
     }
 
+    /**
+     * @param array<string, mixed> $array
+     * @param array<int, string> $keys
+     * @return array<string, mixed>
+     */
     public static function except(array $array, array $keys): array
     {
         return array_diff_key($array, array_flip($keys));
     }
 
+    /**
+     * @param array<string, mixed> $array
+     * @return array<string, mixed>
+     */
     public static function flatten(array $array, string $separator = '.'): array
     {
         $result = [];
@@ -81,12 +101,16 @@ final class ArrayHelper
         return $result;
     }
 
+    /**
+     * @param array<string, mixed> $array
+     */
     public static function isAssociative(array $array): bool
     {
         if ([] === $array) {
             return false;
         }
 
+        // @phpstan-ignore notIdentical.alwaysTrue (array_keys returns string[] for array<string, mixed>, range returns int[])
         return array_keys($array) !== range(0, count($array) - 1);
     }
 }

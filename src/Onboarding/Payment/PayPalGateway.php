@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Onboarding\Payment;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -19,6 +20,16 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        #[Autowire(env: 'PAYPAL_CLIENT_ID')]
+        private readonly string $clientId,
+        #[Autowire(env: 'PAYPAL_CLIENT_SECRET')]
+        private readonly string $clientSecret,
+        #[Autowire(env: 'PAYPAL_WEBHOOK_ID')]
+        private readonly string $webhookId,
+        #[Autowire(env: 'PAYPAL_MODE')]
+        private readonly string $mode,
+        #[Autowire(env: 'PAYPAL_PLAN_MAP')]
+        private readonly string $planMapJson,
     ) {
     }
 
@@ -190,8 +201,6 @@ final class PayPalGateway implements PaymentGatewayInterface
             return $this->accessToken;
         }
 
-        $clientId = $this->getEnv('PAYPAL_CLIENT_ID');
-        $clientSecret = $this->getEnv('PAYPAL_CLIENT_SECRET');
         $baseUrl = $this->getBaseUrl();
 
         $ch = curl_init($baseUrl . '/v1/oauth2/token');
@@ -200,7 +209,7 @@ final class PayPalGateway implements PaymentGatewayInterface
         }
 
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $clientId . ':' . $clientSecret);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->clientId . ':' . $this->clientSecret);
         curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
             'Accept: application/json',
@@ -228,49 +237,94 @@ final class PayPalGateway implements PaymentGatewayInterface
         return $token;
     }
 
-    private function verifyWebhookSignature(Request $request): bool
+    private function verifyWebhookSignature(Request $request): ?bool
     {
-        $webhookId = $this->getEnv('PAYPAL_WEBHOOK_ID');
+        // TODO(SLICE-TEST-001/T001-3): replace curl with HttpClientInterface for testability
+        $baseUrl = $this->getBaseUrl();
+
+        try {
+            $token = $this->getAccessToken();
+        } catch (\Throwable $e) {
+            $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
+                'curl_error' => $e->getMessage(),
+                'http_code' => 0,
+                'webhook_id' => $this->webhookId,
+            ]);
+
+            return null;
+        }
+
         $body = [
             'auth_algo' => $request->headers->get('PAYPAL-AUTH-ALGO', ''),
             'cert_url' => $request->headers->get('PAYPAL-CERT-URL', ''),
             'transmission_id' => $request->headers->get('PAYPAL-TRANSMISSION-ID', ''),
             'transmission_sig' => $request->headers->get('PAYPAL-TRANSMISSION-SIG', ''),
             'transmission_time' => $request->headers->get('PAYPAL-TRANSMISSION-TIME', ''),
-            'webhook_id' => $webhookId,
+            'webhook_id' => $this->webhookId,
             'webhook_event' => json_decode($request->getContent(), true),
         ];
 
-        try {
-            $response = $this->apiRequest('POST', '/v1/notifications/verify-webhook-signature', $body);
-
-            return ($response['verification_status'] ?? '') === 'SUCCESS';
-        } catch (\Throwable $e) {
-            $this->logger->error('PayPal webhook signature verification request failed', [
-                'exception' => $e,
+        $ch = curl_init($baseUrl . '/v1/notifications/verify-webhook-signature');
+        if ($ch === false) {
+            $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
+                'curl_error' => 'Failed to initialize cURL',
+                'http_code' => 0,
+                'webhook_id' => $this->webhookId,
             ]);
 
-            return false;
+            return null;
         }
+
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' . $token,
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body, JSON_THROW_ON_ERROR));
+
+        $result = curl_exec($ch);
+        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        $curlErrno = curl_errno($ch);
+
+        if ($curlErrno !== 0 || $httpCode < 200 || $httpCode >= 300) {
+            $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
+                'curl_error' => $curlError,
+                'http_code' => $httpCode,
+                'webhook_id' => $this->webhookId,
+            ]);
+            curl_close($ch);
+
+            return null;
+        }
+
+        curl_close($ch);
+
+        if (!\is_string($result)) {
+            return null;
+        }
+
+        $decoded = json_decode($result, true);
+        if (!\is_array($decoded)) {
+            return null;
+        }
+
+        return ($decoded['verification_status'] ?? '') === 'SUCCESS';
     }
 
     /**
-     * Resolves PayPal plan ID from env config.
+     * Resolves PayPal plan ID from injected plan map config.
      *
      * PAYPAL_PLAN_MAP format:
      * {"basic_monthly":"P-xxx","basic_annual":"P-yyy","pro_monthly":"P-zzz","pro_annual":"P-www"}
      */
     private function resolvePayPalPlanId(string $plan, BillingCycle $billingCycle): string
     {
-        $mapJson = (string) (
-            $_ENV['PAYPAL_PLAN_MAP']
-            ?? $_SERVER['PAYPAL_PLAN_MAP']
-            ?? getenv('PAYPAL_PLAN_MAP')
-            ?: '{}'
-        );
-
         /** @var array<string, string> $map */
-        $map = json_decode($mapJson, true) ?: [];
+        $map = json_decode($this->planMapJson, true) ?: [];
         $key = $plan . '_' . $billingCycle->value;
         $paypalId = $map[$key] ?? '';
         if ($paypalId === '') {
@@ -282,31 +336,8 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     private function getBaseUrl(): string
     {
-        $mode = (string) (
-            $_ENV['PAYPAL_MODE']
-            ?? $_SERVER['PAYPAL_MODE']
-            ?? getenv('PAYPAL_MODE')
-            ?: 'sandbox'
-        );
-
-        return $mode === 'live'
+        return $this->mode === 'live'
             ? 'https://api-m.paypal.com'
             : 'https://api-m.sandbox.paypal.com';
-    }
-
-    private function getEnv(string $name): string
-    {
-        $value = trim((string) (
-            $_ENV[$name]
-            ?? $_SERVER[$name]
-            ?? getenv($name)
-            ?: ''
-        ));
-
-        if ($value === '') {
-            throw new \RuntimeException('Missing environment variable: ' . $name);
-        }
-
-        return $value;
     }
 }

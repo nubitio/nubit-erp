@@ -111,6 +111,9 @@ readonly class TenantManager
         }
     }
 
+    /**
+     * @param array<string, mixed> $tenant
+     */
     public function updateTenant(int $id, array $tenant): void
     {
         $name = trim((string)($tenant['name'] ?? ''));
@@ -135,6 +138,9 @@ readonly class TenantManager
         $this->invalidateTenantDomainCaches($id);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getTenant(int $id): ?array
     {
         if ($this->shouldUseDatabase()) {
@@ -144,6 +150,9 @@ readonly class TenantManager
         return array_find($this->readTenantsFromYaml(), fn ($tenant) => (int)($tenant['id'] ?? 0) === $id);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getTenantByName(string $name): ?array
     {
         $name = trim($name);
@@ -164,6 +173,9 @@ readonly class TenantManager
         });
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getTenantByDomain(string $domain): ?array
     {
         $domain = trim($domain);
@@ -619,6 +631,7 @@ readonly class TenantManager
     }
 
     /**
+     * @return array<string, mixed>|null
      * @throws DbalException
      */
     private function getTenantFromDatabase(int $id): ?array
@@ -645,6 +658,7 @@ readonly class TenantManager
     }
 
     /**
+     * @return array<string, mixed>|null
      * @throws DbalException
      */
     private function getTenantByNameFromDatabase(string $name): ?array
@@ -671,6 +685,7 @@ readonly class TenantManager
     }
 
     /**
+     * @return array<string, mixed>|null
      * @throws DbalException
      */
     private function getTenantByDomainFromDatabase(string $domain): ?array
@@ -753,6 +768,9 @@ readonly class TenantManager
         $this->writeTenants($data);
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
     private function fallbackToYamlOrFail(string $operation): array
     {
         if ($this->yamlFallbackAvailable()) {

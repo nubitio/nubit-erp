@@ -25,6 +25,9 @@ final readonly class TokenPairDto
         return AuthResponseDto::createFromTokenPair($this, $includeTokens);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(bool $includeTokens = true): array
     {
         $data = [
