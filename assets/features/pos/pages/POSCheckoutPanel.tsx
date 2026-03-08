@@ -381,6 +381,7 @@ export function POSCheckoutPanel({
                 className="pos-section-toggle__btn"
                 onClick={() => setCustomerOpen((v) => !v)}
                 aria-expanded={customerOpen}
+                data-testid="pos-customer-toggle"
               >
                 <User2 size={13} />
                 <span>
@@ -399,6 +400,7 @@ export function POSCheckoutPanel({
                     setCustomerOpen(false);
                   }}
                   aria-label="Quitar cliente"
+                  data-testid="pos-customer-clear"
                 >
                   ×
                 </button>
@@ -423,6 +425,7 @@ export function POSCheckoutPanel({
                       autoComplete="off"
                       className="pos-config-input"
                       autoFocus
+                      data-testid="pos-customer-search"
                       ref={(el) => {
                         (
                           customerInputRef as React.MutableRefObject<HTMLInputElement | null>
@@ -444,6 +447,7 @@ export function POSCheckoutPanel({
                         className="pos-customer-suggestions"
                         role="listbox"
                         aria-label="Sugerencias"
+                        data-testid="pos-customer-suggestions"
                       >
                         {customerOptions.slice(0, 8).map((customer) => (
                           <button
@@ -453,6 +457,7 @@ export function POSCheckoutPanel({
                             aria-selected={selectedCustomerId === customer.id}
                             className={`pos-customer-option ${selectedCustomerId === customer.id ? 'is-active' : ''}`}
                             onMouseDown={(e) => e.preventDefault()}
+                            data-testid="pos-customer-option"
                             onClick={() => {
                               setSelectedCustomerId(customer.id);
                               setShowCustomerSuggestions(false);
@@ -638,6 +643,7 @@ export function POSCheckoutPanel({
                     className={`pos-discount-preset${
                       amountReceived === action.value.toFixed(2) ? ' is-active' : ''
                     }`}
+                    data-testid={`pos-cash-preset-${action.label.toLowerCase().replace(/\s+/g, '-')}`}
                     onClick={() =>
                       setAmountReceived(
                         amountReceived === action.value.toFixed(2) ? '' : action.value.toFixed(2),
@@ -691,6 +697,7 @@ export function POSCheckoutPanel({
           className="pos-checkout"
           onClick={handleCheckout}
           disabled={checkoutDisabled || !cajaAbierta}
+          data-testid="pos-checkout-btn"
         >
           {isProcessingSale ? (
             <span className="pos-checkout__processing">Procesando...</span>
@@ -707,10 +714,17 @@ export function POSCheckoutPanel({
 
       {/* ── Post-sale overlay ── */}
       {showSuccess && (
-        <div className="pos-postsale" aria-live="assertive" role="status">
+        <div
+          className="pos-postsale"
+          aria-live="assertive"
+          role="status"
+          data-testid="pos-postsale"
+        >
           <div className="pos-postsale__card">
             <div className="pos-postsale__check">✓</div>
-            <h2 className="pos-postsale__title">¡Venta completada!</h2>
+            <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
+              ¡Venta completada!
+            </h2>
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successCodeRef.current && (
               // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
@@ -742,6 +756,7 @@ export function POSCheckoutPanel({
                   setShowSuccess(false);
                 }}
                 autoFocus
+                data-testid="pos-postsale-new-sale"
               >
                 Nueva venta
               </button>

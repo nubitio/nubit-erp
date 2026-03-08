@@ -74,6 +74,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
                   type="default"
                   stylingMode="outlined"
                   icon="ph ph-eye"
+                  elementAttr={{ 'data-testid': 'cash-btn-movements' }}
                   onClick={() => {
                     navigate(`/cash-shift/${cell.data.cashShiftId}/movements`);
                   }}
@@ -83,6 +84,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
                   type="danger"
                   stylingMode="outlined"
                   icon="ph ph-cash-register"
+                  elementAttr={{ 'data-testid': 'cash-btn-close' }}
                   onClick={() => {
                     navigate(`/cash-register/${cell.data.cashShiftId}/close`);
                   }}
@@ -97,6 +99,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
               type="success"
               stylingMode="outlined"
               icon="ph ph-cash-register"
+              elementAttr={{ 'data-testid': 'cash-btn-open' }}
               onClick={() => {
                 navigate(`/cash-register/${cell.data.id}/open`);
               }}

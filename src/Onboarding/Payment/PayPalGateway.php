@@ -7,6 +7,8 @@ namespace App\Onboarding\Payment;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * PayPal Subscriptions API v1 integration.
@@ -20,6 +22,7 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly HttpClientInterface $httpClient,
         #[Autowire(env: 'PAYPAL_CLIENT_ID')]
         private readonly string $clientId,
         #[Autowire(env: 'PAYPAL_CLIENT_SECRET')]
@@ -145,42 +148,29 @@ final class PayPalGateway implements PaymentGatewayInterface
         $baseUrl = $this->getBaseUrl();
         $token = $this->getAccessToken();
 
-        $ch = curl_init($baseUrl . $path);
-        if ($ch === false) {
-            throw new \RuntimeException('Failed to initialize cURL for PayPal API.');
-        }
-
-        $headers = [
-            'Authorization: Bearer ' . $token,
-            'Content-Type: application/json',
-            'Accept: application/json',
+        $options = [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+            'timeout' => 30,
         ];
 
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-
         if ($body !== null) {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body, JSON_THROW_ON_ERROR));
+            $options['json'] = $body;
         }
 
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $response = $this->httpClient->request($method, $baseUrl . $path, $options);
 
-        if (!\is_string($result)) {
-            throw new \RuntimeException('PayPal API request failed.');
-        }
+        $httpCode = $response->getStatusCode();
 
         if ($httpCode === 204) {
             return [];
         }
 
-        $decoded = json_decode($result, true);
-        if (!\is_array($decoded)) {
-            throw new \RuntimeException('PayPal API returned invalid JSON. HTTP ' . $httpCode);
-        }
+        /** @var array<string, mixed> $decoded */
+        $decoded = $response->toArray(false);
 
         if ($httpCode >= 400) {
             $this->logger->error('PayPal API error', [
@@ -203,30 +193,23 @@ final class PayPalGateway implements PaymentGatewayInterface
 
         $baseUrl = $this->getBaseUrl();
 
-        $ch = curl_init($baseUrl . '/v1/oauth2/token');
-        if ($ch === false) {
-            throw new \RuntimeException('Failed to initialize cURL for PayPal auth.');
-        }
-
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->clientId . ':' . $this->clientSecret);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, 'grant_type=client_credentials');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Accept: application/json',
-            'Content-Type: application/x-www-form-urlencoded',
+        $response = $this->httpClient->request('POST', $baseUrl . '/v1/oauth2/token', [
+            'auth_basic' => [$this->clientId, $this->clientSecret],
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/x-www-form-urlencoded',
+            ],
+            'body' => 'grant_type=client_credentials',
+            'timeout' => 15,
         ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
 
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if (!\is_string($result) || $httpCode >= 400) {
+        $httpCode = $response->getStatusCode();
+        if ($httpCode >= 400) {
             throw new \RuntimeException('PayPal OAuth2 token request failed. HTTP ' . $httpCode);
         }
 
-        $decoded = json_decode($result, true);
+        /** @var array<string, mixed> $decoded */
+        $decoded = $response->toArray(false);
         $token = (string) ($decoded['access_token'] ?? '');
         if ($token === '') {
             throw new \RuntimeException('PayPal OAuth2 returned no access_token.');
@@ -239,7 +222,6 @@ final class PayPalGateway implements PaymentGatewayInterface
 
     private function verifyWebhookSignature(Request $request): ?bool
     {
-        // TODO(SLICE-TEST-001/T001-3): replace curl with HttpClientInterface for testability
         $baseUrl = $this->getBaseUrl();
 
         try {
@@ -264,55 +246,42 @@ final class PayPalGateway implements PaymentGatewayInterface
             'webhook_event' => json_decode($request->getContent(), true),
         ];
 
-        $ch = curl_init($baseUrl . '/v1/notifications/verify-webhook-signature');
-        if ($ch === false) {
+        try {
+            $response = $this->httpClient->request('POST', $baseUrl . '/v1/notifications/verify-webhook-signature', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $token,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+                'json' => $body,
+                'timeout' => 30,
+            ]);
+
+            $httpCode = $response->getStatusCode();
+
+            if ($httpCode < 200 || $httpCode >= 300) {
+                $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
+                    'curl_error' => '',
+                    'http_code' => $httpCode,
+                    'webhook_id' => $this->webhookId,
+                ]);
+
+                return null;
+            }
+
+            /** @var array<string, mixed> $decoded */
+            $decoded = $response->toArray(false);
+
+            return ($decoded['verification_status'] ?? '') === 'SUCCESS';
+        } catch (TransportExceptionInterface $e) {
             $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
-                'curl_error' => 'Failed to initialize cURL',
+                'curl_error' => $e->getMessage(),
                 'http_code' => 0,
                 'webhook_id' => $this->webhookId,
             ]);
 
             return null;
         }
-
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' . $token,
-            'Content-Type: application/json',
-            'Accept: application/json',
-        ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($body, JSON_THROW_ON_ERROR));
-
-        $result = curl_exec($ch);
-        $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        $curlErrno = curl_errno($ch);
-
-        if ($curlErrno !== 0 || $httpCode < 200 || $httpCode >= 300) {
-            $this->logger->error('PayPal webhook signature verification failed: Verify API unreachable', [
-                'curl_error' => $curlError,
-                'http_code' => $httpCode,
-                'webhook_id' => $this->webhookId,
-            ]);
-            curl_close($ch);
-
-            return null;
-        }
-
-        curl_close($ch);
-
-        if (!\is_string($result)) {
-            return null;
-        }
-
-        $decoded = json_decode($result, true);
-        if (!\is_array($decoded)) {
-            return null;
-        }
-
-        return ($decoded['verification_status'] ?? '') === 'SUCCESS';
     }
 
     /**

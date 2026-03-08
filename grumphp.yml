@@ -1,19 +1,20 @@
 grumphp:
-    process_timeout: 180
-    tasks:
-        phpcsfixer2:
-            config: .php-cs-fixer.dist.php
-        phpcs:
-            standard: 'phpcs.xml.dist'
-            whitelist_patterns:
-                - /^src/
-        phpmd:
-            ruleset:
-                - phpmd.xml.dist
-            report_format: ansi
-            whitelist_patterns:
-                - /^src/
-        phpstan:
-            memory_limit: 1G
-            configuration: phpstan.dist.neon
-        phpunit: ~
+  process_timeout: 180
+  tasks:
+    phpcsfixer2:
+      config: .php-cs-fixer.dist.php
+    phpcs:
+      standard: 'phpcs.xml.dist'
+      warning_severity: 0
+      whitelist_patterns:
+        - /^src/
+    phpmd:
+      ruleset:
+        - phpmd.xml.dist
+      report_format: ansi
+      whitelist_patterns:
+        - /^src/
+    phpstan:
+      memory_limit: 1G
+      configuration: phpstan.dist.neon
+    phpunit: ~

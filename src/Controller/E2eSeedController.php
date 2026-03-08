@@ -8,6 +8,7 @@ use App\Service\E2eTestSeedServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * HTTP façade for the E2E seed/reset commands.
@@ -32,6 +33,10 @@ class E2eSeedController extends AbstractController
 
     public function seed(): JsonResponse
     {
+        if ($this->getParameter('kernel.environment') !== 'test') {
+            throw new NotFoundHttpException();
+        }
+
         if ((string) ($_SERVER['E2E_SEED_ENABLED'] ?? '') !== '1') {
             return $this->json(['error' => 'E2E_SEED_ENABLED is not set.'], Response::HTTP_FORBIDDEN);
         }
@@ -43,6 +48,10 @@ class E2eSeedController extends AbstractController
 
     public function reset(): JsonResponse
     {
+        if ($this->getParameter('kernel.environment') !== 'test') {
+            throw new NotFoundHttpException();
+        }
+
         if ((string) ($_SERVER['E2E_SEED_ENABLED'] ?? '') !== '1') {
             return $this->json(['error' => 'E2E_SEED_ENABLED is not set.'], Response::HTTP_FORBIDDEN);
         }

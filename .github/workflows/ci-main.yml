@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 env:
-  COVERAGE_MIN_PHP: '8.0'
+  COVERAGE_MIN_PHP: '40' # SLICE-TEST-001: raised from 8% → 40% global threshold
 
 jobs:
   backend:

@@ -99,6 +99,9 @@ services:
       E2E_BASE_URL: '${E2E_BASE_URL:-}'
       # Playwright needs this to run Chromium in a container (no sandbox)
       PLAYWRIGHT_BROWSERS_PATH: /ms-playwright
+      # Tell the web container (and any helper scripts) that we are running in
+      # the isolated test environment so the seed endpoint touches demo_test only.
+      APP_ENV: 'test'
     depends_on:
       - web
       - database
