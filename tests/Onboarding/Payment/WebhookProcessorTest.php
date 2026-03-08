@@ -139,6 +139,205 @@ final class WebhookProcessorTest extends TestCase
         $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.ACTIVATED', 'evt-6', 'sub-10'));
     }
 
+    // ------------------------------------------------------------------ handlePastDue
+
+    public function testPastDueEventMarkesSubscriptionPastDue(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 15,
+            'tenant_id' => 30,
+            'status' => 'active',
+            'account_id' => 11,
+            'plan' => 'basic',
+        ]);
+        // executeStatement calls: logPaymentEvent (INSERT) + markPastDue (UPDATE)
+        $connection->expects(self::exactly(2))->method('executeStatement');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning');
+
+        $processor = $this->processor($connection, $logger, $this->createMock(MessageBusInterface::class));
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.PAYMENT.FAILED', 'evt-7', 'sub-15'));
+    }
+
+    public function testPastDueEventWithZeroTenantIdDoesNotSuspendTenant(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 16,
+            'tenant_id' => 0,
+            'status' => 'active',
+            'account_id' => 11,
+            'plan' => 'basic',
+        ]);
+        // Only logPaymentEvent + markPastDue — no suspendTenant call
+        $connection->expects(self::exactly(2))->method('executeStatement');
+
+        $processor = $this->processor(
+            $connection,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(MessageBusInterface::class),
+        );
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.PAYMENT.FAILED', 'evt-8', 'sub-16'));
+    }
+
+    // ------------------------------------------------------------------ handleSuspend
+
+    public function testSuspendEventSuspendsSubscriptionAndTenant(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 20,
+            'tenant_id' => 40,
+            'status' => 'active',
+            'account_id' => 12,
+            'plan' => 'pro',
+        ]);
+        // executeStatement calls: logPaymentEvent (INSERT) + suspend (UPDATE) + suspendTenant (UPDATE)
+        $connection->expects(self::exactly(3))->method('executeStatement');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning');
+
+        $processor = $this->processor($connection, $logger, $this->createMock(MessageBusInterface::class));
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.SUSPENDED', 'evt-9', 'sub-20'));
+    }
+
+    public function testSuspendEventWithZeroTenantIdDoesNotSuspendTenant(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 21,
+            'tenant_id' => 0,
+            'status' => 'active',
+            'account_id' => 12,
+            'plan' => 'pro',
+        ]);
+        // Only logPaymentEvent + suspend — no suspendTenant
+        $connection->expects(self::exactly(2))->method('executeStatement');
+
+        $processor = $this->processor(
+            $connection,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(MessageBusInterface::class),
+        );
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.SUSPENDED', 'evt-10', 'sub-21'));
+    }
+
+    public function testDisputeCreatedEventAlsoTriggersSupend(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 22,
+            'tenant_id' => 50,
+            'status' => 'active',
+            'account_id' => 12,
+            'plan' => 'pro',
+        ]);
+        $connection->expects(self::exactly(3))->method('executeStatement');
+
+        $processor = $this->processor(
+            $connection,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(MessageBusInterface::class),
+        );
+        $processor->process($this->event('paypal', 'CUSTOMER.DISPUTE.CREATED', 'evt-11', 'sub-22'));
+    }
+
+    // ------------------------------------------------------------------ handleCancel without tenant
+
+    public function testCancelEventWithZeroTenantIdDoesNotSuspendTenant(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn([
+            'id' => 25,
+            'tenant_id' => 0,
+            'status' => 'active',
+            'account_id' => 11,
+            'plan' => 'basic',
+        ]);
+        // Only logPaymentEvent + cancel — no suspendTenant
+        $connection->expects(self::exactly(2))->method('executeStatement');
+
+        $processor = $this->processor(
+            $connection,
+            $this->createMock(LoggerInterface::class),
+            $this->createMock(MessageBusInterface::class),
+        );
+        $processor->process($this->event('paypal', 'BILLING.SUBSCRIPTION.CANCELLED', 'evt-12', 'sub-25'));
+    }
+
+    // ------------------------------------------------------------------ resolveAction / dispatch table
+
+    public function testResolveActionCoversAllFivePayPalEvents(): void
+    {
+        $knownPayPalEvents = [
+            'BILLING.SUBSCRIPTION.ACTIVATED'        => 'activate',
+            'PAYMENT.SALE.COMPLETED'                => 'renew',
+            'BILLING.SUBSCRIPTION.PAYMENT.FAILED'   => 'past_due',
+            'BILLING.SUBSCRIPTION.CANCELLED'        => 'cancel',
+            'BILLING.SUBSCRIPTION.SUSPENDED'        => 'suspend',
+            'CUSTOMER.DISPUTE.CREATED'              => 'suspend',
+        ];
+
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn(false);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        // Each known event should trigger a warning (unknown subscription) — not a debug (unhandled)
+        $logger->expects(self::exactly(count($knownPayPalEvents)))->method('warning');
+        $logger->expects(self::never())->method('debug');
+
+        $processor = $this->processor($connection, $logger, $this->createMock(MessageBusInterface::class));
+
+        foreach ($knownPayPalEvents as $eventType => $_action) {
+            $processor->process($this->event('paypal', $eventType, 'evt-' . $eventType, 'sub-unknown'));
+        }
+    }
+
+    public function testResolveActionCoversAllMercadoPagoEvents(): void
+    {
+        $knownMpEvents = [
+            'subscription_preapproval.authorized' => 'activate',
+            'subscription_preapproval.cancelled'  => 'cancel',
+            'subscription_preapproval.paused'     => 'suspend',
+        ];
+
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+        $connection->method('fetchAssociative')->willReturn(false);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::exactly(count($knownMpEvents)))->method('warning');
+        $logger->expects(self::never())->method('debug');
+
+        $processor = $this->processor($connection, $logger, $this->createMock(MessageBusInterface::class));
+
+        foreach ($knownMpEvents as $eventType => $_action) {
+            $processor->process($this->event('mercadopago', $eventType, 'evt-mp-' . $eventType, 'sub-unknown'));
+        }
+    }
+
+    public function testUnknownGatewayExitsCleanlyWithNoException(): void
+    {
+        $connection = $this->connection();
+        $connection->method('fetchOne')->willReturn(false);
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('debug');
+
+        $processor = $this->processor($connection, $logger, $this->createMock(MessageBusInterface::class));
+        $processor->process($this->event('stripe', 'customer.subscription.deleted', 'evt-s1', 'sub-xyz'));
+    }
+
     private function processor(
         Connection $connection,
         LoggerInterface $logger,

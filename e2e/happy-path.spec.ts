@@ -24,9 +24,9 @@
  *   C) .dx-texteditor-input + nth / .dx-datagrid-filter-row — cuando no hay aria
  *   D) CSS class de DX + texto de placeholder — como último recurso
  *
- * ── Selectores inciertos — requieren data-testid (ver nota final) ────────────
- * Los pasos donde el selector es potencialmente frágil están marcados con
- * el comentario:  // ⚠ FRAGILE — ver "NOTAS DE SELECTORES" al final del archivo
+ * ── Selectores ──────────────────────────────────────────────────────────────
+ * Todos los selectores frágiles han sido migrados a data-testid locators (T001-5).
+ * Ver "NOTAS DE SELECTORES" al final del archivo para el historial de cambios.
  *
  * ── Variables de entorno ────────────────────────────────────────────────────
  *   E2E_BASE_URL   (default: http://localhost:8080)
@@ -259,8 +259,8 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
   await page.waitForTimeout(1000);
 
   // Check for "Ver Movimientos" (register open) vs "Abrir" (register closed)
-  const movementsBtn = page.locator('.dx-data-row .dx-button[title="Ver Movimientos"]').first();
-  const openBtn = page.locator('.dx-data-row .dx-button').filter({ hasText: 'Abrir' }).first();
+  const movementsBtn = page.getByTestId('cash-btn-movements').first();
+  const openBtn = page.getByTestId('cash-btn-open').first();
 
   const movementsBtnVisible = await movementsBtn.isVisible({ timeout: 8000 }).catch(() => false);
 
@@ -287,8 +287,8 @@ async function recoverCashShiftId(page: Page): Promise<string | null> {
 
     await page.locator('text=Apertura de caja').waitFor({ state: 'visible', timeout: 10000 });
     await fillDxInput(page, 'Saldo inicial', '100');
+    const abrirCajaBtn = page.getByTestId('cash-open-submit-btn').first();
 
-    const abrirCajaBtn = page.locator('.dx-button').filter({ hasText: 'Abrir caja' }).first();
     await abrirCajaBtn.click();
 
     await page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 });
@@ -428,13 +428,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // ── Campo: Nombre ──
       // DxForm con labelMode="hidden" no genera <label> explícita —
       // DevExtreme establece aria-label en el input con el valor del label del field.
-      // ProductFields.ts: name('name').label('Nombre')  ⚠ FRAGILE (ver notas)
+      // ProductFields.ts: name('name').label('Nombre') — aria-label auto-inyectado por FormUtils
       await fillDxInput(page, 'Nombre', productName);
 
       // ── Campo: Tipo de producto (DxSelectBox ENUM, defaultValue='GOOD') ──
       // Ya tiene valor por defecto 'GOOD', pero lo seleccionamos explícitamente
-      // ⚠ FRAGILE: DxSelectBox sin aria-label explícito — usamos placeholder o posición
-      // El campo productKind label('Tipo de producto') → DX puede generar aria-label
+      // DxSelectBox hereda aria-label de FormUtils. El campo productKind label('Tipo de producto')
+      // → DX genera aria-label automáticamente.
       try {
         await selectDxOption(page, 'Tipo de producto', 'Bien físico');
       } catch {
@@ -609,13 +609,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await page.locator('.dx-data-row').first().waitFor({ state: 'visible', timeout: 15000 });
 
     // Check if there is a closed cash register (Abrir button) or an open one (Ver Movimientos)
-    const openBtn = page.locator('.dx-data-row .dx-button').filter({ hasText: 'Abrir' }).first();
+    const openBtn = page.getByTestId('cash-btn-open').first();
     const alreadyOpen = !(await openBtn.isVisible({ timeout: 8000 }).catch(() => false));
 
     if (alreadyOpen) {
       // Cash register is already open — find the "Ver Movimientos" button
       // DevExtreme renders the hint prop as title attribute on the .dx-button wrapper div
-      const movementsBtn = page.locator('.dx-data-row .dx-button[title="Ver Movimientos"]').first();
+      const movementsBtn = page.getByTestId('cash-btn-movements').first();
       await movementsBtn.waitFor({ state: 'visible', timeout: 5000 });
       await Promise.all([
         page.waitForURL(/\/#\/cash-shift\/\d+\/movements/, { timeout: 15000 }),
@@ -630,7 +630,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await fillDxInput(page, 'Saldo inicial', '100');
 
       // Confirm opening
-      const abrirCajaBtn = page.locator('.dx-button').filter({ hasText: 'Abrir caja' }).first();
+      const abrirCajaBtn = page.getByTestId('cash-open-submit-btn').first();
       await abrirCajaBtn.click();
 
       // Wait for redirect to movements page
@@ -680,7 +680,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // CustomerFields: name('businessName').label('Cliente') — DxTextArea
       // DxTextArea renderiza <textarea aria-label="Cliente"> o con role="textbox"
-      // ⚠ FRAGILE: DxTextArea puede no propagar aria-label al textarea nativo
+      // aria-label es auto-inyectado por FormUtils en el textarea nativo
       const clienteInput = page
         .locator('textarea[aria-label="Cliente"], [aria-label="Cliente"]')
         .first();
@@ -743,7 +743,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // .pos-shell is a real <div> with no display:contents — wait for a stable child element
       // that proves the POS app is loaded: the product search input
-      await expect(page.locator('input[type="search"][placeholder*="Buscar"]')).toBeVisible({
+      await expect(page.getByTestId('pos-product-search')).toBeVisible({
         timeout: 25000,
       });
     });
@@ -763,7 +763,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Buscar el producto creado', async () => {
       // POSCatalogPanel renderiza un <input type="search" placeholder="Buscar producto… (F2)">
       // El input tiene autoFocus y ref={searchInputRef}
-      const searchInput = page.locator('input[type="search"][placeholder*="Buscar"]');
+      const searchInput = page.getByTestId('pos-product-search');
       await searchInput.waitFor({ state: 'visible', timeout: 10000 });
       await searchInput.fill(productName);
     });
@@ -772,13 +772,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
       // POSItem renderiza un <article role="button" aria-label="${name} — S/...">
       // o un <button aria-label="Agregar ${name}"> dentro de la card
       const productCard = page
-        .locator('article.pos-product-card')
+        .getByTestId('pos-product-card')
         .filter({ hasText: productName })
         .first();
       await productCard.waitFor({ state: 'visible', timeout: 15000 });
 
       // Click en el botón "+" de la card
-      const addBtn = productCard.locator('button.pos-product-card__add');
+      const addBtn = productCard.getByTestId('pos-product-card-add');
       if (await addBtn.isVisible({ timeout: 2000 })) {
         await addBtn.click();
       } else {
@@ -795,12 +795,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Seleccionar el cliente creado', async () => {
       // POSCheckoutPanel — sección "Cliente (opcional)"
       // A "Cliente General" may be pre-selected by default. If so:
-      //   - button.pos-section-toggle__btn shows "Cliente General" [expanded][active]
-      //   - button.pos-section-toggle__clear (×) is visible
+      //   - pos-customer-toggle button shows "Cliente General" [expanded][active]
+      //   - pos-customer-clear button (×) is visible
       // We must clear the existing customer first, then open the search.
 
       // Step 1: Clear any pre-selected customer (e.g. "Cliente General")
-      const clearCustomerBtn = page.locator('button.pos-section-toggle__clear');
+      const clearCustomerBtn = page.getByTestId('pos-customer-clear');
       const isClearVisible = await clearCustomerBtn.isVisible({ timeout: 3000 }).catch(() => false);
       if (isClearVisible) {
         await clearCustomerBtn.click();
@@ -810,12 +810,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Step 2: Click the toggle to open the customer search section
       // After clearing, the toggle should show "Cliente (opcional)" and the section is closed.
-      const customerToggle = page.locator('button.pos-section-toggle__btn').first();
+      const customerToggle = page.getByTestId('pos-customer-toggle').first();
       await customerToggle.waitFor({ state: 'visible', timeout: 10000 });
       await customerToggle.click();
 
-      // Input de búsqueda de cliente: aria-label="Cliente" (mounts after toggle opens)
-      const customerSearchInput = page.locator('input[aria-label="Cliente"].pos-config-input');
+      // Input de búsqueda de cliente: data-testid="pos-customer-search" (mounts after toggle opens)
+      const customerSearchInput = page.getByTestId('pos-customer-search');
       await customerSearchInput.waitFor({ state: 'visible', timeout: 8000 });
       // Search by DNI (unique per test run) via the 'ruc' search field.
       // The DB may accumulate many "Cliente Test" entries from prior runs;
@@ -824,12 +824,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await customerSearchInput.fill(customerDni);
 
       // Esperar sugerencias
-      const suggestions = page.locator('.pos-customer-suggestions[role="listbox"]');
+      const suggestions = page.getByTestId('pos-customer-suggestions');
       await suggestions.waitFor({ state: 'visible', timeout: 10000 });
 
       // Seleccionar la primera sugerencia que coincida con customerName
       const customerOption = page
-        .locator('.pos-customer-option')
+        .getByTestId('pos-customer-option')
         .filter({ hasText: customerName })
         .first();
       await customerOption.waitFor({ state: 'visible', timeout: 8000 });
@@ -837,7 +837,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Verificar que el cliente quedó seleccionado (el toggle muestra el nombre)
       await expect(
-        page.locator('button.pos-section-toggle__btn').filter({ hasText: customerName }),
+        page.getByTestId('pos-customer-toggle').filter({ hasText: customerName }),
       ).toBeVisible({ timeout: 8000 });
     });
 
@@ -852,7 +852,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // Si es pago en efectivo, aparece el campo "Monto recibido"
       // Ingresar monto exacto usando el botón "Exacto" para que checkoutDisabled = false
-      const exactoBtn = page.locator('button.pos-discount-preset').filter({ hasText: 'Exacto' });
+      const exactoBtn = page.getByTestId('pos-cash-preset-exacto');
       try {
         await exactoBtn.waitFor({ state: 'visible', timeout: 3000 });
         await exactoBtn.click();
@@ -862,10 +862,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Completar el pago (Cobrar)', async () => {
-      // Botón "Cobrar" — tiene clase .pos-checkout y es el botón principal del footer
+      // Botón "Cobrar" — data-testid="pos-checkout-btn" es el botón principal del footer
       // checkoutDisabled = cart.empty || !warehouse || !paymentMethod || (cash && amountReceived < total)
       // We wait for the button to be enabled (warehouse + payment method must be settled)
-      const cobrarBtn = page.locator('button.pos-checkout').filter({ hasText: /cobrar/i });
+      const cobrarBtn = page.getByTestId('pos-checkout-btn');
       await cobrarBtn.waitFor({ state: 'visible', timeout: 8000 });
       // Wait until the button becomes enabled (up to 10 seconds for data to settle)
       await expect(cobrarBtn).not.toBeDisabled({ timeout: 10000 });
@@ -874,13 +874,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Verificar overlay "¡Venta completada!"', async () => {
       // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive"
-      // Contiene <h2 class="pos-postsale__title">¡Venta completada!</h2>
+      // Contiene <h2 data-testid="pos-postsale-title">¡Venta completada!</h2>
       await expect(
-        page.locator('.pos-postsale__title').filter({ hasText: '¡Venta completada!' }),
+        page.getByTestId('pos-postsale-title').filter({ hasText: '¡Venta completada!' }),
       ).toBeVisible({ timeout: 20000 });
 
       // Cerrar el overlay (botón "Nueva venta")
-      await page.locator('.pos-postsale__btn--primary').filter({ hasText: 'Nueva venta' }).click();
+      await page.getByTestId('pos-postsale-new-sale').filter({ hasText: 'Nueva venta' }).click();
     });
   });
 
@@ -931,7 +931,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Llenar campos del movimiento', async () => {
       // cashMovementsFields: name('category').label('Categoría') — DxSelectBox ENTITY required
-      // ⚠ FRAGILE: requiere categorías de movimiento en BD
+      // Requiere categorías de movimiento en BD (seed de datos de prueba)
       await test.step('Seleccionar categoría de movimiento', async () => {
         const categoryWidget = page
           .locator('.dx-popup-content .dx-field-item')
@@ -1123,10 +1123,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Hacer click en "Cerrar caja"', async () => {
-      // CashRegisterClose tiene un Button text="Cerrar caja" en la Toolbar del DataGrid
-      const closeCajaBtn = page
-        .locator('.dx-toolbar .dx-button')
-        .filter({ hasText: 'Cerrar caja' });
+      // CashRegisterClose tiene un Button con data-testid="cash-close-btn" en la Toolbar del DataGrid
+      const closeCajaBtn = page.getByTestId('cash-close-btn');
       await closeCajaBtn.waitFor({ state: 'visible', timeout: 8000 });
       await closeCajaBtn.click();
     });
