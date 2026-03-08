@@ -90,8 +90,13 @@ final class JWTManagerTest extends TestCase
     {
         $token = $this->manager->encode(['sub' => 'ok', 'exp' => time() + 3600]);
 
-        // Flip the last character of the signature to break HMAC
-        $tampered = substr($token, 0, -1) . ($token[-1] === 'A' ? 'B' : 'A');
+        // Tamper with the payload segment (second part) — this guarantees the
+        // decoded bytes differ and the HMAC signature verification fails.
+        // (Flipping the last character of the *signature* is unreliable because
+        // base64url trailing-padding bits are ignored during decoding.)
+        $parts = explode('.', $token);
+        $parts[1] = substr($parts[1], 0, -1) . ($parts[1][-1] === 'A' ? 'B' : 'A');
+        $tampered = implode('.', $parts);
 
         self::assertFalse($this->manager->verify($tampered));
     }
