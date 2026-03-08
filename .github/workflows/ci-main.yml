@@ -34,7 +34,10 @@ jobs:
 
       - name: Run GrumPHP
         # Level is enforced via phpstan.dist.neon (min: 6, see SLICE-SEC-001)
-        run: docker compose exec -T web ./vendor/bin/grumphp run --no-interaction
+        run: |
+          docker compose exec -T \
+            -e OTEL_SDK_DISABLED=true \
+            web ./vendor/bin/grumphp run --no-interaction
 
       - name: Enable PCOV in web container
         run: |
@@ -42,7 +45,9 @@ jobs:
 
       - name: Run PHPUnit with coverage
         run: |
-          docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/phpunit -c phpunit.coverage.xml
+          docker compose exec -T \
+            -e OTEL_SDK_DISABLED=true \
+            web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/phpunit -c phpunit.coverage.xml
 
       - name: Enforce backend coverage threshold
         run: |
