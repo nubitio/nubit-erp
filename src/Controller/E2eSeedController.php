@@ -8,18 +8,21 @@ use App\Service\E2eTestSeedServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
 
 /**
  * HTTP façade for the E2E seed/reset commands.
  *
- * Protected by the E2E_SEED_ENABLED=1 environment variable.
- * Must NEVER be exposed in production (env var is not set there).
+ * Routes are registered ONLY in the `dev` and `test` environments via
+ * config/routes/e2e.yaml (when@dev / when@test blocks).  In `prod` the
+ * routes simply do not exist and every request returns 404.
+ *
+ * A secondary defence-in-depth guard (E2E_SEED_ENABLED=1) is kept inside
+ * each action so that the endpoint is inert even if something misconfigures
+ * the routing in a non-production environment.
  *
  * POST /api/test/e2e/seed  → seeds test user + data, returns credentials
  * POST /api/test/e2e/reset → cleans up seeded data
  */
-#[Route('/api/test/e2e', name: 'e2e_test_')]
 class E2eSeedController extends AbstractController
 {
     public function __construct(
@@ -27,7 +30,6 @@ class E2eSeedController extends AbstractController
     ) {
     }
 
-    #[Route('/seed', name: 'seed', methods: ['POST'])]
     public function seed(): JsonResponse
     {
         if ((string) ($_SERVER['E2E_SEED_ENABLED'] ?? '') !== '1') {
@@ -39,7 +41,6 @@ class E2eSeedController extends AbstractController
         return $this->json($payload);
     }
 
-    #[Route('/reset', name: 'reset', methods: ['POST'])]
     public function reset(): JsonResponse
     {
         if ((string) ($_SERVER['E2E_SEED_ENABLED'] ?? '') !== '1') {

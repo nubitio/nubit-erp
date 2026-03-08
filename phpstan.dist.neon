@@ -1,11 +1,14 @@
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-doctrine/rules.neon
+    - phpstan-baseline.neon   # 156 pre-existing level-6 violations (SLICE-SEC-001). Remove entries as T-SEC-05a fixes them.
 
 parameters:
-    level: 5
+    level: 6   # upgraded from 5 per SLICE-SEC-001. Target: level 8 by end of Roadmap Phase 2.
     paths:
         - src/
         - tests/
     excludePaths:
         - config/reference.php
+        - migrations/
+        - migrations_control_plane/

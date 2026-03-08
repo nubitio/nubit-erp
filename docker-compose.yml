@@ -17,11 +17,11 @@ services:
     environment:
       SERVER_NAME: ':80'
       CADDY_GLOBAL_OPTIONS: 'auto_https off'
-      DATABASE_URL: '${DATABASE_URL:-mysql://demo:Admin.3000@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
-      CONTROL_PLANE_DATABASE_URL: '${CONTROL_PLANE_DATABASE_URL:-mysql://efact:Admin.3000@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
+      DATABASE_URL: '${DATABASE_URL:-mysql://demo:${MYSQL_PASSWORD:-changeme}@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
+      CONTROL_PLANE_DATABASE_URL: '${CONTROL_PLANE_DATABASE_URL:-mysql://efact:${MYSQL_PASSWORD:-changeme}@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
       QZ_CERT_PATH: '/app/var/qz/qz_cert.pem'
       QZ_PRIVATE_KEY_PATH: '/app/var/qz/qz_private.key'
-      QZ_PRIVATE_KEY_PASSPHRASE: 'Admin.3000'
+      QZ_PRIVATE_KEY_PASSPHRASE: '${QZ_PRIVATE_KEY_PASSPHRASE:-changeme}'
       # Worker mode disabled for development (enable for performance testing)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
       OTEL_PHP_AUTOLOAD_ENABLED: 'true'
@@ -56,10 +56,10 @@ services:
   database:
     image: mariadb:11.4
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
       MYSQL_DATABASE: efact
       MYSQL_USER: efact
-      MYSQL_PASSWORD: Admin.3000
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
       TZ: UTC
     ports:
       - '3306:3306'

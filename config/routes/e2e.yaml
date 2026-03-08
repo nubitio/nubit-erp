@@ -1,0 +1,26 @@
+##
+# E2E seed routes — registered ONLY in dev and test environments.
+# In prod these blocks are ignored and the routes simply do not exist (404).
+##
+
+when@dev:
+  e2e_test_seed:
+    path: /api/test/e2e/seed
+    controller: App\Controller\E2eSeedController::seed
+    methods: [POST]
+
+  e2e_test_reset:
+    path: /api/test/e2e/reset
+    controller: App\Controller\E2eSeedController::reset
+    methods: [POST]
+
+when@test:
+  e2e_test_seed:
+    path: /api/test/e2e/seed
+    controller: App\Controller\E2eSeedController::seed
+    methods: [POST]
+
+  e2e_test_reset:
+    path: /api/test/e2e/reset
+    controller: App\Controller\E2eSeedController::reset
+    methods: [POST]
