@@ -142,11 +142,14 @@ jobs:
 
       - name: Run Playwright e2e tests
         run: |
-          docker compose exec -T \
+          docker compose --profile e2e run --rm \
             -e E2E_USERNAME \
             -e E2E_PASSWORD \
             -e E2E_SALE_ID \
-            vite sh -lc "corepack enable && yarn test:e2e"
+            -e E2E_BASE_URL=http://web \
+            --entrypoint "" \
+            e2e \
+            sh /home/node/app/docker/ci-e2e-runner.sh
 
       - name: Cleanup E2E seeded data
         if: always()
