@@ -106,3 +106,6 @@ services:
     arguments:
       $loggerProvider: '@open_telemetry.logger_provider'
       $level: !php/const Monolog\Level::Warning
+
+  GuzzleHttp\ClientInterface:
+    class: GuzzleHttp\Client

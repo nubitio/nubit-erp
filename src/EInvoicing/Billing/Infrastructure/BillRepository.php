@@ -16,19 +16,20 @@ use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
 use Greenter\Model\Sale\Invoice;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 readonly class BillRepository implements BillRepositoryInterface
 {
     public function __construct(
         private SerializerInterface $serializer,
         private LoggerInterface $logger,
+        private HttpClientInterface $httpClient,
         #[Autowire('%env(BILL_API_BASE_URL)%')]
         private string $apiBaseUrl,
         #[Autowire('%env(BILL_API_TOKEN)%')]
@@ -46,14 +47,13 @@ readonly class BillRepository implements BillRepositoryInterface
     #[Override]
     public function sendBill(Invoice $invoice): DocumentResponse
     {
-        $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
         $url = $this->apiBaseUrl . 'invoice/send?token=' . $this->apiToken;
 
         $this->logger->info('Enviando factura a Bill', ['invoice' => $invoice]);
         $this->logger->info('Request Body', ['requestBody' => $requestBody]);
 
-        $response = $httpClient->request('POST', $url, [
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -79,11 +79,10 @@ readonly class BillRepository implements BillRepositoryInterface
     #[Override]
     public function getXml(Invoice $invoice): string
     {
-        $httpClient = HttpClient::create();
         $requestBody = $this->serializer->serialize($invoice, 'json');
         $url = $this->apiBaseUrl . 'invoice/xml?token=' . $this->apiToken;
 
-        $response = $httpClient->request('POST', $url, [
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -103,8 +102,6 @@ readonly class BillRepository implements BillRepositoryInterface
     #[Override]
     public function getPdf(Invoice $invoice): string
     {
-        $httpClient = HttpClient::create();
-
         $fileRequest = new FileRequest(
             $invoice,
             new Parameters(
@@ -123,7 +120,7 @@ readonly class BillRepository implements BillRepositoryInterface
         $requestBody = $this->serializer->serialize($fileRequest, 'json');
         $url = $this->apiBaseUrl . 'invoice/pdf?token=' . $this->apiToken;
 
-        $response = $httpClient->request('POST', $url, [
+        $response = $this->httpClient->request('POST', $url, [
             'headers' => [
                 'Content-Type' => 'application/json',
             ],
@@ -143,8 +140,6 @@ readonly class BillRepository implements BillRepositoryInterface
     #[Override]
     public function getStatus(Invoice $invoice): StatusCdrResult
     {
-        $httpClient = HttpClient::create();
-
         $params = [
             'ruc' => $invoice->getCompany()?->getRuc(),
             'tipo' => $invoice->getTipoDoc(),
@@ -156,7 +151,7 @@ readonly class BillRepository implements BillRepositoryInterface
         $baseUrl = $this->apiBaseUrl . 'invoice/status?token=' . $this->apiToken;
         $url = $baseUrl . ('&' . $urlParams);
 
-        $response = $httpClient->request('GET', $url);
+        $response = $this->httpClient->request('GET', $url);
 
         $responseBody = $response->getContent();
         /** @var StatusCdrResult $statusResponse */

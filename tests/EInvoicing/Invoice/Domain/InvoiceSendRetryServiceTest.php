@@ -1,0 +1,339 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\EInvoicing\Invoice\Domain;
+
+use App\Core\Service\SettingsService;
+use App\Core\Util\Constants;
+use App\EInvoicing\Invoice\Domain\InvoiceSendRetryService;
+use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
+
+#[AllowMockObjectsWithoutExpectations]
+final class InvoiceSendRetryServiceTest extends TestCase
+{
+    private Connection&MockObject $connection;
+    private SettingsService&MockObject $settings;
+    private LoggerInterface&MockObject $logger;
+    private InvoiceSendRetryService $service;
+
+    protected function setUp(): void
+    {
+        $this->connection = $this->createMock(Connection::class);
+        $this->settings   = $this->createMock(SettingsService::class);
+        $this->logger     = $this->createMock(LoggerInterface::class);
+
+        $this->service = new InvoiceSendRetryService(
+            $this->connection,
+            $this->settings,
+            $this->logger,
+        );
+    }
+
+    // -----------------------------------------------------------------------
+    // countCandidateDocuments
+    // -----------------------------------------------------------------------
+
+    public function testCountCandidateDocumentsReturnsCastInteger(): void
+    {
+        $this->connection->method('fetchOne')->willReturn('42');
+
+        self::assertSame(42, $this->service->countCandidateDocuments());
+    }
+
+    public function testCountCandidateDocumentsWithFalseResult(): void
+    {
+        $this->connection->method('fetchOne')->willReturn(false);
+
+        self::assertSame(0, $this->service->countCandidateDocuments());
+    }
+
+    // -----------------------------------------------------------------------
+    // fetchCandidateIds
+    // -----------------------------------------------------------------------
+
+    public function testFetchCandidateIdsReturnsArrayOfStringIds(): void
+    {
+        $this->connection
+            ->method('fetchFirstColumn')
+            ->willReturn(['uuid-1', 'uuid-2', 'uuid-3']);
+
+        $result = $this->service->fetchCandidateIds(10, 0);
+
+        self::assertSame(['uuid-1', 'uuid-2', 'uuid-3'], $result);
+    }
+
+    public function testFetchCandidateIdsCastsToString(): void
+    {
+        $this->connection
+            ->method('fetchFirstColumn')
+            ->willReturn([1, 2, 3]);
+
+        $result = $this->service->fetchCandidateIds(3, 0);
+
+        self::assertSame(['1', '2', '3'], $result);
+    }
+
+    // -----------------------------------------------------------------------
+    // getRetryPolicy – happy path
+    // -----------------------------------------------------------------------
+
+    public function testGetRetryPolicyHappyPath(): void
+    {
+        $this->settings
+            ->method('get')
+            ->willReturnMap([
+                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '5'],
+                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '30'],
+                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '900'],
+            ]);
+
+        $policy = $this->service->getRetryPolicy('tenant_test');
+
+        self::assertSame(5, $policy['max_attempts']);
+        self::assertSame(30, $policy['base_seconds']);
+        self::assertSame(900, $policy['max_seconds']);
+    }
+
+    public function testGetRetryPolicyEnforcesMinimumMaxAttempts(): void
+    {
+        $this->settings
+            ->method('get')
+            ->willReturnMap([
+                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '0'],
+                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '10'],
+                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '1800'],
+            ]);
+
+        $policy = $this->service->getRetryPolicy(null);
+
+        self::assertSame(1, $policy['max_attempts']);
+    }
+
+    public function testGetRetryPolicyEnforcesMinimumBaseSeconds(): void
+    {
+        $this->settings
+            ->method('get')
+            ->willReturnMap([
+                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '8'],
+                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '0'],
+                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '1800'],
+            ]);
+
+        $policy = $this->service->getRetryPolicy(null);
+
+        self::assertSame(1, $policy['base_seconds']);
+    }
+
+    public function testGetRetryPolicyMaxSecondsNotLessThanBaseSeconds(): void
+    {
+        $this->settings
+            ->method('get')
+            ->willReturnMap([
+                [Constants::SUNAT_SEND_RETRY_MAX_ATTEMPTS, '8', '8'],
+                [Constants::SUNAT_SEND_RETRY_BASE_SECONDS, '60', '200'],
+                [Constants::SUNAT_SEND_RETRY_MAX_SECONDS, '1800', '100'],
+            ]);
+
+        $policy = $this->service->getRetryPolicy(null);
+
+        self::assertSame(200, $policy['max_seconds']);
+    }
+
+    // -----------------------------------------------------------------------
+    // getRetryPolicy – settings exception → fallback
+    // -----------------------------------------------------------------------
+
+    public function testGetRetryPolicyFallbackOnSettingsException(): void
+    {
+        $this->settings
+            ->method('get')
+            ->willThrowException(new RuntimeException('DB error'));
+
+        $this->logger
+            ->expects(self::once())
+            ->method('error');
+
+        $policy = $this->service->getRetryPolicy('tenant_test');
+
+        self::assertSame(['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800], $policy);
+    }
+
+    // -----------------------------------------------------------------------
+    // evaluateRetryEligibility
+    // -----------------------------------------------------------------------
+
+    public function testEvaluateEligibilityWithZeroAttempts(): void
+    {
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['attempts' => '0', 'last_attempt_at' => null]);
+
+        $result = $this->service->evaluateRetryEligibility(
+            'doc-id',
+            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
+        );
+
+        self::assertTrue($result['eligible']);
+        self::assertSame('eligible', $result['reason']);
+        self::assertSame(0, $result['attempts']);
+    }
+
+    public function testEvaluateEligibilityMaxAttemptsReached(): void
+    {
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['attempts' => '8', 'last_attempt_at' => date('Y-m-d H:i:s', time() - 3600)]);
+
+        $result = $this->service->evaluateRetryEligibility(
+            'doc-id',
+            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
+        );
+
+        self::assertFalse($result['eligible']);
+        self::assertSame('max_attempts', $result['reason']);
+        self::assertSame(8, $result['attempts']);
+    }
+
+    public function testEvaluateEligibilityWithAttemptsButNoLastAttemptAt(): void
+    {
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['attempts' => '3', 'last_attempt_at' => null]);
+
+        $result = $this->service->evaluateRetryEligibility(
+            'doc-id',
+            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
+        );
+
+        self::assertTrue($result['eligible']);
+        self::assertSame('eligible', $result['reason']);
+        self::assertSame(3, $result['attempts']);
+    }
+
+    public function testEvaluateEligibilityWithinBackoffWindow(): void
+    {
+        // 1 attempt, base=3600 seconds; last attempt was 60 seconds ago → still in backoff
+        $lastAttempt = date('Y-m-d H:i:s', time() - 60);
+
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['attempts' => '1', 'last_attempt_at' => $lastAttempt]);
+
+        $result = $this->service->evaluateRetryEligibility(
+            'doc-id',
+            ['max_attempts' => 8, 'base_seconds' => 3600, 'max_seconds' => 7200],
+        );
+
+        self::assertFalse($result['eligible']);
+        self::assertSame('backoff', $result['reason']);
+        self::assertGreaterThan(0, $result['wait_seconds']);
+    }
+
+    public function testEvaluateEligibilityAfterBackoffElapsed(): void
+    {
+        // 1 attempt, base=60 seconds; last attempt was 120 seconds ago → elapsed
+        $lastAttempt = date('Y-m-d H:i:s', time() - 120);
+
+        $this->connection
+            ->method('fetchAssociative')
+            ->willReturn(['attempts' => '1', 'last_attempt_at' => $lastAttempt]);
+
+        $result = $this->service->evaluateRetryEligibility(
+            'doc-id',
+            ['max_attempts' => 8, 'base_seconds' => 60, 'max_seconds' => 1800],
+        );
+
+        self::assertTrue($result['eligible']);
+        self::assertSame('eligible', $result['reason']);
+        self::assertSame(0, $result['wait_seconds']);
+    }
+
+    // -----------------------------------------------------------------------
+    // recordRetrySkipEvent
+    // -----------------------------------------------------------------------
+
+    public function testRecordRetrySkipEventBackoffInsertsPendingStatus(): void
+    {
+        $this->connection
+            ->expects(self::once())
+            ->method('insert')
+            ->with(
+                'tax_document_event',
+                self::callback(static function (array $data): bool {
+                    return $data['status'] === 'pending' && $data['code'] === 'backoff';
+                })
+            );
+
+        $this->service->recordRetrySkipEvent('doc-id', 'backoff', 2, 120);
+    }
+
+    public function testRecordRetrySkipEventMaxAttemptsInsertsErrorStatus(): void
+    {
+        $this->connection
+            ->expects(self::once())
+            ->method('insert')
+            ->with(
+                'tax_document_event',
+                self::callback(static function (array $data): bool {
+                    return $data['status'] === 'error' && $data['code'] === 'max_attempts';
+                })
+            );
+
+        $this->service->recordRetrySkipEvent('doc-id', 'max_attempts', 8, 0);
+    }
+
+    public function testRecordRetrySkipEventEligibleDoesNotInsert(): void
+    {
+        $this->connection
+            ->expects(self::never())
+            ->method('insert');
+
+        $this->service->recordRetrySkipEvent('doc-id', 'eligible', 0, 0);
+    }
+
+    public function testRecordRetrySkipEventDbFailureLogsWarningAndDoesNotThrow(): void
+    {
+        $this->connection
+            ->method('insert')
+            ->willThrowException(new RuntimeException('DB error'));
+
+        $this->logger
+            ->expects(self::once())
+            ->method('warning');
+
+        // Should not throw
+        $this->service->recordRetrySkipEvent('doc-id', 'backoff', 2, 60);
+    }
+
+    // -----------------------------------------------------------------------
+    // getCurrentStatus
+    // -----------------------------------------------------------------------
+
+    public function testGetCurrentStatusReturnsStringStatus(): void
+    {
+        $this->connection
+            ->method('fetchOne')
+            ->willReturn('0');
+
+        $result = $this->service->getCurrentStatus('doc-id');
+
+        self::assertSame('0', $result);
+    }
+
+    public function testGetCurrentStatusReturnsFalseAsEmptyString(): void
+    {
+        $this->connection
+            ->method('fetchOne')
+            ->willReturn(false);
+
+        $result = $this->service->getCurrentStatus('doc-id');
+
+        self::assertSame('', $result);
+    }
+}

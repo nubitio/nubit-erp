@@ -17,7 +17,7 @@ use Greenter\Sunat\ConsultaCpe\ApiException;
 use Greenter\Sunat\ConsultaCpe\Configuration;
 use Greenter\Sunat\ConsultaCpe\Model\CpeFilter;
 use Greenter\Sunat\ConsultaCpe\Model\CpeResponse;
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Psr\Cache\InvalidArgumentException;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -34,6 +34,7 @@ readonly class ValidateInvoiceUseCase
         private CompanyContext $companyContext,
         private TaxDocumentRepository $taxDocumentRepository,
         private EntityManagerInterface $entityManager,
+        private ClientInterface $httpClient,
     ) {
     }
 
@@ -53,7 +54,7 @@ readonly class ValidateInvoiceUseCase
         $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
         $token = $this->getToken();
         $config = Configuration::getDefaultConfiguration()->setAccessToken($token);
-        $apiInstance = new ConsultaApi(new Client(), $config->setHost($config->getHostFromSettings(1)));
+        $apiInstance = new ConsultaApi($this->httpClient, $config->setHost($config->getHostFromSettings(1)));
         $customerId = $this->companyContext->getId();
 
         $cpeFilter = new CpeFilter()
@@ -85,7 +86,7 @@ readonly class ValidateInvoiceUseCase
         $tokenKey = $customerID . '_cpe_token';
 
         return $this->cache->get($tokenKey, function (ItemInterface $item) {
-            $apiInstance = new AuthApi(new Client());
+            $apiInstance = new AuthApi($this->httpClient);
             $item->expiresAfter(3600);
             $result = $apiInstance->getToken(
                 self::GRANT_TYPE,
