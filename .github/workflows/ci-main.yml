@@ -123,6 +123,10 @@ jobs:
           docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
           docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
 
+      - name: Build frontend for E2E
+        run: |
+          docker compose exec -T vite sh -lc "corepack enable && yarn build"
+
       - name: Run database migrations for e2e
         run: |
           docker compose exec -T -e OTEL_TRACES_EXPORTER=none -e OTEL_LOGS_EXPORTER=none -e OTEL_METRICS_EXPORTER=none web php bin/console app:control-plane:migrate --no-interaction
