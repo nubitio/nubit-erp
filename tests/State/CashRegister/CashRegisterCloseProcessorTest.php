@@ -8,10 +8,10 @@ use ApiPlatform\Metadata\Put;
 use App\Core\Application\Session\Security;
 use App\Dto\Auth\AuthUserDto;
 use App\Dto\CashRegister\CashRegisterCloseDto;
-use App\Entity\CashShift;
+use App\Entity\CashSession;
 use App\Entity\User;
+use App\Repository\CashSessionRepository;
 use App\State\CashRegister\CashRegisterCloseProcessor;
-use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -24,25 +24,17 @@ final class CashRegisterCloseProcessorTest extends TestCase
     /** @var Security&MockObject */
     private Security $security;
 
-    /** @var Connection&MockObject */
-    private Connection $connection;
+    /** @var CashSessionRepository&MockObject */
+    private CashSessionRepository $cashSessionRepository;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
-        $this->connection = $this->createMock(Connection::class);
-
-        $this->entityManager
-            ->method('getConnection')
-            ->willReturn($this->connection);
+        $this->cashSessionRepository = $this->createMock(CashSessionRepository::class);
 
         $authUser = new AuthUserDto(userId: 1, username: 'cajero');
         $this->security->method('connectedUser')->willReturn($authUser);
-
-        $this->connection->method('beginTransaction');
-        $this->connection->method('commit');
-        $this->connection->method('executeStatement')->willReturn(0);
     }
 
     /**
@@ -51,8 +43,8 @@ final class CashRegisterCloseProcessorTest extends TestCase
      */
     public function testClosureItemsAccumulatedWithBrickMath(): void
     {
-        $cashShift = $this->buildCashShift();
-        $this->entityManager->method('find')->willReturn($cashShift);
+        $cashSession = new CashSession();
+        $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn () => null);
         $this->entityManager->method('flush')->willReturnCallback(fn () => null);
@@ -69,9 +61,9 @@ final class CashRegisterCloseProcessorTest extends TestCase
         // expectedTotal = 0.1 + 0.1 = 0.20 (exact)
         // countedTotal  = 0.2 + 0.1 = 0.30 (exact — would be 0.30000000000000004 with float)
         // difference    = 0.30 - 0.20 = 0.10
-        $this->assertSame('0.20', $cashShift->getExpectedAmount());
-        $this->assertSame('0.30', $cashShift->getCountedAmount());
-        $this->assertSame('0.10', $cashShift->getDifference());
+        $this->assertSame('0.20', $cashSession->getExpectedAmount());
+        $this->assertSame('0.30', $cashSession->getCountedAmount());
+        $this->assertSame('0.10', $cashSession->getDifferenceAmount());
         $this->assertTrue($response->success);
     }
 
@@ -80,8 +72,8 @@ final class CashRegisterCloseProcessorTest extends TestCase
      */
     public function testSingleAmountPathUsesExactScale(): void
     {
-        $cashShift = $this->buildCashShift();
-        $this->entityManager->method('find')->willReturn($cashShift);
+        $cashSession = new CashSession();
+        $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn () => null);
         $this->entityManager->method('flush')->willReturnCallback(fn () => null);
@@ -94,14 +86,9 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $processor = $this->buildProcessor();
         $processor->process($dto, new Put(), ['id' => 2]);
 
-        $this->assertSame('123.46', $cashShift->getExpectedAmount());
-        $this->assertSame('100.00', $cashShift->getCountedAmount());
-        $this->assertSame('-23.45', $cashShift->getDifference());
-    }
-
-    private function buildCashShift(): CashShift
-    {
-        return new CashShift();
+        $this->assertSame('123.46', $cashSession->getExpectedAmount());
+        $this->assertSame('100.00', $cashSession->getCountedAmount());
+        $this->assertSame('-23.45', $cashSession->getDifferenceAmount());
     }
 
     private function buildProcessor(): CashRegisterCloseProcessor
@@ -109,6 +96,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         return new CashRegisterCloseProcessor(
             entityManager: $this->entityManager,
             security: $this->security,
+            cashSessionRepository: $this->cashSessionRepository,
         );
     }
 }

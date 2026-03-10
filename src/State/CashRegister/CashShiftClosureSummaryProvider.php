@@ -13,6 +13,7 @@ use App\Dto\CashRegister\CashShiftClosureSummaryDto;
 use App\Entity\PaymentMethod;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @implements ProviderInterface<CashShiftClosureSummaryDto>
@@ -34,50 +35,44 @@ readonly class CashShiftClosureSummaryProvider implements ProviderInterface
     {
         $cashShiftId = $uriVariables['id'];
 
-        // Fetch V2 cash_session for this legacy shift
+        // Step 1: try direct v2 session ID
         $session = $this->connection->fetchAssociative(
-            'SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?',
+            'SELECT id, opening_amount FROM cash_sessions WHERE id = ?',
             [$cashShiftId]
         );
 
-        // Legacy movements: income and expense sums
-        $legacyIncome = BigDecimal::of(
-            (string) ($this->connection->fetchOne(
-                "SELECT COALESCE(SUM(amount), 0) FROM cash_movement WHERE cash_shift_id = ? AND type = 'income'",
-                [$cashShiftId]
-            ) ?: '0')
-        );
-        $legacyExpense = BigDecimal::of(
-            (string) ($this->connection->fetchOne(
-                "SELECT COALESCE(SUM(amount), 0) FROM cash_movement WHERE cash_shift_id = ? AND type = 'expense'",
-                [$cashShiftId]
-            ) ?: '0')
-        );
-
+        // Step 2: fallback — treat URI id as a legacy_cash_shift_id
         if ($session === false) {
-            // Graceful fallback: legacy data only, single cash row
-            $cashExpected = $legacyIncome->minus($legacyExpense)
-                ->toScale(2, RoundingMode::HALF_UP)
-                ->__toString();
-
-            $cashName = $this->connection->fetchOne(
-                'SELECT name FROM payment_method WHERE id = ?',
-                [PaymentMethod::CASH]
-            ) ?: 'Efectivo';
-
-            return [
-                new CashShiftClosureSummaryDto(
-                    paymentMethodId: PaymentMethod::CASH,
-                    paymentMethod: (string) $cashName,
-                    expectedAmount: $cashExpected,
-                ),
-            ];
+            $session = $this->connection->fetchAssociative(
+                'SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?',
+                [$cashShiftId]
+            );
         }
 
-        $sessionId = (int) $session['id'];
+        if ($session === false) {
+            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashShiftId));
+        }
+
+        $sessionId     = (int) $session['id'];
         $openingAmount = BigDecimal::of((string) $session['opening_amount']);
 
-        // V2 SALE_IN amounts grouped by payment_method_id
+        // CASH_IN total from v2
+        $cashInRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+             WHERE cash_session_id = ? AND movement_type = 'CASH_IN'",
+            [$sessionId]
+        );
+        $cashInTotal = BigDecimal::of((string) ($cashInRaw ?: '0'));
+
+        // CASH_OUT total from v2
+        $cashOutRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
+             WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
+            [$sessionId]
+        );
+        $cashOutTotal = BigDecimal::of((string) ($cashOutRaw ?: '0'));
+
+        // SALE_IN amounts grouped by payment_method_id from v2
         $v2Sales = $this->connection->fetchAllAssociative(
             "SELECT cm.payment_method_id, COALESCE(SUM(cm.amount), 0) AS total
              FROM cash_movements cm
@@ -87,17 +82,18 @@ readonly class CashShiftClosureSummaryProvider implements ProviderInterface
         );
 
         // Build a map: payment_method_id => BigDecimal total
+        /** @var array<int, BigDecimal> $salesMap */
         $salesMap = [];
         foreach ($v2Sales as $row) {
-            $pmId = (int) $row['payment_method_id'];
-            $salesMap[$pmId] = BigDecimal::of((string) $row['total']);
+            $pmId             = (int) $row['payment_method_id'];
+            $salesMap[$pmId]  = BigDecimal::of((string) $row['total']);
         }
 
-        // Cash row: opening + legacy income - legacy expense + V2 SALE_IN (cash only)
-        $v2CashSales = $salesMap[PaymentMethod::CASH] ?? BigDecimal::zero();
+        // Cash row: opening_amount + CASH_IN - CASH_OUT + SALE_IN(cash)
+        $v2CashSales  = $salesMap[PaymentMethod::CASH] ?? BigDecimal::zero();
         $cashExpected = $openingAmount
-            ->plus($legacyIncome)
-            ->minus($legacyExpense)
+            ->plus($cashInTotal)
+            ->minus($cashOutTotal)
             ->plus($v2CashSales)
             ->toScale(2, RoundingMode::HALF_UP)
             ->__toString();
@@ -115,7 +111,7 @@ readonly class CashShiftClosureSummaryProvider implements ProviderInterface
             ),
         ];
 
-        // Non-cash rows: one per non-cash payment method that has at least one SALE_IN
+        // Non-cash rows: one per non-cash payment method with SALE_IN movements
         foreach ($salesMap as $pmId => $total) {
             if ($pmId === PaymentMethod::CASH) {
                 continue;

@@ -6,10 +6,18 @@ namespace App\Entity;
 
 use DateTimeImmutable;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Enum\CashMovementType;
 use App\Entity\CashMovementCategory;
+use App\Entity\CashSession;
 use App\Repository\CashMovementRepository;
+use App\State\CashRegister\CashMovementItemProvider;
+use App\State\CashRegister\CashMovementWriteProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -19,6 +27,19 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_movement:read']],
     filters: [DevExtremeFilter::class],
+    operations: [
+        new GetCollection(),
+        new Get(provider: CashMovementItemProvider::class),
+        new Post(processor: CashMovementWriteProcessor::class),
+        new Patch(
+            provider: CashMovementItemProvider::class,
+            processor: CashMovementWriteProcessor::class,
+        ),
+        new Delete(
+            provider: CashMovementItemProvider::class,
+            processor: CashMovementWriteProcessor::class,
+        ),
+    ],
 )]
 class CashMovement
 {
@@ -30,8 +51,16 @@ class CashMovement
 
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private CashShift $cashShift;
+    #[ORM\JoinColumn(nullable: true)]
+    private ?CashShift $cashShift = null;
+
+    /**
+     * V2 FK to cash_sessions. The DB column (cash_session_id) does NOT yet exist
+     * on the legacy cash_movement table — it will be added in T-CASH-07.
+     * This property is intentionally kept PHP-only (no ORM column mapping) for now.
+     */
+    #[Groups(['cash_movement:read'])]
+    private ?CashSession $cashSession = null;
 
     #[Groups(['cash_movement:read'])]
     #[ORM\ManyToOne]
@@ -63,14 +92,26 @@ class CashMovement
         return $this->id;
     }
 
-    public function getCashShift(): CashShift
+    public function getCashShift(): ?CashShift
     {
         return $this->cashShift;
     }
 
-    public function setCashShift(CashShift $cashShift): static
+    public function setCashShift(?CashShift $cashShift): static
     {
         $this->cashShift = $cashShift;
+
+        return $this;
+    }
+
+    public function getCashSession(): ?CashSession
+    {
+        return $this->cashSession;
+    }
+
+    public function setCashSession(?CashSession $cashSession): static
+    {
+        $this->cashSession = $cashSession;
 
         return $this;
     }
@@ -146,8 +187,12 @@ class CashMovement
     #[ORM\PreUpdate]
     public function syncBranchFromCashShift(): void
     {
-        if ($this->branch === null && isset($this->cashShift)) {
-            $this->branch = $this->cashShift->getBranch();
+        if ($this->branch === null) {
+            if ($this->cashSession !== null) {
+                $this->branch = $this->cashSession->getBranch();
+            } elseif ($this->cashShift !== null) {
+                $this->branch = $this->cashShift->getBranch();
+            }
         }
     }
 

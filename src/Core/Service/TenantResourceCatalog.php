@@ -15,7 +15,7 @@ final class TenantResourceCatalog
         'products' => ['producto'],
         'invoices' => ['tax_document'],
         'branches' => ['local'],
-        'cash_shifts' => ['cash_shift'],
+        'cash_shifts' => ['cash_sessions'],
     ];
 
     /**

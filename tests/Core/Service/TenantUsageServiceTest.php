@@ -27,7 +27,7 @@ final class TenantUsageServiceTest extends TestCase
         );
 
         $schema = $this->createMock(AbstractSchemaManager::class);
-        $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local', 'cash_shift']);
+        $schema->method('listTableNames')->willReturn(['usuario', 'cliente', 'producto', 'tax_document', 'local', 'cash_sessions']);
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
 
         $tenantConnection->method('fetchOne')->willReturnCallback(
@@ -38,7 +38,7 @@ final class TenantUsageServiceTest extends TestCase
                     str_contains($sql, '`producto`') => 33,
                     str_contains($sql, '`tax_document`') => 44,
                     str_contains($sql, '`local`') => 2,
-                    str_contains($sql, '`cash_shift`') => 3,
+                    str_contains($sql, '`cash_sessions`') => 3,
                     str_contains($sql, 'information_schema.tables') => '4096',
                     default => 0,
                 };

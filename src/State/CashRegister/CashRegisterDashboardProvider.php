@@ -41,27 +41,22 @@ SELECT
     c.id,
     c.name,
     cs.id AS cashShiftId,
-    cs.opened_at as openedAt,
-    cs.closed_at as closedAt,
+    cs.opened_at AS openedAt,
+    cs.closed_at AS closedAt,
     u.username AS cashier,
-    cs.opening_balance +
-    COALESCE(SUM(IF(cm.type = 'income', cm.amount, 0)), 0) -
-    COALESCE(SUM(IF(cm.type = 'expense', cm.amount, 0)), 0)
+    cs.opening_amount
+    + COALESCE(SUM(IF(cm.movement_type = 'CASH_IN',  cm.amount, 0)), 0)
+    - COALESCE(SUM(IF(cm.movement_type = 'CASH_OUT', cm.amount, 0)), 0)
+    + COALESCE(SUM(IF(cm.movement_type = 'SALE_IN',  cm.amount, 0)), 0)
     AS balance,
-    IF(cs.id IS NOT NULL AND cs.closed_at IS NULL, 'open', 'closed') AS status,
-    COALESCE((
-        SELECT SUM(v2cm.amount)
-        FROM cash_movements v2cm
-        JOIN cash_sessions v2cs ON v2cs.id = v2cm.cash_session_id
-        WHERE v2cs.legacy_cash_shift_id = cs.id
-          AND v2cm.movement_type = 'SALE_IN'
-    ), 0) AS today_sales
+    IF(cs.id IS NOT NULL AND cs.status = 'OPEN', 'open', 'closed') AS status,
+    COALESCE(SUM(IF(cm.movement_type = 'SALE_IN', cm.amount, 0)), 0) AS today_sales
 FROM cash_register c
-LEFT JOIN cash_shift cs ON cs.cash_register_id = c.id AND cs.closed_at IS NULL
-LEFT JOIN cash_movement cm ON cm.cash_shift_id = cs.id
+LEFT JOIN cash_sessions cs ON cs.cash_register_id = c.id AND cs.status = 'OPEN'
+LEFT JOIN cash_movements cm ON cm.cash_session_id = cs.id
 LEFT JOIN usuario u ON cs.opened_by = u.usuario_id
 WHERE c.branch_id = ?
-GROUP BY c.id, cs.id
+GROUP BY c.id, cs.id, u.username
 ORDER BY c.id
 SQL;
 

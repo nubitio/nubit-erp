@@ -1048,65 +1048,6 @@ final class SaleProcessorTest extends TestCase
         self::assertSame($sale, $result);
     }
 
-    // -------------------------------------------------------------------------
-    // TC-30: Legacy cash movement created when shift present + not disabled
-    // -------------------------------------------------------------------------
-
-    public function testLegacyCashMovementCreatedWhenShiftPresentAndEnabled(): void
-    {
-        $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
-        $sale->setCliente($this->createMock(Customer::class));
-
-        $cashShift = $this->buildCashShift();
-
-        $this->saleUtils
-            ->method('fillSaleValues')
-            ->willReturnArgument(0);
-
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '50.00');
-
-        // Category repo mock — returns a valid category so persist is called
-        $category = $this->buildCashMovementCategory();
-
-        /** @var EntityRepository<CashMovementCategory>&MockObject $categoryRepo */
-        $categoryRepo = $this->createMock(EntityRepository::class);
-        $categoryRepo->method('findOneBy')->willReturn($category);
-
-        // Route all getRepository() calls via a single callback to avoid stub conflicts
-        $this->entityManager
-            ->method('getRepository')
-            ->willReturnCallback(function (string $class) use ($cashShift, $categoryRepo): mixed {
-                if ($class === CashMovementCategory::class) {
-                    return $categoryRepo;
-                }
-
-                // CashShift and any other class: return a repo that gives back $cashShift
-                /** @var EntityRepository<CashShift>&MockObject $cashShiftRepo */
-                $cashShiftRepo = $this->createMock(EntityRepository::class);
-                $cashShiftRepo->method('findOneBy')->willReturn($cashShift);
-
-                return $cashShiftRepo;
-            });
-
-        // Expect persist + flush for cash movement
-        $this->entityManager
-            ->expects($this->once())
-            ->method('persist')
-            ->with($this->isInstanceOf(CashMovement::class));
-
-        $this->entityManager
-            ->expects($this->once())
-            ->method('flush');
-
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-            requireCashRegister: 'false',
-            disableLegacyCashMovement: 'false',
-        );
-    }
 
     // -------------------------------------------------------------------------
     // TC-31: Legacy cash movement skipped when category not found

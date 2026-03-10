@@ -13,10 +13,9 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Http\ApiResponse;
 use App\Dto\CashRegister\CashRegisterCloseDto;
-use App\Entity\CashShift;
+use App\Entity\CashSession;
 use App\Entity\User;
-use App\Enum\CashShiftStatus;
-use Doctrine\DBAL\Exception;
+use App\Repository\CashSessionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -30,6 +29,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
+        private CashSessionRepository $cashSessionRepository,
     ) {
     }
 
@@ -37,8 +37,6 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
      * @inheritdoc
      *
      * @param CashRegisterCloseDto $data
-     *
-     * @throws Exception
      */
     #[Override]
     public function process(
@@ -77,14 +75,17 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
         $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
 
-        $this->entityManager->getConnection()->beginTransaction();
         try {
-            $cashShift = $this->entityManager->find(
-                CashShift::class,
-                $uriVariables['id']
-            );
-            if (!$cashShift instanceof CashShift) {
-                throw new NotFoundHttpException('Turno de caja no encontrado.');
+            // Attempt 1: direct lookup by cash_sessions.id
+            $cashSession = $this->entityManager->find(CashSession::class, $uriVariables['id']);
+
+            // Attempt 2: backward compat — session was opened by legacy code, look up via legacy_cash_shift_id
+            if (!$cashSession instanceof CashSession) {
+                $cashSession = $this->cashSessionRepository->findByLegacyCashShiftId((int) $uriVariables['id']);
+            }
+
+            if (!$cashSession instanceof CashSession) {
+                throw new NotFoundHttpException('Sesión de caja no encontrada.');
             }
 
             $authUser = $this->security->connectedUser();
@@ -92,37 +93,19 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
             }
 
-            $cashShift->setClosingBalance($countedStr);
-            $cashShift->setExpectedAmount($expectedStr);
-            $cashShift->setCountedAmount($countedStr);
-            $cashShift->setDifference($differenceStr);
-            $cashShift->setNote($notes !== [] ? implode('; ', $notes) : null);
-            $cashShift->setStatus(CashShiftStatus::CLOSED);
-
             $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
-            if ($userRef instanceof User) {
-                $cashShift->setClosedBy($userRef);
-            }
 
-            $cashShift->setClosedAt(new DateTimeImmutable());
-            $this->entityManager->persist($cashShift);
+            $cashSession->setCountedAmount($countedStr);
+            $cashSession->setExpectedAmount($expectedStr);
+            $cashSession->setDifferenceAmount($differenceStr);
+            $cashSession->setCloseNote($notes !== [] ? implode('; ', $notes) : null);
+            $cashSession->setStatus('CLOSED');
+            $cashSession->setClosedBy($userRef instanceof User ? $userRef : null);
+            $cashSession->setClosedAt(new DateTimeImmutable());
 
+            $this->entityManager->persist($cashSession);
             $this->entityManager->flush();
-
-            // Close V2 cash_session linked to this legacy shift
-            $userId = $authUser->userId;
-            $this->entityManager->getConnection()->executeStatement(
-                "UPDATE cash_sessions
-                 SET status = 'CLOSED', closed_at = NOW(), closed_by = ?,
-                     expected_amount = ?, counted_amount = ?, difference_amount = ?
-                 WHERE legacy_cash_shift_id = ?",
-                [$userId, $expectedStr, $countedStr, $differenceStr, $uriVariables['id']]
-            );
-
-            $this->entityManager->getConnection()->commit();
         } catch (ORMException $ormException) {
-            $this->entityManager->getConnection()->rollBack();
-
             return new ApiResponse(
                 success: false,
                 message: 'Error al cerrar la caja',

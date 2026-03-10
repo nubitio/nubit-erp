@@ -11,12 +11,13 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
 {
     public function testLegacyCashMovementHelpersAreRemoved(): void
     {
-        // createCashMovementForSale and isLegacyCashMovementDisabled are needed
-        // for legacy mode cash register integration — do not remove them.
+        // createCashMovementForSale and isLegacyCashMovementDisabled were legacy helpers
+        // that wrote directly to the old cash_movement table. AC-04 requires their removal:
+        // SaleProcessor must no longer write legacy CashMovement rows.
         $reflection = new \ReflectionClass(SaleProcessor::class);
 
-        self::assertTrue($reflection->hasMethod('createCashMovementForSale'));
-        self::assertTrue($reflection->hasMethod('isLegacyCashMovementDisabled'));
+        self::assertFalse($reflection->hasMethod('createCashMovementForSale'));
+        self::assertFalse($reflection->hasMethod('isLegacyCashMovementDisabled'));
     }
 
     public function testConstructorNoLongerDependsOnLegacyCashMovementRepository(): void

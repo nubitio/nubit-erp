@@ -13,13 +13,9 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
-use App\Entity\CashMovement;
-use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;
 use App\Entity\Customer;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
-use App\Enum\CashShiftStatus;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
@@ -104,7 +100,6 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $user = $this->security->connectedUser();
-        $cashShiftForMovement = null;
         $isOperationalSale = $data->getTipoId() === 2;
         $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
         $resolvedCashSessionId = null;
@@ -122,25 +117,18 @@ readonly class SaleProcessor implements ProcessorInterface
                 FILTER_VALIDATE_BOOLEAN
             );
 
-            $this->logger->debug('Checking for open cash shift', [
-                'user_id' => $user->userId,
-            ]);
-
-            $cashShift = $this->entityManager->getRepository(CashShift::class)
-                ->findOneBy([
-                    'status' => CashShiftStatus::OPEN,
-                    'openedBy' => $user->userId,
-                ]);
-
-            if ($requireCashShift && !$cashShift instanceof CashShift) {
-                $this->logger->warning('Sale processing failed: No open cash shift found', [
-                    'user_id' => $user->userId,
-                ]);
-                throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
-            }
-
-            if ($cashShift instanceof CashShift) {
-                $cashShiftForMovement = $cashShift;
+            // Check for open cash session in v2 table
+            if ($requireCashShift) {
+                $hasOpenSession = (bool) $this->entityManager->getConnection()->fetchOne(
+                    "SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
+                    [$user->userId]
+                );
+                if (!$hasOpenSession) {
+                    $this->logger->warning('Sale processing failed: No open cash session found', [
+                        'user_id' => $user->userId,
+                    ]);
+                    throw new ServiceException('No puedes realizar ventas, no tienes una caja abierta');
+                }
             }
 
             $data = $this->saleUtils->fillSaleValues($data);
@@ -276,14 +264,8 @@ readonly class SaleProcessor implements ProcessorInterface
             if ($salesWritePolicy->writeNewSchema) {
                 try {
                     $cashSessionId = $requireCashShift
-                        ? $this->cashSessionResolver->resolveForSale(
-                            $data,
-                            $cashShiftForMovement?->getId()
-                        )
-                        : $this->cashSessionResolver->tryResolveForSale(
-                            $data,
-                            $cashShiftForMovement?->getId()
-                        );
+                        ? $this->cashSessionResolver->resolveForSale($data)
+                        : $this->cashSessionResolver->tryResolveForSale($data);
                     $resolvedCashSessionId = $cashSessionId;
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
@@ -294,7 +276,6 @@ readonly class SaleProcessor implements ProcessorInterface
                         'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
                         'warehouse_id' => $data->getAlmacen()?->getId(),
                         'cash_register_id' => $data->getCajaId(),
-                        'legacy_cash_shift_id' => $cashShiftForMovement?->getId(),
                         'resolved_cash_session_id' => $resolvedCashSessionId,
                         'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
                         'item_count' => count($data->getItems()),
@@ -350,13 +331,6 @@ readonly class SaleProcessor implements ProcessorInterface
                             );
                         }
                     }
-                }
-
-                if (
-                    $cashShiftForMovement instanceof CashShift
-                    && !$this->isLegacyCashMovementDisabled($salesWritePolicy)
-                ) {
-                    $this->createCashMovementForSale($data, $cashShiftForMovement, $cashCollected);
                 }
             }
         }
@@ -449,43 +423,4 @@ readonly class SaleProcessor implements ProcessorInterface
         ];
     }
 
-    private function createCashMovementForSale(Sale $sale, CashShift $cashShift, string $cashAmount): void
-    {
-        /** @var CashMovementCategory|null $category */
-        $category = $this->entityManager->getRepository(CashMovementCategory::class)->findOneBy([
-            'code' => CashMovementCategory::CASH_SALE,
-        ]);
-
-        if (!$category instanceof CashMovementCategory) {
-            $this->logger->warning('Cash sale category not found — skipping legacy cash movement', [
-                'sale_id' => $sale->getId(),
-            ]);
-
-            return;
-        }
-
-        $movement = new CashMovement();
-        $movement->setCashShift($cashShift);
-        $movement->setCategory($category);
-        $movement->setType($category->getType());
-        $movement->setAmount($cashAmount);
-        $movement->setDescription('Venta en efectivo N° ' . $sale->getSerie() . '-' . $sale->getNumero());
-        $movement->setCreatedAt(new DateTimeImmutable());
-        $movement->setBranch($sale->getBranch());
-
-        $this->entityManager->persist($movement);
-        $this->entityManager->flush();
-    }
-
-    private function isLegacyCashMovementDisabled(?SalesWritePolicy $policy): bool
-    {
-        if ($policy instanceof SalesWritePolicy && $policy->mode === SalesWriteMode::AUTHORITATIVE) {
-            return true;
-        }
-
-        return filter_var(
-            $this->settings->get('sales_v2_disable_legacy_cash_movement', 'false'),
-            FILTER_VALIDATE_BOOLEAN
-        );
-    }
 }
