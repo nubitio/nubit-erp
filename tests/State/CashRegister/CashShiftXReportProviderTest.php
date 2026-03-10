@@ -29,7 +29,7 @@ final class CashShiftXReportProviderTest extends TestCase
      *
      * opening_amount = 200.00
      * V2 SALE_IN total = 500.00 (cash 300.00 + card 200.00)
-     * legacy income = 50.00, expense = 20.00
+     * V2 CASH_IN = 50.00, CASH_OUT = 20.00
      * current balance = 200 + 500 + 50 - 20 = 730.00
      * shiftDurationMinutes: provided as fixed 60 by mock
      */
@@ -50,16 +50,19 @@ final class CashShiftXReportProviderTest extends TestCase
             ->method('fetchOne')
             ->willReturnCallback(
                 static function (string $sql, array $params): string|int {
-                    if (str_contains($sql, 'cash_movements') && str_contains($sql, 'SALE_IN') && !str_contains($sql, 'payment_method')) {
-                        // total SALE_IN
+                    // SALE_IN total
+                    if (str_contains($sql, "movement_type = 'SALE_IN'")) {
                         return '500.00';
                     }
-                    if (str_contains($sql, "type = 'income'")) {
+                    // CASH_IN total
+                    if (str_contains($sql, "movement_type = 'CASH_IN'")) {
                         return '50.00';
                     }
-                    if (str_contains($sql, "type = 'expense'")) {
+                    // CASH_OUT total
+                    if (str_contains($sql, "movement_type = 'CASH_OUT'")) {
                         return '20.00';
                     }
+                    // Shift duration
                     if (str_contains($sql, 'TIMESTAMPDIFF')) {
                         return 60;
                     }

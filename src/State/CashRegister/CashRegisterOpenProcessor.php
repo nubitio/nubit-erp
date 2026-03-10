@@ -9,20 +9,15 @@ use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
-use RuntimeException;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Core\Application\Session\Security;
 use App\Core\Security\Auth\BranchContextService;
 use App\Dto\CashRegister\CashRegisterOpenDto;
-use App\Entity\CashMovement;
-use App\Entity\CashMovementCategory;
 use App\Entity\CashRegister;
-use App\Entity\CashShift;
+use App\Entity\CashSession;
 use App\Entity\User;
-use App\Enum\CashShiftStatus;
 use App\Repository\BranchRepository;
-use App\Repository\CashMovementCategoryRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -31,14 +26,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
- * @implements ProcessorInterface<CashRegisterOpenDto, CashShift>
+ * @implements ProcessorInterface<CashRegisterOpenDto, CashSession>
  */
 readonly class CashRegisterOpenProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
-        private CashMovementCategoryRepository $cashMovementCategoryRepository,
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
     ) {
@@ -58,7 +52,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
         Operation $operation,
         array $uriVariables = [],
         array $context = [],
-    ): CashShift {
+    ): CashSession {
         $user = $this->security->connectedUser();
         if ($user === null) {
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
@@ -78,52 +72,41 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Usuario no encontrado.');
         }
 
-        $cashShift = new CashShift();
-        $cashShift->setCashRegister($cashRegister);
-        $cashShift->setStatus(CashShiftStatus::OPEN);
-        $cashShift->setOpeningBalance($scaledAmount);
-        $cashShift->setOpenedBy($userRef);
-        $cashShift->setOpenedAt(new DateTimeImmutable());
-
-        // Set branch from current context
         $branchId = $this->branchContextService->getCurrentBranchId();
-        $branch = $branchId !== null ? $this->branchRepository->find($branchId) : null;
-        $cashShift->setBranch($branch);
-
-        $category = $this->cashMovementCategoryRepository->findOneBy(
-            ['code' => CashMovementCategory::CASH_REPLENISHMENT]
-        );
-        if (!$category instanceof CashMovementCategory) {
-            throw new RuntimeException('Categoría de reposición de fondo no encontrada.');
+        if ($branchId === null) {
+            throw new NotFoundHttpException('Contexto de sucursal no encontrado.');
         }
 
-        $cashMovement = new CashMovement();
-        $cashMovement->setCashShift($cashShift);
-        $cashMovement->setCategory($category);
-        $cashMovement->setType($category->getType());
-        $cashMovement->setAmount($scaledAmount);
-        $cashMovement->setDescription('Saldo inicial');
-        $cashMovement->setCreatedAt(new DateTimeImmutable());
-        $cashMovement->setBranch($branch);
+        $branch = $this->branchRepository->find($branchId);
+        if ($branch === null) {
+            throw new NotFoundHttpException('Sucursal no encontrada.');
+        }
+
+        $cashSession = new CashSession();
+        $cashSession->setCashRegister($cashRegister);
+        $cashSession->setBranch($branch);
+        $cashSession->setOpenedBy($userRef);
+        $cashSession->setStatus('OPEN');
+        $cashSession->setOpeningAmount($scaledAmount);
+        $cashSession->setOpenedAt(new DateTimeImmutable());
+        $cashSession->setCreatedAt(new DateTimeImmutable());
 
         $connection = $this->entityManager->getConnection();
         $connection->beginTransaction();
         try {
-            $this->entityManager->persist($cashShift);
-            $this->entityManager->persist($cashMovement);
+            $this->entityManager->persist($cashSession);
             $this->entityManager->flush();
 
-            if ($branchId !== null) {
-                $connection->insert('cash_sessions', [
-                    'legacy_cash_shift_id' => $cashShift->getId(),
-                    'cash_register_id'     => $data->id,
-                    'branch_id'            => $branchId,
-                    'opened_by'            => $user->userId,
-                    'status'               => 'OPEN',
-                    'opening_amount'       => $scaledAmount,
-                    'opened_at'            => (new DateTimeImmutable())->format('Y-m-d H:i:s'),
-                ]);
-            }
+            $connection->executeStatement(
+                'INSERT INTO cash_movements (cash_session_id, movement_type, amount, description, created_by, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+                [
+                    $cashSession->getId(),
+                    'OPENING',
+                    $scaledAmount,
+                    'Saldo inicial',
+                    $user->userId,
+                ]
+            );
 
             $connection->commit();
         } catch (UniqueConstraintViolationException) {
@@ -136,6 +119,6 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             throw $e;
         }
 
-        return $cashShift;
+        return $cashSession;
     }
 }

@@ -8,10 +8,14 @@ use Override;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Entity\CashMovement;
+use App\Entity\CashMovementCategory;
+use App\Entity\CashSession;
 use App\Enum\CashMovementType;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @implements ProviderInterface<CashMovement>
@@ -19,46 +23,81 @@ use Doctrine\ORM\EntityManagerInterface;
 readonly class CashShiftMovementsProvider implements ProviderInterface
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
         private Connection $connection,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
     /**
      * @inheritdoc
+     * @throws Exception
+     * @return CashMovement[]
      */
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object | array | null
     {
         $cashShiftId = $uriVariables['id'];
 
-        $movements = $this->entityManager->getRepository(CashMovement::class)->findBy(
-            ['cashShift' => $cashShiftId],
-            ['createdAt' => 'ASC', 'id' => 'ASC']
-        );
-
-        $v2Rows = $this->connection->fetchAllAssociative(
-            "SELECT cm2.id, cm2.amount, cm2.description, cm2.created_at, cm2.movement_type
-             FROM cash_movements cm2
-             JOIN cash_sessions cs ON cs.id = cm2.cash_session_id
-             WHERE cs.legacy_cash_shift_id = ?
-             ORDER BY cm2.created_at ASC",
+        // Step 1: try direct v2 session ID
+        $session = $this->connection->fetchAssociative(
+            'SELECT id FROM cash_sessions WHERE id = ?',
             [$cashShiftId]
         );
 
-        $idProp = new \ReflectionProperty(CashMovement::class, 'id');
-        foreach ($v2Rows as $row) {
-            $movement = new CashMovement();
-            $type = $row['movement_type'] === 'SALE_IN' ? CashMovementType::INCOME : CashMovementType::EXPENSE;
-            $movement->setType($type);
-            $movement->setAmount((string) $row['amount']);
-            $movement->setDescription($row['description'] ?? 'Venta en efectivo');
-            $movement->setCreatedAt(new DateTimeImmutable($row['created_at']));
-            $idProp->setValue($movement, -(int) $row['id']); // negative to avoid collision with legacy IDs
-            $movements[] = $movement;
+        // Step 2: fallback — treat URI id as a legacy_cash_shift_id
+        if ($session === false) {
+            $session = $this->connection->fetchAssociative(
+                'SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ?',
+                [$cashShiftId]
+            );
         }
 
-        usort($movements, static fn (CashMovement $a, CashMovement $b) => $a->getCreatedAt() <=> $b->getCreatedAt());
+        if ($session === false) {
+            throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashShiftId));
+        }
+
+        $sessionId = (int) $session['id'];
+
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT id, cash_session_id, category_id, amount, description, created_at, movement_type
+             FROM cash_movements
+             WHERE cash_session_id = ?
+             ORDER BY created_at ASC',
+            [$sessionId]
+        );
+
+        $idProp = new \ReflectionProperty(CashMovement::class, 'id');
+
+        // Pre-load the CashSession entity once for all rows
+        $cashSessionEntity = $this->entityManager->find(CashSession::class, $sessionId);
+
+        /** @var CashMovement[] $movements */
+        $movements = [];
+        foreach ($rows as $row) {
+            $movement = new CashMovement();
+            $type     = match ($row['movement_type']) {
+                'CASH_OUT' => CashMovementType::EXPENSE,
+                default    => CashMovementType::INCOME,
+            };
+            $movement->setType($type);
+            $movement->setAmount((string) $row['amount']);
+            $movement->setDescription((string) ($row['description'] ?? 'Movimiento de caja'));
+            $movement->setCreatedAt(new DateTimeImmutable((string) $row['created_at']));
+            $idProp->setValue($movement, (int) $row['id']);
+
+            if ($cashSessionEntity instanceof CashSession) {
+                $movement->setCashSession($cashSessionEntity);
+            }
+
+            if ($row['category_id'] !== null) {
+                $category = $this->entityManager->find(CashMovementCategory::class, (int) $row['category_id']);
+                if ($category instanceof CashMovementCategory) {
+                    $movement->setCategory($category);
+                }
+            }
+
+            $movements[] = $movement;
+        }
 
         return $movements;
     }

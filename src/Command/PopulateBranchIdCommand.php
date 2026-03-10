@@ -69,6 +69,15 @@ class PopulateBranchIdCommand extends TenantAwareCommand
                     WHERE cm.branch_id IS NULL AND cs.branch_id IS NOT NULL
                 ',
             ],
+            [
+                'name' => 'Cash Sessions V2 (cash_sessions)',
+                'query' => '
+                    UPDATE cash_sessions cs
+                    INNER JOIN cash_register cr ON cr.id = cs.cash_register_id
+                    SET cs.branch_id = cr.branch_id
+                    WHERE cs.branch_id IS NULL AND cr.branch_id IS NOT NULL
+                ',
+            ],
         ];
 
         $totalUpdated = 0;

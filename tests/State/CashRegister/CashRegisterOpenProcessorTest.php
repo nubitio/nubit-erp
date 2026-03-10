@@ -11,12 +11,10 @@ use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
 use App\Dto\Auth\AuthUserDto;
 use App\Dto\CashRegister\CashRegisterOpenDto;
-use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;
+use App\Entity\Branch;
+use App\Entity\CashSession;
 use App\Entity\User;
-use App\Enum\CashMovementType;
 use App\Repository\BranchRepository;
-use App\Repository\CashMovementCategoryRepository;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
@@ -38,9 +36,6 @@ final class CashRegisterOpenProcessorTest extends TestCase
     /** @var Security&MockObject */
     private Security $security;
 
-    /** @var CashMovementCategoryRepository&MockObject */
-    private CashMovementCategoryRepository $categoryRepository;
-
     /** @var BranchRepository&MockObject */
     private BranchRepository $branchRepository;
 
@@ -51,7 +46,6 @@ final class CashRegisterOpenProcessorTest extends TestCase
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
-        $this->categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
         $this->branchRepository = $this->createMock(BranchRepository::class);
         $this->connection = $this->createMock(Connection::class);
 
@@ -61,24 +55,21 @@ final class CashRegisterOpenProcessorTest extends TestCase
     }
 
     /**
-     * TC-1: Opening balance "150" must be stored as "150.00" (exact 2-decimal scale).
+     * TC-1: Opening balance "150" must be stored as "150.00" (exact 2-decimal scale)
+     * and the processor must return a CashSession.
      */
     public function testOpeningBalanceStoredWithExactScale(): void
     {
         $authUser = new AuthUserDto(userId: 1, username: 'cajero');
         $this->security->method('connectedUser')->willReturn($authUser);
 
-        $category = $this->createMock(CashMovementCategory::class);
-        $category->method('getType')->willReturn(CashMovementType::INCOME);
-        $this->categoryRepository->method('findOneBy')->willReturn($category);
-
-        /** @var CashShift|null $capturedShift */
-        $capturedShift = null;
+        /** @var CashSession|null $capturedSession */
+        $capturedSession = null;
         $this->entityManager
             ->method('persist')
-            ->willReturnCallback(function (object $entity) use (&$capturedShift): void {
-                if ($entity instanceof CashShift) {
-                    $capturedShift = $entity;
+            ->willReturnCallback(function (object $entity) use (&$capturedSession): void {
+                if ($entity instanceof CashSession) {
+                    $capturedSession = $entity;
                 }
             });
 
@@ -87,6 +78,7 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('commit');
         $this->connection->expects($this->never())->method('rollBack');
+        $this->connection->method('executeStatement')->willReturn(1);
 
         $this->entityManager
             ->method('getReference')
@@ -97,21 +89,23 @@ final class CashRegisterOpenProcessorTest extends TestCase
                 };
             });
 
+        $branch = new Branch();
+        $this->branchRepository->method('find')->willReturn($branch);
+
         $processor = new CashRegisterOpenProcessor(
             entityManager: $this->entityManager,
             security: $this->security,
-            cashMovementCategoryRepository: $this->categoryRepository,
-            branchContextService: $this->buildBranchContextWithNullBranch(),
+            branchContextService: $this->buildBranchContextWithFixedId('branch-1'),
             branchRepository: $this->branchRepository,
         );
 
         $dto = new CashRegisterOpenDto(id: 1, openingBalance: '150');
         $result = $processor->process($dto, new Post());
 
-        $this->assertInstanceOf(CashShift::class, $result);
-        $this->assertInstanceOf(CashShift::class, $capturedShift, 'CashShift was not persisted');
-        /** @var CashShift $capturedShift */
-        $this->assertSame('150.00', $capturedShift->getOpeningBalance());
+        $this->assertInstanceOf(CashSession::class, $result);
+        $this->assertInstanceOf(CashSession::class, $capturedSession, 'CashSession was not persisted');
+        /** @var CashSession $capturedSession */
+        $this->assertSame('150.00', $capturedSession->getOpeningAmount());
     }
 
     /**
@@ -123,10 +117,6 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $authUser = new AuthUserDto(userId: 2, username: 'cajero2');
         $this->security->method('connectedUser')->willReturn($authUser);
 
-        $category = $this->createMock(CashMovementCategory::class);
-        $category->method('getType')->willReturn(CashMovementType::INCOME);
-        $this->categoryRepository->method('findOneBy')->willReturn($category);
-
         $this->entityManager->method('persist')->willReturnCallback(fn () => null);
         $this->entityManager->method('flush')->willReturnCallback(fn () => null);
         $this->entityManager
@@ -137,6 +127,9 @@ final class CashRegisterOpenProcessorTest extends TestCase
                     default     => new $class(),
                 };
             });
+
+        $branch = new Branch();
+        $this->branchRepository->method('find')->willReturn($branch);
 
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('rollBack');
@@ -160,13 +153,12 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $uniqueViolation = new UniqueConstraintViolationException($driverEx, null);
 
         $this->connection
-            ->method('insert')
+            ->method('executeStatement')
             ->willThrowException($uniqueViolation);
 
         $processor = new CashRegisterOpenProcessor(
             entityManager: $this->entityManager,
             security: $this->security,
-            cashMovementCategoryRepository: $this->categoryRepository,
             branchContextService: $this->buildBranchContextWithFixedId('branch-42'),
             branchRepository: $this->branchRepository,
         );
@@ -177,33 +169,6 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->expectExceptionMessage('Esta caja ya tiene un turno abierto.');
 
         $processor->process($dto, new Post());
-    }
-
-    /**
-     * Build a BranchContextService stub (final readonly) that returns null for getCurrentBranchId().
-     * Achieved by injecting a Symfony Security that returns no token.
-     */
-    private function buildBranchContextWithNullBranch(): BranchContextService
-    {
-        $reflection = new \ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $stub */
-        $stub = $reflection->newInstanceWithoutConstructor();
-
-        /** @var SymfonySecurity&MockObject $securityMock */
-        $securityMock = $this->createMock(SymfonySecurity::class);
-        $securityMock->method('getToken')->willReturn(null);
-
-        // JWTManager is also final — use newInstanceWithoutConstructor + property injection
-        $jwtReflection = new \ReflectionClass(JWTManager::class);
-        /** @var JWTManager $jwtStub */
-        $jwtStub = $jwtReflection->newInstanceWithoutConstructor();
-        $jwtReflection->getProperty('secret')->setValue($jwtStub, self::JWT_TEST_SECRET);
-        $jwtReflection->getProperty('logger')->setValue($jwtStub, new NullLogger());
-
-        $reflection->getProperty('security')->setValue($stub, $securityMock);
-        $reflection->getProperty('jwtManager')->setValue($stub, $jwtStub);
-
-        return $stub;
     }
 
     /**

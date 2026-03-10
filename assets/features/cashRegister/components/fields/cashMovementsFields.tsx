@@ -20,9 +20,9 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.ENTITY)
-      .name('cashShift')
-      .label('Turno')
-      .url(Constants.API_BASE_URL + 'cash-shifts')
+      .name('cashSession')
+      .label('Sesión')
+      .url(Constants.API_BASE_URL + 'cash-sessions')
       .valueField('id')
       .textField('id')
       .valueType('number')

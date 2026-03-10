@@ -424,6 +424,12 @@ SQL, ['table' => $table, 'column' => $column]);
             $this->rule('producto', 'precio', 'decimal(10,2)', false, '0.00', '0.00'),
             $this->rule('unidad', 'ratio', 'decimal(10,2)', false, '0.00', '0.00'),
             $this->rule('usuario', 'rol_id', 'int(11)', false, self::NO_DEFAULT, '1'),
+            // v2 tables
+            $this->rule('cash_sessions', 'opening_amount', 'decimal(10,2)', false, '0.00', '0.00'),
+            $this->rule('cash_sessions', 'expected_amount', 'decimal(10,2)', true, null),
+            $this->rule('cash_sessions', 'counted_amount', 'decimal(10,2)', true, null),
+            $this->rule('cash_sessions', 'difference', 'decimal(10,2)', true, null),
+            $this->rule('cash_movements', 'amount', 'decimal(10,2)', false, '0.00', '0.00'),
         ];
     }
 
