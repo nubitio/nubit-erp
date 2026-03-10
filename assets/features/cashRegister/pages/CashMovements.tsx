@@ -1,23 +1,21 @@
 import './CashMovements.scss';
-import { DxDataGrid, DxDataGridEvents } from '../../../core/datagrid/DxDataGrid';
+import {DxDataGrid, DxDataGridEvents} from '../../../core/datagrid/DxDataGrid';
 import NumberUtils from '../../../shared/lib/NumberUtils';
-import { DxDialog } from '../../../core/dialog/DxDialog';
-import { DxForm } from '../../../core/form/DxForm';
-import { useEffect, useRef, useState } from 'react';
-import { Constants } from '../../../core/common/Constants';
+import {DxDialog} from '../../../core/dialog/DxDialog';
+import {DxForm} from '../../../core/form/DxForm';
+import {useEffect, useRef, useState} from 'react';
+import {Constants} from '../../../core/common/Constants';
 import cashMovementsFields from '../components/fields/cashMovementsFields';
-import { useNavigate, useParams } from 'react-router-dom';
-import { AsyncState } from '../../../shared/ui/async-state/AsyncState';
-import { Item } from 'devextreme-react/data-grid';
-import { useEvents } from '../../../core/event/EventHook';
-import { HTTP_ERROR_EVENT } from '../../../shared/api/HttpClient';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useEvents} from '../../../core/event/EventHook';
+import {HTTP_ERROR_EVENT} from '../../../shared/api/HttpClient';
 
 type CashMovementsParams = {
   id: string;
 };
 
 export const CashMovements = () => {
-  const { id } = useParams<CashMovementsParams>();
+  const {id} = useParams<CashMovementsParams>();
   const API_URL = Constants.API_BASE_URL + 'cash-movements';
   const gridRef = useRef<DxDataGridEvents>(null);
   const fields = cashMovementsFields(id);
@@ -37,14 +35,6 @@ export const CashMovements = () => {
   };
 
   const toolbar = [
-    {
-      text: 'Corte X',
-      type: 'normal',
-      icon: 'ph ph-printer',
-      onClick: () => {
-        window.open(`/api/cash-shifts/${id}/x-report`, '_blank');
-      },
-    },
     {
       text: 'Cerrar Caja',
       type: 'info',
@@ -98,27 +88,9 @@ export const CashMovements = () => {
         ]}
         onContentReady={onContentReady}
         paging={false}
-        beforeToolbar={
-          gridError
-            ? () => (
-                <Item location="before" locateInMenu="never">
-                  <div className="page-toolbar-state">
-                    <AsyncState
-                      compact
-                      variant="error"
-                      title="Error de carga"
-                      description={gridError}
-                      onRetry={() => gridRef.current?.refresh()}
-                    />
-                  </div>
-                </Item>
-              )
-            : undefined
-        }
       />
-      <DxDialog title="Movimiento de caja" width={720} maxHeight={700} events={EVENTS}>
+      <DxDialog title="Movimiento de caja" events={EVENTS}>
         <DxForm
-          className="plain-styled-form entity-form"
           url={API_URL}
           fields={fields}
           events={EVENTS}

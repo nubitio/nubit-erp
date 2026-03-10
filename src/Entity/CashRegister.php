@@ -17,6 +17,7 @@ use App\State\CashRegister\CashRegisterCloseProcessor;
 use App\State\CashRegister\CashRegisterDashboardProvider;
 use App\State\CashRegister\CashRegisterOpenProcessor;
 use App\State\CashRegister\CashRegisterShiftsProvider;
+use App\Entity\CashSession;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -61,8 +62,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
                     fromClass: CashRegister::class,
                 ),
             ],
-            normalizationContext: ['groups' => ['cash_shift:read']],
-            output: CashShift::class,
+            normalizationContext: ['groups' => ['cash_session:read']],
+            output: CashSession::class,
             provider: CashRegisterShiftsProvider::class,
         ),
     ],
