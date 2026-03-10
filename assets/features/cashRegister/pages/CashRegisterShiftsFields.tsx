@@ -24,14 +24,14 @@ export const CashRegisterShiftsFields = () => {
       .name('status')
       .label('Estado')
       .data([
-        { value: 'open', text: 'Abierto' },
-        { value: 'closed', text: 'Cerrado' },
+        { value: 'OPEN', text: 'Abierto' },
+        { value: 'CLOSED', text: 'Cerrado' },
       ])
       .formatter((cell: ColumnCellTemplateData) => {
-        if (cell.value === 'open') {
+        if (cell.value === 'OPEN') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Abierto</span>;
         }
-        if (cell.value === 'closed') {
+        if (cell.value === 'CLOSED') {
           return (
             <span className="badge badge-outlined rounded-pill text-bg-secondary">Cerrado</span>
           );
@@ -43,17 +43,8 @@ export const CashRegisterShiftsFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
-      .name('openingBalance')
+      .name('openingAmount')
       .label('Saldo inicial')
-      .align('right')
-      .build(),
-  );
-
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
-      .name('closingBalance')
-      .label('Saldo cierre')
       .align('right')
       .build(),
   );
@@ -79,13 +70,13 @@ export const CashRegisterShiftsFields = () => {
   fields.push(
     new FieldBuilder()
       .type(FieldType.CURRENCY)
-      .name('difference')
+      .name('differenceAmount')
       .label('Diferencia')
       .align('right')
       .build(),
   );
 
-  fields.push(new FieldBuilder().type(FieldType.TEXTAREA).name('note').label('Nota').build());
+  fields.push(new FieldBuilder().type(FieldType.TEXTAREA).name('closeNote').label('Nota').build());
 
   fields.push(
     new FieldBuilder()

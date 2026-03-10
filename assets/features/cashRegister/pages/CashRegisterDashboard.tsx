@@ -1,13 +1,11 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from '../components/fields/cashRegisterDashboardFields';
-import { DxDataGrid, DxDataGridEvents } from '../../../core/datagrid/DxDataGrid';
-import { Constants } from '../../../core/common/Constants';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
-import { useEvents } from '../../../core/event/EventHook';
-import { HTTP_ERROR_EVENT } from '../../../shared/api/HttpClient';
-import { AsyncState } from '../../../shared/ui/async-state/AsyncState';
-import { Item } from 'devextreme-react/data-grid';
+import {DxDataGrid, DxDataGridEvents} from '../../../core/datagrid/DxDataGrid';
+import {Constants} from '../../../core/common/Constants';
+import {useNavigate} from 'react-router-dom';
+import {useEffect, useRef, useState} from 'react';
+import {useEvents} from '../../../core/event/EventHook';
+import {HTTP_ERROR_EVENT} from '../../../shared/api/HttpClient';
 
 export const CashRegisterDashboard = () => {
   const url = Constants.API_BASE_URL + 'cash-registers/dashboard';
@@ -36,23 +34,6 @@ export const CashRegisterDashboard = () => {
         events={EVENTS}
         paging={false}
         onContentReady={() => setGridError(null)}
-        beforeToolbar={
-          gridError
-            ? () => (
-                <Item location="before" locateInMenu="never">
-                  <div className="cash-register-dashboard-toolbar-state">
-                    <AsyncState
-                      compact
-                      variant="error"
-                      title="Error de carga"
-                      description={gridError}
-                      onRetry={() => gridRef.current?.refresh()}
-                    />
-                  </div>
-                </Item>
-              )
-            : undefined
-        }
       />
     </div>
   );

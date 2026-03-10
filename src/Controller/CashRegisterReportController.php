@@ -91,8 +91,10 @@ class CashRegisterReportController extends AbstractController
                 cm.movement_type,
                 cm.amount,
                 cm.description,
-                cm.created_at
+                cm.created_at,
+                cmc.name AS category_name
             FROM cash_movements cm
+            LEFT JOIN cash_movement_category cmc ON cmc.id = cm.category_id
             WHERE cm.cash_session_id = ?
               AND cm.movement_type IN ('CASH_IN', 'CASH_OUT', 'SALE_IN')
             ORDER BY cm.created_at ASC, cm.id ASC
@@ -120,12 +122,12 @@ class CashRegisterReportController extends AbstractController
 
             $createdAtRaw = $row['created_at'];
             $movements[] = [
-                'createdAt'   => $createdAtRaw !== null ? new DateTimeImmutable((string) $createdAtRaw) : null,
-                'category'    => null,
-                'type'        => $type,
-                'description' => $row['description'],
-                'amount'      => $row['amount'],
-            ];
+                    'createdAt'   => $createdAtRaw !== null ? new DateTimeImmutable((string) $createdAtRaw) : null,
+                    'category'    => $row['category_name'],
+                    'type'        => $type,
+                    'description' => $row['description'],
+                    'amount'      => $row['amount'],
+                ];
         }
 
         // --- 4. Sales by payment method breakdown ---

@@ -1,5 +1,6 @@
 import { Column, DataGridRef, Editing, Item, Scrolling, Toolbar } from 'devextreme-react/data-grid';
 import { Button, DataGrid } from 'devextreme-react';
+import { Popup, ToolbarItem } from 'devextreme-react/popup';
 import { useEffect, useRef, useState } from 'react';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
@@ -105,6 +106,15 @@ export const CashRegisterClose = () => {
             e.data.updated = true;
             e.component.saveEditData();
           }}
+          onRowPrepared={(e: any) => {
+            if (e.rowType !== 'data' || e.data == null) return;
+            const diff =
+              e.data.countedAmount != null ? e.data.countedAmount - e.data.expectedAmount : NaN;
+            e.rowElement.classList.remove('row-diff-negative', 'row-diff-positive');
+            if (!isNaN(diff) && diff !== 0) {
+              e.rowElement.classList.add(diff < 0 ? 'row-diff-negative' : 'row-diff-positive');
+            }
+          }}
         >
           <Editing mode="cell" allowUpdating={true} />
           <Scrolling mode="virtual" />
@@ -134,6 +144,7 @@ export const CashRegisterClose = () => {
               <div>
                 <input
                   type="number"
+                  className="dx-texteditor-input"
                   step="0.01"
                   defaultValue={cell.value}
                   onBlur={(e) => cell.setValue(parseFloat(e.target.value))}
@@ -190,51 +201,39 @@ export const CashRegisterClose = () => {
           </Toolbar>
         </DataGrid>
       </div>
-      {showCloseConfirm && (
-        <div
-          data-testid="close-cash-confirm-dialog"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(0,0,0,0.45)',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            style={{
-              background: '#fff',
-              borderRadius: 8,
-              padding: '24px 32px',
-              minWidth: 320,
-              boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
-            }}
-          >
-            <p style={{ marginBottom: 20, fontSize: 16 }}>¿Está seguro que desea cerrar la caja?</p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-              <button
-                data-testid="close-cash-confirm-no"
-                onClick={() => setShowCloseConfirm(false)}
-                style={{ padding: '6px 18px', cursor: 'pointer' }}
-              >
-                No
-              </button>
-              <button
-                data-testid="close-cash-confirm-yes"
-                onClick={() => {
-                  setShowCloseConfirm(false);
-                  closeCashRegister();
-                }}
-                style={{ padding: '6px 18px', cursor: 'pointer', fontWeight: 600 }}
-              >
-                Sí
-              </button>
-            </div>
+      <Popup
+        visible={showCloseConfirm}
+        title="Cerrar caja"
+        width={360}
+        height="auto"
+        showCloseButton={false}
+        dragEnabled={false}
+        hideOnOutsideClick={false}
+        wrapperAttr={{ class: 'form-popup', 'data-testid': 'close-cash-confirm-dialog' }}
+        onHiding={() => setShowCloseConfirm(false)}
+      >
+        <p style={{ margin: '8px 0 16px' }}>¿Está seguro que desea cerrar la caja?</p>
+        <ToolbarItem toolbar="bottom" location="after">
+          <div className="form-popup-buttons-container">
+            <Button
+              text="No"
+              stylingMode="outlined"
+              onClick={() => setShowCloseConfirm(false)}
+              elementAttr={{ 'data-testid': 'close-cash-confirm-no' }}
+            />
+            <Button
+              text="Sí"
+              type="default"
+              stylingMode="outlined"
+              onClick={() => {
+                setShowCloseConfirm(false);
+                closeCashRegister();
+              }}
+              elementAttr={{ 'data-testid': 'close-cash-confirm-yes' }}
+            />
           </div>
-        </div>
-      )}
+        </ToolbarItem>
+      </Popup>
     </div>
   );
 };

@@ -8,12 +8,12 @@ use Override;
 use ApiPlatform\Doctrine\Orm\Paginator;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Entity\CashShift;
+use App\Entity\CashSession;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 
 /**
- * @implements ProviderInterface<CashShift>
+ * @implements ProviderInterface<CashSession>
  */
 readonly class CashRegisterShiftsProvider implements ProviderInterface
 {
@@ -45,7 +45,7 @@ readonly class CashRegisterShiftsProvider implements ProviderInterface
         $offset = max(0, ($page - 1) * $itemsPerPage);
 
         $qb = $this->entityManager
-            ->getRepository(CashShift::class)
+            ->getRepository(CashSession::class)
             ->createQueryBuilder('cs')
             ->andWhere('cs.cashRegister = :cashRegister')
             ->setParameter('cashRegister', $cashRegisterId)
