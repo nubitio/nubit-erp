@@ -1450,18 +1450,6 @@ final class SaleProcessorTest extends TestCase
         return (new ReflectionClass(CashShift::class))->newInstanceWithoutConstructor();
     }
 
-    private function buildCashMovementCategory(): CashMovementCategory
-    {
-        $rc = new ReflectionClass(CashMovementCategory::class);
-        /** @var CashMovementCategory $cat */
-        $cat = $rc->newInstanceWithoutConstructor();
-        if ($rc->hasProperty('type')) {
-            $rc->getProperty('type')->setValue($cat, \App\Enum\CashMovementType::INCOME);
-        }
-
-        return $cat;
-    }
-
     private function mockCashShiftRepository(?CashShift $cashShift): void
     {
         /** @var EntityRepository<CashShift>&MockObject $cashShiftRepo */

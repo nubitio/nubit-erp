@@ -11,6 +11,7 @@ use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Entity\Product;
 use App\Entity\UnitOfMeasure;
+use App\Repository\DashboardRepository;
 use App\Service\SaleCurrencyResolver;
 use App\Service\SalePaymentPlanService;
 use App\State\Sale\SalesWriteGateway;
@@ -34,10 +35,13 @@ class SalesWriteGatewayTest extends TestCase
         // SalePaymentPlanService is final (no-arg constructor) — instantiate directly
         $paymentPlanService = new SalePaymentPlanService();
 
+        $dashboardRepository = $this->createMock(DashboardRepository::class);
+
         $this->gateway = new SalesWriteGateway(
             $this->connection,
             $this->currencyResolver,
             $paymentPlanService,
+            $dashboardRepository,
         );
     }
 

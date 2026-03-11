@@ -422,5 +422,4 @@ readonly class SaleProcessor implements ProcessorInterface
             'root_cause_code' => is_array($rootCause) ? $rootCause['code'] : null,
         ];
     }
-
 }
