@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App;
 
+use Symfony\Component\Console\Messenger\RunCommandMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
+use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -23,8 +25,15 @@ readonly class Schedule implements ScheduleProviderInterface
             ->stateful($this->cache) // ensure missed tasks are executed
             ->processOnlyLastMissedRun(true) // ensure only last missed task is run
 
-            // add your own tasks here
-            // see https://symfony.com/doc/current/scheduler.html#attaching-recurring-messages-to-a-schedule
+            // Daily AI morning briefing — runs at 07:30 America/Lima every day.
+            // RunCommandMessage dispatches "app:ai:briefing:generate" via Symfony Messenger.
+            ->add(
+                RecurringMessage::cron(
+                    '30 7 * * *',
+                    new RunCommandMessage('app:ai:briefing:generate', throwOnFailure: false),
+                    'America/Lima',
+                )
+            )
         ;
     }
 }
