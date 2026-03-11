@@ -148,7 +148,9 @@
 
   &__side {
     display: flex;
-    align-items: center;
+    // align top so stat-values stay on the same row even when one stat
+    // has an extra delta line (e.g. "Este mes" growth %) below it
+    align-items: flex-start;
     gap: 24px;
     flex-wrap: wrap;
 

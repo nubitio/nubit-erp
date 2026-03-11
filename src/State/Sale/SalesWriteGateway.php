@@ -6,6 +6,7 @@ namespace App\State\Sale;
 
 use App\Core\Util\Money;
 use App\Entity\Sale;
+use App\Repository\DashboardRepository;
 use App\Service\SalePaymentPlanService;
 use App\Service\SaleCurrencyResolver;
 use Brick\Math\BigDecimal;
@@ -22,6 +23,7 @@ readonly class SalesWriteGateway
         private Connection $connection,
         private SaleCurrencyResolver $saleCurrencyResolver,
         private SalePaymentPlanService $salePaymentPlanService,
+        private DashboardRepository $dashboardRepository,
     ) {
     }
 
@@ -455,6 +457,67 @@ SQL,
             $this->connection->rollBack();
             throw $exception;
         }
+
+        // Post-commit: update daily summary (non-voided sales only).
+        // Runs outside the transaction so a summary failure never rolls back the sale.
+        if ($sale->getEstado() !== 0) {
+            try {
+                $limaIssuedAt = \DateTimeImmutable::createFromInterface($issuedAt)
+                    ->setTimezone(new \DateTimeZone('America/Lima'));
+                $this->upsertDailySummaries(
+                    (string) $branchId,
+                    $limaIssuedAt,
+                );
+            } catch (\Throwable) {
+                // Intentionally swallowed: summary is best-effort.
+            }
+
+            try {
+                $this->dashboardRepository->invalidate((string) $branchId);
+            } catch (\Throwable) {
+                // Best-effort cache invalidation — never break sale write.
+            }
+        }
+    }
+
+    /**
+     * Re-aggregates branch_daily_summary for the given branch + date from the sales table.
+     * Must be called AFTER the enclosing transaction has committed.
+     *
+     * @throws Exception
+     */
+    private function upsertDailySummaries(string $branchId, \DateTimeImmutable $saleDate): void
+    {
+        $this->connection->executeStatement(
+            <<<'SQL'
+INSERT INTO branch_daily_summary
+    (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
+SELECT
+    :saleDate                                 AS summary_date,
+    :branchId                                 AS branch_id,
+    COUNT(*)                                  AS sales_count,
+    COALESCE(SUM(grand_total), 0)             AS gross_sales,
+    COALESCE(SUM(discount_total), 0)          AS discount_total,
+    COALESCE(SUM(tax_total), 0)               AS tax_total,
+    COALESCE(SUM(grand_total - tax_total), 0) AS net_sales,
+    0                                         AS refunds_total
+FROM sales
+WHERE DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')) = :saleDate
+  AND branch_id                                             = :branchId
+  AND status                                               != 'VOIDED'
+ON DUPLICATE KEY UPDATE
+    sales_count    = VALUES(sales_count),
+    gross_sales    = VALUES(gross_sales),
+    discount_total = VALUES(discount_total),
+    tax_total      = VALUES(tax_total),
+    net_sales      = VALUES(net_sales),
+    updated_at     = NOW()
+SQL,
+            [
+                'saleDate' => $saleDate->format('Y-m-d'),
+                'branchId' => $branchId,
+            ]
+        );
     }
 
     /**

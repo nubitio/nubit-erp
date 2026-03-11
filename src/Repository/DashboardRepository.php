@@ -31,7 +31,7 @@ readonly class DashboardRepository
      */
     public function getOverview(string $branchId): array
     {
-        $cacheKey = "dashboard:overview:{$branchId}";
+        $cacheKey = "dashboard_overview_{$branchId}";
 
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
@@ -49,7 +49,7 @@ readonly class DashboardRepository
      */
     public function getLiteOverview(string $branchId): array
     {
-        $cacheKey = "dashboard:lite:{$branchId}";
+        $cacheKey = "dashboard_lite_{$branchId}";
 
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
@@ -67,8 +67,8 @@ readonly class DashboardRepository
      */
     public function invalidate(string $branchId): void
     {
-        $this->cache->forget("dashboard:overview:{$branchId}");
-        $this->cache->forget("dashboard:lite:{$branchId}");
+        $this->cache->forget("dashboard_overview_{$branchId}");
+        $this->cache->forget("dashboard_lite_{$branchId}");
     }
 
     // -------------------------------------------------------------------------

@@ -112,7 +112,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->cache->expects(self::once())
             ->method('set')
             ->with(
-                'dashboard:overview:branch-1',
+                'dashboard_overview_branch-1',
                 self::isArray(),
                 120
             );
@@ -148,7 +148,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->cache->expects(self::once())
             ->method('set')
             ->with(
-                'dashboard:lite:branch-2',
+                'dashboard_lite_branch-2',
                 self::isArray(),
                 60
             );

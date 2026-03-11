@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Core\Security\Auth\BranchContextService;
 use App\Repository\DashboardRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,7 @@ class DashboardController extends AbstractController
     public function __construct(
         private readonly DashboardRepository $repository,
         private readonly BranchContextService $branchContext,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -39,7 +41,16 @@ class DashboardController extends AbstractController
             $data = $isLite
                 ? $this->repository->getLiteOverview($branchId)
                 : $this->repository->getOverview($branchId);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            $this->logger->error('Dashboard overview fatal error', [
+                'branch_id' => $branchId,
+                'mode' => $isLite ? 'lite' : 'full',
+                'exception' => $e->getMessage(),
+                'class' => $e::class,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
             if ($isLite) {
                 return $this->json([
                     'summary' => [
