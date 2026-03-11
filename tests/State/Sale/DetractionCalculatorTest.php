@@ -15,16 +15,19 @@ use App\State\Sale\DetractionCalculator;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 final class DetractionCalculatorTest extends TestCase
 {
     private SunatCatalogRepository&MockObject $sunatCatalogRepository;
+    private LoggerInterface&MockObject $logger;
     private DetractionCalculator $calculator;
 
     protected function setUp(): void
     {
         $this->sunatCatalogRepository = $this->createMock(SunatCatalogRepository::class);
-        $this->calculator = new DetractionCalculator($this->sunatCatalogRepository);
+        $this->logger = $this->createMock(LoggerInterface::class);
+        $this->calculator = new DetractionCalculator($this->sunatCatalogRepository, $this->logger);
     }
 
     // -------------------------------------------------------------------------
@@ -195,6 +198,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale->expects(self::once())->method('setDetraccionCodigo')->with('037');
         $sale->expects(self::once())->method('setDetraccionPorcentaje')->with(4.0);
         $sale->expects(self::once())->method('setDetraccionMonto')->with(40.0); // 1000 * 4 / 100 = 40
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(1000.0);
 
         $paymentMethod = $this->makePaymentMethod();
         $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);
@@ -225,6 +229,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale->expects(self::once())->method('setDetraccionCodigo')->with('008');
         $sale->expects(self::once())->method('setDetraccionPorcentaje')->with(10.0);
         $sale->expects(self::once())->method('setDetraccionMonto')->with(20.0); // 200 * 10 / 100
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(200.0);
 
         $paymentMethod = $this->makePaymentMethod();
         $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);
@@ -277,6 +282,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale->expects(self::once())->method('setDetraccionCodigo')->with('037');
         $sale->expects(self::once())->method('setDetraccionPorcentaje')->with(4.0);
         $sale->expects(self::once())->method('setDetraccionMonto')->with(80.0); // 2000 * 4 / 100
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(2000.0);
 
         $paymentMethod = $this->makePaymentMethod();
         $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);
@@ -334,6 +340,7 @@ final class DetractionCalculatorTest extends TestCase
 
         // setTipoOperacion must NOT be called when already set
         $sale->expects(self::never())->method('setTipoOperacion');
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(1000.0);
 
         $this->calculator->applyFromItems($sale);
     }
@@ -406,6 +413,7 @@ final class DetractionCalculatorTest extends TestCase
         $sale->method('getDetraccionPorcentaje')->willReturn(null); // null percentage
 
         $sale->expects(self::once())->method('setDetraccionMonto')->with(null);
+        $sale->expects(self::once())->method('setDetraccionValorReferencial')->with(1000.0);
 
         $paymentMethod = $this->makePaymentMethod();
         $this->sunatCatalogRepository->method('findOneBy')->willReturn($paymentMethod);

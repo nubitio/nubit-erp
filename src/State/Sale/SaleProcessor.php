@@ -63,7 +63,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private PurchasesWritePolicyResolver $purchasesWritePolicyResolver,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
-        private DetractionCalculator $detractionCalculator,
+        private DetractionCalculatorInterface $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
     ) {
     }

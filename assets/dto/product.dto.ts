@@ -10,4 +10,10 @@ export interface ProductDto {
   salePrice: number;
   category: string;
   unitOfMeasure: UnitOfMeasureDto;
+  detractionCatalog?: {
+    id: number;
+    code: string;
+    description: string;
+    percentage: number | null;
+  } | null;
 }

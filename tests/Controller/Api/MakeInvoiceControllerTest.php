@@ -8,6 +8,7 @@ use App\Controller\Api\MakeInvoice;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Sale;
+use App\State\Sale\DetractionCalculatorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -20,6 +21,9 @@ final class MakeInvoiceControllerTest extends TestCase
 
         $invoiceCreationService = $this->createMock(InvoiceCreationServiceInterface::class);
 
+        $detractionCalculator = $this->createMock(DetractionCalculatorInterface::class);
+        $detractionCalculator->expects(self::never())->method('applyFromItems');
+
         $controller = new MakeInvoice();
         $request = Request::create('/api/sales/sale-404/invoice', 'POST');
         $request->attributes->set('id', 'sale-404');
@@ -27,6 +31,7 @@ final class MakeInvoiceControllerTest extends TestCase
             $request,
             $invoiceCreationService,
             $saleV2Loader,
+            $detractionCalculator,
         );
 
         $payload = json_decode((string) $response->getContent(), true);
@@ -45,6 +50,9 @@ final class MakeInvoiceControllerTest extends TestCase
 
         $invoiceCreationService = $this->createMock(InvoiceCreationServiceInterface::class);
 
+        $detractionCalculator = $this->createMock(DetractionCalculatorInterface::class);
+        $detractionCalculator->expects(self::never())->method('applyFromItems');
+
         $controller = new MakeInvoice();
         $request = Request::create('/api/sales/sale-1/invoice', 'POST');
         $request->attributes->set('id', 'sale-1');
@@ -52,6 +60,7 @@ final class MakeInvoiceControllerTest extends TestCase
             $request,
             $invoiceCreationService,
             $saleV2Loader,
+            $detractionCalculator,
         );
 
         $payload = json_decode((string) $response->getContent(), true);
@@ -81,6 +90,9 @@ final class MakeInvoiceControllerTest extends TestCase
             ->with($v2Sale)
             ->willReturn(['success' => true, 'message' => 'Comprobante emitido.']);
 
+        $detractionCalculator = $this->createMock(DetractionCalculatorInterface::class);
+        $detractionCalculator->expects(self::once())->method('applyFromItems')->with($v2Sale);
+
         $controller = new MakeInvoice();
         $request = Request::create('/api/sales/v2-uuid-sale/invoice', 'POST');
         $request->attributes->set('id', 'v2-uuid-sale');
@@ -88,6 +100,7 @@ final class MakeInvoiceControllerTest extends TestCase
             $request,
             $invoiceCreationService,
             $saleV2Loader,
+            $detractionCalculator,
         );
 
         $payload = json_decode((string) $response->getContent(), true);
