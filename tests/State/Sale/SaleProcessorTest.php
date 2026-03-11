@@ -1681,6 +1681,9 @@ final class SaleProcessorTest extends TestCase
         // so clearDetraction() is called immediately without querying the repository)
         $rc->getProperty('sunatCatalogRepository')->setValue($stub, $this->sunatCatalogRepository);
 
+        // logger — inject a no-op mock so clearDetraction() can call warning() without crashing
+        $rc->getProperty('logger')->setValue($stub, $this->createMock(LoggerInterface::class));
+
         return $stub;
     }
 

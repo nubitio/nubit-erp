@@ -7,6 +7,7 @@ namespace App\Controller\Api;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
+use App\State\Sale\DetractionCalculatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,11 +16,13 @@ class MakeInvoice extends AbstractController
 {
     /**
      * @throws \Doctrine\DBAL\Exception
+     * @throws \App\Core\Exception\ServiceException
      */
     public function __invoke(
         Request $request,
         InvoiceCreationServiceInterface $invoiceCreationService,
         SaleV2Loader $saleV2Loader,
+        DetractionCalculatorInterface $detractionCalculator,
     ): JsonResponse {
         $saleId = $request->get('id');
 
@@ -34,10 +37,15 @@ class MakeInvoice extends AbstractController
             return ApiResponse::error('La venta ya tiene un comprobante emitido.');
         }
 
+        $detractionCalculator->applyFromItems($sale);
+
         $result = $invoiceCreationService->createForSale($sale);
 
         return $result['success']
-            ? ApiResponse::success($result['message'])
+            ? ApiResponse::success($result['message'], [
+                'detraccionMonto' => $sale->getDetraccionMonto(),
+                'detraccionCodigo' => $sale->getDetraccionCodigo(),
+            ])
             : ApiResponse::error($result['message']);
     }
 }

@@ -324,8 +324,12 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
             return;
         }
         $stubReflection = new ReflectionClass($className);
-        $stub = $stubReflection->newInstanceWithoutConstructor();
-        $this->initializeStubProperties($stubReflection, $stub);
+        if ($stubReflection->isInterface() || $stubReflection->isAbstract()) {
+            $stub = $this->createMock($className);
+        } else {
+            $stub = $stubReflection->newInstanceWithoutConstructor();
+            $this->initializeStubProperties($stubReflection, $stub);
+        }
         $property->setValue($target, $stub);
     }
 
@@ -374,7 +378,12 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                 $depClass = $type->getName();
                 if (class_exists($depClass) || interface_exists($depClass)) {
                     try {
-                        $depStub = (new ReflectionClass($depClass))->newInstanceWithoutConstructor();
+                        $depReflection = new ReflectionClass($depClass);
+                        if ($depReflection->isInterface() || $depReflection->isAbstract()) {
+                            $depStub = $this->createMock($depClass);
+                        } else {
+                            $depStub = $depReflection->newInstanceWithoutConstructor();
+                        }
                         $prop->setValue($stub, $depStub);
                         continue;
                     } catch (\Throwable) {

@@ -1,10 +1,10 @@
-import {Constants} from '@platform/common/Constants';
-import {Field} from '@platform/field/Field';
-import {FieldBuilder} from '@platform/field/FieldBuilder';
-import {FieldType} from '@platform/field/FieldType';
+import { Constants } from '@platform/common/Constants';
+import { Field } from '@platform/field/Field';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
 import NumberUtils from '@shared/lib/NumberUtils';
-import {SharedUtils} from '@shared/lib/SharedUtils';
-import {ColumnCellTemplateData} from 'devextreme/ui/data_grid';
+import { SharedUtils } from '@shared/lib/SharedUtils';
+import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const InvoiceFields = () => {
   const fields: Field[] = [];
@@ -55,8 +55,8 @@ export const InvoiceFields = () => {
       .name('documentType')
       .label('Tipo')
       .data([
-        {value: '01', text: 'Factura'},
-        {value: '03', text: 'Boleta'},
+        { value: '01', text: 'Factura' },
+        { value: '03', text: 'Boleta' },
       ])
       .formatter((cell: ColumnCellTemplateData) =>
         cell.data.documentType === '01' ? 'Factura' : 'Boleta',
@@ -71,7 +71,9 @@ export const InvoiceFields = () => {
       .name('total')
       .label('Total')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'))
+      .formatter((cell: ColumnCellTemplateData) =>
+        NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
+      )
       .build(),
   );
   fields.push(
@@ -112,6 +114,32 @@ export const InvoiceFields = () => {
   );
   fields.push(
     new FieldBuilder().type(FieldType.TEXT).name('sunatMessage').label('Mensaje sunat').build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.TEXT)
+      .name('detraccionCodigo')
+      .label('Cód. Detrac.')
+      .align('center')
+      .formatter((cell: ColumnCellTemplateData) => {
+        if (!cell.value) return '';
+        return <span className="badge text-bg-info">{cell.value}</span>;
+      })
+      .build(),
+  );
+  fields.push(
+    new FieldBuilder()
+      .type(FieldType.CURRENCY)
+      .name('detraccionMonto')
+      .label('Detracción')
+      .align('right')
+      .formatter((cell: ColumnCellTemplateData) => {
+        if (cell.value == null || cell.value === 0) return '';
+        return (
+          <span className="badge text-bg-warning">{`S/ ${Number(cell.value).toFixed(2)}`}</span>
+        );
+      })
+      .build(),
   );
 
   return fields;

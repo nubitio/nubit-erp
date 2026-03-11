@@ -7,11 +7,12 @@ namespace App\State\Sale;
 use App\Core\Exception\ServiceException;
 use App\Entity\Sale;
 use App\Repository\SunatCatalogRepository;
+use Psr\Log\LoggerInterface;
 
 /**
  * Calculates and applies SUNAT detraction rules to a sale.
  */
-final readonly class DetractionCalculator
+final readonly class DetractionCalculator implements DetractionCalculatorInterface
 {
     public const string PAYMENT_METHOD = '001';
     public const float MIN_TOTAL = 700.0;
@@ -19,6 +20,7 @@ final readonly class DetractionCalculator
 
     public function __construct(
         private SunatCatalogRepository $sunatCatalogRepository,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -29,7 +31,7 @@ final readonly class DetractionCalculator
     {
         $customerDoc = $sale->getCliente()?->getRuc() ?? '';
         if (strlen($customerDoc) !== 11) {
-            $this->clearDetraction($sale);
+            $this->clearDetraction($sale, 'customer does not have an 11-digit RUC');
 
             return;
         }
@@ -52,7 +54,7 @@ final readonly class DetractionCalculator
         }
 
         if (!$detractionCatalog) {
-            $this->clearDetraction($sale);
+            $this->clearDetraction($sale, 'no detraction catalog found on any item');
 
             return;
         }
@@ -62,7 +64,7 @@ final readonly class DetractionCalculator
         $threshold = $this->getThreshold($detractionCode);
 
         if ($threshold > 0 && $total <= $threshold) {
-            $this->clearDetraction($sale);
+            $this->clearDetraction($sale, sprintf('total %.2f does not exceed threshold %.2f for code %s', $total, $threshold, $detractionCode));
 
             return;
         }
@@ -73,6 +75,7 @@ final readonly class DetractionCalculator
             ? round($sale->getTotal() * $sale->getDetraccionPorcentaje() / 100, 2)
             : null;
         $sale->setDetraccionMonto($amount);
+        $sale->setDetraccionValorReferencial((float) ($sale->getTotal() ?? 0));
 
         $paymentMethod = $this->sunatCatalogRepository->findOneBy([
             'catalog' => 59,
@@ -98,8 +101,13 @@ final readonly class DetractionCalculator
         return self::MIN_TOTAL;
     }
 
-    private function clearDetraction(Sale $sale): void
+    private function clearDetraction(Sale $sale, string $reason): void
     {
+        $this->logger->warning('Detraction cleared for sale {saleId}: {reason}', [
+            'saleId' => $sale->getId(),
+            'reason' => $reason,
+        ]);
+
         $sale->setDetraccionCodigo(null);
         $sale->setDetraccionPorcentaje(null);
         $sale->setDetraccionMonto(null);
