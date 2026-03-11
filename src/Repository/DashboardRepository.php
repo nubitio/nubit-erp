@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Cache\CacheManager;
-use App\Core\Context\TenantContext;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use DateTimeImmutable;
@@ -24,7 +23,6 @@ readonly class DashboardRepository
         private Connection $connection,
         private SettingsService $settings,
         private CacheManager $cache,
-        private TenantContext $tenantContext,
     ) {
     }
 
@@ -74,31 +72,23 @@ readonly class DashboardRepository
     }
 
     /**
-     * Returns the tenant-scoped cache key for the full overview.
-     * Format: dashboard_overview_{tenantName}_{branchId}
-     * When no tenant is active (CLI / control-plane), falls back to the branchId-only form.
+     * Returns the tenant-agnostic cache key for the full overview.
+     * CacheManager.scopedKey() will prepend t.{tenantName}. at runtime.
+     * Format: dashboard_overview_{branchId}
      */
     private function overviewKey(string $branchId): string
     {
-        $tenantName = $this->tenantContext->getTenantName();
-
-        return $tenantName !== null
-            ? "dashboard_overview_{$tenantName}_{$branchId}"
-            : "dashboard_overview_{$branchId}";
+        return "dashboard_overview_{$branchId}";
     }
 
     /**
-     * Returns the tenant-scoped cache key for the lite overview.
-     * Format: dashboard_lite_{tenantName}_{branchId}
-     * When no tenant is active (CLI / control-plane), falls back to the branchId-only form.
+     * Returns the tenant-agnostic cache key for the lite overview.
+     * CacheManager.scopedKey() will prepend t.{tenantName}. at runtime.
+     * Format: dashboard_lite_{branchId}
      */
     private function liteKey(string $branchId): string
     {
-        $tenantName = $this->tenantContext->getTenantName();
-
-        return $tenantName !== null
-            ? "dashboard_lite_{$tenantName}_{$branchId}"
-            : "dashboard_lite_{$branchId}";
+        return "dashboard_lite_{$branchId}";
     }
 
     // -------------------------------------------------------------------------
