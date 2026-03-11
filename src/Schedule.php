@@ -34,6 +34,17 @@ readonly class Schedule implements ScheduleProviderInterface
                     'America/Lima',
                 )
             )
+
+            // Stock-low in-app notifications — runs every 6 hours.
+            // Emits stock_low notifications for all products at or below min_stock,
+            // deduplicated per user within a 24-hour sliding window.
+            ->add(
+                RecurringMessage::cron(
+                    '0 */6 * * *',
+                    new RunCommandMessage('app:notification:generate-stock', throwOnFailure: false),
+                    'America/Lima',
+                )
+            )
         ;
     }
 }
