@@ -14,11 +14,13 @@ import NotificationPanel from '../notification-panel/NotificationPanel';
 import { Popover } from 'devextreme-react';
 import Assistant from '../../../features/assistant/Assistant';
 import { useScreenSize } from '../../../utils/media-query';
+import { useNotifications } from '../../../features/notifications';
 
 export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: AppHeaderProps) => {
   const [notificationPanelVisible, setNotificationPanelVisible] = useState(false);
   const [assistantVisible, setAssistantVisible] = useState(false);
   const { isXSmall } = useScreenSize();
+  const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
 
   const toggleNotificationPanel = () => {
     setAssistantVisible(false);
@@ -43,13 +45,17 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
         <Item location="after">
           <div className="messages" id="notification">
             <Button icon="belloutline" stylingMode="text" onClick={toggleNotificationPanel} />
-            <div className="dx-badge"></div>
+            {unreadCount > 0 && (
+              <div className="dx-badge" aria-label={`${unreadCount} notificaciones sin leer`}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </div>
+            )}
           </div>
           <Popover
             target="#notification"
             position="bottom"
-            width={isXSmall ? 'calc(100vw - 20px)' : 400}
-            height={380}
+            width={isXSmall ? 'calc(100vw - 20px)' : 460}
+            height="auto"
             visible={notificationPanelVisible}
             onHiding={() => setNotificationPanelVisible(false)}
             hideOnOutsideClick
@@ -58,6 +64,10 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
             <NotificationPanel
               visible={notificationPanelVisible}
               onHiding={() => setNotificationPanelVisible(false)}
+              notifications={notifications}
+              loading={loading}
+              markRead={markRead}
+              markAllRead={markAllRead}
             />
           </Popover>
         </Item>
