@@ -20,10 +20,10 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
       title={'Vista previa'}
       showTitle={true}
       fullScreen={isXSmall}
-      width="100mm"
-      height={600}
+      width="90mm"
+      height={650}
       visible={props.visible}
-      wrapperAttr={{ class: `form-popup` }}
+      wrapperAttr={{ class: `form-popup sale-print-preview-popup` }}
     >
       <ToolbarItem toolbar="bottom" location="after">
         <div className={`form-popup-buttons-container`}>
