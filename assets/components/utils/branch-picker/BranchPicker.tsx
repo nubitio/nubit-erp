@@ -161,6 +161,7 @@ export const BranchPicker = ({ visible, setVisible, initialBranches = [] }: Bran
         noDataText={loadingBranches ? 'Cargando locales...' : 'No hay locales disponibles'}
         onSelectionChanged={onSelectionChanged}
         selectedItemKeys={selectedBranch ? [selectedBranch.id] : []}
+        repaintChangesOnly={true}
         itemRender={(item: Branch) => (
           <span data-testid="branch-picker-option" data-branch-id={item.id}>
             {item.name}

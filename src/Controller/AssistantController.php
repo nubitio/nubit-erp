@@ -6,10 +6,15 @@ namespace App\Controller;
 
 use App\AI\Service\SessionContextBuilder;
 use App\Core\Exception\ServiceException;
+use App\Dto\Assistant\AssistantMessageInput;
 use App\Dto\Assistant\AssistantRequest;
 use App\Dto\Assistant\AssistantResponse;
+use App\Dto\Assistant\AttachmentInput;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
+use Symfony\AI\Platform\Message\Content\ContentInterface;
+use Symfony\AI\Platform\Message\Content\ImageUrl;
+use Symfony\AI\Platform\Message\Content\Text;
 use Symfony\AI\Platform\Message\Message;
 use Symfony\AI\Platform\Message\MessageBag;
 use Symfony\AI\Platform\Message\MessageInterface;
@@ -32,7 +37,25 @@ class AssistantController extends AbstractController
 
     public function __invoke(AssistantRequest $data): AssistantResponse
     {
-        $userMessages = array_map($this->convertMessage(...), $data->messages);
+        $lastUserIndex = null;
+        foreach (array_keys($data->messages) as $i) {
+            if ('assistant' !== $data->messages[$i]->role) {
+                $lastUserIndex = $i;
+            }
+        }
+
+        [$imageAttachments, $textAttachments] = $this->partitionAttachments($data->attachments);
+
+        $userMessages = [];
+        foreach ($data->messages as $i => $message) {
+            $isLast = ($i === $lastUserIndex);
+            $userMessages[] = $this->convertMessage(
+                $message,
+                $isLast ? $imageAttachments : [],
+                $isLast ? $textAttachments : [],
+            );
+        }
+
         $messageBag = new MessageBag(...$userMessages);
 
         // Prepend a dynamic system message so SystemPromptInputProcessor skips its static file.
@@ -43,9 +66,10 @@ class AssistantController extends AbstractController
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
+            'attachments_count' => \count($data->attachments),
             'message_preview' => array_slice(
                 array_map(
-                    static fn ($m) => $m->content,
+                    static fn (AssistantMessageInput $m) => $m->content,
                     $data->messages
                 ),
                 0,
@@ -88,6 +112,78 @@ class AssistantController extends AbstractController
     }
 
     /**
+     * Converts an AssistantMessageInput into a platform MessageInterface.
+     *
+     * For user messages, builds a multi-part content array:
+     *   - A Text part for the message body (if non-empty)
+     *   - An ImageUrl part for each image attachment (if s3Url is present)
+     *   - A Text reference block for each non-image attachment
+     *
+     * @param AttachmentInput[] $imageAttachments
+     * @param AttachmentInput[] $textAttachments
+     */
+    private function convertMessage(
+        AssistantMessageInput $message,
+        array $imageAttachments = [],
+        array $textAttachments = [],
+    ): MessageInterface {
+        $content = trim($message->content);
+
+        if ('assistant' === $message->role) {
+            return Message::ofAssistant($content);
+        }
+
+        /** @var ContentInterface[] $contentParts */
+        $contentParts = [];
+
+        if ('' !== $content) {
+            $contentParts[] = new Text($content);
+        }
+
+        foreach ($imageAttachments as $attachment) {
+            if (null === $attachment->s3Url || '' === $attachment->s3Url) {
+                continue;
+            }
+            $contentParts[] = new ImageUrl($attachment->s3Url);
+        }
+
+        foreach ($textAttachments as $attachment) {
+            $name = trim($attachment->name);
+            $mimeType = trim($attachment->mimeType);
+
+            if ('' === $name || '' === $mimeType) {
+                continue;
+            }
+
+            $urlPart = $attachment->s3Url !== null ? " — {$attachment->s3Url}" : '';
+            $contentParts[] = new Text("[Attachment: {$name} ({$mimeType}){$urlPart}]");
+        }
+
+        return Message::ofUser(...$contentParts);
+    }
+
+    /**
+     * Partitions an attachment list into image attachments and non-image attachments.
+     *
+     * @param  AttachmentInput[] $attachments
+     * @return array{0: AttachmentInput[], 1: AttachmentInput[]}
+     */
+    private function partitionAttachments(array $attachments): array
+    {
+        $images = [];
+        $texts = [];
+        foreach ($attachments as $a) {
+            if (str_starts_with(trim($a->mimeType), 'image/')) {
+                $images[] = $a;
+            } else {
+                $texts[] = $a;
+            }
+        }
+
+        return [$images, $texts];
+    }
+
+    /**
      * Builds the full dynamic system prompt: session context block + static assistant.md content.
      *
      * Injecting it here causes symfony/ai-bundle's SystemPromptInputProcessor to skip its own
@@ -103,19 +199,6 @@ class AssistantController extends AbstractController
             : '';
 
         return $contextBlock . "\n\n---\n\n" . $staticPrompt;
-    }
-
-    private function convertMessage(mixed $message): MessageInterface
-    {
-        $role = \is_array($message) ? ($message['role'] ?? '') : ($message->role ?? '');
-        $content = \is_array($message) ? ($message['content'] ?? '') : ($message->content ?? '');
-        $content = trim((string)$content);
-
-        if ('assistant' === $role) {
-            return Message::ofAssistant($content);
-        }
-
-        return Message::ofUser($content);
     }
 
     private function normalizeContent(mixed $content): string

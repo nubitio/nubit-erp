@@ -1,15 +1,61 @@
 .chat-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   height: 100%;
   flex: 1 1 auto;
   min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/**
+ * Bug 1 fix: toolbar row below the Chat widget that contains the
+ * SpeechToText mic button as a normal flex child — no absolute
+ * positioning that could escape container bounds.
+ */
+.chat-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 900px;
+  width: 100%;
+  padding: 4px 0 2px;
+}
+
+/**
+ * AC-05: SpeechToText mic button sits inline in .chat-toolbar-row as a normal
+ * flex child — no absolute positioning.
+ */
+.chat-speech-to-text-wrapper {
+  .dx-speech-to-text {
+    .dx-button {
+      min-width: 36px;
+      width: 36px;
+      height: 36px;
+    }
+  }
+}
+
+/**
+ * Bug 3 fix: centering wrapper for QuerySuggestionChips inside the Chat's
+ * emptyViewRender so chips appear centered rather than at the top.
+ * min-height ensures centering works even when the DX empty-view container
+ * does not have an explicit height set on it.
+ */
+.chat-empty-view-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
   width: 100%;
 }
 
 .dx-chat {
   max-width: 900px;
   flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -78,4 +124,7 @@
 }
 .assistant-panel {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }

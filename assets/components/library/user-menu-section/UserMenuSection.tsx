@@ -37,39 +37,36 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
     };
   }, []);
 
-  const menuItems = useMemo<MenuItem[]>(
-    () => {
-      const items: MenuItem[] = [];
+  const menuItems = useMemo<MenuItem[]>(() => {
+    const items: MenuItem[] = [];
 
-      if (canChangeBranch) {
-        items.push({
-          text: 'Cambiar sucursal',
-          icon: 'ph ph-building',
-          onClick: () => {
-            setVisible(true);
-          },
-        });
-      }
-
-      items.push(
-        {
-          text: 'Cambiar contraseña',
-          icon: 'ph ph-lock',
-          onClick: () => {
-            navigate('/change-password');
-          },
+    if (canChangeBranch) {
+      items.push({
+        text: 'Cambiar sucursal',
+        icon: 'ph ph-building',
+        onClick: () => {
+          setVisible(true);
         },
-        {
-          text: 'Cerrar sesión',
-          icon: 'ph ph-sign-out',
-          onClick: signOut,
-        },
-      );
+      });
+    }
 
-      return items;
-    },
-    [canChangeBranch, navigate, signOut],
-  );
+    items.push(
+      {
+        text: 'Cambiar contraseña',
+        icon: 'ph ph-lock',
+        onClick: () => {
+          navigate('/change-password');
+        },
+      },
+      {
+        text: 'Cerrar sesión',
+        icon: 'ph ph-sign-out',
+        onClick: signOut,
+      },
+    );
+
+    return items;
+  }, [canChangeBranch, navigate, signOut]);
 
   const listElementAttr = {
     class: 'user-info-list',
@@ -85,7 +82,12 @@ export const UserMenuSection = ({ showAvatar, listRef }: UserMenuSectionProps) =
         )}
         <div className="user-name">{user?.username}</div>
       </div>
-      <List ref={listRef} elementAttr={listElementAttr} items={menuItems} />
+      <List
+        ref={listRef}
+        elementAttr={listElementAttr}
+        items={menuItems}
+        repaintChangesOnly={true}
+      />
       <BranchPicker visible={visible} setVisible={setVisible} />
     </>
   );
