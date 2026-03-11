@@ -74,7 +74,7 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
         <Item location="after">
           <div id="assistant-trigger">
             <Button
-              icon="ph ph-question"
+              icon="ph ph-sparkle"
               stylingMode="text"
               hint="Assistant"
               onClick={() => {

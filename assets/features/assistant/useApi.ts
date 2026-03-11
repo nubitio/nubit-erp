@@ -2,7 +2,11 @@ import { useCallback, useState } from 'react';
 import { type ChatTypes } from 'devextreme-react/chat';
 import { CustomStore, DataSource } from 'devextreme-react/common/data';
 import { ALERT_TIMEOUT, assistant, REGENERATION_TEXT } from './data';
-import { assistantService, type AssistantChatMessage } from '../../features/assistant';
+import {
+  assistantService,
+  type AssistantAttachmentPayload,
+  type AssistantChatMessage,
+} from '../../features/assistant';
 
 const wait = (delay: number): Promise<void> =>
   new Promise((resolve) => {
@@ -12,8 +16,9 @@ const wait = (delay: number): Promise<void> =>
 export async function getAIResponse(
   messages: AssistantChatMessage[],
   delay?: number,
+  attachments?: AssistantAttachmentPayload[],
 ): Promise<string> {
-  const response = await assistantService.chat(messages);
+  const response = await assistantService.chat(messages, attachments);
 
   if (delay) {
     await wait(delay);
@@ -91,11 +96,14 @@ export const useApi = () => {
   }, []);
 
   const fetchAIResponse = useCallback(
-    async (message: ChatTypes.Message): Promise<void> => {
+    async (
+      message: ChatTypes.Message,
+      attachments?: AssistantAttachmentPayload[],
+    ): Promise<void> => {
       const messages = [...getMessageHistory(), dataItemToMessage(message)];
 
       try {
-        const aiResponse = await getAIResponse(messages, 200);
+        const aiResponse = await getAIResponse(messages, 200, attachments);
 
         insertMessage({
           id: Date.now(),

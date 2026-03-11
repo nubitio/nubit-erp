@@ -8,14 +8,34 @@ export type AssistantChatMessage = {
   content: string;
 };
 
+export type AssistantAttachmentPayload = {
+  name: string;
+  mimeType: string;
+  mediaId: string;
+  s3Url: string;
+};
+
 export type AssistantResponse = {
   message: string;
 };
 
+export type AssistantChatRequest = {
+  messages: AssistantChatMessage[];
+  attachments?: AssistantAttachmentPayload[];
+};
+
 class AssistantService {
-  chat(messages: AssistantChatMessage[]): Promise<AssistantResponse> {
+  chat(
+    messages: AssistantChatMessage[],
+    attachments?: AssistantAttachmentPayload[],
+  ): Promise<AssistantResponse> {
+    const body: AssistantChatRequest = { messages };
+    if (attachments && attachments.length > 0) {
+      body.attachments = attachments;
+    }
+
     return lastValueFrom(
-      httpClient.post<AssistantResponse>(`${Constants.API_BASE_URL}assistant`, { messages }),
+      httpClient.post<AssistantResponse>(`${Constants.API_BASE_URL}assistant`, body),
     ).then((response: ApiResponse<AssistantResponse>) => {
       const message = response.data?.message;
 

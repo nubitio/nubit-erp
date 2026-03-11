@@ -5,17 +5,12 @@ import './QuerySuggestionChips.scss';
 interface QuerySuggestionChipsProps {
   /** Called when a chip is clicked; receives the full query string. */
   onSuggestionClick: (query: string) => void;
-  /** When true the chips are hidden (e.g. the user has started typing). */
-  hidden?: boolean;
 }
 
-export function QuerySuggestionChips({
-  onSuggestionClick,
-  hidden = false,
-}: QuerySuggestionChipsProps) {
+export function QuerySuggestionChips({ onSuggestionClick }: QuerySuggestionChipsProps) {
   const { suggestions } = useQuerySuggestions();
 
-  if (hidden || suggestions.length === 0) return null;
+  if (suggestions.length === 0) return null;
 
   return (
     <div className="query-suggestion-chips" aria-label="Sugerencias de consulta">

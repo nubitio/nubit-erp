@@ -1,23 +1,14 @@
 .query-suggestion-chips {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
-  overflow-x: auto;
-  padding: 8px 0 4px;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE/Edge */
-  max-width: 900px;
-  margin: 0 auto;
+  padding: 8px 16px;
   width: 100%;
-
-  &::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-  }
 
   &__chip {
     display: inline-flex;
     align-items: center;
-    flex-shrink: 0;
     cursor: pointer;
     border: 1px solid var(--dx-color-border, rgba(0, 0, 0, 0.15));
     border-radius: 16px;
