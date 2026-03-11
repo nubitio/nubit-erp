@@ -82,6 +82,7 @@ services:
 
   App\Inventory\Core\Contract\StockValidationPolicyInterface: '@App\Inventory\Core\Service\TenantStockValidationPolicy'
   App\Inventory\Core\Contract\UnitConversionServiceInterface: '@App\Inventory\Core\Service\UnitConversionService'
+  App\AI\Context\BranchContextInterface: '@App\AI\Context\BranchContextAdapter'
 
   Symfony\Component\Messenger\Middleware\DispatchAfterCurrentBusMiddleware:
     tags:

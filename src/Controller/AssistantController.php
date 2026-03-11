@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\AI\Service\SessionContextBuilder;
 use App\Core\Exception\ServiceException;
 use App\Dto\Assistant\AssistantRequest;
 use App\Dto\Assistant\AssistantResponse;
@@ -23,12 +24,22 @@ class AssistantController extends AbstractController
         #[Autowire(service: 'ai.agent.default')]
         private readonly AgentInterface $agent,
         private readonly LoggerInterface $logger,
+        private readonly SessionContextBuilder $sessionContextBuilder,
+        #[Autowire('%kernel.project_dir%')]
+        private readonly string $projectDir,
     ) {
     }
 
     public function __invoke(AssistantRequest $data): AssistantResponse
     {
-        $messageBag = new MessageBag(...array_map($this->convertMessage(...), $data->messages));
+        $userMessages = array_map($this->convertMessage(...), $data->messages);
+        $messageBag = new MessageBag(...$userMessages);
+
+        // Prepend a dynamic system message so SystemPromptInputProcessor skips its static file.
+        // The full prompt = context block (live session data) + static assistant.md content.
+        $messageBag = $messageBag->withSystemMessage(
+            Message::forSystem($this->buildDynamicSystemPrompt())
+        );
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
@@ -74,6 +85,24 @@ class AssistantController extends AbstractController
         ]);
 
         return new AssistantResponse($content);
+    }
+
+    /**
+     * Builds the full dynamic system prompt: session context block + static assistant.md content.
+     *
+     * Injecting it here causes symfony/ai-bundle's SystemPromptInputProcessor to skip its own
+     * static file injection (it bails out when a system message already exists in the bag).
+     */
+    private function buildDynamicSystemPrompt(): string
+    {
+        $contextBlock = $this->sessionContextBuilder->build();
+
+        $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
+        $staticPrompt = is_file($staticPromptPath)
+            ? (string) file_get_contents($staticPromptPath)
+            : '';
+
+        return $contextBlock . "\n\n---\n\n" . $staticPrompt;
     }
 
     private function convertMessage(mixed $message): MessageInterface
