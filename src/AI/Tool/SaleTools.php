@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use App\Dto\Assistant\RecentSaleDto;
-use App\Dto\Assistant\SalesSummaryDto;
 use App\Repository\SaleRepository;
+use App\Repository\TimeDimensionRepository;
 use DateInterval;
 use DateTimeImmutable;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -25,17 +25,42 @@ final readonly class SaleTools
 {
     public function __construct(
         private SaleRepository $saleRepository,
+        private TimeDimensionRepository $timeDimensionRepository,
     ) {
     }
 
-    public function salesSummary(?string $desde = null, ?string $hasta = null): SalesSummaryDto
+    /**
+     * @return array{
+     *     from: string,
+     *     to: string,
+     *     totalSales: int,
+     *     totalAmount: float,
+     *     averageTicket: float,
+     *     temporalContext: array{
+     *         isHoliday: bool,
+     *         holidayNames: list<string>,
+     *         isQuincenaWeek: bool,
+     *         periodLabel: string,
+     *         workingDays: int
+     *     }
+     * }
+     */
+    public function salesSummary(?string $desde = null, ?string $hasta = null): array
     {
         $to = $this->parseDate($hasta) ?? new DateTimeImmutable('now');
         $from = $this->parseDate($desde) ?? $to->sub(new DateInterval('P7D'));
 
         $summary = $this->saleRepository->getSummary($from, $to);
+        $temporalContext = $this->buildTemporalContext($from, $to);
 
-        return $summary;
+        return [
+            'from' => $summary->from,
+            'to' => $summary->to,
+            'totalSales' => $summary->totalSales,
+            'totalAmount' => $summary->totalAmount,
+            'averageTicket' => $summary->averageTicket,
+            'temporalContext' => $temporalContext,
+        ];
     }
 
     /**
@@ -57,5 +82,136 @@ final readonly class SaleTools
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /**
+     * @return array{
+     *     isHoliday: bool,
+     *     holidayNames: list<string>,
+     *     isQuincenaWeek: bool,
+     *     periodLabel: string,
+     *     workingDays: int
+     * }
+     */
+    private function buildTemporalContext(DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        $fromId = (int) $from->format('Ymd');
+        $toId = (int) $to->format('Ymd');
+
+        /** @var list<\App\Entity\TimeDimension> $dimensions */
+        $dimensions = $this->timeDimensionRepository->createQueryBuilder('td')
+            ->where('td.id >= :fromId')
+            ->andWhere('td.id <= :toId')
+            ->setParameter('fromId', $fromId)
+            ->setParameter('toId', $toId)
+            ->orderBy('td.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        if ($dimensions === []) {
+            return [
+                'isHoliday' => false,
+                'holidayNames' => [],
+                'isQuincenaWeek' => false,
+                'periodLabel' => 'Sin datos de calendario',
+                'workingDays' => 0,
+            ];
+        }
+
+        $isHoliday = false;
+        /** @var list<string> $holidayNames */
+        $holidayNames = [];
+        $workingDays = 0;
+        $isQuincenaWeek = false;
+
+        foreach ($dimensions as $dim) {
+            $holiday = $dim->isHoliday() ?? false;
+            $weekend = $dim->isWeekend() ?? false;
+            $day = $dim->getDay();
+
+            if ($holiday) {
+                $isHoliday = true;
+                $eventName = $dim->getEvent();
+                if ($eventName !== null && $eventName !== '') {
+                    $holidayNames[] = $eventName;
+                }
+            }
+
+            if (!$holiday && !$weekend) {
+                ++$workingDays;
+            }
+
+            if ($day !== null && ($day === 15 || $this->isLastDayOfMonth($dim))) {
+                $isQuincenaWeek = true;
+            }
+        }
+
+        $periodLabel = $this->buildPeriodLabel($from, $to, $dimensions);
+
+        return [
+            'isHoliday' => $isHoliday,
+            'holidayNames' => array_values(array_unique($holidayNames)),
+            'isQuincenaWeek' => $isQuincenaWeek,
+            'periodLabel' => $periodLabel,
+            'workingDays' => $workingDays,
+        ];
+    }
+
+    private function isLastDayOfMonth(\App\Entity\TimeDimension $dim): bool
+    {
+        $date = $dim->getDate();
+        if ($date === null) {
+            return false;
+        }
+        $dayOfMonth = (int) $date->format('j');
+        $daysInMonth = (int) $date->format('t');
+
+        return $dayOfMonth === $daysInMonth;
+    }
+
+    /**
+     * @param list<\App\Entity\TimeDimension> $dimensions
+     */
+    private function buildPeriodLabel(DateTimeImmutable $from, DateTimeImmutable $to, array $dimensions): string
+    {
+        $isSingleDay = $from->format('Y-m-d') === $to->format('Y-m-d');
+
+        // Determine if the range is within a single month
+        $singleMonth = $from->format('Y-m') === $to->format('Y-m');
+
+        // Grab the first dimension for week/month name
+        $first = $dimensions[0] ?? null;
+        $week = $first?->getWeek();
+        $monthName = $first?->getMonthName();
+        $year = $from->format('Y');
+
+        $hasHoliday = false;
+        foreach ($dimensions as $dim) {
+            if ($dim->isHoliday() === true) {
+                $hasHoliday = true;
+                break;
+            }
+        }
+
+        $qualifier = $hasHoliday ? 'semana con feriado' : 'semana normal';
+
+        if ($isSingleDay) {
+            $dayName = $first?->getDayName() ?? '';
+            $day = $from->format('j');
+            $month = $monthName ?? $from->format('F');
+
+            return sprintf('%s %s de %s %s', $dayName, $day, $month, $year);
+        }
+
+        if ($singleMonth && $week !== null && $monthName !== null) {
+            return sprintf('Semana %d de %s %s (%s)', $week, $monthName, $year, $qualifier);
+        }
+
+        return sprintf(
+            '%s al %s (%s)',
+            $from->format('d/m/Y'),
+            $to->format('d/m/Y'),
+            $qualifier
+        );
     }
 }

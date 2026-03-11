@@ -1,0 +1,51 @@
+.query-suggestion-chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 8px 0 4px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid var(--dx-color-border, rgba(0, 0, 0, 0.15));
+    border-radius: 16px;
+    background-color: var(--dx-color-bg, transparent);
+    color: var(--dx-color-text, inherit);
+    padding: 5px 14px;
+    font-size: 0.8125rem; /* 13px */
+    line-height: 1.4;
+    white-space: nowrap;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease;
+    font-family: inherit;
+
+    &:hover {
+      background-color: var(--dx-color-main-hover, rgba(0, 0, 0, 0.06));
+      border-color: var(--dx-color-main, var(--accent-color, #5f8dcf));
+      color: var(--dx-color-main, var(--accent-color, #5f8dcf));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--dx-color-main, var(--accent-color, #5f8dcf));
+      outline-offset: 2px;
+    }
+
+    &:active {
+      opacity: 0.75;
+    }
+  }
+}

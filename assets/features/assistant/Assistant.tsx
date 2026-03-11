@@ -5,6 +5,7 @@ import { assistant, CHAT_DISABLED_CLASS, user } from './data';
 import Message from './Message';
 import { dataSource, useApi } from './useApi';
 import { AppToolbar } from '../../shared/ui/toolbar/AppToolbar';
+import { QuerySuggestionChips } from './components/QuerySuggestionChips';
 
 loadMessages({
   es: {
@@ -23,6 +24,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
 
   const [typingUsers, setTypingUsers] = useState<ChatTypes.User[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const processAIRequest = useCallback(
     async (message: ChatTypes.Message): Promise<void> => {
@@ -40,6 +42,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
   const onMessageEntered = useCallback(
     async ({ message, event }: ChatTypes.MessageEnteredEvent): Promise<void> => {
       insertMessage({ id: Date.now(), ...message });
+      setIsTyping(false);
 
       if (!alerts.length) {
         (event?.target as HTMLElement).blur();
@@ -47,6 +50,30 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
         await processAIRequest(message);
 
         (event?.target as HTMLElement).focus();
+      }
+    },
+    [insertMessage, alerts.length, processAIRequest],
+  );
+
+  const onTypingStart = useCallback((): void => {
+    setIsTyping(true);
+  }, []);
+
+  const onTypingEnd = useCallback((): void => {
+    setIsTyping(false);
+  }, []);
+
+  const onChipClick = useCallback(
+    async (query: string): Promise<void> => {
+      const message: ChatTypes.Message = {
+        text: query,
+        timestamp: new Date(),
+        author: user,
+      };
+      insertMessage({ id: Date.now(), ...message });
+
+      if (!alerts.length) {
+        await processAIRequest(message);
       }
     },
     [insertMessage, alerts.length, processAIRequest],
@@ -69,6 +96,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
 
   const chat = (
     <div className="chat-container mt-4">
+      <QuerySuggestionChips onSuggestionClick={onChipClick} hidden={isTyping || isProcessing} />
       <Chat
         className={isProcessing ? CHAT_DISABLED_CLASS : ''}
         dataSource={dataSource}
@@ -78,6 +106,8 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
         user={user}
         height={580}
         onMessageEntered={onMessageEntered}
+        onTypingStart={onTypingStart}
+        onTypingEnd={onTypingEnd}
         alerts={alerts}
         typingUsers={typingUsers}
         messageRender={messageRender}

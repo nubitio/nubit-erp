@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\AI\Repository\SunatRejectionQueryInterface;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -12,7 +13,7 @@ use Doctrine\Persistence\ManagerRegistry;
 /**
  * @extends ServiceEntityRepository<TaxDocumentEvent>
  */
-final class TaxDocumentEventRepository extends ServiceEntityRepository
+final class TaxDocumentEventRepository extends ServiceEntityRepository implements SunatRejectionQueryInterface
 {
     private ManagerRegistry $registry;
 
@@ -44,6 +45,25 @@ final class TaxDocumentEventRepository extends ServiceEntityRepository
         $this->registry->getManager()->persist($event);
 
         return $event;
+    }
+
+    /**
+     * @return list<TaxDocumentEvent>
+     */
+    public function findRejections(): array
+    {
+        /** @var list<TaxDocumentEvent> $result */
+        $result = $this->createQueryBuilder('e')
+            ->addSelect('d')
+            ->join('e.taxDocument', 'd')
+            ->where('e.code IS NOT NULL')
+            ->andWhere('e.code != :ok')
+            ->setParameter('ok', '0')
+            ->orderBy('e.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $result;
     }
 
     private function resolveStatus(?string $statusCode): string
