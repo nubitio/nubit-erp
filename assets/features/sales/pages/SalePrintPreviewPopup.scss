@@ -14,3 +14,11 @@
     }
   }
 }
+
+// Remove the popup's own scrollbar so only the iframe scrolls.
+.sale-print-preview-popup {
+  .dx-popup-content {
+    overflow: hidden;
+    padding: 0;
+  }
+}
