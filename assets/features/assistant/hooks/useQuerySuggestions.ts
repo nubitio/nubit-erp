@@ -12,11 +12,6 @@ export interface QuerySuggestion {
 
 type CashSessionStatus = 'open' | 'closed' | 'unknown';
 
-interface CashboxLastResponse {
-  status?: string;
-  [key: string]: unknown;
-}
-
 const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN'];
 const MAX_CHIPS = 3;
 
@@ -150,13 +145,13 @@ export function useQuerySuggestions(): { suggestions: QuerySuggestion[] } {
   useEffect(() => {
     let cancelled = false;
 
-    lastValueFrom(cashboxService.getLast())
+    lastValueFrom(cashboxService.getDashboard())
       .then((response) => {
         if (cancelled) return;
-        const data = response.data as CashboxLastResponse | null;
-        if (data?.status === 'open') {
+        const registers = response.data ?? [];
+        if (registers.some((r) => r.status === 'open')) {
           setCashStatus('open');
-        } else if (data?.status === 'closed') {
+        } else if (registers.length > 0) {
           setCashStatus('closed');
         } else {
           setCashStatus('unknown');
