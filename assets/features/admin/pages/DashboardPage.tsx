@@ -486,7 +486,9 @@ export const DashboardPage = () => {
               </ValueAxis>
               <Tooltip
                 enabled
-                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
+                customizeTooltip={(arg) => ({
+                  text: currencyFormatter('value' in arg ? Number(arg.value) : 0),
+                })}
               />
               <Legend visible={false} />
             </Chart>
@@ -511,7 +513,9 @@ export const DashboardPage = () => {
               </ValueAxis>
               <Tooltip
                 enabled
-                customizeTooltip={(arg) => ({ text: currencyFormatter(arg.value) })}
+                customizeTooltip={(arg) => ({
+                  text: currencyFormatter('value' in arg ? Number(arg.value) : 0),
+                })}
               />
               <Legend visible={false} />
             </Chart>

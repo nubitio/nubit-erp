@@ -78,8 +78,8 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
             position="bottom"
             width={isXSmall ? 'calc(100vw - 20px)' : 'calc(100vw - 32px)'}
             height={isXSmall ? 'calc(100vh - 88px)' : 'calc(100vh - 120px)'}
-            maxWidth={isXSmall ? undefined : 520}
-            maxHeight={isXSmall ? undefined : 650}
+            maxWidth={isXSmall ? undefined : 550}
+            maxHeight={isXSmall ? undefined : 750}
             visible={assistantVisible}
             onHiding={() => setAssistantVisible(false)}
             shading={false}
