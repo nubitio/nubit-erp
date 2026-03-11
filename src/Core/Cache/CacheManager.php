@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Cache;
 
+use App\Core\Context\TenantContext;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
 
@@ -11,6 +12,7 @@ readonly class CacheManager
 {
     public function __construct(
         private CacheItemPoolInterface $cache,
+        private TenantContext $tenantContext,
     ) {
     }
 
@@ -19,7 +21,7 @@ readonly class CacheManager
      */
     public function get(string $key): mixed
     {
-        $item = $this->cache->getItem($key);
+        $item = $this->cache->getItem($this->scopedKey($key));
 
         if (!$item->isHit()) {
             return null;
@@ -33,7 +35,7 @@ readonly class CacheManager
      */
     public function set(string $key, mixed $value, ?int $ttl = null): void
     {
-        $item = $this->cache->getItem($key);
+        $item = $this->cache->getItem($this->scopedKey($key));
         $item->set($value);
 
         if (null !== $ttl) {
@@ -48,7 +50,7 @@ readonly class CacheManager
      */
     public function has(string $key): bool
     {
-        return $this->cache->hasItem($key);
+        return $this->cache->hasItem($this->scopedKey($key));
     }
 
     /**
@@ -56,7 +58,7 @@ readonly class CacheManager
      */
     public function delete(string $key): void
     {
-        $this->cache->deleteItem($key);
+        $this->cache->deleteItem($this->scopedKey($key));
     }
 
     /**
@@ -90,5 +92,20 @@ readonly class CacheManager
     public function forget(string $key): void
     {
         $this->delete($key);
+    }
+
+    /**
+     * Prepend `t.{tenantName}.` to every key when a tenant context is active.
+     * In CLI / control-plane contexts (tenantName is null) the key passes through unchanged.
+     */
+    private function scopedKey(string $key): string
+    {
+        $tenantName = $this->tenantContext->getTenantName();
+
+        if ($tenantName === null) {
+            return $key;
+        }
+
+        return "t.{$tenantName}.{$key}";
     }
 }

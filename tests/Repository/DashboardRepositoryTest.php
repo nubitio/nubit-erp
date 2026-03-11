@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Repository;
 
 use App\Core\Cache\CacheManager;
+use App\Core\Context\TenantContext;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Repository\DashboardRepository;
@@ -33,6 +34,7 @@ final class DashboardRepositoryTest extends TestCase
     private Connection&MockObject $connection;
     private SettingsService&MockObject $settings;
     private CacheManager&MockObject $cache;
+    private TenantContext $tenantContext;
     private DashboardRepository $repository;
 
     protected function setUp(): void
@@ -40,6 +42,10 @@ final class DashboardRepositoryTest extends TestCase
         $this->connection = $this->createMock(Connection::class);
         $this->settings   = $this->createMock(SettingsService::class);
         $this->cache      = $this->createMock(CacheManager::class);
+
+        // Default tenant context: tenantName = 'acme'
+        $this->tenantContext = new TenantContext();
+        $this->tenantContext->setTenant(1, 'acme', 'acme.test', 'req-001');
 
         // By default: no receipt filter requirement
         $this->settings->method('get')
@@ -50,6 +56,7 @@ final class DashboardRepositoryTest extends TestCase
             $this->connection,
             $this->settings,
             $this->cache,
+            $this->tenantContext,
         );
     }
 
@@ -112,7 +119,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->cache->expects(self::once())
             ->method('set')
             ->with(
-                'dashboard_overview_branch-1',
+                'dashboard_overview_acme_branch-1',
                 self::isArray(),
                 120
             );
@@ -148,7 +155,7 @@ final class DashboardRepositoryTest extends TestCase
         $this->cache->expects(self::once())
             ->method('set')
             ->with(
-                'dashboard_lite_branch-2',
+                'dashboard_lite_acme_branch-2',
                 self::isArray(),
                 60
             );
@@ -263,7 +270,7 @@ final class DashboardRepositoryTest extends TestCase
             });
         $this->connection->method('fetchAssociative')->willReturn([]);
 
-        $repo = new DashboardRepository($this->connection, $settings, $this->cache);
+        $repo = new DashboardRepository($this->connection, $settings, $this->cache, $this->tenantContext);
         $repo->getLiteOverview('branch-1');
 
         // At least one SQL should contain the EXISTS subquery

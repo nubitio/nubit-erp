@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Core\Cache\CacheManager;
+use App\Core\Context\TenantContext;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use DateTimeImmutable;
@@ -23,6 +24,7 @@ readonly class DashboardRepository
         private Connection $connection,
         private SettingsService $settings,
         private CacheManager $cache,
+        private TenantContext $tenantContext,
     ) {
     }
 
@@ -31,7 +33,7 @@ readonly class DashboardRepository
      */
     public function getOverview(string $branchId): array
     {
-        $cacheKey = "dashboard_overview_{$branchId}";
+        $cacheKey = $this->overviewKey($branchId);
 
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
@@ -49,7 +51,7 @@ readonly class DashboardRepository
      */
     public function getLiteOverview(string $branchId): array
     {
-        $cacheKey = "dashboard_lite_{$branchId}";
+        $cacheKey = $this->liteKey($branchId);
 
         $cached = $this->cache->get($cacheKey);
         if ($cached !== null) {
@@ -67,8 +69,36 @@ readonly class DashboardRepository
      */
     public function invalidate(string $branchId): void
     {
-        $this->cache->forget("dashboard_overview_{$branchId}");
-        $this->cache->forget("dashboard_lite_{$branchId}");
+        $this->cache->forget($this->overviewKey($branchId));
+        $this->cache->forget($this->liteKey($branchId));
+    }
+
+    /**
+     * Returns the tenant-scoped cache key for the full overview.
+     * Format: dashboard_overview_{tenantName}_{branchId}
+     * When no tenant is active (CLI / control-plane), falls back to the branchId-only form.
+     */
+    private function overviewKey(string $branchId): string
+    {
+        $tenantName = $this->tenantContext->getTenantName();
+
+        return $tenantName !== null
+            ? "dashboard_overview_{$tenantName}_{$branchId}"
+            : "dashboard_overview_{$branchId}";
+    }
+
+    /**
+     * Returns the tenant-scoped cache key for the lite overview.
+     * Format: dashboard_lite_{tenantName}_{branchId}
+     * When no tenant is active (CLI / control-plane), falls back to the branchId-only form.
+     */
+    private function liteKey(string $branchId): string
+    {
+        $tenantName = $this->tenantContext->getTenantName();
+
+        return $tenantName !== null
+            ? "dashboard_lite_{$tenantName}_{$branchId}"
+            : "dashboard_lite_{$branchId}";
     }
 
     // -------------------------------------------------------------------------
