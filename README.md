@@ -17,24 +17,25 @@ git clone https://github.com/CompuExpress/efact.git
 cd efact
 cp .env .env.local
 
-docker compose up -d database redis web vite
+make up
+```
+
+Si es tu primera vez en el proyecto, puedes hacer el setup completo con un solo comando:
+
+```bash
+make bootstrap
 ```
 
 ### 3) Instalar dependencias
 
 ```bash
-docker compose exec -T web composer install --no-interaction --prefer-dist
-docker compose exec -T vite sh -lc "corepack enable && yarn install --immutable"
+make install
 ```
 
 ### 4) Migraciones (obligatorio)
 
 ```bash
-# Control plane (tenants, planes, onboarding, backups)
-docker compose exec -T web php bin/console app:control-plane:migrate --no-interaction
-
-# Tenant DB actual (por defecto usa DATABASE_URL)
-docker compose exec -T web php bin/console app:tenants:migrate --no-interaction
+make migrate
 ```
 
 ### 5) Abrir aplicación
@@ -72,15 +73,38 @@ Opcionales según features:
 ### Frontend (HMR)
 
 ```bash
-docker compose exec -T vite yarn dev
+make dev
 ```
 
 ### Ver logs
 
 ```bash
-docker compose logs -f web
-docker compose logs -f vite
+make logs
 ```
+
+## Comandos rápidos con Make
+
+```bash
+make help          # lista comandos disponibles
+make up            # levanta database, redis, otel-collector, web y vite
+make down          # baja el stack
+make restart       # reinicia contenedores
+make reset         # baja, borra volúmenes y reconstruye entorno dev
+make bootstrap     # up + install + migrate + cache:clear
+make install       # composer install + yarn install
+make migrate       # migraciones control plane + tenant
+make cache-clear   # limpia cache Symfony
+make dev           # levanta Vite dentro de Docker
+make lint          # eslint
+make format        # prettier
+make test          # phpunit + vitest
+make shell-web     # shell en web
+make shell-vite    # shell en vite
+```
+
+Los flujos largos viven en `scripts/dev/bootstrap.sh`, `scripts/dev/reset.sh` y `scripts/dev/migrate.sh`. Así mantienes `Makefile` simple y los procesos reutilizables.
+
+Nota para Podman: el compose desactiva el label confinement (`security_opt: label=disable`) en `web`, `vite` y `e2e` para evitar bloqueos SELinux con bind mounts del proyecto. Los comandos de frontend además se ejecutan como `root` dentro de `vite` para evitar errores de permisos sobre el bind mount.
 
 ## Crear un tenant
 
@@ -139,7 +163,7 @@ También puede ejecutarse vía provisioning (`--setup`) o comando de setup tenan
 ### Backend
 
 ```bash
-docker compose exec -T web ./vendor/bin/phpunit
+make test-back
 ```
 
 ### Backend con cobertura
@@ -151,7 +175,7 @@ docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./ve
 ### Frontend unit
 
 ```bash
-docker compose exec -T vite yarn test
+make test-front
 ```
 
 Umbrales de cobertura (archivos objetivo: `posHelpers.ts`, `offline/api.ts`):
@@ -167,7 +191,7 @@ El type-check TypeScript (`tsc --noEmit`) se ejecuta en CI como paso previo a Vi
 docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:seed-e2e
 
 # Ejecutar e2e
-docker compose exec -T vite yarn test:e2e
+make e2e
 
 # Cleanup
 docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e
@@ -184,23 +208,23 @@ Hay **dos** archivos de spec E2E:
 
 ```bash
 docker compose exec -T web ./vendor/bin/grumphp run --no-interaction
-docker compose exec -T vite yarn lint
+make lint
 ```
 
 ## Docker comandos útiles
 
 ```bash
 # levantar stack
-docker compose up -d
+make up
 
 # bajar stack
-docker compose down
+make down
 
 # bajar stack + volúmenes
-docker compose down -v
+make reset
 
 # entrar a shell web
-docker compose exec web sh
+make shell-web
 ```
 
 ## Deploy

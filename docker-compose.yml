@@ -2,6 +2,8 @@ services:
   web:
     container_name: efact-web
     restart: unless-stopped
+    security_opt:
+      - label=disable
     build:
       context: .
       target: dev
@@ -12,13 +14,13 @@ services:
       - '8443:443'
     volumes:
       - '.:/app'
+      - 'app-var:/app/var'
+      - 'app-public-uploads:/app/public/uploads'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:
       SERVER_NAME: ':80'
       CADDY_GLOBAL_OPTIONS: 'auto_https off'
-      DATABASE_URL: '${DATABASE_URL:-mysql://demo:${MYSQL_PASSWORD:-changeme}@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
-      CONTROL_PLANE_DATABASE_URL: '${CONTROL_PLANE_DATABASE_URL:-mysql://efact:${MYSQL_PASSWORD:-changeme}@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4}'
       QZ_CERT_PATH: '/app/var/qz/qz_cert.pem'
       QZ_PRIVATE_KEY_PATH: '/app/var/qz/qz_private.key'
       QZ_PRIVATE_KEY_PASSPHRASE: '${QZ_PRIVATE_KEY_PASSPHRASE:-changeme}'
@@ -68,6 +70,10 @@ services:
 
   vite:
     image: node:20.19.0
+    security_opt:
+      - label=disable
+    environment:
+      COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
     #command: npm run watch
     working_dir: /home/node/app
     volumes:
@@ -83,14 +89,16 @@ services:
 
   e2e:
     image: mcr.microsoft.com/playwright:v1.58.2-noble
+    security_opt:
+      - label=disable
     working_dir: /home/node/app
     # Bootstrap Corepack (Yarn 4) before every command, then run tests
     entrypoint: ['sh', '/home/node/app/docker/e2e-entrypoint.sh']
     command: ['yarn', 'test:e2e']
     volumes:
       - '.:/home/node/app'
-      - ./var/playwright-report:/home/node/app/playwright-report
-      - ./var/test-results:/home/node/app/test-results
+      - './var/playwright-report:/home/node/app/playwright-report'
+      - './var/test-results:/home/node/app/test-results'
     environment:
       # Suppress Corepack download confirmation prompt
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
@@ -109,6 +117,8 @@ services:
       - e2e
 
 volumes:
+  app-var:
+  app-public-uploads:
   db-data:
 
 configs:
