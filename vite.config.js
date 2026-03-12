@@ -1,4 +1,5 @@
 import { fileURLToPath, URL } from 'node:url';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import symfonyPlugin from 'vite-plugin-symfony';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -34,6 +35,8 @@ export default defineConfig({
       viteDevServerHostname: 'localhost',
     }),
     VitePWA({
+      outDir: 'public',
+      buildBase: '/',
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
@@ -45,13 +48,15 @@ export default defineConfig({
         start_url: '/#/pos',
       },
       workbox: {
+        globPatterns: ['build/**/*.{js,css,woff,woff2,png,ico,svg}'],
         // DevExtreme/vendor chunks can exceed Workbox default precache limit (2 MiB).
         // Keep them precacheable to avoid failing CI image builds.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        // NOTE: Do NOT set navigateFallback here. The app shell is served by
+        // Explicitly disable navigateFallback: the app shell is served by
         // Symfony/PHP (index.php → Twig) — there is no static /index.html.
-        // Using navigateFallback: '/index.html' causes offline reloads to fail
-        // because Workbox looks for a precached '/index.html' that never exists.
+        // Without this, Workbox auto-adds a NavigationRoute for 'index.html'
+        // which throws at runtime because it's never precached.
+        navigateFallback: null,
         runtimeCaching: [
           {
             // Cache the Symfony-rendered HTML shell. NetworkFirst ensures the SW
@@ -112,9 +117,34 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
       },
     }),
+    // vite-plugin-pwa injects manifest.webmanifest into Workbox's additionalManifestEntries
+    // (which runs after manifestTransforms, so it can't be filtered there).
+    // vite-plugin-symfony routes all Vite assets to public/build/, so the manifest is
+    // served at /build/manifest.webmanifest — but the precache entry targets the root-level
+    // /manifest.webmanifest, causing a bad-precaching-response 404 at SW install time.
+    // This plugin strips that entry from the generated sw.js after the fact.
+    {
+      name: 'pwa-strip-manifest-from-precache',
+      apply: 'build',
+      enforce: 'post',
+      closeBundle() {
+        const swPath = new URL('./public/sw.js', import.meta.url).pathname;
+        if (!existsSync(swPath)) return;
+        const before = readFileSync(swPath, 'utf8');
+        // Entry is always appended last: ,{url:"manifest.webmanifest",revision:"<hash>"}
+        const after = before.replace(
+          /,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g,
+          '',
+        );
+        if (before !== after) {
+          writeFileSync(swPath, after, 'utf8');
+          console.log('✓ pwa-strip-manifest-from-precache: removed manifest.webmanifest from sw.js precache list');
+        }
+      },
+    },
   ],
   build: {
     rollupOptions: {
@@ -131,10 +161,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './var/coverage/frontend',
-      include: [
-        'assets/features/pos/pages/posHelpers.ts',
-        'assets/offline/api.ts',
-      ],
+      include: ['assets/features/pos/pages/posHelpers.ts', 'assets/offline/api.ts'],
       thresholds: {
         lines: 85,
         functions: 85,
