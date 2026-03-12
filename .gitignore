@@ -84,3 +84,5 @@ ai/
 # spex state
 .spex/state.db
 .spex/*.db
+.spex/*.db-shm
+.spex/*.db-wal
