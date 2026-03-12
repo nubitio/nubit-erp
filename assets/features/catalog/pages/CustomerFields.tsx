@@ -1,3 +1,4 @@
+import { type RefObject } from 'react';
 import { Constants } from '@platform/common/Constants';
 import { DxFormEvents } from '@platform/form/DxForm';
 import { Field } from '@platform/field/Field';
@@ -9,7 +10,7 @@ import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import notify from 'devextreme/ui/notify';
 
-export const CustomerFields = (formRef: DxFormEvents | null) => {
+export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
   const fields: Field[] = [];
 
   fields.push(
@@ -40,8 +41,8 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (_e: any) => {
-              const doc = formRef?.getFieldValue('ruc');
+            validationCallback: (e: any) => {
+              const doc = e.value;
               if (doc.length === 8) {
                 return true;
               } else {
@@ -61,11 +62,11 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (_e: any) => {
-              const doc = formRef?.getFieldValue('ruc');
+            onClick: (e: any) => {
+              const doc: string = e.component.option('value');
               if (doc.length === 8) {
                 consultService.consultDni(doc).subscribe((response) => {
-                  formRef?.setFieldValue('businessName', response.data.name);
+                  formRef.current?.setFieldValue('businessName', response.data.name);
                 });
               } else if (doc.length === 11) {
                 consultService.consultRuc(doc).subscribe((response) => {
@@ -80,8 +81,8 @@ export const CustomerFields = (formRef: DxFormEvents | null) => {
                     );
                     return;
                   }
-                  formRef?.setFieldValue('businessName', response.data.name);
-                  formRef?.setFieldValue('fiscalAddress', response.data.address);
+                  formRef.current?.setFieldValue('businessName', response.data.name);
+                  formRef.current?.setFieldValue('fiscalAddress', response.data.address);
                 });
               }
             },

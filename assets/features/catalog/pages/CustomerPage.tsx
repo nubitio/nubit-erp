@@ -9,7 +9,7 @@ import { useRef } from 'react';
 export const CustomerPage = () => {
   const formRef = useRef<DxFormEvents | null>(null);
   const container = 'wrapper';
-  const fields = CustomerFields(formRef.current);
+  const fields = CustomerFields(formRef);
 
   return (
     <div id={container}>
@@ -24,12 +24,7 @@ export const CustomerPage = () => {
         events={customerEvents}
       />
       <DxDialog events={customerEvents}>
-        <DxForm
-          ref={formRef}
-          url={customerApiUrl}
-          fields={fields}
-          events={customerEvents}
-        />
+        <DxForm ref={formRef} url={customerApiUrl} fields={fields} events={customerEvents} />
       </DxDialog>
     </div>
   );

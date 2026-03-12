@@ -1,3 +1,4 @@
+import { type RefObject } from 'react';
 import { Field } from '@platform/field/Field';
 import { FieldBuilder } from '@platform/field/FieldBuilder';
 import { FieldType } from '@platform/field/FieldType';
@@ -8,7 +9,7 @@ import { textField } from '@platform/field/TextFieldBuilder';
 import { DxFormEvents } from '@platform/form/DxForm';
 import { consultService } from '@features/consult';
 
-export const CompanyFields = (formRef: DxFormEvents | null) => {
+export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
   const fields: Field[] = [];
 
   fields.push(
@@ -38,8 +39,8 @@ export const CompanyFields = (formRef: DxFormEvents | null) => {
         {
           type: 'custom',
           options: {
-            validationCallback: () => {
-              const doc = formRef?.getFieldValue('ruc');
+            validationCallback: (e: any) => {
+              const doc = e.value;
               return SharedUtils.validateRUC(doc ?? '');
             },
             message: 'El RUC ingresado no es válido',
@@ -54,8 +55,8 @@ export const CompanyFields = (formRef: DxFormEvents | null) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: () => {
-              const doc = formRef?.getFieldValue('ruc');
+            onClick: (e: any) => {
+              const doc: string = e.component.option('value');
               if (!doc || doc.length !== 11) {
                 toast('Ingresa un RUC válido de 11 dígitos', 'warning');
                 return;
@@ -66,9 +67,9 @@ export const CompanyFields = (formRef: DxFormEvents | null) => {
                     toast('El RUC ingresado no se encuentra activo', 'error');
                     return;
                   }
-                  formRef?.setFieldValue('businessName', response.data.name);
-                  formRef?.setFieldValue('tradeName', response.data.name);
-                  formRef?.setFieldValue('fiscalAddress', response.data.address);
+                  formRef.current?.setFieldValue('businessName', response.data.name);
+                  formRef.current?.setFieldValue('tradeName', response.data.name);
+                  formRef.current?.setFieldValue('fiscalAddress', response.data.address);
                 },
                 error: () => toast('No se pudo consultar el RUC', 'error'),
               });

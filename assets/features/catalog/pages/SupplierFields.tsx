@@ -1,3 +1,4 @@
+import { type RefObject } from 'react';
 import {Field} from '@platform/field/Field';
 import {FieldBuilder} from '@platform/field/FieldBuilder';
 import {FieldType} from '@platform/field/FieldType';
@@ -6,7 +7,7 @@ import {textField} from '@platform/field/TextFieldBuilder';
 import {DxFormEvents} from '@platform/form/DxForm';
 import {consultService} from '@features/consult';
 
-export const SupplierFields = (formRef: DxFormEvents | null) => {
+export const SupplierFields = (formRef: RefObject<DxFormEvents | null>) => {
   const fields: Field[] = [];
 
   fields.push(
@@ -36,8 +37,8 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
         {
           type: 'custom',
           options: {
-            validationCallback: (_e: any) => {
-              const doc = formRef?.getFieldValue('ruc');
+            validationCallback: (e: any) => {
+              const doc: string = e.value;
               if (doc.length === 8) {
                 return true;
               } else {
@@ -55,15 +56,15 @@ export const SupplierFields = (formRef: DxFormEvents | null) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: (_e: any) => {
-              const doc = formRef?.getFieldValue('ruc');
+            onClick: (e: any) => {
+              const doc: string = e.component.option('value');
               consultService.consultRuc(doc).subscribe((response) => {
                 if (!response.data.active) {
                   toast('El RUC ingresado no se encuentra activo', 'error');
                   return;
                 }
-                formRef?.setFieldValue('businessName', response.data.name);
-                formRef?.setFieldValue('fiscalAddress', response.data.address);
+                formRef.current?.setFieldValue('businessName', response.data.name);
+                formRef.current?.setFieldValue('fiscalAddress', response.data.address);
               });
             },
           },

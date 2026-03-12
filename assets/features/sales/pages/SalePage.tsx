@@ -5,10 +5,7 @@ import { DxDialog } from '@platform/dialog/DxDialog';
 import { Constants } from '@platform/common/Constants';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useRef, useState } from 'react';
-import {
-  DiscountDialog,
-  DiscountDialogEvent,
-} from '@widgets/discount-dialog/DiscountDialog';
+import { DiscountDialog, DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
 import {
   applySaleAutoInvoiceOnAdd,
   cloneSaleToForm,
@@ -40,7 +37,8 @@ export const SalePage = () => {
   const container = 'wrapper';
   const fields = SaleFields(formRef.current);
   const detailFields = SaleDetailFields(formRef.current);
-  const gridDetailFields = (parentRow: any) => SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
+  const gridDetailFields = (parentRow: any) =>
+    SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
 
   const API_URL = Constants.API_BASE_URL + 'sales';
 
@@ -151,7 +149,7 @@ export const SalePage = () => {
         <DxForm
           ref={customerFormRef}
           url={CustomerPage.API_URL}
-          fields={CustomerFields(customerFormRef.current)}
+          fields={CustomerFields(customerFormRef)}
           events={CustomerPage.EVENTS}
         />
       </DxDialog>

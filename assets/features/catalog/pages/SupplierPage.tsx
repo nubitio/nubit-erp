@@ -10,7 +10,7 @@ import { useRef } from 'react';
 export const SupplierPage = () => {
   const container = 'wrapper';
   const formRef = useRef<DxFormEvents | null>(null);
-  const fields = SupplierFields(formRef.current);
+  const fields = SupplierFields(formRef);
 
   const API_URL = Constants.API_BASE_URL + 'suppliers';
 
