@@ -7,7 +7,7 @@ type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 type UseCreditNoteRelatedDocumentObserverParams = {
   on: OnEventFn;
   apiUrl: string;
-  formRef: RefObject<DxFormEvents>;
+  formRef: RefObject<DxFormEvents | null>;
 };
 
 export const useCreditNoteRelatedDocumentObserver = ({

@@ -7,9 +7,9 @@ import { FileUploader, FileUploaderTypes } from 'devextreme-react/file-uploader'
 export const FormPhotoUploader = () => {
   const [isDropZoneActive, setDropZoneActive] = useState(false);
 
-  const uploaderZone = useRef();
+  const uploaderZone = useRef<HTMLDivElement | null>(null);
 
-  const getUploaderRef = useCallback((element) => {
+  const getUploaderRef = useCallback((element: HTMLDivElement | null) => {
     uploaderZone.current = element;
   }, []);
 
@@ -35,9 +35,9 @@ export const FormPhotoUploader = () => {
       </div>
       <FileUploader
         // eslint-disable-next-line react-hooks/refs -- DevExtreme FileUploader requires DOM ref passed as prop; no alternative API
-        dialogTrigger={uploaderZone.current}
+        dialogTrigger={uploaderZone.current ?? undefined}
         // eslint-disable-next-line react-hooks/refs -- DevExtreme FileUploader requires DOM ref passed as prop; no alternative API
-        dropZone={uploaderZone.current}
+        dropZone={uploaderZone.current ?? undefined}
         multiple={false}
         accept="image/*"
         uploadMode="instantly"

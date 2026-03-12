@@ -24,7 +24,7 @@ export interface UserPanelProps {
 
 export interface UserMenuSectionProps {
   showAvatar?: boolean;
-  listRef?: React.RefObject<ListRef>;
+  listRef?: React.RefObject<ListRef | null>;
 }
 
 export interface User {

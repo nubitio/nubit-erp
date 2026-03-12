@@ -8,7 +8,7 @@ type UseOutboundFormObserversParams = {
   on: OnEventFn;
   apiUrl: string;
   editEventName: string;
-  formRef: RefObject<DxFormEvents>;
+  formRef: RefObject<DxFormEvents | null>;
 };
 
 export const useOutboundFormObservers = ({

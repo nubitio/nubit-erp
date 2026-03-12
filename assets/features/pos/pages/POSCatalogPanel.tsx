@@ -17,7 +17,7 @@ interface POSCatalogPanelProps {
   getItemQuantity: (id: string) => number;
   getEffectiveStock: (item: PosItem) => number | undefined;
   enforceStockCheck: boolean;
-  searchInputRef: React.RefObject<HTMLInputElement>;
+  searchInputRef: React.RefObject<HTMLInputElement | null>;
   usingOfflineCatalog: boolean;
   lastCatalogSyncAt: string | null;
 }

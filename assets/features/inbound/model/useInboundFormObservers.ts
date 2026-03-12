@@ -8,7 +8,7 @@ type UseInboundFormObserversParams = {
   on: OnEventFn;
   apiUrl: string;
   editEventName: string;
-  formRef: RefObject<DxFormEvents>;
+  formRef: RefObject<DxFormEvents | null>;
   onDetailRowsChanged: () => void;
 };
 

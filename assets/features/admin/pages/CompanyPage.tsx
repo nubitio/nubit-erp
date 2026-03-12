@@ -3,7 +3,7 @@ import { Constants } from '@platform/common/Constants';
 import { useEvents } from '@platform/event/EventHook';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, FORM_EVENTS } from '@platform/form/DxForm';
+import { DxForm, DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
 import { companyEvents } from '@features/company';
 import { httpClient } from '@shared/api/HttpClient';
 import { CompanyFields } from './CompanyFields';
@@ -11,8 +11,8 @@ import { useEffect, useRef } from 'react';
 
 export const CompanyPage = () => {
   const container = 'wrapper';
-  const formRef = useRef<any>(null);
-  const fields = CompanyFields(formRef.current);
+  const formRef = useRef<DxFormEvents | null>(null);
+  const fields = CompanyFields(formRef);
   const [on, emit] = useEvents();
 
   const API_URL = Constants.API_BASE_URL + 'companies';
@@ -68,13 +68,7 @@ export const CompanyPage = () => {
         events={companyEvents}
       />
       <DxDialog events={companyEvents}>
-        <DxForm
-          url={API_URL}
-          fields={fields}
-          events={companyEvents}
-          useIRI={true}
-          ref={formRef}
-        />
+        <DxForm url={API_URL} fields={fields} events={companyEvents} useIRI={true} ref={formRef} />
       </DxDialog>
     </div>
   );
