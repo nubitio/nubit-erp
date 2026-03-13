@@ -16,10 +16,10 @@ import { defineConfig, devices } from '@playwright/test';
  *       E2E_BASE_URL=http://localhost:8080 yarn test:e2e --ui
  *
  *  4. View traces / videos after any run:
- *       npx playwright show-report          (opens http://localhost:9323)
+ *       npx playwright show-report var/playwright-report   (opens http://localhost:9323)
  *       # or inside Docker:
  *       docker compose --profile e2e run --rm -p 9323:9323 e2e \
- *         yarn playwright show-report --host 0.0.0.0
+ *         yarn playwright show-report --host 0.0.0.0 var/playwright-report
  *
  * ── Environment variables ──────────────────────────────────────────────────
  *   E2E_BASE_URL    default: http://efact-web  (Docker) | http://localhost:8080 (host)
@@ -47,7 +47,7 @@ export default defineConfig({
   reporter: [
     ['list'],
     // Always write an HTML report so you can open it after the run
-    ['html', { outputFolder: 'playwright-report', open: 'never' }], // mapped to var/playwright-report via Docker bind mount
+    ['html', { outputFolder: 'var/playwright-report', open: 'never' }], // gitignored via /var/
   ],
 
   use: {
@@ -77,7 +77,7 @@ export default defineConfig({
   timeout: 120_000,
 
   // Output folder for traces, videos, screenshots
-  outputDir: 'test-results',
+  outputDir: 'var/test-results',
 
   projects: [
     {

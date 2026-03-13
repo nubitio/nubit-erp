@@ -87,6 +87,3 @@ ai/
 .spex/*.db-shm
 .spex/*.db-wal
 
-# Playwright output written directly to repo root when running inside Docker e2e container
-/playwright-report/
-/test-results/
