@@ -2,6 +2,7 @@ import { Settings } from 'luxon';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { EfactApp } from './EfactApp';
+import { ErrorBoundary } from '@shared/components';
 import './app.scss';
 
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)
@@ -14,8 +15,10 @@ window.addEventListener('load', () => {
 
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
-    //<React.StrictMode>
-    <EfactApp />,
-    //</React.StrictMode>
+    <React.StrictMode>
+      <ErrorBoundary>
+        <EfactApp />
+      </ErrorBoundary>
+    </React.StrictMode>,
   );
 });
