@@ -1,0 +1,211 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}New Admin User{% endblock %}
+{% block nav_admin_users %}active{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('admin_user_index') }}">Admin Users</a></li>
+            <li class="breadcrumb-item active">New</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            {% for message in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-circle me-1"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="h5 mb-4"><i class="bi bi-person-plus me-1"></i> Create Admin User</h2>
+                    <form action="{{ path('admin_user_new') }}" method="post" novalidate id="new-user-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('admin_user') }}">
+
+                        {# ── Username ── #}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username"
+                                   value="{{ username }}" required autocomplete="off"
+                                   pattern="[a-z0-9._\-]{3,64}"
+                                   minlength="3" maxlength="64"
+                                   placeholder="e.g. john.doe"
+                                   aria-describedby="usernameHelp">
+                            <div class="form-text" id="usernameHelp">
+                                3–64 chars: lowercase letters, digits, dots, hyphens, underscores.
+                            </div>
+                        </div>
+
+                        {# ── Password ── #}
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                   required minlength="12" autocomplete="new-password"
+                                   aria-describedby="passwordHelp passwordStrengthText">
+                            <div class="mt-2" id="password-strength-bar" style="display:none;" aria-hidden="true">
+                                <div class="progress">
+                                    <div class="progress-bar" id="strength-bar" role="progressbar"
+                                         style="width:0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                            </div>
+                            <div class="form-text" id="passwordStrengthText"></div>
+                            <div class="form-text" id="passwordHelp">Minimum 12 characters.</div>
+                        </div>
+
+                        {# ── Confirm Password ── #}
+                        <div class="mb-4">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password"
+                                   required minlength="12" autocomplete="new-password"
+                                   aria-describedby="confirmHelp">
+                            <div class="form-text text-danger d-none" id="confirmHelp">Passwords do not match.</div>
+                        </div>
+
+                        {# ── Roles ── #}
+                        <div class="mb-3">
+                            <label class="form-label d-block">Roles</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       name="roles[]" value="ROLE_CP_VIEWER"
+                                       id="role_ROLE_CP_VIEWER"
+                                       {% if 'ROLE_CP_VIEWER' in selected_roles %}checked{% endif %}>
+                                <label class="form-check-label" for="role_ROLE_CP_VIEWER">
+                                    <span class="fw-semibold">ROLE_CP_VIEWER</span>
+                                    <span class="text-muted ms-1 small">— read-only access to audit logs and dashboards</span>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       name="roles[]" value="ROLE_ADMIN"
+                                       id="role_ROLE_ADMIN"
+                                       {% if 'ROLE_ADMIN' in selected_roles %}checked{% endif %}>
+                                <label class="form-check-label" for="role_ROLE_ADMIN">
+                                    <span class="fw-semibold">ROLE_ADMIN</span>
+                                    <span class="text-muted ms-1 small">— manage tenants, plans, and provisioning</span>
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       name="roles[]" value="ROLE_SUPER_ADMIN"
+                                       id="role_ROLE_SUPER_ADMIN"
+                                       {% if 'ROLE_SUPER_ADMIN' in selected_roles %}checked{% endif %}>
+                                <label class="form-check-label" for="role_ROLE_SUPER_ADMIN">
+                                    <span class="fw-semibold text-danger">ROLE_SUPER_ADMIN</span>
+                                    <span class="text-muted ms-1 small">— full access including admin user management</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        {# ── Active status ── #}
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" role="switch"
+                                       id="is_active" name="is_active" value="1" checked>
+                                <label class="form-check-label" for="is_active">Active</label>
+                            </div>
+                            <div class="form-text">Inactive users cannot log in.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="bi bi-check2 me-1"></i> Create User
+                            </button>
+                            <a href="{{ path('admin_user_index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    var pwdInput     = document.getElementById('password');
+    var confirmInput = document.getElementById('confirm_password');
+    var strengthBar  = document.getElementById('strength-bar');
+    var barWrapper   = document.getElementById('password-strength-bar');
+    var strengthText = document.getElementById('passwordStrengthText');
+    var confirmHelp  = document.getElementById('confirmHelp');
+    var form         = document.getElementById('new-user-form');
+
+    function scorePassword(pw) {
+        var score = 0;
+        if (pw.length >= 12) score += 25;
+        if (pw.length >= 16) score += 15;
+        if (/[A-Z]/.test(pw)) score += 15;
+        if (/[0-9]/.test(pw)) score += 15;
+        if (/[^A-Za-z0-9]/.test(pw)) score += 20;
+        if (pw.length >= 20) score += 10;
+        return Math.min(score, 100);
+    }
+
+    function strengthLabel(score) {
+        if (score < 30) return { label: 'Very weak', cls: 'bg-danger' };
+        if (score < 50) return { label: 'Weak',      cls: 'bg-warning' };
+        if (score < 70) return { label: 'Fair',       cls: 'bg-info' };
+        if (score < 90) return { label: 'Strong',     cls: 'bg-primary' };
+        return              { label: 'Very strong', cls: 'bg-success' };
+    }
+
+    if (pwdInput) {
+        pwdInput.addEventListener('input', function () {
+            var pw = pwdInput.value;
+            if (!pw) {
+                barWrapper.style.display = 'none';
+                strengthText.textContent = '';
+                return;
+            }
+            barWrapper.style.display = 'block';
+            var score = scorePassword(pw);
+            var info  = strengthLabel(score);
+            strengthBar.style.width    = score + '%';
+            strengthBar.setAttribute('aria-valuenow', score);
+            strengthBar.className      = 'progress-bar ' + info.cls;
+            strengthText.textContent   = info.label;
+            strengthText.className     = 'form-text ' + (score < 50 ? 'text-danger' : 'text-muted');
+
+            /* Re-check confirm match */
+            checkConfirm();
+        });
+    }
+
+    function checkConfirm() {
+        if (!confirmInput.value) {
+            confirmHelp.classList.add('d-none');
+            confirmInput.setCustomValidity('');
+            return;
+        }
+        if (confirmInput.value !== pwdInput.value) {
+            confirmHelp.classList.remove('d-none');
+            confirmInput.setCustomValidity('Passwords do not match.');
+        } else {
+            confirmHelp.classList.add('d-none');
+            confirmInput.setCustomValidity('');
+        }
+    }
+
+    if (confirmInput) {
+        confirmInput.addEventListener('input', checkConfirm);
+    }
+
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            checkConfirm();
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}
