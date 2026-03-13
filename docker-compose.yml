@@ -97,8 +97,6 @@ services:
     command: ['yarn', 'test:e2e']
     volumes:
       - '.:/home/node/app'
-      - './var/playwright-report:/home/node/app/playwright-report'
-      - './var/test-results:/home/node/app/test-results'
     environment:
       # Suppress Corepack download confirmation prompt
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
