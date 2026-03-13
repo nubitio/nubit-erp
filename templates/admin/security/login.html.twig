@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eFact — Admin Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script nonce="{{ csp_nonce() }}">
+    (function() {
+        var mode = localStorage.getItem('admin-theme') || 'auto';
+        var theme = mode === 'auto'
+            ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : mode;
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+    </script>
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-subtle: rgba(99,102,241,0.12);
+            --card-radius: 12px;
+            --btn-radius: 8px;
+        }
+
+        [data-theme="light"] {
+            --content-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --alert-danger-bg: #fef2f2;
+            --alert-danger-border: #ef4444;
+            --alert-danger-text: #991b1b;
+        }
+
+        [data-theme="dark"] {
+            --content-bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --input-bg: #1e293b;
+            --input-border: #334155;
+            --alert-danger-bg: rgba(239,68,68,0.1);
+            --alert-danger-border: #ef4444;
+            --alert-danger-text: #fca5a5;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--content-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 420px;
+            padding: 1.5rem;
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: var(--accent);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .brand-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 500;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--card-radius);
+            box-shadow: var(--card-shadow);
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .card-header {
+            background: transparent;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .form-control {
+            border-radius: var(--btn-radius);
+            border-color: var(--input-border);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-subtle);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .form-control {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+
+        [data-theme="dark"] .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-label {
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .form-check-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .form-check-input {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+        }
+
+        [data-theme="dark"] .form-check-input:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.625rem 1rem;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .alert {
+            border: none;
+            border-left: 4px solid;
+            border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
+            font-size: 0.875rem;
+        }
+
+        .alert-danger {
+            background: var(--alert-danger-bg);
+            border-left-color: var(--alert-danger-border);
+            color: var(--alert-danger-text);
+        }
+
+        .input-group-text {
+            background-color: var(--input-bg);
+            border-color: var(--input-border);
+            color: var(--text-muted);
+            border-radius: var(--btn-radius) 0 0 var(--btn-radius);
+        }
+
+        .input-group .form-control {
+            border-radius: 0 var(--btn-radius) var(--btn-radius) 0;
+        }
+
+        .theme-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--btn-radius);
+            color: var(--text-secondary);
+            padding: 0.4rem 0.6rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1;
+        }
+
+        .theme-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .divider-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin: 0.25rem 0;
+        }
+
+        @media (max-width: 480px) {
+            .login-wrapper {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+{# ── Theme toggle (fixed top-right) ── #}
+<button class="theme-btn" id="themeToggle" aria-label="Cambiar tema">
+    <i class="bi bi-moon-stars"></i>
+</button>
+
+<div class="login-wrapper">
+
+    {# ── Branding ── #}
+    <a href="#" class="login-brand" tabindex="-1" aria-hidden="true">
+        <div class="brand-icon">
+            <i class="bi bi-receipt"></i>
+        </div>
+        <div>
+            <div class="brand-name">eFact</div>
+            <div class="brand-sub">Admin Panel</div>
+        </div>
+    </a>
+
+    {# ── Login card ── #}
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0 fw-semibold" style="font-size: 1rem;">
+                <i class="bi bi-lock me-2" style="color: var(--accent);"></i>
+                Iniciar sesión
+            </h5>
+        </div>
+        <div class="card-body">
+
+            {# ── Error block ── #}
+            {% if error %}
+                <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                    <span>{{ error.messageKey | trans({}, 'security') }}</span>
+                </div>
+            {% endif %}
+
+            {# ── Login form ── #}
+            <form method="POST" action="{{ path('admin_login') }}" novalidate>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                {# Username #}
+                <div class="mb-3">
+                    <label for="username" class="form-label">Usuario</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-person"></i>
+                        </span>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="form-control"
+                            value="{{ last_username }}"
+                            autocomplete="username"
+                            autofocus
+                            required
+                            aria-label="Nombre de usuario"
+                        >
+                    </div>
+                </div>
+
+                {# Password #}
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-key"></i>
+                        </span>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-control"
+                            autocomplete="current-password"
+                            required
+                            aria-label="Contraseña"
+                        >
+                    </div>
+                </div>
+
+                {# Remember me #}
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="remember_me"
+                            name="_remember_me"
+                            value="1"
+                        >
+                        <label class="form-check-label" for="remember_me">
+                            Recordar sesión (7 días)
+                        </label>
+                    </div>
+                </div>
+
+                {# Submit #}
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>
+                    Iniciar sesión
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <p class="text-center mt-3" style="font-size: 0.75rem; color: var(--text-muted);">
+        eFact Control Plane &mdash; Acceso restringido
+    </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"
+        nonce="{{ csp_nonce() }}"></script>
+<script nonce="{{ csp_nonce() }}">
+(function() {
+    var modes = ['light', 'dark', 'auto'];
+    var modeIcons = { light: 'bi bi-sun', dark: 'bi bi-moon-stars', auto: 'bi bi-circle-half' };
+
+    function getMode() {
+        return localStorage.getItem('admin-theme') || 'auto';
+    }
+
+    function resolveTheme(mode) {
+        if (mode === 'auto') {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        return mode;
+    }
+
+    function applyMode(mode) {
+        localStorage.setItem('admin-theme', mode);
+        document.documentElement.setAttribute('data-theme', resolveTheme(mode));
+        var icon = document.querySelector('#themeToggle i');
+        if (icon) { icon.className = modeIcons[mode]; }
+    }
+
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+        btn.addEventListener('click', function() {
+            var current = getMode();
+            var next = modes[(modes.indexOf(current) + 1) % modes.length];
+            applyMode(next);
+        });
+        var icon = btn.querySelector('i');
+        if (icon) { icon.className = modeIcons[getMode()]; }
+    }
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if (getMode() === 'auto') { applyMode('auto'); }
+    });
+})();
+</script>
+</body>
+</html>
