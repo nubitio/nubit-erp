@@ -20,7 +20,7 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: ['react', '@typescript-eslint'],
+  plugins: ['react', '@typescript-eslint', 'react-hooks'],
   settings: {
     react: {
       version: 'detect',
@@ -31,9 +31,13 @@ module.exports = {
     'react/react-in-jsx-scope': 'off', // Not needed in React 17+
     'react/prop-types': 'off', // Not needed when using TypeScript
 
+    // React Hooks rules
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+
     // TypeScript rules
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off', // The project uses 'any' type in several places
+    '@typescript-eslint/no-explicit-any': 'warn', // Gradually eliminating explicit `any` — see REFAC-001
     '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
     // General rules
@@ -46,14 +50,21 @@ module.exports = {
         patterns: [
           {
             group: ['**/assets/service/*', './service/*', '../service/*', '../../service/*'],
-            message: 'Use `assets/features/*` exports directly; `assets/service/*` is legacy compatibility.',
+            message:
+              'Use `assets/features/*` exports directly; `assets/service/*` is legacy compatibility.',
           },
           {
             group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
-            message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+            message:
+              'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
           },
           {
-            group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
+            group: [
+              '**/assets/core/http/*',
+              './core/http/*',
+              '../core/http/*',
+              '../../core/http/*',
+            ],
             message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
           },
         ],
@@ -70,14 +81,7 @@ module.exports = {
       },
     ],
   },
-  ignorePatterns: [
-    'node_modules/',
-    'public/',
-    'var/',
-    'vendor/',
-    'dist/',
-    '*.min.js',
-  ],
+  ignorePatterns: ['node_modules/', 'public/', 'var/', 'vendor/', 'dist/', '*.min.js'],
   overrides: [
     {
       files: ['assets/shared/**/*.{ts,tsx,js,jsx}'],
@@ -93,11 +97,18 @@ module.exports = {
               },
               {
                 group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
-                message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+                message:
+                  'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
               },
               {
-                group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
-                message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
+                group: [
+                  '**/assets/core/http/*',
+                  './core/http/*',
+                  '../core/http/*',
+                  '../../core/http/*',
+                ],
+                message:
+                  'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
               },
               {
                 group: ['@features/*', '**/features/**'],
@@ -136,11 +147,18 @@ module.exports = {
               },
               {
                 group: ['**/assets/routes/*', './routes/*', '../routes/*', '../../routes/*'],
-                message: 'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
+                message:
+                  'Use feature-owned route modules (`assets/features/*/routes`) or `@app/router/*`.',
               },
               {
-                group: ['**/assets/core/http/*', './core/http/*', '../core/http/*', '../../core/http/*'],
-                message: 'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
+                group: [
+                  '**/assets/core/http/*',
+                  './core/http/*',
+                  '../core/http/*',
+                  '../../core/http/*',
+                ],
+                message:
+                  'Use `assets/shared/api/*`; `assets/core/http/*` is a compatibility layer.',
               },
               {
                 group: ['@pages/*', '../../../pages/**', '../../../../pages/**', '../../pages/**'],
