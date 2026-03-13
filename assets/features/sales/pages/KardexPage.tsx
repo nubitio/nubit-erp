@@ -1,11 +1,11 @@
 import './KardexPage.scss';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 
 import { Item as ToolbarItem, Toolbar } from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
 import ScrollView from 'devextreme-react/scroll-view';
 import DateBox from 'devextreme-react/date-box';
-import { kardexService } from '@features/kardex';
+import LoadIndicator from 'devextreme-react/load-indicator';
 import DataGrid, {
   Column,
   DataGridRef,
@@ -15,35 +15,21 @@ import DataGrid, {
 } from 'devextreme-react/data-grid';
 import { DateUtils } from '@shared/lib/DateUtils';
 import { KardexDetailPage } from './KardexDetailPage';
+import { useKardexQuery } from './useKardexQuery';
 
 export const KardexPage = () => {
   const gridRef = useRef<DataGridRef>(null);
   const [dateFrom, setDateFrom] = useState<Date>(new Date());
   const [dateTo, setDateTo] = useState<Date>(new Date());
-  const [data, setData] = useState<any[]>([]);
 
-  const loadData = useCallback(() => {
-    kardexService
-      .getAll(DateUtils.dateFormatter(dateFrom), DateUtils.dateFormatter(dateTo))
-      .subscribe((response) => {
-        setData(response.data);
-      });
-  }, [dateFrom, dateTo]);
+  const { rows, isLoading, isError, errorMessage, refetch } = useKardexQuery(dateFrom, dateTo);
 
   const renderDetail = useCallback(
-    ({ data }) => {
+    ({ data }: { data: { producto_id: string; [key: string]: unknown } }) => {
       return <KardexDetailPage data={data} dateFrom={dateFrom} dateTo={dateTo} />;
     },
     [dateFrom, dateTo],
   );
-
-  const refresh = useCallback(() => {
-    loadData();
-  }, [loadData]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   return (
     <ScrollView className="view-wrapper-scroll">
@@ -110,21 +96,43 @@ export const KardexPage = () => {
             />
           </ToolbarItem>
           <ToolbarItem location="after" locateInMenu="auto" widget="dxButton" showText="inMenu">
-            <Button text="Refresh" icon="refresh" stylingMode="text" onClick={refresh} />
+            <Button text="Refresh" icon="refresh" stylingMode="text" onClick={refetch} />
           </ToolbarItem>
         </Toolbar>
-        <DataGrid ref={gridRef} dataSource={data} keyExpr={'producto_id'}>
-          <Selection selectAllMode="allPages" showCheckBoxesMode="onClick" mode="single" />
-          <Column dataField={'producto'} caption={'Producto'} />
-          <Column dataField={'saldo'} caption={'Saldo'} alignment={'right'} />
-          <Column dataField={'ingresos'} caption={'Ingresos'} alignment={'right'} />
-          <Column dataField={'salidas'} caption={'Salidas'} alignment={'right'} />
-          <Column dataField={'stock'} caption={'Stock '} alignment={'right'} />
 
-          <FilterRow visible={true} />
+        {isLoading && (
+          <div className="kardex-loading" role="status" aria-label="Cargando Kardex">
+            <LoadIndicator visible={true} height={40} width={40} />
+          </div>
+        )}
 
-          <MasterDetail enabled={true} render={renderDetail} />
-        </DataGrid>
+        {isError && !isLoading && (
+          <div className="kardex-error" role="alert">
+            <span>{errorMessage}</span>
+            <Button text="Reintentar" icon="refresh" stylingMode="outlined" onClick={refetch} />
+          </div>
+        )}
+
+        {!isLoading && !isError && rows.length === 0 && (
+          <div className="kardex-empty" role="status">
+            No hay registros para el rango de fechas seleccionado
+          </div>
+        )}
+
+        {!isLoading && (
+          <DataGrid ref={gridRef} dataSource={rows} keyExpr={'producto_id'}>
+            <Selection selectAllMode="allPages" showCheckBoxesMode="onClick" mode="single" />
+            <Column dataField={'producto'} caption={'Producto'} />
+            <Column dataField={'saldo'} caption={'Saldo'} alignment={'right'} />
+            <Column dataField={'ingresos'} caption={'Ingresos'} alignment={'right'} />
+            <Column dataField={'salidas'} caption={'Salidas'} alignment={'right'} />
+            <Column dataField={'stock'} caption={'Stock '} alignment={'right'} />
+
+            <FilterRow visible={true} />
+
+            <MasterDetail enabled={true} render={renderDetail} />
+          </DataGrid>
+        )}
       </div>
     </ScrollView>
   );
