@@ -7,6 +7,7 @@ namespace App\EInvoicing\Billing\Infrastructure;
 use App\EInvoicing\Billing\Domain\FileRequest;
 use App\EInvoicing\Billing\Domain\NoteRepositoryInterface;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
+use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Model\Sale\Note;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -76,5 +77,35 @@ readonly class NoteRepository implements NoteRepositoryInterface
         ]);
 
         return $response->getContent();
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ServerExceptionInterface
+     * @throws RedirectionExceptionInterface
+     * @throws ClientExceptionInterface
+     * @throws ExceptionInterface
+     */
+    #[Override]
+    public function getStatus(Note $note): StatusCdrResult
+    {
+        $params = [
+            'ruc' => $note->getCompany()?->getRuc(),
+            'tipo' => $note->getTipoDoc(),
+            'serie' => $note->getSerie(),
+            'numero' => $note->getCorrelativo(),
+        ];
+
+        $urlParams = http_build_query($params);
+        $baseUrl = $this->apiBaseUrl . 'note/status?token=' . $this->apiToken;
+        $url = $baseUrl . ('&' . $urlParams);
+
+        $response = $this->httpClient->request('GET', $url);
+
+        $responseBody = $response->getContent();
+        /** @var StatusCdrResult $statusResponse */
+        $statusResponse = $this->serializer->deserialize($responseBody, StatusCdrResult::class, 'json');
+
+        return $statusResponse;
     }
 }

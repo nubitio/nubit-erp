@@ -11,12 +11,14 @@ use App\Core\Exception\ServiceException;
 use App\Core\Security\Auth\BranchContextService;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
+use App\Entity\Sale;
 use App\Repository\BranchRepository;
 use App\Repository\TaxDocumentRepository;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceLineInput;
 use Brick\Math\Exception\MathException;
 use DateTime;
+use Doctrine\ORM\EntityNotFoundException;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -61,12 +63,12 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         if ($isNew && $data->getReasonCode() != null) {
+            $related = $data->getRelatedTaxDocument();
             $data->setDocumentType('07');
-            $data->setSale($data->getRelatedTaxDocument()->getSale());
-            $data->setAffectedDocument($data->getSale()->getInvoice());
-            $data->setCustomer($data->getSale()->getCliente());
-            $data->setTotal($data->getSale()->getTotal());
-            if ($data->getRelatedTaxDocument()?->isVoided()) {
+            $data->setAffectedDocument($related->getFullNumber());
+            $data->setCustomer($related->getCustomer());
+            $data->setTotal($related->getTotal());
+            if ($related->isVoided()) {
                 throw new ServiceException('No se puede generar nota de crédito para un comprobante anulado.');
             }
             $branchId = $this->branchContextService->getCurrentBranchId();
@@ -80,6 +82,14 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             $data->setSeries($seriesResult->series);
             $data->setNumber((string)$number);
             $this->prepareCreditNoteLines($data);
+
+            // Propagate sale reference from related document to new credit note
+            $resolvedSale = $this->resolveLegacySale($related);
+            if ($resolvedSale !== null) {
+                $data->setSale($resolvedSale);
+            } elseif ($related->getSaleRecord() !== null) {
+                $data->setSaleRecord($related->getSaleRecord());
+            }
         }
 
         if ($isNew) {
@@ -104,6 +114,27 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
     }
 
     /**
+     * Attempt to resolve the legacy Sale entity from the related TaxDocument.
+     * Returns null if the Sale row does not exist (v2_authoritative mode).
+     */
+    private function resolveLegacySale(TaxDocument $related): ?Sale
+    {
+        $sale = $related->getSale();
+        if ($sale === null) {
+            return null;
+        }
+
+        try {
+            // Force proxy initialization — if the movimiento row is missing this throws
+            $sale->getCliente();
+
+            return $sale;
+        } catch (EntityNotFoundException) {
+            return null;
+        }
+    }
+
+    /**
      * @throws ServiceException
      * @throws MathException
      */
@@ -114,7 +145,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             throw new ServiceException('Debe seleccionar el comprobante afectado.');
         }
 
-        $sale = $related->getSale();
+        $sale = $this->resolveLegacySale($related);
+
         $requestedLines = [];
         foreach ($data->getLines() as $line) {
             $requestedLines[] = [
@@ -167,9 +199,17 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             throw new ServiceException('Debe seleccionar al menos un ítem para la nota de crédito.');
         }
 
-        $discountPercent = (string)($sale->getDescuento() ?? 0);
-        $taxPercent = (string)($sale->getIgv() ?? 0);
-        $chargesPercent = (string)($sale->getRecargoConsumo() ?? 0);
+        // Source percentages: prefer legacy Sale, fall back to related TaxDocument data
+        if ($sale !== null) {
+            $discountPercent = (string)($sale->getDescuento() ?? 0);
+            $taxPercent = (string)($sale->getIgv() ?? 0);
+            $chargesPercent = (string)($sale->getRecargoConsumo() ?? 0);
+        } else {
+            $discountPercent = $related->getDiscountPercent() ?? '0';
+            $firstLine = $related->getLines()->first();
+            $taxPercent = ($firstLine !== false ? $firstLine->getTaxPercentage() : null) ?? '18';
+            $chargesPercent = '0';
+        }
 
         $lineInputs = array_map(
             static fn (array $item): InvoiceLineInput => new InvoiceLineInput(
@@ -208,27 +248,51 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         $data->setTotal($amounts->getTotal());
-        $saleCurrencyData = $this->taxDocumentRepository->getSalesCurrencyForSaleId($sale->getId());
+
+        // Source currency: prefer related TaxDocument, fall back to sales table lookup
+        if ($sale !== null) {
+            $saleCurrencyData = $this->taxDocumentRepository->getSalesCurrencyForSaleId($sale->getId());
+        } else {
+            $saleId = $related->getCanonicalSaleId();
+            $saleCurrencyData = $this->taxDocumentRepository->getSalesCurrencyForSaleId($saleId);
+        }
         $currency = $related->getCurrency() ?? $saleCurrencyData['currency'] ?? 'PEN';
         $exchangeRate = $related->getExchangeRate() ?? $saleCurrencyData['exchange_rate'];
         if ($currency === 'PEN') {
             $exchangeRate = '1.000000';
         }
+        if ($currency !== 'PEN' && ($exchangeRate === null || $exchangeRate === '')) {
+            throw new ServiceException('No se pudo determinar el tipo de cambio para el documento');
+        }
         $data->setCurrency($currency);
         $data->setExchangeRate($exchangeRate);
-        $data->setPaymentMethod($sale->getFormaPago());
+
+        // Source remaining fields: prefer legacy Sale, fall back to related TaxDocument
+        if ($sale !== null) {
+            $data->setPaymentMethod($sale->getFormaPago());
+            $data->setDiscountPercent($sale->getDescuento() ?? '0');
+            $data->setOperationType($sale->getTipoOperacion());
+            $data->setDetractionCode($sale->getDetraccionCodigo());
+            $data->setDetractionPercent($sale->getDetraccionPorcentaje());
+            $data->setDetractionAmount($sale->getDetraccionMonto());
+            $data->setDetractionPaymentMethod($sale->getDetraccionMedioPago());
+            $data->setDetractionValueRef($sale->getDetraccionValorReferencial());
+        } else {
+            $data->setPaymentMethod($related->getPaymentMethod());
+            $data->setDiscountPercent($related->getDiscountPercent() ?? '0');
+            $data->setOperationType($related->getOperationType());
+            $data->setDetractionCode($related->getDetractionCode());
+            $data->setDetractionPercent($related->getDetractionPercent());
+            $data->setDetractionAmount($related->getDetractionAmount());
+            $data->setDetractionPaymentMethod($related->getDetractionPaymentMethod());
+            $data->setDetractionValueRef($related->getDetractionValueRef());
+        }
+
         $data->setSubtotal($amounts->getSubtotal());
         $data->setTaxableAmount($amounts->getTaxedAmount());
         $data->setIgvAmount($amounts->getTax());
         $data->setRcAmount($amounts->getChargesAmount());
-        $data->setDiscountPercent($sale->getDescuento() ?? '0');
         $data->setDiscountAmount($amounts->getDiscountAmount());
-        $data->setOperationType($sale->getTipoOperacion());
-        $data->setDetractionCode($sale->getDetraccionCodigo());
-        $data->setDetractionPercent($sale->getDetraccionPorcentaje());
-        $data->setDetractionAmount($sale->getDetraccionMonto());
-        $data->setDetractionPaymentMethod($sale->getDetraccionMedioPago());
-        $data->setDetractionValueRef($sale->getDetraccionValorReferencial());
 
         return;
     }

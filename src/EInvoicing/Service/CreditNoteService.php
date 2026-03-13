@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
+use App\EInvoicing\Billing\Domain\NoteConsultUseCase;
 use App\EInvoicing\Billing\Domain\NoteSendUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\Repository\TaxDocumentEventRepository;
 use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
+use App\Core\Service\CompanyContext;
 use App\Core\Util\Constants;
 use App\Entity\TaxDocument;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
+use Greenter\Model\Response\StatusCdrResult;
 use League\Flysystem\FilesystemException;
 
 /**
@@ -24,7 +27,9 @@ readonly class CreditNoteService
     public function __construct(
         private ManagerRegistry $doctrine,
         private NoteSendUseCase $noteSendUseCase,
+        private NoteConsultUseCase $noteConsultUseCase,
         private FileManager $fileManager,
+        private CompanyContext $companyContext,
         private TaxDocumentEventRepository $taxDocumentEventRepository,
     ) {
     }
@@ -84,5 +89,53 @@ readonly class CreditNoteService
         );
 
         return $response;
+    }
+
+    /**
+     * Consulta el estado CDR de una nota (crédito o débito) en SUNAT
+     *
+     * @throws FilesystemException
+     */
+    public function consultCdr(TaxDocument $creditNote): StatusCdrResult
+    {
+        $consultResponse = $this->noteConsultUseCase->__invoke($creditNote->getId());
+
+        if ($consultResponse->isSuccess()) {
+            if ($consultResponse->getCdrResponse()?->isAccepted()) {
+                $sunatStatus = $consultResponse->getCdrResponse()->getCode();
+                $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
+                $cdrZip = $consultResponse->getCdrZip();
+                if (!in_array($cdrZip, [null, '', '0'], true)) {
+                    $decoded = base64_decode($cdrZip);
+                    if ($decoded !== '') {
+                        $companyId = $this->companyContext->getId();
+                        $docFullName = $companyId . '-'
+                            . $creditNote->getDocumentType() . '-'
+                            . $consultResponse->getCdrResponse()->getId();
+                        $this->fileManager->write(
+                            Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
+                            $decoded
+                        );
+                    }
+                }
+            } else {
+                $sunatStatus = $consultResponse->getError()?->getCode();
+                $sunatMessage = $consultResponse->getError()?->getMessage();
+            }
+
+            $creditNote->setSunatStatus($sunatStatus);
+            $creditNote->setSunatMessage($sunatMessage);
+            $creditNote->setUpdatedAt(new \DateTime());
+            $this->doctrine->getManager()->flush();
+
+            $this->taxDocumentEventRepository->recordEvent(
+                taxDocument: $creditNote,
+                eventType: 'sunat_consult',
+                statusCode: $sunatStatus,
+                statusMessage: $sunatMessage,
+            );
+        }
+
+        return $consultResponse;
     }
 }
