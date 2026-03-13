@@ -12,7 +12,7 @@ export const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const formData = useRef({ username: '', password: '' });
   const [showLocalPicker, setShowLocalPicker] = useState(false);
-  const onSubmit = useCallback(async (e) => {
+  const onSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const { username, password } = formData.current;
     setLoading(true);
