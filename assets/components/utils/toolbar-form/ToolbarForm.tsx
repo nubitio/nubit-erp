@@ -2,6 +2,7 @@ import React from 'react';
 
 import Toolbar, { Item } from 'devextreme-react/toolbar';
 import Button from 'devextreme-react/button';
+import type { ClickEvent } from 'devextreme/ui/button';
 
 import './ToolbarForm.scss';
 
@@ -14,7 +15,7 @@ export const ToolbarForm = ({
   editing: boolean;
   toggleEditing: () => void;
   onCancelClick: () => void;
-  onSaveClick: (e) => void;
+  onSaveClick: (e: ClickEvent) => void;
 }) => {
   return (
     <Toolbar className="toolbar-form">

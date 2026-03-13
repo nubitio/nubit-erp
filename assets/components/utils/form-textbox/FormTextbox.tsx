@@ -8,7 +8,7 @@ type TextboxProps = {
   value: string;
   label?: string;
   isEditing: boolean;
-  onValueChange: (data) => void;
+  onValueChange: (data: string) => void;
   mask?: string;
   icon?: string;
 };

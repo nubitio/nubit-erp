@@ -21,11 +21,18 @@ export const UserPanel = ({ menuMode }: UserPanelProps) => {
     width: '200',
   };
 
-  const dropDownButtonContentReady = useCallback(({ component }) => {
-    component.registerKeyHandler('downArrow', () => {
-      listRef.current?.instance().focus();
-    });
-  }, []);
+  const dropDownButtonContentReady = useCallback(
+    ({
+      component,
+    }: {
+      component: { registerKeyHandler: (key: string, handler: () => void) => void };
+    }) => {
+      component.registerKeyHandler('downArrow', () => {
+        listRef.current?.instance().focus();
+      });
+    },
+    [],
+  );
 
   return (
     <div className="user-panel">

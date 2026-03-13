@@ -398,7 +398,7 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
 };
 
 const getSubTotal = (form: DxFormEvents | null) => {
-  const rows = form?.getDetailData() ?? [];
+  const rows: { netAmount?: unknown }[] = form?.getDetailData() ?? [];
   let total = 0;
   rows.forEach((row) => {
     total += Number(row.netAmount);

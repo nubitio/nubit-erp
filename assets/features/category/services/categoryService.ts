@@ -2,8 +2,10 @@ import { httpClient } from '../../../shared/api/HttpClient';
 import { lastValueFrom } from 'rxjs';
 import { Constants } from '../../../core/common/Constants';
 
+type LoadOptions = Record<string, unknown>;
+
 const CategoryService = {
-  getAll: (loadOptions) => {
+  getAll: (loadOptions: LoadOptions) => {
     return lastValueFrom(
       httpClient.get(`${Constants.API_BASE_URL}categories`, { params: loadOptions }),
     ).then((response) => {
@@ -14,13 +16,13 @@ const CategoryService = {
     });
   },
 
-  getOne: (_id) => {},
+  getOne: (_id: unknown) => {},
 
-  create: (_values) => {},
+  create: (_values: unknown) => {},
 
-  update: (_id, _values) => {},
+  update: (_id: unknown, _values: unknown) => {},
 
-  delete: (_id) => {},
+  delete: (_id: unknown) => {},
 };
 
 export default CategoryService;

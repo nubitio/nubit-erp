@@ -5,7 +5,7 @@ import { useScreenSize } from '../../../utils/media-query';
 import './left-side-panel.scss';
 import { ScrollView } from 'devextreme-react';
 
-export const LeftSidePanel = ({ children }) => {
+export const LeftSidePanel = ({ children }: React.PropsWithChildren) => {
   const { isXSmall, isSmall, isMedium, isLarge } = useScreenSize();
   const [isOpened, setIsOpened] = useState(isMedium || isLarge);
 

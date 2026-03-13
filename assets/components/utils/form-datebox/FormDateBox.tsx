@@ -3,7 +3,15 @@ import React from 'react';
 import DateBox from 'devextreme-react/date-box';
 import Validator, { RequiredRule } from 'devextreme-react/validator';
 
-export const FormDateBox = ({ value, readOnly, name, label, onValueChange }) => {
+interface FormDateBoxProps {
+  value: Date | string | null;
+  readOnly?: boolean;
+  name?: string;
+  label?: string;
+  onValueChange: (value: Date | string | number | null) => void;
+}
+
+export const FormDateBox = ({ value, readOnly, name, label, onValueChange }: FormDateBoxProps) => {
   return (
     <DateBox
       value={value}
