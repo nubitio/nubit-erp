@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Subscription } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
+import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { Constants } from '@platform/common/Constants';
-import toast from '@shared/lib/SharedUtils';
 import { DashboardData } from '@features/admin/pages/types';
 
 const initialData: DashboardData = {
@@ -57,6 +56,7 @@ const initialData: DashboardData = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response is untyped at this layer
 const normalize = (payload: any): DashboardData => ({
   summary: { ...initialData.summary, ...(payload?.summary ?? {}) },
   salesByDay: payload?.salesByDay ?? [],
@@ -81,44 +81,32 @@ type DashboardOverviewOptions = {
 };
 
 export const useDashboardOverview = (options?: DashboardOverviewOptions) => {
-  const [data, setData] = useState<DashboardData>(initialData);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const lastSubscription = useRef<Subscription | null>(null);
+  const lite = options?.lite ?? false;
+  const queryString = lite ? '?lite=1&view=mobile' : '';
 
-  const loadDashboard = useCallback(() => {
-    setLoading(true);
-    setError(null);
-    const query = options?.lite ? '?lite=1&view=mobile' : '';
+  const {
+    data,
+    isFetching: loading,
+    error: queryError,
+    refetch,
+  } = useQuery<DashboardData, Error>({
+    queryKey: ['dashboard-overview', lite],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- normalize handles shape validation
+    queryFn: () =>
+      firstValueFrom(
+        httpClient.get<any>(Constants.API_BASE_URL + 'bi/overview' + queryString),
+      ).then((response) => normalize(response.data)),
+    staleTime: 5 * 60 * 1000, // 5 minutes — keeps parity with the old setInterval
+    refetchInterval: 5 * 60 * 1000,
+    placeholderData: initialData,
+  });
 
-    lastSubscription.current?.unsubscribe?.();
-    const subscription = httpClient
-      .get<any>(Constants.API_BASE_URL + 'bi/overview' + query)
-      .subscribe({
-        next: (response) => {
-          setData(normalize(response.data));
-          setLoading(false);
-        },
-        error: (err) => {
-          toast('No se pudo cargar el dashboard', 'error');
-          console.error(err);
-          setError('No se pudo cargar el dashboard');
-          setLoading(false);
-        },
-      });
+  const error = queryError ? (queryError.message ?? 'No se pudo cargar el dashboard') : null;
 
-    lastSubscription.current = subscription;
-  }, [options?.lite]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadDashboard calls setState; initial fetch + periodic refresh pattern
-    loadDashboard();
-    const refresh = setInterval(loadDashboard, 5 * 60 * 1000);
-    return () => {
-      clearInterval(refresh);
-      lastSubscription.current?.unsubscribe?.();
-    };
-  }, [loadDashboard]);
-
-  return { data, loading, error, refetch: loadDashboard };
+  return {
+    data: data ?? initialData,
+    loading,
+    error,
+    refetch: () => void refetch(),
+  };
 };

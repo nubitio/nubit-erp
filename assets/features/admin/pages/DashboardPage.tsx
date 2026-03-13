@@ -1,5 +1,5 @@
 import './DashboardPage.scss';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Chart } from 'devextreme-react';
 import {
   ArgumentAxis,
@@ -16,10 +16,7 @@ import { CardAnalytics } from '@widgets/library/card-analytics/CardAnalytics';
 import ScrollView from 'devextreme-react/scroll-view';
 import { currencyFormatter, decimalFormatter } from '@widgets/dashboard/formatters';
 import { useDashboardOverview } from './hooks/useDashboardOverview';
-import { CashRegisterStatus } from './types';
-import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
-import toast from '@platform/utils/SharedUtils';
+import { useCashRegisters } from './hooks/useCashRegisters';
 import { userInformation } from '@platform/common/UserInformation';
 import { useScreenSize } from '@utils/media-query';
 
@@ -36,33 +33,10 @@ export const DashboardPage = () => {
   const screen = useScreenSize();
   const isMobileDashboard = screen.isXSmall || screen.isSmall;
   const { data, loading, error, refetch } = useDashboardOverview({ lite: isMobileDashboard });
-  const [cashRegisters, setCashRegisters] = useState<CashRegisterStatus[]>([]);
-  const [cashboxLoading, setCashboxLoading] = useState(false);
+  const { cashRegisters, isLoading: cashboxLoading } = useCashRegisters();
   const summary = useMemo(() => data.summary, [data]);
   const purchasesSummary = useMemo(() => data.purchasesSummary, [data]);
   const { currentUserName, currentBranchName } = userInformation();
-
-  const loadCashRegisters = useCallback(() => {
-    setCashboxLoading(true);
-    httpClient
-      .get<CashRegisterStatus[]>(Constants.API_BASE_URL + 'cash-registers/dashboard')
-      .subscribe({
-        next: (response) => {
-          setCashRegisters(response.data ?? []);
-          setCashboxLoading(false);
-        },
-        error: (err) => {
-          console.error(err);
-          toast('No se pudo cargar las cajas', 'error');
-          setCashboxLoading(false);
-        },
-      });
-  }, []);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- loadCashRegisters calls setState; this is data loading on mount
-    loadCashRegisters();
-  }, [loadCashRegisters]);
 
   // ── Derived operational values ──────────────────────────────────────────────
   const openCashCount = cashRegisters.filter((c) => c.status === 'open').length;
