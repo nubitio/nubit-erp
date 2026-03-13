@@ -96,6 +96,14 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         }
         $currencyData = $this->saleCurrencyResolver->resolveForSaleId($saleId);
 
+        // Resolve the V2 sale_id (sales.id) for the FK to the sales table.
+        // Must happen before the dedup check so it can be used in the WHERE clause.
+        $v2SaleId = $connection->fetchOne(
+            'SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1',
+            ['id' => $saleId]
+        );
+        $resolvedV2SaleId = is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null;
+
         $connection->beginTransaction();
         try {
             $voucherType = strlen(
@@ -105,11 +113,13 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             $existingInvoice = $connection->fetchOne(
                 "SELECT tax_document_id
                  FROM tax_document
-                 WHERE movimiento_id = :saleId
+                 WHERE (movimiento_id = :saleId
+                    OR (:v2SaleId IS NOT NULL AND sale_id = :v2SaleId))
                    AND document_type IN (:facturaDocType, :boletaDocType)
                  LIMIT 1 FOR UPDATE",
                 [
                     'saleId' => $saleId,
+                    'v2SaleId' => $resolvedV2SaleId,
                     'facturaDocType' => DocType::FACTURA->value,
                     'boletaDocType' => DocType::BOLETA->value,
                 ]
@@ -158,16 +168,10 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
             $taxDocumentId = (string) $this->connection->fetchOne('SELECT UUID()');
 
-            // Resolve the V2 sale_id (sales.id) for the FK to the sales table.
-            $v2SaleId = $connection->fetchOne(
-                'SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1',
-                ['id' => $saleId]
-            );
-
             $connection->insert('tax_document', [
                 'tax_document_id' => $taxDocumentId,
                 'movimiento_id' => $saleId,
-                'sale_id' => is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null,
+                'sale_id' => $resolvedV2SaleId,
                 'issue_date' => $saleDateUtc->format('Y-m-d H:i:s'),
                 'document_type' => $voucherType,
                 'series' => $series,

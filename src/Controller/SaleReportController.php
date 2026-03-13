@@ -203,7 +203,7 @@ class SaleReportController extends AbstractController
     {
         if ($this->settings->get(Constants::RECEIPT_REQUIRED)) {
             return 'AND EXISTS (SELECT 1 FROM tax_document td '
-                . "WHERE td.movimiento_id = {$salesAlias}.legacy_movimiento_id "
+                . "WHERE (td.movimiento_id = {$salesAlias}.legacy_movimiento_id OR td.sale_id = {$salesAlias}.id) "
                 . "AND td.document_type IN ('01','03'))";
         }
 
@@ -258,7 +258,7 @@ select
         else 'Aceptado'
     end as status
 from sales s
-    left join tax_document i on i.movimiento_id = s.legacy_movimiento_id and i.document_type in ('01', '03')
+    left join tax_document i on (i.movimiento_id = s.legacy_movimiento_id OR i.sale_id = s.id) and i.document_type in ('01', '03')
     left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
     left join cliente c on c.id = s.customer_id
     left join sale_payments sp on sp.sale_id = s.id
@@ -287,7 +287,7 @@ SQL;
     private function accountingSalesSql(): string
     {
         return <<<SQL
-select
+select distinct
     date(i.issue_date) as issue_date,
     coalesce(vt.descripcion, 'Documento') as voucher_type,
     concat(i.series, '-', i.number) as document,
@@ -306,7 +306,7 @@ select
         else 'Observado'
     end as status
 from tax_document i
-    inner join sales s on s.legacy_movimiento_id = i.movimiento_id
+    inner join sales s on (s.legacy_movimiento_id = i.movimiento_id OR s.id = i.sale_id)
     left join cliente c on c.id = i.customer_id
     left join tipo_comprobante vt on vt.codigo = i.document_type
 where
@@ -334,7 +334,7 @@ select
         else 'Aceptado'
     end as status
 from sales s
-    left join tax_document i on i.movimiento_id = s.legacy_movimiento_id and i.document_type in ('01', '03')
+    left join tax_document i on (i.movimiento_id = s.legacy_movimiento_id OR i.sale_id = s.id) and i.document_type in ('01', '03')
     left join cliente c on c.id = s.customer_id
     left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
 where

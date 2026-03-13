@@ -89,6 +89,35 @@ final class VoidedRepositoryTest extends TestCase
         self::assertSame(0, $result);
     }
 
+    public function testGetLastCorrelativeByDateCountsV2NativeSalesWithSaleId(): void
+    {
+        // Simulates a tenant where sales are created natively in V2 (sale_id populated,
+        // legacy_movimiento_id = NULL). The JOIN must cover td.sale_id = s.id path.
+        // The repository query uses a single COUNT that already covers both join arms,
+        // so the test verifies the SQL contains the sale_id join condition.
+        $this->connection->method('fetchOne')
+            ->willReturnCallback(function (string $sql, array $params): mixed {
+                if (str_contains($sql, 'information_schema')) {
+                    return '1'; // table exists
+                }
+                if (str_contains($sql, 'COUNT(*)')) {
+                    // Verify both join arms are present in the query
+                    self::assertStringContainsString('td.sale_id = s.id', $sql);
+                    self::assertStringContainsString('s.legacy_movimiento_id = td.movimiento_id', $sql);
+
+                    return '5'; // 5 voided records (mix of legacy + V2 native)
+                }
+                return false;
+            });
+
+        $httpClient = new MockHttpClient();
+        $repo = $this->makeRepository($httpClient);
+
+        $result = $repo->getLastCorrelativeByDate('2025-06-01');
+
+        self::assertSame(5, $result);
+    }
+
     // -----------------------------------------------------------------------
     // getLastCorrelativeByDate — tableExists returns false (legacy fallback)
     // -----------------------------------------------------------------------

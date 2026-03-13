@@ -44,7 +44,11 @@ readonly class VoidedRepository implements VoidedRepositoryInterface
                 <<<'SQL'
 SELECT COUNT(*) AS correlative
 FROM tax_document td
-INNER JOIN sales s ON s.legacy_movimiento_id = td.movimiento_id
+INNER JOIN sales s ON (
+    (s.legacy_movimiento_id IS NOT NULL AND s.legacy_movimiento_id = td.movimiento_id)
+    OR
+    (td.sale_id IS NOT NULL AND td.sale_id = s.id)
+)
 WHERE td.document_type IN ('01', '03')
   AND s.status = 'VOIDED'
   AND DATE(CONVERT_TZ(td.issue_date, 'UTC', 'America/Lima')) = :date_value

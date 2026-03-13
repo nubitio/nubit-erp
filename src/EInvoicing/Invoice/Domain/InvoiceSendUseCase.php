@@ -47,7 +47,7 @@ readonly class InvoiceSendUseCase
                 throw new ServiceException('Invoice not found');
             }
 
-            $saleId = (string)$taxDocument->getSale()->getId();
+            $saleId = (string)($taxDocument->getCanonicalSaleId() ?? '');
             $response = $this->billSendUseCase->__invoke($taxDocumentId);
             $docDir = Constants::INVOICE_DIR . '/' . $response->name;
             $this->fileManager->write(
