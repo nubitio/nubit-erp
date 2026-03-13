@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { EfactApp } from './EfactApp';
 import { ErrorBoundary } from '@shared/components';
+import './i18n';
 import './app.scss';
 
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)

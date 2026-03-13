@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Popup, ToolbarItem } from 'devextreme-react/popup';
 import { Button } from 'devextreme-react/button';
+import { useTranslation } from 'react-i18next';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -19,10 +20,13 @@ export function ConfirmDialog({
   message,
   onConfirm,
   onCancel,
-  confirmLabel = 'Confirmar',
-  cancelLabel = 'Cancelar',
+  confirmLabel,
+  cancelLabel,
   variant = 'warning',
 }: ConfirmDialogProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t('common.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
   const cancelBtnRef = useRef<HTMLButtonElement | null>(null);
 
   // Move focus to the Cancel button when the dialog opens (safer default)
@@ -68,16 +72,16 @@ export function ConfirmDialog({
           type="button"
           className="dx-button dx-button-normal dx-button-mode-outlined"
           onClick={onCancel}
-          aria-label={cancelLabel}
+          aria-label={resolvedCancelLabel}
           style={{ minWidth: 100 }}
         >
-          <span className="dx-button-text">{cancelLabel}</span>
+          <span className="dx-button-text">{resolvedCancelLabel}</span>
         </button>
       </ToolbarItem>
 
       <ToolbarItem toolbar="bottom" location="after">
         <Button
-          text={confirmLabel}
+          text={resolvedConfirmLabel}
           type={confirmType}
           stylingMode="contained"
           onClick={onConfirm}

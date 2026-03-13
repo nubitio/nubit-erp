@@ -11,7 +11,10 @@ export default defineConfig({
     alias: {
       '@app': fileURLToPath(new URL('./assets/app', import.meta.url)),
       '@shared': fileURLToPath(new URL('./assets/shared', import.meta.url)),
+      // TODO REFAC-002: rename @platform -> @core (259 active imports)
       '@platform': fileURLToPath(new URL('./assets/core', import.meta.url)),
+      // Preferred alias for new code — points to the same directory as @platform
+      '@core': fileURLToPath(new URL('./assets/core', import.meta.url)),
       '@features': fileURLToPath(new URL('./assets/features', import.meta.url)),
       '@widgets': fileURLToPath(new URL('./assets/components', import.meta.url)),
       '@layouts': fileURLToPath(new URL('./assets/layouts', import.meta.url)),
@@ -135,13 +138,12 @@ export default defineConfig({
         if (!existsSync(swPath)) return;
         const before = readFileSync(swPath, 'utf8');
         // Entry is always appended last: ,{url:"manifest.webmanifest",revision:"<hash>"}
-        const after = before.replace(
-          /,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g,
-          '',
-        );
+        const after = before.replace(/,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g, '');
         if (before !== after) {
           writeFileSync(swPath, after, 'utf8');
-          console.log('✓ pwa-strip-manifest-from-precache: removed manifest.webmanifest from sw.js precache list');
+          console.log(
+            '✓ pwa-strip-manifest-from-precache: removed manifest.webmanifest from sw.js precache list',
+          );
         }
       },
     },

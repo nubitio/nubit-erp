@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { LayoutGrid, ShoppingCart } from 'lucide-react';
 import './POSPage.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -279,7 +278,7 @@ const POSPage = () => {
           className={`pos-mobile-tabs__btn${activePanel === 'catalog' ? ' is-active' : ''}`}
           onClick={() => setActivePanel('catalog')}
         >
-          <LayoutGrid size={16} />
+          <i className="ph ph-grid-four" aria-hidden="true" />
           <span>Productos</span>
         </button>
         <button
@@ -289,7 +288,7 @@ const POSPage = () => {
           className={`pos-mobile-tabs__btn${activePanel === 'cart' ? ' is-active' : ''}`}
           onClick={() => setActivePanel('cart')}
         >
-          <ShoppingCart size={16} />
+          <i className="ph ph-shopping-cart" aria-hidden="true" />
           <span>Carrito</span>
           {cartItemsCount > 0 && <span className="pos-mobile-tabs__badge">{cartItemsCount}</span>}
         </button>
