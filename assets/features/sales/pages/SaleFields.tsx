@@ -17,7 +17,7 @@ import { Setting, settings } from '@assets/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import notify from 'devextreme/ui/notify';
 import { lastValueFrom } from 'rxjs';
-import { CustomerPage } from '@features/catalog/pages/CustomerPage';
+import { CustomerPage } from '@features/catalog/pages/customers';
 
 let priceList: PriceListItemDto[] = [];
 let selectedWarehouseId = '';
@@ -233,7 +233,9 @@ export const SaleFields = (form: DxFormEvents | null) => {
       .name('grandTotal')
       .label('Total')
       .align('right')
-      .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'))
+      .formatter((cell: ColumnCellTemplateData) =>
+        NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
+      )
       .disabled(true)
       .sendAsString(true)
       .build(),
