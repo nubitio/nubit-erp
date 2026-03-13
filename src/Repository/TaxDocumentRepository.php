@@ -297,8 +297,13 @@ SQL,
             throw new ServiceException('La nota de crédito no existe');
         }
 
-        $saleRef = $creditNote->getSale();
-        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($saleRef->getId());
+        $rawSaleId = $creditNote->getCanonicalSaleId();
+
+        if ($rawSaleId === null) {
+            throw new ServiceException('La nota no tiene una venta asociada');
+        }
+
+        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($rawSaleId);
         $sale = $this->loadSaleGraph($resolvedSaleId);
         if (!$sale) {
             throw new ServiceException('La venta asociada no existe');

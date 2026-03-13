@@ -45,12 +45,40 @@ export const runSendCreditNoteToSunatAction = (deps: ActionDeps) => {
   });
 };
 
-export const runOpenCreditNoteReceiptAction = (deps: Pick<ActionDeps, 'getSelectedRow' | 'notify'>) => {
+export const runOpenCreditNoteReceiptAction = (
+  deps: Pick<ActionDeps, 'getSelectedRow' | 'notify'>,
+) => {
   withSelectedRow(deps, 'Debe seleccionar una nota', (selectedRow) => {
     if (!selectedRow.publicReceiptUrl) {
       deps.notify('La nota no tiene URL pública disponible', 'warning');
       return;
     }
     window.open(selectedRow.publicReceiptUrl, '_blank');
+  });
+};
+
+export const runConsultCreditNoteCdrAction = (deps: ActionDeps) => {
+  withSelectedRow(deps, 'Debe seleccionar una nota', (selectedRow) => {
+    deps.showLoading('Consultando CDR...');
+    taxDocumentService
+      .consultDocument(selectedRow.id)
+      .subscribe((response) => {
+        deps.notify(response.data.message, response.data.success ? 'success' : 'error');
+        deps.refreshGrid();
+      })
+      .add(() => deps.hideLoading());
+  });
+};
+
+export const runConsultCreditNoteCpeAction = (deps: ActionDeps) => {
+  withSelectedRow(deps, 'Debe seleccionar una nota', (selectedRow) => {
+    deps.showLoading('Consultando CPE...');
+    taxDocumentService
+      .validateDocument(selectedRow.id)
+      .subscribe((response) => {
+        deps.notify(response.data.message, response.data.success ? 'success' : 'error');
+        deps.refreshGrid();
+      })
+      .add(() => deps.hideLoading());
   });
 };

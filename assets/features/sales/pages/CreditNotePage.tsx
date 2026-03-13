@@ -12,6 +12,8 @@ import {
   creditNoteEvents,
   runOpenCreditNoteReceiptAction,
   runSendCreditNoteToSunatAction,
+  runConsultCreditNoteCdrAction,
+  runConsultCreditNoteCpeAction,
   useCreditNoteRelatedDocumentObserver,
   useCreditNoteSelectionState,
 } from '@features/creditNote';
@@ -34,13 +36,16 @@ export const CreditNotePage = () => {
     showLoading: (message?: string) => gridRef.current?.showLoading(message),
     hideLoading: () => gridRef.current?.hideLoading(),
     refreshGrid: () => gridRef.current?.refresh(),
-    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => toast(message, type),
+    notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') =>
+      toast(message, type),
   };
 
   const toolbar = createCreditNoteToolbar({
     onSendSunat: () => runSendCreditNoteToSunatAction(actionDeps),
     onSendEmail: () => toast('Funcionalidad no implementada', 'warning'),
     onView: () => runOpenCreditNoteReceiptAction(actionDeps),
+    onConsultCdr: () => runConsultCreditNoteCdrAction(actionDeps),
+    onConsultCpe: () => runConsultCreditNoteCpeAction(actionDeps),
   });
 
   return (

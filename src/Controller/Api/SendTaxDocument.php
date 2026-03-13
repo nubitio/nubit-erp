@@ -37,7 +37,7 @@ class SendTaxDocument extends AbstractController
         }
 
         try {
-            if ($taxDocument->getDocumentType() === '07') {
+            if (in_array($taxDocument->getDocumentType(), ['07', '08'], true)) {
                 $result = $this->creditNoteService->sendToSunat($taxDocument);
             } else {
                 $result = $this->invoiceSendUseCase->__invoke($id);
