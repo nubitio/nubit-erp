@@ -3,7 +3,12 @@ import { DropDownButton } from 'devextreme-react/drop-down-button';
 
 import './CardMenu.scss';
 
-export const CardMenu = ({ items, visible = true }) => {
+interface CardMenuProps {
+  items: unknown[];
+  visible?: boolean;
+}
+
+export const CardMenu = ({ items, visible = true }: CardMenuProps) => {
   return (
     <DropDownButton
       className="overflow-menu"

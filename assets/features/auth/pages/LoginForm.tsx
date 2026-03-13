@@ -58,7 +58,7 @@ export const LoginForm = () => {
   }, []);
 
   const onSubmit = useCallback(
-    async (e) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (loading) {
         return;
