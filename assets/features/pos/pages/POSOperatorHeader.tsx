@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, HelpCircle, Maximize2, Minimize2, Package, Store, User } from 'lucide-react';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
+import { ConfirmDialog } from '@shared/components';
 
 interface POSOperatorHeaderProps {
   branchName: string;
@@ -44,6 +45,11 @@ export function POSOperatorHeader({
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
+  // ── Confirm dialogs state ──────────────────────────────────────────────────
+  const [warehouseConfirmOpen, setWarehouseConfirmOpen] = useState(false);
+  const pendingWarehouseIdRef = useRef<string | null>(null);
+  const [closeCajaConfirmOpen, setCloseCajaConfirmOpen] = useState(false);
+
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', handler);
@@ -60,7 +66,9 @@ export function POSOperatorHeader({
 
   function handleWarehouseChange(newId: string) {
     if (hasCartItems && newId !== selectedWarehouseId) {
-      if (!window.confirm('Cambiar de almacén vaciará el carrito. ¿Continuar?')) return;
+      pendingWarehouseIdRef.current = newId;
+      setWarehouseConfirmOpen(true);
+      return;
     }
     setSelectedWarehouseId(newId);
   }
@@ -94,7 +102,10 @@ export function POSOperatorHeader({
           <span>{cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
           {cajaAbierta && cajaOpenedAt && (
             <span className="pos-caja-badge__time">
-              {new Date(cajaOpenedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(cajaOpenedAt).toLocaleTimeString('es', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </span>
           )}
         </div>
@@ -157,7 +168,8 @@ export function POSOperatorHeader({
             className="pos-caja-action-btn is-close"
             onClick={() => {
               if (cartItemsCount > 0) {
-                if (!window.confirm('Hay productos en el carrito. ¿Cerrar caja igualmente?')) return;
+                setCloseCajaConfirmOpen(true);
+                return;
               }
               setCajaAbierta(false);
             }}
@@ -191,7 +203,10 @@ export function POSOperatorHeader({
         <button
           type="button"
           className="pos-shortcuts-btn"
-          onClick={(e) => { e.stopPropagation(); setShowShortcuts(true); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowShortcuts(true);
+          }}
           aria-label="Atajos de teclado"
           title="Atajos de teclado"
         >
@@ -206,7 +221,9 @@ export function POSOperatorHeader({
           role="dialog"
           aria-modal="true"
           aria-label="Atajos de teclado"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowShortcuts(false); }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowShortcuts(false);
+          }}
         >
           <div className="pos-shortcuts-modal">
             <div className="pos-shortcuts-modal__header">
@@ -221,13 +238,15 @@ export function POSOperatorHeader({
               </button>
             </div>
             <ul className="pos-shortcuts-list">
-              {([
-                ['F2', 'Enfocar buscador de productos'],
-                ['F3', 'Seleccionar cliente'],
-                ['Enter', 'Cobrar (cuando el carrito tiene items)'],
-                ['Esc', 'Cancelar venta y vaciar carrito'],
-                ['Scanner → Enter', 'Añadir producto por código de barras'],
-              ] as [string, string][]).map(([key, desc]) => (
+              {(
+                [
+                  ['F2', 'Enfocar buscador de productos'],
+                  ['F3', 'Seleccionar cliente'],
+                  ['Enter', 'Cobrar (cuando el carrito tiene items)'],
+                  ['Esc', 'Cancelar venta y vaciar carrito'],
+                  ['Scanner → Enter', 'Añadir producto por código de barras'],
+                ] as [string, string][]
+              ).map(([key, desc]) => (
                 <li key={key} className="pos-shortcuts-list__item">
                   <kbd className="pos-shortcuts-list__key">{key}</kbd>
                   <span>{desc}</span>
@@ -237,6 +256,42 @@ export function POSOperatorHeader({
           </div>
         </div>
       )}
+
+      {/* ── Warehouse change confirmation ── */}
+      <ConfirmDialog
+        open={warehouseConfirmOpen}
+        title="Cambiar almacén"
+        message="Cambiar de almacén vaciará el carrito. ¿Continuar?"
+        confirmLabel="Continuar"
+        cancelLabel="Cancelar"
+        variant="warning"
+        onConfirm={() => {
+          setWarehouseConfirmOpen(false);
+          if (pendingWarehouseIdRef.current !== null) {
+            setSelectedWarehouseId(pendingWarehouseIdRef.current);
+            pendingWarehouseIdRef.current = null;
+          }
+        }}
+        onCancel={() => {
+          setWarehouseConfirmOpen(false);
+          pendingWarehouseIdRef.current = null;
+        }}
+      />
+
+      {/* ── Close caja confirmation ── */}
+      <ConfirmDialog
+        open={closeCajaConfirmOpen}
+        title="Cerrar caja"
+        message="Hay productos en el carrito. ¿Cerrar caja igualmente?"
+        confirmLabel="Cerrar caja"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          setCloseCajaConfirmOpen(false);
+          setCajaAbierta(false);
+        }}
+        onCancel={() => setCloseCajaConfirmOpen(false)}
+      />
     </header>
   );
 }

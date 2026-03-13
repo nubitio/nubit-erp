@@ -16,6 +16,7 @@ import { usePosCatalogData } from './usePosCatalogData';
 import { isCashPaymentMethod, normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
+import { ConfirmDialog } from '@shared/components';
 
 type QzInvoicePrinter = ReturnType<typeof createQzInvoicePrinter>;
 
@@ -35,6 +36,7 @@ const POSPage = () => {
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
+  const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
 
   const qzInvoicePrinterRef = useRef<QzInvoicePrinter>(createQzInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -235,9 +237,7 @@ const POSPage = () => {
       // Esc → clear cart with confirmation
       if (e.key === 'Escape' && !isInput) {
         if (cart.length > 0) {
-          if (window.confirm('¿Cancelar la venta y vaciar el carrito?')) {
-            clearCart();
-          }
+          setConfirmClearCartOpen(true);
         }
       }
     }
@@ -375,6 +375,21 @@ const POSPage = () => {
         onRetrySale={(saleId) => {
           void retrySale(saleId);
         }}
+      />
+
+      {/* ── Clear cart confirmation (triggered by Esc key) ── */}
+      <ConfirmDialog
+        open={confirmClearCartOpen}
+        title="Cancelar venta"
+        message="¿Cancelar la venta y vaciar el carrito?"
+        confirmLabel="Vaciar carrito"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          setConfirmClearCartOpen(false);
+          clearCart();
+        }}
+        onCancel={() => setConfirmClearCartOpen(false)}
       />
     </div>
   );
