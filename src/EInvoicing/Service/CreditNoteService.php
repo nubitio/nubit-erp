@@ -65,12 +65,20 @@ readonly class CreditNoteService
             $creditNote->setSunatMessage($response->sunatResponse->getCdrResponse()?->getDescription() ?? '');
 
             // Save CDR (Constancia de Recepción)
-            if (!in_array($response->sunatResponse->getCdrZip(), [null, '', '0'], true)) {
-                $cdr = base64_decode($response->sunatResponse->getCdrZip());
+            $cdrZipOnSend = $response->sunatResponse->getCdrZip();
+            if (!in_array($cdrZipOnSend, [null, '', '0'], true)) {
+                $cdr = base64_decode($cdrZipOnSend);
                 $this->fileManager->write(
                     $docDir . '/R-' . $response->name . '.zip',
                     $cdr
                 );
+            } else {
+                // SUNAT did not return the CDR zip inline — attempt to fetch it via consult
+                try {
+                    $this->consultCdr($creditNote);
+                } catch (\Throwable) {
+                    // Consult failure must not abort the send transaction
+                }
             }
         } else {
             $creditNote->setSunatStatus($response->sunatResponse->getError()?->getCode() ?? '');
@@ -104,23 +112,24 @@ readonly class CreditNoteService
             if ($consultResponse->getCdrResponse()?->isAccepted()) {
                 $sunatStatus = $consultResponse->getCdrResponse()->getCode();
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
-                $cdrZip = $consultResponse->getCdrZip();
-                if (!in_array($cdrZip, [null, '', '0'], true)) {
-                    $decoded = base64_decode($cdrZip);
-                    if ($decoded !== '') {
-                        $companyId = $this->companyContext->getId();
-                        $docFullName = $companyId . '-'
-                            . $creditNote->getDocumentType() . '-'
-                            . $consultResponse->getCdrResponse()->getId();
-                        $this->fileManager->write(
-                            Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
-                            $decoded
-                        );
-                    }
-                }
             } else {
                 $sunatStatus = $consultResponse->getError()?->getCode();
                 $sunatMessage = $consultResponse->getError()?->getMessage();
+            }
+
+            $cdrZip = $consultResponse->getCdrZip();
+            if (!in_array($cdrZip, [null, '', '0'], true)) {
+                $decoded = base64_decode($cdrZip);
+                if ($decoded !== '') {
+                    $companyId = $this->companyContext->getId();
+                    $docFullName = $companyId . '-'
+                        . $creditNote->getDocumentType() . '-'
+                        . $consultResponse->getCdrResponse()->getId();
+                    $this->fileManager->write(
+                        Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
+                        $decoded
+                    );
+                }
             }
 
             $creditNote->setSunatStatus($sunatStatus);

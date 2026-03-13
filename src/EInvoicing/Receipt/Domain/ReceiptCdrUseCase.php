@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Receipt\Domain;
 
 use App\EInvoicing\Billing\Domain\FileResponse;
+use App\Core\Exception\ServiceException;
 use App\Core\Filesystem\FileManager;
 use App\Core\Util\Constants;
 use App\Core\Service\CompanyContext;
@@ -50,6 +51,7 @@ readonly class ReceiptCdrUseCase
 
     /**
      * @throws FilesystemException
+     * @throws ServiceException
      */
     public function getCdrForNote(string $id): FileResponse
     {
@@ -58,9 +60,16 @@ readonly class ReceiptCdrUseCase
 
         $docName = $note->getFullNumber();
         $docFullName = $companyId . '-' . $note->getDocumentType() . '-' . $docName;
+        $cdrPath = Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip';
+
+        if (!$this->fileManager->exists($cdrPath)) {
+            throw new ServiceException(
+                'CDR no disponible. Use Consulta CDR para sincronizar el estado con SUNAT.'
+            );
+        }
 
         return new FileResponse(
-            $this->fileManager->read(Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip'),
+            $this->fileManager->read($cdrPath),
             'R-' . $docFullName . '.zip'
         );
     }
