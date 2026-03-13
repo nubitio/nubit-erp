@@ -1,7 +1,7 @@
 import { Field } from '@platform/field/Field';
 import { FieldBuilder } from '@platform/field/FieldBuilder';
 import { FieldType } from '@platform/field/FieldType';
-import { SharedUtils } from '@platform/utils/SharedUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { Constants } from '@platform/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
