@@ -92,7 +92,7 @@ readonly class CreditNoteService
     }
 
     /**
-     * Consult CDR status for a credit note
+     * Consulta el estado CDR de una nota (crédito o débito) en SUNAT
      *
      * @throws FilesystemException
      */
@@ -104,15 +104,20 @@ readonly class CreditNoteService
             if ($consultResponse->getCdrResponse()?->isAccepted()) {
                 $sunatStatus = $consultResponse->getCdrResponse()->getCode();
                 $sunatMessage = $consultResponse->getCdrResponse()->getDescription();
-                $cdr = base64_decode($consultResponse->getCdrZip() ?: '');
-                $companyId = $this->companyContext->getId();
-                $docFullName = $companyId . '-'
-                    . $creditNote->getDocumentType() . '-'
-                    . $consultResponse->getCdrResponse()->getId();
-                $this->fileManager->write(
-                    Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
-                    $cdr
-                );
+                $cdrZip = $consultResponse->getCdrZip();
+                if (!in_array($cdrZip, [null, '', '0'], true)) {
+                    $decoded = base64_decode($cdrZip);
+                    if ($decoded !== '') {
+                        $companyId = $this->companyContext->getId();
+                        $docFullName = $companyId . '-'
+                            . $creditNote->getDocumentType() . '-'
+                            . $consultResponse->getCdrResponse()->getId();
+                        $this->fileManager->write(
+                            Constants::INVOICE_DIR . '/' . $docFullName . '/R-' . $docFullName . '.zip',
+                            $decoded
+                        );
+                    }
+                }
             } else {
                 $sunatStatus = $consultResponse->getError()?->getCode();
                 $sunatMessage = $consultResponse->getError()?->getMessage();

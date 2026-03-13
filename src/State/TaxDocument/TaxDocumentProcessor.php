@@ -261,6 +261,9 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         if ($currency === 'PEN') {
             $exchangeRate = '1.000000';
         }
+        if ($currency !== 'PEN' && ($exchangeRate === null || $exchangeRate === '')) {
+            throw new ServiceException('No se pudo determinar el tipo de cambio para el documento');
+        }
         $data->setCurrency($currency);
         $data->setExchangeRate($exchangeRate);
 

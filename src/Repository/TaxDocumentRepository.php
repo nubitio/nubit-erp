@@ -300,7 +300,7 @@ SQL,
         $rawSaleId = $creditNote->getCanonicalSaleId();
 
         if ($rawSaleId === null) {
-            throw new ServiceException('La nota de crédito no tiene una venta asociada (movimiento_id y sale_id son ambos nulos)');
+            throw new ServiceException('La nota no tiene una venta asociada');
         }
 
         $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($rawSaleId);
