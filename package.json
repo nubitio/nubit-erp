@@ -71,6 +71,7 @@
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
     "jwt-decode": "^4.0.0",
+    "luxon": "^3",
     "marked": "^17.0.4",
     "openai": "^6.27.0",
     "postcss": "^8.5.8",

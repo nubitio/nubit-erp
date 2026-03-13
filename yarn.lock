@@ -4432,6 +4432,7 @@ __metadata:
     jspdf: "npm:^4.2.0"
     jspdf-autotable: "npm:^5.0.7"
     jwt-decode: "npm:^4.0.0"
+    luxon: "npm:^3"
     marked: "npm:^17.0.4"
     openai: "npm:^6.27.0"
     postcss: "npm:^8.5.8"
@@ -6937,6 +6938,13 @@ __metadata:
   dependencies:
     yallist: "npm:^3.0.2"
   checksum: 10c0/89b2ef2ef45f543011e38737b8a8622a2f8998cddf0e5437174ef8f1f70a8b9d14a918ab3e232cb3ba343b7abddffa667f0b59075b2b80e6b4d63c3de6127482
+  languageName: node
+  linkType: hard
+
+"luxon@npm:^3":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
   languageName: node
   linkType: hard
 
