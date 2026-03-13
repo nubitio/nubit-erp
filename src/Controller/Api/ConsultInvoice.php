@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Api;
 
+use App\Core\Exception\ServiceException;
 use App\Core\Http\ApiResponse;
 use App\EInvoicing\Invoice\Domain\InvoiceConsultUseCase;
+use App\EInvoicing\Service\CreditNoteService;
+use App\Repository\TaxDocumentRepository;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -16,14 +19,27 @@ class ConsultInvoice extends AbstractController
 {
     public function __construct(
         private readonly InvoiceConsultUseCase $invoiceConsultUseCase,
+        private readonly CreditNoteService $creditNoteService,
+        private readonly TaxDocumentRepository $taxDocumentRepository,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
         $id = $request->get('id');
+
+        $taxDocument = $this->taxDocumentRepository->find($id);
+
+        if (!$taxDocument) {
+            throw new ServiceException('Documento no encontrado');
+        }
+
         try {
-            $result = $this->invoiceConsultUseCase->__invoke($id);
+            if (in_array($taxDocument->getDocumentType(), ['07', '08'], true)) {
+                $result = $this->creditNoteService->consultCdr($taxDocument);
+            } else {
+                $result = $this->invoiceConsultUseCase->__invoke($id);
+            }
 
             if ($result->isSuccess()) {
                 return

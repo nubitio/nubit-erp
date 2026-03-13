@@ -1,1 +1,6 @@
-export { runOpenCreditNoteReceiptAction, runSendCreditNoteToSunatAction } from './creditNoteActions';
+export {
+  runOpenCreditNoteReceiptAction,
+  runSendCreditNoteToSunatAction,
+  runConsultCreditNoteCdrAction,
+  runConsultCreditNoteCpeAction,
+} from './creditNoteActions';
