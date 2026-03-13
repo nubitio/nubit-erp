@@ -17,7 +17,10 @@
     "paths": {
       "@app/*": ["assets/app/*"],
       "@shared/*": ["assets/shared/*"],
+      // TODO REFAC-002: rename @platform -> @core (259 active imports)
       "@platform/*": ["assets/core/*"],
+      // Preferred alias for new code — points to the same directory as @platform
+      "@core/*": ["assets/core/*"],
       "@features/*": ["assets/features/*"],
       "@pages/*": ["assets/pages/*"],
       "@widgets": ["assets/components"],

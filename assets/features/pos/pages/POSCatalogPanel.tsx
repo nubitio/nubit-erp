@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { PackageSearch, Search } from 'lucide-react';
 import { POSItem } from './POSItem';
 import type { Category, PosItem } from './types';
 
@@ -61,7 +60,7 @@ export function POSCatalogPanel({
       {/* ── Search toolbar ── */}
       <header className="pos-toolbar">
         <div className="pos-toolbar__search">
-          <Search size={14} />
+          <i className="ph ph-magnifying-glass" aria-hidden="true" />
           <input
             ref={searchInputRef}
             type="search"
@@ -149,7 +148,11 @@ export function POSCatalogPanel({
           </div>
         ) : filteredMenu.length === 0 ? (
           <div className="pos-state">
-            <PackageSearch size={36} strokeWidth={1.4} />
+            <i
+              className="ph ph-package-search"
+              aria-hidden="true"
+              style={{ fontSize: '2.25rem' }}
+            />
             <p>{searchQuery ? 'Sin resultados' : 'Catálogo vacío'}</p>
             <span>
               {searchQuery

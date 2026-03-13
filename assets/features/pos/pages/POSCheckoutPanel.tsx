@@ -1,22 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  BadgePercent,
-  Banknote,
-  Building2,
-  ChevronDown,
-  CreditCard,
-  Eraser,
-  Link,
-  MessageSquare,
-  Minus,
-  Plus,
-  Receipt,
-  ShoppingCart,
-  Smartphone,
-  Trash2,
-  User2,
-  Wallet,
-} from 'lucide-react';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import { isCashPaymentMethod, normalizeText, toNumber } from './posHelpers';
 import type { LocalSale } from '@offline/types';
@@ -78,16 +60,16 @@ interface POSCheckoutPanelProps {
 
 const MAX_VISIBLE_PAYMENT_METHODS = 3;
 
-function getPaymentIcon(methodName: string) {
+function getPaymentIconClass(methodName: string): string {
   const n = normalizeText(methodName);
-  if (isCashPaymentMethod({ id: 0, name: methodName })) return Receipt;
-  if (n.includes('debito')) return CreditCard;
-  if (n.includes('credito') || n.includes('tarjet')) return CreditCard;
-  if (n.includes('transferencia')) return Building2;
-  if (n.includes('yape') || n.includes('plin') || n.includes('wallet')) return Wallet;
-  if (n.includes('link')) return Link;
-  if (n.includes('deposito')) return Banknote;
-  return Smartphone;
+  if (isCashPaymentMethod({ id: 0, name: methodName })) return 'ph ph-receipt';
+  if (n.includes('debito')) return 'ph ph-credit-card';
+  if (n.includes('credito') || n.includes('tarjet')) return 'ph ph-credit-card';
+  if (n.includes('transferencia')) return 'ph ph-building';
+  if (n.includes('yape') || n.includes('plin') || n.includes('wallet')) return 'ph ph-wallet';
+  if (n.includes('link')) return 'ph ph-link';
+  if (n.includes('deposito')) return 'ph ph-money';
+  return 'ph ph-device-mobile';
 }
 
 export function POSCheckoutPanel({
@@ -242,7 +224,7 @@ export function POSCheckoutPanel({
           title="Vaciar carrito"
           aria-label="Vaciar carrito"
         >
-          <Trash2 size={14} />
+          <i className="ph ph-trash" aria-hidden="true" />
         </button>
       </div>
 
@@ -259,7 +241,11 @@ export function POSCheckoutPanel({
         <div className="pos-cart-lines">
           {cart.length === 0 ? (
             <div className="pos-empty-cart">
-              <ShoppingCart size={30} strokeWidth={1.5} />
+              <i
+                className="ph ph-shopping-cart"
+                aria-hidden="true"
+                style={{ fontSize: '1.875rem' }}
+              />
               <p>Orden vacía</p>
               <span>
                 Presiona <kbd>F2</kbd> para buscar productos
@@ -285,7 +271,11 @@ export function POSCheckoutPanel({
                     }
                     aria-label={item.quantity === 1 ? `Quitar ${item.name}` : 'Restar uno'}
                   >
-                    {item.quantity === 1 ? <Trash2 size={11} /> : <Minus size={11} />}
+                    {item.quantity === 1 ? (
+                      <i className="ph ph-trash" aria-hidden="true" />
+                    ) : (
+                      <i className="ph ph-minus" aria-hidden="true" />
+                    )}
                   </button>
                   {editingQtyId === item.id ? (
                     <input
@@ -332,7 +322,7 @@ export function POSCheckoutPanel({
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     aria-label="Sumar uno"
                   >
-                    <Plus size={11} />
+                    <i className="ph ph-plus" aria-hidden="true" />
                   </button>
                 </div>
                 {/* Column 3 — line total (fixed min-width, always right-aligned) */}
@@ -353,9 +343,9 @@ export function POSCheckoutPanel({
               onClick={() => setNoteOpen((v) => !v)}
               aria-expanded={noteOpen}
             >
-              <MessageSquare size={13} />
+              <i className="ph ph-chat-circle" aria-hidden="true" />
               <span>{note ? `Nota: ${note}` : 'Agregar nota interna'}</span>
-              <ChevronDown size={12} className="pos-note-toggle__chevron" />
+              <i className="ph ph-caret-down pos-note-toggle__chevron" aria-hidden="true" />
             </button>
             {(noteOpen || note) && (
               <textarea
@@ -383,12 +373,12 @@ export function POSCheckoutPanel({
                 aria-expanded={customerOpen}
                 data-testid="pos-customer-toggle"
               >
-                <User2 size={13} />
+                <i className="ph ph-user" aria-hidden="true" />
                 <span>
                   {selectedCustomer ? selectedCustomer.businessName : 'Cliente (opcional)'}
                 </span>
                 {!selectedCustomer && (
-                  <ChevronDown size={12} className="pos-note-toggle__chevron" />
+                  <i className="ph ph-caret-down pos-note-toggle__chevron" aria-hidden="true" />
                 )}
               </button>
               {selectedCustomer && (
@@ -495,7 +485,7 @@ export function POSCheckoutPanel({
           <div className="pos-payment__section-label">Método de pago</div>
           <div className="pos-payment__methods" role="radiogroup" aria-label="Método de pago">
             {visiblePaymentMethods.map((method) => {
-              const Icon = getPaymentIcon(method.name);
+              const iconClass = getPaymentIconClass(method.name);
               return (
                 <label
                   key={method.id}
@@ -511,7 +501,7 @@ export function POSCheckoutPanel({
                     checked={selectedPaymentMethodId === method.id}
                     onChange={() => setSelectedPaymentMethodId(method.id)}
                   />
-                  <Icon size={14} />
+                  <i className={iconClass} aria-hidden="true" />
                   <span>{method.name}</span>
                 </label>
               );
@@ -524,7 +514,10 @@ export function POSCheckoutPanel({
                 }`}
                 onClick={() => setShowMorePayments((v) => !v)}
               >
-                <ChevronDown size={14} className={showMorePayments ? 'is-flipped' : ''} />
+                <i
+                  className={`ph ph-caret-down${showMorePayments ? ' is-flipped' : ''}`}
+                  aria-hidden="true"
+                />
                 <span>{showMorePayments ? 'Menos' : 'Más'}</span>
               </button>
             )}
@@ -579,7 +572,7 @@ export function POSCheckoutPanel({
 
             <div className="pos-discount-row">
               <label className="pos-discount-label" htmlFor="pos-discount">
-                <BadgePercent size={13} />
+                <i className="ph ph-percent" aria-hidden="true" />
                 Descuento (%)
               </label>
               <div className="pos-payment__discount-controls">
@@ -602,7 +595,7 @@ export function POSCheckoutPanel({
                   title="Limpiar descuento"
                   aria-label="Limpiar descuento"
                 >
-                  <Eraser size={13} />
+                  <i className="ph ph-eraser" aria-hidden="true" />
                 </button>
               </div>
             </div>

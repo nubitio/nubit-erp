@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, HelpCircle, Maximize2, Minimize2, Package, Store, User } from 'lucide-react';
 import { ThemeSwitcher } from '../../../components/library/theme-switcher/ThemeSwitcher';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
@@ -83,13 +82,13 @@ export function POSOperatorHeader({
           onClick={() => window.history.back()}
           aria-label="Salir del POS"
         >
-          <ArrowLeft size={14} />
+          <i className="ph ph-arrow-left" aria-hidden="true" />
         </button>
 
         <div className="pos-operator-header__sep" />
 
         <div className="pos-operator-header__ctx">
-          <Store size={11} />
+          <i className="ph ph-storefront" aria-hidden="true" />
           <span className="pos-operator-header__label">Sucursal</span>
           <strong>{branchName || 'Principal'}</strong>
         </div>
@@ -114,7 +113,7 @@ export function POSOperatorHeader({
           <>
             <div className="pos-operator-header__sep" />
             <div className="pos-operator-header__ctx">
-              <Package size={11} />
+              <i className="ph ph-package" aria-hidden="true" />
               <span className="pos-operator-header__label">Almacén</span>
               {warehouses.length === 1 ? (
                 <strong>{warehouses[0].name}</strong>
@@ -139,7 +138,7 @@ export function POSOperatorHeader({
         <div className="pos-operator-header__sep" />
 
         <div className="pos-operator-header__ctx">
-          <User size={11} />
+          <i className="ph ph-user" aria-hidden="true" />
           <span className="pos-operator-header__label">Cajero</span>
           <strong>{userName || '—'}</strong>
         </div>
@@ -197,7 +196,11 @@ export function POSOperatorHeader({
           aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
           title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
         >
-          {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          {isFullscreen ? (
+            <i className="ph ph-arrows-in" aria-hidden="true" />
+          ) : (
+            <i className="ph ph-arrows-out" aria-hidden="true" />
+          )}
         </button>
 
         <button
@@ -210,7 +213,7 @@ export function POSOperatorHeader({
           aria-label="Atajos de teclado"
           title="Atajos de teclado"
         >
-          <HelpCircle size={14} />
+          <i className="ph ph-question" aria-hidden="true" />
         </button>
       </div>
 
