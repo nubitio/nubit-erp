@@ -54,6 +54,7 @@
     </div>
 
     <div class="row g-4">
+        {% if is_granted('ROLE_ADMIN') %}
         <div class="col-xl-4">
             <div class="card">
                 <div class="card-body">
@@ -106,7 +107,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-xl-8">
+        {% endif %}
+        <div class="{% if is_granted('ROLE_ADMIN') %}col-xl-8{% else %}col-xl-12{% endif %}">
             <div class="card">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -121,6 +123,7 @@
                         </div>
                     {% else %}
                         {% for plan in plans %}
+                            {% if is_granted('ROLE_ADMIN') %}
                             <form action="{{ path('admin_plan_update', {'id': plan.id}) }}" method="post"
                                   class="border rounded p-3 mb-3 {{ plan.is_default ? 'border-primary' : '' }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
@@ -188,6 +191,25 @@
                                     </div>
                                 </div>
                             </form>
+                            {% else %}
+                            {# Read-only plan card for ROLE_CP_VIEWER #}
+                            <div class="border rounded p-3 mb-3 {{ plan.is_default ? 'border-primary' : '' }}">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="fw-semibold">{{ plan.name }}</span>
+                                    {% if plan.is_default %}
+                                        <span class="badge text-bg-primary">Default</span>
+                                    {% endif %}
+                                </div>
+                                <div class="row g-2">
+                                    {% for key in ['users','customers','products','invoices','branches','storage_mb'] %}
+                                        <div class="col-md-4">
+                                            <div class="text-muted small text-capitalize">{{ key|replace({'_':' '}) }}</div>
+                                            <div class="fw-semibold">{{ plan.limits[key] ?? -1 == -1 ? '∞ unlimited' : plan.limits[key] ?? -1 }}</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 </div>

@@ -692,6 +692,7 @@
             <i class="bi bi-speedometer2"></i>
             <span>Dashboard</span>
         </a>
+        {% if is_granted('ROLE_ADMIN') %}
         <a href="{{ path('admin_tenant_index') }}"
            class="sidebar-link {% block nav_tenants %}{% endblock %}">
             <i class="bi bi-building"></i>
@@ -702,14 +703,52 @@
             <i class="bi bi-box-seam"></i>
             <span>Plans</span>
         </a>
+        {% endif %}
         <div class="nav-label">System</div>
+        {% if is_granted('ROLE_CP_VIEWER') %}
         <a href="{{ path('admin_audit_log_index') }}"
            class="sidebar-link {% block nav_audit %}{% endblock %}">
             <i class="bi bi-journal-text"></i>
             <span>Audit Log</span>
         </a>
+        {% endif %}
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+        <a href="{{ path('admin_user_index') }}"
+           class="sidebar-link {% block nav_admin_users %}{% endblock %}">
+            <i class="bi bi-shield-lock"></i>
+            <span>Admin Users</span>
+        </a>
+        {% endif %}
     </nav>
     <div class="admin-sidebar-footer">
+        {% if app.user %}
+        <div style="padding: 0.5rem 0.75rem 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-person-circle" style="color: rgba(255,255,255,0.5); font-size: 1.1rem;"></i>
+            <div style="min-width: 0;">
+                <div style="font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ app.user.userIdentifier }}
+                </div>
+                <div>
+                    {% if is_granted('ROLE_SUPER_ADMIN') %}
+                        <span style="font-size: 0.6rem; font-weight: 600; background: rgba(239,68,68,0.25); color: #fca5a5; border-radius: 4px; padding: 1px 5px; text-transform: uppercase; letter-spacing: 0.04em;">Super Admin</span>
+                    {% elseif is_granted('ROLE_ADMIN') %}
+                        <span style="font-size: 0.6rem; font-weight: 600; background: rgba(99,102,241,0.25); color: #a5b4fc; border-radius: 4px; padding: 1px 5px; text-transform: uppercase; letter-spacing: 0.04em;">Admin</span>
+                    {% elseif is_granted('ROLE_CP_VIEWER') %}
+                        <span style="font-size: 0.6rem; font-weight: 600; background: rgba(148,163,184,0.2); color: #94a3b8; border-radius: 4px; padding: 1px 5px; text-transform: uppercase; letter-spacing: 0.04em;">Viewer</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if app.user %}
+        <a href="{{ path('admin_logout') }}"
+           class="theme-toggle text-start"
+           style="color: rgba(255,255,255,0.5);"
+           title="Cerrar sesión como {{ app.user.userIdentifier }}">
+            <i class="bi bi-box-arrow-left" style="font-size: 1.1rem; width: 1.25rem; text-align: center;"></i>
+            <span>Cerrar sesión</span>
+        </a>
+        {% endif %}
         <button class="theme-toggle" id="themeToggle">
             <i class="bi bi-moon-stars"></i>
             <span>Dark mode</span>

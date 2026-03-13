@@ -34,6 +34,7 @@
         </small>
     </div>
 
+    {% if is_granted('ROLE_ADMIN') %}
     <form method="post" action="{{ path('admin_tenant_notifications_update', {'id': tenant.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
 
@@ -117,4 +118,10 @@
             </button>
         </div>
     </form>
+    {% else %}
+    <div class="alert alert-warning">
+        <i class="bi bi-lock me-1"></i>
+        You have read-only access. Notification settings can only be modified by Admins.
+    </div>
+    {% endif %}
 {% endblock %}

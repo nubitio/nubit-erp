@@ -29,7 +29,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_ADMIN')]
 #[Route('/admin/tenants')]
 class TenantController extends AbstractController
 {
@@ -371,6 +373,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_index');
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/delete/{id}', name: 'admin_tenant_delete', methods: ['POST'])]
     public function delete(int $id, Request $request): Response
     {
@@ -447,6 +450,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id]);
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/{id}/purge', name: 'admin_tenant_purge', methods: ['POST'])]
     public function purge(int $id, Request $request): Response
     {
@@ -717,6 +721,7 @@ class TenantController extends AbstractController
         return $this->json($backups);
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/{id}/backup', name: 'admin_tenant_backup_create', methods: ['POST'])]
     public function createBackup(int $id, Request $request): Response
     {
@@ -746,6 +751,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/{id}/backup/{backupId}/restore', name: 'admin_tenant_backup_restore', methods: ['POST'])]
     public function restoreBackup(int $id, int $backupId, Request $request): Response
     {
@@ -769,6 +775,7 @@ class TenantController extends AbstractController
         return $this->redirectToRoute('admin_tenant_edit', ['id' => $id, '_fragment' => 'backups']);
     }
 
+    #[IsGranted('ROLE_SUPER_ADMIN')]
     #[Route('/{id}/backup/{backupId}/delete', name: 'admin_tenant_backup_delete', methods: ['POST'])]
     public function deleteBackup(int $id, int $backupId, Request $request): Response
     {
