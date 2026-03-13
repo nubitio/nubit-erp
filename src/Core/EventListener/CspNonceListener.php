@@ -82,7 +82,7 @@ final readonly class CspNonceListener
             'Content-Security-Policy',
             implode('; ', [
                 "default-src 'self'",
-                "script-src 'self' 'nonce-{$nonce}'",
+                "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
                 "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
                 $imgSrc,
                 "font-src 'self' data: https://cdn.jsdelivr.net",
