@@ -53,7 +53,7 @@ export interface Field {
   onChange: any;
   onSelect: any;
   onClick: any;
-  onKeyPress: ((e) => void) | undefined;
+  onKeyPress: ((e: KeyboardEvent) => void) | undefined;
   readonly: boolean;
   disabled: boolean;
   hidden: boolean;

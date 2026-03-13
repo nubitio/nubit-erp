@@ -92,7 +92,9 @@ class DxUtils {
         options.forEach((option) => {
           for (const key in option) {
             if (Object.prototype.hasOwnProperty.call(option, key)) {
-              loadOptions[key] = option[key];
+              // LoadOptions does not expose an index signature; cast is safe because
+              // LoadOption values are arbitrary query params forwarded to the server.
+              (loadOptions as Record<string, unknown>)[key] = option[key];
             }
           }
         });
@@ -101,7 +103,7 @@ class DxUtils {
       byKey: (key) => {
         const id = typeof key === 'object' ? key[idField] : key;
         if (id === undefined) return Promise.resolve(null);
-        const loadOptions = {};
+        const loadOptions: Record<string, unknown> = {};
         options.forEach((option) => {
           for (const key in option) {
             if (Object.prototype.hasOwnProperty.call(option, key)) {
