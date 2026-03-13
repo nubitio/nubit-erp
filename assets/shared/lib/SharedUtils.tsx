@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import React from 'react';
 import notify from 'devextreme/ui/notify';
 
@@ -181,7 +182,7 @@ export class SharedUtils {
     if (value) {
       return (
         <div className="text-truncate" style={{ maxWidth: '200px' }}>
-          <span dangerouslySetInnerHTML={{ __html: value }} />
+          <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(value) }} />
         </div>
       );
     } else {
