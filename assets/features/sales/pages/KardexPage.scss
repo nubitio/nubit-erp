@@ -16,6 +16,34 @@
   flex-grow: 1;
   padding: var(--content-padding) var(--content-padding) 0 var(--content-padding);
 
+  .kardex-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 48px 0;
+  }
+
+  .kardex-error {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    color: var(--dx-color-danger, #d32f2f);
+    background: rgba(211, 47, 47, 0.08);
+    border-radius: 4px;
+    margin-bottom: 12px;
+
+    span {
+      flex: 1;
+    }
+  }
+
+  .kardex-empty {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--dx-color-text-secondary, #757575);
+  }
+
   .panels {
     display: flex;
     flex-wrap: wrap;
