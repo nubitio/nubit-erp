@@ -11,8 +11,13 @@ security:
         user_provider:
             id: App\Core\Security\Auth\UserProvider
     role_hierarchy:
-        ROLE_ADMIN: ROLE_USER
-        ROLE_SUPER_ADMIN: [ ROLE_USER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH ]
+        # Control-plane admin role hierarchy
+        # ROLE_CP_VIEWER  → read-only access: dashboard, tenant list, audit log
+        # ROLE_ADMIN      → normal operations: create/edit tenants, change plans, manage domains, provision, backup
+        # ROLE_SUPER_ADMIN→ destructive actions (purge, restore from backup, delete backup) + future admin management
+        ROLE_CP_VIEWER: ROLE_USER
+        ROLE_ADMIN: [ ROLE_USER, ROLE_CP_VIEWER ]
+        ROLE_SUPER_ADMIN: [ ROLE_USER, ROLE_CP_VIEWER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH ]
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
@@ -23,9 +28,26 @@ security:
             security: false
         admin:
             pattern: ^/admin
-            http_basic:
-                realm: 'Admin Panel'
             provider: control_plane_admin_provider
+            form_login:
+                login_path: admin_login
+                check_path: admin_login
+                default_target_path: admin_dashboard
+                always_use_default_target_path: false
+                username_parameter: username
+                password_parameter: password
+                enable_csrf: true
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
+            logout:
+                path: admin_logout
+                target: admin_login
+                invalidate_session: true
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800   # 7 días
+                path: /admin
         main:
             lazy: true
             stateless: true
@@ -53,7 +75,9 @@ security:
         - { path: ^/receipt/[-\w ]+$, roles: PUBLIC_ACCESS }
         - { path: ^/receipt/[-\w ]+/(ticket|pdf|xml|cdr), roles: PUBLIC_ACCESS }
         - { path: ^/sale/consult, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/users, roles: ROLE_SUPER_ADMIN }
+        - { path: ^/admin, roles: ROLE_CP_VIEWER }
         - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/, roles: ROLE_USER }
 

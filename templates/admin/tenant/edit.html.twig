@@ -93,6 +93,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Tenant details</h2>
+                            {% if is_granted('ROLE_ADMIN') %}
                             <form action="{{ path('admin_tenant_update', {'id': tenant.id}) }}" method="post"
                                   class="needs-validation" novalidate>
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
@@ -112,6 +113,16 @@
                                     <button type="submit" class="btn btn-primary">Save changes</button>
                                 </div>
                             </form>
+                            {% else %}
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <p class="form-control-plaintext fw-semibold">{{ tenant.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Connection</label>
+                                <p class="form-control-plaintext"><code>{{ tenant.connection }}</code></p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -119,6 +130,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Plan</h2>
+                            {% if is_granted('ROLE_ADMIN') %}
                             <form id="tenant-plan-form"
                                   action="{{ path('admin_tenant_plan', {'id': tenant.id}) }}" method="post">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
@@ -135,10 +147,15 @@
                                 </div>
                                 <div class="form-text">Plan controls quotas and limits for this tenant.</div>
                             </form>
+                            {% else %}
+                            <p class="mb-0 fw-semibold">{{ tenant.plan ?? 'free' }}</p>
+                            <div class="form-text">Plan controls quotas and limits for this tenant.</div>
+                            {% endif %}
 
                             <hr class="my-4">
 
                             <h2 class="h5 mb-3">Status</h2>
+                            {% if is_granted('ROLE_ADMIN') %}
                             {% if tenant.status is defined and tenant.status == 'suspended' %}
                                 <div class="d-flex align-items-center gap-3">
                                     <span class="badge bg-warning-subtle text-warning">Suspended</span>
@@ -163,6 +180,13 @@
                                     </form>
                                 </div>
                             {% endif %}
+                            {% else %}
+                            {% if tenant.status is defined and tenant.status == 'suspended' %}
+                                <span class="badge bg-warning-subtle text-warning">Suspended</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            {% endif %}
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -172,6 +196,7 @@
         {# ── DOMAINS TAB ── #}
         <div class="tab-pane fade" id="domains" role="tabpanel">
             <div class="row g-4">
+                {% if is_granted('ROLE_ADMIN') %}
                 <div class="col-lg-5">
                     <div class="card">
                         <div class="card-body">
@@ -201,7 +226,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-7">
+                {% endif %}
+                <div class="{% if is_granted('ROLE_ADMIN') %}col-lg-7{% else %}col-lg-12{% endif %}">
                     <div class="card">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Current domains</h2>
@@ -216,7 +242,9 @@
                                         <tr>
                                             <th scope="col">Domain</th>
                                             <th scope="col">Primary</th>
+                                            {% if is_granted('ROLE_ADMIN') %}
                                             <th scope="col" class="text-end">Actions</th>
+                                            {% endif %}
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -238,6 +266,7 @@
                                                         </span>
                                                     {% endif %}
                                                 </td>
+                                                {% if is_granted('ROLE_ADMIN') %}
                                                 <td class="text-end">
                                                     {% if not domain.is_primary %}
                                                         <form action="{{ path('admin_tenant_domain_primary', {'tenantId': tenant.id, 'domainId': domain.id}) }}"
@@ -261,6 +290,7 @@
                                                         </button>
                                                     </form>
                                                 </td>
+                                                {% endif %}
                                             </tr>
                                         {% endfor %}
                                         </tbody>
@@ -275,6 +305,7 @@
 
         {# ── PROVISIONING TAB ── #}
         <div class="tab-pane fade" id="provisioning" role="tabpanel">
+            {% if is_granted('ROLE_ADMIN') %}
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5 mb-3"><i class="bi bi-rocket me-1"></i> Provisioning</h2>
@@ -309,6 +340,7 @@
                     </form>
                 </div>
             </div>
+            {% endif %}
 
             <div class="card">
                 <div class="card-body">
@@ -510,6 +542,7 @@
 
         {# ── BACKUPS TAB ── #}
         <div class="tab-pane fade" id="backups" role="tabpanel">
+            {% if is_granted('ROLE_ADMIN') %}
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5 mb-3"><i class="bi bi-clock-history me-1"></i> Backup schedule</h2>
@@ -546,6 +579,7 @@
                     </form>
                 </div>
             </div>
+            {% endif %}
 
             {% if binlog_summary is not empty %}
             <div class="card mb-4">
@@ -592,6 +626,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h2 class="h5 mb-0"><i class="bi bi-archive me-1"></i> Backups</h2>
+                        {% if is_granted('ROLE_SUPER_ADMIN') %}
                         <form action="{{ path('admin_tenant_backup_create', {'id': tenant.id}) }}" method="post"
                               class="d-inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('admin') }}">
@@ -599,6 +634,7 @@
                                 <i class="bi bi-cloud-arrow-up me-1"></i> Backup Now
                             </button>
                         </form>
+                        {% endif %}
                     </div>
 
                     {% if backups is empty %}
@@ -661,6 +697,7 @@
                                                    class="btn btn-outline-primary btn-sm me-1">
                                                     <i class="bi bi-download me-1"></i> Download
                                                 </a>
+                                                {% if is_granted('ROLE_SUPER_ADMIN') %}
                                                 <form action="{{ path('admin_tenant_backup_restore', {'id': tenant.id, 'backupId': backup.id}) }}"
                                                       method="post" class="d-inline">
                                                     <input type="hidden" name="_token"
@@ -671,7 +708,9 @@
                                                         <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
                                                     </button>
                                                 </form>
+                                                {% endif %}
                                             {% endif %}
+                                            {% if is_granted('ROLE_SUPER_ADMIN') %}
                                             <form action="{{ path('admin_tenant_backup_delete', {'id': tenant.id, 'backupId': backup.id}) }}"
                                                   method="post" class="d-inline">
                                                 <input type="hidden" name="_token"
@@ -682,6 +721,7 @@
                                                     <i class="bi bi-trash me-1"></i> Delete
                                                 </button>
                                             </form>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
