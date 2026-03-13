@@ -680,12 +680,14 @@ SQL,
             }
 
             $sale = $row->getSale();
-            $legacySaleId = $sale->getId();
+            // Guard: $sale may be null for V2 documents (sale is in `sales` table, not `movimiento`).
+            // Use getCanonicalSaleId() as the authoritative ID that covers both legacy and V2.
+            $legacySaleId = $sale?->getId() ?? $row->getCanonicalSaleId();
             $saleStatusV2 = null;
 
             if ($legacySaleId !== null && $legacySaleId !== '') {
                 $status = $this->getEntityManager()->getConnection()->fetchOne(
-                    'SELECT status FROM sales WHERE legacy_movimiento_id = :legacy_sale_id LIMIT 1',
+                    'SELECT status FROM sales WHERE legacy_movimiento_id = :legacy_sale_id OR id = :legacy_sale_id LIMIT 1',
                     ['legacy_sale_id' => $legacySaleId]
                 );
                 $saleStatusV2 = $status !== false ? (string)$status : null;
@@ -701,7 +703,7 @@ SQL,
                 'total' => $row->getTotal(),
                 'digest' => $row->getDigest(),
                 'sunat_status' => $row->getSunatStatus(),
-                'sale_status' => $sale->getEstado(),
+                'sale_status' => $sale?->getEstado() ?? null,
                 'sale_status_v2' => $saleStatusV2,
                 'currency' => $row->getCurrency() ?? 'PEN',
             ];
