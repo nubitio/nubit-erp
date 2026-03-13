@@ -26,7 +26,7 @@ export interface DxFormOptions {
   url: string;
   detailUrl?: string;
   fields: Field[];
-  detailFields?: any;
+  detailFields?: Field[];
   detailPropertyName?: string;
   allowAdding?: boolean;
   allowUpdating?: boolean;
@@ -533,7 +533,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
   }));
 
   const renderForm = () => {
-    if (options.detailFields?.length > 0) {
+    if ((options.detailFields?.length ?? 0) > 0) {
       return (
         <Form ref={formRef} className={options.className} labelMode={'floating'}>
           <Item itemType="group" colCount={4}>
@@ -584,7 +584,7 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
                   confirmDelete={false}
                 />
                 <Paging enabled={false} />
-                {buildColumns(options.detailFields, true)}
+                {buildColumns(options.detailFields ?? [], true)}
               </DataGrid>
             </GroupItem>
           </Item>

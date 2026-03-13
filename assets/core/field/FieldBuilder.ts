@@ -325,7 +325,7 @@ export class FieldBuilder {
     return this;
   }
 
-  onKeyPress(param: (e) => void) {
+  onKeyPress(param: (e: KeyboardEvent) => void) {
     this._field.onKeyPress = param;
     return this;
   }
