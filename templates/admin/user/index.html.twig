@@ -1,0 +1,193 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Admin Users{% endblock %}
+{% block nav_admin_users %}active{% endblock %}
+
+{% block breadcrumbs %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Admin Users</li>
+        </ol>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h1 class="h3 mb-0">Admin Users</h1>
+            <p class="text-muted mb-0">Manage control-plane administrator accounts.</p>
+        </div>
+        <a href="{{ path('admin_user_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> New Admin User
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            {% if users is empty %}
+                <div class="p-4 text-center text-muted">No admin users found.</div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Roles</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Last Login</th>
+                            <th scope="col">Created</th>
+                            <th scope="col" class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                            {% set isSelf = app.user and app.user.userIdentifier == user.username %}
+                            <tr>
+                                <td class="text-muted small">{{ user.id }}</td>
+                                <td class="fw-semibold">
+                                    {{ user.username }}
+                                    {% if isSelf %}
+                                        <span class="badge bg-secondary-subtle text-secondary ms-1" title="That's you">you</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% for role in user.roles %}
+                                        {% if role == 'ROLE_SUPER_ADMIN' %}
+                                            <span class="badge bg-danger-subtle text-danger me-1">{{ role }}</span>
+                                        {% elseif role == 'ROLE_ADMIN' %}
+                                            <span class="badge bg-primary-subtle text-primary me-1">{{ role }}</span>
+                                        {% elseif role != 'ROLE_USER' %}
+                                            <span class="badge bg-secondary-subtle text-secondary me-1">{{ role }}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge js-status-badge
+                                        {% if user.is_active %}bg-success-subtle text-success{% else %}bg-secondary text-light{% endif %}"
+                                          id="status-badge-{{ user.id }}">
+                                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">
+                                    {% if user.last_login_at %}
+                                        {{ user.last_login_at|date('Y-m-d H:i') }}
+                                    {% else %}
+                                        <span title="Never logged in">—</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted small">
+                                    {% if user.created_at %}
+                                        {{ user.created_at|date('Y-m-d') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ path('admin_user_edit', {id: user.id}) }}"
+                                       class="btn btn-sm btn-outline-secondary me-1"
+                                       title="Edit user">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    {% if isSelf %}
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary disabled"
+                                                disabled
+                                                title="You cannot deactivate your own account"
+                                                aria-label="Cannot toggle your own account">
+                                            <i class="bi bi-toggle-on"></i>
+                                        </button>
+                                    {% else %}
+                                        <button type="button"
+                                                class="btn btn-sm js-toggle-btn {{ user.is_active ? 'btn-outline-warning' : 'btn-outline-success' }}"
+                                                data-user-id="{{ user.id }}"
+                                                data-username="{{ user.username }}"
+                                                data-is-active="{{ user.is_active ? '1' : '0' }}"
+                                                data-csrf="{{ csrf_token('admin_user') }}"
+                                                data-toggle-url="{{ path('admin_user_toggle', {id: user.id}) }}"
+                                                id="toggle-btn-{{ user.id }}"
+                                                aria-label="{{ user.is_active ? 'Deactivate' : 'Activate' }} user {{ user.username }}">
+                                            {% if user.is_active %}
+                                                <i class="bi bi-toggle-on"></i> Deactivate
+                                            {% else %}
+                                                <i class="bi bi-toggle-off"></i> Activate
+                                            {% endif %}
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+<script nonce="{{ csp_nonce() }}">
+(function () {
+    document.querySelectorAll('.js-toggle-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var userId    = btn.dataset.userId;
+            var username  = btn.dataset.username;
+            var isActive  = btn.dataset.isActive === '1';
+            var action    = isActive ? 'Deactivate' : 'Activate';
+
+            if (!confirm(action + ' user "' + username + '"?')) {
+                return;
+            }
+
+            var url  = btn.dataset.toggleUrl;
+            var csrf = btn.dataset.csrf;
+
+            var body = new URLSearchParams();
+            body.append('_token', csrf);
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json' },
+                body: body,
+            })
+            .then(function (resp) { return resp.json(); })
+            .then(function (data) {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                var nowActive = data.is_active;
+
+                /* Update badge */
+                var badge = document.getElementById('status-badge-' + userId);
+                if (badge) {
+                    if (nowActive) {
+                        badge.className = 'badge js-status-badge bg-success-subtle text-success';
+                        badge.textContent = 'Active';
+                    } else {
+                        badge.className = 'badge js-status-badge bg-secondary text-light';
+                        badge.textContent = 'Inactive';
+                    }
+                }
+
+                /* Update button */
+                btn.dataset.isActive = nowActive ? '1' : '0';
+                if (nowActive) {
+                    btn.className = 'btn btn-sm js-toggle-btn btn-outline-warning';
+                    btn.innerHTML = '<i class="bi bi-toggle-on"></i> Deactivate';
+                    btn.setAttribute('aria-label', 'Deactivate user ' + username);
+                } else {
+                    btn.className = 'btn btn-sm js-toggle-btn btn-outline-success';
+                    btn.innerHTML = '<i class="bi bi-toggle-off"></i> Activate';
+                    btn.setAttribute('aria-label', 'Activate user ' + username);
+                }
+            })
+            .catch(function (err) {
+                alert('Request failed: ' + err.message);
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}
