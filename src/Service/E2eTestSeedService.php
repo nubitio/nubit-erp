@@ -13,7 +13,7 @@ use App\Entity\Product;
 use App\Entity\Role;
 use App\Entity\CashRegister;
 use App\Entity\SaleRecord;
-use App\Entity\SaleItem;
+use App\Entity\SaleItemRecord;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
 use App\Entity\VoucherSeries;
@@ -47,8 +47,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_CUSTOMER_NAME = 'Cliente CI E2E';
     private const string E2E_PRODUCT_CODE = 'E2E-CI-PRODUCT';
     private const string E2E_PRODUCT_NAME = 'Producto CI E2E';
-    private const string E2E_SALE_GLOSA = 'E2E_CI_SALE';
-
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly Connection $connection,
@@ -300,18 +298,19 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setBranch($branch)
             ->setCliente($customer)
             ->setTipoId(2)
-            ->setFecha(new DateTimeImmutable('-1 hour'))
+            ->setFecha(new \DateTime('-1 hour'))
             ->setFormaPago(PaymentMethod::CASH)
             ->setTipoPago($paymentMethod)
             ->setSerie('NV01')
             ->setNumero(sprintf('%08d', random_int(1000, 9999)))
             ->setDescuento('0.00')
-            ->setGlosa(self::E2E_SALE_GLOSA)
             ->setHasInvoice(false)
             ->setCajaId(1)
             ->setEstado(1)
             ->setDateCreated(new DateTimeImmutable())
+            ->setSellerUserId((int) $user->getId())
             ->setCreatedBy((int) $user->getId())
+            ->setCreatedAt(new \DateTime())
             ->setIgv('18')
             ->setRecargoConsumo(0)
             ->setTipoOperacion('0101')
@@ -320,16 +319,16 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setCurrency('PEN')
             ->setExchangeRate('1.000000');
 
-        $item = new SaleItem();
+        $item = new SaleItemRecord();
         $item
-            ->setMovimiento($sale)
-            ->setProducto($product)
-            ->setCantidad(1.0)
-            ->setPrecioUnitario('10.00')
-            ->setDescuento('0.00')
-            ->setPrecioTotal('10.00');
-
-        $sale->addItem($item);
+            ->setSaleRecord($sale)
+            ->setProduct($product)
+            ->setLineNo(1)
+            ->setNameSnapshot($product->getName())
+            ->setQty('1.000')
+            ->setUnitPrice('10.0000')
+            ->setGrossAmount('10.00')
+            ->setNetAmount('10.00');
 
         $this->entityManager->persist($sale);
         $this->entityManager->persist($item);
@@ -340,9 +339,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function purgeE2eSales(): void
     {
+        // Identify E2E sales by the seller (ci_e2e_user). The old `glosa` column
+        // was on the legacy `movimiento` table and no longer exists in `sales`.
         $saleIds = $this->connection->fetchFirstColumn(
-            'SELECT id FROM sales WHERE glosa = :glosa',
-            ['glosa' => self::E2E_SALE_GLOSA]
+            'SELECT s.id FROM sales s
+             INNER JOIN usuario u ON u.usuario_id = s.seller_user_id
+             WHERE u.username = :username',
+            ['username' => self::E2E_USERNAME]
         );
 
         if ($saleIds === []) {

@@ -11,7 +11,7 @@ services:
         PHP_VERSION: 8.5
     ports:
       - '8080:80'
-      - '8443:443'
+      - '8444:443'
     volumes:
       - '.:/app'
       - 'app-var:/app/var'

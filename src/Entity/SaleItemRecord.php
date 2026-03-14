@@ -84,6 +84,15 @@ class SaleItemRecord
     #[ORM\Column(name: 'unit_cost_snapshot', type: Types::DECIMAL, precision: 12, scale: 4, nullable: true)]
     private ?string $unitCostSnapshot = null;
 
+    #[ORM\Column(name: 'name_snapshot', type: 'string', length: 255)]
+    private string $nameSnapshot = '';
+
+    #[ORM\Column(name: 'sku_snapshot', type: 'string', length: 64, nullable: true)]
+    private ?string $skuSnapshot = null;
+
+    #[ORM\Column(name: 'uom_snapshot', type: 'string', length: 20, nullable: true)]
+    private ?string $uomSnapshot = null;
+
     #[ORM\Column(name: 'margin_amount', type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
     private ?string $marginAmount = null;
 
@@ -215,6 +224,49 @@ class SaleItemRecord
     public function getUnitCostSnapshot(): ?string
     {
         return $this->unitCostSnapshot;
+    }
+
+    public function setUnitCostSnapshot(?string $unitCostSnapshot): static
+    {
+        $this->unitCostSnapshot = $unitCostSnapshot;
+
+        return $this;
+    }
+
+    public function getNameSnapshot(): string
+    {
+        return $this->nameSnapshot;
+    }
+
+    public function setNameSnapshot(string $nameSnapshot): static
+    {
+        $this->nameSnapshot = $nameSnapshot;
+
+        return $this;
+    }
+
+    public function getSkuSnapshot(): ?string
+    {
+        return $this->skuSnapshot;
+    }
+
+    public function setSkuSnapshot(?string $skuSnapshot): static
+    {
+        $this->skuSnapshot = $skuSnapshot;
+
+        return $this;
+    }
+
+    public function getUomSnapshot(): ?string
+    {
+        return $this->uomSnapshot;
+    }
+
+    public function setUomSnapshot(?string $uomSnapshot): static
+    {
+        $this->uomSnapshot = $uomSnapshot;
+
+        return $this;
     }
 
     public function getMarginAmount(): ?string
