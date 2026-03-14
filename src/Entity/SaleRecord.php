@@ -10,10 +10,12 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Api\MakeInvoice;
+use App\Controller\Api\VoidSale;
+use App\Controller\PrintESCPOSController;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
-use App\Core\Util\ReceiptPayload;
-use App\Entity\SaleItem;
-use App\Entity\Supplier;
+use App\Core\Exception\ServiceException;
+use App\Core\Http\ApiResponse;
+use App\Dto\Sale\VoidSaleDto;
 use App\Repository\SaleRecordRepository;
 use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleV2Provider;
@@ -30,9 +32,6 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     shortName: 'Sale',
-    normalizationContext: ['groups' => ['sale_record:read']],
-    denormalizationContext: ['groups' => ['sale_record:write']],
-    filters: [DevExtremeFilter::class],
     operations: [
         new GetCollection(),
         new Get(),
@@ -43,7 +42,25 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: MakeInvoice::class,
             name: 'sale_make_invoice'
         ),
+        new Post(
+            uriTemplate: '/sales/{id}/void',
+            controller: VoidSale::class,
+            exceptionToStatus: [ServiceException::class => 400],
+            input: VoidSaleDto::class,
+            output: ApiResponse::class,
+            deserialize: false,
+            name: 'sale_void',
+        ),
+        new Get(
+            uriTemplate: '/sales/{id}/print-invoice',
+            controller: PrintESCPOSController::class,
+            read: false,
+            name: 'sale_print_invoice',
+        ),
     ],
+    normalizationContext: ['groups' => ['sale_record:read']],
+    denormalizationContext: ['groups' => ['sale_record:write']],
+    filters: [DevExtremeFilter::class],
     provider: SaleV2Provider::class,
     processor: SaleProcessor::class,
 )]
