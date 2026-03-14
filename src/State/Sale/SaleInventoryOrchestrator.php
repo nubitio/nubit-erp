@@ -6,7 +6,7 @@ namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Dto\Auth\AuthUserDto;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Service\InventoryLedgerService;
@@ -35,7 +35,7 @@ final readonly class SaleInventoryOrchestrator
      * @throws ServiceException
      * @throws \Doctrine\DBAL\Exception
      */
-    public function process(Sale $sale, AuthUserDto $user, bool $isOfflineSale = false): void
+    public function process(SaleRecord $sale, AuthUserDto $user, bool $isOfflineSale = false): void
     {
         if (!$sale->getAlmacen()) {
             return;
@@ -71,7 +71,7 @@ final readonly class SaleInventoryOrchestrator
      * @throws ServiceException
      * @throws \Doctrine\DBAL\Exception
      */
-    private function validateStock(Sale $sale, bool $useCoreValidation, bool $enforceNonNegative): void
+    private function validateStock(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
     {
         /** @var SaleItem $item */
         foreach ($sale->getItems() as $item) {
@@ -131,7 +131,7 @@ final readonly class SaleInventoryOrchestrator
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    private function applyLedgerMovements(Sale $sale, bool $useCoreValidation, bool $enforceNonNegative): void
+    private function applyLedgerMovements(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
     {
         $lineNo = 0;
 

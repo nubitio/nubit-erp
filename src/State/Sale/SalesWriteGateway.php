@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Util\Money;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Repository\DashboardRepository;
 use App\Service\SalePaymentPlanService;
 use App\Service\SaleCurrencyResolver;
@@ -30,7 +30,7 @@ readonly class SalesWriteGateway
     /**
      * @throws Exception
      */
-    public function write(Sale $sale, ?int $cashSessionId): void
+    public function write(SaleRecord $sale, ?int $cashSessionId): void
     {
         $saleId = $sale->getId();
         $warehouseId = $sale->getAlmacen()?->getId();
@@ -79,7 +79,8 @@ readonly class SalesWriteGateway
         $balanceDue = $grandTotal->isGreaterThan($paidTotal)
             ? Money::money($grandTotal->minus($paidTotal))
             : BigDecimal::zero();
-        $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $updatedAt = $sale->getDateUpdated() ?? $sale->getDateCreated();
         $saleOffline = $this->buildOfflineMeta('sale:' . $saleId, $issuedAt, 1);
 
@@ -523,7 +524,7 @@ SQL,
     /**
      * @throws Exception
      */
-    public function markVoided(Sale $sale, ?string $reason = null): void
+    public function markVoided(SaleRecord $sale, ?string $reason = null): void
     {
         $saleId = $sale->getId();
         if ($saleId === null) {

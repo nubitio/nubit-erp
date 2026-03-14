@@ -11,15 +11,13 @@ use App\EInvoicing\Sale\Void\CashRefundRegistrar;
 use App\EInvoicing\Sale\Void\SunatVoidService;
 use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;
 use App\EInvoicing\Service\SaleV2Loader;
-use App\Sale\Domain\SaleStatus;
 use App\EInvoicing\Shared\ErrorMessages;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;
 use App\State\Sale\SalesWriteGateway;
 use Brick\Math\Exception\MathException;
-use DateTime;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -54,16 +52,19 @@ readonly class SaleVoidUseCase
     ): ApiResponse {
         // Load sale from V2 tables (v2_authoritative mode; no ORM movimiento fallback).
         $sale = $this->saleV2Loader->loadAsSale($saleId);
-        if (!$sale instanceof Sale) {
+        if (!$sale instanceof SaleRecord) {
             throw new ServiceException(ErrorMessages::SALE_NOT_EXISTS);
         }
 
-        if (SaleStatus::VOIDED->value === $sale->getEstado()) {
+        if ($sale->getStatus() === 'VOIDED') {
             throw SaleException::alreadyVoided();
         }
 
         $lima = new \DateTimeZone('America/Lima');
-        $saleDateLima = $sale->getFecha()?->setTimezone($lima)->format('Y-m-d');
+        $rawFecha = $sale->getFecha();
+        $saleDateLima = $rawFecha !== null
+            ? \DateTimeImmutable::createFromInterface($rawFecha)->setTimezone($lima)->format('Y-m-d')
+            : null;
         $limitDateLima = (new \DateTimeImmutable('now', $lima))->modify('-7 days')->format('Y-m-d');
         if ($saleDateLima < $limitDateLima) {
             throw SaleException::tooOld();
@@ -80,9 +81,9 @@ readonly class SaleVoidUseCase
 
         if ($documentType === DocType::NOTA_VENTA->value) {
             $sale->setGlosa($reason);
-            $sale->setEstado(SaleStatus::VOIDED->value);
+            $sale->setStatus('VOIDED');
             $sale->setUpdatedBy($userId);
-            $sale->setDateUpdated(new DateTime());
+            $sale->setDateUpdated(new \DateTimeImmutable());
             $this->cashRefundRegistrar->register($sale, $userId);
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);
@@ -126,9 +127,9 @@ readonly class SaleVoidUseCase
             $this->taxDocumentVoidUpdater->applyVoidResult($taxDocument, $sunatResponse, $voidedStatus);
 
             $sale->setGlosa($reason);
-            $sale->setEstado(SaleStatus::VOIDED->value);
+            $sale->setStatus('VOIDED');
             $sale->setUpdatedBy($userId);
-            $sale->setDateUpdated(new DateTime());
+            $sale->setDateUpdated(new \DateTimeImmutable());
 
             $this->cashRefundRegistrar->register($sale, $userId);
 
@@ -160,7 +161,7 @@ readonly class SaleVoidUseCase
         }
     }
 
-    private function syncVoidToSalesV2(Sale $sale, string $reason): void
+    private function syncVoidToSalesV2(SaleRecord $sale, string $reason): void
     {
         try {
             $this->salesWriteGateway->markVoided($sale, $reason);

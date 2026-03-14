@@ -6,7 +6,7 @@ namespace App\Tests\Service;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Service\SalePaymentPlanService;
 use PHPUnit\Framework\TestCase;
 
@@ -21,7 +21,7 @@ final class SalePaymentPlanServiceTest extends TestCase
 
     public function testFallbackSinglePaymentFromTipoPago(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setTipoPago($this->paymentMethod(2));
         $sale->setPayments([]);
 
@@ -34,7 +34,7 @@ final class SalePaymentPlanServiceTest extends TestCase
 
     public function testResolvesMixedPayments(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setPayments([
             [
                 'payment_method_id' => 1,
@@ -61,7 +61,7 @@ final class SalePaymentPlanServiceTest extends TestCase
 
     public function testThrowsWhenPaymentsDoNotMatchTotal(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setPayments([
             ['payment_method_id' => 1, 'amount' => '10.00'],
             ['payment_method_id' => 2, 'amount' => '10.00'],
@@ -75,7 +75,7 @@ final class SalePaymentPlanServiceTest extends TestCase
 
     public function testCashCollectedAmountOnlyAddsCashLines(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setPayments([
             ['payment_method_id' => 1, 'amount' => '25.00'],
             ['payment_method_id' => 2, 'amount' => '75.00'],

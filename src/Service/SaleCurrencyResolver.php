@@ -6,7 +6,7 @@ namespace App\Service;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 
 readonly class SaleCurrencyResolver
@@ -23,20 +23,21 @@ readonly class SaleCurrencyResolver
     /**
      * @return array{currency: string, exchange_rate: string}
      */
-    public function resolveForWrite(Sale $sale): array
+    public function resolveForWrite(SaleRecord $sale): array
     {
         $saleId = $sale->getId();
         $snapshot = $saleId !== null ? $this->findInSalesTable($saleId) : null;
 
         $currency = $this->normalizeCurrency(
-            $sale->getCurrency()
-            ?? ($snapshot['currency'] ?? null)
+            $sale->getCurrency() !== '' ? $sale->getCurrency() : ($snapshot['currency'] ?? null)
             ?? (string)$this->settings->get(Constants::SALES_DEFAULT_CURRENCY, self::PEN)
         );
 
         $exchangeRate = $this->normalizeExchangeRate(
             $currency,
-            $sale->getExchangeRate() ?? ($snapshot['exchange_rate'] ?? null)
+            $sale->getExchangeRate() !== '' && $sale->getExchangeRate() !== '1.000000'
+                ? $sale->getExchangeRate()
+                : ($snapshot['exchange_rate'] ?? null)
         );
 
         return [

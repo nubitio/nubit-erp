@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EInvoicing\Service;
 
 use App\EInvoicing\Service\InvoiceCreationService;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +16,7 @@ final class InvoiceCreationServiceTest extends TestCase
     {
         $service = $this->newService();
 
-        $result = $service->createForSale(new Sale());
+        $result = $service->createForSale(new SaleRecord());
 
         self::assertFalse($result['success']);
         self::assertSame('La venta no tiene un identificador válido.', $result['message']);
@@ -24,7 +24,7 @@ final class InvoiceCreationServiceTest extends TestCase
 
     public function testCreateForSaleFailsWhenSaleAlreadyHasInvoice(): void
     {
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-1')
             ->setHasInvoice(true)
             ->setInvoice('F001-20');
@@ -39,7 +39,7 @@ final class InvoiceCreationServiceTest extends TestCase
 
     public function testCreateForSaleFailsWhenDateExceedsAllowedWindow(): void
     {
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-1')
             ->setFecha(new \DateTimeImmutable('-4 days'));
 

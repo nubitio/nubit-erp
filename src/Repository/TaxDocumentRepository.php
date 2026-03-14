@@ -17,8 +17,8 @@ use App\EInvoicing\Service\InvoiceLineAmounts;
 use App\EInvoicing\Service\InvoiceLineInput;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Branch;
+use App\Entity\SaleRecord;
 use App\Entity\SunatCatalog;
-use App\Legacy\Sale;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
 use App\Entity\VoucherSeries;
@@ -329,32 +329,13 @@ SQL,
         return $header->toVoucher($voucherItems);
     }
 
-    private function loadSaleGraph(string $saleId): ?Sale
+    private function loadSaleGraph(string $saleId): ?SaleRecord
     {
-        $result = $this->getEntityManager()->getRepository(Sale::class)
-            ->createQueryBuilder('s')
-            ->leftJoin('s.cliente', 'c')->addSelect('c')
-            ->leftJoin('s.almacen', 'w')->addSelect('w')
-            ->leftJoin('w.branch', 'b')->addSelect('b')
-            ->leftJoin('b.company', 'co')->addSelect('co')
-            ->leftJoin('s.items', 'items')->addSelect('items')
-            ->leftJoin('items.producto', 'p')->addSelect('p')
-            ->leftJoin('p.unitOfMeasure', 'u')->addSelect('u')
-            ->where('s.id = :saleId')
-            ->setParameter('saleId', $saleId)
-            ->getQuery()
-            ->getOneOrNullResult();
-
-        if ($result instanceof Sale) {
-            return $result;
-        }
-
-        // Fallback: V2 sale stored only in `sales` table (no movimiento row)
         return $this->saleV2Loader->loadAsSale($saleId);
     }
 
     private function buildHeaderFromSale(
-        Sale $sale,
+        SaleRecord $sale,
         ?TaxDocument $taxDocument,
         ?TaxDocument $relatedTaxDocument,
     ): VoucherHeaderDto {
@@ -453,7 +434,7 @@ SQL,
     /**
      * @return VoucherLineDto[]
      */
-    private function buildLinesForVoucher(Sale $sale, ?TaxDocument $taxDocument): array
+    private function buildLinesForVoucher(SaleRecord $sale, ?TaxDocument $taxDocument): array
     {
         if ($taxDocument && !$taxDocument->getLines()->isEmpty()) {
             return array_map(
@@ -568,7 +549,7 @@ SQL,
     /**
      * @throws MathException
      */
-    private function applyNotaVentaTotals(Sale $sale, VoucherHeaderDto $header): void
+    private function applyNotaVentaTotals(SaleRecord $sale, VoucherHeaderDto $header): void
     {
         $subtotal = Money::money($sale->getSubtotal());
         $discountRate = Money::rate($sale->getDescuento() ?? 0);
@@ -598,7 +579,7 @@ SQL,
     }
 
     private function buildQrData(
-        Sale $sale,
+        SaleRecord $sale,
         ?TaxDocument $taxDocument,
         InvoiceAmounts $amounts
     ): ?string {

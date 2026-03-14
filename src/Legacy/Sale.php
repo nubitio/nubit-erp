@@ -22,17 +22,14 @@ use App\Entity\Supplier;
 use App\Entity\PaymentMethod;
 
 /**
- * Legacy DTO / ORM entity for the movimiento table.
+ * Legacy DTO for the V1→V2 write bridge.
  *
- * This class is kept as a runtime data-carrier for the V1→V2 write bridge.
- * The movimiento table is scheduled for decommission; the ORM mapping is
- * preserved only while SaleProcessor still dual-writes to the table.
- * Once dual-write is disabled globally, the ORM annotations can be stripped.
+ * The movimiento table has been decommissioned. This class is now a plain
+ * data-carrier populated by SaleV2Loader; it no longer maps to any ORM
+ * entity or database table.
  *
  * @see App\Entity\SaleRecord for the V2 replacement.
  */
-#[ORM\Entity]
-#[ORM\Table(name: 'movimiento')]
 class Sale
 {
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]

@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
+use App\Entity\SaleItem;
+use App\Entity\Supplier;
 use App\Repository\SaleRecordRepository;
 use App\State\Sale\SaleV2Processor;
 use App\State\Sale\SaleV2Provider;
@@ -142,12 +144,21 @@ class SaleRecord
     private ?DateTimeInterface $deletedAt = null;
 
     /**
-     * Not in normalization group to avoid N+1; use /api/sales/{id}/items sub-resource.
+     * ORM-managed V2 items. Not in normalization group to avoid N+1.
      *
      * @var Collection<int, SaleItemRecord>
      */
     #[ORM\OneToMany(targetEntity: SaleItemRecord::class, mappedBy: 'saleRecord')]
-    private Collection $items;
+    private Collection $saleItemRecords;
+
+    // ── Legacy pipeline items (transient, not ORM-mapped) ────────────────────
+
+    /**
+     * Pipeline-only SaleItem objects used by the write pipeline.
+     *
+     * @var Collection<int, SaleItem>
+     */
+    private Collection $legacyItems;
 
     // ── Transient fields enriched by SaleV2Provider ──────────────────────────
 
@@ -177,7 +188,19 @@ class SaleRecord
     #[Groups(['sale_record:read', 'sale_record:write'])]
     private ?string $discountPercent = null;
 
+    #[ORM\Column(name: 'serie', type: 'string', length: 10, nullable: true)]
+    #[Groups(['sale:read'])]
+    private ?string $serie = null;
+
+    #[ORM\Column(name: 'numero', type: 'string', length: 20, nullable: true)]
+    #[Groups(['sale:read'])]
+    private ?string $numero = null;
+
     // ── Write-only transient fields ───────────────────────────────────────────
+
+    // no ORM annotation — transient
+    #[Groups(['sale:read'])]
+    private ?string $taxRate = null;
 
     #[Groups(['sale_record:write'])]
     private ?bool $emitInvoice = null;
@@ -200,9 +223,42 @@ class SaleRecord
     #[Groups(['sale_record:write'])]
     private array $writeItems = [];
 
+    // ── Legacy-pipeline transient fields (no ORM mapping) ────────────────────
+
+    private int $tipoId = 2;
+
+    private ?int $formaPago = null;
+
+    private ?int $updatedBy = null;
+
+    private ?int $createdBy = null;
+
+    private ?int $recargoConsumo = null;
+
+    private ?string $tipoOperacion = null;
+
+    private ?string $invoice = null;
+
+    private ?string $detraccionCodigo = null;
+
+    private ?float $detraccionPorcentaje = null;
+
+    private ?float $detraccionMonto = null;
+
+    private ?string $detraccionMedioPago = null;
+
+    private ?float $detraccionValorReferencial = null;
+
+    private ?Supplier $proveedor = null;
+
+    private ?\DateTimeImmutable $dateCreated = null;
+
+    private ?\DateTimeImmutable $dateUpdated = null;
+
     public function __construct()
     {
-        $this->items = new ArrayCollection();
+        $this->saleItemRecords = new ArrayCollection();
+        $this->legacyItems = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -470,11 +526,46 @@ class SaleRecord
     }
 
     /**
+     * ORM-managed V2 items.
+     *
      * @return Collection<int, SaleItemRecord>
+     */
+    public function getSaleItemRecords(): Collection
+    {
+        return $this->saleItemRecords;
+    }
+
+    /**
+     * Pipeline-only legacy SaleItem objects (transient).
+     *
+     * @return Collection<int, SaleItem>
      */
     public function getItems(): Collection
     {
-        return $this->items;
+        return $this->legacyItems;
+    }
+
+    /** Bridge alias for addLegacyItem() — keeps legacy call-sites working during Wave 2. */
+    public function addItem(SaleItem $item): static
+    {
+        return $this->addLegacyItem($item);
+    }
+
+    public function addLegacyItem(SaleItem $item): static
+    {
+        $this->legacyItems->add($item);
+
+        return $this;
+    }
+
+    /**
+     * @param Collection<int, SaleItem> $items
+     */
+    public function setLegacyItems(Collection $items): static
+    {
+        $this->legacyItems = $items;
+
+        return $this;
     }
 
     // ── Transient getters/setters ─────────────────────────────────────────────
@@ -575,6 +666,42 @@ class SaleRecord
         return $this;
     }
 
+    public function getSerie(): ?string
+    {
+        return $this->serie;
+    }
+
+    public function setSerie(?string $serie): static
+    {
+        $this->serie = $serie;
+
+        return $this;
+    }
+
+    public function getNumero(): ?string
+    {
+        return $this->numero;
+    }
+
+    public function setNumero(?string $numero): static
+    {
+        $this->numero = $numero;
+
+        return $this;
+    }
+
+    public function getTaxRate(): ?string
+    {
+        return $this->taxRate;
+    }
+
+    public function setTaxRate(?string $taxRate): static
+    {
+        $this->taxRate = $taxRate;
+
+        return $this;
+    }
+
     public function getEmitInvoice(): ?bool
     {
         return $this->emitInvoice;
@@ -631,6 +758,289 @@ class SaleRecord
     public function setWriteItems(array $writeItems): static
     {
         $this->writeItems = $writeItems;
+
+        return $this;
+    }
+
+    // ── Bridge alias methods (legacy-pipeline compatibility) ─────────────────
+
+    public function getAlmacen(): ?Warehouse
+    {
+        return $this->getWarehouse();
+    }
+
+    public function setAlmacen(?Warehouse $almacen): static
+    {
+        return $this->setWarehouse($almacen);
+    }
+
+    public function getCliente(): ?Customer
+    {
+        return $this->getCustomer();
+    }
+
+    public function setCliente(?Customer $cliente): static
+    {
+        return $this->setCustomer($cliente);
+    }
+
+    public function getFecha(): ?DateTimeInterface
+    {
+        return $this->getIssuedAt();
+    }
+
+    public function setFecha(?DateTimeInterface $fecha): static
+    {
+        return $this->setIssuedAt($fecha);
+    }
+
+    public function getTotal(): ?string
+    {
+        return $this->grandTotal;
+    }
+
+    public function setTotal(string $total): static
+    {
+        return $this->setGrandTotal($total);
+    }
+
+    public function getTipoPago(): ?PaymentMethod
+    {
+        return $this->getPaymentMethod();
+    }
+
+    public function setTipoPago(?PaymentMethod $tipoPago): static
+    {
+        return $this->setPaymentMethod($tipoPago);
+    }
+
+    public function getGlosa(): ?string
+    {
+        return $this->getNote();
+    }
+
+    public function setGlosa(?string $glosa): static
+    {
+        return $this->setNote($glosa);
+    }
+
+    public function getDescuento(): ?string
+    {
+        return $this->getDiscountPercent();
+    }
+
+    public function setDescuento(?string $descuento): static
+    {
+        return $this->setDiscountPercent($descuento);
+    }
+
+    public function getIgv(): ?string
+    {
+        return $this->getTaxRate();
+    }
+
+    public function setIgv(?string $igv): static
+    {
+        return $this->setTaxRate($igv);
+    }
+
+    public function getCajaId(): ?int
+    {
+        return $this->getCashRegisterId();
+    }
+
+    public function setCajaId(?int $cajaId): static
+    {
+        return $this->setCashRegisterId($cajaId);
+    }
+
+    /** Returns 0 for VOIDED, 1 for everything else. */
+    public function getEstado(): int
+    {
+        return $this->status === 'VOIDED' ? 0 : 1;
+    }
+
+    public function setEstado(int $estado): static
+    {
+        return $this->setStatus($estado === 0 ? 'VOIDED' : 'COMPLETED');
+    }
+
+    public function getCreatedBy(): ?int
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?int $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?int
+    {
+        return $this->updatedBy;
+    }
+
+    public function setUpdatedBy(?int $updatedBy): static
+    {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    public function getDateCreated(): ?\DateTimeImmutable
+    {
+        return $this->dateCreated;
+    }
+
+    public function setDateCreated(?\DateTimeImmutable $dateCreated): static
+    {
+        $this->dateCreated = $dateCreated;
+
+        return $this;
+    }
+
+    public function getDateUpdated(): ?\DateTimeImmutable
+    {
+        return $this->dateUpdated;
+    }
+
+    public function setDateUpdated(?\DateTimeImmutable $dateUpdated): static
+    {
+        $this->dateUpdated = $dateUpdated;
+
+        return $this;
+    }
+
+    public function getTipoId(): int
+    {
+        return $this->tipoId;
+    }
+
+    public function setTipoId(int $tipoId): static
+    {
+        $this->tipoId = $tipoId;
+
+        return $this;
+    }
+
+    public function getFormaPago(): ?int
+    {
+        return $this->formaPago;
+    }
+
+    public function setFormaPago(?int $formaPago): static
+    {
+        $this->formaPago = $formaPago;
+
+        return $this;
+    }
+
+    public function getRecargoConsumo(): ?int
+    {
+        return $this->recargoConsumo;
+    }
+
+    public function setRecargoConsumo(?int $recargoConsumo): static
+    {
+        $this->recargoConsumo = $recargoConsumo;
+
+        return $this;
+    }
+
+    public function getTipoOperacion(): ?string
+    {
+        return $this->tipoOperacion;
+    }
+
+    public function setTipoOperacion(?string $tipoOperacion): static
+    {
+        $this->tipoOperacion = $tipoOperacion;
+
+        return $this;
+    }
+
+    public function getInvoice(): ?string
+    {
+        return $this->invoice;
+    }
+
+    public function setInvoice(?string $invoice): static
+    {
+        $this->invoice = $invoice;
+
+        return $this;
+    }
+
+    public function getDetraccionCodigo(): ?string
+    {
+        return $this->detraccionCodigo;
+    }
+
+    public function setDetraccionCodigo(?string $detraccionCodigo): static
+    {
+        $this->detraccionCodigo = $detraccionCodigo;
+
+        return $this;
+    }
+
+    public function getDetraccionPorcentaje(): ?float
+    {
+        return $this->detraccionPorcentaje;
+    }
+
+    public function setDetraccionPorcentaje(?float $detraccionPorcentaje): static
+    {
+        $this->detraccionPorcentaje = $detraccionPorcentaje;
+
+        return $this;
+    }
+
+    public function getDetraccionMonto(): ?float
+    {
+        return $this->detraccionMonto;
+    }
+
+    public function setDetraccionMonto(?float $detraccionMonto): static
+    {
+        $this->detraccionMonto = $detraccionMonto;
+
+        return $this;
+    }
+
+    public function getDetraccionMedioPago(): ?string
+    {
+        return $this->detraccionMedioPago;
+    }
+
+    public function setDetraccionMedioPago(?string $detraccionMedioPago): static
+    {
+        $this->detraccionMedioPago = $detraccionMedioPago;
+
+        return $this;
+    }
+
+    public function getDetraccionValorReferencial(): ?float
+    {
+        return $this->detraccionValorReferencial;
+    }
+
+    public function setDetraccionValorReferencial(?float $detraccionValorReferencial): static
+    {
+        $this->detraccionValorReferencial = $detraccionValorReferencial;
+
+        return $this;
+    }
+
+    public function getProveedor(): ?Supplier
+    {
+        return $this->proveedor;
+    }
+
+    public function setProveedor(?Supplier $proveedor): static
+    {
+        $this->proveedor = $proveedor;
 
         return $this;
     }

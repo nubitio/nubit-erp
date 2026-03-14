@@ -12,7 +12,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Message\SendInvoiceMessage;
 use App\State\Purchase\PurchasesWritePolicy;
 use App\State\Purchase\PurchasesWritePolicyResolver;
@@ -182,9 +182,9 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
      * the payment plan without throwing. tipoPago is intentionally left null to
      * avoid triggering the SaleUtils::fillSaleValues() path (which requires DB).
      */
-    private function buildOperationalSale(bool $emitInvoice): Sale
+    private function buildOperationalSale(bool $emitInvoice): SaleRecord
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setTipoId(2);
         $sale->setEmitInvoice($emitInvoice);
 

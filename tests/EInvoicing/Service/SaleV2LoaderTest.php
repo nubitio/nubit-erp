@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Service;
 use App\Core\Service\SettingsService;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Customer;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\Warehouse;
 use App\Sale\Domain\SaleStatus;
 use Doctrine\DBAL\Connection;
@@ -70,7 +70,7 @@ final class SaleV2LoaderTest extends TestCase
         $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('abc-123');
 
-        self::assertInstanceOf(Sale::class, $sale);
+        self::assertInstanceOf(SaleRecord::class, $sale);
         self::assertSame('abc-123', $sale->getId());
         self::assertSame('PEN', $sale->getCurrency());
         self::assertSame(7, $sale->getCreatedBy());
@@ -107,8 +107,8 @@ final class SaleV2LoaderTest extends TestCase
         $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('void-sale');
 
-        self::assertInstanceOf(Sale::class, $sale);
-        self::assertSame(SaleStatus::VOIDED->value, $sale->getEstado());
+        self::assertInstanceOf(SaleRecord::class, $sale);
+        self::assertSame('VOIDED', $sale->getStatus());
     }
 
     public function testActiveSaleStatusMapsToActiveValue(): void
@@ -141,7 +141,7 @@ final class SaleV2LoaderTest extends TestCase
         $loader = $this->makeLoader($connection, $em);
         $sale = $loader->loadAsSale('active-sale');
 
-        self::assertInstanceOf(Sale::class, $sale);
+        self::assertInstanceOf(SaleRecord::class, $sale);
         self::assertSame(SaleStatus::ACTIVE->value, $sale->getEstado());
         self::assertNotSame(SaleStatus::VOIDED->value, $sale->getEstado());
     }
@@ -178,7 +178,7 @@ final class SaleV2LoaderTest extends TestCase
         $loader = $this->makeLoader($connection, $em);
         $sale   = $loader->loadAsSale('sale-series');
 
-        self::assertInstanceOf(Sale::class, $sale);
+        self::assertInstanceOf(SaleRecord::class, $sale);
         self::assertSame('F001', $sale->getSerie());
         self::assertSame('42', $sale->getNumero());
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 
@@ -17,5 +17,5 @@ interface InvoiceCreationServiceInterface
      * @throws MathException
      * @throws \DateMalformedStringException
      */
-    public function createForSale(Sale $sale): array;
+    public function createForSale(SaleRecord $sale): array;
 }

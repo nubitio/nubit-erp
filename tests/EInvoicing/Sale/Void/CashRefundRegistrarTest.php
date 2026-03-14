@@ -8,7 +8,7 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
@@ -296,8 +296,8 @@ final class CashRefundRegistrarTest extends TestCase
         string $total = '100.00',
         string $serie = 'B001',
         string $numero = '1',
-    ): Sale {
-        $sale = new Sale();
+    ): SaleRecord {
+        $sale = new SaleRecord();
         $sale->setId($id);
         $sale->setTotal($total);
         $sale->setSerie($serie);

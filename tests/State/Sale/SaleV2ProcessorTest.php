@@ -62,7 +62,7 @@ class SaleV2ProcessorTest extends TestCase
     {
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale, Operation $op) use ($id): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $sale->setId($id);
             });
     }
@@ -159,7 +159,7 @@ class SaleV2ProcessorTest extends TestCase
         $capturedSale = null;
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale) use (&$capturedSale): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $capturedSale = $sale;
                 $sale->setId('sale-123');
             });
@@ -190,7 +190,7 @@ class SaleV2ProcessorTest extends TestCase
         $capturedSale = null;
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale) use (&$capturedSale): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $capturedSale = $sale;
                 $sale->setId('sale-456');
             });
@@ -226,7 +226,7 @@ class SaleV2ProcessorTest extends TestCase
         $capturedSale = null;
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale) use (&$capturedSale): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $capturedSale = $sale;
                 $sale->setId('sale-789');
             });
@@ -256,7 +256,7 @@ class SaleV2ProcessorTest extends TestCase
         $capturedSale = null;
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale) use (&$capturedSale): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $capturedSale = $sale;
                 $sale->setId('sale-no-product');
             });
@@ -293,7 +293,7 @@ class SaleV2ProcessorTest extends TestCase
         $capturedSale = null;
         $this->saleProcessor->method('process')
             ->willReturnCallback(function (mixed $sale) use (&$capturedSale): void {
-                /** @var \App\Legacy\Sale $sale */
+                /** @var \App\Entity\SaleRecord $sale */
                 $capturedSale = $sale;
                 $sale->setId('sale-missing-product');
             });

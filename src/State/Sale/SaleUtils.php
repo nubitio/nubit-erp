@@ -9,7 +9,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\CashShift;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;
@@ -86,9 +86,9 @@ readonly class SaleUtils
      * @throws Exception
      */
     public function fillSaleValues(
-        Sale $sale,
+        SaleRecord $sale,
         DocType $docType = DocType::NOTA_VENTA,
-    ): Sale {
+    ): SaleRecord {
         $sale->setTipoId(2);
         if ($sale->getTipoPago()->getId() === 2) {
             $sale->setFormaPago(2);

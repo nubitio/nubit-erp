@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Enum\InventoryBehavior;
@@ -38,7 +38,7 @@ final class BomExplosionService implements StockMovementEnricherInterface
      *
      * @return list<MovementDraft>
      */
-    public function enrichSaleMovements(Sale $sale, array $baseMovements): array
+    public function enrichSaleMovements(SaleRecord $sale, array $baseMovements): array
     {
         $enriched = [];
 

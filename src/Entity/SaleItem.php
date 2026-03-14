@@ -7,6 +7,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use App\Entity\SaleRecord;
 use App\Legacy\Sale;
 use App\Repository\SaleItemRepository;
 use Doctrine\DBAL\Types\Types;
@@ -65,14 +66,14 @@ class SaleItem
         return $this->id;
     }
 
-    public function getMovimiento(): ?Sale
+    public function getMovimiento(): Sale|SaleRecord|null
     {
         return $this->movimiento;
     }
 
-    public function setMovimiento(?Sale $movimiento): static
+    public function setMovimiento(Sale|SaleRecord|null $movimiento): static
     {
-        $this->movimiento = $movimiento;
+        $this->movimiento = $movimiento instanceof SaleRecord ? null : $movimiento;
 
         return $this;
     }

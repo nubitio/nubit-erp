@@ -7,7 +7,7 @@ namespace App\Service;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Money;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
 
 /**
@@ -26,7 +26,7 @@ final class SalePaymentPlanService
      *
      * @throws ServiceException
      */
-    public function resolveForWrite(Sale $sale, string $currency, string $grandTotal): array
+    public function resolveForWrite(SaleRecord $sale, string $currency, string $grandTotal): array
     {
         $total = Money::money($grandTotal);
         $payments = $sale->getPayments();
@@ -87,9 +87,9 @@ final class SalePaymentPlanService
     /**
      * @throws ServiceException
      */
-    public function resolveCashCollectedAmount(Sale $sale, string $grandTotal): string
+    public function resolveCashCollectedAmount(SaleRecord $sale, string $grandTotal): string
     {
-        $currency = strtoupper(trim((string)($sale->getCurrency() ?? 'PEN')));
+        $currency = strtoupper(trim($sale->getCurrency()));
         $payments = $this->resolveForWrite($sale, $currency !== '' ? $currency : 'PEN', $grandTotal);
 
         $cash = BigDecimal::zero();

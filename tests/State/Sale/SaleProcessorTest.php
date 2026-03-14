@@ -20,7 +20,7 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\Customer;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
@@ -1146,7 +1146,7 @@ final class SaleProcessorTest extends TestCase
             purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
-        self::assertSame($sale, $item->getMovimiento());
+        self::assertTrue($sale->getItems()->contains($item));
         self::assertSame('100.00', $sale->getSubtotal());
         self::assertSame('100.00', $sale->getTotal());
     }
@@ -1295,7 +1295,7 @@ final class SaleProcessorTest extends TestCase
      * @param array<string, mixed> $context
      */
     private function buildAndRunProcessor(
-        Sale $sale,
+        SaleRecord $sale,
         \ApiPlatform\Metadata\Operation $operation,
         SalesWritePolicy $salesPolicy,
         PurchasesWritePolicy $purchasesPolicy,
@@ -1381,9 +1381,9 @@ final class SaleProcessorTest extends TestCase
     // Domain-object factory helpers
     // =========================================================================
 
-    private function buildNewSale(int $tipoId): Sale
+    private function buildNewSale(int $tipoId): SaleRecord
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setTipoId($tipoId);
 
         // Operational sales (tipoId=2) always call SalePaymentPlanService::resolveForWrite().
@@ -1400,7 +1400,7 @@ final class SaleProcessorTest extends TestCase
      * Needed for tests that exercise CashSessionResolver or SalesWriteGateway V2 paths
      * (both require $sale->getBranch() to be non-null).
      */
-    private function buildNewSaleWithBranch(int $tipoId): Sale
+    private function buildNewSaleWithBranch(int $tipoId): SaleRecord
     {
         $sale = $this->buildNewSale($tipoId);
         $branch = new Branch();
@@ -1411,7 +1411,7 @@ final class SaleProcessorTest extends TestCase
         return $sale;
     }
 
-    private function buildNewSaleWithPaymentMethod(int $tipoId): Sale
+    private function buildNewSaleWithPaymentMethod(int $tipoId): SaleRecord
     {
         $sale = $this->buildNewSale($tipoId);
         $paymentMethod = $this->buildPaymentMethod(id: 1);
@@ -1420,9 +1420,9 @@ final class SaleProcessorTest extends TestCase
         return $sale;
     }
 
-    private function buildExistingSale(int $tipoId): Sale
+    private function buildExistingSale(int $tipoId): SaleRecord
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setTipoId($tipoId);
         $sale->setId('existing-uuid-abc-123');
 

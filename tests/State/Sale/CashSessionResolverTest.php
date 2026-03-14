@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\Branch;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\State\Sale\CashSessionResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -140,7 +140,7 @@ final class CashSessionResolverTest extends TestCase
         $resolver = new CashSessionResolver($connection);
 
         // Sale with no branch and no almacen
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setFecha(new \DateTimeImmutable('2026-02-28 10:00:00'));
 
         $this->expectException(ServiceException::class);
@@ -149,12 +149,12 @@ final class CashSessionResolverTest extends TestCase
         $resolver->tryResolveForSale($sale, null);
     }
 
-    private function buildSale(string $branchId, int $cashRegisterId, string $issuedAt): Sale
+    private function buildSale(string $branchId, int $cashRegisterId, string $issuedAt): SaleRecord
     {
         $branch = new Branch();
         $this->setEntityId($branch, $branchId);
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setBranch($branch);
         $sale->setCajaId($cashRegisterId);
         $sale->setFecha(new \DateTimeImmutable($issuedAt));
