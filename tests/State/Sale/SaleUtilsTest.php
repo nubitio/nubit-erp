@@ -8,7 +8,7 @@ use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\Warehouse;
 use App\Sale\Domain\DocType;
 use App\State\Sale\SaleUtils;
@@ -47,7 +47,7 @@ class SaleUtilsTest extends TestCase
     /**
      * Build a Sale with a PaymentMethod and a Warehouse, ready for fillSaleValues().
      */
-    private function buildSaleForFill(int $paymentMethodId, ?int $cajaId = null): Sale
+    private function buildSaleForFill(int $paymentMethodId, ?int $cajaId = null): SaleRecord
     {
         $warehouse = $this->createMock(Warehouse::class);
         $warehouse->method('getId')->willReturn('wh-uuid');
@@ -55,7 +55,7 @@ class SaleUtilsTest extends TestCase
         $paymentMethod = $this->createMock(PaymentMethod::class);
         $paymentMethod->method('getId')->willReturn($paymentMethodId);
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setAlmacen($warehouse);
         $sale->setTipoPago($paymentMethod);
         $sale->setTotal('100.00');

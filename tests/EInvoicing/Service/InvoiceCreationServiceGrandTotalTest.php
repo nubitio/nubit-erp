@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Service;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceCreationService;
 use App\EInvoicing\Service\InvoiceLineInput;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
@@ -208,10 +208,10 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
      * Builds a Sale with 4 SaleItem lines at 1.18 each (total 4.73 — which
      * differs by 1 cent from the pure IGV-recalculated 4.72).
      */
-    private function buildSaleWithFourItems(string $total): Sale
+    private function buildSaleWithFourItems(string $total): SaleRecord
     {
         $now = new \DateTimeImmutable('now');
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-igv-test-1')
             ->setFecha($now)
             ->setDateCreated($now)

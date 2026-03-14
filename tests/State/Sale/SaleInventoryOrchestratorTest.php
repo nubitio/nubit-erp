@@ -9,7 +9,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
@@ -79,9 +79,9 @@ final class SaleInventoryOrchestratorTest extends TestCase
     /**
      * @param list<SaleItem> $items
      */
-    private function makeSale(int $tipoId, Warehouse $warehouse, array $items = []): Sale&MockObject
+    private function makeSale(int $tipoId, Warehouse $warehouse, array $items = []): SaleRecord&MockObject
     {
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getAlmacen')->willReturn($warehouse);
         $sale->method('getTipoId')->willReturn($tipoId);
         $sale->method('getId')->willReturn('sale-1');
@@ -150,7 +150,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
     public function testNoWarehouseSkipsAllProcessing(): void
     {
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getAlmacen')->willReturn(null);
 
         $this->connection->expects(self::never())->method('fetchOne');

@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Entity\Branch;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Entity\Product;
@@ -51,7 +51,7 @@ class SalesWriteGatewayTest extends TestCase
      * Build a Sale that satisfies all guard checks and works with the real
      * SalePaymentPlanService (uses sale.payments array to avoid querying tipoPago).
      */
-    private function buildMinimalSale(string $amount = '100.00'): Sale
+    private function buildMinimalSale(string $amount = '100.00'): SaleRecord
     {
         $branch = $this->createMock(Branch::class);
         $branch->method('getId')->willReturn('branch-uuid');
@@ -60,7 +60,7 @@ class SalesWriteGatewayTest extends TestCase
         $warehouse->method('getId')->willReturn('warehouse-uuid');
         $warehouse->method('getBranch')->willReturn(null);
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId('sale-uuid-001');
         $sale->setBranch($branch);
         $sale->setAlmacen($warehouse);
@@ -93,11 +93,11 @@ class SalesWriteGatewayTest extends TestCase
      * Create a partial mock of Sale that makes getCreatedBy/getUpdatedBy return null,
      * used for guard tests that need sellerUserId=null without triggering type errors.
      *
-     * @return Sale&\PHPUnit\Framework\MockObject\MockObject
+     * @return SaleRecord&\PHPUnit\Framework\MockObject\MockObject
      */
-    private function buildSaleWithNullSeller(): Sale
+    private function buildSaleWithNullSeller(): SaleRecord
     {
-        $sale = $this->getMockBuilder(Sale::class)
+        $sale = $this->getMockBuilder(SaleRecord::class)
             ->onlyMethods(['getCreatedBy', 'getUpdatedBy'])
             ->getMock();
         $sale->method('getCreatedBy')->willReturn(null);
@@ -356,7 +356,7 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testMarkVoidedThrowsWhenSaleIdIsNull(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/sale id is null/');
@@ -366,7 +366,7 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testMarkVoidedHappyPath(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId('sale-void-1');
 
         $this->connection->expects($this->exactly(2))
@@ -378,7 +378,7 @@ class SalesWriteGatewayTest extends TestCase
 
     public function testMarkVoidedEmptyReasonDefaultsToVoid(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId('sale-void-2');
 
         $capturedParams = [];

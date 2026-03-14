@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use ApiPlatform\Metadata\Operation;
-use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\SaleRecord;
 use App\Repository\ProductRepository;
@@ -19,9 +17,8 @@ use Psr\Log\LoggerInterface;
 /**
  * Processor for POST/PATCH /api/sales.
  *
- * Maps a SaleRecord (English field names) to the legacy Sale entity,
- * delegates all business logic to SaleProcessor, then returns a
- * refreshed SaleRecord from the repository.
+ * Hydrates the incoming SaleRecord with pipeline-only data, delegates all
+ * business logic to SaleProcessor, then returns a refreshed SaleRecord.
  *
  * @implements ProcessorInterface<mixed, mixed>
  */
@@ -47,15 +44,21 @@ readonly class SaleV2Processor implements ProcessorInterface
             throw new \InvalidArgumentException('SaleV2Processor expects a SaleRecord instance.');
         }
 
-        $sale = $this->mapToSaleEntity($data);
+        // Hydrate pipeline-only fields not set by deserializer
+        $data->setTipoId(2);
+        if ($data->getBranch() === null && $data->getWarehouse()?->getBranch() !== null) {
+            $data->setBranch($data->getWarehouse()->getBranch());
+        }
 
-        // Adapt the operation to target Sale (SaleProcessor expects Sale class context)
-        $saleOperation = $this->buildSaleOperation($operation);
+        // Build SaleItem entities and attach them for SaleProcessor
+        foreach ($this->buildSaleItems($data) as $item) {
+            $data->addLegacyItem($item);
+        }
 
-        $this->saleProcessor->process($sale, $saleOperation, $uriVariables, $context);
+        $this->saleProcessor->process($data, $operation, $uriVariables, $context);
 
         // Refresh from DB to get fully populated SaleRecord with V2 data
-        $saleId = $sale->getId();
+        $saleId = $data->getId();
         if ($saleId === null) {
             throw new \RuntimeException('SaleProcessor did not assign an ID to the sale.');
         }
@@ -77,38 +80,6 @@ readonly class SaleV2Processor implements ProcessorInterface
         $this->saleRecordRepository->enrichWithTaxDocuments([$record]);
 
         return $record;
-    }
-
-    /**
-     * Map SaleRecord (English V2 fields) → Sale (legacy entity).
-     */
-    private function mapToSaleEntity(SaleRecord $record): Sale
-    {
-        $sale = new Sale();
-
-        $sale->setTipoId(2); // Always a sale (type 2)
-        $sale->setAlmacen($record->getWarehouse());
-        $sale->setBranch($record->getBranch() ?? $record->getWarehouse()?->getBranch());
-        $sale->setCliente($record->getCustomer());
-        $sale->setTipoPago($record->getPaymentMethod());
-        $sale->setFecha($record->getIssuedAt() ?? new \DateTimeImmutable());
-        $sale->setCurrency($record->getCurrency());
-        $sale->setExchangeRate($record->getExchangeRate());
-        $sale->setGlosa($record->getNote());
-        $sale->setDescuento($record->getDiscountPercent());
-        $sale->setTotal($record->getGrandTotal());
-        $sale->setEmitInvoice($record->getEmitInvoice());
-        $sale->setPayments($record->getPayments());
-
-        if ($record->getSellerUserId() !== null) {
-            $sale->setCreatedBy($record->getSellerUserId());
-        }
-
-        foreach ($this->buildSaleItems($record) as $item) {
-            $sale->addItem($item);
-        }
-
-        return $sale;
     }
 
     /**
@@ -180,16 +151,5 @@ readonly class SaleV2Processor implements ProcessorInterface
         }
 
         return null;
-    }
-
-    /**
-     * Build a Sale-compatible operation for SaleProcessor delegation.
-     */
-    private function buildSaleOperation(Operation $operation): Operation
-    {
-        // SaleProcessor checks instanceof Post/Patch/Delete; create matching type.
-        $operationClass = $operation::class;
-
-        return new $operationClass(class: Sale::class);
     }
 }

@@ -7,7 +7,7 @@ namespace App\Tests\Service;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Service\InventoryLedgerService;
@@ -93,7 +93,7 @@ final class InventoryLedgerServiceCoreTransitionTest extends TestCase
 
         $service = new InventoryLedgerService($connection, $settings);
 
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-1')
             ->setTipoId(2)
             ->setFecha(new \DateTimeImmutable('2026-02-28 10:00:00'))

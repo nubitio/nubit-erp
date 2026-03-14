@@ -6,7 +6,7 @@ namespace App\Tests\Service;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
@@ -53,7 +53,7 @@ final class SaleCurrencyResolverTest extends TestCase
             [Constants::SALES_DEFAULT_USD_EXCHANGE_RATE, '3.800000', '3.800000'],
         ]);
 
-        $sale = (new Sale())->setId('sale-1');
+        $sale = (new SaleRecord())->setId('sale-1');
 
         $resolver = new SaleCurrencyResolver($connection, $settings);
         $result = $resolver->resolveForWrite($sale);

@@ -6,7 +6,7 @@ namespace App\Inventory\Core\Service;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\Warehouse;
 use App\Inventory\Core\Contract\StockMovementEnricherInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
@@ -58,14 +58,14 @@ final class InventoryService
      *
      * Enrichers (e.g. BomExplosionService) may replace or expand the draft list.
      *
-     * @param Sale|null $sale Context object for enricher chain
+     * @param SaleRecord|null $sale Context object for enricher chain
      *
      * @throws ServiceException on validation failure
      * @throws \Doctrine\DBAL\Exception
      */
     public function recordMovement(
         MovementDraft $draft,
-        ?Sale $sale = null,
+        ?SaleRecord $sale = null,
         InventoryBehavior $behavior = InventoryBehavior::TRACKED,
     ): void {
         // NOT_TRACKED products (services, digital goods) never generate stock movements.
@@ -214,12 +214,12 @@ final class InventoryService
     /**
      * @return list<MovementDraft>
      */
-    private function runEnrichers(MovementDraft $draft, ?Sale $sale): array
+    private function runEnrichers(MovementDraft $draft, ?SaleRecord $sale): array
     {
         $movements = [$draft];
 
         foreach ($this->enrichers as $enricher) {
-            $movements = $enricher->enrichSaleMovements($sale ?? new Sale(), $movements);
+            $movements = $enricher->enrichSaleMovements($sale ?? new SaleRecord(), $movements);
         }
 
         return $movements;

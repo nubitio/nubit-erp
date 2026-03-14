@@ -7,7 +7,7 @@ namespace App\Tests\State\Sale;
 use App\Core\Exception\ServiceException;
 use App\Entity\Customer;
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\SunatCatalog;
 use App\Repository\SunatCatalogRepository;
@@ -55,9 +55,9 @@ final class DetractionCalculatorTest extends TestCase
     /**
      * @param list<SaleItem> $items
      */
-    private function makeSale(?Customer $customer, string $total, array $items = []): Sale&MockObject
+    private function makeSale(?Customer $customer, string $total, array $items = []): SaleRecord&MockObject
     {
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn($total);
         $sale->method('getItems')->willReturn(new ArrayCollection($items));
@@ -187,7 +187,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '037', 4.0); // 4%
         $item = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
@@ -220,7 +220,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '008', 10.0); // '008' has no minimum
         $item = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('200.00'); // below 700 but no threshold applies
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
@@ -273,7 +273,7 @@ final class DetractionCalculatorTest extends TestCase
         $itemA = $this->makeSaleItemWithCatalog($catalog);
         $itemB = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('2000.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$itemA, $itemB]));
@@ -303,7 +303,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
         $item = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1500.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
@@ -328,7 +328,7 @@ final class DetractionCalculatorTest extends TestCase
         $catalog = $this->makeDetractionCatalog(1, '037', 4.0);
         $item = $this->makeSaleItemWithCatalog($catalog);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));
@@ -406,7 +406,7 @@ final class DetractionCalculatorTest extends TestCase
 
         $item = $this->makeSaleItemWithCatalog($catalogNull);
 
-        $sale = $this->createMock(Sale::class);
+        $sale = $this->createMock(SaleRecord::class);
         $sale->method('getCliente')->willReturn($customer);
         $sale->method('getTotal')->willReturn('1000.00');
         $sale->method('getItems')->willReturn(new ArrayCollection([$item]));

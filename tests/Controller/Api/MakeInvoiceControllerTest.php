@@ -7,7 +7,7 @@ namespace App\Tests\Controller\Api;
 use App\Controller\Api\MakeInvoice;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\EInvoicing\Service\SaleV2Loader;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\State\Sale\DetractionCalculatorInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +41,7 @@ final class MakeInvoiceControllerTest extends TestCase
 
     public function testReturnsErrorWhenSaleAlreadyHasInvoice(): void
     {
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setHasInvoice(true)
             ->setInvoice('F001-123');
 
@@ -74,7 +74,7 @@ final class MakeInvoiceControllerTest extends TestCase
      */
     public function testV2LoaderIsTriedFirstAndOrmIsNotNeeded(): void
     {
-        $v2Sale = (new Sale())
+        $v2Sale = (new SaleRecord())
             ->setId('v2-uuid-sale')
             ->setHasInvoice(false);
 

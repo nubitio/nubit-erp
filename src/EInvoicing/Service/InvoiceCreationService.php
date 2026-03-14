@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Service;
 
 use App\EInvoicing\Shared\ErrorMessages;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Sale\Domain\DocType;
 use App\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;
@@ -30,7 +30,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
      * @throws MathException
      * @throws \DateMalformedStringException
      */
-    public function createForSale(Sale $sale): array
+    public function createForSale(SaleRecord $sale): array
     {
         $saleId = $sale->getId();
         if ($saleId === null || $saleId === '') {
@@ -55,7 +55,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             ];
         }
 
-        $saleDateUtc = (clone $saleDate)->setTimezone(new DateTimeZone('UTC'));
+        $saleDateUtc = \DateTimeImmutable::createFromInterface($saleDate)->setTimezone(new DateTimeZone('UTC'));
         $nowUtc = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         if ($saleDateUtc < $nowUtc->modify('-3 days')) {
             return [

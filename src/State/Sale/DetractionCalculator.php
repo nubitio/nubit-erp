@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Repository\SunatCatalogRepository;
 use Psr\Log\LoggerInterface;
 
@@ -27,7 +27,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
     /**
      * @throws ServiceException
      */
-    public function applyFromItems(Sale $sale): void
+    public function applyFromItems(SaleRecord $sale): void
     {
         $customerDoc = $sale->getCliente()?->getRuc() ?? '';
         if (strlen($customerDoc) !== 11) {
@@ -101,7 +101,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
         return self::MIN_TOTAL;
     }
 
-    private function clearDetraction(Sale $sale, string $reason): void
+    private function clearDetraction(SaleRecord $sale, string $reason): void
     {
         $this->logger->warning('Detraction cleared for sale {saleId}: {reason}', [
             'saleId' => $sale->getId(),

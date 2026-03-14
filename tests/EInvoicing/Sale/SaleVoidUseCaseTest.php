@@ -17,7 +17,7 @@ use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\TaxDocument;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementCategoryRepository;
@@ -64,8 +64,8 @@ final class SaleVoidUseCaseTest extends TestCase
 
     public function testThrowsAlreadyVoidedWhenSaleIsVoided(): void
     {
-        $sale = (new Sale())->setId('sale-1');
-        $sale->setEstado(SaleStatus::VOIDED->value);
+        $sale = (new SaleRecord())->setId('sale-1');
+        $sale->setStatus('VOIDED');
 
         $em = $this->createMock(EntityManagerInterface::class);
 
@@ -85,9 +85,9 @@ final class SaleVoidUseCaseTest extends TestCase
     {
         // When no movimiento row exists, SaleV2Loader returns a synthetic Sale
         // whose estado must be SaleStatus::VOIDED->value (not 0, which was the old bug).
-        $v2Sale = new Sale();
+        $v2Sale = new SaleRecord();
         $v2Sale->setId('v2-uuid');
-        $v2Sale->setEstado(SaleStatus::VOIDED->value); // must be 2, not 0
+        $v2Sale->setStatus('VOIDED'); // setEstado(0) or setStatus('VOIDED') — bridge maps estado=0 to VOIDED
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('find')->willReturn(null); // no legacy row
@@ -111,7 +111,7 @@ final class SaleVoidUseCaseTest extends TestCase
 
     public function testThrowsTooOldWhenSaleDateExceedsWindow(): void
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId('sale-old');
         $sale->setEstado(SaleStatus::ACTIVE->value);
         $sale->setFecha(new \DateTimeImmutable('-10 days'));
@@ -231,7 +231,7 @@ final class SaleVoidUseCaseTest extends TestCase
 
         $useCase('sale-status', 'reason', 1);
 
-        self::assertSame(SaleStatus::VOIDED->value, $sale->getEstado());
+        self::assertSame('VOIDED', $sale->getStatus());
     }
 
     public function testEntityManagerFlushIsCalledOnSuccessfulVoid(): void
@@ -675,7 +675,7 @@ final class SaleVoidUseCaseTest extends TestCase
     {
         // Sale with no payment method → CashRefundRegistrar.register() exits early
         // (no EntityManager access needed inside CashRefundRegistrar).
-        $v2Sale = new Sale();
+        $v2Sale = new SaleRecord();
         $v2Sale->setId('v2-uuid');
         $v2Sale->setEstado(SaleStatus::ACTIVE->value);
         $v2Sale->setFecha(new \DateTimeImmutable('today'));
@@ -709,7 +709,7 @@ final class SaleVoidUseCaseTest extends TestCase
     public function testDoesNotPersistSaleWhenLoadedFromV2(): void
     {
         // Sale with no payment method → CashRefundRegistrar exits early.
-        $v2Sale = new Sale();
+        $v2Sale = new SaleRecord();
         $v2Sale->setId('v2-only');
         $v2Sale->setEstado(SaleStatus::ACTIVE->value);
         $v2Sale->setFecha(new \DateTimeImmutable('today'));
@@ -740,9 +740,9 @@ final class SaleVoidUseCaseTest extends TestCase
     // Helpers
     // ---------------------------------------------------------------------------
 
-    private function makeActiveSale(string $id): Sale
+    private function makeActiveSale(string $id): SaleRecord
     {
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId($id);
         $sale->setEstado(SaleStatus::ACTIVE->value);
         $sale->setFecha(new \DateTimeImmutable('today'));

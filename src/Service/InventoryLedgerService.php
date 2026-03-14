@@ -8,7 +8,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Constants;
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
@@ -106,7 +106,7 @@ SQL,
      * @throws ServiceException
      */
     public function applyMovementFromSaleItem(
-        Sale $sale,
+        SaleRecord $sale,
         SaleItem $item,
         int $lineNo,
         bool $enforceNonNegativeStock = true,
@@ -174,7 +174,7 @@ SQL,
                 productId: (string) $product->getId(),
                 delta: $delta,
                 unitCost: $unitCost,
-                occurredAt: $sale->getFecha() ?? new \DateTimeImmutable(),
+                occurredAt: \DateTimeImmutable::createFromInterface($sale->getFecha() ?? new \DateTimeImmutable()),
                 enforceNonNegativeStock: $enforceNonNegativeStock
             );
 
@@ -226,7 +226,7 @@ SQL,
      * @throws Exception
      */
     private function insertStockMovement(
-        Sale $sale,
+        SaleRecord $sale,
         SaleItem $item,
         string $movementType,
         float $delta,
@@ -519,7 +519,7 @@ SQL,
         $this->syncStockItem($warehouseId, $productId, $newOnHand, $currentReserved);
     }
 
-    private function resolveUnitCost(Sale $sale, SaleItem $item): ?float
+    private function resolveUnitCost(SaleRecord $sale, SaleItem $item): ?float
     {
         if ($sale->getTipoId() === 1) {
             $fromItem = $item->getPrecioUnitario();

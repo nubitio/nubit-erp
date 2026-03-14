@@ -14,7 +14,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
 use App\Entity\Customer;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
@@ -71,7 +71,7 @@ readonly class SaleProcessor implements ProcessorInterface
     /**
      * @inheritdoc
      *
-     * @param Sale $data
+     * @param SaleRecord $data
      *
      * @throws ServiceException
      * @throws Exception
@@ -160,12 +160,12 @@ readonly class SaleProcessor implements ProcessorInterface
         $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
         $total = Money::money($subtotal->minus($discountAmount));
         $data->setTotal(Money::toString($total));
-        $data->setEstado(1);
+        $data->setStatus('COMPLETED');
         $this->detractionCalculator->applyFromItems($data);
         if ($isOperationalSale) {
             $this->salePaymentPlanService->resolveForWrite(
                 $data,
-                strtoupper(trim((string) ($data->getCurrency() ?? 'PEN')) ?: 'PEN'),
+                strtoupper(trim($data->getCurrency())) ?: 'PEN',
                 $data->getTotal() ?? '0.00'
             );
         }
@@ -312,7 +312,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             amount: $cashCollected,
                             categoryId: null,
                             paymentMethodId: \App\Entity\PaymentMethod::CASH,
-                            createdAt: $data->getFecha() ?? new DateTimeImmutable(),
+                            createdAt: $data->getFecha() !== null ? \DateTimeImmutable::createFromInterface($data->getFecha()) : new DateTimeImmutable(),
                             description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
                         );
                     } catch (\Throwable $exception) {
@@ -370,7 +370,7 @@ readonly class SaleProcessor implements ProcessorInterface
         return $result;
     }
 
-    private function ensureSaleCustomer(Sale $sale): void
+    private function ensureSaleCustomer(SaleRecord $sale): void
     {
         if ($sale->getTipoId() !== 2 || $sale->getCliente() instanceof Customer) {
             return;

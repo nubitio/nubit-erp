@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\Branch;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\State\Sale\CashSessionResolver;
 use App\State\Sale\SaleProcessor;
 use Doctrine\DBAL\Connection;
@@ -170,12 +170,12 @@ final class SaleProcessorScenarioCTest extends TestCase
         );
     }
 
-    private function buildSale(string $branchId, int $cashRegisterId, string $issuedAt): Sale
+    private function buildSale(string $branchId, int $cashRegisterId, string $issuedAt): SaleRecord
     {
         $branch = new Branch();
         $this->setEntityId($branch, $branchId);
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setBranch($branch);
         $sale->setCajaId($cashRegisterId);
         $sale->setFecha(new \DateTimeImmutable($issuedAt));

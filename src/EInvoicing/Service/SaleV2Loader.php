@@ -7,10 +7,9 @@ namespace App\EInvoicing\Service;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\Customer;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
-use App\Sale\Domain\SaleStatus;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -36,7 +35,7 @@ readonly class SaleV2Loader
      * The returned Sale is NOT an ORM-managed entity (it has no identity map entry).
      * It is intended for read-only use by services that query data off the Sale object.
      */
-    public function loadAsSale(string $saleId): ?Sale
+    public function loadAsSale(string $saleId): ?SaleRecord
     {
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
@@ -71,7 +70,7 @@ SQL,
             return null;
         }
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale->setId($row['id']);
         $sale->setTipoId(2); // sales table only stores operational sales
 
@@ -87,7 +86,7 @@ SQL,
         $sale->setExchangeRate($row['exchange_rate']);
         $sale->setSubtotal($row['subtotal']);
         $sale->setTotal($row['grand_total']);
-        $sale->setEstado($row['status'] === 'VOIDED' ? SaleStatus::VOIDED->value : SaleStatus::ACTIVE->value);
+        $sale->setEstado($row['status'] === 'VOIDED' ? 0 : 1);
 
         if (!empty($row['serie'])) {
             $sale->setSerie((string) $row['serie']);
@@ -129,7 +128,7 @@ SQL,
         foreach ($itemRows as $itemRow) {
             $saleItem = $this->buildSaleItem($itemRow);
             if ($saleItem !== null) {
-                $sale->addItem($saleItem);
+                $sale->addLegacyItem($saleItem);
             }
         }
 

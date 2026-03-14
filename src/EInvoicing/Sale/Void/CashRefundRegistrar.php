@@ -8,7 +8,7 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Enum\CashShiftStatus;
 use App\Repository\CashMovementCategoryRepository;
 use DateTimeImmutable;
@@ -24,7 +24,7 @@ final readonly class CashRefundRegistrar
     ) {
     }
 
-    public function register(Sale $sale, int $userId): void
+    public function register(SaleRecord $sale, int $userId): void
     {
         if ($sale->getTipoPago()?->getId() !== PaymentMethod::CASH) {
             return;

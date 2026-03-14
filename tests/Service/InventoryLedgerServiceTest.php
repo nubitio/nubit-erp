@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Entity\Product;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Service\InventoryLedgerService;
@@ -59,7 +59,7 @@ final class InventoryLedgerServiceTest extends TestCase
 
         $service = new InventoryLedgerService($connection);
 
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-1')
             ->setTipoId(1)
             ->setFecha(new \DateTimeImmutable('2026-02-28 10:00:00'))
@@ -82,7 +82,7 @@ final class InventoryLedgerServiceTest extends TestCase
 
         $service = new InventoryLedgerService($connection);
 
-        $sale = (new Sale())
+        $sale = (new SaleRecord())
             ->setId('sale-2')
             ->setTipoId(2)
             ->setFecha(new \DateTimeImmutable('2026-02-28 11:00:00'))

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Purchase;
 
 use App\Core\Util\Money;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -22,7 +22,7 @@ final readonly class GoodsReceiptWriteGateway
     /**
      * @throws Exception
      */
-    public function write(Sale $movement): void
+    public function write(SaleRecord $movement): void
     {
         $receiptId = $movement->getId() ?? Uuid::v7()->toRfc4122();
         $branchId = $movement->getBranch()?->getId() ?? $movement->getAlmacen()?->getBranch()?->getId();
@@ -51,9 +51,10 @@ final readonly class GoodsReceiptWriteGateway
         $subtotal = Money::money($movement->getSubtotal());
         $grandTotal = Money::money($movement->getTotal());
         $currencyData = $this->saleCurrencyResolver->resolveForWrite($movement);
-        $issuedAt = $movement->getFecha() ?? $movement->getDateCreated() ?? new \DateTimeImmutable();
-        $createdAt = $movement->getDateCreated() ?? $issuedAt;
-        $updatedAt = $movement->getDateUpdated() ?? $createdAt;
+        $rawIssuedAt = $movement->getFecha() ?? $movement->getDateCreated() ?? new \DateTimeImmutable();
+        $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
+        $createdAt = $movement->getDateCreated() !== null ? \DateTimeImmutable::createFromInterface($movement->getDateCreated()) : $issuedAt;
+        $updatedAt = $movement->getDateUpdated() !== null ? \DateTimeImmutable::createFromInterface($movement->getDateUpdated()) : $createdAt;
         $offline = $this->buildOfflineMeta('goods-receipt:' . $receiptId, $issuedAt, 1);
 
         $this->connection->beginTransaction();

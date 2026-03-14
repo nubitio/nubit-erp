@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use Doctrine\DBAL\Connection;
 
 /**
@@ -21,7 +21,7 @@ final readonly class CashSessionResolver
     /**
      * @throws ServiceException
      */
-    public function resolveForSale(Sale $sale, ?int $legacyCashShiftId = null): int
+    public function resolveForSale(SaleRecord $sale, ?int $legacyCashShiftId = null): int
     {
         $saleId = (string) ($sale->getId() ?? 'NEW');
         $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
@@ -33,7 +33,8 @@ final readonly class CashSessionResolver
         }
 
         $cashRegisterId = $sale->getCajaId();
-        $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
 
         $candidate = false;
@@ -71,7 +72,7 @@ final readonly class CashSessionResolver
      *
      * @throws ServiceException when the branch cannot be determined (infrastructure error)
      */
-    public function tryResolveForSale(Sale $sale, ?int $legacyCashShiftId = null): ?int
+    public function tryResolveForSale(SaleRecord $sale, ?int $legacyCashShiftId = null): ?int
     {
         $saleId = (string) ($sale->getId() ?? 'NEW');
         $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
@@ -83,7 +84,8 @@ final readonly class CashSessionResolver
         }
 
         $cashRegisterId = $sale->getCajaId();
-        $issuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
+        $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
 
         $candidate = false;
