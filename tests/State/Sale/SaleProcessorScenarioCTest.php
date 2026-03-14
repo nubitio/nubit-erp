@@ -44,7 +44,7 @@ final class SaleProcessorScenarioCTest extends TestCase
         $sale = $this->buildSale(branchId: 'branch-abc', cashRegisterId: 1, issuedAt: '2026-03-01 10:00:00');
 
         // Must return null — NOT throw ServiceException
-        $result = $resolver->tryResolveForSale($sale, null);
+        $result = $resolver->tryResolveForSale($sale);
 
         $this->assertNull($result, 'Scenario C: tryResolveForSale() must return null when no session exists');
     }
@@ -69,7 +69,7 @@ final class SaleProcessorScenarioCTest extends TestCase
         $this->expectExceptionMessageMatches('/No se pudo resolver cash_session_id/');
 
         // resolveForSale() (used when requireCashShift=true) must still throw
-        $resolver->resolveForSale($sale, null);
+        $resolver->resolveForSale($sale);
     }
 
     /**
@@ -97,7 +97,7 @@ final class SaleProcessorScenarioCTest extends TestCase
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-abc', cashRegisterId: 1, issuedAt: '2026-03-01 10:00:00');
 
-        $result = $resolver->tryResolveForSale($sale, null);
+        $result = $resolver->tryResolveForSale($sale);
 
         $this->assertSame(42, $result, 'Scenario B: tryResolveForSale() must return session ID when session exists');
     }

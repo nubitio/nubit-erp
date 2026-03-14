@@ -134,7 +134,7 @@
         {% endif %}
     </div>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             var banner = document.getElementById('provision-banner');
             var failedSection = document.getElementById('failed-provisions');

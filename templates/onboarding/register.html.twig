@@ -93,7 +93,7 @@
         <a href="{{ path('onboarding_account_login') }}" class="link">&iquest;Ya tienes cuenta? Inicia sesi&oacute;n</a>
     </p>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         var form = document.getElementById('register-form');
         var password = document.getElementById('password');
         var passwordConfirm = document.getElementById('password_confirm');
