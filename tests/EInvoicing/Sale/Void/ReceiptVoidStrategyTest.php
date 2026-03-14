@@ -287,6 +287,6 @@ final class ReceiptVoidStrategyTest extends TestCase
 
         self::assertIsArray($capturedCriteria);
         self::assertSame(DocType::BOLETA->value, $capturedCriteria['documentType'] ?? null);
-        self::assertSame('sale-004', $capturedCriteria['sale'] ?? null);
+        self::assertSame('sale-004', $capturedCriteria['saleRecord'] ?? null);
     }
 }

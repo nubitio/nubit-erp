@@ -68,11 +68,10 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale->setEstado(SaleStatus::VOIDED->value);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
 
         $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
-        $saleV2Loader->expects(self::never())->method('loadAsSale');
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
 
@@ -118,10 +117,10 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale->setFecha(new \DateTimeImmutable('-10 days'));
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
 
         $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
 
@@ -140,12 +139,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-cn');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
 
         $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(true);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
 
@@ -164,7 +163,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-nv');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -175,7 +173,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // → NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
-
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
@@ -191,7 +189,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-reason');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -202,6 +199,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
@@ -216,7 +214,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-status');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -227,6 +224,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
@@ -241,7 +239,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-flush');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->expects(self::once())->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -252,35 +249,12 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
 
         $useCase('sale-flush', 'reason', 1);
-    }
-
-    public function testEntityManagerPersistCalledForOrmSaleOnNotaVentaPath(): void
-    {
-        $sale = $this->makeActiveSale('sale-persist');
-
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale); // ORM sale
-        $em->expects(self::once())->method('persist')->with($sale);
-        $em->method('flush');
-
-        $connection = $this->createMock(Connection::class);
-        $em->method('getConnection')->willReturn($connection);
-
-        $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
-        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
-        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
-
-        $saleV2Loader = $this->createMock(SaleV2Loader::class);
-        $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
-
-        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader, salesWriteGateway: $salesWriteGateway);
-
-        $useCase('sale-persist', 'reason', 1);
     }
 
     // ---------------------------------------------------------------------------
@@ -292,7 +266,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-sync');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -303,6 +276,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $salesWriteGateway->expects(self::once())
@@ -319,7 +293,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-sync-fail');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -330,6 +303,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $salesWriteGateway->method('markVoided')
@@ -365,13 +339,11 @@ final class SaleVoidUseCaseTest extends TestCase
         $category->setName('Reembolso cliente');
         $category->setType(CashMovementType::EXPENSE);
 
-        // EntityManager: find returns the cash shift for CashRefundRegistrar's lookup,
-        // and the sale for SaleVoidUseCase.
+        // EntityManager: find returns the cash shift for CashRefundRegistrar's lookup.
         $shiftRepository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
         $shiftRepository->method('findOneBy')->willReturn($cashShift);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('getRepository')->willReturn($shiftRepository);
         $em->expects(self::atLeastOnce())->method('persist');
         $em->method('flush');
@@ -384,6 +356,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
@@ -409,9 +382,8 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale = $this->makeActiveSale('sale-nocash');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
-        // Only the Sale itself is persisted; no CashMovement
-        $em->expects(self::once())->method('persist')->with($sale);
+        // In V2-only mode, the sale is never ORM-managed — persist is never called for it
+        $em->expects(self::never())->method('persist');
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -422,6 +394,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
@@ -458,7 +431,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocument = $this->createMock(TaxDocument::class);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
         $em->method('persist');
 
@@ -473,9 +445,9 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
-        $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
-        // TaxDocumentVoidUpdater needs real deps because it's called in the SUNAT path
+        $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $taxDocumentVoidUpdater = $this->buildTaxDocumentVoidUpdater($em);
 
         $useCase = $this->buildUseCase(
@@ -507,7 +479,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocument = $this->createMock(TaxDocument::class);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
         $em->method('persist');
 
@@ -522,6 +493,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $taxDocumentVoidUpdater = $this->buildTaxDocumentVoidUpdater($em);
 
@@ -553,7 +525,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocument = $this->createMock(TaxDocument::class);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn($sale);
         $em->method('flush');
         $em->method('persist');
 
@@ -568,6 +539,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findOneBy')->willReturn($taxDocument);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $taxDocumentVoidUpdater = $this->buildTaxDocumentVoidUpdater($em);
 
@@ -610,6 +582,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::FACTURA->value);
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase(
@@ -642,6 +615,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn('09');
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
 
@@ -676,6 +650,7 @@ final class SaleVoidUseCaseTest extends TestCase
         $taxDocumentRepository->method('findOneBy')->willReturn(null); // not found
 
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
 
         $useCase = $this->buildUseCase(
@@ -706,7 +681,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $v2Sale->setFecha(new \DateTimeImmutable('today'));
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn(null);
         $em->method('flush');
 
         $connection = $this->createMock(Connection::class);
@@ -741,7 +715,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $v2Sale->setFecha(new \DateTimeImmutable('today'));
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('find')->willReturn(null);
         // persist must NOT be called for a synthetic V2 Sale
         $em->expects(self::never())->method('persist');
         $em->method('flush');

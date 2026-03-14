@@ -266,6 +266,6 @@ final class InvoiceVoidStrategyTest extends TestCase
 
         self::assertIsArray($capturedCriteria);
         self::assertSame(DocType::FACTURA->value, $capturedCriteria['documentType'] ?? null);
-        self::assertSame('sale-004', $capturedCriteria['sale'] ?? null);
+        self::assertSame('sale-004', $capturedCriteria['saleRecord'] ?? null);
     }
 }

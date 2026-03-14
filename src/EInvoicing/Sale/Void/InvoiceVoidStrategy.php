@@ -34,7 +34,7 @@ final readonly class InvoiceVoidStrategy implements VoidStrategyInterface
     public function void(string $saleId, string $reason): SunatVoidResponse
     {
         $taxDocument = $this->taxDocumentRepository->findOneBy([
-            'sale' => $saleId,
+            'saleRecord' => $saleId,
             'documentType' => DocType::FACTURA->value,
         ]);
 

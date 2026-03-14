@@ -6,7 +6,6 @@ namespace App\Tests\Entity;
 
 use App\Entity\Branch;
 use App\Entity\Customer;
-use App\Entity\Sale;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +15,6 @@ final class TaxDocumentTest extends TestCase
     public function testAccessorsAndComputedFields(): void
     {
         $entity = new TaxDocument();
-        $sale = new Sale();
         $branch = new Branch();
         $customer = new Customer();
         $line = (new TaxDocumentLine())->setProductName('Producto')->setLineNumber(1);
@@ -24,8 +22,7 @@ final class TaxDocumentTest extends TestCase
         $createdAt = new \DateTimeImmutable('2026-02-20 11:00:00');
         $updatedAt = new \DateTimeImmutable('2026-02-20 12:00:00');
 
-        $entity->setSale($sale)
-            ->setBranch($branch)
+        $entity->setBranch($branch)
             ->setCustomer($customer)
             ->setDocumentType('01')
             ->setIssueDate($issueDate)
@@ -64,7 +61,6 @@ final class TaxDocumentTest extends TestCase
         $entity->addLine($line);
         $this->setPrivate($entity, 'id', 'tax-doc-1');
 
-        self::assertSame($sale, $entity->getSale());
         self::assertSame($branch, $entity->getBranch());
         self::assertSame($customer, $entity->getCustomer());
         self::assertSame('01', $entity->getDocumentType());

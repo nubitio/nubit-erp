@@ -12,7 +12,6 @@ use App\Core\Security\Auth\BranchContextService;
 use App\Core\Security\Auth\JWTAuthenticationToken;
 use App\Core\Security\Auth\JWTManager;
 use App\Dto\TaxDocument\SeriesResultDto;
-use App\Entity\Sale;
 use App\Entity\TaxDocument;
 use App\Entity\TaxDocumentLine;
 use App\Repository\BranchRepository;
@@ -78,12 +77,9 @@ final class TaxDocumentProcessorTest extends TestCase
      */
     public function testNewCreditNoteIsProcessedSuccessfully(): void
     {
-        $sale = $this->buildSale(invoiceSeriesPrefix: 'F001');
-
         $relatedDoc = $this->buildRelatedTaxDocument(
             isVoided: false,
             series: 'F001',
-            sale: $sale,
         );
 
         $creditNote = $this->buildNewCreditNote(
@@ -129,12 +125,9 @@ final class TaxDocumentProcessorTest extends TestCase
     public function testSeriesMismatchThrowsServiceException(): void
     {
         // The sale's invoice field starts with 'B001' — different from associatedSeries 'F001'.
-        $sale = $this->buildSale(invoiceSeriesPrefix: 'B001');
-
         $relatedDoc = $this->buildRelatedTaxDocument(
             isVoided: false,
             series: 'B001',
-            sale: $sale,
         );
 
         $creditNote = $this->buildNewCreditNote(
@@ -175,12 +168,9 @@ final class TaxDocumentProcessorTest extends TestCase
      */
     public function testVoidedRelatedDocumentThrowsServiceException(): void
     {
-        $sale = $this->buildSale(invoiceSeriesPrefix: 'F001');
-
         $relatedDoc = $this->buildRelatedTaxDocument(
             isVoided: true,
             series: 'F001',
-            sale: $sale,
         );
 
         $creditNote = $this->buildNewCreditNote(
@@ -234,36 +224,14 @@ final class TaxDocumentProcessorTest extends TestCase
     // -------------------------------------------------------------------------
 
     /**
-     * Build a Sale entity whose getInvoice() returns "<prefix>-00123".
-     *
-     * @param string $invoiceSeriesPrefix First 4 characters that must match the
-     *                                    SeriesResultDto::$associatedSeries.
-     */
-    private function buildSale(string $invoiceSeriesPrefix): Sale
-    {
-        $sale = new Sale();
-        $sale->setInvoice($invoiceSeriesPrefix . '-00123');
-        $sale->setIgv('18');
-        $sale->setTotal('118.00');
-        $sale->setDescuento('0');
-        $sale->setRecargoConsumo(null);
-        $sale->setFormaPago(1);
-        $sale->setTipoOperacion('0101');
-
-        return $sale;
-    }
-
-    /**
      * Build a related TaxDocument (the invoice being credited).
      *
-     * @param bool        $isVoided Whether the related document should be flagged as voided.
-     * @param string      $series   The series assigned to the related tax document.
-     * @param Sale        $sale     The Sale linked to this tax document.
+     * @param bool   $isVoided Whether the related document should be flagged as voided.
+     * @param string $series   The series assigned to the related tax document.
      */
-    private function buildRelatedTaxDocument(bool $isVoided, string $series, Sale $sale): TaxDocument
+    private function buildRelatedTaxDocument(bool $isVoided, string $series): TaxDocument
     {
         $doc = new TaxDocument();
-        $doc->setSale($sale);
         $doc->setDocumentType('01');
         $doc->setSeries($series);
         $doc->setNumber('00001');

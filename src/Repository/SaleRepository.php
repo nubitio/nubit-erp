@@ -12,6 +12,11 @@ use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Legacy ORM repository for the Sale entity (movimiento table).
+ * All read methods in this class query the V2 `sales` table via DBAL
+ * to serve the AI assistant context. The ORM entity binding is preserved
+ * to satisfy Doctrine's repository wiring.
+ *
  * @extends ServiceEntityRepository<Sale>
  */
 class SaleRepository extends ServiceEntityRepository

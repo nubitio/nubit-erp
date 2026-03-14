@@ -647,7 +647,6 @@ final readonly class TestDataSeeder
 
             // Create corresponding tax document
             $taxDocument = new TaxDocument();
-            $taxDocument->setSale($sale);
             $taxDocument->setCustomer($customer);
             $taxDocument->setDocumentType(($customer->getRuc()[0] === '1') ? '03' : '01');
             $taxDocument->setIssueDate($saleDate);

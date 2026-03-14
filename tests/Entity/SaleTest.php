@@ -12,7 +12,6 @@ use App\Entity\PriceList;
 use App\Entity\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Supplier;
-use App\Entity\TaxDocument;
 use App\Entity\Warehouse;
 use PHPUnit\Framework\TestCase;
 
@@ -33,14 +32,6 @@ final class SaleTest extends TestCase
         $supplier = (new Supplier())->setBusinessName('Proveedor Uno');
         $paymentMethod = (new PaymentMethod())->setName('Efectivo');
         $date = new \DateTimeImmutable('2026-02-20 08:00:00');
-        $taxDocument = (new TaxDocument())
-            ->setDocumentType('01')
-            ->setSeries('F001')
-            ->setNumber('1')
-            ->setSunatStatus('accepted');
-        $this->setPrivate($taxDocument, 'id', 'td-1');
-        $this->setPrivate($sale, 'taxDocument', $taxDocument);
-
         $sale->setId('sale-1')
             ->setOperacion($operation)
             ->setAlmacen($warehouse)
@@ -123,19 +114,9 @@ final class SaleTest extends TestCase
         self::assertSame('F001-100', $sale->getInvoice());
         self::assertSame('84.75', $sale->getSubtotal());
         self::assertSame('100.00', $sale->getTotal());
-        self::assertSame('accepted', $sale->getInvoiceSunatStatus());
-        self::assertSame(1, $sale->getInvoiceVoided());
-        self::assertStringStartsWith('/receipt/', (string) $sale->getPublicReceiptUrl());
         self::assertCount(1, $sale->getItems());
 
         $sale->removeItem($item);
         self::assertCount(0, $sale->getItems());
-    }
-
-    private function setPrivate(object $object, string $property, mixed $value): void
-    {
-        $reflection = new \ReflectionObject($object);
-        $refProperty = $reflection->getProperty($property);
-        $refProperty->setValue($object, $value);
     }
 }

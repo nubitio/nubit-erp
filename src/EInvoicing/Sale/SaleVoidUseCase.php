@@ -52,9 +52,8 @@ readonly class SaleVoidUseCase
         string $reason,
         int $userId,
     ): ApiResponse {
-        // Load sale — try ORM (V1/dual-write) first, fall back to V2 tables.
-        $ormSale = $this->entityManager->find(Sale::class, $saleId);
-        $sale = $ormSale ?? $this->saleV2Loader->loadAsSale($saleId);
+        // Load sale from V2 tables (v2_authoritative mode; no ORM movimiento fallback).
+        $sale = $this->saleV2Loader->loadAsSale($saleId);
         if (!$sale instanceof Sale) {
             throw new ServiceException(ErrorMessages::SALE_NOT_EXISTS);
         }
@@ -84,9 +83,6 @@ readonly class SaleVoidUseCase
             $sale->setEstado(SaleStatus::VOIDED->value);
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
-            if ($ormSale !== null) {
-                $this->entityManager->persist($sale);
-            }
             $this->cashRefundRegistrar->register($sale, $userId);
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);
@@ -117,11 +113,8 @@ readonly class SaleVoidUseCase
         try {
             $sunatResponse = $this->sunatVoidService->void($documentType, $saleId, $reason);
 
-            // Search tax_document by movimiento_id (V1/dual-write) or by sale_id (V2).
+            // Search tax_document by sale_id (V2 — v2_authoritative mode).
             $taxDocument = $this->taxDocumentRepository->findOneBy([
-                'sale' => $saleId,
-                'documentType' => $documentType,
-            ]) ?? $this->taxDocumentRepository->findOneBy([
                 'saleRecord' => $saleId,
                 'documentType' => $documentType,
             ]);
@@ -136,9 +129,6 @@ readonly class SaleVoidUseCase
             $sale->setEstado(SaleStatus::VOIDED->value);
             $sale->setUpdatedBy($userId);
             $sale->setDateUpdated(new DateTime());
-            if ($ormSale !== null) {
-                $this->entityManager->persist($sale);
-            }
 
             $this->cashRefundRegistrar->register($sale, $userId);
 
