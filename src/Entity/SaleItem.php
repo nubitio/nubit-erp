@@ -4,30 +4,13 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Link;
 use App\Entity\SaleRecord;
-use App\Legacy\Sale;
 use App\Repository\SaleItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ApiResource(
-    uriTemplate: '/movements/{id}/items.{_format}',
-    operations: [new GetCollection()],
-    uriVariables: [
-        'id' => new Link(
-            fromProperty: 'items',
-            fromClass: Sale::class,
-        ),
-    ],
-    normalizationContext: ['groups' => ['sale_item:read']],
-    paginationEnabled: false,
-)]
 #[ORM\Entity(repositoryClass: SaleItemRepository::class)]
-#[ORM\Table(name: 'movimiento_detalle')]
 class SaleItem
 {
     #[Groups(['sale_item:read', 'sale:read', 'inbound:read', 'outbound:read'])]
@@ -36,9 +19,7 @@ class SaleItem
     #[ORM\Column(name: 'id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Sale::class, cascade: ['persist', 'remove'], inversedBy: 'items')]
-    #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
-    private ?Sale $movimiento = null;
+    private ?SaleRecord $movimiento = null;
 
     #[Groups(['sale_item:read', 'sale:read', 'sale:write', 'inbound:read', 'outbound:read'])]
     #[ORM\ManyToOne(targetEntity: Product::class)]
@@ -66,14 +47,14 @@ class SaleItem
         return $this->id;
     }
 
-    public function getMovimiento(): Sale|SaleRecord|null
+    public function getMovimiento(): ?SaleRecord
     {
         return $this->movimiento;
     }
 
-    public function setMovimiento(Sale|SaleRecord|null $movimiento): static
+    public function setMovimiento(SaleRecord|null $movimiento): static
     {
-        $this->movimiento = $movimiento instanceof SaleRecord ? null : $movimiento;
+        $this->movimiento = $movimiento;
 
         return $this;
     }

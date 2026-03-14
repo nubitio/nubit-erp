@@ -12,7 +12,7 @@ use App\Entity\TaxDocument;
 use App\Entity\LogisticOperation;
 use App\Entity\Product;
 use App\Entity\ProductStock;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\Supplier;
 use App\Entity\UnitOfMeasure;
@@ -25,7 +25,6 @@ use App\Repository\ProductRepository;
 use App\Repository\SupplierRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\WarehouseRepository;
-use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class TestDataSeeder
@@ -556,7 +555,7 @@ final readonly class TestDataSeeder
             $glosa = 'Venta Test #' . $i;
 
             $daysAgo = random_int(1, 30);
-            $saleDate = new DateTime("-$daysAgo days");
+            $saleDate = new \DateTimeImmutable("-$daysAgo days");
 
             // Reload entities from database to avoid detached entities
             $customer = $this->customerRepository->find($customerIds[array_rand($customerIds)]);
@@ -571,8 +570,7 @@ final readonly class TestDataSeeder
                 $series = 'F001';
             }
 
-            $sale = new Sale();
-            $sale->setOperacion($logisticOperation);
+            $sale = new SaleRecord();
             $sale->setAlmacen($warehouse);
             $sale->setCliente($customer);
             $sale->setTipoId(2);
@@ -585,7 +583,6 @@ final readonly class TestDataSeeder
             $sale->setDescuento('0.00');
             $sale->setGlosa($glosa);
             $sale->setHasInvoice(true);
-            $sale->setIsConsume(false);
             $sale->setInvoice($series . '-' . $sale->getNumero());
             $sale->setCajaId(1);
             $sale->setEstado(1);
