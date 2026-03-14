@@ -9,12 +9,13 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Api\MakeInvoice;
 use App\Core\Doctrine\Filter\DevExtremeFilter;
 use App\Core\Util\ReceiptPayload;
 use App\Entity\SaleItem;
 use App\Entity\Supplier;
 use App\Repository\SaleRecordRepository;
-use App\State\Sale\SaleV2Processor;
+use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleV2Provider;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -26,6 +27,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: SaleRecordRepository::class)]
 #[ORM\Table(name: 'sales')]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     shortName: 'Sale',
     normalizationContext: ['groups' => ['sale_record:read']],
@@ -36,9 +38,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(),
         new Post(),
         new Patch(),
+        new Post(
+            uriTemplate: '/sales/{id}/invoice',
+            controller: MakeInvoice::class,
+            name: 'sale_make_invoice'
+        ),
     ],
     provider: SaleV2Provider::class,
-    processor: SaleV2Processor::class,
+    processor: SaleProcessor::class,
 )]
 class SaleRecord
 {
@@ -259,6 +266,20 @@ class SaleRecord
     {
         $this->saleItemRecords = new ArrayCollection();
         $this->legacyItems = new ArrayCollection();
+    }
+
+    #[ORM\PrePersist]
+    public function setTimestampsOnPersist(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTime();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function setTimestampsOnUpdate(): void
+    {
+        $this->updatedAt = new \DateTime();
     }
 
     public function getId(): ?string

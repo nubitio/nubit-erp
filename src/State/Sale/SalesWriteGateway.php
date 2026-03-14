@@ -310,7 +310,11 @@ SQL,
                         'unit_price' => $unitPrice->__toString(),
                         'gross_amount' => Money::toString($grossAmount),
                         'discount_amount' => Money::toString($itemDiscount),
-                        'tax_amount' => '0.00',
+                        'tax_amount' => Money::toString(
+                            Money::money($item->getPrecioTotal() ?? '0')->multipliedBy(
+                                Money::of($sale->getIgv() ?? '0')->dividedBy(100, 10, \Brick\Math\RoundingMode::HALF_UP)
+                            )
+                        ),
                         'net_amount' => Money::toString($netAmount),
                         'unit_cost_snapshot' => $item->getProducto()->getPurchasePrice(),
                         'margin_amount' => null,
@@ -407,7 +411,7 @@ INSERT INTO sale_discounts (
     :value,
     :amount_applied,
     'LEGACY',
-    'Bridge from movimiento.descuento',
+    '',
     :created_at
 )
 SQL,
@@ -421,6 +425,13 @@ SQL,
             }
 
             if (Money::of($sale->getIgv() ?? '0')->isGreaterThan(BigDecimal::zero())) {
+                $igvRate = Money::of($sale->getIgv() ?? '0')->toScale(4, RoundingMode::HALF_UP);
+                $taxAmount = number_format(
+                    round((float) Money::toString($subtotal) * ((float) $igvRate->__toString() / 100), 2),
+                    2,
+                    '.',
+                    ''
+                );
                 $this->connection->executeStatement(
                     <<<'SQL'
 INSERT INTO sale_taxes (
@@ -443,11 +454,9 @@ INSERT INTO sale_taxes (
 SQL,
                     [
                         'sale_id' => $saleId,
-                        'tax_rate' => Money::of($sale->getIgv() ?? '0')
-                            ->toScale(4, RoundingMode::HALF_UP)
-                            ->__toString(),
+                        'tax_rate' => $igvRate->__toString(),
                         'taxable_base' => Money::toString($grandTotal),
-                        'tax_amount' => '0.00',
+                        'tax_amount' => $taxAmount,
                         'created_at' => ($sale->getDateCreated() ?? new \DateTimeImmutable())->format('Y-m-d H:i:s'),
                     ]
                 );

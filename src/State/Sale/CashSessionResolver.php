@@ -21,7 +21,7 @@ final readonly class CashSessionResolver
     /**
      * @throws ServiceException
      */
-    public function resolveForSale(SaleRecord $sale, ?int $legacyCashShiftId = null): int
+    public function resolveForSale(SaleRecord $sale): int
     {
         $saleId = (string) ($sale->getId() ?? 'NEW');
         $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
@@ -37,14 +37,9 @@ final readonly class CashSessionResolver
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
 
-        $candidate = false;
-        if ($legacyCashShiftId !== null) {
-            $candidate = $this->findByLegacyCashShift($legacyCashShiftId, $branchId);
-        }
-
-        if ($candidate === false && $cashRegisterId !== null) {
-            $candidate = $this->findByRegisterAndIssuedAt($cashRegisterId, $branchId, $issuedAtSql);
-        }
+        $candidate = $cashRegisterId !== null
+            ? $this->findByRegisterAndIssuedAt($cashRegisterId, $branchId, $issuedAtSql)
+            : false;
 
         if ($candidate === false) {
             $candidate = $this->findByBranchAndIssuedAt($branchId, $issuedAtSql);
@@ -72,7 +67,7 @@ final readonly class CashSessionResolver
      *
      * @throws ServiceException when the branch cannot be determined (infrastructure error)
      */
-    public function tryResolveForSale(SaleRecord $sale, ?int $legacyCashShiftId = null): ?int
+    public function tryResolveForSale(SaleRecord $sale): ?int
     {
         $saleId = (string) ($sale->getId() ?? 'NEW');
         $branchId = $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId();
@@ -88,14 +83,9 @@ final readonly class CashSessionResolver
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtSql = $issuedAt->format('Y-m-d H:i:s');
 
-        $candidate = false;
-        if ($legacyCashShiftId !== null) {
-            $candidate = $this->findByLegacyCashShift($legacyCashShiftId, $branchId);
-        }
-
-        if ($candidate === false && $cashRegisterId !== null) {
-            $candidate = $this->findByRegisterAndIssuedAt($cashRegisterId, $branchId, $issuedAtSql);
-        }
+        $candidate = $cashRegisterId !== null
+            ? $this->findByRegisterAndIssuedAt($cashRegisterId, $branchId, $issuedAtSql)
+            : false;
 
         if ($candidate === false) {
             $candidate = $this->findByBranchAndIssuedAt($branchId, $issuedAtSql);
@@ -112,27 +102,6 @@ final readonly class CashSessionResolver
         $this->validateCandidate($candidate, $branchId, $cashRegisterId, $issuedAt, $saleId);
 
         return (int) $candidate['id'];
-    }
-
-    /**
-     * @return array<string, mixed>|false
-     */
-    private function findByLegacyCashShift(int $legacyCashShiftId, string $branchId): array|false
-    {
-        return $this->connection->fetchAssociative(
-            <<<'SQL'
-SELECT id, cash_register_id, branch_id, opened_at, closed_at
-FROM cash_sessions
-WHERE legacy_cash_shift_id = :legacy_cash_shift_id
-  AND branch_id = :branch_id
-ORDER BY opened_at DESC
-LIMIT 1
-SQL,
-            [
-                'legacy_cash_shift_id' => $legacyCashShiftId,
-                'branch_id' => $branchId,
-            ]
-        );
     }
 
     /**
@@ -195,9 +164,8 @@ SQL,
 SELECT id, cash_register_id, branch_id, opened_at, closed_at
 FROM cash_sessions
 WHERE branch_id = :branch_id
-ORDER BY
-    CASE WHEN status = 'OPEN' THEN 0 ELSE 1 END,
-    opened_at DESC
+  AND status = 'OPEN'
+ORDER BY opened_at DESC
 LIMIT 1
 SQL,
             [

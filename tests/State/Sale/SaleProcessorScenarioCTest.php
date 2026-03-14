@@ -124,11 +124,11 @@ final class SaleProcessorScenarioCTest extends TestCase
             'SaleProcessor must call CashSessionResolver::tryResolveForSale() for the non-required path'
         );
 
-        // The call must be inside a ternary/conditional guarded by $requireCashShift
+        // The call must be inside a ternary/conditional guarded by $requireOpenSession
         $this->assertStringContainsString(
-            '$requireCashShift',
+            '$requireOpenSession',
             $source,
-            'SaleProcessor must reference $requireCashShift to select the resolver method'
+            'SaleProcessor must reference $requireOpenSession to select the resolver method'
         );
 
         // Must NOT call resolveForSale unconditionally (both paths must be present)

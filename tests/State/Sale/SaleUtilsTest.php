@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\State\Sale;
 
-use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Entity\PaymentMethod;
@@ -13,7 +12,6 @@ use App\Entity\Warehouse;
 use App\Sale\Domain\DocType;
 use App\State\Sale\SaleUtils;
 use Doctrine\DBAL\Connection;
-use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -21,24 +19,18 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SaleUtils::class)]
 class SaleUtilsTest extends TestCase
 {
-    private EntityManagerInterface&MockObject $entityManager;
     private Connection&MockObject $connection;
     private SettingsService&MockObject $settings;
-    private Security&MockObject $security;
     private SaleUtils $utils;
 
     protected function setUp(): void
     {
-        $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->connection = $this->createMock(Connection::class);
         $this->settings = $this->createMock(SettingsService::class);
-        $this->security = $this->createMock(Security::class);
 
         $this->utils = new SaleUtils(
-            $this->entityManager,
             $this->connection,
             $this->settings,
-            $this->security,
         );
     }
 
@@ -170,61 +162,5 @@ class SaleUtilsTest extends TestCase
         $result = $this->utils->fillSaleValues($sale, DocType::BOLETA);
 
         $this->assertSame(1, $result->getFormaPago());
-    }
-
-    public function testFillSaleValuesDoesNotCallGetCashBoxIdWhenCajaIdAlreadySet(): void
-    {
-        $sale = $this->buildSaleForFill(1, 99);
-
-        $fetchOneCallCount = 0;
-        $this->connection->method('fetchOne')
-            ->willReturnCallback(function () use (&$fetchOneCallCount): string {
-                ++$fetchOneCallCount;
-                return $fetchOneCallCount === 1 ? 'B001' : '7';
-            });
-        $this->connection->method('executeStatement')->willReturn(1);
-        $this->connection->method('beginTransaction');
-        $this->connection->method('commit');
-        $this->settings->method('get')->willReturn('18');
-
-        // Security should NOT be called because cajaId is already set
-        $this->security->expects($this->never())->method('connectedUser');
-
-        $result = $this->utils->fillSaleValues($sale);
-
-        $this->assertSame(99, $result->getCajaId());
-    }
-
-    public function testFillSaleValuesCallsGetCashBoxIdWhenCajaIdIsNull(): void
-    {
-        $sale = $this->buildSaleForFill(1); // no cajaId
-
-        $fetchOneCallCount = 0;
-        $this->connection->method('fetchOne')
-            ->willReturnCallback(function () use (&$fetchOneCallCount): string {
-                ++$fetchOneCallCount;
-                return $fetchOneCallCount === 1 ? 'B001' : '3';
-            });
-        $this->connection->method('executeStatement')->willReturn(1);
-        $this->connection->method('beginTransaction');
-        $this->connection->method('commit');
-        $this->settings->method('get')->willReturn('18');
-
-        // getCashBoxId() calls security.connectedUser()
-        $user = new \App\Dto\Auth\AuthUserDto(userId: 7, username: 'testuser');
-        $this->security->expects($this->once())
-            ->method('connectedUser')
-            ->willReturn($user);
-
-        // entityManager->getRepository() is called by getCashBoxId()
-        // willReturn null from the repository means cashShift is null → cajaId = null
-        $repository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
-        $repository->method('findOneBy')->willReturn(null);
-        $this->entityManager->method('getRepository')->willReturn($repository);
-
-        $result = $this->utils->fillSaleValues($sale);
-
-        // cajaId stays null because no open shift was found
-        $this->assertNull($result->getCajaId());
     }
 }

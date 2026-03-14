@@ -12,13 +12,19 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
+use App\Entity\Branch;
 use App\Entity\SaleRecord;
 use App\Message\SendInvoiceMessage;
-use App\State\Purchase\PurchasesWritePolicy;
-use App\State\Purchase\PurchasesWritePolicyResolver;
+use App\Repository\BranchRepository;
+use App\Repository\SaleRecordRepository;
+use App\State\Sale\CashSessionResolver;
+use App\State\Sale\DetractionCalculator;
+use App\State\Sale\SaleInventoryOrchestrator;
+use App\Service\SalePaymentPlanService;
+use App\State\Sale\SaleUtils;
+use App\State\Sale\SalesWriteGateway;
+use Doctrine\DBAL\Connection;
 use App\State\Sale\SaleProcessor;
-use App\State\Sale\SalesWritePolicy;
-use App\State\Sale\SalesWritePolicyResolver;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -59,14 +65,6 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
     /** @var SettingsService&MockObject */
     private SettingsService $settings;
 
-    // SalesWritePolicyResolver and PurchasesWritePolicyResolver are final classes.
-    // We create real (but constructor-bypassed) instances and wrap them with
-    // closure-backed stubs to control return values, injected via reflection.
-    /** @var SalesWritePolicyResolver */
-    private SalesWritePolicyResolver $salesWritePolicyResolver;
-    /** @var PurchasesWritePolicyResolver */
-    private PurchasesWritePolicyResolver $purchasesWritePolicyResolver;
-
     protected function setUp(): void
     {
         $this->messageBus = $this->createMock(MessageBusInterface::class);
@@ -76,12 +74,6 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->settings = $this->createMock(SettingsService::class);
-
-        // Create final-class stubs via reflection (no constructor invoked).
-        $this->salesWritePolicyResolver = $this->newInstanceWithoutConstructor(SalesWritePolicyResolver::class);
-        $this->purchasesWritePolicyResolver = $this->newInstanceWithoutConstructor(
-            PurchasesWritePolicyResolver::class
-        );
     }
 
     /**
@@ -192,6 +184,12 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         // total = '0' (no items), amount = '0.01' → diff = 0.01 ≤ 0.01 tolerance ✓.
         $sale->setPayments([['payment_method_id' => 1, 'amount' => '0.01']]);
 
+        // Resolver throws if branch is null — inject a branch with an id.
+        $branch = new Branch();
+        (new \ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
+
         return $sale;
     }
 
@@ -229,16 +227,6 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                 [Constants::REQUIRE_CASH_REGISTER, 'true', 'false'],
             ]);
 
-        // Inject the legacy policy into the final SalesWritePolicyResolver stub.
-        $swpr = new ReflectionClass(SalesWritePolicyResolver::class);
-        $swPolicyProp = $swpr->getProperty('settings');
-        $swPolicyProp->setValue($this->salesWritePolicyResolver, $this->buildLegacySalesSettings());
-
-        // Inject the legacy policy into the final PurchasesWritePolicyResolver stub.
-        $pwpr = new ReflectionClass(PurchasesWritePolicyResolver::class);
-        $pwPolicyProp = $pwpr->getProperty('settings');
-        $pwPolicyProp->setValue($this->purchasesWritePolicyResolver, $this->buildLegacySalesSettings());
-
         // Build SaleProcessor bypassing constructor.
         $processorReflection = new ReflectionClass(SaleProcessor::class);
         /** @var SaleProcessor $processor */
@@ -253,13 +241,6 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->set($processorReflection, $processor, 'invoiceCreationService', $this->invoiceCreationService);
         $this->set($processorReflection, $processor, 'logger', $this->logger);
         $this->set($processorReflection, $processor, 'messageBus', $this->messageBus);
-        $this->set($processorReflection, $processor, 'salesWritePolicyResolver', $this->salesWritePolicyResolver);
-        $this->set(
-            $processorReflection,
-            $processor,
-            'purchasesWritePolicyResolver',
-            $this->purchasesWritePolicyResolver
-        );
 
         // Inject no-op stubs for final-class properties not exercised by tests.
         $this->injectNoOpStub($processorReflection, $processor, 'saleUtils');
@@ -267,27 +248,20 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         // We do this by injecting a Symfony Security stub that returns null from getToken().
         $this->injectBranchContextStub($processorReflection, $processor);
         $this->injectNoOpStub($processorReflection, $processor, 'branchRepository');
-        $this->injectNoOpStub($processorReflection, $processor, 'salesWriteGateway');
-        $this->injectNoOpStub($processorReflection, $processor, 'goodsReceiptWriteGateway');
-        $this->injectNoOpStub($processorReflection, $processor, 'cashSessionResolver');
+        // salesWriteGateway: use an interface mock so write() is a no-op (avoids warehouse/register guards).
+        /** @var SalesWriteGateway&MockObject $salesWriteGatewayMock */
+        $salesWriteGatewayMock = $this->createMock(SalesWriteGateway::class);
+        $processorReflection->getProperty('salesWriteGateway')->setValue($processor, $salesWriteGatewayMock);
+        $this->injectCashSessionResolverStub($processorReflection, $processor);
         $this->injectNoOpStub($processorReflection, $processor, 'salePaymentPlanService');
         $this->injectNoOpStub($processorReflection, $processor, 'detractionCalculator');
         $this->injectNoOpStub($processorReflection, $processor, 'inventoryOrchestrator');
+        // saleRecordRepository: use a mock so findByAnyId() returns null without touching real Doctrine.
+        /** @var SaleRecordRepository&MockObject $saleRecordRepoMock */
+        $saleRecordRepoMock = $this->createMock(SaleRecordRepository::class);
+        $processorReflection->getProperty('saleRecordRepository')->setValue($processor, $saleRecordRepoMock);
 
         return $processor;
-    }
-
-    /**
-     * Build a SettingsService stub that always returns 'legacy' for any key.
-     * Used to drive the SalesWritePolicyResolver and PurchasesWritePolicyResolver
-     * into legacy (=no-schema-write, no-skip) mode without real DB access.
-     */
-    private function buildLegacySalesSettings(): SettingsService
-    {
-        /** @var SettingsService&MockObject $stub */
-        $stub = $this->createMock(SettingsService::class);
-        $stub->method('get')->willReturn('legacy');
-        return $stub;
     }
 
     /**
@@ -331,6 +305,28 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
             $this->initializeStubProperties($stubReflection, $stub);
         }
         $property->setValue($target, $stub);
+    }
+
+    /**
+     * Inject a CashSessionResolver stub where tryResolveForSale() returns null
+     * (no open session found) without throwing.
+     *
+     * @param ReflectionClass<SaleProcessor> $processorReflection
+     */
+    private function injectCashSessionResolverStub(
+        ReflectionClass $processorReflection,
+        SaleProcessor $target
+    ): void {
+        $resolverRc = new ReflectionClass(CashSessionResolver::class);
+        /** @var CashSessionResolver $resolver */
+        $resolver = $resolverRc->newInstanceWithoutConstructor();
+
+        /** @var Connection&MockObject $connMock */
+        $connMock = $this->createMock(Connection::class);
+        $connMock->method('fetchAssociative')->willReturn(false);
+
+        $resolverRc->getProperty('connection')->setValue($resolver, $connMock);
+        $processorReflection->getProperty('cashSessionResolver')->setValue($target, $resolver);
     }
 
     /**
@@ -395,18 +391,5 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
                 $prop->setValue($stub, null);
             }
         }
-    }
-
-    /**
-     * Instantiate any class without invoking its constructor.
-     *
-     * @template T of object
-     * @param class-string<T> $className
-     * @return T
-     */
-    private function newInstanceWithoutConstructor(string $className): object
-    {
-        /** @var T */
-        return (new ReflectionClass($className))->newInstanceWithoutConstructor();
     }
 }

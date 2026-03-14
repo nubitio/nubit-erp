@@ -41,10 +41,6 @@ abstract class Constants
 
     public const string SUNAT_SEND_RETRY_MAX_SECONDS = 'app_option_sunat_send_retry_max_seconds';
 
-    public const string SALES_V2_DUAL_WRITE_ENABLED = 'app_option_sales_v2_dual_write_enabled';
-
-    public const string SALES_V2_DUAL_WRITE_STRICT = 'app_option_sales_v2_dual_write_strict';
-
     public const string SALES_V2_MODE = 'sales_v2_mode';
 
     public const string SALES_DEFAULT_CURRENCY = 'sales_default_currency';

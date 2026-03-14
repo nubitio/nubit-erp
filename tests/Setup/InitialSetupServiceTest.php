@@ -54,7 +54,6 @@ final class InitialSetupServiceTest extends TestCase
         $this->invokePrivate($service, 'seedSettings');
 
         self::assertSame('v2_authoritative', $captured[Constants::SALES_V2_MODE]['value'] ?? null);
-        self::assertSame('true', $captured[Constants::SALES_V2_DUAL_WRITE_STRICT]['value'] ?? null);
         self::assertSame('v2_authoritative', $captured[Constants::PURCHASES_V2_MODE]['value'] ?? null);
         self::assertSame('true', $captured[Constants::PURCHASES_V2_DUAL_WRITE_STRICT]['value'] ?? null);
         self::assertArrayNotHasKey('app_option_check_stock', $captured);

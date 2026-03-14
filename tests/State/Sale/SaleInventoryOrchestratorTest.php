@@ -288,7 +288,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // useCoreValidation=true (dual_write mode) → StockValidationPolicyInterface called
+    // useCoreValidation=true (v2_authoritative mode) → StockValidationPolicyInterface called
     // -------------------------------------------------------------------------
 
     public function testCoreValidationPathCallsValidateSale(): void
@@ -298,7 +298,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 2.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('STRICT', 'dual_write'); // shouldUseCoreValidation = true
+        $this->configureSettings('STRICT', 'v2_authoritative'); // shouldUseCoreValidation = true
         $this->stubStockBalance(10.0);
         $this->stubSuccessfulLedgerWrite();
 
@@ -323,7 +323,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 5.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('STRICT', 'dual_write'); // core validation ON
+        $this->configureSettings('STRICT', 'v2_authoritative'); // core validation ON
         $this->stubStockBalance(3.0);
 
         $this->validationPolicy
@@ -346,7 +346,7 @@ final class SaleInventoryOrchestratorTest extends TestCase
         $item = $this->makeSaleItem($product, 2.0);
         $sale = $this->makeSale(2, $warehouse, [$item]);
 
-        $this->configureSettings('WARNING_ONLY', 'dual_write');
+        $this->configureSettings('WARNING_ONLY', 'v2_authoritative');
         $this->stubStockBalance(1.0);
         $this->stubSuccessfulLedgerWrite();
 
