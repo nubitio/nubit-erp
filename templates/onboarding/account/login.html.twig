@@ -64,7 +64,7 @@
         <a href="{{ path('onboarding_register') }}" class="link">&iquest;No tienes cuenta? Reg&iacute;strate</a>
     </p>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         document.getElementById('toggle-password').addEventListener('click', function () {
             var input = document.getElementById('password');
             var isVisible = input.type === 'text';

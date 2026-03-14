@@ -51,7 +51,7 @@
         <a href="{{ path('onboarding_register', { email: email|default('') }) }}" class="link">Reenviar c&oacute;digo</a>
     </p>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             const wrapper = document.getElementById('code-wrapper');
             const inputs = wrapper.querySelectorAll('input');

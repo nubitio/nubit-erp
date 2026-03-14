@@ -268,7 +268,7 @@
         <a href="{{ path('onboarding_account_dashboard') }}" class="link">&larr; Volver al dashboard</a>
     </p>
 
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             var currentPlan = '{{ current_plan }}';
             var billingCycleInput = document.getElementById('billing_cycle');

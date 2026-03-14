@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}eFact{% endblock %}</title>
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             var storageKey = 'onboarding-theme';
             var mode = localStorage.getItem(storageKey) || 'auto';
@@ -658,7 +658,7 @@
             </div>
         </main>
     </div>
-    <script>
+    <script nonce="{{ csp_nonce() }}">
         (function () {
             var storageKey = 'onboarding-theme';
             var modes = ['light', 'dark', 'auto'];
