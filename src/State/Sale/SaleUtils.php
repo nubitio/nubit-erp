@@ -9,7 +9,7 @@ use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\CashShift;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;

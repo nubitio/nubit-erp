@@ -13,7 +13,7 @@ use App\EInvoicing\Sale\Void\TaxDocumentVoidUpdater;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Sale\Domain\SaleStatus;
 use App\EInvoicing\Shared\ErrorMessages;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;

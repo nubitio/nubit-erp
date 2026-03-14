@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Repository\SunatCatalogRepository;
 use Psr\Log\LoggerInterface;
 

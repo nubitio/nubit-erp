@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Core\Contract;
 
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Inventory\Core\Dto\MovementDraft;
 
 interface StockMovementEnricherInterface

@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Entity\Branch;
 use App\Entity\PaymentMethod;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Entity\Product;

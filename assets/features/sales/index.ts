@@ -6,7 +6,6 @@ export { CreditNotePage } from './pages/CreditNotePage';
 export { InboundPage, PurchasesPage } from './pages/InboundPage';
 export { OutboundPage } from './pages/OutboundPage';
 export { TransferPage } from './pages/TransferPage';
-export { KardexPage } from './pages/KardexPage';
 export { SaleConsultPage } from './pages/SaleConsultPage';
 
 // Routes

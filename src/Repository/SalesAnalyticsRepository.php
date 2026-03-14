@@ -6,34 +6,26 @@ namespace App\Repository;
 
 use App\Dto\Assistant\RecentSaleDto;
 use App\Dto\Assistant\SalesSummaryDto;
-use App\Entity\Sale;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Connection;
-use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\ParameterType;
 
 /**
- * Legacy ORM repository for the Sale entity (movimiento table).
- * All read methods in this class query the V2 `sales` table via DBAL
- * to serve the AI assistant context. The ORM entity binding is preserved
- * to satisfy Doctrine's repository wiring.
+ * DBAL-only read repository for the V2 sales analytics.
  *
- * @extends ServiceEntityRepository<Sale>
+ * This service replaced the legacy SaleRepository (which extended
+ * ServiceEntityRepository<Sale> and was bound to the movimiento ORM entity).
+ * All queries here operate exclusively on the V2 `sales` table.
  */
-class SaleRepository extends ServiceEntityRepository
+final readonly class SalesAnalyticsRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, Sale::class);
-    }
-
-    private function getConnection(): Connection
-    {
-        return $this->getEntityManager()->getConnection();
+    public function __construct(
+        private Connection $connection,
+    ) {
     }
 
     public function getSummary(\DateTimeImmutable $from, \DateTimeImmutable $to): SalesSummaryDto
     {
-        $row = $this->getConnection()->fetchAssociative(
+        $row = $this->connection->fetchAssociative(
             <<<'SQL'
 SELECT
     COUNT(*)                            AS cnt,
@@ -67,7 +59,7 @@ SQL,
      */
     public function getRecentSales(int $limit = 5): array
     {
-        $rows = $this->getConnection()->fetchAllAssociative(
+        $rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
 SELECT
     s.id,
@@ -88,7 +80,7 @@ ORDER BY s.issued_at DESC
 LIMIT :limit
 SQL,
             ['limit' => $limit],
-            ['limit' => \Doctrine\DBAL\ParameterType::INTEGER]
+            ['limit' => ParameterType::INTEGER]
         );
 
         return array_map(static function (array $row): RecentSaleDto {

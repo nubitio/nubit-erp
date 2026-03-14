@@ -8,7 +8,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Exception\ServiceException;
 use App\Core\Util\Constants;
 use App\Entity\Product;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Inventory\Core\Enum\LotTrackingStrategy;

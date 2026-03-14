@@ -12,7 +12,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Message\SendInvoiceMessage;
 use App\State\Purchase\PurchasesWritePolicy;
 use App\State\Purchase\PurchasesWritePolicyResolver;

@@ -6,7 +6,7 @@ namespace App\Tests\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\Branch;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\State\Sale\CashSessionResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;

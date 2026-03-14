@@ -12,7 +12,7 @@ use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Role;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
 use App\Entity\VoucherType;

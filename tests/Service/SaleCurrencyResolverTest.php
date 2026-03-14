@@ -6,7 +6,7 @@ namespace App\Tests\Service;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;

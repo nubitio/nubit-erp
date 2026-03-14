@@ -17,7 +17,6 @@ use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
-use App\Repository\SaleRepository;
 use App\Repository\SupplierRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\WarehouseRepository;
@@ -177,8 +176,6 @@ final class TestDataSeederTest extends TestCase
         $this->setEntityId($warehouse, 'id', 'wh-1');
         $this->setEntityId($operation, 'id', 'op-1');
 
-        $saleRepository = $this->createMock(SaleRepository::class);
-        $saleRepository->method('findOneBy')->willReturn(null);
         $customerRepository = $this->createMock(CustomerRepository::class);
         $customerRepository->method('find')->willReturn($customer);
         $supplierRepository = $this->createMock(SupplierRepository::class);
@@ -201,7 +198,6 @@ final class TestDataSeederTest extends TestCase
             supplierRepository: $supplierRepository,
             customerRepository: $customerRepository,
             productRepository: $productRepository,
-            saleRepository: $saleRepository,
         );
 
         $created = $this->invokePrivate(
@@ -232,7 +228,6 @@ final class TestDataSeederTest extends TestCase
         ?SupplierRepository $supplierRepository = null,
         ?CustomerRepository $customerRepository = null,
         ?ProductRepository $productRepository = null,
-        ?SaleRepository $saleRepository = null,
     ): TestDataSeeder {
         /** @var WarehouseRepository&MockObject $warehouseRepository */
         $warehouseRepository = $warehouseRepository ?? $this->createMock(WarehouseRepository::class);
@@ -248,7 +243,6 @@ final class TestDataSeederTest extends TestCase
             $supplierRepository ?? $this->createMock(SupplierRepository::class),
             $customerRepository ?? $this->createMock(CustomerRepository::class),
             $productRepository ?? $this->createMock(ProductRepository::class),
-            $saleRepository ?? $this->createMock(SaleRepository::class),
         );
     }
 

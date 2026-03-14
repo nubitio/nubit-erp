@@ -12,7 +12,7 @@ use App\Entity\TaxDocument;
 use App\Entity\LogisticOperation;
 use App\Entity\Product;
 use App\Entity\ProductStock;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Supplier;
 use App\Entity\UnitOfMeasure;
@@ -22,7 +22,6 @@ use App\Repository\CustomerRepository;
 use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
-use App\Repository\SaleRepository;
 use App\Repository\SupplierRepository;
 use App\Repository\UnitOfMeasureRepository;
 use App\Repository\WarehouseRepository;
@@ -214,7 +213,6 @@ final readonly class TestDataSeeder
         private SupplierRepository $supplierRepository,
         private CustomerRepository $customerRepository,
         private ProductRepository $productRepository,
-        private SaleRepository $saleRepository,
     ) {
     }
 
@@ -556,11 +554,6 @@ final readonly class TestDataSeeder
 
         for ($i = 1; $i <= $count; ++$i) {
             $glosa = 'Venta Test #' . $i;
-            $existing = $this->saleRepository->findOneBy(['glosa' => $glosa]);
-
-            if ($existing instanceof Sale) {
-                continue;
-            }
 
             $daysAgo = random_int(1, 30);
             $saleDate = new DateTime("-$daysAgo days");
