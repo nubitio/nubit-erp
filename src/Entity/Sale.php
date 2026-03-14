@@ -5,12 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
-use ApiPlatform\Metadata\ApiResource;
-use App\Core\Doctrine\Filter\DevExtremeFilter;
-use App\Core\Util\ReceiptPayload;
 use App\Repository\SaleRepository;
-use App\State\Sale\SaleProcessor;
-use App\State\Sale\SaleProvider;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,14 +18,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SaleRepository::class)]
 #[ORM\Table(name: 'movimiento')]
-#[ApiResource(
-    shortName: 'Movement',
-    normalizationContext: ['groups' => ['sale:read', 'inbound:read', 'outbound:read']],
-    denormalizationContext: ['groups' => ['sale:write']],
-    filters: [DevExtremeFilter::class],
-    provider: SaleProvider::class,
-    processor: SaleProcessor::class
-)]
 class Sale
 {
     #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
@@ -237,9 +224,6 @@ class Sale
     #[ORM\Column(name: 'invoice', type: 'string', nullable: true)]
     private ?string $invoice = null;
 
-    #[ORM\OneToOne(targetEntity: TaxDocument::class, mappedBy: 'sale')]
-    private ?TaxDocument $taxDocument = null;
-
     #[Groups([
         'sale:read',
         'sale:write',
@@ -297,11 +281,6 @@ class Sale
         }
 
         return $this;
-    }
-
-    public function getTaxDocument(): ?TaxDocument
-    {
-        return $this->taxDocument;
     }
 
     public function getId(): ?string
@@ -779,31 +758,6 @@ class Sale
         $this->invoice = $invoice;
 
         return $this;
-    }
-
-    #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    public function getInvoiceSunatStatus(): ?string
-    {
-        return $this->taxDocument?->getSunatStatus();
-    }
-
-    #[Groups(['sale:read', 'inbound:read', 'outbound:read'])]
-    public function getInvoiceVoided(): ?int
-    {
-        return $this->taxDocument?->getVoidTicket() != null ? 2 : 1;
-    }
-
-    #[Groups(['sale:read'])]
-    public function getPublicReceiptUrl(): ?string
-    {
-        if (!$this->taxDocument) {
-            return null;
-        }
-
-        return ReceiptPayload::publicUrl(
-            $this->taxDocument->getDocumentType(),
-            $this->taxDocument->getId(),
-        );
     }
 
     public function getSubtotal(): ?string

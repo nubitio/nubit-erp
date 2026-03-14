@@ -41,7 +41,7 @@ final readonly class ReceiptVoidStrategy implements VoidStrategyInterface
         ]);
 
         $taxDocument = $this->taxDocumentRepository->findOneBy([
-            'sale' => $saleId,
+            'saleRecord' => $saleId,
             'documentType' => DocType::BOLETA->value,
         ]);
 

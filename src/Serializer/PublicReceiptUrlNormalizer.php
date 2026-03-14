@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Serializer;
 
 use App\Core\Util\ReceiptPayload;
-use App\Entity\Sale;
 use App\Entity\SaleRecord;
 use App\Entity\TaxDocument;
 use Override;
@@ -35,7 +34,7 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             return false;
         }
 
-        return $data instanceof TaxDocument || $data instanceof Sale || $data instanceof SaleRecord;
+        return $data instanceof TaxDocument || $data instanceof SaleRecord;
     }
 
     /**
@@ -69,15 +68,6 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
             return ReceiptPayload::encode($object->getDocumentType(), $object->getId());
         }
 
-        if ($object instanceof Sale) {
-            $invoice = $object->getTaxDocument();
-            if ($invoice === null) {
-                return null;
-            }
-
-            return ReceiptPayload::encode($invoice->getDocumentType(), $invoice->getId());
-        }
-
         if ($object instanceof SaleRecord) {
             $taxDocumentId = $object->getTaxDocumentId();
             $documentType  = $object->getDocumentType();
@@ -96,6 +86,6 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
      */
     public function getSupportedTypes(?string $format): array
     {
-        return [TaxDocument::class => false, Sale::class => false, SaleRecord::class => false];
+        return [TaxDocument::class => false, SaleRecord::class => false];
     }
 }

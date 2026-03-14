@@ -129,10 +129,8 @@ SQL,
             throw new ServiceException('La venta no existe');
         }
 
-        // For V2 sales loaded via SaleV2Loader the ORM relation is not populated;
-        // load the tax document explicitly by sale id.
-        $taxDocument = $sale->getTaxDocument()
-            ?? $this->findActiveTaxDocumentBySaleId($resolvedSaleId)
+        // Load the active tax document for this sale explicitly by sale id.
+        $taxDocument = $this->findActiveTaxDocumentBySaleId($resolvedSaleId)
             ?? $this->findActiveTaxDocumentBySaleId($saleId);
         $header = $this->buildHeaderFromSale($sale, $taxDocument, null);
         $lines = $this->buildLinesForVoucher($sale, $taxDocument);
@@ -342,8 +340,6 @@ SQL,
             ->leftJoin('s.items', 'items')->addSelect('items')
             ->leftJoin('items.producto', 'p')->addSelect('p')
             ->leftJoin('p.unitOfMeasure', 'u')->addSelect('u')
-            ->leftJoin('s.taxDocument', 'td')->addSelect('td')
-            ->leftJoin('td.lines', 'tdl')->addSelect('tdl')
             ->where('s.id = :saleId')
             ->setParameter('saleId', $saleId)
             ->getQuery()
@@ -654,7 +650,6 @@ SQL,
         $rows = $this->createQueryBuilder('td')
             ->leftJoin('td.branch', 'b')->addSelect('b')
             ->leftJoin('b.company', 'e')->addSelect('e')
-            ->leftJoin('td.sale', 's')->addSelect('s')
             ->where('e.ruc = :companyRuc')
             ->andWhere('td.documentType = :voucherType')
             ->andWhere('td.series = :series')
@@ -679,18 +674,19 @@ SQL,
                 continue;
             }
 
-            $sale = $row->getSale();
-            // Guard: $sale may be null for V2 documents (sale is in `sales` table, not `movimiento`).
-            // Use getCanonicalSaleId() as the authoritative ID that covers both legacy and V2.
-            $legacySaleId = $sale?->getId() ?? $row->getCanonicalSaleId();
+            // In v2_authoritative mode the canonical sale ID comes from saleRecord (sales table).
+            $legacySaleId = $row->getCanonicalSaleId();
             $saleStatusV2 = null;
+            $saleStatusLegacy = null;
 
             if ($legacySaleId !== null && $legacySaleId !== '') {
-                $status = $this->getEntityManager()->getConnection()->fetchOne(
-                    'SELECT status FROM sales WHERE legacy_movimiento_id = :legacy_sale_id OR id = :legacy_sale_id LIMIT 1',
-                    ['legacy_sale_id' => $legacySaleId]
+                $saleRow = $this->getEntityManager()->getConnection()->fetchAssociative(
+                    'SELECT status FROM sales WHERE legacy_movimiento_id = :id OR id = :id LIMIT 1',
+                    ['id' => $legacySaleId]
                 );
-                $saleStatusV2 = $status !== false ? (string)$status : null;
+                if (is_array($saleRow)) {
+                    $saleStatusV2 = isset($saleRow['status']) ? (string) $saleRow['status'] : null;
+                }
             }
 
             return [
@@ -703,7 +699,7 @@ SQL,
                 'total' => $row->getTotal(),
                 'digest' => $row->getDigest(),
                 'sunat_status' => $row->getSunatStatus(),
-                'sale_status' => $sale?->getEstado() ?? null,
+                'sale_status' => $saleStatusLegacy,
                 'sale_status_v2' => $saleStatusV2,
                 'currency' => $row->getCurrency() ?? 'PEN',
             ];
