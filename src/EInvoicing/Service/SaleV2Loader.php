@@ -7,7 +7,7 @@ namespace App\EInvoicing\Service;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Entity\Customer;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Sale\Domain\SaleStatus;

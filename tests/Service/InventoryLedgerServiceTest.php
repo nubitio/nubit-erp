@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Entity\Product;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Warehouse;
 use App\Service\InventoryLedgerService;

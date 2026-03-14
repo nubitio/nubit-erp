@@ -7,6 +7,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
+use App\Legacy\Sale;
 use App\Repository\SaleItemRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -34,7 +35,7 @@ class SaleItem
     #[ORM\Column(name: 'id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(cascade: ['persist', 'remove'], inversedBy: 'items')]
+    #[ORM\ManyToOne(targetEntity: Sale::class, cascade: ['persist', 'remove'], inversedBy: 'items')]
     #[ORM\JoinColumn(name: 'movimiento_id', referencedColumnName: 'movimiento_id')]
     private ?Sale $movimiento = null;
 

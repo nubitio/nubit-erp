@@ -6,7 +6,7 @@ namespace App\Service;
 
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use Doctrine\DBAL\Connection;
 
 readonly class SaleCurrencyResolver

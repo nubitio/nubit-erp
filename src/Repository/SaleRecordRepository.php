@@ -71,27 +71,38 @@ class SaleRecordRepository extends ServiceEntityRepository
 SELECT
     td.tax_document_id,
     td.movimiento_id,
+    td.sale_id,
     td.document_type,
     td.series,
     td.number,
     td.sunat_status
 FROM tax_document td
-WHERE td.movimiento_id IN (%s)
+WHERE (td.movimiento_id IN (%s) OR td.sale_id IN (%s))
   AND td.reason_code IS NULL
 ORDER BY td.created_at DESC
 SQL,
+                $placeholders,
                 $placeholders
             ),
-            $ids
+            array_merge($ids, $ids)
         );
 
-        // Index by movimiento_id (which equals sales.id in V2)
+        // Index by movimiento_id (legacy path) and by sale_id (V2 path)
         $byMovimientoId = [];
         foreach ($rows as $row) {
-            $movId = (string) $row['movimiento_id'];
-            // Keep only the first (newest) tax document per sale
-            if (!isset($byMovimientoId[$movId])) {
-                $byMovimientoId[$movId] = $row;
+            // V2 path: index by sale_id
+            if (!empty($row['sale_id'])) {
+                $saleIdKey = (string) $row['sale_id'];
+                if (!isset($byMovimientoId[$saleIdKey])) {
+                    $byMovimientoId[$saleIdKey] = $row;
+                }
+            }
+            // Legacy path: index by movimiento_id
+            if (!empty($row['movimiento_id'])) {
+                $movId = (string) $row['movimiento_id'];
+                if (!isset($byMovimientoId[$movId])) {
+                    $byMovimientoId[$movId] = $row;
+                }
             }
         }
 

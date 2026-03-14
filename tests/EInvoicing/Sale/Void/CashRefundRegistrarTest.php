@@ -8,7 +8,7 @@ use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Enum\CashMovementType;
 use App\Enum\CashShiftStatus;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;

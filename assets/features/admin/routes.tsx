@@ -4,10 +4,7 @@ import {
   CompanyPage,
   ConfigPage,
   DashboardPage,
-  DepartmentPage,
-  EmployeePage,
   ExchangeRatePage,
-  PositionPage,
   RolePage,
   UserPage,
 } from './route-pages';
@@ -17,10 +14,7 @@ export const adminRoutes: AppRouteDefinition[] = [
   { path: '/branch', element: BranchPage },
   { path: '/company', element: CompanyPage },
   { path: '/config', element: ConfigPage },
-  { path: '/department', element: DepartmentPage },
-  { path: '/employee', element: EmployeePage },
   { path: '/exchange-rate', element: ExchangeRatePage },
-  { path: '/position', element: PositionPage },
   { path: '/role', element: RolePage },
   { path: '/user', element: UserPage },
 ];

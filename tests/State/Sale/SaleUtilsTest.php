@@ -8,7 +8,7 @@ use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Entity\PaymentMethod;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\Warehouse;
 use App\Sale\Domain\DocType;
 use App\State\Sale\SaleUtils;

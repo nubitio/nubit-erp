@@ -14,7 +14,7 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
 use App\Entity\Customer;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;

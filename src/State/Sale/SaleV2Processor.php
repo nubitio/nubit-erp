@@ -7,7 +7,7 @@ namespace App\State\Sale;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\SaleRecord;
 use App\Repository\ProductRepository;

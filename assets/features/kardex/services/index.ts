@@ -1,2 +1,0 @@
-export { kardexService } from './kardexService';
-

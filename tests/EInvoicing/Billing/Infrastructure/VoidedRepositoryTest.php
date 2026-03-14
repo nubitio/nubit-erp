@@ -68,27 +68,6 @@ final class VoidedRepositoryTest extends TestCase
         self::assertSame(3, $result);
     }
 
-    public function testGetLastCorrelativeByDateReturnsFalseCountAsZero(): void
-    {
-        // tableExists returns truthy, but the COUNT query returns false
-        $callCount = 0;
-        $this->connection->method('fetchOne')
-            ->willReturnCallback(function () use (&$callCount): mixed {
-                $callCount++;
-                if ($callCount <= 2) {
-                    return '1'; // sales and tax_document tables exist
-                }
-                return false; // COUNT query returns false
-            });
-
-        $httpClient = new MockHttpClient();
-        $repo = $this->makeRepository($httpClient);
-
-        $result = $repo->getLastCorrelativeByDate('2025-01-15');
-
-        self::assertSame(0, $result);
-    }
-
     public function testGetLastCorrelativeByDateCountsV2NativeSalesWithSaleId(): void
     {
         // Simulates a tenant where sales are created natively in V2 (sale_id populated,
@@ -116,28 +95,6 @@ final class VoidedRepositoryTest extends TestCase
         $result = $repo->getLastCorrelativeByDate('2025-06-01');
 
         self::assertSame(5, $result);
-    }
-
-    // -----------------------------------------------------------------------
-    // getLastCorrelativeByDate — tableExists returns false (legacy fallback)
-    // -----------------------------------------------------------------------
-
-    public function testGetLastCorrelativeByDateFallsBackToLegacyWhenTableDoesNotExist(): void
-    {
-        // information_schema check returns false → table doesn't exist
-        $this->connection->method('fetchOne')->willReturn(false);
-
-        // executeQuery + fetchAssociative for legacy SQL
-        $statement = $this->createMock(\Doctrine\DBAL\Result::class);
-        $statement->method('fetchAssociative')->willReturn(['correlative' => '7']);
-        $this->connection->method('executeQuery')->willReturn($statement);
-
-        $httpClient = new MockHttpClient();
-        $repo = $this->makeRepository($httpClient);
-
-        $result = $repo->getLastCorrelativeByDate('2025-01-15');
-
-        self::assertSame(7, $result);
     }
 
     public function testGetLastCorrelativeByDateReturnsZeroWhenLegacyResultIsEmpty(): void

@@ -375,51 +375,6 @@ SQL, ['table' => $table, 'column' => $column]);
             $this->rule('cash_shift', 'expected_amount', 'decimal(10,2)', true, null),
             $this->rule('cash_shift', 'counted_amount', 'decimal(10,2)', true, null),
             $this->rule('cash_shift', 'difference', 'decimal(10,2)', true, null),
-            $this->rule(
-                'movimiento',
-                'created_by',
-                'int(11)',
-                false,
-                self::NO_DEFAULT,
-                '1'
-            ),
-            $this->rule(
-                'movimiento',
-                'date_created',
-                'datetime',
-                false,
-                'CURRENT_TIMESTAMP',
-                'CURRENT_TIMESTAMP'
-            ),
-            $this->rule('movimiento', 'descuento', 'decimal(10,2)', true, null),
-            $this->rule('movimiento', 'has_invoice', 'tinyint(1)', false, '0', '0'),
-            $this->rule('movimiento', 'is_consume', 'tinyint(1)', false, '0', '0'),
-            $this->rule('movimiento', 'subtotal', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule('movimiento', 'total', 'decimal(10,2)', false, '0.00', '0.00'),
-            $this->rule(
-                'movimiento_detalle',
-                'cantidad',
-                'decimal(10,2)',
-                false,
-                '0.00',
-                '0.00'
-            ),
-            $this->rule(
-                'movimiento_detalle',
-                'precio_total',
-                'decimal(10,2)',
-                false,
-                '0.00',
-                '0.00'
-            ),
-            $this->rule(
-                'movimiento_detalle',
-                'precio_unitario',
-                'decimal(10,2)',
-                false,
-                '0.00',
-                '0.00'
-            ),
             $this->rule('producto', 'precio_compra', 'decimal(10,2)', true, null),
             $this->rule('producto', 'precio', 'decimal(10,2)', false, '0.00', '0.00'),
             $this->rule('unidad', 'ratio', 'decimal(10,2)', false, '0.00', '0.00'),
@@ -620,7 +575,6 @@ SQL, ['table' => $table, 'column' => $column]);
             $this->idRule('empresa', 'empresa_id', 'varchar(255)'),
             $this->idRule('local', 'local_id', 'varchar(255)'),
             $this->idRule('media', 'id', 'varchar(255)'),
-            $this->idRule('movimiento', 'movimiento_id', 'varchar(255)'),
             $this->idRule('operacion', 'operacion_id', 'varchar(255)'),
             $this->idRule('producto', 'producto_id', 'varchar(255)'),
             $this->idRule('proveedor', 'proveedor_id', 'varchar(255)'),

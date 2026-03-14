@@ -92,7 +92,7 @@ function getRouteSuggestions(
         query: '¿Cuáles son los productos más vendidos?',
       },
     );
-  } else if (pathname.startsWith('/inventory') || pathname.startsWith('/kardex')) {
+  } else if (pathname.startsWith('/inventory')) {
     suggestions.push(
       {
         id: 'inv-low',

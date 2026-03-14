@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Purchase;
 
 use App\Core\Util\Money;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;

@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Service;
 use App\Core\Service\SettingsService;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\Entity\Customer;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\Warehouse;
 use App\Sale\Domain\SaleStatus;
 use Doctrine\DBAL\Connection;

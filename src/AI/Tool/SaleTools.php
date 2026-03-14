@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Tool;
 
 use App\Dto\Assistant\RecentSaleDto;
-use App\Repository\SaleRepository;
+use App\Repository\SalesAnalyticsRepository;
 use App\Repository\TimeDimensionRepository;
 use DateInterval;
 use DateTimeImmutable;
@@ -24,7 +24,7 @@ use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 final readonly class SaleTools
 {
     public function __construct(
-        private SaleRepository $saleRepository,
+        private SalesAnalyticsRepository $saleRepository,
         private TimeDimensionRepository $timeDimensionRepository,
     ) {
     }

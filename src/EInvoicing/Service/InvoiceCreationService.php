@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EInvoicing\Service;
 
 use App\EInvoicing\Shared\ErrorMessages;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Sale\Domain\DocType;
 use App\Service\SaleCurrencyResolver;
 use Brick\Math\Exception\MathException;

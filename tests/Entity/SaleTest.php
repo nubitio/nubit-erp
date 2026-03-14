@@ -9,7 +9,7 @@ use App\Entity\Customer;
 use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\PriceList;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\Supplier;
 use App\Entity\Warehouse;

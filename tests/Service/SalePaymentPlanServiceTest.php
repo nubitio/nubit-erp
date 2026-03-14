@@ -6,7 +6,7 @@ namespace App\Tests\Service;
 
 use App\Core\Exception\ServiceException;
 use App\Entity\PaymentMethod;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Service\SalePaymentPlanService;
 use PHPUnit\Framework\TestCase;
 

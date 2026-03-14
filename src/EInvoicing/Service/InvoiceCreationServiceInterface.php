@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EInvoicing\Service;
 
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 

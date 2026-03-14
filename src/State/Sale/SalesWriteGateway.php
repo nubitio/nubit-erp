@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\State\Sale;
 
 use App\Core\Util\Money;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Repository\DashboardRepository;
 use App\Service\SalePaymentPlanService;
 use App\Service\SaleCurrencyResolver;

@@ -13,7 +13,7 @@ use App\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Role;
 use App\Entity\CashRegister;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
@@ -347,7 +347,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private function purgeE2eSales(): void
     {
         $saleIds = $this->connection->fetchFirstColumn(
-            'SELECT movimiento_id FROM movimiento WHERE glosa = :glosa',
+            'SELECT id FROM sales WHERE glosa = :glosa',
             ['glosa' => self::E2E_SALE_GLOSA]
         );
 
@@ -357,61 +357,29 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document_event WHERE tax_document_id IN '
-            . '(SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
+            . '(SELECT tax_document_id FROM tax_document WHERE sale_id IN (?))',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
 
         $this->connection->executeStatement(
             'DELETE FROM tax_document_line WHERE tax_document_id IN '
-            . '(SELECT tax_document_id FROM tax_document WHERE movimiento_id IN (?))',
+            . '(SELECT tax_document_id FROM tax_document WHERE sale_id IN (?))',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
 
         $this->connection->executeStatement(
-            'DELETE FROM tax_document WHERE movimiento_id IN (?)',
+            'DELETE FROM tax_document WHERE sale_id IN (?)',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
 
         $this->connection->executeStatement(
-            'DELETE FROM movimiento_detalle WHERE movimiento_id IN (?)',
+            'DELETE FROM sales WHERE id IN (?)',
             [$saleIds],
             [ArrayParameterType::STRING]
         );
-
-        $this->connection->executeStatement(
-            'DELETE FROM movimiento WHERE movimiento_id IN (?)',
-            [$saleIds],
-            [ArrayParameterType::STRING]
-        );
-
-        if ($this->tableExists('sales')) {
-            $this->connection->executeStatement(
-                'DELETE FROM sales WHERE legacy_movimiento_id IN (?)',
-                [$saleIds],
-                [ArrayParameterType::STRING]
-            );
-        }
-    }
-
-    private function tableExists(string $tableName): bool
-    {
-        $exists = $this->connection->fetchOne(
-            <<<'SQL'
-SELECT 1
-FROM information_schema.tables
-WHERE table_schema = DATABASE()
-  AND table_name = :table_name
-LIMIT 1
-SQL,
-            [
-                'table_name' => $tableName,
-            ]
-        );
-
-        return $exists !== false;
     }
 
     private function resolveUserRole(): Role

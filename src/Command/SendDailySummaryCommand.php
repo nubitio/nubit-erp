@@ -112,7 +112,11 @@ class SendDailySummaryCommand extends TenantAwareCommand
             );
             $cancellationsCount = (int)$this->connection->fetchOne(
                 "SELECT COUNT(*) FROM tax_document t
-                 INNER JOIN sales s ON s.legacy_movimiento_id = t.movimiento_id
+                 INNER JOIN sales s ON (
+                     (s.legacy_movimiento_id IS NOT NULL AND s.legacy_movimiento_id = t.movimiento_id)
+                     OR
+                     (t.sale_id IS NOT NULL AND t.sale_id = s.id)
+                 )
                  WHERE t.document_type IN ('01', '03')
                    AND s.status = 'VOIDED'
                    AND DATE(CONVERT_TZ(t.issue_date, 'UTC', 'America/Lima')) = ?",

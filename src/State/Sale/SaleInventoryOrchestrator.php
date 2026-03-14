@@ -6,7 +6,7 @@ namespace App\State\Sale;
 
 use App\Core\Exception\ServiceException;
 use App\Dto\Auth\AuthUserDto;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Service\InventoryLedgerService;

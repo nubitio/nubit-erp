@@ -17,7 +17,7 @@ use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\TaxDocument;
 use App\Enum\CashMovementType;
 use App\Repository\CashMovementCategoryRepository;

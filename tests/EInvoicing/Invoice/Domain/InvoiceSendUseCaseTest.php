@@ -14,7 +14,6 @@ use App\EInvoicing\Billing\Domain\BillSendUseCase;
 use App\EInvoicing\Billing\Model\Response\DocumentResponse;
 use App\EInvoicing\Invoice\Domain\InvoiceSendUseCase;
 use App\EInvoicing\Invoice\Domain\SunatSendControlService;
-use App\Entity\Sale;
 use App\Entity\TaxDocument;
 use App\Repository\TaxDocumentEventRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -92,13 +91,9 @@ final class InvoiceSendUseCaseTest extends TestCase
     /** @return TaxDocument&MockObject */
     private function makeTaxDocument(string $id = 'td-1', string $type = '01'): TaxDocument
     {
-        $sale = $this->createMock(Sale::class);
-        $sale->method('getId')->willReturn('sale-1');
-
         /** @var TaxDocument&MockObject $taxDocument */
         $taxDocument = $this->createMock(TaxDocument::class);
         $taxDocument->method('getId')->willReturn($id);
-        $taxDocument->method('getSale')->willReturn($sale);
         $taxDocument->method('getDocumentType')->willReturn($type);
 
         return $taxDocument;

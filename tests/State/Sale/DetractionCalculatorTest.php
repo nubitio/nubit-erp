@@ -7,7 +7,7 @@ namespace App\Tests\State\Sale;
 use App\Core\Exception\ServiceException;
 use App\Entity\Customer;
 use App\Entity\Product;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Entity\SunatCatalog;
 use App\Repository\SunatCatalogRepository;

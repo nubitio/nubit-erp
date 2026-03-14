@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
+namespace App\Legacy;
 
-use ApiPlatform\Metadata\ApiProperty;
-use App\Repository\SaleRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -15,8 +13,25 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Entity\LogisticOperation;
+use App\Entity\Warehouse;
+use App\Entity\Branch;
+use App\Entity\Customer;
+use App\Entity\PriceList;
+use App\Entity\Supplier;
+use App\Entity\PaymentMethod;
 
-#[ORM\Entity(repositoryClass: SaleRepository::class)]
+/**
+ * Legacy DTO / ORM entity for the movimiento table.
+ *
+ * This class is kept as a runtime data-carrier for the V1→V2 write bridge.
+ * The movimiento table is scheduled for decommission; the ORM mapping is
+ * preserved only while SaleProcessor still dual-writes to the table.
+ * Once dual-write is disabled globally, the ORM annotations can be stripped.
+ *
+ * @see App\Entity\SaleRecord for the V2 replacement.
+ */
+#[ORM\Entity]
 #[ORM\Table(name: 'movimiento')]
 class Sale
 {
@@ -243,16 +258,15 @@ class Sale
     private string $total = '0.00';
 
     /**
-     * @var Collection<int, SaleItem>&iterable<SaleItem> $items
+     * @var Collection<int, \App\Entity\SaleItem>&iterable<\App\Entity\SaleItem> $items
      */
-    #[ApiProperty(genId: false)]
     #[Groups([
         'sale:read',
         'sale:write',
         'inbound:read',
         'outbound:read',
     ])]
-    #[ORM\OneToMany(targetEntity: SaleItem::class, mappedBy: 'movimiento', cascade: [
+    #[ORM\OneToMany(targetEntity: \App\Entity\SaleItem::class, mappedBy: 'movimiento', cascade: [
         'persist',
         'remove',
     ], orphanRemoval: true)]
@@ -263,7 +277,7 @@ class Sale
         $this->items = new ArrayCollection();
     }
 
-    public function addItem(SaleItem $item): static
+    public function addItem(\App\Entity\SaleItem $item): static
     {
         if (!$this->items->contains($item)) {
             $this->items->add($item);
@@ -273,7 +287,7 @@ class Sale
         return $this;
     }
 
-    public function removeItem(SaleItem $item): static
+    public function removeItem(\App\Entity\SaleItem $item): static
     {
         // set the owning side to null (unless already changed)
         if ($this->items->removeElement($item) && $item->getMovimiento() === $this) {
@@ -785,7 +799,7 @@ class Sale
     }
 
     /**
-     * @return Collection<int, SaleItem>
+     * @return Collection<int, \App\Entity\SaleItem>
      */
     public function getItems(): Collection
     {

@@ -7,7 +7,7 @@ namespace App\Tests\EInvoicing\Service;
 use App\EInvoicing\Service\InvoiceCalculator;
 use App\EInvoicing\Service\InvoiceCreationService;
 use App\EInvoicing\Service\InvoiceLineInput;
-use App\Entity\Sale;
+use App\Legacy\Sale;
 use App\Entity\SaleItem;
 use App\Service\SaleCurrencyResolver;
 use Doctrine\DBAL\Connection;
