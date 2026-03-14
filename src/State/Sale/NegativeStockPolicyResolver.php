@@ -54,7 +54,7 @@ final readonly class NegativeStockPolicyResolver
     public function shouldUseCoreValidation(): bool
     {
         $mode = strtolower(trim((string) $this->settings->get(Constants::INVENTORY_CORE_MODE, 'legacy')));
-        if (in_array($mode, ['dual_write', 'v2_authoritative'], true)) {
+        if ($mode === 'v2_authoritative') {
             return true;
         }
 

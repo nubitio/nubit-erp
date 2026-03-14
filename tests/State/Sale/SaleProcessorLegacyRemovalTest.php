@@ -55,7 +55,7 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
         self::assertFalse($reflection->hasMethod('isPurchasesV2StrictMode'));
     }
 
-    public function testConstructorDependsOnPurchasesWritePolicyResolver(): void
+    public function testConstructorDoesNotDependOnPurchasesWritePolicyResolver(): void
     {
         $reflection = new \ReflectionClass(SaleProcessor::class);
         $constructor = $reflection->getConstructor();
@@ -66,6 +66,6 @@ final class SaleProcessorLegacyRemovalTest extends TestCase
             $constructor->getParameters()
         );
 
-        self::assertContains('purchasesWritePolicyResolver', $parameterNames);
+        self::assertNotContains('purchasesWritePolicyResolver', $parameterNames);
     }
 }

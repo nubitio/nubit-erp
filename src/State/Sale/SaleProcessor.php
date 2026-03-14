@@ -14,14 +14,14 @@ use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
 use App\Core\Util\Money;
 use App\Entity\Customer;
+use App\Entity\Product;
 use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
+use App\Repository\SaleRecordRepository;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Service\SalePaymentPlanService;
-use App\State\Purchase\GoodsReceiptWriteGateway;
-use App\State\Purchase\PurchasesWritePolicyResolver;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
@@ -57,14 +57,12 @@ readonly class SaleProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private MessageBusInterface $messageBus,
-        private SalesWritePolicyResolver $salesWritePolicyResolver,
         private SalesWriteGateway $salesWriteGateway,
-        private GoodsReceiptWriteGateway $goodsReceiptWriteGateway,
-        private PurchasesWritePolicyResolver $purchasesWritePolicyResolver,
         private CashSessionResolver $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
         private DetractionCalculatorInterface $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
+        private SaleRecordRepository $saleRecordRepository,
     ) {
     }
 
@@ -101,24 +99,34 @@ readonly class SaleProcessor implements ProcessorInterface
 
         $user = $this->security->connectedUser();
         $isOperationalSale = $data->getTipoId() === 2;
-        $salesWritePolicy = $isOperationalSale ? $this->salesWritePolicyResolver->resolve() : null;
         $resolvedCashSessionId = null;
-        $requireCashShift = false;
+        $requireOpenSession = false;
         $request = $context['request'] ?? null;
         $isOfflineSale = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
+
+        // Convert writeItems array to SaleItem objects
+        if ($isNew && !empty($data->getWriteItems())) {
+            $this->logger->info('Converting writeItems to SaleItem objects', [
+                'item_count' => count($data->getWriteItems()),
+            ]);
+
+            foreach ($this->buildSaleItems($data->getWriteItems()) as $item) {
+                $data->addLegacyItem($item);
+            }
+        }
 
         if ($isNew && $data->getTipoPago()) {
             $this->logger->info('Processing new sale with payment method', [
                 'payment_method' => $data->getTipoPago()->getId(),
             ]);
 
-            $requireCashShift = filter_var(
+            $requireOpenSession = filter_var(
                 $this->settings->get(Constants::REQUIRE_CASH_REGISTER, 'true'),
                 FILTER_VALIDATE_BOOLEAN
             );
 
             // Check for open cash session in v2 table
-            if ($requireCashShift) {
+            if ($requireOpenSession) {
                 $hasOpenSession = (bool) $this->entityManager->getConnection()->fetchOne(
                     "SELECT 1 FROM cash_sessions WHERE opened_by = ? AND status = 'OPEN' LIMIT 1",
                     [$user->userId]
@@ -204,105 +212,51 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setUpdatedBy($user->userId);
         }
 
-        $purchasesPolicy = $this->purchasesWritePolicyResolver->resolve();
-        $skipLegacyPersist = ($data->getTipoId() === 1 && $purchasesPolicy->skipLegacyPersist)
-            || ($isOperationalSale
-                && $salesWritePolicy instanceof SalesWritePolicy
-                && $salesWritePolicy->skipLegacyPersist);
+        $this->logger->info('Persisting sale data', [
+            'sale_id' => $data->getId(),
+            'customer_id' => $data->getCliente()?->getId(),
+            'total' => $data->getTotal(),
+            'item_count' => count($data->getItems()),
+        ]);
+        $this->persistProcessor->process($data, $operation, $uriVariables, $context);
 
-        if ($skipLegacyPersist) {
-            $this->logger->info('Skipping legacy movimiento persist (v2_authoritative)', [
-                'movimiento_id' => $data->getId(),
-                'tipo_id' => $data->getTipoId(),
-            ]);
-            $result = $data;
-        } else {
-            $this->logger->info('Persisting sale data', [
-                'sale_id' => $data->getId(),
-                'customer_id' => $data->getCliente()?->getId(),
-                'total' => $data->getTotal(),
-                'item_count' => count($data->getItems()),
-            ]);
-            $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
-        }
-
-        if ($data->getTipoId() === 1 && $purchasesPolicy->writeNewSchema) {
+        if ($isOperationalSale) {
             try {
-                $this->goodsReceiptWriteGateway->write($data);
+                $cashSessionId = $requireOpenSession
+                    ? $this->cashSessionResolver->resolveForSale($data)
+                    : $this->cashSessionResolver->tryResolveForSale($data);
+                $resolvedCashSessionId = $cashSessionId;
+
+                // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord
+                // so that SalesWriteGateway::write() (guard at line 51) sees a non-null value.
+                // This is required when the legacy cash_shift lookup returns null (e.g. demo tenant
+                // running in v2_authoritative mode where no open cash_shift row exists).
+                if ($cashSessionId !== null && $data->getCajaId() === null) {
+                    $resolvedRegisterId = $this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId);
+                    if ($resolvedRegisterId !== null) {
+                        $data->setCashRegisterId($resolvedRegisterId);
+                    }
+                }
+
+                $this->salesWriteGateway->write($data, $cashSessionId);
             } catch (\Throwable $exception) {
-                $this->logger->error('Goods receipts V2 write failed', [
-                    'movimiento_id' => $data->getId(),
-                    'mode' => $purchasesPolicy->mode,
-                    'strict' => $purchasesPolicy->strict,
+                $this->logger->error('Sales V2 write failed', [
+                    'sale_id' => $data->getId(),
                     'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
                     'warehouse_id' => $data->getAlmacen()?->getId(),
+                    'cash_register_id' => $data->getCajaId(),
+                    'resolved_cash_session_id' => $resolvedCashSessionId,
+                    'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
+                    'item_count' => count($data->getItems()),
+                    'total' => $data->getTotal(),
                     ...$this->buildThrowableContext($exception),
                 ]);
 
-                if ($purchasesPolicy->strict) {
-                    throw new ServiceException(
-                        'No se pudo sincronizar la compra con Compras V2. Operación cancelada.',
-                        0,
-                        $exception
-                    );
-                }
-            }
-        }
-
-        if ($isOperationalSale) {
-            if (!$salesWritePolicy instanceof SalesWritePolicy) {
-                throw new \LogicException('Sales write policy must be resolved for operational sale flow.');
-            }
-
-            $this->logger->info('Sales V2 runtime mode resolved', [
-                'sale_id' => $data->getId(),
-                'mode' => $salesWritePolicy->mode,
-                'write_new_schema' => $salesWritePolicy->writeNewSchema,
-                'strict' => $salesWritePolicy->strict,
-            ]);
-
-            if ($salesWritePolicy->writeNewSchema) {
-                try {
-                    $cashSessionId = $requireCashShift
-                        ? $this->cashSessionResolver->resolveForSale($data)
-                        : $this->cashSessionResolver->tryResolveForSale($data);
-                    $resolvedCashSessionId = $cashSessionId;
-
-                    // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord
-                    // so that SalesWriteGateway::write() (guard at line 51) sees a non-null value.
-                    // This is required when the legacy cash_shift lookup returns null (e.g. demo tenant
-                    // running in v2_authoritative mode where no open cash_shift row exists).
-                    if ($cashSessionId !== null && $data->getCajaId() === null) {
-                        $resolvedRegisterId = $this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId);
-                        if ($resolvedRegisterId !== null) {
-                            $data->setCashRegisterId($resolvedRegisterId);
-                        }
-                    }
-
-                    $this->salesWriteGateway->write($data, $cashSessionId);
-                } catch (\Throwable $exception) {
-                    $this->logger->error('Sales V2 dual-write failed', [
-                        'sale_id' => $data->getId(),
-                        'mode' => $salesWritePolicy->mode,
-                        'strict' => $salesWritePolicy->strict,
-                        'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
-                        'warehouse_id' => $data->getAlmacen()?->getId(),
-                        'cash_register_id' => $data->getCajaId(),
-                        'resolved_cash_session_id' => $resolvedCashSessionId,
-                        'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
-                        'item_count' => count($data->getItems()),
-                        'total' => $data->getTotal(),
-                        ...$this->buildThrowableContext($exception),
-                    ]);
-
-                    if ($salesWritePolicy->strict) {
-                        throw new ServiceException(
-                            'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
-                            0,
-                            $exception
-                        );
-                    }
-                }
+                throw new ServiceException(
+                    'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
+                    0,
+                    $exception
+                );
             }
         }
 
@@ -335,13 +289,11 @@ readonly class SaleProcessor implements ProcessorInterface
                             ...$this->buildThrowableContext($exception),
                         ]);
 
-                        if ($salesWritePolicy instanceof SalesWritePolicy && $salesWritePolicy->strict) {
-                            throw new ServiceException(
-                                'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
-                                0,
-                                $exception
-                            );
-                        }
+                        throw new ServiceException(
+                            'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
+                            0,
+                            $exception
+                        );
                     }
                 }
             }
@@ -379,7 +331,109 @@ readonly class SaleProcessor implements ProcessorInterface
             'sale_id' => $data->getId(),
         ]);
 
-        return $result;
+        // Re-fetch from DB to return a fully populated SaleRecord with V2 data
+        $this->entityManager->clear();
+        $record = $this->saleRecordRepository->findByAnyId((string) $data->getId());
+        if ($record !== null) {
+            $this->saleRecordRepository->enrichWithTaxDocuments([$record]);
+
+            return $record;
+        }
+
+        // Synthetic fallback: sale was written but not yet visible (e.g. race on v2_authoritative mode)
+        $this->logger->warning('SaleRecord not found after processing, returning synthetic record.', [
+            'sale_id' => $data->getId(),
+        ]);
+
+        return $data;
+    }
+
+    /**
+     * Build SaleItem entities from the raw write-items payload.
+     *
+     * @param array<int, array<string, mixed>> $writeItems
+     *
+     * @return SaleItem[]
+     */
+    private function buildSaleItems(array $writeItems): array
+    {
+        $items = [];
+
+        foreach ($writeItems as $itemData) {
+            $item = new SaleItem();
+
+            // Resolve product from IRI, object with @id / id, or plain UUID
+            $productRef = $itemData['product'] ?? null;
+            $productId  = $this->extractProductId($productRef);
+            if ($productId !== null) {
+                $product = $this->entityManager->find(Product::class, $productId);
+                $item->setProducto($product);
+            }
+
+            $qty       = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
+            $unitPrice = $itemData['unitPrice'] ?? $itemData['precio_unitario'] ?? '0.00';
+            $discount  = $itemData['discount'] ?? $itemData['descuento'] ?? '0.00';
+
+            // Calculate item total: (qty × unitPrice) − discount
+            $itemTotal = $itemData['total'] ?? $itemData['precio_total'] ?? null;
+            if ($itemTotal === null || $itemTotal === '' || $itemTotal === '0.00') {
+                $lineTotal = Money::money(BigDecimal::of($unitPrice)->multipliedBy($qty));
+                $itemTotal = Money::toString($lineTotal->minus(Money::money($discount)));
+            }
+
+            $item->setCantidad($qty);
+            $item->setPrecioUnitario($unitPrice);
+            $item->setDescuento($discount);
+            $item->setPrecioTotal($itemTotal);
+
+            $this->logger->debug('Converted sale item', [
+                'product_id' => $item->getProducto()?->getId(),
+                'qty'        => $qty,
+                'unit_price' => $unitPrice,
+                'discount'   => $discount,
+                'total'      => $itemTotal,
+            ]);
+
+            $items[] = $item;
+        }
+
+        return $items;
+    }
+
+    /**
+     * Resolve a product identifier from various input shapes:
+     *  - IRI string:        "/api/products/{uuid}"
+     *  - Object with @id:   ["@id" => "/api/products/{uuid}", ...]
+     *  - Object with id:    ["id" => "{uuid}", ...]
+     *  - Plain UUID string: "{uuid}"
+     *
+     * Returns null when $productRef is null or cannot be resolved.
+     */
+    private function extractProductId(mixed $productRef): ?string
+    {
+        if ($productRef === null) {
+            return null;
+        }
+
+        // Unwrap array shapes: { "@id": "/api/products/…" } or { "id": "…" }
+        if (is_array($productRef)) {
+            $productRef = $productRef['@id'] ?? $productRef['id'] ?? null;
+            if ($productRef === null) {
+                return null;
+            }
+        }
+
+        if (!is_string($productRef)) {
+            return null;
+        }
+
+        // Strip IRI prefix
+        if (str_starts_with($productRef, '/api/products/')) {
+            return substr($productRef, strlen('/api/products/'));
+        }
+
+        // Plain UUID / numeric ID — return as-is
+        return $productRef;
     }
 
     private function ensureSaleCustomer(SaleRecord $sale): void

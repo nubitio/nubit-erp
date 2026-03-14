@@ -30,7 +30,7 @@ final class CashSessionResolverTest extends TestCase
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-1', cashRegisterId: 7, issuedAt: '2026-02-28 10:00:00');
 
-        $cashSessionId = $resolver->resolveForSale($sale, 55);
+        $cashSessionId = $resolver->resolveForSale($sale);
 
         $this->assertSame(101, $cashSessionId);
     }
@@ -55,7 +55,7 @@ final class CashSessionResolverTest extends TestCase
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-2', cashRegisterId: 3, issuedAt: '2026-02-28 11:00:00');
 
-        $cashSessionId = $resolver->resolveForSale($sale, 999);
+        $cashSessionId = $resolver->resolveForSale($sale);
 
         $this->assertSame(202, $cashSessionId);
     }
@@ -80,7 +80,7 @@ final class CashSessionResolverTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('no pertenece a la sucursal');
 
-        $resolver->resolveForSale($sale, 7);
+        $resolver->resolveForSale($sale);
     }
 
     /**
@@ -93,7 +93,7 @@ final class CashSessionResolverTest extends TestCase
         $connection = $this->createMock(Connection::class);
         // legacyCashShiftId is provided but returns false; all fallbacks also return false
         $connection
-            ->expects($this->exactly(4))
+            ->expects($this->exactly(3))
             ->method('fetchAssociative')
             ->willReturn(false);
 
@@ -104,7 +104,7 @@ final class CashSessionResolverTest extends TestCase
         $this->expectExceptionMessageMatches('/No se pudo resolver cash_session_id/');
 
         // Previously this would throw TypeError; now it must throw ServiceException
-        $resolver->resolveForSale($sale, 99);
+        $resolver->resolveForSale($sale);
     }
 
     /**
@@ -123,7 +123,7 @@ final class CashSessionResolverTest extends TestCase
         $resolver = new CashSessionResolver($connection);
         $sale = $this->buildSale(branchId: 'branch-1', cashRegisterId: 5, issuedAt: '2026-02-28 10:00:00');
 
-        $result = $resolver->tryResolveForSale($sale, null);
+        $result = $resolver->tryResolveForSale($sale);
 
         $this->assertNull($result);
     }
@@ -146,7 +146,7 @@ final class CashSessionResolverTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessage('sucursal no definida');
 
-        $resolver->tryResolveForSale($sale, null);
+        $resolver->tryResolveForSale($sale);
     }
 
     private function buildSale(string $branchId, int $cashRegisterId, string $issuedAt): SaleRecord

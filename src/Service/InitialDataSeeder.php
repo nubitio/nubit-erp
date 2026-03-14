@@ -65,8 +65,6 @@ readonly class InitialDataSeeder
             $this->settingsService->set(Constants::SUNAT_SEND_RETRY_BASE_SECONDS, 'int', '60');
             $this->settingsService->set(Constants::SUNAT_SEND_RETRY_MAX_SECONDS, 'int', '1800');
             // Post-cutover default: new tenants start directly in V2 authoritative mode.
-            $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');
-            $this->settingsService->set(Constants::SALES_V2_DUAL_WRITE_STRICT, 'bool', 'true');
             $this->settingsService->set(Constants::SALES_V2_MODE, 'string', 'v2_authoritative');
             $this->settingsService->set(Constants::PURCHASES_V2_MODE, 'string', 'v2_authoritative');
             $this->settingsService->set(Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'bool', 'true');

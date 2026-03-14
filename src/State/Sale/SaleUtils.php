@@ -4,25 +4,19 @@ declare(strict_types=1);
 
 namespace App\State\Sale;
 
-use App\Core\Application\Session\Security;
 use App\Core\Exception\ServiceException;
 use App\Core\Service\SettingsService;
 use App\Core\Util\Constants;
-use App\Entity\CashShift;
 use App\Entity\SaleRecord;
-use App\Enum\CashShiftStatus;
 use App\Sale\Domain\DocType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
 
 readonly class SaleUtils
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
         private Connection $connection,
         private SettingsService $settings,
-        private Security $security,
     ) {
     }
 
@@ -103,10 +97,6 @@ readonly class SaleUtils
         );
         $sale->setNumero($this->getSaleNumber($sale->getSerie()));
 
-        if ($sale->getCajaId() === null) {
-            $sale->setCajaId($this->getCashBoxId());
-        }
-
         $sale->setIgv((string)$this->settings->get(Constants::TAX));
         $sale->setRecargoConsumo(
             intval(
@@ -115,18 +105,5 @@ readonly class SaleUtils
         );
 
         return $sale;
-    }
-
-    private function getCashBoxId(): ?int
-    {
-        $user = $this->security->connectedUser();
-
-        $cashShift = $this->entityManager->getRepository(CashShift::class)
-            ->findOneBy([
-                'status' => CashShiftStatus::OPEN,
-                'openedBy' => $user->userId,
-            ]);
-
-        return $cashShift?->getCashRegister()->getId();
     }
 }

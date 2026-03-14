@@ -16,7 +16,6 @@ use App\Core\Util\Constants;
 use App\Dto\Auth\AuthUserDto;
 use App\EInvoicing\Service\InvoiceCreationServiceInterface;
 use App\Entity\Branch;
-use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
 use App\Entity\CashShift;
 use App\Entity\Customer;
@@ -26,19 +25,13 @@ use App\Message\SendInvoiceMessage;
 use App\Repository\BranchRepository;
 use App\Repository\SunatCatalogRepository;
 use App\Service\SalePaymentPlanService;
-use App\State\Purchase\GoodsReceiptWriteGateway;
-use App\State\Purchase\PurchasesWriteMode;
-use App\State\Purchase\PurchasesWritePolicy;
-use App\State\Purchase\PurchasesWritePolicyResolver;
+use App\Repository\SaleRecordRepository;
 use App\State\Sale\CashSessionResolver;
 use App\State\Sale\DetractionCalculator;
 use App\State\Sale\SaleInventoryOrchestrator;
 use App\State\Sale\SaleProcessor;
 use App\State\Sale\SaleUtils;
 use App\State\Sale\SalesWriteGateway;
-use App\State\Sale\SalesWriteMode;
-use App\State\Sale\SalesWritePolicy;
-use App\State\Sale\SalesWritePolicyResolver;
 use App\Entity\Product;
 use App\Entity\Warehouse;
 use Doctrine\DBAL\Connection;
@@ -138,13 +131,10 @@ final class SaleProcessorTest extends TestCase
     // Their inner dependencies are replaced with mocks injected via reflection.
     // -------------------------------------------------------------------------
 
-    private SalesWritePolicyResolver $salesWritePolicyResolver;
-    private PurchasesWritePolicyResolver $purchasesWritePolicyResolver;
     private BranchContextService $branchContextService;
     private SaleInventoryOrchestrator $inventoryOrchestrator;
     private DetractionCalculator $detractionCalculator;
     private SalePaymentPlanService $salePaymentPlanService;
-    private GoodsReceiptWriteGateway $goodsReceiptWriteGateway;
     private CashSessionResolver $cashSessionResolver;
 
     /** @var SunatCatalogRepository&MockObject */
@@ -165,13 +155,10 @@ final class SaleProcessorTest extends TestCase
         $this->sunatCatalogRepository = $this->createMock(SunatCatalogRepository::class);
 
         // Build final-class stubs
-        $this->salesWritePolicyResolver = $this->bypassConstructor(SalesWritePolicyResolver::class);
-        $this->purchasesWritePolicyResolver = $this->bypassConstructor(PurchasesWritePolicyResolver::class);
         $this->branchContextService = $this->buildBranchContextStub(returnBranchId: null);
         $this->inventoryOrchestrator = $this->buildInventoryOrchestratorStub(shouldThrow: false);
         $this->detractionCalculator = $this->buildDetractionCalculatorStub();
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
-        $this->goodsReceiptWriteGateway = $this->buildGoodsReceiptWriteGatewayStub();
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
 
         // Default: persistProcessor returns the sale unchanged
@@ -205,8 +192,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertSame($sale, $result);
@@ -231,8 +216,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Put(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertNotNull($sale->getDateUpdated(), 'Updated sale must have date_updated set');
@@ -259,8 +242,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Delete(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
     }
 
@@ -270,7 +251,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testNewOperationalSaleWithoutTipoPagoSkipsCashShiftCheck(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         // getRepository should NOT be called (no tipoPago → block skipped)
         $this->entityManager
@@ -285,8 +266,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertSame($sale, $result);
@@ -308,8 +287,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'true',
         );
     }
@@ -320,7 +297,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testNoCashShiftWithoutRequirementProceedsNormally(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         // No tipoPago → cash-shift block not entered at all
         $this->persistProcessor
@@ -331,8 +308,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
         );
 
@@ -340,147 +315,32 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
-    // TC-07: skipLegacyPersist=true → persistProcessor NOT called
+    // TC-07: New operational sale always calls salesWriteGateway::write
     // -------------------------------------------------------------------------
 
-    public function testSkipLegacyPersistBypassesPersistProcessor(): void
+    public function testNewOperationalSaleAlwaysCallsSalesWriteGateway(): void
     {
-        // Sale needs branch+fecha so CashSessionResolver (called via V2 write path) doesn't crash
-        // on error-log path ($data->getFecha())
+        // Sale needs branch+fecha so CashSessionResolver doesn't throw
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
-        // Use a session resolver that returns a session so V2 write path completes without error
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 1);
 
-        $this->persistProcessor
-            ->expects($this->never())
-            ->method('process');
+        $this->salesWriteGateway
+            ->expects($this->once())
+            ->method('write')
+            ->with($sale, 1);
 
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::AUTHORITATIVE,
-                writeNewSchema: true,
-                skipLegacyPersist: true,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-        );
+        $result = $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($sale, $result);
     }
 
     // -------------------------------------------------------------------------
-    // TC-08: tipoId=1 + purchasesPolicy writeNewSchema=true → goodsReceiptWriteGateway called
+    // TC-11: salesWriteGateway::write always receives resolved cash session id
     // -------------------------------------------------------------------------
 
-    public function testPurchasesV2DualWriteCallsGoodsReceiptWriteGateway(): void
+    public function testSalesWriteGatewayReceivesResolvedCashSessionId(): void
     {
-        // Give the sale branch + warehouse + createdBy so GoodsReceiptWriteGateway::write()
-        // passes its guard checks and reaches connection->beginTransaction() (the spy point).
-        $sale = $this->buildNewSale(tipoId: 1);
-        $branch = new Branch();
-        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-tc08');
-        $sale->setBranch($branch);
-        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
-
-        $warehouse = new Warehouse();
-        (new ReflectionClass(Warehouse::class))->getProperty('id')->setValue($warehouse, 'wh-tc08');
-        $sale->setAlmacen($warehouse);
-        $sale->setCreatedBy(1);
-
-        // Build a spy on GoodsReceiptWriteGateway via its inner Connection mock's beginTransaction
-        $writeCallCount = 0;
-        $goodsReceiptGateway = $this->buildGoodsReceiptWriteGatewayStub(
-            onWrite: static function () use (&$writeCallCount): void {
-                $writeCallCount++;
-            }
-        );
-        $this->goodsReceiptWriteGateway = $goodsReceiptGateway;
-
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: new PurchasesWritePolicy(
-                mode: PurchasesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-        );
-
-        self::assertSame(1, $writeCallCount, 'goodsReceiptWriteGateway::write() must be called once');
-    }
-
-    // -------------------------------------------------------------------------
-    // TC-09: tipoId=1 + writeNewSchema=true + strict=true + gateway throws → ServiceException
-    // -------------------------------------------------------------------------
-
-    public function testPurchasesV2StrictModeThrowsOnGatewayFailure(): void
-    {
-        $sale = $this->buildNewSale(tipoId: 1);
-
-        $this->goodsReceiptWriteGateway = $this->buildGoodsReceiptWriteGatewayStub(
-            onWrite: static function (): void {
-                throw new \RuntimeException('DB error');
-            }
-        );
-
-        $this->expectException(ServiceException::class);
-        $this->expectExceptionMessageMatches('/Compras V2/');
-
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: new PurchasesWritePolicy(
-                mode: 'dual_write',
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: true,
-            ),
-        );
-    }
-
-    // -------------------------------------------------------------------------
-    // TC-10: tipoId=1 + writeNewSchema=true + strict=false + gateway throws → no exception
-    // -------------------------------------------------------------------------
-
-    public function testPurchasesV2NonStrictGatewayFailureIsSwallowed(): void
-    {
-        $sale = $this->buildNewSale(tipoId: 1);
-
-        $this->goodsReceiptWriteGateway = $this->buildGoodsReceiptWriteGatewayStub(
-            onWrite: static function (): void {
-                throw new \RuntimeException('DB error');
-            }
-        );
-
-        // Must not throw
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: new PurchasesWritePolicy(
-                mode: 'dual_write',
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-        );
-
-        self::assertSame($sale, $result);
-    }
-
-    // -------------------------------------------------------------------------
-    // TC-11: Operational sale + salesPolicy writeNewSchema=true → salesWriteGateway::write called
-    // -------------------------------------------------------------------------
-
-    public function testSalesV2DualWriteCallsSalesWriteGateway(): void
-    {
-        // Sale needs a branch so CashSessionResolver::tryResolveForSale() doesn't throw
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 99);
@@ -490,27 +350,15 @@ final class SaleProcessorTest extends TestCase
             ->method('write')
             ->with($sale, 99);
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-        );
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------
-    // TC-12: Operational sale + strict + salesWriteGateway throws → ServiceException
+    // TC-12: salesWriteGateway throws → ServiceException propagated
     // -------------------------------------------------------------------------
 
-    public function testSalesV2StrictModeThrowsOnGatewayFailure(): void
+    public function testSalesWriteGatewayFailureThrowsServiceException(): void
     {
-        // Sale needs branch so CashSessionResolver doesn't throw (branch-null) before reaching
-        // the salesWriteGateway->write() call which we want to be the error source.
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
@@ -522,46 +370,7 @@ final class SaleProcessorTest extends TestCase
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/Sales V2/');
 
-        $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: true,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-        );
-    }
-
-    // -------------------------------------------------------------------------
-    // TC-13: Operational sale + non-strict + salesWriteGateway throws → no exception
-    // -------------------------------------------------------------------------
-
-    public function testSalesV2NonStrictGatewayFailureIsSwallowed(): void
-    {
-        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
-
-        $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
-
-        $this->salesWriteGateway
-            ->method('write')
-            ->willThrowException(new \RuntimeException('Sales V2 write error'));
-
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-        );
-
-        self::assertSame($sale, $result);
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------
@@ -607,8 +416,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
     }
 
@@ -618,7 +425,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testAutoInvoiceDisabledAndEmitInvoiceNullSkipsInvoice(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(null);
 
         $this->invoiceCreationService
@@ -628,8 +435,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'false',
         );
     }
@@ -640,7 +445,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testEmitInvoiceTrueCallsInvoiceCreationService(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
         $this->invoiceCreationService
@@ -651,8 +456,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'false',
         );
     }
@@ -663,7 +466,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testInvoiceCreationSuccessDispatchesMessage(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
         $this->invoiceCreationService
@@ -682,8 +485,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'false',
         );
     }
@@ -694,7 +495,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testInvoiceCreationExceptionIsCaughtAndNotPropagated(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(true);
 
         $this->invoiceCreationService
@@ -708,8 +509,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'false',
         );
 
@@ -723,6 +522,11 @@ final class SaleProcessorTest extends TestCase
     public function testAutoInvoiceNotDispatchedOnUpdate(): void
     {
         $sale = $this->buildExistingSale(tipoId: 2);
+        // Resolver throws if branch is null — inject a branch so it can proceed
+        $branch = new Branch();
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setEmitInvoice(null);
 
         $this->invoiceCreationService
@@ -732,8 +536,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Put(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'true',
         );
     }
@@ -744,7 +546,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testAutoInvoiceEnabledOnNewOperationalSaleTriggersInvoice(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(null);
 
         $this->invoiceCreationService
@@ -755,8 +557,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'true',
         );
     }
@@ -767,7 +567,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testEmitInvoiceFalseOverridesAutoInvoiceTrue(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setEmitInvoice(false);
 
         $this->invoiceCreationService
@@ -777,8 +577,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'true',
         );
     }
@@ -799,8 +597,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             autoInvoice: 'true',
         );
     }
@@ -813,6 +609,11 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
         // No customer set on purpose
+        // Resolver throws if branch is null — inject a branch so it can proceed
+        $branch = new Branch();
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
         $defaultCustomer = $this->createMock(Customer::class);
         $cashShift = $this->buildCashShift();
@@ -830,8 +631,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
         );
 
@@ -864,8 +663,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
         );
     }
@@ -878,6 +675,11 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
         $sale->setCliente($this->createMock(Customer::class));
+        // Resolver throws if branch is null — inject a branch so it can proceed
+        $branch = new Branch();
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
         $cashShift = $this->buildCashShift();
         $this->mockCashShiftRepository($cashShift);
@@ -894,8 +696,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
         );
     }
@@ -924,8 +724,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
         );
     }
@@ -971,21 +769,14 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
     }
 
     // -------------------------------------------------------------------------
-    // TC-28: Cash movement write fails + strict → ServiceException
+    // TC-28: Cash movement write fails → ServiceException always propagated
     // -------------------------------------------------------------------------
 
-    public function testCashMovementWriteFailsStrictModeThrowsServiceException(): void
+    public function testCashMovementWriteFailsThrowsServiceException(): void
     {
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
@@ -1005,47 +796,7 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: true,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
-    }
-
-    // -------------------------------------------------------------------------
-    // TC-29: Cash movement write fails + non-strict → no exception
-    // -------------------------------------------------------------------------
-
-    public function testCashMovementWriteFailsNonStrictModeDoesNotThrow(): void
-    {
-        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
-
-        $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '10.00');
-
-        $this->salesWriteGateway
-            ->method('write');
-
-        $this->salesWriteGateway
-            ->method('writeCashSaleMovement')
-            ->willThrowException(new \RuntimeException('Cash write error'));
-
-        $result = $this->buildAndRunProcessor(
-            $sale,
-            new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::DUAL_WRITE,
-                writeNewSchema: true,
-                skipLegacyPersist: false,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
-        );
-
-        self::assertSame($sale, $result);
     }
 
 
@@ -1056,6 +807,11 @@ final class SaleProcessorTest extends TestCase
     public function testLegacyCashMovementSkippedWhenCategoryNotFound(): void
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
+        // Resolver throws if branch is null — inject a branch so it can proceed
+        $branch = new Branch();
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->createMock(Customer::class));
 
         $cashShift = $this->buildCashShift();
@@ -1092,8 +848,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
             disableLegacyCashMovement: 'false',
         );
@@ -1107,7 +861,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testDetractionCalculatorIsAlwaysCalled(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         // Set a non-null detraction code so we can detect clearDetraction() was called
         // (applyFromItems() calls clearDetraction() when customer has no 11-digit RUC,
@@ -1117,8 +871,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertNull(
@@ -1142,8 +894,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertTrue($sale->getItems()->contains($item));
@@ -1159,6 +909,8 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSale(tipoId: 2);
         $branch = new Branch();
+        // Give the branch an id so CashSessionResolver can resolve it after it's set on the sale
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-42');
 
         $this->branchContextService = $this->buildBranchContextStubWithRealToken('branch-42');
 
@@ -1170,29 +922,24 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertSame($branch, $sale->getBranch());
     }
 
     // -------------------------------------------------------------------------
-    // TC-35: Authoritative mode: skip legacy persist, disable legacy cash movement
+    // TC-35: New operational sale always calls persistProcessor (no skip-persist mode)
     // -------------------------------------------------------------------------
 
-    public function testAuthoritativeModeSkipsPersistAndDisablesLegacyCashMovement(): void
+    public function testNewOperationalSaleAlwaysCallsPersistProcessor(): void
     {
         // Sale needs branch+fecha so CashSessionResolver doesn't throw when V2 write runs
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $this->persistProcessor
-            ->expects($this->never())
-            ->method('process');
-
-        $this->entityManager
-            ->expects($this->never())
-            ->method('persist');
+            ->expects($this->once())
+            ->method('process')
+            ->willReturnArgument(0);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 55);
         $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
@@ -1200,13 +947,6 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: new SalesWritePolicy(
-                mode: SalesWriteMode::AUTHORITATIVE,
-                writeNewSchema: true,
-                skipLegacyPersist: true,
-                strict: false,
-            ),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertSame($sale, $result);
@@ -1219,6 +959,11 @@ final class SaleProcessorTest extends TestCase
     public function testSettingDisableLegacyCashMovementSkipsMovementCreation(): void
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
+        // Resolver throws if branch is null — inject a branch so it can proceed
+        $branch = new Branch();
+        (new ReflectionClass(Branch::class))->getProperty('id')->setValue($branch, 'branch-1');
+        $sale->setBranch($branch);
+        $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->createMock(Customer::class));
 
         $cashShift = $this->buildCashShift();
@@ -1237,8 +982,6 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
             requireCashRegister: 'false',
             disableLegacyCashMovement: 'true',
         );
@@ -1250,7 +993,7 @@ final class SaleProcessorTest extends TestCase
 
     public function testOfflineSaleHeaderCausesNoExceptionAndProceedsNormally(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $request = new Request();
         $request->headers->set('X-Offline-Sale', 'true');
@@ -1259,8 +1002,6 @@ final class SaleProcessorTest extends TestCase
             $sale,
             new Post(),
             context: ['request' => $request],
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertSame($sale, $result);
@@ -1272,14 +1013,12 @@ final class SaleProcessorTest extends TestCase
 
     public function testNewSaleHasInvoiceIsSetToFalse(): void
     {
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
         $sale->setHasInvoice(true); // client tries to set it true
 
         $this->buildAndRunProcessor(
             $sale,
             new Post(),
-            salesPolicy: $this->legacySalesPolicy(),
-            purchasesPolicy: $this->legacyPurchasesPolicy(),
         );
 
         self::assertFalse($sale->isHasInvoice(), 'New sale: has_invoice must always be forced to false');
@@ -1297,16 +1036,12 @@ final class SaleProcessorTest extends TestCase
     private function buildAndRunProcessor(
         SaleRecord $sale,
         \ApiPlatform\Metadata\Operation $operation,
-        SalesWritePolicy $salesPolicy,
-        PurchasesWritePolicy $purchasesPolicy,
         array $context = [],
         string $requireCashRegister = 'false',
         string $autoInvoice = 'false',
         string $disableLegacyCashMovement = 'false',
     ): mixed {
         $processor = $this->buildProcessor(
-            salesPolicy: $salesPolicy,
-            purchasesPolicy: $purchasesPolicy,
             requireCashRegister: $requireCashRegister,
             autoInvoice: $autoInvoice,
             disableLegacyCashMovement: $disableLegacyCashMovement,
@@ -1319,22 +1054,10 @@ final class SaleProcessorTest extends TestCase
      * Build a fully-configured SaleProcessor via reflection.
      */
     private function buildProcessor(
-        SalesWritePolicy $salesPolicy,
-        PurchasesWritePolicy $purchasesPolicy,
         string $requireCashRegister = 'false',
         string $autoInvoice = 'false',
         string $disableLegacyCashMovement = 'false',
     ): SaleProcessor {
-        // Wire SalesWritePolicyResolver to return our policy
-        $swpr = new ReflectionClass(SalesWritePolicyResolver::class);
-        $swSettingsMock = $this->buildSettingsMockForSalesPolicy($salesPolicy);
-        $swpr->getProperty('settings')->setValue($this->salesWritePolicyResolver, $swSettingsMock);
-
-        // Wire PurchasesWritePolicyResolver to return our policy
-        $pwpr = new ReflectionClass(PurchasesWritePolicyResolver::class);
-        $pwSettingsMock = $this->buildSettingsMockForPurchasesPolicy($purchasesPolicy);
-        $pwpr->getProperty('settings')->setValue($this->purchasesWritePolicyResolver, $pwSettingsMock);
-
         // Configure the main settings mock (new mock each call to avoid "already configured" issues)
         $settingsMock = $this->createMock(SettingsService::class);
         $settingsMock
@@ -1365,14 +1088,12 @@ final class SaleProcessorTest extends TestCase
         $inj('branchContextService', $this->branchContextService);
         $inj('branchRepository', $this->branchRepository);
         $inj('messageBus', $this->messageBus);
-        $inj('salesWritePolicyResolver', $this->salesWritePolicyResolver);
         $inj('salesWriteGateway', $this->salesWriteGateway);
-        $inj('goodsReceiptWriteGateway', $this->goodsReceiptWriteGateway);
-        $inj('purchasesWritePolicyResolver', $this->purchasesWritePolicyResolver);
         $inj('cashSessionResolver', $this->cashSessionResolver);
         $inj('salePaymentPlanService', $this->salePaymentPlanService);
         $inj('detractionCalculator', $this->detractionCalculator);
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
+        $inj('saleRecordRepository', $this->createMock(\App\Repository\SaleRecordRepository::class));
 
         return $processor;
     }
@@ -1469,56 +1190,6 @@ final class SaleProcessorTest extends TestCase
 
                 return $cashShiftRepo;
             });
-    }
-
-    // =========================================================================
-    // Policy factory helpers
-    // =========================================================================
-
-    private function legacySalesPolicy(): SalesWritePolicy
-    {
-        return new SalesWritePolicy(
-            mode: SalesWriteMode::LEGACY,
-            writeNewSchema: false,
-            skipLegacyPersist: false,
-            strict: false,
-        );
-    }
-
-    private function legacyPurchasesPolicy(): PurchasesWritePolicy
-    {
-        return new PurchasesWritePolicy(
-            mode: 'legacy',
-            writeNewSchema: false,
-            skipLegacyPersist: false,
-            strict: false,
-        );
-    }
-
-    private function buildSettingsMockForSalesPolicy(SalesWritePolicy $policy): SettingsService
-    {
-        /** @var SettingsService&MockObject $stub */
-        $stub = $this->createMock(SettingsService::class);
-        $stub->method('get')->willReturnMap([
-            [\App\Core\Util\Constants::SALES_V2_MODE, SalesWriteMode::DUAL_WRITE, $policy->mode],
-            [\App\Core\Util\Constants::SALES_V2_DUAL_WRITE_ENABLED, 'true', $policy->writeNewSchema ? 'true' : 'false'],
-            [\App\Core\Util\Constants::SALES_V2_DUAL_WRITE_STRICT, 'false', $policy->strict ? 'true' : 'false'],
-        ]);
-
-        return $stub;
-    }
-
-    private function buildSettingsMockForPurchasesPolicy(PurchasesWritePolicy $policy): SettingsService
-    {
-        /** @var SettingsService&MockObject $stub */
-        $stub = $this->createMock(SettingsService::class);
-        $stub->method('get')->willReturnMap([
-            [\App\Core\Util\Constants::PURCHASES_V2_MODE, PurchasesWriteMode::DUAL_WRITE, $policy->mode],
-            [\App\Core\Util\Constants::PURCHASES_V2_DUAL_WRITE_ENABLED, 'true', $policy->writeNewSchema ? 'true' : 'false'],
-            [\App\Core\Util\Constants::PURCHASES_V2_DUAL_WRITE_STRICT, 'false', $policy->strict ? 'true' : 'false'],
-        ]);
-
-        return $stub;
     }
 
     // =========================================================================
@@ -1708,69 +1379,6 @@ final class SaleProcessorTest extends TestCase
     }
 
     /**
-     * Build a GoodsReceiptWriteGateway stub (final class).
-     * Accepts an optional closure invoked when write() is called (via beginTransaction spy).
-     * @param callable():void|null $onWrite
-     */
-    private function buildGoodsReceiptWriteGatewayStub(?callable $onWrite = null): GoodsReceiptWriteGateway
-    {
-        $rc = new ReflectionClass(GoodsReceiptWriteGateway::class);
-        /** @var GoodsReceiptWriteGateway $stub */
-        $stub = $rc->newInstanceWithoutConstructor();
-
-        // GoodsReceiptWriteGateway has a Connection dependency
-        if ($rc->hasProperty('connection')) {
-            /** @var Connection&MockObject $connMock */
-            $connMock = $this->createMock(Connection::class);
-
-            if ($onWrite !== null) {
-                $capturedOnWrite = $onWrite;
-                $connMock
-                    ->method('beginTransaction')
-                    ->willReturnCallback(static function () use ($capturedOnWrite): void {
-                        ($capturedOnWrite)();
-                    });
-            }
-
-            $rc->getProperty('connection')->setValue($stub, $connMock);
-        }
-
-        // Inject a SaleCurrencyResolver mock so resolveForWrite() doesn't crash
-        if ($rc->hasProperty('saleCurrencyResolver')) {
-            /** @var \App\Service\SaleCurrencyResolver&MockObject $currencyResolverMock */
-            $currencyResolverMock = $this->createMock(\App\Service\SaleCurrencyResolver::class);
-            $currencyResolverMock->method('resolveForWrite')->willReturn([
-                'currency' => 'PEN',
-                'exchange_rate' => '1.000000',
-            ]);
-            $rc->getProperty('saleCurrencyResolver')->setValue($stub, $currencyResolverMock);
-        }
-
-        // Inject other deps as no-op sub-stubs
-        foreach ($rc->getProperties() as $prop) {
-            if ($prop->isInitialized($stub)) {
-                continue;
-            }
-            $typeName = $prop->getType() instanceof ReflectionNamedType
-                ? $prop->getType()->getName()
-                : null;
-            if ($typeName !== null && (class_exists($typeName) || interface_exists($typeName))) {
-                try {
-                    $depStub = (new ReflectionClass($typeName))->newInstanceWithoutConstructor();
-                    $prop->setValue($stub, $depStub);
-                } catch (\Throwable) {
-                    if ($prop->getType() instanceof ReflectionNamedType
-                        && $prop->getType()->allowsNull()) {
-                        $prop->setValue($stub, null);
-                    }
-                }
-            }
-        }
-
-        return $stub;
-    }
-
-    /**
      * Build a CashSessionResolver stub (final class).
      * tryResolveForSale() and resolveForSale() both return $resolvedSessionId.
      */
@@ -1807,19 +1415,6 @@ final class SaleProcessorTest extends TestCase
     // =========================================================================
     // General reflection utilities
     // =========================================================================
-
-    /**
-     * Bypass the constructor of any class and return an uninitialised instance.
-     *
-     * @template T of object
-     * @param class-string<T> $className
-     * @return T
-     */
-    private function bypassConstructor(string $className): object
-    {
-        /** @var T */
-        return (new ReflectionClass($className))->newInstanceWithoutConstructor();
-    }
 
     /**
      * Recursively initialize unset properties of a stub with no-op sub-stubs or null.
