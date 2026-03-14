@@ -8,12 +8,11 @@ use App\Dto\Setup\InitialSetupInput;
 use App\Entity\Branch;
 use App\Entity\Category;
 use App\Entity\Customer;
-use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Role;
 use App\Entity\CashRegister;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\SaleItem;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
@@ -25,7 +24,6 @@ use App\Repository\CashRegisterRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
-use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
 use App\Repository\RoleRepository;
@@ -67,7 +65,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly UnitOfMeasureRepository $unitOfMeasureRepository,
         private readonly VoucherTypeRepository $voucherTypeRepository,
         private readonly VoucherSeriesRepository $voucherSeriesRepository,
-        private readonly LogisticOperationRepository $logisticOperationRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
         private readonly CashRegisterRepository $cashRegisterRepository,
     ) {
@@ -292,15 +289,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         Warehouse $warehouse,
         Customer $customer,
         Product $product,
-    ): Sale {
+    ): SaleRecord {
         $this->purgeE2eSales();
 
-        $operation = $this->resolveSaleOperation();
         $paymentMethod = $this->resolvePaymentMethod();
 
-        $sale = new Sale();
+        $sale = new SaleRecord();
         $sale
-            ->setOperacion($operation)
             ->setAlmacen($warehouse)
             ->setBranch($branch)
             ->setCliente($customer)
@@ -313,7 +308,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             ->setDescuento('0.00')
             ->setGlosa(self::E2E_SALE_GLOSA)
             ->setHasInvoice(false)
-            ->setIsConsume(false)
             ->setCajaId(1)
             ->setEstado(1)
             ->setDateCreated(new DateTimeImmutable())
@@ -393,18 +387,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         return $role;
-    }
-
-    private function resolveSaleOperation(): LogisticOperation
-    {
-        $operation = $this->logisticOperationRepository->findOneBy(['name' => 'Venta'])
-            ?? $this->logisticOperationRepository->findOneBy(['type' => 2]);
-
-        if (!$operation instanceof LogisticOperation) {
-            throw new \RuntimeException('No logistic operation found for sales.');
-        }
-
-        return $operation;
     }
 
     private function resolvePaymentMethod(): PaymentMethod

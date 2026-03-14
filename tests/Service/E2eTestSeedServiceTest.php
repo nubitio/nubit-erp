@@ -8,11 +8,10 @@ use App\Dto\Setup\SetupStatusDto;
 use App\Entity\Branch;
 use App\Entity\Category;
 use App\Entity\Customer;
-use App\Entity\LogisticOperation;
 use App\Entity\PaymentMethod;
 use App\Entity\Product;
 use App\Entity\Role;
-use App\Legacy\Sale;
+use App\Entity\SaleRecord;
 use App\Entity\UnitOfMeasure;
 use App\Entity\User;
 use App\Entity\VoucherType;
@@ -22,7 +21,6 @@ use App\Repository\BranchRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CompanyRepository;
 use App\Repository\CustomerRepository;
-use App\Repository\LogisticOperationRepository;
 use App\Repository\PaymentMethodRepository;
 use App\Repository\ProductRepository;
 use App\Repository\RoleRepository;
@@ -58,7 +56,6 @@ final class E2eTestSeedServiceTest extends TestCase
         $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
         $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
         $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
-        $logisticOperationRepository = $this->createMock(LogisticOperationRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 
@@ -104,9 +101,6 @@ final class E2eTestSeedServiceTest extends TestCase
             ->setSalePrice('10.00');
         $productRepository->method('findOneBy')->willReturn($product);
 
-        $logisticOperation = (new LogisticOperation())->setName('Venta')->setType(2);
-        $logisticOperationRepository->method('findOneBy')->willReturn($logisticOperation);
-
         $paymentMethod = (new PaymentMethod())->setName('Efectivo');
         $this->setEntityId($paymentMethod, 'id', 1);
         $paymentMethodRepository->method('find')->with(1)->willReturn($paymentMethod);
@@ -114,7 +108,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $connection->method('fetchFirstColumn')->willReturn([]);
 
         $entityManager->method('persist')->willReturnCallback(function (object $entity): void {
-            if ($entity instanceof Sale) {
+            if ($entity instanceof SaleRecord) {
                 $this->setEntityId($entity, 'id', 'sale-e2e-1');
             }
         });
@@ -135,7 +129,6 @@ final class E2eTestSeedServiceTest extends TestCase
             $unitRepository,
             $voucherTypeRepository,
             $voucherSeriesRepository,
-            $logisticOperationRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
         );
@@ -164,7 +157,6 @@ final class E2eTestSeedServiceTest extends TestCase
         $unitRepository = $this->createMock(UnitOfMeasureRepository::class);
         $voucherTypeRepository = $this->createMock(VoucherTypeRepository::class);
         $voucherSeriesRepository = $this->createMock(VoucherSeriesRepository::class);
-        $logisticOperationRepository = $this->createMock(LogisticOperationRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
 
@@ -200,7 +192,6 @@ final class E2eTestSeedServiceTest extends TestCase
             $unitRepository,
             $voucherTypeRepository,
             $voucherSeriesRepository,
-            $logisticOperationRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
         );
