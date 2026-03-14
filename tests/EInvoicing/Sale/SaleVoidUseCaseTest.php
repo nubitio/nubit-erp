@@ -15,22 +15,22 @@ use App\EInvoicing\Sale\Void\VoidStrategyInterface;
 use App\EInvoicing\Service\SaleV2Loader;
 use App\EInvoicing\Shared\ErrorMessages;
 use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
 use App\Entity\TaxDocument;
 use App\Enum\CashMovementType;
-use App\Repository\CashMovementCategoryRepository;
 use App\Repository\TaxDocumentEventRepository;
 use App\Repository\TaxDocumentRepository;
 use App\Sale\Domain\DocType;
 use App\Sale\Domain\SaleException;
 use App\Sale\Domain\SaleStatus;
+use App\State\Sale\CashSessionResolverInterface;
 use App\State\Sale\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
@@ -330,26 +330,22 @@ final class SaleVoidUseCaseTest extends TestCase
         $sale->setSerie('B001');
         $sale->setNumero('1');
 
-        // Open cash shift
-        $cashShift = $this->createMock(CashShift::class);
-
-        // Category with type
-        $category = new CashMovementCategory();
-        $category->setCode(CashMovementCategory::CUSTOMER_REFUND);
-        $category->setName('Reembolso cliente');
-        $category->setType(CashMovementType::EXPENSE);
-
-        // EntityManager: find returns the cash shift for CashRefundRegistrar's lookup.
-        $shiftRepository = $this->createMock(\Doctrine\ORM\EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn($cashShift);
-
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->expects(self::atLeastOnce())->method('persist');
         $em->method('flush');
 
-        $connection = $this->createMock(Connection::class);
-        $em->method('getConnection')->willReturn($connection);
+        // V2: CashRefundRegistrar uses DBAL Connection + CashSessionResolver
+        $dbalConnection = $this->createMock(Connection::class);
+        $dbalConnection->method('fetchAssociative')->willReturn(['id' => 7]); // category found
+        $dbalConnection->expects(self::once())->method('executeStatement');   // row written
+
+        /** @var MockObject&CashSessionResolverInterface $cashSessionResolver */
+        $cashSessionResolver = $this->createMock(CashSessionResolverInterface::class);
+        $cashSessionResolver->method('tryResolveForSale')->willReturn(42);   // session found
+
+        $cashRefundRegistrar = new CashRefundRegistrar($dbalConnection, $cashSessionResolver, new NullLogger());
+
+        $emConnection = $this->createMock(Connection::class);
+        $em->method('getConnection')->willReturn($emConnection);
 
         $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
@@ -358,11 +354,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
-
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $categoryRepository->method('findOneBy')->willReturn($category);
-
-        $cashRefundRegistrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
 
         $useCase = $this->buildUseCase(
             $em,
@@ -378,16 +369,26 @@ final class SaleVoidUseCaseTest extends TestCase
 
     public function testCashRefundMovementNotPersistedWhenSaleHasNoCashPayment(): void
     {
-        // No tipo_pago set → CashRefundRegistrar exits immediately, no persist
+        // No tipo_pago set → CashRefundRegistrar exits immediately, no DB access
         $sale = $this->makeActiveSale('sale-nocash');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        // In V2-only mode, the sale is never ORM-managed — persist is never called for it
         $em->expects(self::never())->method('persist');
         $em->method('flush');
 
-        $connection = $this->createMock(Connection::class);
-        $em->method('getConnection')->willReturn($connection);
+        $emConnection = $this->createMock(Connection::class);
+        $em->method('getConnection')->willReturn($emConnection);
+
+        // V2: Connection and resolver must NOT be invoked (early return on non-cash payment)
+        $dbalConnection = $this->createMock(Connection::class);
+        $dbalConnection->expects(self::never())->method('fetchAssociative');
+        $dbalConnection->expects(self::never())->method('executeStatement');
+
+        /** @var MockObject&CashSessionResolverInterface $cashSessionResolver */
+        $cashSessionResolver = $this->createMock(CashSessionResolverInterface::class);
+        $cashSessionResolver->expects(self::never())->method('tryResolveForSale');
+
+        $cashRefundRegistrar = new CashRefundRegistrar($dbalConnection, $cashSessionResolver, new NullLogger());
 
         $taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
@@ -396,9 +397,6 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader = $this->createMock(SaleV2Loader::class);
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
-
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $cashRefundRegistrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
 
         $useCase = $this->buildUseCase(
             $em,
