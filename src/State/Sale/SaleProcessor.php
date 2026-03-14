@@ -267,6 +267,18 @@ readonly class SaleProcessor implements ProcessorInterface
                         ? $this->cashSessionResolver->resolveForSale($data)
                         : $this->cashSessionResolver->tryResolveForSale($data);
                     $resolvedCashSessionId = $cashSessionId;
+
+                    // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord
+                    // so that SalesWriteGateway::write() (guard at line 51) sees a non-null value.
+                    // This is required when the legacy cash_shift lookup returns null (e.g. demo tenant
+                    // running in v2_authoritative mode where no open cash_shift row exists).
+                    if ($cashSessionId !== null && $data->getCajaId() === null) {
+                        $resolvedRegisterId = $this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId);
+                        if ($resolvedRegisterId !== null) {
+                            $data->setCashRegisterId($resolvedRegisterId);
+                        }
+                    }
+
                     $this->salesWriteGateway->write($data, $cashSessionId);
                 } catch (\Throwable $exception) {
                     $this->logger->error('Sales V2 dual-write failed', [
