@@ -17,7 +17,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     operations: [new GetCollection()],
     uriVariables: [
         'id' => new Link(
-            fromProperty: 'items',
+            fromProperty: 'saleItemRecords',
             fromClass: SaleRecord::class,
         ),
     ],
@@ -34,7 +34,7 @@ class SaleItemRecord
     #[ORM\Column(name: 'id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: SaleRecord::class, inversedBy: 'items')]
+    #[ORM\ManyToOne(targetEntity: SaleRecord::class, inversedBy: 'saleItemRecords')]
     #[ORM\JoinColumn(name: 'sale_id', referencedColumnName: 'id')]
     private ?SaleRecord $saleRecord = null;
 
