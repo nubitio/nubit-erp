@@ -4,278 +4,248 @@ declare(strict_types=1);
 
 namespace App\Tests\EInvoicing\Sale\Void;
 
-use App\Entity\CashMovement;
 use App\Entity\CashMovementCategory;
-use App\Entity\CashShift;
 use App\Entity\PaymentMethod;
 use App\Entity\SaleRecord;
-use App\Enum\CashMovementType;
-use App\Enum\CashShiftStatus;
 use App\EInvoicing\Sale\Void\CashRefundRegistrar;
-use App\Repository\CashMovementCategoryRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
+use App\State\Sale\CashSessionResolverInterface;
+use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 final class CashRefundRegistrarTest extends TestCase
 {
     // ---------------------------------------------------------------------------
-    // Happy path: open shift + cash payment → CashMovement persisted
+    // Happy path: cash session found + cash payment → cash_movements INSERT
     // ---------------------------------------------------------------------------
 
-    public function testPersistsCashMovementWhenOpenShiftAndCashPayment(): void
+    public function testInsertsRowIntoCashMovementsWhenSessionAndCashPayment(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
-
         $sale = $this->makeSale(id: 'sale-001', total: '150.00', serie: 'B001', numero: '100');
-        $sale->setTipoPago($paymentMethod);
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $cashShift = $this->createMock(CashShift::class);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 42);
 
-        $category = $this->makeCashRefundCategory();
+        // Simulate category lookup returning a row
+        $connection->method('fetchAssociative')
+            ->with(self::stringContains('cash_movement_category'), ['code' => CashMovementCategory::CUSTOMER_REFUND])
+            ->willReturn(['id' => 7]);
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn($cashShift);
+        $executed = false;
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function () use (&$executed): int {
+                $executed = true;
 
-        $persistedEntity = null;
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->expects(self::once())
-            ->method('persist')
-            ->willReturnCallback(static function (object $entity) use (&$persistedEntity): void {
-                $persistedEntity = $entity;
+                return 1;
             });
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $categoryRepository->method('findOneBy')->willReturn($category);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
 
-        self::assertInstanceOf(CashMovement::class, $persistedEntity);
-        /** @var CashMovement $persistedEntity */
-        self::assertSame('150.00', $persistedEntity->getAmount());
-        self::assertStringContainsString('B001', $persistedEntity->getDescription());
-        self::assertStringContainsString('100', $persistedEntity->getDescription());
+        self::assertTrue($executed, 'executeStatement was not called — no row was inserted');
     }
 
-    public function testCashMovementIsLinkedToCashShift(): void
+    public function testInsertDescriptionContainsSerieAndNumero(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
+        $sale = $this->makeSale(id: 'sale-desc', total: '200.00', serie: 'F001', numero: '999');
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $sale = $this->makeSale(id: 'sale-shift', total: '50.00', serie: 'B001', numero: '2');
-        $sale->setTipoPago($paymentMethod);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 5);
 
-        $cashShift = $this->createMock(CashShift::class);
+        $connection->method('fetchAssociative')->willReturn(['id' => 3]);
 
-        $category = $this->makeCashRefundCategory();
+        /** @var string|null $capturedSql */
+        $capturedSql  = null;
+        /** @var array<string, mixed>|null $capturedParams */
+        $capturedParams = null;
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql, array $params) use (&$capturedSql, &$capturedParams): int {
+                $capturedSql    = $sql;
+                $capturedParams = $params;
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn($cashShift);
-
-        /** @var CashMovement|null $persistedMovement */
-        $persistedMovement = null;
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->method('persist')
-            ->willReturnCallback(static function (object $entity) use (&$persistedMovement): void {
-                if ($entity instanceof CashMovement) {
-                    $persistedMovement = $entity;
-                }
+                return 1;
             });
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $categoryRepository->method('findOneBy')->willReturn($category);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
 
-        self::assertNotNull($persistedMovement);
-        self::assertSame($cashShift, $persistedMovement->getCashShift());
+        self::assertNotNull($capturedParams, 'executeStatement was not called');
+        self::assertStringContainsString('F001', $capturedParams['description']);
+        self::assertStringContainsString('999', $capturedParams['description']);
     }
 
-    public function testCashMovementTypeMatchesCategoryType(): void
+    public function testInsertUsesCorrectMovementType(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
+        $sale = $this->makeSale(id: 'sale-mtype', total: '50.00');
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $sale = $this->makeSale(id: 'sale-type', total: '75.00', serie: 'B001', numero: '3');
-        $sale->setTipoPago($paymentMethod);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 1);
 
-        $cashShift = $this->createMock(CashShift::class);
-        $category = $this->makeCashRefundCategory(type: CashMovementType::EXPENSE);
+        $connection->method('fetchAssociative')->willReturn(['id' => 2]);
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn($cashShift);
+        $capturedSql = '';
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
+                $capturedSql = $sql;
 
-        /** @var CashMovement|null $persistedMovement */
-        $persistedMovement = null;
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->method('persist')
-            ->willReturnCallback(static function (object $entity) use (&$persistedMovement): void {
-                if ($entity instanceof CashMovement) {
-                    $persistedMovement = $entity;
-                }
+                return 1;
             });
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $categoryRepository->method('findOneBy')->willReturn($category);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
 
-        self::assertNotNull($persistedMovement);
-        self::assertSame(CashMovementType::EXPENSE, $persistedMovement->getType());
+        self::assertStringContainsString("'REFUND_OUT'", $capturedSql);
+    }
+
+    public function testInsertPassesCorrectAmount(): void
+    {
+        $sale = $this->makeSale(id: 'sale-amt', total: '75.50');
+        $sale->setTipoPago($this->makeCashPaymentMethod());
+
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 10);
+
+        $connection->method('fetchAssociative')->willReturn(['id' => 4]);
+
+        /** @var array<string, mixed>|null $capturedParams */
+        $capturedParams = null;
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql, array $params) use (&$capturedParams): int {
+                $capturedParams = $params;
+
+                return 1;
+            });
+
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
+        $registrar->register($sale, 1);
+
+        self::assertNotNull($capturedParams);
+        self::assertSame('75.50', $capturedParams['amount']);
     }
 
     // ---------------------------------------------------------------------------
-    // No open cash shift → graceful skip, no persist, no exception
+    // No cash session → graceful skip, no DB interaction
     // ---------------------------------------------------------------------------
 
-    public function testGracefullySkipsWhenNoOpenCashShift(): void
+    public function testGracefullySkipsWhenNoSessionFound(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
-
         $sale = $this->makeSale(id: 'sale-noshift', total: '200.00');
-        $sale->setTipoPago($paymentMethod);
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn(null); // no open shift
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: null);
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->expects(self::never())->method('persist');
+        $connection->expects(self::never())->method('fetchAssociative');
+        $connection->expects(self::never())->method('executeStatement');
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
-
-        // Must not throw
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
     }
 
-    public function testNoExceptionThrownWhenNoOpenCashShift(): void
+    public function testNoExceptionThrownWhenNoSessionFound(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
-
         $sale = $this->makeSale(id: 'sale-noshift-ok', total: '100.00');
-        $sale->setTipoPago($paymentMethod);
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn(null);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: null);
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
 
         $this->expectNotToPerformAssertions();
         $registrar->register($sale, 42);
     }
 
     // ---------------------------------------------------------------------------
-    // Sale has no cash payment → immediate return, no EM interaction for shift
+    // Non-cash payment method → immediate return, no DB interaction at all
     // ---------------------------------------------------------------------------
 
     public function testDoesNothingWhenSaleHasNoCashPaymentMethod(): void
     {
         $sale = $this->makeSale(id: 'sale-nocash', total: '300.00');
-        // No tipo_pago set → getTipoPago() returns null → early return
+        // No tipo_pago → getTipoPago() returns null → early return
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('getRepository');
-        $em->expects(self::never())->method('persist');
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: null);
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
+        $connection->expects(self::never())->method('fetchAssociative');
+        $connection->expects(self::never())->method('executeStatement');
+        $resolver->expects(self::never())->method('tryResolveForSale');
 
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
     }
 
     public function testDoesNothingWhenSaleHasNonCashPaymentMethod(): void
     {
-        // PaymentMethod with id != PaymentMethod::CASH (e.g. credit card = 2)
         $paymentMethod = new PaymentMethod();
-        $prop = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
+        $prop          = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
         $prop->setValue($paymentMethod, 2); // credit card
 
         $sale = $this->makeSale(id: 'sale-card', total: '500.00');
         $sale->setTipoPago($paymentMethod);
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('getRepository');
-        $em->expects(self::never())->method('persist');
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: null);
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
+        $connection->expects(self::never())->method('fetchAssociative');
+        $connection->expects(self::never())->method('executeStatement');
+        $resolver->expects(self::never())->method('tryResolveForSale');
 
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
     }
 
     // ---------------------------------------------------------------------------
-    // Missing refund category → graceful skip
+    // Category not found → graceful skip, no INSERT
     // ---------------------------------------------------------------------------
 
     public function testGracefullySkipsWhenRefundCategoryNotFound(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
-
         $sale = $this->makeSale(id: 'sale-nocat', total: '80.00');
-        $sale->setTipoPago($paymentMethod);
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $cashShift = $this->createMock(CashShift::class);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 3);
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')->willReturn($cashShift);
+        $connection->method('fetchAssociative')->willReturn(false); // category missing
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
-        $em->expects(self::never())->method('persist');
+        $connection->expects(self::never())->method('executeStatement');
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-        $categoryRepository->method('findOneBy')->willReturn(null); // category missing
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
-
-        // Must not throw
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
         $registrar->register($sale, 1);
     }
 
     // ---------------------------------------------------------------------------
-    // Shift lookup uses correct criteria (OPEN status + userId)
+    // Idempotency: ON DUPLICATE KEY UPDATE present in SQL
     // ---------------------------------------------------------------------------
 
-    public function testShiftLookupUsesOpenStatusAndUserId(): void
+    public function testInsertSqlContainsOnDuplicateKeyUpdate(): void
     {
-        $paymentMethod = $this->makeCashPaymentMethod();
+        $sale = $this->makeSale(id: 'sale-idem', total: '30.00');
+        $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $sale = $this->makeSale(id: 'sale-lookup', total: '10.00');
-        $sale->setTipoPago($paymentMethod);
+        $connection = $this->createConnectionMock();
+        $resolver   = $this->createResolverMock(sessionId: 9);
 
-        $capturedCriteria = null;
+        $connection->method('fetchAssociative')->willReturn(['id' => 1]);
 
-        $shiftRepository = $this->createMock(EntityRepository::class);
-        $shiftRepository->method('findOneBy')
-            ->willReturnCallback(static function (array $criteria) use (&$capturedCriteria): null {
-                $capturedCriteria = $criteria;
+        $capturedSql = '';
+        $connection->method('executeStatement')
+            ->willReturnCallback(static function (string $sql) use (&$capturedSql): int {
+                $capturedSql = $sql;
 
-                return null;
+                return 1;
             });
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->method('getRepository')->willReturn($shiftRepository);
+        $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
+        $registrar->register($sale, 1);
 
-        $categoryRepository = $this->createMock(CashMovementCategoryRepository::class);
-
-        $registrar = new CashRefundRegistrar($em, $categoryRepository, new NullLogger());
-        $registrar->register($sale, 99);
-
-        self::assertIsArray($capturedCriteria);
-        self::assertSame(CashShiftStatus::OPEN, $capturedCriteria['status'] ?? null);
-        self::assertSame(99, $capturedCriteria['openedBy'] ?? null);
+        self::assertStringContainsString('ON DUPLICATE KEY UPDATE', $capturedSql);
     }
 
     // ---------------------------------------------------------------------------
@@ -285,7 +255,7 @@ final class CashRefundRegistrarTest extends TestCase
     private function makeCashPaymentMethod(): PaymentMethod
     {
         $paymentMethod = new PaymentMethod();
-        $prop = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
+        $prop          = (new \ReflectionClass(PaymentMethod::class))->getProperty('id');
         $prop->setValue($paymentMethod, PaymentMethod::CASH);
 
         return $paymentMethod;
@@ -306,13 +276,22 @@ final class CashRefundRegistrarTest extends TestCase
         return $sale;
     }
 
-    private function makeCashRefundCategory(CashMovementType $type = CashMovementType::EXPENSE): CashMovementCategory
+    /**
+     * @return Connection&MockObject
+     */
+    private function createConnectionMock(): Connection
     {
-        $category = new CashMovementCategory();
-        $category->setCode(CashMovementCategory::CUSTOMER_REFUND);
-        $category->setName('Reembolso cliente');
-        $category->setType($type);
+        return $this->createMock(Connection::class);
+    }
 
-        return $category;
+    /**
+     * @return CashSessionResolverInterface&MockObject
+     */
+    private function createResolverMock(?int $sessionId): CashSessionResolverInterface&MockObject
+    {
+        $resolver = $this->createMock(CashSessionResolverInterface::class);
+        $resolver->method('tryResolveForSale')->willReturn($sessionId);
+
+        return $resolver;
     }
 }

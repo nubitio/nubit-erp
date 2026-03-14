@@ -11,7 +11,7 @@ use Doctrine\DBAL\Connection;
 /**
  * Resolves and validates the canonical cash session for Sales V2 writes.
  */
-final readonly class CashSessionResolver
+final readonly class CashSessionResolver implements CashSessionResolverInterface
 {
     public function __construct(
         private Connection $connection,

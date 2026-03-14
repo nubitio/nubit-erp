@@ -58,7 +58,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private BranchRepository $branchRepository,
         private MessageBusInterface $messageBus,
         private SalesWriteGateway $salesWriteGateway,
-        private CashSessionResolver $cashSessionResolver,
+        private CashSessionResolverInterface $cashSessionResolver,
         private SalePaymentPlanService $salePaymentPlanService,
         private DetractionCalculatorInterface $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
