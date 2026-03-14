@@ -207,6 +207,25 @@ SQL,
     }
 
     /**
+     * Fetches the cash_register_id for an already-resolved cash session.
+     * Uses a single targeted lookup against the cash_sessions table (V2 canonical source).
+     * Returns null if the row does not exist or cash_register_id is not set.
+     */
+    public function resolveRegisterIdForSession(int $sessionId): ?int
+    {
+        $row = $this->connection->fetchAssociative(
+            'SELECT cash_register_id FROM cash_sessions WHERE id = :id',
+            ['id' => $sessionId]
+        );
+
+        if ($row === false || empty($row['cash_register_id'])) {
+            return null;
+        }
+
+        return (int) $row['cash_register_id'];
+    }
+
+    /**
      * @param array<string, mixed> $candidate
      * @throws ServiceException
      */
