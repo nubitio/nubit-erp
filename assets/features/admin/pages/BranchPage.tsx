@@ -1,16 +1,16 @@
 import './BranchPage.scss';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { branchEvents } from '@features/branch';
 import { BranchFields } from './BranchFields';
+import { branchEndpoints } from '../api/adminEndpoints';
 
 export const BranchPage = () => {
   const container = 'wrapper';
   const fields = BranchFields();
 
-  const API_URL = Constants.API_BASE_URL + 'branches';
+  const API_URL = branchEndpoints.list();
 
   return (
     <div id={container}>

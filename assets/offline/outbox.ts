@@ -4,7 +4,16 @@ import { offlineDb } from './db';
 import { nextRetryDelayMs } from './backoff';
 import { logSyncEvent } from './telemetry';
 import { sendApiRequest } from './api';
-import type { CreateOfflineSaleInput, LocalSale, LocalSaleStatus, OutboxItem } from './types';
+import type {
+  CreateOfflineSaleInput,
+  LocalSale,
+  LocalSaleStatus,
+  OutboxItem,
+  OutboxStatus,
+} from './types';
+
+/** Maximum number of sync attempts before an outbox item is permanently failed. */
+const MAX_SYNC_ATTEMPTS = 10;
 
 const OFFLINE_CORRELATIVE_PREFIX = 'OFF';
 let activeSyncPromise: Promise<void> | null = null;
@@ -129,6 +138,27 @@ const processOutboxItem = async (item: OutboxItem) => {
 
   if (result.recoverable) {
     const attempts = item.attempts + 1;
+
+    // Promote to permanent error if max attempts exceeded
+    if (attempts >= MAX_SYNC_ATTEMPTS) {
+      const errorMessage = result.errorMessage ?? 'Límite de reintentos alcanzado';
+      await offlineDb.transaction('rw', offlineDb.outbox, offlineDb.sales, async () => {
+        await offlineDb.outbox.update(item.id, {
+          status: 'error',
+          attempts,
+          lastError: errorMessage,
+          nextRetryAt: undefined,
+        });
+        await updateSaleStatus(item.saleId, 'error', { errorMessage });
+      });
+      await logSyncEvent({
+        eventType: 'sale_sync_error',
+        saleId: item.saleId,
+        detail: `Máximo de reintentos alcanzado (#${attempts}): ${errorMessage}`,
+      });
+      return;
+    }
+
     const nextRetryAt = asIso(new Date(Date.now() + nextRetryDelayMs(attempts)));
     await offlineDb.transaction('rw', offlineDb.outbox, offlineDb.sales, async () => {
       await offlineDb.outbox.update(item.id, {
@@ -198,6 +228,12 @@ export const processOutboxQueue = async () => {
 export const retrySaleSync = async (saleId: string) => {
   const outbox = await offlineDb.outbox.where('saleId').equals(saleId).first();
   if (!outbox) {
+    return false;
+  }
+
+  // Do not retry items that completed successfully
+  // (cast needed: Dexie's query inference narrows the union incorrectly here)
+  if ((outbox.status as OutboxStatus) === 'done') {
     return false;
   }
 

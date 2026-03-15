@@ -1,16 +1,16 @@
 import './OperationPage.scss';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { operationEvents } from '@features/operation';
 import { OperationFields } from './OperationFields';
+import { operationEndpoints } from '../api/catalogEndpoints';
 
 export const OperationPage = () => {
   const container = 'wrapper';
   const fields = OperationFields();
 
-  const API_URL = Constants.API_BASE_URL + 'logistic-operations';
+  const API_URL = operationEndpoints.list();
 
   return (
     <div id={container}>

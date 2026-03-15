@@ -6,6 +6,7 @@ import LoadIndicator from 'devextreme-react/load-indicator';
 import './LoginForm.scss';
 import { authService } from '../../../features/auth';
 import { BranchPicker } from '../../utils/branch-picker/BranchPicker';
+import toast from '@shared/lib/SharedUtils';
 
 export const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -21,8 +22,8 @@ export const LoginForm = () => {
       next: (_response) => {
         setShowLocalPicker(true);
       },
-      error: (error) => {
-        console.error(error);
+      error: () => {
+        toast('Usuario o contraseña incorrectos', 'error');
         setLoading(false);
       },
     });

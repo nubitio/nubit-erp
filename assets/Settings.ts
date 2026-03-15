@@ -26,7 +26,7 @@ class Settings {
         this.settings = JSON.parse(settings);
       }
     } catch (error) {
-      console.error('Error initializing settings:', error);
+      // Settings init failed silently — app continues with defaults
     }
   }
 

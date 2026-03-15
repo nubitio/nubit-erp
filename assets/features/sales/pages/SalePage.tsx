@@ -46,8 +46,8 @@ export const SalePage = () => {
   const API_URL = saleEndpoints.list();
 
   const setupPrinter = () => {
-    qzInvoicePrinterRef.current.initialize().catch((err: any) => {
-      console.error(err);
+    qzInvoicePrinterRef.current.initialize().catch((_err: unknown) => {
+      // QZ Tray not available — print features will be disabled silently
     });
   };
   const setupPrinterRef = useRef(setupPrinter);
@@ -99,8 +99,8 @@ export const SalePage = () => {
   };
 
   const print = (saleId: string) => {
-    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((err: any) => {
-      console.error(err);
+    qzInvoicePrinterRef.current.printSaleInvoice(saleId).catch((_err: unknown) => {
+      toast('No se pudo imprimir el comprobante. Verifique QZ Tray.', 'error');
     });
   };
 

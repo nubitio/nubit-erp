@@ -1,16 +1,16 @@
 import './UserPage.scss';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { userEvents } from '@features/user';
 import { UserFields } from './UserFields';
+import { userEndpoints } from '../api/adminEndpoints';
 
 export const UserPage = () => {
   const container = 'wrapper';
   const fields = UserFields();
 
-  const API_URL = Constants.API_BASE_URL + 'users';
+  const API_URL = userEndpoints.list();
 
   return (
     <div id={container}>

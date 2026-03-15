@@ -345,6 +345,11 @@ export class FieldBuilder {
     return this;
   }
 
+  maxLength(value: number): FieldBuilder {
+    this._field.maxLength = value;
+    return this;
+  }
+
   build(): Field {
     return this._field;
   }

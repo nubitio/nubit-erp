@@ -1,18 +1,18 @@
 import './SupplierPage.scss';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm, DxFormEvents } from '@platform/form/DxForm';
 import { supplierEvents } from '@features/supplier';
 import { SupplierFields } from './SupplierFields';
 import { useRef } from 'react';
+import { supplierEndpoints } from '../api/catalogEndpoints';
 
 export const SupplierPage = () => {
   const container = 'wrapper';
   const formRef = useRef<DxFormEvents | null>(null);
   const fields = SupplierFields(formRef);
 
-  const API_URL = Constants.API_BASE_URL + 'suppliers';
+  const API_URL = supplierEndpoints.list();
 
   return (
     <div id={container}>
