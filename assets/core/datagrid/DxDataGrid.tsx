@@ -41,6 +41,7 @@ import { DxFilterRule } from '../common/FilterRule';
 import { useEvents } from '../event/EventHook';
 import toast from '../utils/SharedUtils';
 import { Field } from '../field/Field';
+import { DataGridEventNames, ToolbarButtonItem } from '../event/EventTypes';
 import { Store } from 'devextreme/data';
 import { RowPreparedEvent, SelectionChangedEvent } from 'devextreme/ui/data_grid';
 
@@ -50,10 +51,10 @@ export interface DxDataGridOptions {
   url: string;
   detailUrl?: string;
   fields: Field[];
-  detailFields?: any[] | ((parentRow: any) => any[]);
+  detailFields?: Field[] | ((parentRow: any) => Field[]);
   columns?: any[];
-  toolbar?: any[];
-  events?: any;
+  toolbar?: ToolbarButtonItem[] | ToolbarButtonItem[][];
+  events?: DataGridEventNames;
   allowAdd?: boolean;
   allowEdit?: boolean;
   allowDelete?: boolean;
@@ -102,10 +103,11 @@ export const DATA_GRID_EVENTS = {
   TOOLBAR_EVENT: 'datagrid:toolbar.event',
 };
 
+const EXPORT_FORMATS = ['xlsx', 'pdf'];
+
 export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((options, ref) => {
   const gridRef = useRef<DataGridRef | null>(null);
   const [data, setData] = useState<Store | null>(null);
-  const exportFormats = ['xlsx', 'pdf'];
   const viewMode = options.mode ?? 'full';
   const [on, emit] = useEvents();
   const noDataText = 'No hay registros para mostrar';
@@ -214,7 +216,8 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
         />
       );
     },
-    [options],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [options.detailUrl, options.detailFields],
   );
 
   const showLoading = (message: string = 'Cargando...') => {
@@ -329,7 +332,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
           <Export
             enabled={options.allowExport ?? false}
             allowExportSelectedData
-            formats={exportFormats}
+            formats={EXPORT_FORMATS}
           />
           <Selection
             mode={options.selectionMode ?? 'single'}
@@ -382,7 +385,12 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             </Item>
             {buildToolbar(options.toolbar)}
             <Item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton">
-              <Button icon="ph ph-arrow-clockwise" text="Actualizar" stylingMode="text" onClick={refresh} />
+              <Button
+                icon="ph ph-arrow-clockwise"
+                text="Actualizar"
+                stylingMode="text"
+                onClick={refresh}
+              />
             </Item>
             {options.allowExport && (
               <Item location="after" locateInMenu="auto">
