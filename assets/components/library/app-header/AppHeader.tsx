@@ -36,7 +36,7 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
           widget="dxButton"
           cssClass="menu-button"
         >
-          <Button icon="menu" stylingMode="text" onClick={toggleMenu} />
+          <Button icon="ph ph-list" stylingMode="text" onClick={toggleMenu} />
         </Item>
         <Item location="before" cssClass="header-title" text={title} visible={!!title} />
         <Item location="after" locateInMenu="never">
@@ -44,7 +44,7 @@ export const AppHeader = ({ menuToggleEnabled, title, toggleMenu, className }: A
         </Item>
         <Item location="after">
           <div className="messages" id="notification">
-            <Button icon="belloutline" stylingMode="text" onClick={toggleNotificationPanel} />
+            <Button icon="ph ph-bell" stylingMode="text" onClick={toggleNotificationPanel} />
             {unreadCount > 0 && (
               <div className="dx-badge" aria-label={`${unreadCount} notificaciones sin leer`}>
                 {unreadCount > 99 ? '99+' : unreadCount}
