@@ -5,14 +5,14 @@ import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { permissionEvents, roleEvents } from '@features/role';
-import AppResponse from '@shared/api/AppResponse';
 import { httpClient } from '@shared/api/HttpClient';
 import { RoleFields } from './RoleFields';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import notify from 'devextreme/ui/notify';
 import TreeView, { TreeViewRef } from 'devextreme-react/tree-view';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
+import { useRoleObservers } from '../model/useRoleObservers';
 
 type RoleMenu = {
   id: number;
@@ -75,46 +75,13 @@ export const RolePage = () => {
     },
   ];
 
-  const setupEventsRef = useRef<() => void>(() => {});
-
-  const setupEvents = () => {
-    on(permissionEvents.SAVE, () => {
-      const row = gridRef.current?.getSelectedRow();
-      if (row) {
-        const data = treeRef.current?.instance().getSelectedNodes();
-        let permissions: any[] = [];
-        data?.forEach((item) => {
-          if (item.parent?.key) {
-            permissions.push(item.parent.key);
-          }
-          permissions.push(item.key);
-        });
-        permissions = [...new Set(permissions)];
-        httpClient
-          .post<AppResponse>(Constants.API_BASE_URL + 'role-menu', {
-            roleId: row.id,
-            permissions: permissions,
-          })
-          .subscribe((response) => {
-            notify(
-              {
-                message: response.data.message,
-                type: 'success',
-                displayTime: 3000,
-              },
-              { position: 'top right' },
-            );
-            emit(permissionEvents.SUCCESS);
-          });
-      }
-    });
-  };
-
-  setupEventsRef.current = setupEvents;
-
-  useEffect(() => {
-    setupEventsRef.current();
-  }, []);
+  useRoleObservers({
+    on,
+    emit,
+    permissionEvents,
+    gridRef,
+    treeRef,
+  });
 
   return (
     <div id={container}>

@@ -1,59 +1,21 @@
 import './CompanyPage.scss';
 import { Constants } from '@platform/common/Constants';
-import { useEvents } from '@platform/event/EventHook';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
-import { DxForm, DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
+import { DxForm, DxFormEvents } from '@platform/form/DxForm';
 import { companyEvents } from '@features/company';
-import { httpClient } from '@shared/api/HttpClient';
 import { CompanyFields } from './CompanyFields';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
+import { useCompanyObservers } from '../model/useCompanyObservers';
 
 export const CompanyPage = () => {
   const container = 'wrapper';
   const formRef = useRef<DxFormEvents | null>(null);
   const fields = CompanyFields(formRef);
-  const [on, emit] = useEvents();
 
   const API_URL = Constants.API_BASE_URL + 'companies';
 
-  useEffect(() => {
-    const sub = on<any>(FORM_EVENTS.FIELD_CHANGED, (data) => {
-      if (data.field !== 'ubigeo') {
-        return;
-      }
-
-      if (!data.value) {
-        formRef.current?.setFieldValue('ubigeoCode', '');
-        formRef.current?.setFieldValue('department', '');
-        formRef.current?.setFieldValue('province', '');
-        formRef.current?.setFieldValue('district', '');
-        return;
-      }
-
-      emit(companyEvents.LOADING, true);
-      httpClient
-        .get<any>(`${Constants.API_BASE_URL}ubigeos/${data.value}`)
-        .subscribe({
-          next: (response) => {
-            const ubigeo = response.data;
-            formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
-            formRef.current?.setFieldValue('department', ubigeo.department ?? '');
-            formRef.current?.setFieldValue('province', ubigeo.province ?? '');
-            formRef.current?.setFieldValue('district', ubigeo.district ?? '');
-          },
-          error: () => {
-            formRef.current?.setFieldValue('ubigeoCode', '');
-            formRef.current?.setFieldValue('department', '');
-            formRef.current?.setFieldValue('province', '');
-            formRef.current?.setFieldValue('district', '');
-          },
-        })
-        .add(() => emit(companyEvents.LOADING, false));
-    });
-
-    return () => sub?.unsubscribe();
-  }, [on, emit]);
+  useCompanyObservers({ loadingEvent: companyEvents.LOADING, formRef });
 
   return (
     <div id={container}>

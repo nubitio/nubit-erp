@@ -1,5 +1,4 @@
 import { Constants } from '@platform/common/Constants';
-import { dispatch } from '@platform/event/EventHook';
 import { DxFormEvents } from '@platform/form/DxForm';
 import { Field } from '@platform/field/Field';
 import { FieldBuilder } from '@platform/field/FieldBuilder';
@@ -12,7 +11,6 @@ import { productService } from '@features/product';
 import { GetStockUseCase } from '@assets/common/GetStockUseCase';
 import { ProductDto } from '@dto/product.dto';
 import { PriceListItemDto } from '@dto/PriceListItemDto';
-import { DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
 import { Setting, settings } from '@assets/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import notify from 'devextreme/ui/notify';
@@ -22,7 +20,12 @@ import { CustomerPage } from '@features/catalog/pages/customers';
 let priceList: PriceListItemDto[] = [];
 let selectedWarehouseId = '';
 
-export const SaleFields = (form: DxFormEvents | null) => {
+export type SaleFieldCallbacks = {
+  onOpenAddCustomer?: () => void;
+  onOpenDiscount?: (params: { total: number; discountPercent: number }) => void;
+};
+
+export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallbacks) => {
   const fields: Field[] = [];
 
   fields.push(
@@ -105,7 +108,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
             icon: 'add',
             stylingMode: 'text',
             onClick: (_e: any) => {
-              dispatch(CustomerPage.EVENTS.ADD);
+              callbacks?.onOpenAddCustomer?.();
             },
           },
         },
@@ -218,7 +221,7 @@ export const SaleFields = (form: DxFormEvents | null) => {
         const total = form?.getFieldValue('grandTotal');
         let discountPercent = form?.getFieldValue('discountPercent');
         discountPercent = discountPercent ? Number(discountPercent / 100) : 0;
-        dispatch(DiscountDialogEvent.OPEN, { total, discountPercent });
+        callbacks?.onOpenDiscount?.({ total, discountPercent });
       })
       .onChange((_e: any) => {
         setTotal(form);
