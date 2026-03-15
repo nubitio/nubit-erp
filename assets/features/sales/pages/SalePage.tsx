@@ -34,7 +34,11 @@ export const SalePage = () => {
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
 
   const container = 'wrapper';
-  const fields = SaleFields(formRef.current);
+  const fields = SaleFields(formRef.current, {
+    onOpenAddCustomer: () => emit(CustomerPage.EVENTS.ADD),
+    onOpenDiscount: ({ total, discountPercent }) =>
+      emit(DiscountDialogEvent.OPEN, { total, discountPercent }),
+  });
   const detailFields = SaleDetailFields(formRef.current);
   const gridDetailFields = (parentRow: any) =>
     SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
