@@ -15,6 +15,7 @@ import Form, {
 import './InitialSetupPage.scss';
 import { SetupPayload, SetupStatus, setupService } from '@features/setup';
 import { useScreenSizeClass } from '@utils/media-query';
+import toast from '@shared/lib/SharedUtils';
 
 const steps = [
   {
@@ -120,7 +121,7 @@ export const InitialSetupPage = () => {
       },
       error: (err) => {
         const message = err?.response?.data?.detail || 'No se pudo completar la configuración.';
-        console.error(message);
+        toast(message, 'error');
         setSubmitting(false);
       },
     });

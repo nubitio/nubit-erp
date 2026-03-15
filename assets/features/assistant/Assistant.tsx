@@ -10,6 +10,7 @@ import { dataSource, useApi } from './useApi';
 import { AppToolbar } from '../../shared/ui/toolbar/AppToolbar';
 import { QuerySuggestionChips } from './components/QuerySuggestionChips';
 import type { AssistantAttachmentPayload } from './services/assistantService';
+import toast from '@shared/lib/SharedUtils';
 // Note: DevExtreme 25.2 introduces LoadPanel indicatorOptions={{ animationType: "sparkle" }}
 // and LoadIndicator animationType="sparkle". When a LoadPanel or LoadIndicator is added to
 // this component to show AI generation progress, set animationType="sparkle" on it.
@@ -50,7 +51,9 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
    * so browser XHR automatically includes it for same-origin requests — no Authorization
    * header is required.
    */
-  const uploadedFilesRef = useRef<Map<string, { mediaId: string; mimeType: string; s3Url: string }>>(new Map());
+  const uploadedFilesRef = useRef<
+    Map<string, { mediaId: string; mimeType: string; s3Url: string }>
+  >(new Map());
 
   /** Ref to the DX Chat instance — used to programmatically set the input text from speech. */
   const chatRef = useRef<ChatRef>(null);
@@ -208,11 +211,14 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
               throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
             }
             const data = (await response.json()) as { id: string; path: string };
-            uploadedFilesRef.current.set(file.name, { mediaId: data.id, mimeType: file.type, s3Url: data.path });
+            uploadedFilesRef.current.set(file.name, {
+              mediaId: data.id,
+              mimeType: file.type,
+              s3Url: data.path,
+            });
           },
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onUploadError: (e: any) => {
-            console.error('File upload failed:', e);
+          onUploadError: (_e: unknown) => {
+            toast('No se pudo subir el archivo', 'error');
           },
         }}
       />

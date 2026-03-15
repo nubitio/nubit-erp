@@ -1,14 +1,14 @@
 import './PaymentMethodPage.scss';
 import { PaymentMethodFields } from './PaymentMethodFields';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxForm } from '@platform/form/DxForm';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { paymentMethodEvents } from '@features/paymentMethod';
+import { paymentMethodEndpoints } from '../api/catalogEndpoints';
 
 export const PaymentMethodPage = () => {
   const container = 'wrapper';
-  const API_URL = Constants.API_BASE_URL + 'payment-methods';
+  const API_URL = paymentMethodEndpoints.list();
   const fields = PaymentMethodFields();
   return (
     <div id={container}>

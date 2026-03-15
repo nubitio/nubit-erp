@@ -376,3 +376,7 @@ const getEditorType = (field: Field): any => {
       return 'dxHtmlEditor';
   }
 };
+
+// Exported for testing only — not part of the public API
+export const _getEditorType = getEditorType;
+export const _buildValidationRules = buildValidationRules;

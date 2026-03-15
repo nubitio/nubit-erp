@@ -51,15 +51,21 @@ export const usePriceListObservers = ({
         toast('Debe seleccionar una tarifa', 'warning');
         return;
       }
-      httpClient.get<any>(priceListEndpoints.prices(selectedRow.id)).subscribe((response) => {
-        prices.current?.instance().beginCustomLoading('Cargando precios...');
-        const store = data.current.store() as ArrayStore;
-        store.clear();
-        response.data.forEach((item: any) => {
-          store.insert(item);
-        });
-        data.current.reload();
-        prices.current?.instance().endCustomLoading();
+      httpClient.get<any>(priceListEndpoints.prices(selectedRow.id)).subscribe({
+        next: (response) => {
+          prices.current?.instance().beginCustomLoading('Cargando precios...');
+          const store = data.current.store() as ArrayStore;
+          store.clear();
+          response.data.forEach((item: any) => {
+            store.insert(item);
+          });
+          data.current.reload();
+          prices.current?.instance().endCustomLoading();
+        },
+        error: () => {
+          prices.current?.instance().endCustomLoading();
+          toast('No se pudieron cargar los precios', 'error');
+        },
       });
     });
 
@@ -83,9 +89,14 @@ export const usePriceListObservers = ({
           priceListId: selectedRow.id,
           prices: pricesPayload,
         })
-        .subscribe((response) => {
-          toast(response.data.message, 'success');
-          emitEvent(ev.SUCCESS);
+        .subscribe({
+          next: (response) => {
+            toast(response.data.message, 'success');
+            emitEvent(ev.SUCCESS);
+          },
+          error: () => {
+            toast('No se pudieron guardar los precios', 'error');
+          },
         });
     });
   }, []);

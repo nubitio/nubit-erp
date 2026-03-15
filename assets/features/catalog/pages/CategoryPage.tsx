@@ -3,12 +3,12 @@ import { CategoryFields } from './CategoryFields';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxForm } from '@platform/form/DxForm';
 import { DxDialog } from '@platform/dialog/DxDialog';
-import { Constants } from '@platform/common/Constants';
 import { categoryEvents } from '@features/category';
+import { categoryEndpoints } from '../api/catalogEndpoints';
 
 export const CategoryPage = () => {
   const container = 'wrapper';
-  const API_URL = Constants.API_BASE_URL + 'categories';
+  const API_URL = categoryEndpoints.list();
   const fields = CategoryFields();
   return (
     <div id={container}>

@@ -1,16 +1,16 @@
 import './VoucherTypePage.scss';
-import { Constants } from '@platform/common/Constants';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { voucherTypeEvents } from '@features/voucherType';
 import { VoucherTypeFields } from './VoucherTypeFields';
+import { voucherTypeEndpoints } from '../api/catalogEndpoints';
 
 export const VoucherTypePage = () => {
   const container = 'wrapper';
   const fields = VoucherTypeFields();
 
-  const API_URL = Constants.API_BASE_URL + 'voucher-types';
+  const API_URL = voucherTypeEndpoints.list();
 
   return (
     <div id={container}>
