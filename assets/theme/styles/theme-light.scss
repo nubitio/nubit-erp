@@ -1,5 +1,5 @@
 /* stylelint-disable */
-@use 'devextreme/scss/bundles/dx.fluent.blue.light.scss';
+@use './dx.fluent.brand.light.scss';
 @use './variables-mixin.scss' as * with (
   $theme-mode: 'light'
 );
