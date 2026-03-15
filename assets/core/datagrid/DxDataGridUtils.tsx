@@ -1,24 +1,30 @@
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
+import { ToolbarButtonItem } from '../event/EventTypes';
 import {
   Column,
+  CustomRule,
+  EmailRule,
   Item,
   ITotalItemProps,
   Lookup,
+  PatternRule,
+  RangeRule,
   RequiredRule,
+  StringLengthRule,
   TotalItem,
 } from 'devextreme-react/data-grid';
 import { dxUtils } from '../../shared/data/DxUtils';
 import { Button } from 'devextreme-react';
 import React from 'react';
 
-export const buildToolbar = (items: any[] = []) => {
-  return items?.map((item: any, index) => {
+export const buildToolbar = (items: (ToolbarButtonItem | ToolbarButtonItem[])[] = []) => {
+  return items?.map((item: ToolbarButtonItem | ToolbarButtonItem[], index) => {
     // object or array
     if (item instanceof Array) {
       return (
         <Item location="after" locateInMenu="auto" key={index}>
-          {item.map((subItem: any, subIndex: number) => {
+          {item.map((subItem: ToolbarButtonItem, subIndex: number) => {
             return (
               <Button
                 key={subIndex}
@@ -49,8 +55,8 @@ export const buildToolbar = (items: any[] = []) => {
   });
 };
 
-const buildLookup = (field: Field) => {
-  if (!field.filterable) return;
+const buildLookup = (field: Field): React.JSX.Element | null => {
+  if (!field.filterable) return null;
   let lookup: React.JSX.Element | null = null;
   if (field.type === FieldType.ENTITY) {
     lookup = (
@@ -84,7 +90,7 @@ const buildLookup = (field: Field) => {
         ];
     lookup = <Lookup dataSource={data} valueExpr="value" displayExpr="text" />;
   }
-  return lookup;
+  return lookup ?? null;
 };
 
 const buildEditorOptions = (field: Field) => {
@@ -110,14 +116,53 @@ const buildValidationRules = (field: Field) => {
   if (field.required) {
     validationRules.push({
       type: 'required',
-      message: `${field.label} es requerido`,
+      options: {
+        message: `${field.label} es requerido`,
+      },
     });
   }
   validationRules = validationRules.concat(field.validators ?? []);
   return validationRules.map((rule, index) => {
     switch (rule.type) {
       case 'required':
-        return <RequiredRule key={index} />;
+        return <RequiredRule key={index} message={rule.options?.message} />;
+      case 'email':
+        return <EmailRule key={index} message={rule.options?.message} />;
+      case 'pattern':
+        return (
+          <PatternRule
+            key={index}
+            pattern={rule.options?.pattern}
+            message={rule.options?.message}
+          />
+        );
+      case 'range':
+        return (
+          <RangeRule
+            key={index}
+            min={rule.options?.min}
+            max={rule.options?.max}
+            message={rule.options?.message}
+          />
+        );
+      case 'stringLength':
+        return (
+          <StringLengthRule
+            key={index}
+            min={rule.options?.min}
+            max={rule.options?.max}
+            message={rule.options?.message}
+          />
+        );
+      case 'custom':
+        return (
+          <CustomRule
+            key={index}
+            message={rule.options?.message}
+            validationCallback={rule.options?.validationCallback}
+          />
+        );
+      // 'async' / 'compare' not supported in DataGrid columns — use form-level validation
       default:
         return null;
     }

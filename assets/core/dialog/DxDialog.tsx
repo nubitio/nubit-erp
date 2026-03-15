@@ -5,6 +5,7 @@ import { Popup, ToolbarItem } from 'devextreme-react/popup';
 import { useScreenSize } from '../../utils/media-query';
 import { Button } from 'devextreme-react';
 import { useEvents } from '../event/EventHook';
+import { DialogEventNames } from '../event/EventTypes';
 import LoadIndicator from 'devextreme-react/load-indicator';
 import LoadPanel from 'devextreme-react/load-panel';
 import { SharedUtils } from '../utils/SharedUtils';
@@ -15,8 +16,8 @@ export interface DxDialogOptions {
   height?: number;
   maxHeight?: number;
   visible?: boolean;
-  events?: any;
-  children?: any;
+  events?: DialogEventNames;
+  children?: React.ReactNode;
   positiveText?: string;
   negativeText?: string;
   footerVisible?: boolean;
@@ -34,8 +35,14 @@ export const DIALOG_EVENTS = {
 };
 
 export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
-  const dialogId = SharedUtils.generateId('dialog');
+  const dialogIdRef = useRef<string>(SharedUtils.generateId('dialog'));
+  const dialogId = dialogIdRef.current;
   const [title, setTitle] = useState<string>(options.title ?? 'Nuevo');
+  useEffect(() => {
+    if (options.title) {
+      setTitle(options.title);
+    }
+  }, [options.title]);
   const width = options.width ?? 480;
   const [visible, setVisible] = useState<boolean>(options.visible ?? false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -62,13 +69,15 @@ export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, re
   };
 
   const setupObservers = () => {
-    on<any>(options.events?.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
+    if (options.events?.ADD)
+      on<any>(options.events.ADD, (payload) => open(payload?.title ?? 'Nuevo'));
 
-    on(options.events?.EDIT, () => open('Editar'));
+    if (options.events?.EDIT) on(options.events.EDIT, () => open('Editar'));
 
-    on<boolean>(options.events?.LOADING, (isLoading) => setIsProcessing(isLoading));
+    if (options.events?.LOADING)
+      on<boolean>(options.events.LOADING, (isLoading) => setIsProcessing(isLoading));
 
-    on(options.events?.SUCCESS, () => close());
+    if (options.events?.SUCCESS) on(options.events.SUCCESS, () => close());
   };
 
   const setupObserversRef = useRef(setupObservers);

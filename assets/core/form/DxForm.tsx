@@ -3,9 +3,8 @@ import Form, { FormRef, GroupItem, Item } from 'devextreme-react/form';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
-import { DateTime } from 'luxon';
 import { FORM_ERRORS_EVENT, httpClient } from '../../shared/api/HttpClient';
-import { confirm } from 'devextreme/ui/dialog';
+import { useFormSubmit } from './useFormSubmit';
 import DataGrid, {
   DataGridRef,
   Editing,
@@ -17,9 +16,10 @@ import { buildColumns } from '../datagrid/DxDataGridUtils';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 import { useEvents } from '../event/EventHook';
+import { FormEventNames } from '../event/EventTypes';
 import { buildField } from './FormUtils';
 import { DateUtils } from '../../shared/lib/DateUtils';
-import toast, { getIRI } from '../../shared/lib/SharedUtils';
+import toast from '../../shared/lib/SharedUtils';
 
 export interface DxFormOptions {
   className?: string;
@@ -31,11 +31,22 @@ export interface DxFormOptions {
   allowAdding?: boolean;
   allowUpdating?: boolean;
   allowDeleting?: boolean;
-  events?: any;
+  events?: FormEventNames;
   editable?: boolean;
   format?: 'json' | 'multipart';
   requiredDetail?: boolean;
+  /** @deprecated — no tiene efecto, IRI siempre se aplica */
   useIRI?: boolean;
+  /** Called after a successful POST or PATCH. Receives the server response. */
+  onSaveSuccess?: (response: any) => void;
+  /** Called when POST or PATCH fails (after HTTP error). */
+  onSaveError?: (error?: any) => void;
+  /** Called after a successful DELETE. */
+  onDeleteSuccess?: (response: any) => void;
+  /** Called when DELETE fails. */
+  onDeleteError?: (error?: any) => void;
+  /** Called whenever the loading state changes (true = started, false = finished). */
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 export interface DxFormEvents {
@@ -99,22 +110,8 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     return options.detailFields?.find((field) => field.isIdentity)?.name ?? '';
   };
 
-  const buildFields = (fields: Field[]) => {
-    return fields.map((field: Field, index) => {
-      return buildField(field, index, options.editable ?? true, uploadedFiles, formRef);
-    });
-  };
-
-  const buildEmptyRow = (fields: Field[]) => {
-    const row: any = {};
-    fields.forEach((field: Field) => {
-      if (field.defaultValue !== undefined) {
-        row[field.name] = field.defaultValue;
-      } else {
-        row[field.name] = undefined;
-      }
-    });
-    return row;
+  const getFieldValue = (field: string) => {
+    return formRef.current?.instance().getEditor(field)?.option('value');
   };
 
   const validate = () => {
@@ -140,6 +137,45 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     }
 
     return formValid && gridValid;
+  };
+
+  const { handleSave, handleDelete } = useFormSubmit(
+    {
+      url: options.url,
+      detailUrl: options.detailUrl,
+      fields: options.fields,
+      detailFields: options.detailFields,
+      detailPropertyName,
+      format: options.format,
+      events: options.events,
+      onSaveSuccess: options.onSaveSuccess,
+      onSaveError: options.onSaveError,
+      onDeleteSuccess: options.onDeleteSuccess,
+      onDeleteError: options.onDeleteError,
+      onLoadingChange: options.onLoadingChange,
+    },
+    { formRef, gridRef, uploadedFiles, isEdit },
+    emit,
+    getFieldValue,
+    validate,
+  );
+
+  const buildFields = (fields: Field[]) => {
+    return fields.map((field: Field, index) => {
+      return buildField(field, index, options.editable ?? true, uploadedFiles, formRef);
+    });
+  };
+
+  const buildEmptyRow = (fields: Field[]) => {
+    const row: any = {};
+    fields.forEach((field: Field) => {
+      if (field.defaultValue !== undefined) {
+        row[field.name] = field.defaultValue;
+      } else {
+        row[field.name] = undefined;
+      }
+    });
+    return row;
   };
 
   const getData = (data: any) => {
@@ -194,234 +230,63 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
       }
     });
 
-    on(options.events?.ADD, (payload: any) => {
-      formRef.current?.instance().option('formData', null);
-      uploadedFiles.current = [];
-      const store = data.current?.store() as ArrayStore;
-      store.clear();
-      data.current?.reload();
-      if (payload) {
-        options.fields.forEach((field: Field) => {
-          if (payload[field.name] === undefined) return;
-          const row = getData(payload);
-          formRef.current?.instance().getEditor(field.name)?.option('value', row[field.name]);
-        });
-        if (payload[detailPropertyName]) {
-          setDetailData(payload[detailPropertyName]);
-        }
-      } else {
-        options.fields.forEach((field: Field) => {
-          if (field.defaultValue !== undefined) {
-            if (field.defaultValue instanceof Function) {
-              formRef.current
-                ?.instance()
-                .getEditor(field.name)
-                ?.option('value', field.defaultValue());
-            } else {
-              formRef.current
-                ?.instance()
-                .getEditor(field.name)
-                ?.option('value', field.defaultValue);
-            }
+    if (options.events?.ADD)
+      on(options.events.ADD, (payload: any) => {
+        formRef.current?.instance().option('formData', null);
+        uploadedFiles.current = [];
+        const store = data.current?.store() as ArrayStore;
+        store.clear();
+        data.current?.reload();
+        if (payload) {
+          options.fields.forEach((field: Field) => {
+            if (payload[field.name] === undefined) return;
+            const row = getData(payload);
+            formRef.current?.instance().getEditor(field.name)?.option('value', row[field.name]);
+          });
+          if (payload[detailPropertyName]) {
+            setDetailData(payload[detailPropertyName]);
           }
-        });
-      }
-      isEdit.current = false;
-    });
-
-    on(options.events?.EDIT, (payload: any) => {
-      const row = getData(payload.row);
-      formRef.current?.instance().option('formData', row);
-      uploadedFiles.current = [];
-      isEdit.current = true;
-      const detailUrl = options.detailUrl?.replace('{id}', row[getIdField()]);
-      if (!detailUrl) return;
-      setDetailData([]);
-      emit(FORM_EVENTS.LOADING, true);
-      httpClient
-        .get<any>(detailUrl)
-        .subscribe((response) => {
-          setDetailData(response.data);
-        })
-        .add(() => emit(FORM_EVENTS.LOADING, false));
-    });
-
-    on(options.events?.DELETE, (payload: any) => {
-      const result = confirm('¿Está seguro de eliminar el registro?', 'Confirmar eliminación');
-      result.then((dialogResult) => {
-        if (dialogResult) {
-          emit(options.events?.LOADING, true);
-          httpClient
-            .delete(`${options.url}/${payload.row[getIdField()]}`)
-            .subscribe((response: any) => {
-              emit(options.events?.SUCCESS, response);
-            })
-            .add(() => emit(options.events?.LOADING, false));
-        }
-      });
-    });
-
-    on(options.events?.SAVE, () => {
-      if (!validate()) return;
-      emit(options.events?.LOADING, true);
-      const _formData = formRef.current?.instance().option('formData');
-      let formData = { ..._formData };
-      uploadedFiles.current.forEach((file) => {
-        formData[file.name] = file.iri;
-      });
-      options.fields.forEach((field: Field) => {
-        if (field.type === FieldType.ENTITY || field.type === FieldType.TAGS) {
-          const type = typeof formData[field.name];
-          if (
-            formData[field.name] === null ||
-            formData[field.name] === undefined ||
-            formData[field.name] === '' ||
-            formData[field.name] === -999
-          ) {
-            delete formData[field.name];
-            return;
-          }
-          if (type === 'object' && formData[field.name] !== null && !field.multiple) {
-            formData[field.name] = getIRI(
-              field.url ?? '',
-              formData[field.name][field.valueField].toString(),
-            );
-          }
-
-          if (type === 'string' || type === 'number') {
-            formData[field.name] = getIRI(field.url ?? '', formData[field.name].toString());
-          }
-
-          if (field.multiple) {
-            if (Array.isArray(formData[field.name])) {
-              formData[field.name] = formData[field.name].map((item: any) => {
-                if (typeof item === 'object') {
-                  return getIRI(field.url ?? '', item[field.valueField].toString());
-                }
-                return getIRI(field.url ?? '', item.toString());
-              });
-            } else {
-              formData[field.name] = [getIRI(field.url ?? '', formData[field.name].toString())];
-            }
-          }
-        }
-        if (field.type === FieldType.FILE) {
-          if (options.format === 'multipart') {
-            const files = getFieldValue(field.name);
-            if (files.length > 0) {
-              formData[field.name] = files[0];
-            } else {
-              delete formData[field.name];
-            }
-            return;
-          }
-          if (Array.isArray(formData[field.name])) {
-            delete formData[field.name];
-            return;
-          }
-        }
-        if (field.type === FieldType.NONE) {
-          if (!field.isIdentity) {
-            delete formData[field.name];
-            return;
-          }
-        }
-        if (field.type === FieldType.DATE) {
-          if (formData[field.name] === null || formData[field.name] === undefined) {
-            delete formData[field.name];
-            return;
-          }
-          const date = new Date(formData[field.name]);
-          // Interpret the picked date as Lima local time, then convert to UTC ISO-8601 with Z suffix.
-          // This is correct regardless of the browser's own timezone setting.
-          formData[field.name] = DateTime.fromJSDate(date, { zone: 'America/Lima' })
-            .toUTC()
-            .toISO();
-        }
-        if (field.type === FieldType.TEXT && field.valueType === 'number') {
-          formData[field.name] = Number(formData[field.name]);
-        }
-        if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
-          if (field.sendAsString) {
-            const value = formData[field.name];
-            formData[field.name] =
-              value != null ? Number(value).toFixed(field.precision || 2) : null;
-          } else {
-            formData[field.name] = Number(formData[field.name]);
-          }
-        }
-      });
-
-      if (options.detailFields) {
-        const items = gridRef.current?.instance().getDataSource().items() ?? [];
-        formData[detailPropertyName] = JSON.parse(JSON.stringify(items));
-        options.detailFields.forEach((field: Field) => {
-          if (field.type === FieldType.ENTITY) {
-            formData[detailPropertyName].forEach((detail: any) => {
-              const type = typeof (detail[field.name] ?? '');
-              if (type === 'object') {
-                detail[field.name] = getIRI(
-                  field.url ?? '',
-                  detail[field.name][field.valueField].toString(),
-                );
-              }
-            });
-          }
-          if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
-            formData[detailPropertyName].forEach((detail: any) => {
-              if (field.sendAsString) {
-                const value = detail[field.name];
-                detail[field.name] =
-                  value != null ? Number(value).toFixed(field.precision || 2) : null;
+        } else {
+          options.fields.forEach((field: Field) => {
+            if (field.defaultValue !== undefined) {
+              if (field.defaultValue instanceof Function) {
+                formRef.current
+                  ?.instance()
+                  .getEditor(field.name)
+                  ?.option('value', field.defaultValue());
               } else {
-                detail[field.name] = Number(detail[field.name]);
+                formRef.current
+                  ?.instance()
+                  .getEditor(field.name)
+                  ?.option('value', field.defaultValue);
               }
-            });
-          }
-          if (!isEdit.current) {
-            formData[detailPropertyName].forEach((detail: any) => {
-              delete detail[getDetailIdField()];
-            });
-          } else {
-            formData[detailPropertyName].forEach((detail: any) => {
-              if (typeof detail[getDetailIdField()] === 'string') {
-                delete detail[getDetailIdField()];
-              }
-            });
-          }
-        });
-      }
+            }
+          });
+        }
+        isEdit.current = false;
+      });
 
-      const id = formData[getIdField()];
-
-      if (options.format === 'multipart') {
-        formData = getMultipartFormData(formData);
-      }
-
-      if (isEdit.current) {
+    if (options.events?.EDIT)
+      on(options.events.EDIT, (payload: any) => {
+        const row = getData(payload.row);
+        formRef.current?.instance().option('formData', row);
+        uploadedFiles.current = [];
+        isEdit.current = true;
+        const detailUrl = options.detailUrl?.replace('{id}', row[getIdField()]);
+        if (!detailUrl) return;
+        setDetailData([]);
+        emit(FORM_EVENTS.LOADING, true);
         httpClient
-          .patch(`${options.url}/${id}`, formData)
-          .subscribe((response: any) => {
-            emit(options.events?.SUCCESS, response);
+          .get<any>(detailUrl)
+          .subscribe((response) => {
+            setDetailData(response.data);
           })
-          .add(() => emit(options.events?.LOADING, false));
-      } else {
-        httpClient
-          .post(options.url, formData)
-          .subscribe((response: any) => {
-            emit(options.events?.SUCCESS, response);
-          })
-          .add(() => emit(options.events?.LOADING, false));
-      }
-    });
-  };
+          .add(() => emit(FORM_EVENTS.LOADING, false));
+      });
 
-  const getMultipartFormData = (formData: any) => {
-    const form = new FormData();
-    for (const key in formData) {
-      form.append(key, formData[key]);
-    }
-    return form;
+    if (options.events?.DELETE) on(options.events.DELETE, (payload: any) => handleDelete(payload));
+
+    if (options.events?.SAVE) on(options.events.SAVE, () => handleSave());
   };
 
   const setupObserversRef = useRef(setupObservers);
@@ -434,10 +299,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
 
   const getFormData = () => {
     return formRef.current?.instance().option('formData');
-  };
-
-  const getFieldValue = (field: string) => {
-    return formRef.current?.instance().getEditor(field)?.option('value');
   };
 
   const setFieldValue = (field: string, value: any) => {
