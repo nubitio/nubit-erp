@@ -82,7 +82,7 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
         <Item location="after" visible={!editing}>
           <Button
             text="Editar"
-            icon="edit"
+            icon="ph ph-pencil-simple"
             stylingMode="outlined"
             type="default"
             onClick={onEditClick}

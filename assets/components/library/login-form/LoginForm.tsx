@@ -53,7 +53,7 @@ export const LoginForm = () => {
                 name: 'password',
                 location: 'after',
                 options: {
-                  icon: showPassword ? 'eyeopen' : 'eyeclose',
+                  icon: showPassword ? 'ph ph-eye' : 'ph ph-eye-slash',
                   type: 'default',
                   stylingMode: 'text',
                   onClick: () => setShowPassword(!showPassword),

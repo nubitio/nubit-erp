@@ -28,7 +28,7 @@ export const TickerCard = ({
     </div>
     {percentage !== undefined && (
       <div className={`percentage ${tone || (percentage > 0 ? 'positive' : 'negative')}`}>
-        <div className={`dx-icon-${percentage > 0 ? 'spinup' : 'spindown'}`} />
+        <i className={`ph ph-trend-${percentage > 0 ? 'up' : 'down'}`} aria-hidden="true" />
         <div className="value">{`${Math.abs(percentage)}%`}</div>
       </div>
     )}

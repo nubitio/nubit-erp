@@ -25,7 +25,7 @@ export const ToolbarForm = ({
       <Item location="after" visible={!editing}>
         <Button
           text="Edit"
-          icon="edit"
+          icon="ph ph-pencil-simple"
           stylingMode="outlined"
           type="default"
           onClick={toggleEditing}

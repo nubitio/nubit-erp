@@ -21,13 +21,13 @@ export const ToolbarAnalytics = ({
         </Item>
         {additionalToolbarContent}
         <Item location="after" locateInMenu="auto" widget="dxButton" showText="inMenu">
-          <Button text="Refresh" icon="refresh" stylingMode="text" />
+          <Button text="Refresh" icon="ph ph-arrow-clockwise" stylingMode="text" />
         </Item>
         <Item location="after" locateInMenu="auto">
           <div className="separator" />
         </Item>
         <Item location="after" locateInMenu="auto" widget="dxButton" showText="inMenu">
-          <Button icon="export" text="Export" stylingMode="text" />
+          <Button icon="ph ph-download-simple" text="Export" stylingMode="text" />
         </Item>
       </Toolbar>
       {children}

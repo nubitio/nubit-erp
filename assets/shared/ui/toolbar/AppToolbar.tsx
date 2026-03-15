@@ -27,7 +27,7 @@ export const AppToolbar = (props: AppToolbarProps & React.PropsWithChildren) => 
           showText="inMenu"
           visible={props.showRefreshButton ?? true}
         >
-          <Button text="Actualizar" icon="refresh" stylingMode="text" onClick={props.onRefresh} />
+          <Button text="Actualizar" icon="ph ph-arrow-clockwise" stylingMode="text" onClick={props.onRefresh} />
         </Item>
       </Toolbar>
       {props.children}
