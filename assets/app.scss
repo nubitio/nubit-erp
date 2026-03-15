@@ -6,7 +6,7 @@
 
 body {
   margin: 0;
-  font-family: var(--font-family-sans, 'Ubuntu', 'Roboto', sans-serif);
+  font-family: var(--font-family-sans, 'Inter', system-ui, sans-serif);
   color: var(--text-primary, inherit);
   background: var(--surface-0, inherit);
   -webkit-font-smoothing: antialiased;
