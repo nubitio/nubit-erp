@@ -1,7 +1,31 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useConnectivity } from '@offline/connectivity/ConnectivityContext';
-import { getPendingSalesCount, getRecentSales, processOutboxQueue, retrySaleSync } from '@offline/outbox';
+import {
+  getPendingSalesCount,
+  getRecentSales,
+  processOutboxQueue,
+  retrySaleSync,
+} from '@offline/outbox';
 import type { LocalSale } from '@offline/types';
+
+/**
+ * Polling intervals for the sync loop.
+ *
+ * When there are pending/error sales and the device is online we poll
+ * aggressively so the queue drains quickly after reconnection.
+ * When the queue is empty we slow down to conserve battery — especially
+ * important on low-end Android devices used by vendors in Peru.
+ */
+const POLL_INTERVAL_ACTIVE_MS = 10_000; // 10s  — queue has items, drain quickly
+const POLL_INTERVAL_IDLE_MS = 60_000; // 60s  — queue empty, just keep watch
 
 interface OutboxSyncContextValue {
   pendingSalesCount: number;
@@ -63,19 +87,32 @@ export const OutboxSyncProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [isOnline, processNow]);
 
-  useEffect(() => {
-    const interval = window.setInterval(() => {
+  // Adaptive polling: drain aggressively when there are pending sales,
+  // back off to conserve battery when the queue is empty.
+  const intervalRef = useRef<number | null>(null);
+
+  const scheduleNextPoll = useCallback(() => {
+    if (intervalRef.current !== null) {
+      window.clearInterval(intervalRef.current);
+    }
+    const delay = pendingSalesCount > 0 ? POLL_INTERVAL_ACTIVE_MS : POLL_INTERVAL_IDLE_MS;
+    intervalRef.current = window.setInterval(() => {
       if (isOnline) {
         void processNow();
       } else {
         void refresh();
       }
-    }, 5000);
+    }, delay);
+  }, [isOnline, pendingSalesCount, processNow, refresh]);
 
+  useEffect(() => {
+    scheduleNextPoll();
     return () => {
-      window.clearInterval(interval);
+      if (intervalRef.current !== null) {
+        window.clearInterval(intervalRef.current);
+      }
     };
-  }, [isOnline, processNow, refresh]);
+  }, [scheduleNextPoll]);
 
   const value = useMemo(
     () => ({

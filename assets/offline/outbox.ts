@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { LIMA_TZ } from '@shared/lib/DateUtils';
 import { offlineDb } from './db';
-import { nextRetryDelayMs } from './backoff';
+import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';
 import { logSyncEvent } from './telemetry';
 import { sendApiRequest } from './api';
 import type {
@@ -11,9 +11,6 @@ import type {
   OutboxItem,
   OutboxStatus,
 } from './types';
-
-/** Maximum number of sync attempts before an outbox item is permanently failed. */
-const MAX_SYNC_ATTEMPTS = 10;
 
 const OFFLINE_CORRELATIVE_PREFIX = 'OFF';
 let activeSyncPromise: Promise<void> | null = null;
@@ -140,7 +137,7 @@ const processOutboxItem = async (item: OutboxItem) => {
     const attempts = item.attempts + 1;
 
     // Promote to permanent error if max attempts exceeded
-    if (attempts >= MAX_SYNC_ATTEMPTS) {
+    if (attempts >= MAX_OUTBOX_ATTEMPTS) {
       const errorMessage = result.errorMessage ?? 'Límite de reintentos alcanzado';
       await offlineDb.transaction('rw', offlineDb.outbox, offlineDb.sales, async () => {
         await offlineDb.outbox.update(item.id, {
@@ -216,7 +213,17 @@ export const processOutboxQueue = async () => {
       if (item.nextRetryAt && item.nextRetryAt > nowIso) {
         continue;
       }
-      await processOutboxItem(item);
+      try {
+        await processOutboxItem(item);
+      } catch (err) {
+        // Unexpected JS error (not HTTP) — log and continue so remaining
+        // items in the queue are not blocked by a single broken item.
+        await logSyncEvent({
+          eventType: 'sale_sync_error',
+          saleId: item.saleId,
+          detail: err instanceof Error ? err.message : 'Error inesperado en sincronización',
+        });
+      }
     }
   })().finally(() => {
     activeSyncPromise = null;
@@ -237,8 +244,12 @@ export const retrySaleSync = async (saleId: string) => {
     return false;
   }
 
+  // Reset attempts so the manual retry gets a full new window of MAX_OUTBOX_ATTEMPTS.
+  // This is intentional: a merchant who waited hours before retrying deserves
+  // another full backoff cycle, not the scraps of the previous one.
   await offlineDb.outbox.update(outbox.id, {
     status: 'pending',
+    attempts: 0,
     nextRetryAt: undefined,
     lastError: undefined,
   });
