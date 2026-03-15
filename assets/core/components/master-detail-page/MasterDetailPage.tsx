@@ -19,7 +19,7 @@ export const MasterDetailPage = (props: MasterDetailViewProps) => {
         {(props.showBackButton ?? true) && (
           <Item location="before">
             <Button
-              icon="arrowleft"
+              icon="ph ph-arrow-left"
               onClick={() => {
                 window.history.back();
               }}

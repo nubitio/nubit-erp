@@ -23,7 +23,7 @@ export const FormPhoto = ({
           backgroundImage: `url('data:image/png;base64,${link}')`,
         }}
       >
-        {editable && <i className="edit-icon dx-icon-photooutline" />}
+        {editable && <i className="edit-icon ph ph-camera" aria-hidden="true" />}
       </div>
       {editable && <FileUploader dialogTrigger=".edit-icon" accept="image/*" visible={false} />}
     </div>

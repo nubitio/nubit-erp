@@ -27,7 +27,7 @@ export const AsyncState = ({
       {description && <div className="async-state__description">{description}</div>}
       {onRetry && variant === 'error' && (
         <div className="async-state__actions">
-          <Button icon="refresh" text={retryText} stylingMode="outlined" onClick={onRetry} />
+          <Button icon="ph ph-arrow-clockwise" text={retryText} stylingMode="outlined" onClick={onRetry} />
         </div>
       )}
     </div>

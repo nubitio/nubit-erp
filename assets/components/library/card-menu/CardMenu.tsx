@@ -14,7 +14,7 @@ export const CardMenu = ({ items, visible = true }: CardMenuProps) => {
       className="overflow-menu"
       items={items}
       visible={visible}
-      icon="overflow"
+      icon="ph ph-dots-three"
       stylingMode="text"
       showArrowIcon={false}
       dropDownOptions={{ width: 'auto' }}

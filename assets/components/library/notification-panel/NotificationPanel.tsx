@@ -81,7 +81,7 @@ const NotificationPanel = (props: NotificationPanelProps) => {
           )}
         </div>
         <div className="notification-header-button">
-          <Button icon="close" stylingMode="text" onClick={props.onHiding} />
+          <Button icon="ph ph-x" stylingMode="text" onClick={props.onHiding} />
         </div>
       </div>
 

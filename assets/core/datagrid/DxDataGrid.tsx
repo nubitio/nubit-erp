@@ -341,7 +341,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
           <Toolbar visible={(options.toolbarVisible ?? true) && 'minimal' !== viewMode}>
             <Item location="before" visible={options.hasBackButton ?? false}>
               <Button
-                icon="arrowleft"
+                icon="ph ph-arrow-left"
                 stylingMode="text"
                 onClick={() => {
                   window.history.back();
@@ -382,7 +382,7 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
             </Item>
             {buildToolbar(options.toolbar)}
             <Item location="after" locateInMenu="auto" showText="inMenu" widget="dxButton">
-              <Button icon="refresh" text="Actualizar" stylingMode="text" onClick={refresh} />
+              <Button icon="ph ph-arrow-clockwise" text="Actualizar" stylingMode="text" onClick={refresh} />
             </Item>
             {options.allowExport && (
               <Item location="after" locateInMenu="auto">
