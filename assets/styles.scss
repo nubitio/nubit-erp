@@ -494,21 +494,13 @@ samp {
       }
     }
 
-    .dx-datagrid-rowsview .dx-row > td {
-      border-top-color: color-mix(in srgb, var(--border-color) 65%, transparent);
-    }
-
-    .dx-datagrid-rowsview .dx-row.dx-data-row:nth-child(even) > td {
-      background: color-mix(in srgb, var(--surface-1) 96%, var(--surface-2));
-    }
-
     .dx-datagrid-rowsview .dx-row.dx-state-hover > td {
-      background: color-mix(in srgb, var(--surface-2) 72%, var(--surface-1));
+      background: color-mix(in srgb, var(--accent-color) 22%, var(--surface-1)) !important;
       transition: background-color 120ms ease;
     }
 
     .dx-datagrid-rowsview .dx-row.dx-selection > td {
-      background: color-mix(in srgb, var(--accent-color) 14%, var(--surface-1));
+      background: color-mix(in srgb, var(--accent-color) 14%, var(--surface-1)) !important;
     }
   }
 

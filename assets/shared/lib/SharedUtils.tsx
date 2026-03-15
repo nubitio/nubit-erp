@@ -197,7 +197,7 @@ export class SharedUtils {
       value = Number(value);
     }
     if (value === -1) {
-      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
+      return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
     } else if (value === 0) {
       return <span className="badge badge-outlined rounded-pill text-bg-success">ENVIADO</span>;
     } else if (value < 2000) {
@@ -205,7 +205,7 @@ export class SharedUtils {
     } else if (value >= 2000 && value < 4000) {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
     } else if (value >= 4000) {
-      return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
+      return <span className="badge badge-outlined rounded-pill text-bg-secondary">OBSERVADO</span>;
     }
   }
 
@@ -222,7 +222,7 @@ export class SharedUtils {
 
     const rawStatus = sale?.invoiceSunatStatus ?? sale?.sunatStatus;
     if (rawStatus === null || rawStatus === undefined || rawStatus === '') {
-      return <span className="badge badge-outlined rounded-pill text-bg-primary">PENDIENTE</span>;
+      return <span className="badge badge-outlined rounded-pill text-bg-info">PENDIENTE</span>;
     }
 
     const statusNumber = Number(rawStatus);
@@ -242,7 +242,7 @@ export class SharedUtils {
       return <span className="badge badge-outlined rounded-pill text-bg-danger">RECHAZADO</span>;
     }
 
-    return <span className="badge badge-outlined rounded-pill text-bg-info">OBSERVADO</span>;
+    return <span className="badge badge-outlined rounded-pill text-bg-secondary">OBSERVADO</span>;
   }
 }
 
