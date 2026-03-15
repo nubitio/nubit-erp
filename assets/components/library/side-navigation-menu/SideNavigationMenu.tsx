@@ -135,7 +135,7 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
   }, [currentPath, location.pathname, compactMode, items]);
 
   return (
-    <div className="dx-swatch-additional side-navigation-menu" ref={getWrapperRef}>
+    <div className={`dx-swatch-additional side-navigation-menu${compactMode ? ' compact' : ''}`} ref={getWrapperRef}>
       {children}
       <div className="menu-container theme-dependent">
         {isLoading && <div className="menu-loading">Cargando menú...</div>}

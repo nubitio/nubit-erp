@@ -25,8 +25,6 @@
       .dx-treeview-item {
         padding-left: 0;
         flex-direction: row-reverse;
-        border-radius: var(--radius-md);
-        margin-inline: 8px;
         transition: background 150ms ease;
 
         .dx-icon {
@@ -35,12 +33,18 @@
         }
       }
 
-      .dx-treeview-item-selected > .dx-treeview-item,
-      .dx-treeview-node.dx-state-selected > .dx-item {
+      // Selected item
+      .dx-treeview-item-without-checkbox.dx-state-selected > .dx-treeview-item {
         background: color-mix(in srgb, var(--accent-color) 12%, transparent);
         color: var(--accent-color);
         font-weight: var(--font-weight-semibold);
         border-left: 3px solid var(--accent-color);
+      }
+
+      // Parent section header when a child is selected
+      .dx-treeview-node[aria-level='1']:has(.dx-state-selected) > .dx-treeview-item {
+        color: var(--accent-color);
+        font-weight: var(--font-weight-semibold);
       }
 
       // ##
@@ -75,5 +79,11 @@
     }
 
     // ##
+  }
+
+  &.compact .menu-container .dx-treeview {
+    .dx-treeview-item-without-checkbox.dx-state-selected > .dx-treeview-item {
+      border-left: none;
+    }
   }
 }
