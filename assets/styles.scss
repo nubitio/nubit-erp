@@ -12,10 +12,10 @@
 // Design tokens that are theme-independent and must be available before the
 // dynamic theme stylesheet is injected (fixes Firefox "property not set" warnings).
 :root {
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 18px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --font-size-xs: 12px;
   --font-size-sm: 14px;
   --font-size-md: 16px;
@@ -276,7 +276,7 @@ samp {
 }
 
 .status-commission {
-  @include status-contact(#03a9f4);
+  @include status-contact(#0e7a50);
 }
 
 .status-salaried {

@@ -1,0 +1,18 @@
+/* stylelint-disable */
+// Custom brand bundle — replaces dx.fluent.blue.dark with #10B981 accent (lighter for dark bg)
+@use 'devextreme/scss/widgets/fluent/colors' with (
+  $color: 'blue',
+  $mode: 'dark',
+  $base-accent: #10b981
+);
+@use 'devextreme/scss/widgets/fluent/sizes' with ($size: 'default');
+@use 'devextreme/scss/widgets/fluent/typography';
+@use 'devextreme/scss/widgets/fluent/icons';
+@use 'devextreme/scss/widgets/fluent/widget';
+@use 'devextreme/scss/widgets/fluent/card';
+@use 'devextreme/scss/widgets/fluent/fieldset';
+@use 'devextreme/scss/widgets/fluent/common';
+@use 'devextreme/scss/widgets/base/resizable';
+@use 'devextreme/scss/widgets/base/draggable';
+@use 'devextreme/scss/widgets/base/ui';
+@use 'devextreme/scss/widgets/fluent';

@@ -773,7 +773,7 @@
 
   &:focus-visible {
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.22);
+    box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
     border-color: var(--pos-primary-border);
   }
 
@@ -1648,7 +1648,7 @@
   }
 
   input[type='checkbox']:focus-visible + &__track {
-    box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.22);
+    box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
   }
 }
 
@@ -1874,12 +1874,12 @@
   border: 0;
   border-radius: var(--pos-radius);
   padding: 0.9rem 1.1rem;
-  background: linear-gradient(145deg, #1463ff 0%, #0044cc 100%);
+  background: linear-gradient(145deg, #0e7a50 0%, #065e3b 100%);
   color: #fff;
   font-weight: 800;
   cursor: pointer;
   box-shadow:
-    0 4px 14px rgba(20, 99, 255, 0.38),
+    0 4px 14px rgba(14, 122, 80, 0.38),
     inset 0 1px 0 rgba(255, 255, 255, 0.14);
   transition:
     box-shadow 220ms ease,
@@ -1913,7 +1913,7 @@
 
   &:hover:not(:disabled) {
     box-shadow:
-      0 8px 28px rgba(20, 99, 255, 0.52),
+      0 8px 28px rgba(14, 122, 80, 0.52),
       inset 0 1px 0 rgba(255, 255, 255, 0.18);
     transform: translateY(-1px);
   }
@@ -1944,21 +1944,21 @@
 .pos-mode-btn:focus-visible,
 .pos-caja-action-btn:focus-visible {
   outline: 0;
-  box-shadow: 0 0 0 3px rgba(20, 99, 255, 0.22);
+  box-shadow: 0 0 0 3px rgba(14, 122, 80, 0.22);
 }
 
 // ─── Dark mode overrides ──────────────────────────────────────────────────────
 .pos-shell[data-theme='dark'] {
   // Cobrar: deeper, richer; glow on hover feels premium on dark canvas
   .pos-checkout {
-    background: linear-gradient(145deg, #1a6fff 0%, #0040cc 100%);
+    background: linear-gradient(145deg, #10b981 0%, #0e7a50 100%);
     box-shadow:
-      0 4px 18px rgba(26, 111, 255, 0.30),
+      0 4px 18px rgba(14, 122, 80, 0.30),
       inset 0 1px 0 rgba(255, 255, 255, 0.10);
 
     &:hover:not(:disabled) {
       box-shadow:
-        0 6px 32px rgba(26, 111, 255, 0.55),
+        0 6px 32px rgba(14, 122, 80, 0.55),
         0 0 0 1px rgba(255, 255, 255, 0.06),
         inset 0 1px 0 rgba(255, 255, 255, 0.14);
     }
