@@ -58,8 +58,7 @@ $theme-mode: null !default;
   --popup-toolbar-item-spacing: var(--dx-popup-toolbar-item-padding-inline);
   --drop-down-gnrc-button-height: var(--dx-component-height);
   --subtitle-text-color: var(--texteditor-label-color);
-  --font-family-sans: 'Ubuntu', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    sans-serif;
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-family-mono: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono',
     'Courier New', monospace;
   --font-size-xs: 12px;
