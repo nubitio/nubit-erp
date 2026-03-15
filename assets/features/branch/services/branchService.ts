@@ -1,5 +1,5 @@
-import { httpClient } from '../../../shared/api/HttpClient';
-import { Constants } from '../../../core/common/Constants';
+import { httpClient } from '@shared/api/HttpClient';
+import { Constants } from '@platform/common/Constants';
 import { StorageUtils } from '../../../shared/lib/StorageUtils';
 
 class BranchService {

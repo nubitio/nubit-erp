@@ -72,6 +72,7 @@ export interface DxDataGridOptions {
   stateStoringEnabled?: boolean;
   toolbarVisible?: boolean;
   selectionMode?: 'single' | 'multiple';
+  onBack?: () => void;
   onSelectionChanged?: (e: SelectionChangedEvent) => void;
   onRowPrepared?: (e: RowPreparedEvent) => void;
   onContentReady?: () => void;
@@ -347,7 +348,11 @@ export const DxDataGrid = forwardRef<DxDataGridEvents, DxDataGridOptions>((optio
                 icon="ph ph-arrow-left"
                 stylingMode="text"
                 onClick={() => {
-                  window.history.back();
+                  if (options.onBack) {
+                    options.onBack();
+                  } else {
+                    window.history.back();
+                  }
                 }}
               />
             </Item>

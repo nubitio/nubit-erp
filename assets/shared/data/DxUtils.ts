@@ -4,8 +4,8 @@ import ApiResponse from '../api/ApiResponse';
 import CustomStore from 'devextreme/data/custom_store';
 import { FilterDescriptor, SortDescriptor } from 'devextreme/data';
 import GridData from '../../types/GridData';
-import { DxFilterRule } from '../../core/common/FilterRule';
-import { LoadOption } from '../../core/field/Field';
+import { DxFilterRule } from '@platform/common/FilterRule';
+import { LoadOption } from '@platform/field/Field';
 
 class DxUtils {
   private async fetchAll(url: string, loadOptions: any): Promise<GridData<any>> {

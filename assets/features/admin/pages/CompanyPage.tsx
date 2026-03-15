@@ -1,5 +1,5 @@
 import './CompanyPage.scss';
-import { Constants } from '@platform/common/Constants';
+import { companyEndpoints } from '../api/companyEndpoints';
 import { DxDataGrid } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm, DxFormEvents } from '@platform/form/DxForm';
@@ -13,7 +13,7 @@ export const CompanyPage = () => {
   const formRef = useRef<DxFormEvents | null>(null);
   const fields = CompanyFields(formRef);
 
-  const API_URL = Constants.API_BASE_URL + 'companies';
+  const API_URL = companyEndpoints.list();
 
   useCompanyObservers({ loadingEvent: companyEvents.LOADING, formRef });
 

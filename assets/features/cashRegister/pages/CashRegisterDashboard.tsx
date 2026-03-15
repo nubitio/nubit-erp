@@ -1,11 +1,11 @@
 import './CashRegisterDashboard.scss';
 import cashRegisterDashboardFields from '../components/fields/cashRegisterDashboardFields';
-import {DxDataGrid, DxDataGridEvents} from '../../../core/datagrid/DxDataGrid';
-import {Constants} from '../../../core/common/Constants';
-import {useNavigate} from 'react-router-dom';
-import {useEffect, useRef, useState} from 'react';
-import {useEvents} from '../../../core/event/EventHook';
-import {HTTP_ERROR_EVENT} from '../../../shared/api/HttpClient';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
+import { Constants } from '@platform/common/Constants';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useEvents } from '@platform/event/EventHook';
+import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 export const CashRegisterDashboard = () => {
   const url = Constants.API_BASE_URL + 'cash-registers/dashboard';

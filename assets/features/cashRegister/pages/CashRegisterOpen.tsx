@@ -3,12 +3,12 @@ import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { useRef, useState } from 'react';
 import { Button } from 'devextreme-react';
 import LoadIndicator from 'devextreme-react/load-indicator';
-import { FieldBuilder } from '../../../core/field/FieldBuilder';
-import { FieldType } from '../../../core/field/FieldType';
-import { buildField } from '../../../core/form/FormUtils';
+import { FieldBuilder } from '@platform/field/FieldBuilder';
+import { FieldType } from '@platform/field/FieldType';
+import { buildField } from '@platform/form/FormUtils';
 import cashRegisterService from '../services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
-import toast from '../../../shared/lib/SharedUtils';
+import toast from '@shared/lib/SharedUtils';
 
 type CashRegisterOpenParams = {
   id: string;

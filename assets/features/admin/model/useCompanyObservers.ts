@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
 import { useEvents } from '@platform/event/EventHook';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { companyEndpoints } from '../api/companyEndpoints';
 
 type UseCompanyObserversParams = {
   loadingEvent: string;
@@ -26,7 +26,7 @@ export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserve
 
       emit(loadingEvent, true);
       httpClient
-        .get<any>(`${Constants.API_BASE_URL}ubigeos/${data.value}`)
+        .get<any>(companyEndpoints.ubigeo(data.value))
         .subscribe({
           next: (response) => {
             const ubigeo = response.data;

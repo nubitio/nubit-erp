@@ -1,5 +1,5 @@
 import './RolePage.scss';
-import { Constants } from '@platform/common/Constants';
+import { roleEndpoints } from '../api/roleEndpoints';
 import { useEvents } from '@platform/event/EventHook';
 import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
@@ -8,7 +8,7 @@ import { permissionEvents, roleEvents } from '@features/role';
 import { httpClient } from '@shared/api/HttpClient';
 import { RoleFields } from './RoleFields';
 import { useRef } from 'react';
-import notify from 'devextreme/ui/notify';
+import toast from '@shared/lib/SharedUtils';
 import TreeView, { TreeViewRef } from 'devextreme-react/tree-view';
 import DataSource from 'devextreme/data/data_source';
 import ArrayStore from 'devextreme/data/array_store';
@@ -41,7 +41,7 @@ export const RolePage = () => {
     }),
   );
 
-  const API_URL = Constants.API_BASE_URL + 'roles';
+  const API_URL = roleEndpoints.list();
 
   const toolbar = [
     {
@@ -51,25 +51,16 @@ export const RolePage = () => {
         const row = gridRef.current?.getSelectedRow();
         if (row) {
           emit(permissionEvents.ADD, { title: 'Permisos de ' + row.name });
-          httpClient
-            .get<RoleMenu[]>(Constants.API_BASE_URL + `role-menu/${row.id}`)
-            .subscribe((response) => {
-              const store = permissionsData.current.store() as ArrayStore;
-              store.clear();
-              response.data.forEach((item: any) => {
-                store.insert(item);
-              });
-              permissionsData.current.reload();
+          httpClient.get<RoleMenu[]>(roleEndpoints.menu(row.id)).subscribe((response) => {
+            const store = permissionsData.current.store() as ArrayStore;
+            store.clear();
+            response.data.forEach((item: any) => {
+              store.insert(item);
             });
+            permissionsData.current.reload();
+          });
         } else {
-          notify(
-            {
-              message: 'Debe seleccionar un rol',
-              type: 'error',
-              displayTime: 3000,
-            },
-            { position: 'top right' },
-          );
+          toast('Debe seleccionar un rol', 'error');
         }
       },
     },

@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon';
+import { LIMA_TZ } from '@shared/lib/DateUtils';
 import { Constants } from '@platform/common/Constants';
 import type { PaymentMethodOption, PosItem } from './types';
 
@@ -84,7 +85,7 @@ export function nowUtcIso(): string {
  * interpreting the Date as representing a moment in America/Lima.
  */
 export function toUtcIso(date: Date): string {
-  return DateTime.fromJSDate(date, { zone: 'America/Lima' }).toUTC().toISO() as string;
+  return DateTime.fromJSDate(date, { zone: LIMA_TZ }).toUTC().toISO() as string;
 }
 
 export const isCashPaymentMethod = (method: PaymentMethodOption | null | undefined) => {

@@ -1,11 +1,11 @@
 import './PriceListPage.scss';
-import { Constants } from '@platform/common/Constants';
+import { priceListEndpoints } from '../api/priceListEndpoints';
 import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { DxDialog } from '@platform/dialog/DxDialog';
 import { DxForm } from '@platform/form/DxForm';
 import { PriceListFields } from './PriceListFields';
 import { useRef } from 'react';
-import notify from 'devextreme/ui/notify';
+import toast from '@shared/lib/SharedUtils';
 import { DataGrid } from 'devextreme-react';
 import { Column, DataGridRef, Editing, Scrolling } from 'devextreme-react/data-grid';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
@@ -30,7 +30,7 @@ export const PriceListPage = () => {
     }),
   );
 
-  const API_URL = Constants.API_BASE_URL + 'price-lists';
+  const API_URL = priceListEndpoints.list();
 
   const EVENTS = {
     ADD: 'price-list:add',
@@ -59,14 +59,7 @@ export const PriceListPage = () => {
       onClick: () => {
         const selectedRow = gridRef.current?.getSelectedRow();
         if (!selectedRow) {
-          notify(
-            {
-              message: 'Debe seleccionar una tarifa',
-              type: 'warning',
-              displayTime: 3000,
-            },
-            { position: 'top right' },
-          );
+          toast('Debe seleccionar una tarifa', 'warning');
           return;
         }
         emit(PRICES_EVENT.ADD, { title: 'Precios de ' + selectedRow.name });

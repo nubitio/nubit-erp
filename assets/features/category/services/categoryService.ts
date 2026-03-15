@@ -1,6 +1,6 @@
-import { httpClient } from '../../../shared/api/HttpClient';
+import { httpClient } from '@shared/api/HttpClient';
 import { lastValueFrom } from 'rxjs';
-import { Constants } from '../../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
 
 type LoadOptions = Record<string, unknown>;
 

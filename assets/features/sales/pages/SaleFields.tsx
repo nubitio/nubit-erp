@@ -13,7 +13,6 @@ import { ProductDto } from '@dto/product.dto';
 import { PriceListItemDto } from '@dto/PriceListItemDto';
 import { Setting, settings } from '@assets/Settings';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import notify from 'devextreme/ui/notify';
 import { lastValueFrom } from 'rxjs';
 import { CustomerPage } from '@features/catalog/pages/customers';
 
@@ -330,23 +329,9 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
             return;
           }
           const stockData = await GetStockUseCase(currentRow.product.id, selectedWarehouseId);
-          notify(
-            {
-              message: 'Stock actual: ' + stockData.stock,
-              type: 'info',
-              duration: 2000,
-            },
-            { position: 'top right' },
-          );
+          toast('Stock actual: ' + stockData.stock, 'info', 2000);
           if (value > stockData.stock) {
-            notify(
-              {
-                message: 'No hay stock suficiente',
-                type: 'error',
-                duration: 2000,
-              },
-              { position: 'top right' },
-            );
+            toast('No hay stock suficiente', 'error', 2000);
             value = '';
             row.qty = '';
             row.netAmount = '';

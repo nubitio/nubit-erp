@@ -1,7 +1,7 @@
 import { lastValueFrom } from 'rxjs';
 
-import { Constants } from '../../../core/common/Constants';
-import { httpClient } from '../../../shared/api/HttpClient';
+import { Constants } from '@platform/common/Constants';
+import { httpClient } from '@shared/api/HttpClient';
 
 export type NotificationType =
   | 'sunat_error'
