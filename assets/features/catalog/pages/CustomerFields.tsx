@@ -8,7 +8,7 @@ import { FieldType } from '@platform/field/FieldType';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import notify from 'devextreme/ui/notify';
+import toast from '@shared/lib/SharedUtils';
 
 export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
   const fields: Field[] = [];
@@ -71,14 +71,7 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
               } else if (doc.length === 11) {
                 consultService.consultRuc(doc).subscribe((response) => {
                   if (!response.data.active) {
-                    notify(
-                      {
-                        message: 'El RUC ingresado no se encuentra activo',
-                        type: 'error',
-                        displayTime: 3000,
-                      },
-                      { position: 'top right' },
-                    );
+                    toast('El RUC ingresado no se encuentra activo', 'error');
                     return;
                   }
                   formRef.current?.setFieldValue('businessName', response.data.name);

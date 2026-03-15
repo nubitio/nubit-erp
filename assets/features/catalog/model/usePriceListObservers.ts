@@ -2,12 +2,11 @@ import { useEffect, useRef } from 'react';
 import { DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { DataGridRef } from 'devextreme-react/data-grid';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { priceListEndpoints } from '../api/priceListEndpoints';
 import ArrayStore from 'devextreme/data/array_store';
 import DataSource from 'devextreme/data/data_source';
 import AppResponse from '@shared/api/AppResponse';
 import toast from '@shared/lib/SharedUtils';
-import notify from 'devextreme/ui/notify';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -52,18 +51,16 @@ export const usePriceListObservers = ({
         toast('Debe seleccionar una tarifa', 'warning');
         return;
       }
-      httpClient
-        .get<any>(Constants.API_BASE_URL + 'price-lists/' + selectedRow.id + '/prices')
-        .subscribe((response) => {
-          prices.current?.instance().beginCustomLoading('Cargando precios...');
-          const store = data.current.store() as ArrayStore;
-          store.clear();
-          response.data.forEach((item: any) => {
-            store.insert(item);
-          });
-          data.current.reload();
-          prices.current?.instance().endCustomLoading();
+      httpClient.get<any>(priceListEndpoints.prices(selectedRow.id)).subscribe((response) => {
+        prices.current?.instance().beginCustomLoading('Cargando precios...');
+        const store = data.current.store() as ArrayStore;
+        store.clear();
+        response.data.forEach((item: any) => {
+          store.insert(item);
         });
+        data.current.reload();
+        prices.current?.instance().endCustomLoading();
+      });
     });
 
     onEvent(ev.SAVE, () => {
@@ -82,15 +79,12 @@ export const usePriceListObservers = ({
         return;
       }
       httpClient
-        .post<AppResponse>(Constants.API_BASE_URL + 'price-lists/update', {
+        .post<AppResponse>(priceListEndpoints.updatePrices(), {
           priceListId: selectedRow.id,
           prices: pricesPayload,
         })
         .subscribe((response) => {
-          notify(
-            { message: response.data.message, type: 'success', displayTime: 3000 },
-            { position: 'top right' },
-          );
+          toast(response.data.message, 'success');
           emitEvent(ev.SUCCESS);
         });
     });

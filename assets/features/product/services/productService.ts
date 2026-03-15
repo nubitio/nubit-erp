@@ -1,13 +1,14 @@
 import { lastValueFrom } from 'rxjs';
+import type { LoadOptions } from 'devextreme/data/load_options';
 import { ProductDto } from '../../../dto/product.dto';
-import { httpClient } from '../../../shared/api/HttpClient';
+import { httpClient } from '@shared/api/HttpClient';
 import GridData from '../../../types/GridData';
-import ApiResponse from '../../../shared/api/ApiResponse';
-import { Constants } from '../../../core/common/Constants';
+import ApiResponse from '@shared/api/ApiResponse';
+import { Constants } from '@platform/common/Constants';
 import { ProductStockDto } from '../../../dto/product.stock.dto';
 
 class ProductService {
-  getAll(loadOptions: any): Promise<GridData<ProductDto>> {
+  getAll(loadOptions: LoadOptions): Promise<GridData<ProductDto>> {
     const subscription = httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products`, {
       params: loadOptions,
     });
@@ -36,7 +37,7 @@ class ProductService {
     return httpClient.get<ProductDto[]>(`${Constants.API_BASE_URL}products?rows=1000`);
   }
 
-  create(_values: any) {
+  create(_values: unknown): Promise<string> {
     return Promise.resolve('insert');
   }
 

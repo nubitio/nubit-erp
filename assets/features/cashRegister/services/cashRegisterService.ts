@@ -1,5 +1,5 @@
-import { httpClient } from '../../../shared/api/HttpClient';
-import { Constants } from '../../../core/common/Constants';
+import { httpClient } from '@shared/api/HttpClient';
+import { Constants } from '@platform/common/Constants';
 
 export interface XReportDto {
   openingBalance: string;
@@ -15,6 +15,15 @@ export interface XReportDto {
   }>;
 }
 
+export interface CashRegisterClosureItem {
+  cashShift: string;
+  paymentMethod: string;
+  expectedAmount: number;
+  countedAmount: number | undefined;
+  difference: number | undefined;
+  note: unknown;
+}
+
 const cashRegisterService = () => {
   const openCashRegister = (id: string, openingBalance: number) => {
     const amount = Number(openingBalance ?? 0);
@@ -24,14 +33,14 @@ const cashRegisterService = () => {
     });
   };
 
-  const closeCashRegister = (id: string, closureData: any) => {
+  const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
     return httpClient.post<any>(Constants.API_BASE_URL + `cash-registers/${id}/close`, {
       closureItems: closureData,
     });
   };
 
   const getMovements = (id: string) => {
-    return httpClient.get<any>(Constants.API_BASE_URL + `cash-registers/${id}/movements`);
+    return httpClient.get<unknown>(Constants.API_BASE_URL + `cash-registers/${id}/movements`);
   };
 
   const getXReport = (shiftId: string | number) => {

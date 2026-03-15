@@ -1,7 +1,7 @@
 import { lastValueFrom } from 'rxjs';
-import { Constants } from '../../../core/common/Constants';
-import { httpClient } from '../../../shared/api/HttpClient';
-import ApiResponse from '../../../shared/api/ApiResponse';
+import { Constants } from '@platform/common/Constants';
+import { httpClient } from '@shared/api/HttpClient';
+import ApiResponse from '@shared/api/ApiResponse';
 
 export type AssistantChatMessage = {
   role: 'user' | 'assistant';

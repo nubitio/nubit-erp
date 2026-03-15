@@ -6,6 +6,7 @@ import ArrayStore from 'devextreme/data/array_store';
 import { confirm } from 'devextreme/ui/dialog';
 import { httpClient } from '../../shared/api/HttpClient';
 import { getIRI } from '../../shared/lib/SharedUtils';
+import { LIMA_TZ } from '../../shared/lib/DateUtils';
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
 import { FormEventNames } from '../event/EventTypes';
@@ -135,7 +136,7 @@ export const useFormSubmit = (
         const date = new Date(val);
         // Interpret the picked date as Lima local time, then convert to UTC ISO-8601.
         // This is correct regardless of the browser's own timezone setting.
-        formData[field.name] = DateTime.fromJSDate(date, { zone: 'America/Lima' }).toUTC().toISO();
+        formData[field.name] = DateTime.fromJSDate(date, { zone: LIMA_TZ }).toUTC().toISO();
       }
 
       if (field.type === FieldType.TEXT && field.valueType === 'number') {

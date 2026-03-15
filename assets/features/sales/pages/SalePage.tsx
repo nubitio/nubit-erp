@@ -2,7 +2,7 @@ import './SalePage.scss';
 import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { DxForm, DxFormEvents, FORM_EVENTS } from '@platform/form/DxForm';
 import { DxDialog } from '@platform/dialog/DxDialog';
-import { Constants } from '@platform/common/Constants';
+import { saleEndpoints } from '../api/saleEndpoints';
 import { SaleDetailFields, SaleFields, setTotal } from './SaleFields';
 import { useEffect, useRef, useState } from 'react';
 import { DiscountDialog, DiscountDialogEvent } from '@widgets/discount-dialog/DiscountDialog';
@@ -43,7 +43,7 @@ export const SalePage = () => {
   const gridDetailFields = (parentRow: any) =>
     SaleDetailFields(formRef.current, parentRow?.currency ?? 'PEN');
 
-  const API_URL = Constants.API_BASE_URL + 'sales';
+  const API_URL = saleEndpoints.list();
 
   const setupPrinter = () => {
     qzInvoicePrinterRef.current.initialize().catch((err: any) => {
@@ -131,7 +131,7 @@ export const SalePage = () => {
         fields={fields}
         allowAdd={true}
         toolbar={toolbar}
-        detailUrl={API_URL + '/{id}/items'}
+        detailUrl={saleEndpoints.items('{id}')}
         detailFields={gridDetailFields}
         events={saleEvents}
         sort={[{ selector: 'createdAt', desc: true }]}

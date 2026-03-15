@@ -1,6 +1,6 @@
-import { httpClient } from '../../../shared/api/HttpClient';
+import { httpClient } from '@shared/api/HttpClient';
 import { SideNavigationItem } from '../../../components/library/side-navigation-menu/SideNavigationMenu';
-import { Constants } from '../../../core/common/Constants';
+import { Constants } from '@platform/common/Constants';
 
 class MenuService {
   getMenuByRoleId(roleId: number) {

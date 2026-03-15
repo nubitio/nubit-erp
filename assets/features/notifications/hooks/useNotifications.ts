@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Subscription } from 'rxjs';
 
-import { Constants } from '../../../core/common/Constants';
-import { httpClient } from '../../../shared/api/HttpClient';
+import { Constants } from '@platform/common/Constants';
+import { httpClient } from '@shared/api/HttpClient';
 import type { Notification } from '../services/notificationService';
 import { notificationService } from '../services/notificationService';
 

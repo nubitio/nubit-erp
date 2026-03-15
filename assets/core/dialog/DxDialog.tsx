@@ -29,11 +29,6 @@ export interface DxDialogEvents {
   close: () => void;
 }
 
-export const DIALOG_EVENTS = {
-  SHOW: 'show',
-  HIDE: 'hide',
-};
-
 export const DxDialog = forwardRef<DxDialogEvents, DxDialogOptions>((options, ref) => {
   const dialogIdRef = useRef<string>(SharedUtils.generateId('dialog'));
   const dialogId = dialogIdRef.current;

@@ -1,21 +1,21 @@
 import './CashMovements.scss';
-import {DxDataGrid, DxDataGridEvents} from '../../../core/datagrid/DxDataGrid';
+import { DxDataGrid, DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import NumberUtils from '../../../shared/lib/NumberUtils';
-import {DxDialog} from '../../../core/dialog/DxDialog';
-import {DxForm} from '../../../core/form/DxForm';
-import {useEffect, useRef, useState} from 'react';
-import {Constants} from '../../../core/common/Constants';
+import { DxDialog } from '@platform/dialog/DxDialog';
+import { DxForm } from '@platform/form/DxForm';
+import { useEffect, useRef, useState } from 'react';
+import { Constants } from '@platform/common/Constants';
 import cashMovementsFields from '../components/fields/cashMovementsFields';
-import {useNavigate, useParams} from 'react-router-dom';
-import {useEvents} from '../../../core/event/EventHook';
-import {HTTP_ERROR_EVENT} from '../../../shared/api/HttpClient';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useEvents } from '@platform/event/EventHook';
+import { HTTP_ERROR_EVENT } from '@shared/api/HttpClient';
 
 type CashMovementsParams = {
   id: string;
 };
 
 export const CashMovements = () => {
-  const {id} = useParams<CashMovementsParams>();
+  const { id } = useParams<CashMovementsParams>();
   const API_URL = Constants.API_BASE_URL + 'cash-movements';
   const gridRef = useRef<DxDataGridEvents>(null);
   const fields = cashMovementsFields(id);
@@ -90,12 +90,7 @@ export const CashMovements = () => {
         paging={false}
       />
       <DxDialog title="Movimiento de caja" events={EVENTS}>
-        <DxForm
-          url={API_URL}
-          fields={fields}
-          events={EVENTS}
-          useIRI={true}
-        />
+        <DxForm url={API_URL} fields={fields} events={EVENTS} useIRI={true} />
       </DxDialog>
     </div>
   );

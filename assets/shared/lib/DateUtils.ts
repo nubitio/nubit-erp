@@ -1,4 +1,4 @@
-const LIMA_TZ = 'America/Lima';
+export const LIMA_TZ = 'America/Lima';
 
 /** Extract date components in Lima timezone using Intl.DateTimeFormat. */
 function limaDateParts(date: Date): { year: number; month: number; day: number } {

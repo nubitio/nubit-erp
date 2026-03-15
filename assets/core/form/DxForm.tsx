@@ -56,7 +56,6 @@ export interface DxFormEvents {
   getDetailData: () => any;
   setDetailData: (data: any[]) => void;
   reloadDetailData: () => void;
-  getValues: () => any;
   setValues: (data: any) => void;
   setReadonly: (field: string, value: boolean) => void;
   setDisabled: (field: string, value: boolean) => void;
@@ -317,10 +316,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     return gridRef.current?.instance().getDataSource().items();
   };
 
-  const getValues = () => {
-    return formRef.current?.instance().option('formData');
-  };
-
   const setValues = (data: any) => {
     const row = getData(data);
     formRef.current?.instance().option('formData', row);
@@ -380,7 +375,6 @@ export const DxForm = forwardRef<DxFormEvents, DxFormOptions>((options, ref) => 
     getDetailData,
     setDetailData,
     reloadDetailData,
-    getValues,
     setValues,
     setReadonly,
     setDisabled,

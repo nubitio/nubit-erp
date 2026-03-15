@@ -2,9 +2,9 @@ import { useEffect, useRef } from 'react';
 import { DxDataGridEvents } from '@platform/datagrid/DxDataGrid';
 import { TreeViewRef } from 'devextreme-react/tree-view';
 import { httpClient } from '@shared/api/HttpClient';
-import { Constants } from '@platform/common/Constants';
+import { roleEndpoints } from '../api/roleEndpoints';
 import AppResponse from '@shared/api/AppResponse';
-import notify from 'devextreme/ui/notify';
+import toast from '@shared/lib/SharedUtils';
 
 type OnEventFn = <T>(name: string, handler: (payload: T) => void) => unknown;
 
@@ -52,15 +52,12 @@ export const useRoleObservers = ({
       });
       permissions = [...new Set(permissions)];
       httpClient
-        .post<AppResponse>(Constants.API_BASE_URL + 'role-menu', {
+        .post<AppResponse>(roleEndpoints.saveMenu(), {
           roleId: row.id,
           permissions,
         })
         .subscribe((response) => {
-          notify(
-            { message: response.data.message, type: 'success', displayTime: 3000 },
-            { position: 'top right' },
-          );
+          toast(response.data.message, 'success');
           emitEvent(ev.SUCCESS);
         });
     });

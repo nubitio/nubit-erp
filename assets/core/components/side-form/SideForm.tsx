@@ -28,7 +28,7 @@ export const SideForm = forwardRef<DxFormEvents, SideFormProps>((props, ref) => 
   };
 
   const onEditClick = () => {
-    emit(props.events?.EDIT, { row: formRef.current?.getValues() });
+    emit(props.events?.EDIT, { row: formRef.current?.getFormData() });
     toggleEditing();
   };
 

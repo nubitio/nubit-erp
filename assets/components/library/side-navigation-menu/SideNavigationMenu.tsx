@@ -13,7 +13,7 @@ import { menuService } from '../../../features/navigation';
 import './SideNavigationMenu.scss';
 
 import * as events from 'devextreme/events';
-import { userInformation } from '../../../core/common/UserInformation';
+import { userInformation } from '@platform/common/UserInformation';
 
 export type SideNavigationItem = {
   expanded: boolean;
@@ -135,7 +135,10 @@ export const SideNavigationMenu = (props: React.PropsWithChildren<SideNavigation
   }, [currentPath, location.pathname, compactMode, items]);
 
   return (
-    <div className={`dx-swatch-additional side-navigation-menu${compactMode ? ' compact' : ''}`} ref={getWrapperRef}>
+    <div
+      className={`dx-swatch-additional side-navigation-menu${compactMode ? ' compact' : ''}`}
+      ref={getWrapperRef}
+    >
       {children}
       <div className="menu-container theme-dependent">
         {isLoading && <div className="menu-loading">Cargando menú...</div>}
