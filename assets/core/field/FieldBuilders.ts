@@ -1,6 +1,6 @@
 import { BaseFieldBuilder } from './BaseFieldBuilder';
 import { FieldType } from './FieldType';
-import { Field } from './Field';
+import type { Field } from './Field';
 
 /**
  * Factory for the standard hidden identity field (type NONE, name 'id').
@@ -349,4 +349,4 @@ export function passwordField(): PasswordFieldBuilder {
   return new PasswordFieldBuilder();
 }
 
-export { Field };
+export type { Field };
