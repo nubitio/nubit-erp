@@ -148,6 +148,15 @@ export default defineConfig({
       },
     },
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // DevExtreme SCSS still uses legacy color functions (lighten, desaturate, etc.)
+        // that Sass 1.80+ deprecated. Silence until DevExtreme updates their SCSS.
+        silenceDeprecations: ['global-builtin', 'color-functions', 'import'],
+      },
+    },
+  },
   build: {
     rollupOptions: {
       input: {
