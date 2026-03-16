@@ -55,8 +55,16 @@ readonly class InvoiceCalculator
             $discountAmount = Money::money($baseAmount->multipliedBy($discountRate));
             $taxableAmount = Money::money($baseAmount->minus($discountAmount));
             $chargesAmount = Money::money($taxableAmount->multipliedBy($chargesRate));
-            $taxAmount = Money::money($taxableAmount->multipliedBy($taxRate));
-            $lineTotal = Money::money($taxableAmount->plus($chargesAmount)->plus($taxAmount));
+
+            // Compute lineTotal from 6dp intermediates (before any 2dp rounding) to avoid
+            // cascade rounding errors on non-trivial tax rates such as 10.5%.
+            // taxAmount is then the residual so that
+            //   taxableAmount + chargesAmount + taxAmount = lineTotal exactly.
+            $baseAmount6   = $unitValue->multipliedBy($qty);
+            $discount6     = $baseAmount6->multipliedBy($discountRate);
+            $taxable6      = $baseAmount6->minus($discount6);
+            $lineTotal     = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
+            $taxAmount     = Money::money($lineTotal->minus($chargesAmount)->minus($taxableAmount));
 
             $lines[] = new InvoiceLineAmounts(
                 Money::toString($qty, 6),
@@ -105,12 +113,16 @@ readonly class InvoiceCalculator
         $divisor = BigDecimal::one()->plus($taxRate);
         $grossTotal = Money::money($this->expectedTotal ?? 0);
 
-        $subtotal = Money::money(Money::div($grossTotal, $divisor, 6));
+        $subtotal6      = Money::div($grossTotal, $divisor, 6);
+        $subtotal       = Money::money($subtotal6);
         $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
-        $taxableAmount = Money::money($subtotal->minus($discountAmount));
-        $chargesAmount = Money::money($taxableAmount->multipliedBy($chargesRate));
-        $taxAmount = Money::money($taxableAmount->multipliedBy($taxRate));
-        $total = Money::money($taxableAmount->plus($taxAmount)->plus($chargesAmount));
+        $taxableAmount  = Money::money($subtotal->minus($discountAmount));
+        $chargesAmount  = Money::money($taxableAmount->multipliedBy($chargesRate));
+
+        // Same deferred-rounding fix as in calculate(): round total once at 6dp, derive taxAmount.
+        $taxable6  = $subtotal6->minus($subtotal6->multipliedBy($discountRate));
+        $total     = Money::money($taxable6->multipliedBy(BigDecimal::one()->plus($chargesRate)->plus($taxRate)));
+        $taxAmount = Money::money($total->minus($chargesAmount)->minus($taxableAmount));
 
         return new InvoiceAmounts()
             ->setSubtotal(Money::toString($subtotal))

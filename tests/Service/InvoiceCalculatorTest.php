@@ -82,9 +82,11 @@ final class InvoiceCalculatorTest extends TestCase
                     'subtotal' => '1.08',
                     'discount' => '0.00',
                     'taxable' => '1.08',
-                    'tax' => '0.19',
+                    // Deferred-rounding: 1.084746 * 1.28 = 1.388475 -> 1.39 (previously 1.38 due to
+                    // intermediate rounding of baseAmount to 1.08 before applying charges+tax).
+                    'tax' => '0.20',
                     'charges' => '0.11',
-                    'total' => '1.38',
+                    'total' => '1.39',
                 ],
             ],
             'quantity_decimals' => [
@@ -151,6 +153,74 @@ final class InvoiceCalculatorTest extends TestCase
                     'tax' => '18.00',
                     'charges' => '0.00',
                     'total' => '118.00',
+                ],
+            ],
+            // ── 10.5% IGV (Peruvian non-trivial rate) ───────────────────────────────
+            'igv_10_5_single_line' => [
+                'lines' => [
+                    new InvoiceLineInput('1', '13.00'),
+                ],
+                'discount' => '0',
+                'tax' => '10.5',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '11.76',
+                    'discount' => '0.00',
+                    'taxable' => '11.76',
+                    'tax' => '1.24',
+                    'charges' => '0.00',
+                    'total' => '13.00',
+                ],
+            ],
+            'igv_10_5_price_7' => [
+                'lines' => [
+                    new InvoiceLineInput('1', '7.00'),
+                ],
+                'discount' => '0',
+                'tax' => '10.5',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '6.33',
+                    'discount' => '0.00',
+                    'taxable' => '6.33',
+                    'tax' => '0.67',
+                    'charges' => '0.00',
+                    'total' => '7.00',
+                ],
+            ],
+            'igv_10_5_multi_line' => [
+                'lines' => [
+                    new InvoiceLineInput('1', '13.00'),
+                    new InvoiceLineInput('2', '7.00'),
+                ],
+                'discount' => '0',
+                'tax' => '10.5',
+                'charges' => '0',
+                'expectedTotal' => null,
+                'expected' => [
+                    'subtotal' => '24.43',
+                    'discount' => '0.00',
+                    'taxable' => '24.43',
+                    'tax' => '2.57',
+                    'charges' => '0.00',
+                    'total' => '27.00',
+                ],
+            ],
+            'igv_10_5_fallback' => [
+                'lines' => [],
+                'discount' => '0',
+                'tax' => '10.5',
+                'charges' => '0',
+                'expectedTotal' => '13.00',
+                'expected' => [
+                    'subtotal' => '11.76',
+                    'discount' => '0.00',
+                    'taxable' => '11.76',
+                    'tax' => '1.24',
+                    'charges' => '0.00',
+                    'total' => '13.00',
                 ],
             ],
         ];
