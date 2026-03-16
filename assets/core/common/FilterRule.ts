@@ -1,6 +1,6 @@
-export default interface FilterRule {
+export interface FilterRule {
   field: string;
-  op: string;
+  operator: string;
   value: string | number | boolean;
 }
 
