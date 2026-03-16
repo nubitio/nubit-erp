@@ -34,7 +34,7 @@
   "scripts": {
     "dev": "vite",
     "build": "yarn build:themes && vite build",
-    "build:themes": "sass --load-path=node_modules assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass --load-path=node_modules assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map",
+    "build:themes": "sass --load-path=node_modules assets/theme/styles/theme-dark.scss public/themes/app-theme-dark.css --no-source-map && sass --load-path=node_modules assets/theme/styles/theme-light.scss public/themes/app-theme-light.css --no-source-map && node scripts/wrap-dx-layer.mjs",
     "postinstall": "yarn build:themes",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
