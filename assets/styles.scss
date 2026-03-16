@@ -494,13 +494,27 @@ samp {
       }
     }
 
+    .dx-datagrid-rowsview .dx-row > td {
+      border-top-color: color-mix(in srgb, var(--border-color) 65%, transparent);
+    }
+
+    .dx-datagrid-rowsview .dx-row.dx-row-alt > td {
+      background: color-mix(in srgb, var(--surface-1) 96%, var(--surface-2));
+    }
+
     .dx-datagrid-rowsview .dx-row.dx-state-hover > td {
-      background: color-mix(in srgb, var(--accent-color) 22%, var(--surface-1)) !important;
+      background: color-mix(in srgb, var(--surface-2) 72%, var(--surface-1));
       transition: background-color 120ms ease;
     }
 
     .dx-datagrid-rowsview .dx-row.dx-selection > td {
-      background: color-mix(in srgb, var(--accent-color) 14%, var(--surface-1)) !important;
+      background: color-mix(in srgb, var(--accent-color) 14%, var(--surface-1));
+    }
+
+    .dx-datagrid-rowsview
+      .dx-row-focused.dx-data-row
+      > td:not(.dx-focused):not(.dx-cell-modified):not(.dx-datagrid-invalid) {
+      background: color-mix(in srgb, var(--accent-color) 18%, var(--surface-1));
     }
   }
 
