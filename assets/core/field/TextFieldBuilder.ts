@@ -1,15 +1,4 @@
-import { BaseFieldBuilder } from './BaseFieldBuilder';
-import { FieldType } from './FieldType';
-
-class TextFieldBuilder extends BaseFieldBuilder {
-  constructor() {
-    super(FieldType.TEXT);
-  }
-
-  maxLength(maxLength: number): TextFieldBuilder {
-    this._field.maxLength = maxLength;
-    return this;
-  }
-}
-
-export const textField = () => new TextFieldBuilder();
+/**
+ * @deprecated Import `textField` from `@platform/field/FieldBuilders` instead.
+ */
+export { textField, TextFieldBuilder } from './FieldBuilders';

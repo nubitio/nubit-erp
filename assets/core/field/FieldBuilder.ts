@@ -1,6 +1,6 @@
 import { FieldType } from './FieldType';
 import { Field, LoadOption } from './Field';
-import { DxFilterRule } from '../common/FilterRule';
+import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
 
 export class FieldBuilder {
@@ -34,8 +34,8 @@ export class FieldBuilder {
       filterValue: undefined,
       data: [],
       format: '',
-      formatter: null,
-      itemFormatter: null,
+      formatter: undefined,
+      itemFormatter: undefined,
       visible: true,
       defaultValue: undefined,
       autoSelectIfSingle: false,
@@ -150,7 +150,7 @@ export class FieldBuilder {
     return this;
   }
 
-  filters(filters: DxFilterRule[]): FieldBuilder {
+  filters(filters: FilterRule[]): FieldBuilder {
     this._field.filters = filters;
     return this;
   }
@@ -351,6 +351,6 @@ export class FieldBuilder {
   }
 
   build(): Field {
-    return this._field;
+    return { ...this._field };
   }
 }

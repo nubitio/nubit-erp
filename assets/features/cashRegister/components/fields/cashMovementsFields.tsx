@@ -1,6 +1,11 @@
-import { FieldBuilder } from '../../../../core/field/FieldBuilder';
-import { FieldType } from '../../../../core/field/FieldType';
 import { Field } from '../../../../core/field/Field';
+import {
+  identityField,
+  entityField,
+  currencyField,
+  enumField,
+  textareaField,
+} from '../../../../core/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 import { Constants } from '../../../../core/common/Constants';
@@ -8,23 +13,11 @@ import { Constants } from '../../../../core/common/Constants';
 const cashMovementsFields = (cashShiftId: string | undefined) => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'cash-sessions', 'id', 'id')
       .name('cashSession')
       .label('Sesión')
-      .url(Constants.API_BASE_URL + 'cash-sessions')
-      .valueField('id')
-      .textField('id')
       .valueType('number')
       .defaultValue(Number(cashShiftId))
       .required(true)
@@ -34,26 +27,20 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'cash-movement-categories', 'id', 'name')
       .name('category')
       .label('Categoría')
-      .url(Constants.API_BASE_URL + 'cash-movement-categories')
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'income', text: 'Ingreso' },
+      { value: 'expense', text: 'Egreso' },
+    ])
       .name('type')
       .label('Tipo')
-      .data([
-        { value: 'income', text: 'Ingreso' },
-        { value: 'expense', text: 'Egreso' },
-      ])
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value === 'income') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Ingreso</span>;
@@ -66,23 +53,13 @@ const cashMovementsFields = (cashShiftId: string | undefined) => {
       .defaultValue('income')
       .build(),
   );
+  fields.push(textareaField().name('description').label('Descripcion').required(true).build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXTAREA)
-      .name('description')
-      .label('Descripcion')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('amount')
       .label('Monto')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
-      .sendAsString(true)
       .build(),
   );
 

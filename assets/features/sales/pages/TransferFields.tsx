@@ -1,7 +1,12 @@
 import { Constants } from '@platform/common/Constants';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  dateField,
+  noneField,
+  textareaField,
+} from '@platform/field/FieldBuilders';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
@@ -9,19 +14,9 @@ import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 export const TransferFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().name('transfer_id').label('Transfer id').build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('transfer_id')
-      .label('Transfer id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.DATE)
+    dateField()
       .name('fecha')
       .label('Fecha')
       .defaultValue('Today')
@@ -32,48 +27,36 @@ export const TransferFields = () => {
   const session = StorageUtils.getItem('session');
   const warehouseUrl = `${Constants.API_BASE_URL}branches/${session['branch_id']}/warehouses`;
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(warehouseUrl, 'almacen_id', 'descripcion')
       .name('almacen_origen')
       .label('Almacen origen')
-      .url(warehouseUrl)
-      .valueField('almacen_id')
-      .textField('descripcion')
       .visible(false)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('origen')
       .label('Almacen origen')
       .formatter((cell: ColumnCellTemplateData) => cell.data.almacen_origen)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(warehouseUrl, 'almacen_id', 'descripcion')
       .name('almacen_destino')
       .label('Almacen destino')
-      .url(warehouseUrl)
-      .valueField('almacen_id')
-      .textField('descripcion')
       .visible(false)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('destino')
       .label('Almacen destino')
       .formatter((cell: ColumnCellTemplateData) => cell.data.almacen_destino)
       .build(),
   );
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXTAREA).width(100).name('nota').label('Nota').build(),
-  );
+  fields.push(textareaField().width(100).name('nota').label('Nota').build());
 
   /*detailFields.push(new FieldBuilder()
         .type(FieldType.SELECT)

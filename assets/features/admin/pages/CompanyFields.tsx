@@ -1,27 +1,22 @@
 import { type RefObject } from 'react';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  imageField,
+  enumField,
+  textField,
+} from '@platform/field/FieldBuilders';
+import { DxFormEvents } from '@platform/form/DxForm';
+import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import { Constants } from '@platform/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
-import { textField } from '@platform/field/TextFieldBuilder';
-import { DxFormEvents } from '@platform/form/DxForm';
-import { consultService } from '@features/consult';
 
 export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
   const fields: Field[] = [];
 
-  fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
+  fields.push(identityField().build());
   fields.push(
     textField()
       .name('ruc')
@@ -79,102 +74,40 @@ export const CompanyFields = (formRef: RefObject<DxFormEvents | null>) => {
       ])
       .build(),
   );
+  fields.push(textField().name('businessName').label('Razon social').required(true).build());
+  fields.push(textField().name('tradeName').label('Nombre comercial').build());
+  fields.push(textField().name('fiscalAddress').label('Domicilio fiscal').required(true).build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('businessName')
-      .label('Razon social')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('tradeName').label('Nombre comercial').build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('fiscalAddress')
-      .label('Domicilio fiscal')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
-      .url(`${Constants.API_BASE_URL}ubigeos`)
-      .valueField('code')
-      .textField('name')
+    entityField(`${Constants.API_BASE_URL}ubigeos`, 'code', 'name')
       .name('ubigeo')
       .label('Ubigeo (INEI)')
       .searchExpr(['code', 'department', 'province', 'district'])
       .visible(false)
       .build(),
   );
+  fields.push(textField().name('ubigeoCode').label('Ubigeo (INEI)').hidden(true).build());
+  fields.push(textField().name('department').label('Departmento').readonly(true).build());
+  fields.push(textField().name('province').label('Provincia').readonly(true).build());
+  fields.push(textField().name('district').label('Distrito').readonly(true).build());
+  fields.push(textField().name('phone').label('Telefono').build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('ubigeoCode')
-      .label('Ubigeo (INEI)')
-      .hidden(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('department')
-      .label('Departmento')
-      .readonly(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('province')
-      .label('Provincia')
-      .readonly(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('district')
-      .label('Distrito')
-      .readonly(true)
-      .build(),
-  );
-  fields.push(new FieldBuilder().type(FieldType.TEXT).name('phone').label('Telefono').build());
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'BCP', text: 'BCP' },
+      { value: 'BBVA', text: 'BBVA' },
+      { value: 'INTERBANK', text: 'INTERBANK' },
+      { value: 'SCOTIABANK', text: 'SCOTIABANK' },
+    ])
       .name('bankName')
       .label('Banco')
-      .data([
-        { value: 'BCP', text: 'BCP' },
-        { value: 'BBVA', text: 'BBVA' },
-        { value: 'INTERBANK', text: 'INTERBANK' },
-        { value: 'SCOTIABANK', text: 'SCOTIABANK' },
-      ])
       .build(),
   );
+  fields.push(textField().name('bankAccount').label('Cuenta bancaria').build());
+  fields.push(textField().name('bankCci').label('CCI').build());
+  fields.push(textField().name('detraccionAccount').label('Cuenta de detracciones').build());
   fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('bankAccount').label('Cuenta bancaria').build(),
-  );
-  fields.push(new FieldBuilder().type(FieldType.TEXT).name('bankCci').label('CCI').build());
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('detraccionAccount')
-      .label('Cuenta de detracciones')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.FILE)
+    imageField(Constants.API_BASE_URL)
       .name('logo')
       .label('Logo')
-      .align('center')
-      .url(Constants.API_BASE_URL + 'media')
-      .accept('image/*')
       .formatter((e: ColumnCellTemplateData) => {
         return SharedUtils.imageFormatter(e.data?.logo?.path, e.data?.nombre_comercial);
       })

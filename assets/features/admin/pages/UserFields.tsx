@@ -1,34 +1,20 @@
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  textField,
+  passwordField,
+} from '@platform/field/FieldBuilders';
 import { Constants } from '@platform/common/Constants';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const UserFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().valueType('number').build());
+  fields.push(textField().name('username').label('Username').required(true).build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .valueType('number')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('username')
-      .label('Username')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.PASSWORD)
+    passwordField()
       .name('plainPassword')
       .label('Contraseña')
       .helpText('Deje en blanco si no desea cambiar la contraseña')
@@ -36,13 +22,9 @@ export const UserFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'roles', 'id', 'name')
       .name('role')
       .label('Rol')
-      .url(Constants.API_BASE_URL + 'roles')
-      .valueField('id')
-      .textField('name')
       .valueType('number')
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)

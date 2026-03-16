@@ -1,8 +1,13 @@
 import { Constants } from '@platform/common/Constants';
 import { userInformation } from '@platform/common/UserInformation';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  dateField,
+  numberField,
+  textareaField,
+} from '@platform/field/FieldBuilders';
 import { productService } from '@features/product';
 import { ProductDto } from '@dto/product.dto';
 import { SharedUtils } from '@shared/lib/SharedUtils';
@@ -11,19 +16,9 @@ import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 export const OutboundFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('tipo_id')
       .label('Tipo id')
       .defaultValue(2)
@@ -32,20 +27,16 @@ export const OutboundFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.DATE)
+    dateField()
       .name('fecha')
       .label('Fecha')
-      .defaultValue(new Date())
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'logistic-operations', 'id', 'name')
       .name('operacion')
       .label('Operacion')
-      .url(Constants.API_BASE_URL + 'logistic-operations')
       .filters([
         {
           field: 'type',
@@ -53,18 +44,14 @@ export const OutboundFields = () => {
           value: 2,
         },
       ])
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
       .name('almacen')
       .label('Almacen')
-      .url(Constants.API_BASE_URL + 'warehouses')
       .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
       .filters([
         {
@@ -73,13 +60,11 @@ export const OutboundFields = () => {
           value: userInformation().currentBranchId,
         },
       ])
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       //.defaultValue(userInformation().currentWarehouseId)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.TEXTAREA).name('glosa').label('Glosa').build());
+  fields.push(textareaField().name('glosa').label('Glosa').build());
 
   return fields;
 };
@@ -87,25 +72,12 @@ export const OutboundFields = () => {
 export const OutboundDetailFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
       .name('producto')
       .label('Producto')
       .minWidth(250)
-      .url(Constants.API_BASE_URL + 'products')
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
@@ -117,8 +89,7 @@ export const OutboundDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('cantidad')
       .label('Cantidad')
       .align('center')

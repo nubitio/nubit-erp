@@ -1,8 +1,14 @@
 import { Constants } from '@platform/common/Constants';
 import { userInformation } from '@platform/common/UserInformation';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  currencyField,
+  dateField,
+  numberField,
+  textareaField,
+} from '@platform/field/FieldBuilders';
 import { productService } from '@features/product';
 import { ProductDto } from '@dto/product.dto';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -12,19 +18,9 @@ import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 export const InboundFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().label('ID').build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('ID')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('tipo_id')
       .label('Tipo id')
       .defaultValue(1)
@@ -33,20 +29,16 @@ export const InboundFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.DATE)
+    dateField()
       .name('fecha')
       .label('Fecha')
-      .defaultValue(new Date())
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'logistic-operations', 'id', 'name')
       .name('operacion')
       .label('Operacion')
-      .url(Constants.API_BASE_URL + 'logistic-operations')
       .filters([
         {
           field: 'type',
@@ -54,18 +46,14 @@ export const InboundFields = () => {
           value: 1,
         },
       ])
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
       .name('almacen')
       .label('Almacen')
-      .url(Constants.API_BASE_URL + 'warehouses')
       .byKeyUrl(Constants.API_BASE_URL + 'warehouses')
       .filters([
         {
@@ -74,33 +62,24 @@ export const InboundFields = () => {
           value: userInformation().currentBranchId,
         },
       ])
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'suppliers', 'id', 'businessName')
       .name('proveedor')
       .label('Proveedor')
-      .url(Constants.API_BASE_URL + 'suppliers')
-      .valueField('id')
-      .textField('businessName')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.TEXTAREA).name('glosa').label('Glosa').build());
+  fields.push(textareaField().name('glosa').label('Glosa').build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('total')
       .label('Total')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
-      .sendAsString(true)
       .build(),
   );
 
@@ -112,25 +91,12 @@ export const PurchasesFields = InboundFields;
 export const InboundDetailFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
       .name('producto')
       .label('Producto')
       .minWidth(200)
-      .url(Constants.API_BASE_URL + 'products')
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
@@ -143,8 +109,7 @@ export const InboundDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('cantidad')
       .label('Cantidad')
       .align('center')
@@ -159,8 +124,7 @@ export const InboundDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('precio_unitario')
       .label('Precio unitario')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
@@ -169,21 +133,16 @@ export const InboundDetailFields = () => {
         row.precio_total = currentRow.cantidad * value;
         this.defaultSetCellValue(row, value, currentRow);
       })
-      .align('right')
-      .sendAsString(true)
       .sortable(false)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('precio_total')
       .label('Precio total')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .sortable(false)
       .filterable(false)
-      .sendAsString(true)
       .build(),
   );
 
