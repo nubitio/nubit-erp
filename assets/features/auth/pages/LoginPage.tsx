@@ -57,6 +57,12 @@ export const LoginPage = () => {
             <p>La plataforma de facturación electrónica más intuitiva para tu empresa.</p>
           </div>
 
+          <ul className="brand-features">
+            <li><i className="ph ph-check-circle" aria-hidden="true" />Facturación electrónica SUNAT</li>
+            <li><i className="ph ph-check-circle" aria-hidden="true" />POS integrado multilocal</li>
+            <li><i className="ph ph-check-circle" aria-hidden="true" />Inventario en tiempo real</li>
+          </ul>
+
           {window.app_version && (
             <span className="brand-version">{window.app_version}</span>
           )}

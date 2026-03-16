@@ -4,9 +4,7 @@
   flex: 0 0 auto;
   z-index: 1;
   box-shadow: var(--shadow-sm);
-  border-bottom: 1px solid color-mix(in srgb, var(--accent-color) 18%, var(--border-color) 82%);
   padding: 10px 0;
-  background-color: color-mix(in srgb, var(--accent-color) 3%, var(--base-bg) 97%);
 
   .header-title {
     min-width: 250px !important;
