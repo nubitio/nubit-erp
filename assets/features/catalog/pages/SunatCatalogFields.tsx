@@ -1,55 +1,15 @@
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import { identityField, numberField, textField, switchField } from '@platform/field/FieldBuilders';
 
 export const SunatCatalogFields = () => {
   const fields: Field[] = [];
 
-  fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
-      .name('catalog')
-      .label('Catálogo')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').required(true).build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('description')
-      .label('Descripción')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
-      .name('percentage')
-      .label('Porcentaje')
-      .precision(2)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.SWITCH)
-      .name('active')
-      .label('Activo')
-      .defaultValue(true)
-      .build(),
-  );
+  fields.push(identityField().build());
+  fields.push(numberField().name('catalog').label('Catálogo').required(true).build());
+  fields.push(textField().name('code').label('Código').required(true).build());
+  fields.push(textField().name('description').label('Descripción').required(true).build());
+  fields.push(numberField().name('percentage').label('Porcentaje').precision(2).build());
+  fields.push(switchField().name('active').label('Activo').defaultValue(true).build());
 
   return fields;
 };

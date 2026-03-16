@@ -1,6 +1,7 @@
 import { FieldType } from './FieldType';
-import { DxFilterRule } from '../common/FilterRule';
+import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
+import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 
 export type LoadOption = Record<string, any>;
 
@@ -22,7 +23,7 @@ export interface Field {
   mode: 'remote' | 'local' | 'none';
   url: string | undefined;
   loadOptions: LoadOption[];
-  filters: DxFilterRule[];
+  filters: FilterRule[];
   byKeyUrl: string | null;
   textField: string;
   valueField: string;
@@ -43,16 +44,16 @@ export interface Field {
     | undefined;
   filterValue: any;
   data: any[];
-  formatter: any;
-  itemFormatter: any;
+  formatter: FormatterFn | undefined;
+  itemFormatter: ItemFormatterFn | undefined;
   visible: boolean;
   defaultValue: string | number | boolean | Date | null | undefined | (() => unknown);
   // When true, form building logic may auto-select the single available option
   // for ENTITY/TAGS fields (only applied if defaultValue is undefined).
   autoSelectIfSingle?: boolean;
-  onChange: any;
-  onSelect: any;
-  onClick: any;
+  onChange: OnChangeFn | undefined;
+  onSelect: ((e: unknown) => void) | undefined;
+  onClick: ((e: unknown) => void) | undefined;
   onKeyPress: ((e: KeyboardEvent) => void) | undefined;
   readonly: boolean;
   disabled: boolean;

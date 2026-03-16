@@ -1,35 +1,22 @@
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  numberField,
+  enumField,
+  textField,
+  selectField,
+  switchField,
+} from '@platform/field/FieldBuilders';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const UnitOfMeasureFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().valueType('number').build());
+  fields.push(textField().name('name').label('Nombre').width('100%').required(true).build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .valueType('number')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('name')
-      .label('Nombre')
-      .width('100%')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.SELECT)
+    selectField()
       .name('code')
       .label('Código')
       .data([
@@ -99,17 +86,15 @@ export const UnitOfMeasureFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 1, text: 'Unidad' },
+      { value: 2, text: 'Peso' },
+      { value: 3, text: 'Volumen' },
+      { value: 4, text: 'Longitud' },
+      { value: 5, text: 'Tiempo' },
+    ])
       .name('type')
       .label('Tipo')
-      .data([
-        { value: 1, text: 'Unidad' },
-        { value: 2, text: 'Peso' },
-        { value: 3, text: 'Volumen' },
-        { value: 4, text: 'Longitud' },
-        { value: 5, text: 'Tiempo' },
-      ])
       .formatter((cell: ColumnCellTemplateData) => {
         switch (cell.value) {
           case 1:
@@ -131,8 +116,7 @@ export const UnitOfMeasureFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('ratio')
       .label('Ratio')
       .helpText('Relación con la unidad base')
@@ -144,8 +128,7 @@ export const UnitOfMeasureFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.SWITCH)
+    switchField()
       .name('reference')
       .label('Es unidad base')
       .helpText('Indica si es la unidad base')

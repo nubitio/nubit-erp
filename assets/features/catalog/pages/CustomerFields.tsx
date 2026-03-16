@@ -2,9 +2,7 @@ import { type RefObject } from 'react';
 import { Constants } from '@platform/common/Constants';
 import { DxFormEvents } from '@platform/form/DxForm';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { textField } from '@platform/field/TextFieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import { entityField, textField, textareaField } from '@platform/field/FieldBuilders';
 import { consultService } from '@features/consult';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
@@ -86,19 +84,11 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXTAREA)
-      .name('businessName')
-      .label('Cliente')
-      .required(true)
-      .sortable(true)
-      .build(),
+    textareaField().name('businessName').label('Cliente').required(true).sortable(true).build(),
   );
+  fields.push(textareaField().name('fiscalAddress').label('Domicilio').build());
   fields.push(
-    new FieldBuilder().type(FieldType.TEXTAREA).name('fiscalAddress').label('Domicilio').build(),
-  );
-  fields.push(
-    new FieldBuilder()
+    textField()
       .name('phone')
       .label('Teléfono')
       .validators([
@@ -113,7 +103,7 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
+    textField()
       .name('email')
       .label('Email')
       .validators([
@@ -125,13 +115,9 @@ export const CustomerFields = (formRef: RefObject<DxFormEvents | null>) => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')
-      .url(Constants.API_BASE_URL + 'price-lists')
-      .valueField('id')
-      .textField('name')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .valueType('number')
       .build(),

@@ -1,8 +1,17 @@
 import { Constants } from '@platform/common/Constants';
 import { DxFormEvents } from '@platform/form/DxForm';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  currencyField,
+  dateField,
+  numberField,
+  checkboxField,
+  selectField,
+  textareaField,
+  noneField,
+} from '@platform/field/FieldBuilders';
 import { userInformation } from '@platform/common/UserInformation';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -27,19 +36,9 @@ export type SaleFieldCallbacks = {
 export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallbacks) => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.CHECKBOX)
+    checkboxField()
       .name('emitInvoice')
       .label('Emitir comprobante')
       .valueType('boolean')
@@ -49,22 +48,18 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.DATE)
+    dateField()
       .name('issuedAt')
       .label('Fecha')
-      .defaultValue(new Date())
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
       .valueType('date')
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'warehouses', 'id', 'name')
       .name('warehouse')
       .label('Almacen')
-      .url(Constants.API_BASE_URL + 'warehouses')
       .filters([
         {
           field: 'branch',
@@ -72,8 +67,6 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
           value: userInformation().currentBranchId,
         },
       ])
-      .valueField('id')
-      .textField('name')
       .autoSelectIfSingle(true)
       .onChange((e: any) => {
         selectedWarehouseId = e;
@@ -83,14 +76,10 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .url(Constants.API_BASE_URL + 'customers')
       .mode('remote')
-      .valueField('id')
-      .textField('businessName')
       .defaultValue(1)
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
@@ -115,13 +104,9 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'price-lists', 'id', 'name')
       .name('price_list')
       .label('Tarifa')
-      .url(Constants.API_BASE_URL + 'price-lists')
-      .valueField('id')
-      .textField('name')
       .valueType('number')
       .visible(false)
       .onChange(async (event: any) => {
@@ -144,13 +129,9 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'payment-methods', 'id', 'name')
       .name('paymentMethod')
       .label('Método de pago')
-      .url(Constants.API_BASE_URL + 'payment-methods')
-      .valueField('id')
-      .textField('name')
       .valueType('number')
       .defaultValue(1)
       .required(true)
@@ -158,8 +139,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.SELECT)
+    selectField()
       .name('currency')
       .label('Moneda')
       .data([
@@ -172,8 +152,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('exchangeRate')
       .label('Tipo de cambio')
       .defaultValue(() => {
@@ -182,12 +161,10 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       })
       .visible(false)
       .col(6)
-      .sendAsString(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('invoiceFullNumber')
       .label('Comprobante')
       .formatter((cell: ColumnCellTemplateData) => {
@@ -204,16 +181,12 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .align('center')
       .build(),
   );
+  fields.push(textareaField().name('note').label('Nota').visible(false).build());
   fields.push(
-    new FieldBuilder().type(FieldType.TEXTAREA).name('note').label('Nota').visible(false).build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .col(6)
       .name('discountPercent')
       .label('Descuento %')
-      .align('right')
       .defaultValue(0)
       .readonly(true)
       .onClick((_e: any) => {
@@ -225,26 +198,21 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .onChange((_e: any) => {
         setTotal(form);
       })
-      .sendAsString(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .col(6)
       .name('grandTotal')
       .label('Total')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) =>
         NumberUtils.formatCurrency(cell.value, cell.data?.currency ?? 'PEN'),
       )
       .disabled(true)
-      .sendAsString(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('status')
       .label('Estado')
       .align('center')
@@ -254,8 +222,7 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('sellerUserId')
       .defaultValue(userInformation().currentUserId)
       .visible(false)
@@ -269,26 +236,13 @@ export const SaleFields = (form: DxFormEvents | null, callbacks?: SaleFieldCallb
 export const SaleDetailFields = (form: DxFormEvents | null, currency: string = 'PEN') => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'products', 'id', 'name')
       .name('product')
       .label('Producto')
       .minWidth(300)
-      .url(Constants.API_BASE_URL + 'products')
       .mode('remote')
-      .valueField('id')
-      .textField('name')
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         const product = (await productService.getOne(value, true)) as ProductDto;
         let price = product.salePrice;
@@ -310,8 +264,7 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('qty')
       .label('Cantidad')
       .align('center')
@@ -344,11 +297,9 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('unitPrice')
       .label('Precio')
-      .align('right')
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
@@ -358,15 +309,12 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value, currency))
       .required(true)
       .sortable(false)
-      .sendAsString(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('netAmount')
       .label('Total')
-      .align('right')
       .defaultValue(0)
       .onChange(async function (this: any, row: any, value: any, currentRow: any) {
         if (value === '') return;
@@ -378,7 +326,6 @@ export const SaleDetailFields = (form: DxFormEvents | null, currency: string = '
       .filterable(false)
       .disabled(true)
       .sortable(false)
-      .sendAsString(true)
       .build(),
   );
 

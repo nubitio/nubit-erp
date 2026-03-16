@@ -1,6 +1,8 @@
 import { FieldType } from './FieldType';
-import { Field } from './Field';
+import { Field, LoadOption } from './Field';
+import { FilterRule } from '../common/FilterRule';
 import { ValidationRule } from './ValidationRule';
+import { FormatterFn, ItemFormatterFn, OnChangeFn } from './FieldCallbacks';
 
 export class BaseFieldBuilder {
   protected _field: Field;
@@ -33,8 +35,8 @@ export class BaseFieldBuilder {
       selectedFilterOperation: undefined,
       data: [],
       format: '',
-      formatter: null,
-      itemFormatter: null,
+      formatter: undefined,
+      itemFormatter: undefined,
       visible: true,
       defaultValue: undefined,
       onChange: undefined,
@@ -154,12 +156,12 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  formatter(formatter: any): this {
+  formatter(formatter: FormatterFn): this {
     this._field.formatter = formatter;
     return this;
   }
 
-  itemFormatter(itemFormatter: any): this {
+  itemFormatter(itemFormatter: ItemFormatterFn): this {
     this._field.itemFormatter = itemFormatter;
     return this;
   }
@@ -174,17 +176,17 @@ export class BaseFieldBuilder {
     return this;
   }
 
-  onChange(onChange: any): this {
+  onChange(onChange: OnChangeFn): this {
     this._field.onChange = onChange;
     return this;
   }
 
-  onSelect(onSelect: any): this {
+  onSelect(onSelect: (e: unknown) => void): this {
     this._field.onSelect = onSelect;
     return this;
   }
 
-  onClick(onClick: any): this {
+  onClick(onClick: (e: unknown) => void): this {
     this._field.onClick = onClick;
     return this;
   }
@@ -274,7 +276,75 @@ export class BaseFieldBuilder {
     return this;
   }
 
+  url(url: string): this {
+    this._field.url = url;
+    return this;
+  }
+
+  loadOptions(param: LoadOption[]): this {
+    this._field.loadOptions = param;
+    return this;
+  }
+
+  filters(filters: FilterRule[]): this {
+    this._field.filters = filters;
+    return this;
+  }
+
+  byKeyUrl(byKeyUrl: string): this {
+    this._field.byKeyUrl = byKeyUrl;
+    return this;
+  }
+
+  textField(textField: string): this {
+    this._field.textField = textField;
+    return this;
+  }
+
+  valueField(valueField: string): this {
+    this._field.valueField = valueField;
+    return this;
+  }
+
+  selectedFilterOperation(
+    operation:
+      | '<'
+      | '<='
+      | '<>'
+      | '='
+      | '>'
+      | '>='
+      | 'between'
+      | 'contains'
+      | 'endswith'
+      | 'notcontains'
+      | 'startswith',
+  ): this {
+    this._field.selectedFilterOperation = operation;
+    return this;
+  }
+
+  sendAsString(value: boolean): this {
+    this._field.sendAsString = value;
+    return this;
+  }
+
+  multiple(value: boolean): this {
+    this._field.multiple = value;
+    return this;
+  }
+
+  editorOptions(param: any): this {
+    this._field.editorOptions = param;
+    return this;
+  }
+
+  maxLength(value: number): this {
+    this._field.maxLength = value;
+    return this;
+  }
+
   build(): Field {
-    return this._field;
+    return { ...this._field };
   }
 }

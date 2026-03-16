@@ -1,7 +1,14 @@
 import { Constants } from '@platform/common/Constants';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  currencyField,
+  imageField,
+  enumField,
+  textField,
+  noneField,
+} from '@platform/field/FieldBuilders';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
@@ -9,72 +16,47 @@ import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 export const ProductFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.FILE)
+    imageField(Constants.API_BASE_URL)
       .name('photo')
       .label('Imagen')
-      .align('center')
-      .url(Constants.API_BASE_URL + 'media')
-      .accept('image/*')
       .formatter((e: ColumnCellTemplateData) => {
         return SharedUtils.imageFormatter(e.value?.path, e.data?.name ?? e.data?.descripcion);
       })
       .build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').build());
+  fields.push(textField().name('code').label('Código').build());
+  fields.push(textField().name('sku').label('SKU').build());
+  fields.push(textField().name('barcode').label('Código de barras').build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('sku')
-      .label('SKU')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('barcode')
-      .label('Código de barras')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'GOOD', text: 'Bien físico' },
+      { value: 'SERVICE', text: 'Servicio' },
+      { value: 'DIGITAL', text: 'Digital' },
+    ])
       .name('productKind')
       .label('Tipo de producto')
-      .data([
-        { value: 'GOOD', text: 'Bien físico' },
-        { value: 'SERVICE', text: 'Servicio' },
-        { value: 'DIGITAL', text: 'Digital' },
-      ])
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => {
-        const map: Record<string, string> = { GOOD: 'Bien físico', SERVICE: 'Servicio', DIGITAL: 'Digital' };
+        const map: Record<string, string> = {
+          GOOD: 'Bien físico',
+          SERVICE: 'Servicio',
+          DIGITAL: 'Digital',
+        };
         return map[cell.value] ?? cell.value;
       })
       .defaultValue('GOOD')
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'TRACKED', text: 'Con stock (trazable)' },
+      { value: 'NOT_TRACKED', text: 'Sin stock' },
+      { value: 'COMPOSITE', text: 'Compuesto (BOM)' },
+    ])
       .name('inventoryBehavior')
       .label('Control de stock')
-      .data([
-        { value: 'TRACKED', text: 'Con stock (trazable)' },
-        { value: 'NOT_TRACKED', text: 'Sin stock' },
-        { value: 'COMPOSITE', text: 'Compuesto (BOM)' },
-      ])
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => {
         const map: Record<string, string> = {
@@ -90,60 +72,40 @@ export const ProductFields = () => {
   );
   // Keep legacy type field hidden but still sent for backward compat
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 1, text: 'Fisico' },
+      { value: 2, text: 'Servicio' },
+    ])
       .name('type')
       .label('Tipo (legacy)')
-      .data([
-        { value: 1, text: 'Fisico' },
-        { value: 2, text: 'Servicio' },
-      ])
       .required(false)
       .hidden(true)
       .visible(false)
       .defaultValue(1)
       .build(),
   );
+  fields.push(textField().name('name').label('Nombre').sortable(true).required(true).build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('name')
-      .label('Nombre')
-      .sortable(true)
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'categories', 'id', 'name')
       .name('category')
       .label('Categoría')
-      .url(Constants.API_BASE_URL + 'categories')
-      .valueField('id')
-      .textField('name')
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'unit-of-measures', 'id', 'name')
       .name('unitOfMeasure')
       .label('Unidad')
-      .url(Constants.API_BASE_URL + 'unit-of-measures')
-      .valueField('id')
-      .textField('name')
       .required(true)
       .formatter((cell: ColumnCellTemplateData) => cell.value?.name)
       .valueType('number')
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'sunat-catalogs', 'id', 'description')
       .name('detractionCatalog')
       .label('Detracción (Bien/Servicio)')
-      .url(Constants.API_BASE_URL + 'sunat-catalogs')
       .filters([
         {
           field: 'catalog',
@@ -151,8 +113,6 @@ export const ProductFields = () => {
           value: 54,
         },
       ])
-      .valueField('id')
-      .textField('description')
       .itemFormatter((item: any) => {
         if (!item) {
           return '';
@@ -177,24 +137,15 @@ export const ProductFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('salePrice')
       .label('Precio')
-      .align('right')
-      .sendAsString(true)
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
-      .name('stock')
-      .label('Stock')
-      .align('center')
-      .visibleOnForm(false)
-      .build(),
+    noneField().name('stock').label('Stock').align('center').visibleOnForm(false).build(),
   );
 
   return fields;

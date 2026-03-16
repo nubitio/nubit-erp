@@ -1,41 +1,24 @@
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import { identityField, enumField, textField, switchField } from '@platform/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 
 export const CashMovementCategoryFields = () => {
   const fields: Field[] = [];
 
-  fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .valueType('number')
-      .build(),
-  );
+  fields.push(identityField().valueType('number').build());
+
+  fields.push(textField().name('code').label('Código').required(true).build());
+
+  fields.push(textField().name('name').label('Nombre').required(true).build());
 
   fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('code').label('Código').required(true).build(),
-  );
-
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('name').label('Nombre').required(true).build(),
-  );
-
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'income', text: 'Ingreso' },
+      { value: 'expense', text: 'Egreso' },
+    ])
       .name('type')
       .label('Tipo')
-      .data([
-        { value: 'income', text: 'Ingreso' },
-        { value: 'expense', text: 'Egreso' },
-      ])
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value === 'income') {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Ingreso</span>;
@@ -48,21 +31,19 @@ export const CashMovementCategoryFields = () => {
   );
 
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.SWITCH)
+    switchField()
       .name('isSystem')
       .label('Sistema')
-      .formatter(SharedUtils.booleanFormatter)
+      .formatter((cell: ColumnCellTemplateData) => SharedUtils.booleanFormatter(cell.value))
       .defaultValue(true)
       .build(),
   );
 
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.SWITCH)
+    switchField()
       .name('active')
       .label('Activo')
-      .formatter(SharedUtils.booleanFormatter)
+      .formatter((cell: ColumnCellTemplateData) => SharedUtils.booleanFormatter(cell.value))
       .defaultValue(true)
       .build(),
   );

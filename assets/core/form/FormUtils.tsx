@@ -1,5 +1,6 @@
 import { Field } from '../field/Field';
 import { FieldType } from '../field/FieldType';
+import { FormOnChangeFn } from '../field/FieldCallbacks';
 import { dxUtils } from '../../shared/data/DxUtils';
 import {
   CompareRule,
@@ -227,7 +228,7 @@ export const buildField = (
     onFocusIn: field.onClick,
     onValueChanged: (e: any) => {
       dispatch(FORM_EVENTS.FIELD_CHANGED, { field: field.name, value: e.value });
-      field.onChange?.(e.value);
+      field.onChange && (field.onChange as FormOnChangeFn)(e.value);
     },
     onKeyPress: field.onKeyPress,
     onItemClick: field.onSelect,

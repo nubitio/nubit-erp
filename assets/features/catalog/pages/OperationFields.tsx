@@ -1,40 +1,20 @@
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import { identityField, enumField, textField } from '@platform/field/FieldBuilders';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
 
 export const OperationFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
+  fields.push(textField().name('name').label('Descripcion').width('100%').required(true).build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('name')
-      .label('Descripcion')
-      .width('100%')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 1, text: 'Entrada' },
+      { value: 2, text: 'Salida' },
+    ])
       .name('type')
       .label('Tipo')
       .align('center')
-      .data([
-        { value: 1, text: 'Entrada' },
-        { value: 2, text: 'Salida' },
-      ])
       .formatter((cell: ColumnCellTemplateData) => {
         if (cell.value === 1) {
           return <span className="badge badge-outlined rounded-pill text-bg-success">Entrada</span>;

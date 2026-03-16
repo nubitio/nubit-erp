@@ -1,23 +1,59 @@
-type ValidationOptions = {
-  message: string;
-  min?: number;
-  max?: number;
-  comparisonTarget?: () => any;
-  comparisonType?: '==' | '!=' | '>' | '<' | '>=' | '<=';
-  pattern?: string;
-  validationCallback?: (options: any) => boolean;
+type RequiredRule = {
+  type: 'required';
+  options: { message?: string };
 };
 
-export type ValidationRule = {
-  type:
-    | 'async'
-    | 'compare'
-    | 'custom'
-    | 'email'
-    | 'numeric'
-    | 'pattern'
-    | 'range'
-    | 'required'
-    | 'stringLength';
-  options: ValidationOptions;
+type EmailRule = {
+  type: 'email';
+  options: { message?: string };
 };
+
+type NumericRule = {
+  type: 'numeric';
+  options: { message?: string };
+};
+
+type PatternRule = {
+  type: 'pattern';
+  options: { pattern: string; message?: string };
+};
+
+type StringLengthRule = {
+  type: 'stringLength';
+  options: { min?: number; max?: number; message?: string };
+};
+
+type RangeRule = {
+  type: 'range';
+  options: { min?: number; max?: number; message?: string };
+};
+
+type CompareRule = {
+  type: 'compare';
+  options: {
+    comparisonTarget: () => any;
+    comparisonType?: '==' | '!=' | '>' | '<' | '>=' | '<=';
+    message?: string;
+  };
+};
+
+type CustomRule = {
+  type: 'custom';
+  options: { validationCallback: (options: any) => boolean; message?: string };
+};
+
+type AsyncRule = {
+  type: 'async';
+  options: { validationCallback: (options: any) => Promise<boolean>; message?: string };
+};
+
+export type ValidationRule =
+  | RequiredRule
+  | EmailRule
+  | NumericRule
+  | PatternRule
+  | StringLengthRule
+  | RangeRule
+  | CompareRule
+  | CustomRule
+  | AsyncRule;

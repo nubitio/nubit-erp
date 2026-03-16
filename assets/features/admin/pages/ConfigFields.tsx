@@ -1,38 +1,23 @@
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
 import { Field } from '@platform/field/Field';
+import { identityField, enumField, textField } from '@platform/field/FieldBuilders';
 
 export const ConfigFields = () => {
   const fields: Field[] = [];
 
-  fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .required(true)
-      .valueType('number')
-      .build(),
-  );
+  fields.push(identityField().valueType('number').build());
+
+  fields.push(textField().name('name').label('Nombre').required(true).build());
 
   fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('name').label('Nombre').required(true).build(),
-  );
-
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENUM)
+    enumField([
+      { value: 'string', text: 'Texto' },
+      { value: 'int', text: 'Entero' },
+      { value: 'float', text: 'Decimal' },
+      { value: 'bool', text: 'Booleano' },
+      { value: 'json', text: 'JSON' },
+    ])
       .name('type')
       .label('Tipo')
-      .data([
-        { value: 'string', text: 'Texto' },
-        { value: 'int', text: 'Entero' },
-        { value: 'float', text: 'Decimal' },
-        { value: 'bool', text: 'Booleano' },
-        { value: 'json', text: 'JSON' },
-      ])
       .valueField('value')
       .textField('text')
       .valueType('string')
@@ -40,9 +25,7 @@ export const ConfigFields = () => {
       .build(),
   );
 
-  fields.push(
-    new FieldBuilder().type(FieldType.TEXT).name('value').label('Valor').required(true).build(),
-  );
+  fields.push(textField().name('value').label('Valor').required(true).build());
 
   return fields;
 };

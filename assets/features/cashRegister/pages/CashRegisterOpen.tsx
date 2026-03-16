@@ -3,8 +3,7 @@ import Form, { FormRef, SimpleItem } from 'devextreme-react/form';
 import { useRef, useState } from 'react';
 import { Button } from 'devextreme-react';
 import LoadIndicator from 'devextreme-react/load-indicator';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import { currencyField } from '@platform/field/FieldBuilders';
 import { buildField } from '@platform/form/FormUtils';
 import cashRegisterService from '../services/cashRegisterService';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -20,8 +19,7 @@ export const CashRegisterOpen = () => {
   const { id } = useParams<CashRegisterOpenParams>();
   const navigate = useNavigate();
 
-  const openingBalanceField = new FieldBuilder()
-    .type(FieldType.CURRENCY)
+  const openingBalanceField = currencyField()
     .name('openingBalance')
     .label('Saldo inicial')
     .required(true)

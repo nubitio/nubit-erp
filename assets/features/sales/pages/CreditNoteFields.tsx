@@ -1,7 +1,16 @@
 import { Constants } from '@platform/common/Constants';
 import { Field } from '@platform/field/Field';
-import { FieldBuilder } from '@platform/field/FieldBuilder';
-import { FieldType } from '@platform/field/FieldType';
+import {
+  identityField,
+  entityField,
+  currencyField,
+  dateField,
+  numberField,
+  noneField,
+  selectField,
+  textareaField,
+  textField,
+} from '@platform/field/FieldBuilders';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ColumnCellTemplateData } from 'devextreme/ui/data_grid';
@@ -47,44 +56,31 @@ const reasonCodes: { value: string; text: string }[] = [
     value: '10',
     text: 'Otros Conceptos',
   },
-]
+];
 
 export const CreditNoteFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().label('ID').build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('ID')
-      .required(true)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'tax-documents', 'id', 'fullNumber')
       .name('relatedTaxDocument')
       .label('Comprobante')
       .visible(false)
-      .url(Constants.API_BASE_URL + 'tax-documents')
       .filters([
         {
           field: 'documentType',
           operator: '=',
-          value: '01'
-        }
+          value: '01',
+        },
       ])
-      .textField('fullNumber')
-      .valueField('id')
       .itemFormatter((data: any) => {
         return (
           <div>
             <b>{`${data.series ?? ''}-${data.number ?? ''}`}</b>
-            <br/>
+            <br />
             {data.customer?.businessName ?? ''}
-            <br/>
+            <br />
             {NumberUtils.formatCurrency(data.total)}
           </div>
         );
@@ -93,30 +89,23 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.DATE)
+    dateField()
       .name('issueDate')
       .label('Fecha')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.dateFormatter(cell.value))
-      .defaultValue(new Date())
       .required(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.ENTITY)
+    entityField(Constants.API_BASE_URL + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .url(Constants.API_BASE_URL + 'customers')
-      .valueField('id')
-      .textField('businessName')
       .formatter((cell: ColumnCellTemplateData) => cell.value?.businessName)
       .visibleOnForm(false)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('documentType')
       .label('Tipo')
       .formatter((cell: ColumnCellTemplateData) => {
@@ -132,8 +121,7 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.SELECT)
+    selectField()
       .name('reasonCode')
       .label('Código')
       .data(reasonCodes)
@@ -145,18 +133,12 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXTAREA)
-      .name('reasonDescription')
-      .label('Motivo Descripción')
-      .required(true)
-      .build(),
+    textareaField().name('reasonDescription').label('Motivo Descripción').required(true).build(),
   );
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('series').label('Serie').build());
-  fields.push(new FieldBuilder().type(FieldType.NONE).name('number').label('Número').build());
+  fields.push(noneField().name('series').label('Serie').build());
+  fields.push(noneField().name('number').label('Número').build());
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('affectedDocument')
       .label('Doc. afectado')
       .align('center')
@@ -164,17 +146,14 @@ export const CreditNoteFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NONE)
+    noneField()
       .name('sunatStatus')
       .label('Envio sunat')
       .align('center')
       .formatter((cell: ColumnCellTemplateData) => SharedUtils.billStatusFormatter(cell.value))
       .build(),
   );
-  fields.push(
-    new FieldBuilder().type(FieldType.NONE).name('sunatMessage').label('Mensaje sunat').build(),
-  );
+  fields.push(noneField().name('sunatMessage').label('Mensaje sunat').build());
 
   return fields;
 };
@@ -182,26 +161,10 @@ export const CreditNoteFields = () => {
 export const CreditNoteDetailFields = () => {
   const fields: Field[] = [];
 
+  fields.push(identityField().build());
+  fields.push(numberField().name('lineNumber').label('Linea').visible(false).build());
   fields.push(
-    new FieldBuilder()
-      .isIdentity(true)
-      .visible(false)
-      .type(FieldType.NONE)
-      .name('id')
-      .label('Id')
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
-      .name('lineNumber')
-      .label('Linea')
-      .visible(false)
-      .build(),
-  );
-  fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
+    textField()
       .name('productCode')
       .label('Código')
       .minWidth(120)
@@ -210,17 +173,10 @@ export const CreditNoteDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
-      .name('productName')
-      .label('Producto')
-      .minWidth(260)
-      .readonly(true)
-      .build(),
+    textField().name('productName').label('Producto').minWidth(260).readonly(true).build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.TEXT)
+    textField()
       .name('productUom')
       .label('U.M.')
       .align('center')
@@ -230,8 +186,7 @@ export const CreditNoteDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.NUMBER)
+    numberField()
       .name('quantity')
       .label('Cantidad')
       .align('center')
@@ -246,25 +201,19 @@ export const CreditNoteDetailFields = () => {
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('unitPrice')
       .label('Precio')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
-      .sendAsString(true)
       .build(),
   );
   fields.push(
-    new FieldBuilder()
-      .type(FieldType.CURRENCY)
+    currencyField()
       .name('total')
       .label('Total')
-      .align('right')
       .formatter((cell: ColumnCellTemplateData) => NumberUtils.formatCurrency(cell.value))
       .readonly(true)
-      .sendAsString(true)
       .build(),
   );
 
