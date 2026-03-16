@@ -82,6 +82,7 @@ WORKDIR /app
 # Copy package files and assets (needed for postinstall script)
 COPY package.json yarn.lock ./
 COPY assets ./assets
+COPY scripts ./scripts
 
 # Create public/themes directory for theme compilation
 RUN mkdir -p public/themes
