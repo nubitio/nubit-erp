@@ -1,10 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 
-// ---------------------------------------------------------------------------
-// Module mocks — DevExtreme components are not available in the test env
-// ---------------------------------------------------------------------------
-
 vi.mock('devextreme-react/data-grid', () => ({
   Column: 'Column',
   CustomRule: 'CustomRule',
@@ -28,14 +24,16 @@ vi.mock('../../shared/data/DxUtils', () => ({
   },
 }));
 
-import { buildColumns, buildSummary, buildToolbar, getIdField } from './DxDataGridUtils';
+import {
+  buildColumns,
+  buildSummary,
+  buildToolbar,
+  buildEntityDisplayValue,
+  getIdField,
+} from './DxDataGridUtils';
 import { FieldBuilder } from '../field/FieldBuilder';
 import { FieldType } from '../field/FieldType';
 import type { Field } from '../field/Field';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const makeField = (overrides: Partial<Field> = {}): Field =>
   Object.assign(
@@ -43,9 +41,18 @@ const makeField = (overrides: Partial<Field> = {}): Field =>
     overrides,
   );
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
+const makeEntityField = (overrides: Partial<Field> = {}): Field =>
+  Object.assign(
+    new FieldBuilder()
+      .type(FieldType.ENTITY)
+      .name('parent')
+      .label('Parent')
+      .url('/api/categories')
+      .valueField('id')
+      .textField('name')
+      .build(),
+    overrides,
+  );
 
 describe('DxDataGridUtils › getIdField', () => {
   it('returns the name of the field with isIdentity:true', () => {
@@ -143,5 +150,83 @@ describe('DxDataGridUtils › buildSummary', () => {
     const result = buildSummary(items);
 
     expect(result).toHaveLength(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BUG-015: Entity column display value
+// ---------------------------------------------------------------------------
+
+describe('DxDataGridUtils › buildEntityDisplayValue', () => {
+  it('extracts textField from a nested object (the primary bug fix)', () => {
+    const field = makeEntityField();
+    const fn = buildEntityDisplayValue(field);
+
+    const rowData = { parent: { id: '2f1f2a69-...', name: 'OTROS' } };
+    expect(fn(rowData)).toBe('OTROS');
+  });
+
+  it('returns an empty string for null entity value', () => {
+    const field = makeEntityField();
+    const fn = buildEntityDisplayValue(field);
+
+    expect(fn({ parent: null })).toBe('');
+  });
+
+  it('returns an empty string for undefined entity value', () => {
+    const field = makeEntityField();
+    const fn = buildEntityDisplayValue(field);
+
+    expect(fn({ parent: undefined })).toBe('');
+  });
+
+  it('returns the string as-is when the value is already a plain string (IRI)', () => {
+    const field = makeEntityField();
+    const fn = buildEntityDisplayValue(field);
+
+    expect(fn({ parent: '/api/categories/2f1f2a69-...' })).toBe('/api/categories/2f1f2a69-...');
+  });
+
+  it('falls back to "name" when textField is not present but name is', () => {
+    const field = makeEntityField({ textField: 'title' });
+    const fn = buildEntityDisplayValue(field);
+
+    // Object has no "title" but does have "name" — falls back to "name"
+    const rowData = { parent: { id: '123', name: 'Fallback Name' } };
+    expect(fn(rowData)).toBe('Fallback Name');
+  });
+
+  it('uses textField over name fallback when both are present', () => {
+    const field = makeEntityField({ textField: 'code' });
+    const fn = buildEntityDisplayValue(field);
+
+    const rowData = { parent: { id: '123', code: 'CAT-01', name: 'Category' } };
+    expect(fn(rowData)).toBe('CAT-01');
+  });
+
+  it('does not apply calculateDisplayValue when the field has a custom formatter', () => {
+    // buildColumns should NOT attach calculateDisplayValue when formatter is set,
+    // so the custom formatter takes full control.
+    const customFormatter = vi.fn();
+    const fields: Field[] = [makeEntityField({ visible: true, formatter: customFormatter })];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    // The column's calculateDisplayValue prop should be undefined when a formatter is set
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(props['calculateDisplayValue']).toBeUndefined();
+  });
+
+  it('attaches calculateDisplayValue when the entity field has no formatter', () => {
+    const fields: Field[] = [makeEntityField({ visible: true, formatter: undefined })];
+
+    const result = buildColumns(fields);
+    const element = result[0];
+
+    expect(React.isValidElement(element)).toBe(true);
+    const props = (element as React.ReactElement<Record<string, unknown>>).props;
+    expect(typeof props['calculateDisplayValue']).toBe('function');
   });
 });

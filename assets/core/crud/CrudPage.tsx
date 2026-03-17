@@ -76,7 +76,6 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   const [selectedRowId, setSelectedRowId] = useState<string | number | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
 
-  // Dialog state managed via the store
   const {
     isOpen: dialogIsOpen,
     mode: dialogMode,
@@ -84,11 +83,9 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     closeDialog,
   } = useCrudDialogStore(resource.id);
 
-  // Wire RxJS event bus → dialog store
   const [on] = useEvents();
 
   // Subscribe to ADD / EDIT / SUCCESS events and mirror them into the store.
-  // We use a ref-based pattern (same as DxDialog) so the effect runs once.
   const wireEventsRef = React.useRef(() => {
     if (events.ADD) {
       on<{ title?: string; rowData?: Record<string, unknown> } | undefined>(
@@ -136,8 +133,6 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
   }, []);
 
   // Deep-link: open the appropriate dialog on mount when routing props are provided.
-  // This effect runs once after the event bus is wired so the dialog store is ready.
-  // Guards ensure existing behaviour is completely unchanged when props are omitted.
   React.useEffect(() => {
     if (initialRecordId != null) {
       // Open edit dialog for the given record id.
@@ -150,7 +145,6 @@ const CrudPageInner = <T extends Record<string, unknown> = Record<string, unknow
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Derive dialog title from mode
   const dialogTitle = useMemo((): string => {
     const modeMap: Record<DialogMode, string> = {
       add: t('crudPage.dialogTitleAdd'),

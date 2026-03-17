@@ -85,18 +85,31 @@ export const useFormSubmit = (
           return;
         }
         if (type === 'object' && val !== null && !field.multiple) {
-          formData[field.name] = getIRI(field.url ?? '', val[field.valueField].toString());
+          // Prefer the JSON-LD IRI (@id) when the value is a full Hydra entity object
+          // e.g. { "@id": "/api/categories/uuid", "id": 1, "name": "Root" }
+          // getIRI detects the "/" prefix and returns the IRI unchanged (BUG-014).
+          const atId: unknown = val['@id'];
+          if (typeof atId === 'string') {
+            formData[field.name] = getIRI(field.url ?? '', atId);
+          } else {
+            formData[field.name] = getIRI(field.url ?? '', val[field.valueField].toString());
+          }
         }
         if (type === 'string' || type === 'number') {
           formData[field.name] = getIRI(field.url ?? '', val.toString());
         }
         if (field.multiple) {
           if (Array.isArray(val)) {
-            formData[field.name] = val.map((item: any) =>
-              typeof item === 'object'
-                ? getIRI(field.url ?? '', item[field.valueField].toString())
-                : getIRI(field.url ?? '', item.toString()),
-            );
+            formData[field.name] = val.map((item: any) => {
+              if (typeof item === 'object') {
+                // Prefer @id for full Hydra objects (BUG-014)
+                const atId: unknown = item['@id'];
+                return typeof atId === 'string'
+                  ? getIRI(field.url ?? '', atId)
+                  : getIRI(field.url ?? '', item[field.valueField].toString());
+              }
+              return getIRI(field.url ?? '', item.toString());
+            });
           } else {
             formData[field.name] = [getIRI(field.url ?? '', val.toString())];
           }
@@ -144,6 +157,11 @@ export const useFormSubmit = (
       }
 
       if (field.type === FieldType.NUMBER || field.type === FieldType.CURRENCY) {
+        // Skip numeric coercion for the identity (primary key) field.
+        // UUID / string keys must reach the URL builder as-is — coercing them
+        // with Number() produces NaN and results in PATCH /api/resource/NaN.
+        // (BUG-011)
+        if (field.isIdentity) return;
         if (field.sendAsString) {
           const val = formData[field.name];
           formData[field.name] = val != null ? Number(val).toFixed(field.precision || 2) : null;
@@ -170,10 +188,16 @@ export const useFormSubmit = (
         formData[options.detailPropertyName].forEach((detail: any) => {
           const type = typeof (detail[field.name] ?? '');
           if (type === 'object') {
-            detail[field.name] = getIRI(
-              field.url ?? '',
-              detail[field.name][field.valueField].toString(),
-            );
+            // Prefer the JSON-LD IRI (@id) over the raw id when available (BUG-014)
+            const atId: unknown = detail[field.name]['@id'];
+            if (typeof atId === 'string') {
+              detail[field.name] = getIRI(field.url ?? '', atId);
+            } else {
+              detail[field.name] = getIRI(
+                field.url ?? '',
+                detail[field.name][field.valueField].toString(),
+              );
+            }
           }
         });
       }

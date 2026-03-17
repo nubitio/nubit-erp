@@ -133,7 +133,7 @@ describe('useDependsOn', () => {
     expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 
-  it('calls invalidateQueries with the field url when dependsOn is set and url exists', () => {
+  it('does NOT call invalidateQueries on mount even when dependsOn is set and url exists (BUG-009)', () => {
     const fields: Field[] = [
       makeField({
         name: 'subcategory',
@@ -143,12 +143,11 @@ describe('useDependsOn', () => {
     ];
     renderHook(() => useDependsOn(fields, { category: 'electronics' }));
 
-    expect(mockInvalidateQueries).toHaveBeenCalledWith({
-      queryKey: ['/api/subcategories'],
-    });
+    // Mount guard must suppress the initial run — no spurious refetch on dialog open
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 
-  it('calls invalidateQueries once per field with dependsOn + url on mount', () => {
+  it('does NOT call invalidateQueries on mount for multiple dependsOn fields (BUG-009)', () => {
     const fields: Field[] = [
       makeField({ name: 'sub', url: '/api/sub', dependsOn: ['cat'] }),
       makeField({ name: 'child', url: '/api/child', dependsOn: ['cat', 'sub'] }),
@@ -156,9 +155,8 @@ describe('useDependsOn', () => {
     ];
     renderHook(() => useDependsOn(fields, { cat: 'a', sub: 'b' }));
 
-    expect(mockInvalidateQueries).toHaveBeenCalledTimes(2);
-    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['/api/sub'] });
-    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['/api/child'] });
+    // Mount guard applies to all fields — no call on initial render
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 
   it('re-runs and calls invalidateQueries when a dependency value changes', () => {

@@ -1,18 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { CrudPage } from './CrudPage';
 import { useResourceSchema } from './hydra/useResourceSchema';
+import { API_DOC_QUERY_KEY } from './hydra/useHydraMetadata';
 import type { ResourceConfig } from './ResourceConfig';
 import type { Field } from '../field/Field';
+import type { FieldOverride } from './hydra/useResourceSchema';
 import { useAuth } from '../../contexts/auth';
 import { useFieldPermissions } from './rules/useFieldPermissions';
 import { useConditionalRules } from './rules/useConditionalRules';
 import { useDependsOn } from './rules/useDependsOn';
 import { useRouting } from './routing/useRouting';
-
-// ---------------------------------------------------------------------------
-// Internal presentational helpers
-// ---------------------------------------------------------------------------
+import { logDevHint } from './devHint';
 
 function CrudSkeleton() {
   return (
@@ -35,44 +34,43 @@ function CrudError({ message, onRetry }: { message: string; onRetry: () => void 
   );
 }
 
-// ---------------------------------------------------------------------------
-// SmartCrudPage
-// ---------------------------------------------------------------------------
-
 interface SmartCrudPageProps<T extends Record<string, unknown> = Record<string, unknown>> {
   resource: ResourceConfig<T>;
+  /**
+   * Per-field overrides applied on top of auto-inferred Hydra fields.
+   * Each entry must contain a `key` matching the field's `name`, plus any
+   * `Field` properties to override (e.g. `{ key: 'name', label: 'Custom' }`).
+   * Has no effect when `resource.fields` is a non-empty manual array.
+   */
+  fieldOverrides?: FieldOverride[];
 }
 
 /**
  * SmartCrudPage — wraps CrudPage with Hydra auto-discovery and declarative rules.
  *
- * ## Field resolution (post SLICE-005)
+ * ## Field resolution
  * - If `resource.fields` is a non-empty array, it is used as-is (pass-through).
  * - If `resource.fields` is empty / absent, fields are inferred from the Hydra
  *   API spec at `/api/docs.json` via `useResourceSchema`.
  * - While the schema loads: renders a skeleton loader.
  * - If the schema fetch errors: renders a user-visible error with a retry button.
  *
- * ## Declarative rules (SLICE-006 Wave 2)
- * After resolving fields, the following pipeline runs:
+ * ## Declarative rules pipeline
  *   1. `useFieldPermissions` — RBAC: hides or disables fields based on user roles
  *   2. `useConditionalRules` — evaluates visibleWhen / disabledWhen / computed
  *   3. `useDependsOn`        — invalidates entity queries when dependency fields change
  *   4. `useRouting`          — deep-link and URL filter sync (opt-in via resource.routing)
  *
- * `formData` is kept live via the `onFormDataChange` callback now available on CrudPage,
- * so visibleWhen / disabledWhen / computed rules react to actual in-form changes.
+ * `formData` is kept live via the `onFormDataChange` callback so visibleWhen /
+ * disabledWhen / computed rules react to actual in-form changes.
  *
  * URL deep-linking is wired via `initialRecordId` / `initialIsNew` props on CrudPage.
  */
 export function SmartCrudPage<T extends Record<string, unknown> = Record<string, unknown>>({
   resource,
+  fieldOverrides,
 }: SmartCrudPageProps<T>) {
   const queryClient = useQueryClient();
-
-  // ---------------------------------------------------------------------------
-  // Step 1: Resolve fields (Hydra auto-discovery or pass-through)
-  // ---------------------------------------------------------------------------
 
   // Determine whether the consumer supplied manual fields.
   // `fields` can be Field[], FieldDef<T>[], or FieldsFactory<T> (function).
@@ -84,52 +82,52 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     resource.apiUrl,
     // Pass the manual fields only when they exist so useResourceSchema short-circuits
     hasManualFields ? (resource.fields as Field[]) : undefined,
+    // Pass fieldOverrides through to useResourceSchema's merge logic
+    hasManualFields ? undefined : fieldOverrides,
   );
 
-  // ---------------------------------------------------------------------------
-  // Step 2: Auth — get user roles for RBAC field filtering
-  // ---------------------------------------------------------------------------
+  // Dev hint: log a defineResource() snippet once per resource URL when fields
+  // were auto-inferred (not supplied manually). No-op in production.
+  // useEffect runs after render to avoid accessing refs during render.
+  const hintFiredRef = useRef(false);
+  useEffect(() => {
+    if (!hasManualFields && !isLoading && !error && fields.length > 0 && !hintFiredRef.current) {
+      hintFiredRef.current = true;
+      logDevHint(resource.apiUrl, fields);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasManualFields, isLoading, error, fields, resource.apiUrl]);
 
   const { user } = useAuth();
-  const userRoles: string[] = user?.roles ?? [];
-
-  // ---------------------------------------------------------------------------
-  // Step 3: Declarative rules pipeline
-  // ---------------------------------------------------------------------------
+  // Stabilize the roles array so useMemo inside useFieldPermissions is not
+  // defeated by a new array reference being created on every render when
+  // user?.roles is undefined.
+  const stableRoles = useMemo(() => user?.roles ?? [], [user?.roles]);
 
   // Live form data — updated via onFormDataChange callback wired to CrudPage.
   // Enables reactive evaluation of visibleWhen / disabledWhen / computed rules.
   const [formData, setFormData] = useState<Record<string, unknown>>({});
 
-  // Stable callback reference — avoids re-rendering CrudPage on every setState call
+  // Stable callback — avoids re-rendering CrudPage on every setState call
   const handleFormDataChange = useCallback((data: Record<string, unknown>) => {
     setFormData(data);
   }, []);
 
-  // 3a. RBAC field filtering: hide or force-disable based on user roles
-  const permissionFilteredFields = useFieldPermissions(fields ?? [], userRoles);
-
-  // 3b. Conditional visibility / disabled / computed rules
+  // 3a. RBAC field filtering
+  const permissionFilteredFields = useFieldPermissions(fields ?? [], stableRoles);
   const fieldStates = useConditionalRules(permissionFilteredFields, formData);
-
-  // 3c. Reactive entity query invalidation for dependsOn fields
   useDependsOn(permissionFilteredFields, formData);
 
-  // ---------------------------------------------------------------------------
-  // Step 4: URL routing (opt-in)
-  // ---------------------------------------------------------------------------
-
-  // Provides initialRecordId, initialIsNew, initialFilters, syncFilters.
-  // These are now forwarded to CrudPage as props for deep-link dialog opening.
   const routingState = useRouting(resource.routing);
-
-  // ---------------------------------------------------------------------------
-  // Step 5: Apply FieldStates to the resolved fields
-  // ---------------------------------------------------------------------------
 
   const processedFields: Field[] = React.useMemo(() => {
     return permissionFilteredFields
       .map((field) => {
+        // Identity fields (e.g. the hidden "id" field) must always be present in the
+        // field list passed to DxDataGrid so that DevExtreme can resolve keyExpr.
+        // Conditional rules and visibility state are never applied to them.
+        if (field.isIdentity) return field;
+
         const state = fieldStates.find((s) => s.name === field.name);
         if (!state) return field;
 
@@ -156,10 +154,6 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
       .filter((f): f is Field => f !== null);
   }, [permissionFilteredFields, fieldStates]);
 
-  // ---------------------------------------------------------------------------
-  // Loading / error states (only for Hydra auto-discovery)
-  // ---------------------------------------------------------------------------
-
   if (!hasManualFields && isLoading) {
     return <CrudSkeleton />;
   }
@@ -168,14 +162,10 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     return (
       <CrudError
         message={error.message}
-        onRetry={() => queryClient.invalidateQueries({ queryKey: ['/api/docs.json'] })}
+        onRetry={() => queryClient.invalidateQueries({ queryKey: API_DOC_QUERY_KEY })}
       />
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Step 6: Render CrudPage with processed fields
-  // ---------------------------------------------------------------------------
 
   // Normalize apiUrl — ensure it always starts with '/' so axios treats it as
   // an absolute path regardless of the current page URL.
