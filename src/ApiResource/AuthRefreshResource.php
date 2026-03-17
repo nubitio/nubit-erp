@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\Controller\AuthRefreshController;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
+use ApiPlatform\OpenApi\Model\Response as OpenApiResponse;
 
 #[ApiResource(
     shortName: 'Auth',
@@ -18,8 +19,8 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
             controller: AuthRefreshController::class,
             openapi: new OpenApiOperation(
                 responses: [
-                    '200' => ['description' => 'Access and refresh tokens rotated'],
-                    '401' => ['description' => 'Invalid or expired refresh token'],
+                    200 => new OpenApiResponse(description: 'Access and refresh tokens rotated'),
+                    401 => new OpenApiResponse(description: 'Invalid or expired refresh token'),
                 ],
                 summary: 'Refresh access token',
             ),
