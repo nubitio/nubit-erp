@@ -17,4 +17,5 @@ grumphp:
     phpstan:
       memory_limit: 1G
       configuration: phpstan.dist.neon
+      use_grumphp_paths: false
     phpunit: ~

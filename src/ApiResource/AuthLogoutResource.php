@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use App\Controller\AuthLogoutController;
 use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
+use ApiPlatform\OpenApi\Model\Response as OpenApiResponse;
 
 #[ApiResource(
     shortName: 'Auth',
@@ -18,8 +19,8 @@ use ApiPlatform\OpenApi\Model\Operation as OpenApiOperation;
             controller: AuthLogoutController::class,
             openapi: new OpenApiOperation(
                 responses: [
-                    '200' => ['description' => 'Logout successful'],
-                    '401' => ['description' => 'Unauthorized'],
+                    200 => new OpenApiResponse(description: 'Logout successful'),
+                    401 => new OpenApiResponse(description: 'Unauthorized'),
                 ],
                 summary: 'Logout and revoke refresh token',
             ),
