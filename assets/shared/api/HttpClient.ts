@@ -9,6 +9,52 @@ import { dispatch } from '../../core/event/EventHook';
 import { Constants } from '../../core/common/Constants';
 import { StorageUtils } from '../lib/StorageUtils';
 
+/**
+ * Serializes request params to bracket-notation query strings.
+ *
+ * Converts arrays-of-objects to the format PHP's DevExtremeFilter expects:
+ *   { sort: [{ selector: 'name', desc: false }] }
+ *   → "sort[0][selector]=name&sort[0][desc]=false"
+ *
+ * Plain values and primitive arrays are serialised normally.
+ */
+function serializeParams(params: Record<string, unknown>): string {
+  const parts: string[] = [];
+
+  function encodeValue(val: unknown): string {
+    return encodeURIComponent(String(val));
+  }
+
+  function recurse(obj: unknown, prefix: string): void {
+    if (obj === null || obj === undefined) return;
+
+    if (Array.isArray(obj)) {
+      obj.forEach((item, idx) => {
+        recurse(item, `${prefix}[${idx}]`);
+      });
+    } else if (typeof obj === 'object') {
+      Object.entries(obj as Record<string, unknown>).forEach(([key, val]) => {
+        recurse(val, `${prefix}[${key}]`);
+      });
+    } else {
+      parts.push(`${encodeValue(prefix)}=${encodeValue(obj)}`);
+    }
+  }
+
+  Object.entries(params).forEach(([key, val]) => {
+    if (val === null || val === undefined) return;
+    if (Array.isArray(val)) {
+      recurse(val, key);
+    } else if (typeof val === 'object') {
+      recurse(val, key);
+    } else {
+      parts.push(`${encodeValue(key)}=${encodeValue(val)}`);
+    }
+  });
+
+  return parts.join('&');
+}
+
 class HttpClient {
   private readonly axiosClient: AxiosInstance;
   private tokenExpiredModalShown: boolean = false;
@@ -38,6 +84,7 @@ class HttpClient {
       baseURL: baseUrl,
       timeout: 30000,
       withCredentials: true,
+      paramsSerializer: (params) => serializeParams(params as Record<string, unknown>),
     });
 
     this.setupInterceptors();

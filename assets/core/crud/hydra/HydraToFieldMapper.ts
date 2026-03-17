@@ -1,5 +1,5 @@
 import type { Field } from '../../field/Field';
-import type { HydraResourceSchema } from './types';
+import type { HydraResourceSchema, CrudHints } from './types';
 import {
   textField,
   numberField,
@@ -99,6 +99,24 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
 }
 
 /**
+ * Apply `x-crud` backend hints on top of an already-built Field.
+ *
+ * Hints override inferred values; inference is the fallback when hints are absent.
+ * Only properties that are explicitly set (`!== undefined`) are applied.
+ *
+ * `hidden: true` sets `visible: false` so the column is hidden in the grid.
+ * `order` maps to the `Field.order` property (used as DevExtreme `visibleIndex`).
+ */
+function applyCrudHints(field: Field, hints: CrudHints | undefined): void {
+  if (!hints) return;
+  if (hints.filterable !== undefined) field.filterable = hints.filterable;
+  if (hints.sortable !== undefined) field.sortable = hints.sortable;
+  if (hints.hidden !== undefined && hints.hidden) field.visible = false;
+  if (hints.order !== undefined) field.order = hints.order;
+  if (hints.width !== undefined) field.width = hints.width;
+}
+
+/**
  * Map a single HydraResourceSchema to an array of Field objects using the
  * existing field builder utilities.
  *
@@ -117,8 +135,10 @@ export function resolveRangeTag(range: string | undefined, propertyType: string)
  *  8. range resolves to 'entity' OR propertyType === 'Link' → entityField
  *  9. range resolves to 'text' OR fallback  → textField
  *
- * For each field, `filterable` is set to `true` when the field's property name
- * appears in `schema.searchMappings` (from `hydra:search`), otherwise `false`.
+ * For each field, `filterable` is `true` when the field's property name appears in
+ * `schema.searchMappings` (from `hydra:search`). When `searchMappings` is empty
+ * (e.g. the resource uses a catch-all filter like DevExtremeFilter that doesn't
+ * enumerate field-level mappings), ALL fields default to `filterable: true`.
  *
  * After processing all schema fields, if no `id` field was found in the schema,
  * a synthetic hidden identity field is injected so the grid always has a key.
@@ -169,12 +189,14 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
     // non-empty; fall back to the auto-capitalised property name.
     const hydraTitle = fieldSchema['hydra:title'];
     const label = hydraTitle && hydraTitle.trim() !== '' ? hydraTitle : toLabel(name);
-    const filterable = filterableProperties.has(name);
+    const filterable = filterableProperties.size === 0 ? true : filterableProperties.has(name);
 
     // Rule 3 — display-only (writeable: false) → noneField
     if (!writeable) {
       const built = noneField().name(name).label(label).required(required).build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
@@ -183,28 +205,36 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
     // Rule 4 — boolean → switchField
     if (tag === 'boolean') {
       const built = switchField().name(name).label(label).required(required).build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
     // Rule 5 — date-time → datetimeField
     if (tag === 'dateTime') {
       const built = datetimeField().name(name).label(label).required(required).build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
     // Rule 6 — integer → numberField with precision 0
     if (tag === 'integer') {
       const built = numberField().name(name).label(label).required(required).precision(0).build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
     // Rule 7 — decimal → numberField
     if (tag === 'decimal') {
       const built = numberField().name(name).label(label).required(required).build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
@@ -226,13 +256,17 @@ export function mapHydraSchemaToFields(schema: HydraResourceSchema): Field[] {
         .label(label)
         .required(required)
         .build();
-      fields.push({ ...built, filterable });
+      const field: Field = { ...built, filterable };
+      applyCrudHints(field, fieldSchema.crudHints);
+      fields.push(field);
       continue;
     }
 
     // Rule 9 — xmls:string and unknown → textField (safe fallback)
     const built = textField().name(name).label(label).required(required).build();
-    fields.push({ ...built, filterable });
+    const field: Field = { ...built, filterable };
+    applyCrudHints(field, fieldSchema.crudHints);
+    fields.push(field);
   }
 
   // If the schema had no explicit id / @id property, inject a synthetic hidden

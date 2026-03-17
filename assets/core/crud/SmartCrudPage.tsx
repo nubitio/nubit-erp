@@ -78,7 +78,7 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
   const hasManualFields =
     Array.isArray(resource.fields) && (resource.fields as unknown[]).length > 0;
 
-  const { fields, isLoading, error } = useResourceSchema(
+  const { fields, isLoading, error, supportedOperations } = useResourceSchema(
     resource.apiUrl,
     // Pass the manual fields only when they exist so useResourceSchema short-circuits
     hasManualFields ? (resource.fields as Field[]) : undefined,
@@ -180,6 +180,7 @@ export function SmartCrudPage<T extends Record<string, unknown> = Record<string,
     ...(hasManualFields ? resource : { ...resource, fields }),
     apiUrl: normalizedApiUrl,
     fields: processedFields,
+    _supportedOperations: supportedOperations,
   };
 
   return (

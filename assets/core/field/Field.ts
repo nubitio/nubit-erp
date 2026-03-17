@@ -74,6 +74,12 @@ export interface Field {
   multiple: boolean;
   editorOptions: any | undefined;
   sendAsString: boolean;
+  /**
+   * Column display order hint (maps to DevExtreme `visibleIndex`).
+   * Set via `x-crud.order` from the Hydra API documentation.
+   * When undefined, DevExtreme uses its default column ordering.
+   */
+  order?: number;
 
   // ---------------------------------------------------------------------------
   // Declarative rules (SLICE-006) — all optional, do NOT break existing fields

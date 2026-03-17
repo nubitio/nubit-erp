@@ -16,20 +16,44 @@ async function importFreshDevHint() {
   return mod.logDevHint;
 }
 
-describe('logDevHint — DEV mode', () => {
+/**
+ * Helper to override window.location.hostname in jsdom.
+ * jsdom does not allow direct assignment to location, so we redefine the
+ * property on the window object.
+ */
+function stubHostname(hostname: string): () => void {
+  const original = window.location;
+  Object.defineProperty(window, 'location', {
+    configurable: true,
+    writable: true,
+    value: { ...original, hostname },
+  });
+  return () => {
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      writable: true,
+      value: original,
+    });
+  };
+}
+
+// ---------------------------------------------------------------------------
+// DEV-environment suite
+// jsdom defaults to hostname "localhost", so isDevEnvironment() returns true
+// with no extra setup needed.
+// ---------------------------------------------------------------------------
+describe('logDevHint — local dev hostname (localhost)', () => {
   let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.stubEnv('DEV', true);
   });
 
   afterEach(() => {
     consoleInfoSpy.mockRestore();
-    vi.unstubAllEnvs();
   });
 
-  it('calls console.info when DEV=true', async () => {
+  it('calls console.info on localhost', async () => {
     const logDevHint = await importFreshDevHint();
     logDevHint('api/test-resource', stubFields);
     expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
@@ -64,11 +88,11 @@ describe('logDevHint — DEV mode', () => {
     expect(message).toContain("key: 'price'");
   });
 
-  it('does NOT log a second time for the same resource URL (dedup)', async () => {
+  it('logs every call regardless of URL (dedup delegated to SmartCrudPage hintFiredRef)', async () => {
     const logDevHint = await importFreshDevHint();
     logDevHint('api/deduplicated', stubFields);
     logDevHint('api/deduplicated', stubFields);
-    expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+    expect(consoleInfoSpy).toHaveBeenCalledTimes(2);
   });
 
   it('DOES log for different resource URLs (separate entries)', async () => {
@@ -79,20 +103,61 @@ describe('logDevHint — DEV mode', () => {
   });
 });
 
-describe('logDevHint — PRODUCTION mode', () => {
+// ---------------------------------------------------------------------------
+// Additional local hostname variants
+// ---------------------------------------------------------------------------
+describe('logDevHint — other recognised local hostnames', () => {
   let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+  let restoreHostname: () => void;
+
+  afterEach(() => {
+    consoleInfoSpy.mockRestore();
+    restoreHostname?.();
+  });
+
+  it('fires on 127.0.0.1', async () => {
+    restoreHostname = stubHostname('127.0.0.1');
+    consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const logDevHint = await importFreshDevHint();
+    logDevHint('api/r', stubFields);
+    expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires on a *.localhost subdomain', async () => {
+    restoreHostname = stubHostname('app.localhost');
+    consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const logDevHint = await importFreshDevHint();
+    logDevHint('api/r', stubFields);
+    expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('fires on a 192.168.x.x LAN address', async () => {
+    restoreHostname = stubHostname('192.168.1.100');
+    consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const logDevHint = await importFreshDevHint();
+    logDevHint('api/r', stubFields);
+    expect(consoleInfoSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PRODUCTION / non-local hostname suite
+// ---------------------------------------------------------------------------
+describe('logDevHint — non-local hostname (production / staging)', () => {
+  let consoleInfoSpy: ReturnType<typeof vi.spyOn>;
+  let restoreHostname: () => void;
 
   beforeEach(() => {
+    restoreHostname = stubHostname('app.example.com');
     consoleInfoSpy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
-    vi.stubEnv('DEV', false);
   });
 
   afterEach(() => {
     consoleInfoSpy.mockRestore();
-    vi.unstubAllEnvs();
+    restoreHostname();
   });
 
-  it('does NOT call console.info when DEV=false', async () => {
+  it('does NOT call console.info on a non-local hostname', async () => {
     const logDevHint = await importFreshDevHint();
     logDevHint('api/production-resource', stubFields);
     expect(consoleInfoSpy).not.toHaveBeenCalled();

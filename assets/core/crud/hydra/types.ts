@@ -22,6 +22,23 @@ export interface HydraProperty {
   range?: unknown;
 }
 
+/**
+ * UI display hints injected by the backend via `#[ApiProperty(openapiContext: ['x-crud' => [...]])]`.
+ * All properties are optional — absent means "use inferred value".
+ */
+export interface CrudHints {
+  /** Override whether the field is shown in the filter row. */
+  filterable?: boolean;
+  /** Override whether the field can be sorted in the grid. */
+  sortable?: boolean;
+  /** When true, the column is hidden from the grid by default. */
+  hidden?: boolean;
+  /** Column display order (maps to DevExtreme `visibleIndex`). */
+  order?: number;
+  /** Column width in pixels or as a CSS string. */
+  width?: number;
+}
+
 export interface HydraSupportedProperty {
   '@type': 'SupportedProperty';
   property: HydraProperty;
@@ -44,6 +61,25 @@ export interface HydraSupportedProperty {
   required?: boolean;
   readable?: boolean;
   writeable?: boolean;
+  /**
+   * UI CRUD hints injected by `TranslatedDocumentationNormalizer` from
+   * `#[ApiProperty(openapiContext: ['x-crud' => [...]])]` on the PHP entity.
+   */
+  'x-crud'?: CrudHints;
+}
+
+/**
+ * A single entry from `supportedOperation` on a Hydra class.
+ * API Platform serialises the HTTP method as either `hydra:method` or `method`
+ * depending on the AP version; we accept both so parsing never silently drops
+ * an operation.
+ *
+ * Note: the outer array key is the compact `supportedOperation` (no `hydra:` prefix)
+ * as confirmed from the /api/docs.jsonld wire format.
+ */
+export interface HydraSupportedOperation {
+  'hydra:method'?: string;
+  method?: string;
 }
 
 export interface HydraClass {
@@ -56,6 +92,14 @@ export interface HydraClass {
    * Present on collection operations in API Platform JSON-LD responses.
    */
   'hydra:search'?: HydraSearchTemplate;
+  /**
+   * Supported HTTP operations for this class, e.g. GET, POST, PUT, PATCH, DELETE.
+   * Used to infer canAdd / canEdit / canDelete permissions without manual config.
+   *
+   * Wire format (confirmed from /api/docs.jsonld): compact key `supportedOperation`
+   * (no `hydra:` prefix). API Platform compact context strips the namespace prefix.
+   */
+  supportedOperation?: HydraSupportedOperation[];
 }
 
 /** Raw `hydra:IriTemplate` block found inside `hydra:search`. */
@@ -75,7 +119,7 @@ export interface HydraIriTemplateMapping {
 
 export interface HydraApiDoc {
   '@id': string;
-  '@type': 'ApiDocumentation';
+  '@type': 'ApiDocumentation' | 'hydra:ApiDocumentation';
   supportedClass: HydraClass[];
 }
 
@@ -97,6 +141,11 @@ export interface HydraFieldSchema {
    * auto-capitalised property name.
    */
   'hydra:title'?: string;
+  /**
+   * UI CRUD hints forwarded from `x-crud` on the raw `HydraSupportedProperty`.
+   * When present, these values override inferred field properties in the mapper.
+   */
+  crudHints?: CrudHints;
 }
 
 /**
@@ -122,6 +171,13 @@ export interface HydraResourceSchema {
    * operation. Absent/empty means no server-side filter info was found.
    */
   searchMappings?: HydraSearchMapping[];
+  /**
+   * HTTP methods supported by this resource class, uppercased.
+   * e.g. ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].
+   * Derived from `supportedOperation` (compact wire key) in the Hydra API doc.
+   * Empty array means no operation info was found (fall back to platform defaults).
+   */
+  supportedOperations?: string[];
 }
 
 // ---------------------------------------------------------------------------

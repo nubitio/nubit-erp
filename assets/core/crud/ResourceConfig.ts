@@ -94,4 +94,11 @@ export interface ResourceConfig<T extends Record<string, unknown> = Record<strin
   auditTrail?: AuditTrailConfig;
   /** Optional URL routing configuration — enables deep-linking and filter sync. */
   routing?: ResourceRouting;
+  /**
+   * Internal: HTTP methods inferred from `hydra:supportedOperation` in the API doc.
+   * Populated automatically by SmartCrudPage from useResourceSchema.
+   * Do NOT set this manually — it is overridden by any explicit `allowX` / `permissions` config.
+   * e.g. ['GET', 'POST', 'PATCH', 'DELETE']
+   */
+  _supportedOperations?: string[];
 }
