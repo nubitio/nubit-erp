@@ -1,36 +1,33 @@
 import './CompanyPage.scss';
-import { companyEndpoints } from '../api/companyEndpoints';
+import { useRef } from 'react';
 import { DxDataGrid } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@core/form/DxForm';
+import { DxForm, type DxFormEvents } from '@core/form/DxForm';
 import { companyEvents } from '@features/company';
 import { CompanyFields } from './CompanyFields';
-import { useMemo, useRef } from 'react';
+import { companyEndpoints } from '../api/companyEndpoints';
 import { useCompanyObservers } from '../model/useCompanyObservers';
 
+const API_URL = companyEndpoints.list();
+
 export const CompanyPage = () => {
-  const container = 'wrapper';
   const formRef = useRef<DxFormEvents | null>(null);
-  const fields = useMemo(() => CompanyFields(formRef), [formRef]);
-
-  const API_URL = companyEndpoints.list();
-
   useCompanyObservers({ loadingEvent: companyEvents.LOADING, formRef });
-
+  const fields = CompanyFields(formRef);
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
-        id={'company'}
-        title={'Empresas'}
+        id="company"
+        title="Empresas"
         url={API_URL}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         fields={fields}
         events={companyEvents}
       />
       <DxDialog events={companyEvents}>
-        <DxForm url={API_URL} fields={fields} events={companyEvents} useIRI={true} ref={formRef} />
+        <DxForm ref={formRef} url={API_URL} fields={fields} events={companyEvents} />
       </DxDialog>
     </div>
   );

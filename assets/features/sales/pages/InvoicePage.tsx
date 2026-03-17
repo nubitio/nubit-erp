@@ -1,10 +1,10 @@
 import './InvoicePage.scss';
+import { useRef } from 'react';
 import { Constants } from '@core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
 import { DxForm } from '@core/form/DxForm';
 import { InvoiceDetailFields, InvoiceFields } from './InvoiceFields';
-import { useMemo, useRef } from 'react';
 import {
   createInvoiceToolbar,
   invoiceEvents,
@@ -16,17 +16,13 @@ import {
 } from '@features/invoice';
 import toast from '@shared/lib/SharedUtils';
 
-export const InvoicePage = () => {
-  const container = 'wrapper';
-  const fields = useMemo(() => InvoiceFields(), []);
-  const detailFields = useMemo(
-    () => (parentRow: Record<string, unknown>) =>
-      InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN'),
-    [],
-  );
-  const gridRef = useRef<DxDataGridEvents>(null);
+const API_URL = Constants.API_BASE_URL + 'tax-documents';
+const fields = InvoiceFields();
+const detailFields = (parentRow: Record<string, unknown>) =>
+  InvoiceDetailFields((parentRow?.currency as string) ?? 'PEN');
 
-  const API_URL = Constants.API_BASE_URL + 'tax-documents';
+export const InvoicePage = () => {
+  const gridRef = useRef<DxDataGridEvents>(null);
 
   const actionDeps = {
     getSelectedRow: () => gridRef.current?.getSelectedRow(),
@@ -46,11 +42,11 @@ export const InvoicePage = () => {
   });
 
   return (
-    <div id={container} className="invoice-page">
+    <div id="wrapper" className="invoice-page">
       <DxDataGrid
-        id={'invoice'}
+        id="invoice"
         ref={gridRef}
-        title={'Comprobantes'}
+        title="Comprobantes"
         toolbar={toolbar}
         url={API_URL + '?type=invoice'}
         fields={fields}

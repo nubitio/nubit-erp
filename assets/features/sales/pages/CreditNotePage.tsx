@@ -1,10 +1,10 @@
 import './CreditNotePage.scss';
+import { useRef } from 'react';
 import { Constants } from '@core/common/Constants';
-import { DxDataGrid, DxDataGridEvents } from '@core/datagrid/DxDataGrid';
+import { DxDataGrid, type DxDataGridEvents } from '@core/datagrid/DxDataGrid';
 import { DxDialog } from '@core/dialog/DxDialog';
-import { DxForm, DxFormEvents } from '@core/form/DxForm';
+import { DxForm, type DxFormEvents } from '@core/form/DxForm';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
-import { useMemo, useRef } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@core/event/EventHook';
 import {
@@ -18,16 +18,15 @@ import {
   useCreditNoteSelectionState,
 } from '@features/creditNote';
 
+const API_URL = Constants.API_BASE_URL + 'tax-documents';
+const fields = CreditNoteFields();
+const detailFields = CreditNoteDetailFields();
+
 export const CreditNotePage = () => {
   const [on] = useEvents();
-  const container = 'wrapper';
-  const fields = useMemo(() => CreditNoteFields(), []);
-  const detailFields = useMemo(() => CreditNoteDetailFields(), []);
   const gridRef = useRef<DxDataGridEvents>(null);
   const formRef = useRef<DxFormEvents>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
-
-  const API_URL = Constants.API_BASE_URL + 'tax-documents';
 
   useCreditNoteRelatedDocumentObserver({ on, apiUrl: API_URL, formRef });
 
@@ -49,18 +48,18 @@ export const CreditNotePage = () => {
   });
 
   return (
-    <div id={container}>
+    <div id="wrapper">
       <DxDataGrid
-        id={'creditNote'}
+        id="creditNote"
         ref={gridRef}
-        title={'Notas de crédito'}
+        title="Notas de crédito"
         toolbar={toolbar}
         url={API_URL + '?type=note'}
         detailUrl={API_URL + '/{id}/lines'}
         detailFields={detailFields}
-        allowAdd={true}
-        allowEdit={true}
-        allowDelete={true}
+        allowAdd
+        allowEdit
+        allowDelete
         editDisabled={editDisabled}
         deleteDisabled={deleteDisabled}
         fields={fields}
@@ -76,11 +75,10 @@ export const CreditNotePage = () => {
           detailFields={detailFields}
           detailPropertyName="lines"
           allowAdding={false}
-          allowDeleting={true}
-          allowUpdating={true}
-          requiredDetail={true}
+          allowDeleting
+          allowUpdating
+          requiredDetail
           events={creditNoteEvents}
-          useIRI={true}
         />
       </DxDialog>
     </div>

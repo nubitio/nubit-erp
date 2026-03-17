@@ -1,6 +1,7 @@
 export { defineResource } from './defineResource';
 export { useCrudPage } from './useCrudPage';
 export { CrudPage } from './CrudPage';
+export { SmartCrudPage } from './SmartCrudPage';
 export type { ResourceConfig, FieldsFactory, ResourcePermissions } from './ResourceConfig';
 export type { FieldDef } from '../field/Field';
 export { usePermissions } from './usePermissions';
